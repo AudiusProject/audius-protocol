@@ -84,6 +84,7 @@ module.exports = (sequelize, DataTypes) => {
     })
   }
 
+  // TODO why no work?
   File.TrackTypes = ['track', 'copy320']
   File.NonTrackTypes = ['dir', 'image', 'metadata']
 

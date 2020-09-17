@@ -5,6 +5,7 @@ const path = require('path')
 const fs = require('fs')
 
 const models = require('../src/models')
+
 const ipfsClient = require('../src/ipfsClient')
 const config = require('../src/config')
 const BlacklistManager = require('../src/blacklistManager')
@@ -52,7 +53,7 @@ describe('test AudiusUsers', function () {
 
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session)
+      .set('X-Session-ID', session.sessionToken)
       .send({ metadata })
       .expect(200)
 
@@ -70,7 +71,7 @@ describe('test AudiusUsers', function () {
 
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session)
+      .set('X-Session-ID', session.sessionToken)
       .send({ metadata })
       .expect(200)
 
@@ -80,7 +81,7 @@ describe('test AudiusUsers', function () {
 
     await request(app)
       .post('/audius_users')
-      .set('X-Session-ID', session)
+      .set('X-Session-ID', session.sessionToken)
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
       .expect(200)
   })
@@ -122,7 +123,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient fo
   it('should fail if metadata is not found in request body', async function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session)
+      .set('X-Session-ID', session.sessionToken)
       .send({ dummy: 'data' })
       .expect(500)
 
@@ -136,18 +137,18 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient fo
     const metadata = { metadata: 'spaghetti' }
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session)
+      .set('X-Session-ID', session.sessionToken)
       .send(metadata)
       .expect(500)
 
-    assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
+    assert.deepStrictEqual(resp.body.error, 'saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
   })
 
   it('should successfully add metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({ spaghetti: 'spaghetti' })
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session)
+      .set('X-Session-ID', session.sessionToken)
       .send({ metadata })
       .expect(200)
 

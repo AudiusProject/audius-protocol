@@ -13,7 +13,6 @@ const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 
 const config = require('./config')
-const models = require('./models')
 const Utils = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
@@ -23,12 +22,11 @@ const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions')
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 /**
- * (1) Add file to IPFS; (2) save file to disk;
- * (3) add file via IPFS; (4) save file ref to DB
- * @dev - only call this function when file is not already stored to disk
- *      - if it is, then use saveFileToIPFSFromFS()
+ * Adds file to IPFS then saves file to disk under multihash name
+ *
+ * @dev - only call this function when file is not already stored to disk, else use saveFileToIPFSFromFS()
  */
-async function saveFileFromBuffer (req, buffer, fileType, clockVal, transaction = null) {
+async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -36,36 +34,20 @@ async function saveFileFromBuffer (req, buffer, fileType, clockVal, transaction 
 
   const ipfs = req.app.get('ipfsAPI')
 
+  // Add to IPFS without pinning and retrieve multihash
   const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
 
+  // Write file to disk by multihash for future retrieval
   const dstPath = path.join(req.app.get('storagePath'), multihash)
-
   await writeFile(dstPath, buffer)
 
-  // add reference to file to database
-  const file = (await models.File.create(
-    {
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      multihash: multihash,
-      sourceFile: req.fileName,
-      storagePath: dstPath,
-      type: fileType,
-      clock: clockVal
-    },
-    { transaction }
-  )).dataValues
-
-  req.logger.info('\nAdded file:', multihash, 'file id', file.fileUUID)
-  return { multihash: multihash, fileUUID: file.fileUUID }
+  return { multihash, dstPath }
 }
 
 /**
- * Save file to IPFS given file path.
- * - Add file to IPFS.
- * - Re-save file to disk under multihash.
- * - Save reference to file in DB.
+ * Given file path on disk, adds file to IPFS + re-saves under /multihash.
  */
-async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, clockVal, transaction = null) {
+async function saveFileToIPFSFromFS (req, srcPath) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -73,35 +55,14 @@ async function saveFileToIPFSFromFS (req, srcPath, fileType, sourceFile, clockVa
 
   const ipfs = req.app.get('ipfsAPI')
 
-  req.logger.info(`beginning saveFileToIPFSFromFS for srcPath ${srcPath}`)
-
-  let codeBlockTimeStart = Date.now()
-
+  // Add to IPFS without pinning and retrieve multihash
   const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
-  req.logger.info(`Time taken in saveFileToIpfsFromFS to add: ${Date.now() - codeBlockTimeStart}`)
-  codeBlockTimeStart = Date.now()
-  const dstPath = path.join(req.app.get('storagePath'), multihash)
 
-  // store segment file copy under multihash for easy future retrieval
+  // store file copy by multihash for future retrieval
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
   fs.copyFileSync(srcPath, dstPath)
 
-  req.logger.info(`Time taken in saveFileToIpfsFromFS to copyFileSync: ${Date.now() - codeBlockTimeStart}`)
-
-  // add reference to file to database
-  const file = (await models.File.create(
-    {
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      multihash: multihash,
-      sourceFile: sourceFile,
-      storagePath: dstPath,
-      type: fileType,
-      clock: clockVal
-    },
-    { transaction }
-  )).dataValues
-
-  req.logger.info(`Added file: ${multihash} for fileUUID ${file.fileUUID} from sourceFile ${sourceFile}`)
-  return { multihash: multihash, fileUUID: file.fileUUID }
+  return { multihash, dstPath }
 }
 
 /**
@@ -405,7 +366,7 @@ function getFileExtension (fileName) {
 }
 
 module.exports = {
-  saveFileFromBuffer,
+  saveFileFromBufferToIPFSAndDisk,
   saveFileToIPFSFromFS,
   saveFileForMultihash,
   removeTrackFolder,

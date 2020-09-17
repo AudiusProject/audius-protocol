@@ -9,15 +9,18 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction()
 
-    // Add 'clock2' column to all 4 data tables - TESTING ONLY
+    // TODO remove - Add 'clock2' column to all 4 data tables
     await addClock2Column(queryInterface, Sequelize, transaction, true)
 
-    // Add 'clock' column to all 4 data tables
+    // Add 'clock' column to all 4 tables
     await addClockColumn(queryInterface, Sequelize, transaction, false)
 
     // Add composite uniqueness constraint on (cnodeUserUUID, clock) to all Content Tables
-    await addConstraints(queryInterface, Sequelize, transaction)
-    
+    await addUniquenessConstraints(queryInterface, Sequelize, transaction)
+
+    // Create Clock table
+    await createClockRecordsTable(queryInterface, Sequelize, transaction)
+
     await transaction.commit()
   },
 
@@ -92,7 +95,7 @@ async function addClock2Column (queryInterface, Sequelize, transaction, allowNul
 }
 
 // Add uniqueness constraint on composite (cnodeUserUUId, clock) to Content Tables
-async function addConstraints (queryInterface, Sequelize, transaction) {
+async function addUniquenessConstraints (queryInterface, Sequelize, transaction) {
   await queryInterface.addConstraint(
     'AudiusUsers',
     {
@@ -120,4 +123,40 @@ async function addConstraints (queryInterface, Sequelize, transaction) {
       transaction
     }
   )
+}
+
+async function createClockRecordsTable (queryInterface, Sequelize, transaction) {
+  await queryInterface.createTable('ClockRecords', {
+    cnodeUserUUID: {
+      type: Sequelize.UUID,
+      primaryKey: true, // composite PK with clock
+      unique: false,
+      allowNull: false,
+      references: {
+        model: 'CNodeUsers',
+        key: 'cnodeUserUUID',
+        as: 'cnodeUserUUID'
+      },
+      onDelete: 'RESTRICT'
+    },
+    clock: {
+      type: Sequelize.INTEGER,
+      primaryKey: true, // composite PK with cnodeUserUUID
+      unique: false,
+      allowNull: false
+    },
+    sourceTable: {
+      // TODO - if this doesn't work, use models/file.js:L46
+      type: Sequelize.ENUM('AudiusUser', 'Track', 'File'),
+      allowNull: false
+    },
+    createdAt: {
+      allowNull: false,
+      type: Sequelize.DATE
+    },
+    updatedAt: {
+      allowNull: false,
+      type: Sequelize.DATE
+    }
+  }, { transaction })
 }
