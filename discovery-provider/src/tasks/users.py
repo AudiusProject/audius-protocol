@@ -3,7 +3,8 @@ from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import helpers
-from src.models import User, BlacklistedIPLD
+from src.models import User
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
@@ -34,6 +35,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     for tx_receipt in user_factory_txs:
         for event_type in user_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
+            processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
 
@@ -44,12 +46,10 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                     ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
                     user_events_lookup[user_id] = {"user": ret_user, "events": []}
 
-                user_events_lookup[user_id]["events"].append(event_type)
-
                 # Add or update the value of the user record for this block in user_events_lookup,
                 # ensuring that multiple events for a single user result in only 1 row insert operation
                 # (even if multiple operations are present)
-                user_events_lookup[user_id]["user"] = parse_user_event(
+                user_record = parse_user_event(
                     self,
                     user_contract,
                     update_task,
@@ -61,15 +61,22 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                     user_events_lookup[user_id]["user"],
                     block_timestamp
                 )
+                if user_record is not None:
+                    user_events_lookup[user_id]["events"].append(event_type)
+                    user_events_lookup[user_id]["user"] = user_record
+                    processedEntries += 1
 
-            num_total_changes += len(user_events_tx)
+            num_total_changes += processedEntries
+
+    logger.info(f"[users indexing] There are {num_total_changes} events processed.")
 
     # for each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_events_lookup.items():
         logger.info(f"users.py | Adding {value_obj['user']}")
-        invalidate_old_user(session, user_id)
-        session.add(value_obj["user"])
+        if value_obj["events"]:
+            invalidate_old_user(session, user_id)
+            session.add(value_obj["user"])
 
     return num_total_changes
 
@@ -136,8 +143,13 @@ def parse_user_event(
         user_record.handle_lc = handle_str.lower()
         user_record.wallet = event_args._wallet.lower()
     elif event_type == user_event_types_lookup["update_multihash"]:
-        metadata_multihash = event_args._multihashDigest
-        user_record.metadata_multihash = helpers.multihash_digest_to_cid(metadata_multihash)
+        metadata_multihash = helpers.multihash_digest_to_cid(event_args._multihashDigest)
+        is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
+        # If cid is in blacklist, do not update user
+        if is_blacklisted:
+            logger.info(f"Encountered blacklisted CID {metadata_multihash} in indexing update user metadata multihash")
+            return None
+        user_record.metadata_multihash = metadata_multihash
     elif event_type == user_event_types_lookup["update_name"]:
         user_record.name = helpers.bytes32_to_str(event_args._name)
     elif event_type == user_event_types_lookup["update_location"]:
@@ -145,9 +157,19 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_bio"]:
         user_record.bio = event_args._bio
     elif event_type == user_event_types_lookup["update_profile_photo"]:
-        user_record.profile_picture = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
+        profile_photo_multihash = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
+        is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
+        if is_blacklisted:
+            logger.info(f"Encountered blacklisted CID {profile_photo_multihash} in indexing update user profile photo")
+            return None
+        user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
-        user_record.cover_photo = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
+        cover_photo_multihash = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
+        is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
+        if is_blacklisted:
+            logger.info(f"Encountered blacklisted CID {cover_photo_multihash} in indexing update user cover photo")
+            return None
+        user_record.cover_photo = cover_photo_multihash
     elif event_type == user_event_types_lookup["update_is_creator"]:
         user_record.is_creator = event_args._isCreator
     elif event_type == user_event_types_lookup["update_is_verified"]:
@@ -185,7 +207,7 @@ def parse_user_event(
 
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
-        logger.warning(f"users.py | Processing user profile_picture {user_record.profile_picture}")
+        logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
         try:
             is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
             if is_directory:
@@ -201,7 +223,7 @@ def parse_user_event(
 
     # if cover_photo CID is of a dir, store under _sizes field instead
     if user_record.cover_photo:
-        logger.warning(f"users.py | Processing user cover photo {user_record.cover_photo}")
+        logger.info(f"users.py | Processing user cover photo {user_record.cover_photo}")
         try:
             is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
             if is_directory:
@@ -230,17 +252,7 @@ def refresh_user_connection(user_record, update_task):
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
     user_metadata = user_metadata_format
 
-    if user_record.is_creator and user_record.metadata_multihash and user_record.handle:
-        ipld_blacklist_entry = (
-            session.query(BlacklistedIPLD)
-            .filter(BlacklistedIPLD.ipld == user_record.metadata_multihash)
-            .first()
-        )
-
-        # Early exit if the ipld is in the blacklist table
-        if ipld_blacklist_entry:
-            return None
-
+    if user_record.metadata_multihash and user_record.is_creator and user_record.handle:
         # Manually peer with user creator nodes
         helpers.update_ipfs_peers_from_user_endpoint(
             update_task,

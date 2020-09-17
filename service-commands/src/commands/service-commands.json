@@ -63,6 +63,7 @@
     "host": "audius-disc-prov_web-server_1",
     "port": 5000,
     "up": [
+      "cd discovery-provider; rm celerybeat.pid",
       "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -114,6 +115,6 @@
     "up": ["node libs/initScripts/local.js distribute"]
   },
   "init-repos": {
-    "up": ["./scripts/init-repos.sh"]
+    "up": [". scripts/init-repos.sh"]
   }
 }
