@@ -36,7 +36,7 @@ run_unit_tests () {
 run_integration_tests () {
   set +e
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha --timeout 30000 --exit
+  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 30000 --exit
   set -e
 }
 

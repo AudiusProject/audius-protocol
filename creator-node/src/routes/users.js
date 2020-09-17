@@ -35,11 +35,12 @@ module.exports = function (app) {
       return successResponse() // do nothing if user already exists
     }
 
+    // Create CNodeUser entry for wallet with clock = 0
     await models.CNodeUser.create({
       walletPublicKey: walletAddress,
-      // Initialize clock value for cnodeUser to 0
       clock: 0
     })
+
     return successResponse()
   }))
 

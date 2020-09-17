@@ -33,8 +33,8 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       throw new Error('Invalid amount')
     }
 
-    let requestUrl = urlJoin(endpoint, 'health_check')
-    let axiosRequestObj = {
+    const requestUrl = urlJoin(endpoint, 'health_check')
+    const axiosRequestObj = {
       url: requestUrl,
       method: 'get',
       timeout: 1000
@@ -53,17 +53,18 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
 
     // Approve token transfer operation
     const contractAddress = await this.stakingProxyClient.getAddress()
-    let tx0 = await this.audiusTokenClient.approve(
+    const tx0 = await this.audiusTokenClient.approve(
       contractAddress,
-      amount)
+      amount
+    )
 
     // Register and stake
-    let method = await this.getMethod('register',
+    const method = await this.getMethod('register',
       Utils.utf8ToHex(serviceType),
       endpoint,
       amount,
       delegateOwnerWallet)
-    let tx = await this.web3Manager.sendTransaction(method, 1000000)
+    const tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
       spID: parseInt(tx.events.RegisteredServiceProvider.returnValues._spID),
@@ -82,14 +83,65 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       this.web3Manager.getWalletAddress())
   }
 
+  // Get the deregistered service's most recent endpoint and delegate owner wallet
+  async getDeregisteredService ({
+    serviceType,
+    spID,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let service = { endpoint: '', delegateOwnerWallet: '' }
+    let registerEvents = await contract.getPastEvents('RegisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _spID: spID,
+        _serviceType: Utils.utf8ToHex(serviceType)
+      }
+    })
+
+    if (registerEvents.length > 0) {
+      const { _endpoint, _owner } = registerEvents[registerEvents.length -1].returnValues
+      service.endpoint = _endpoint
+      service.owner = _owner
+    }
+
+    let endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _spID: spID,
+        _serviceType: Utils.utf8ToHex(serviceType)
+      }
+    })
+
+    if (endpointUpdateEvents.length > 0) {
+      const { _newEndpoint } = endpointUpdateEvents[endpointUpdateEvents.length -1].returnValues
+      service.endpoint = _newEndpoint
+    }
+
+    let walletEvents = await contract.getPastEvents('DelegateOwnerWalletUpdated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _spID: spID,
+        _serviceType: Utils.utf8ToHex(serviceType)
+      }
+    })
+
+    if (walletEvents.length > 0) {
+      const { _updatedWallet } = walletEvents[walletEvents.length -1].returnValues
+      service.delegateOwnerWallet = _updatedWallet
+    }
+
+    return service
+  }
+
   async increaseStake (amount) {
     const contractAddress = await this.stakingProxyClient.getAddress()
-    let tx0 = await this.audiusTokenClient.approve(
+    const tx0 = await this.audiusTokenClient.approve(
       contractAddress,
       amount
     )
-    let method = await this.getMethod('increaseStake', amount)
-    let tx = await this.web3Manager.sendTransaction(method, 1000000)
+    const method = await this.getMethod('increaseStake', amount)
+    const tx = await this.web3Manager.sendTransaction(method, 1000000)
     return {
       txReceipt: tx,
       tokenApproveReceipt: tx0
@@ -110,7 +162,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
 
     const account = this.web3Manager.getWalletAddress()
     const lockupExpiryBlock = await this.getLockupExpiry(account)
-    return lockupExpiryBlock
+    return parseInt(lockupExpiryBlock)
   }
 
   /**
@@ -119,7 +171,44 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    */
   async getPendingDecreaseStakeRequest (account) {
     const requestInfoMethod = await this.getMethod('getPendingDecreaseStakeRequest', account)
-    return requestInfoMethod.call()
+    const {
+      amount,
+      lockupExpiryBlock
+    } = await requestInfoMethod.call()
+    return {
+      amount: Utils.toBN(amount),
+      lockupExpiryBlock: parseInt(lockupExpiryBlock)
+    }
+  }
+
+  /**
+   * Gets the pending decrease stake lockup duration
+   */
+  async getDecreaseStakeLockupDuration () {
+    const requestInfoMethod = await this.getMethod('getDecreaseStakeLockupDuration')
+    const info = await requestInfoMethod.call()
+    return parseInt(info)
+  }
+
+  /**
+   * Gets the deployer cut lockup duration
+   */
+  async getDeployerCutLockupDuration () {
+    const requestInfoMethod = await this.getMethod('getDeployerCutLockupDuration')
+    const info = await requestInfoMethod.call()
+    return parseInt(info)
+  }
+
+  /**
+   * Cancels the pending decrease stake request
+   * @param {string} account wallet address to cancel request for
+   */
+  async cancelDecreaseStakeRequest (account) {
+    const requestCancelDecreaseMethod = await this.getMethod('cancelDecreaseStakeRequest', account)
+    await this.web3Manager.sendTransaction(
+      requestCancelDecreaseMethod,
+      1000000
+    )
   }
 
   /**
@@ -128,15 +217,9 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    */
   async getLockupExpiry (account) {
     const { lockupExpiryBlock } = await this.getPendingDecreaseStakeRequest(account)
-    return lockupExpiryBlock
+    return parseInt(lockupExpiryBlock)
   }
 
-  /**
-   * Actuates a decrease stake. Will be rejected if there was not a request
-   * pending that passed its expiry.
-   * @returns {object}
-   *  txReceipt: the transaction receipt
-   */
   async decreaseStake () {
     const method = await this.getMethod('decreaseStake')
     const tx = await this.web3Manager.sendTransaction(method, 1000000)
@@ -152,10 +235,10 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
    * @param {string} endpoint
    */
   async deregister (serviceType, endpoint) {
-    let method = await this.getMethod('deregister',
+    const method = await this.getMethod('deregister',
       Utils.utf8ToHex(serviceType),
       endpoint)
-    let tx = await this.web3Manager.sendTransaction(method)
+    const tx = await this.web3Manager.sendTransaction(method)
     return {
       txReceipt: tx,
       spID: parseInt(tx.events.DeregisteredServiceProvider.returnValues._spID),
@@ -169,15 +252,16 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     const method = await this.getMethod('getTotalServiceTypeProviders',
       Utils.utf8ToHex(serviceType)
     )
-    return method.call()
+    const count = await method.call()
+    return parseInt(count)
   }
 
   async getServiceProviderIdFromEndpoint (endpoint) {
     const method = await this.getMethod('getServiceProviderIdFromEndpoint',
       (endpoint)
     )
-    let info = await method.call()
-    return info
+    const info = await method.call()
+    return parseInt(info)
   }
 
   // TODO: Remove this method after all consumers are using
@@ -191,20 +275,20 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       Utils.utf8ToHex(serviceType),
       serviceId
     )
-    let info = await method.call()
+    const info = await method.call()
     return {
       owner: info.owner,
       endpoint: info.endpoint,
       spID: parseInt(serviceId),
       type: serviceType,
-      blocknumber: info.blocknumber,
+      blockNumber: parseInt(info.blockNumber),
       delegateOwnerWallet: info.delegateOwnerWallet
     }
   }
 
   async getServiceProviderInfoFromEndpoint (endpoint) {
-    let requestUrl = urlJoin(endpoint, 'health_check')
-    let axiosRequestObj = {
+    const requestUrl = urlJoin(endpoint, 'health_check')
+    const axiosRequestObj = {
       url: requestUrl,
       method: 'get',
       timeout: 1000
@@ -218,8 +302,8 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       serviceType = resp.data.service
     }
 
-    let serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
-    let info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
+    const serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
+    const info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
     return info
   }
 
@@ -228,8 +312,8 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       ownerAddress,
       Utils.utf8ToHex(serviceType)
     )
-    let info = await method.call()
-    return info
+    const info = await method.call()
+    return info.map(id => parseInt(id))
   }
 
   async getServiceProviderIdFromAddress (ownerAddress, serviceType) {
@@ -238,7 +322,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   }
 
   async getServiceEndpointInfoFromAddress (ownerAddress, serviceType) {
-    let spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
+    const spId = await this.getServiceProviderIdFromAddress(ownerAddress, serviceType)
 
     // cast this as an array for backwards compatibility because everything expects an array
     const spInfo = [await this.getServiceEndpointInfo(serviceType, spId)]
@@ -246,7 +330,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   }
 
   async getServiceProviderList (serviceType) {
-    let numberOfProviders = parseInt(await this.getTotalServiceTypeProviders(serviceType))
+    const numberOfProviders = await this.getTotalServiceTypeProviders(serviceType)
 
     const providerList = await Promise.all(
       range(1, numberOfProviders + 1).map(i =>
@@ -265,6 +349,92 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       method,
       DEFAULT_GAS_AMOUNT
     )
+  }
+
+  async getServiceProviderDetails (serviceProviderAddress) {
+    const method = await this.getMethod(
+      'getServiceProviderDetails',
+      serviceProviderAddress
+    )
+    const info = await method.call()
+    return {
+      deployerCut: parseInt(info.deployerCut),
+      deployerStake: Utils.toBN(info.deployerStake),
+      maxAccountStake: Utils.toBN(info.maxAccountStake),
+      minAccountStake: Utils.toBN(info.minAccountStake),
+      numberOfEndpoints: parseInt(info.numberOfEndpoints),
+      validBounds: info.validBounds
+    }
+  }
+
+  async updateDelegateOwnerWallet (serviceType, endpoint, updatedDelegateOwnerWallet) {
+    const method = await this.getMethod(
+      'updateDelegateOwnerWallet',
+      Utils.utf8ToHex(serviceType),
+      endpoint,
+      updatedDelegateOwnerWallet
+    )
+
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return tx
+  }
+
+  async updateEndpoint (serviceType, oldEndpoint, newEndpoint) {
+    const method = await this.getMethod(
+      'updateEndpoint',
+      Utils.utf8ToHex(serviceType),
+      oldEndpoint,
+      newEndpoint
+    )
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return tx
+  }
+
+  async requestUpdateDeployerCut (ownerAddress, deployerCut) {
+    const method = await this.getMethod(
+      'requestUpdateDeployerCut',
+      ownerAddress,
+      deployerCut
+    )
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return tx
+  }
+
+  async getPendingUpdateDeployerCutRequest (ownerAddress) {
+    const method = await this.getMethod(
+      'getPendingUpdateDeployerCutRequest',
+      ownerAddress
+    )
+    const { lockupExpiryBlock, newDeployerCut } = await method.call()
+    return { lockupExpiryBlock: parseInt(lockupExpiryBlock), newDeployerCut: parseInt(newDeployerCut) }
+  }
+
+  async cancelUpdateDeployerCut (ownerAddress) {
+    const method = await this.getMethod(
+      'cancelUpdateDeployerCut',
+      ownerAddress
+    )
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return tx
+  }
+
+  async updateDeployerCut (ownerAddress) {
+    const method = await this.getMethod(
+      'updateDeployerCut',
+      ownerAddress
+    )
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return tx
+  }
+
+  async updateServiceProviderStake (ownerAddress, newAmount) {
+    const method = await this.getMethod(
+      'updateServiceProviderStake',
+      ownerAddress,
+      newAmount
+    )
+    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return tx
   }
 }
 

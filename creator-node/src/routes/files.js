@@ -22,7 +22,7 @@ const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('.
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { incrementAndFetchCNodeUserClock } = require('../utils/incrementAndFetchCNodeUserClock')
+const { updateClockInCNodeUserAndClockRecords, selectCNodeUserClockSubquery } = require('../clockManager')
 
 /**
  * Helper method to stream file from file system on creator node
@@ -235,7 +235,9 @@ const getDirCID = async (req, res) => {
 }
 
 module.exports = function (app) {
-  /** Store image in multiple-resolutions on disk + DB and make available via IPFS */
+  /**
+   * Store image in multiple-resolutions on disk + DB and make available via IPFS
+   */
   app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponse(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
@@ -243,13 +245,14 @@ module.exports = function (app) {
     if (!req.file) {
       return errorResponseBadRequest('Must provide image file in request body.')
     }
-    let routestart = Date.now()
 
+    const routestart = Date.now()
     const imageBufferOriginal = req.file.path
     const originalFileName = req.file.originalname
-    let resizeResp
+    const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Resize the images and add them to IPFS and filestorage
+    let resizeResp
     try {
       if (req.body.square === 'true') {
         resizeResp = await ImageProcessingQueue.resizeImage({
@@ -278,58 +281,47 @@ module.exports = function (app) {
         })
       }
 
-      req.logger.info('ipfs add resp', resizeResp)
+      req.logger.debug('ipfs add resp', resizeResp)
     } catch (e) {
       return errorResponseServerError(e)
     }
 
-    const t = await models.sequelize.transaction()
-    // Add the created files to the DB
+    // Record image file entries in DB
+    const transaction = await models.sequelize.transaction()
     try {
-      // increment and fetch cnodeUser.clock value
-      const finalClockVal = await incrementAndFetchCNodeUserClock(req, resizeResp.files.length + 1)
-      const initialClockVal = finalClockVal - (resizeResp.files.length + 1)
+      // Record dir file entry in DB
+      await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
+      await models.File.create({
+        cnodeUserUUID,
+        multihash: resizeResp.dir.dirCID,
+        sourceFile: null,
+        storagePath: resizeResp.dir.dirDestPath,
+        type: 'dir', // TODO - replace with models enum
+        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
+      }, { transaction })
 
-      // Save dir file reference to DB
-      const dir = (await models.File.create(
-        {
-          cnodeUserUUID: req.session.cnodeUserUUID,
-          multihash: resizeResp.dir.dirCID,
-          sourceFile: null,
-          storagePath: resizeResp.dir.dirDestPath,
-          type: 'dir',
-          clock: (initialClockVal + 1)
-        },
-        { transaction: t }
-      )).dataValues
+      // Record all image res file entries in DB
+      // Must be written sequentially to ensure clock values are correctly incremented and populated
+      for (const file of resizeResp.files) {
+        await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
+        await models.File.create({
+          cnodeUserUUID,
+          multihash: file.multihash,
+          sourceFile: file.sourceFile,
+          storagePath: file.storagePath,
+          type: 'image', // TODO - replace with models enum
+          dirMultihash: resizeResp.dir.dirCID,
+          fileName: file.sourceFile.split('/').slice(-1)[0],
+          clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
+        })
+      }
 
-      // Save each file to the DB
-      await Promise.all(resizeResp.files.map(async (fileResp, i) => {
-        const file = (await models.File.create(
-          {
-            cnodeUserUUID: req.session.cnodeUserUUID,
-            multihash: fileResp.multihash,
-            sourceFile: fileResp.sourceFile,
-            storagePath: fileResp.storagePath,
-            type: 'image',
-            dirMultihash: resizeResp.dir.dirCID,
-            fileName: fileResp.sourceFile.split('/').slice(-1)[0],
-            clock: (initialClockVal + 1 + (i + 1)) // increment clock val for each file entry
-          },
-          { transaction: t }
-        )).dataValues
-
-        req.logger.info('Added file', fileResp, file)
-      }))
-
-      req.logger.info('Added all files for dir', dir)
       req.logger.info(`route time = ${Date.now() - routestart}`)
-
-      await t.commit()
+      await transaction.commit()
       triggerSecondarySyncs(req)
       return successResponse({ dirCID: resizeResp.dir.dirCID })
     } catch (e) {
-      await t.rollback()
+      await transaction.rollback()
       return errorResponseServerError(e)
     }
   }))

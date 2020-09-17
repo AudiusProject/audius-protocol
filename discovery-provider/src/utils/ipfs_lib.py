@@ -130,7 +130,6 @@ class IPFSClient:
         )
 
     def get_metadata_from_ipfs_node(self, multihash, metadata_format):
-
         try:
             res = self.cat(multihash)
             resp_val = json.loads(res)
@@ -165,11 +164,18 @@ class IPFSClient:
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
     def multihash_is_directory(self, multihash):
+        """Given a profile picture or cover photo CID, determine if it's a
+        directory or a regular file CID
+
+        Args:
+            args.self - class self
+            args.multihash - CID to check if directory
+        """
         # Check if the multihash is valid
         if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
 
-        # First attempt to cat multihash locally.
+        # First, attempt to cat multihash locally via IPFS.
         try:
             # If cat successful, multihash is not directory.
             self._api.cat(multihash, 0, 1, timeout=3)
@@ -179,32 +185,37 @@ class IPFSClient:
                 logger.warning(f"IPFSCLIENT | Found directory {multihash}")
                 return True
 
-        # Attempt to retrieve from cnode gateway endpoints.
+        # If not found via IPFS, attempt to retrieve from cnode gateway endpoints.
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
             # First, query as dir.
-            gateway_query_address = urljoin(address, f"/ipfs/{multihash}/150x150.jpg")
+            gateway_query_address = construct_image_dir_gateway_url(address, multihash)
             r = None
-            try:
-                logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=3)
-            except Exception as e:
-                logger.warning(f"Failed to query {gateway_query_address} with error {e}")
+            if gateway_query_address:
+                try:
+                    logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
+                    # use a HEAD request instead of a GET so we can just get the status code without the
+                    # actual image file, which we don't need
+                    r = requests.head(gateway_query_address, timeout=3)
+                except Exception as e:
+                    logger.warning(f"Failed to query {gateway_query_address} with error {e}")
 
             if r is not None:
-                try:
-                    json_resp = r.json()
-                    # Gateway will return "no link named" error if dir  but no file named 150x150.jpg exists in dir.
-                    if 'error' in json_resp and 'no link named' in json_resp['error']:
-                        logger.warning(f"IPFSCLIENT | Found directory {gateway_query_address}")
-                        return True
-                except Exception as e:
-                    logger.warning(f"IPFSCLIENT | Failed to deserialize json for {multihash} for error {e}")
-
                 # Success non-json response indicates image in dir
                 if r.status_code == 200:
                     logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
                     return True
+
+                # If not a success code, try to parse the json and see if it contains an error
+                try:
+                    json_resp = r.json()
+                    # Gateway will return "no link named" error if dir but no file named
+                    # with filename (original.jpg, 150x150.jpg) exists in dir.
+                    if 'error' in json_resp and 'no link named' in json_resp['error']:
+                        logger.warning(f"IPFSCLIENT | Found directory {gateway_query_address}")
+                        return True
+                except Exception as e:
+                    logger.warning(f"IPFSCLIENT | Failed to deserialize json for {gateway_query_address} for error {e}")
 
             # Else, query as non-dir image
             gateway_query_address = urljoin(address, f"/ipfs/{multihash}")
@@ -246,4 +257,17 @@ class IPFSClient:
             make_cid(cid)
             return True
         except Exception as e:
+            logger.error(f'IPFSCLIENT | Error in cid_is_valid {str(e)}')
             return False
+
+def construct_image_dir_gateway_url(address, CID):
+    """Construct the gateway url for an image directory.
+
+    Args:
+        args.address - base url of gateway
+        args.CID - CID of the image directory
+    """
+    if not address:
+        return None
+
+    return urljoin(address, f"/ipfs/{CID}/original.jpg")

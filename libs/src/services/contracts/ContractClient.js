@@ -121,6 +121,11 @@ class ContractClient {
 
     return netId
   }
+
+  async getContract () {
+    await this.init()
+    return this._contract
+  }
 }
 
 module.exports = ContractClient
