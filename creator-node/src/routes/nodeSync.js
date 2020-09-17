@@ -26,19 +26,20 @@ module.exports = function (app) {
   app.get('/export', handleResponse(async (req, res) => {
     const walletPublicKeys = req.query.wallet_public_key // array
 
-    const t = await models.sequelize.transaction()
+    const transaction = await models.sequelize.transaction()
     try {
       // Fetch cnodeUser for each walletPublicKey.
-      const cnodeUsers = await models.CNodeUser.findAll({ where: { walletPublicKey: walletPublicKeys }, transaction: t })
+      const cnodeUsers = await models.CNodeUser.findAll({ where: { walletPublicKey: walletPublicKeys }, transaction })
       const cnodeUserUUIDs = cnodeUsers.map((cnodeUser) => cnodeUser.cnodeUserUUID)
 
-      // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files.
-      const [audiusUsers, tracks, files] = await Promise.all([
-        models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
-        models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t }),
-        models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction: t })
+      // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
+      const [audiusUsers, tracks, files, clockRecords] = await Promise.all([
+        models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction }),
+        models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction }),
+        models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction }),
+        models.ClockRecord.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction })
       ])
-      await t.commit()
+      await transaction.commit()
 
       /** Bundle all data into cnodeUser objects to maximize import speed. */
 
@@ -51,27 +52,29 @@ module.exports = function (app) {
         cnodeUserDictObj['audiusUsers'] = []
         cnodeUserDictObj['tracks'] = []
         cnodeUserDictObj['files'] = []
+        cnodeUserDictObj['clockRecords'] = []
 
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
       })
 
       audiusUsers.forEach(audiusUser => {
-        const audiusUserDictObj = audiusUser.toJSON()
-        cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUserDictObj)
+        cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUser.toJSON())
       })
       tracks.forEach(track => {
-        let trackDictObj = track.toJSON()
-        cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
+        cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(track.toJSON())
       })
       files.forEach(file => {
-        let fileDictObj = file.toJSON()
-        cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
+        cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(file.toJSON())
+      })
+      clockRecords.forEach(clockRecord => {
+        cnodeUsersDict[clockRecordDictObj['cnodeUserUUID']]['clockRecords'].push(clockRecord.toJSON())
       })
 
       // Expose ipfs node's peer ID.
       const ipfs = req.app.get('ipfsAPI')
-      let ipfsIDObj = await getIPFSPeerId(ipfs, config)
+      const ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
+      // Rehydrate files if necessary
       for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
         const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
         req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
@@ -92,7 +95,7 @@ module.exports = function (app) {
           }
         }))
       }
-      return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj: ipfsIDObj })
+      return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
       await t.rollback()
       return errorResponseServerError(e.message)
@@ -139,9 +142,10 @@ module.exports = function (app) {
 
     // Get & return latestBlockNumber for wallet
     const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey } })
-    const latestBlockNumber = cnodeUser ? cnodeUser.latestBlockNumber : -1
+    const latestBlockNumber = (cnodeUser) ? cnodeUser.latestBlockNumber : -1
+    const clockValue = (cnodeUser) ? cnodeUser.clock : -1
 
-    return successResponse({ walletPublicKey, latestBlockNumber })
+    return successResponse({ walletPublicKey, latestBlockNumber, clockValue })
   }))
 }
 
@@ -217,18 +221,19 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       }
       const fetchedCnodeUserUUID = fetchedCNodeUser.cnodeUserUUID
 
-      const t = await models.sequelize.transaction()
+      const transaction = await models.sequelize.transaction()
 
       try {
         const cnodeUser = await models.CNodeUser.findOne({
           where: { walletPublicKey: fetchedWalletPublicKey },
-          transaction: t
+          transaction
         })
         const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
 
         // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
         if (cnodeUser) {
           // Ensure imported data has higher blocknumber than already stored.
+          // TODO - replace this check with a clock check (!!!)
           const latestBlockNumber = cnodeUser.latestBlockNumber
           if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
             (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
@@ -241,35 +246,42 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
 
           const numAudiusUsersDeleted = await models.AudiusUser.destroy({
-            where: { cnodeUserUUID: cnodeUserUUID },
-            transaction: t
+            where: { cnodeUserUUID },
+            transaction
           })
           req.logger.info(redisKey, `numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
+          
           // TrackFiles must be deleted before associated Tracks can be deleted.
           const numTrackFilesDeleted = await models.File.destroy({
             where: {
-              cnodeUserUUID: cnodeUserUUID,
+              cnodeUserUUID,
               trackUUID: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
             },
-            transaction: t
+            transaction
           })
           req.logger.info(redisKey, `numTrackFilesDeleted ${numTrackFilesDeleted}`)
+          
           const numTracksDeleted = await models.Track.destroy({
-            where: { cnodeUserUUID: cnodeUserUUID },
-            transaction: t
+            where: { cnodeUserUUID },
+            transaction
           })
           req.logger.info(redisKey, `numTracksDeleted ${numTracksDeleted}`)
+          
           // Delete all remaining files (image / metadata files).
           const numNonTrackFilesDeleted = await models.File.destroy({
-            where: { cnodeUserUUID: cnodeUserUUID },
-            transaction: t
+            where: { cnodeUserUUID },
+            transaction
           })
           req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
+          
+          const numClockRecordsDeleted = await models.ClockRecord.destroy({
+            where: { cnodeUserUUID },
+            transaction
+          })
+          req.logger.info(redisKey, `numClockRecordsDeleted ${numClockRecordsDeleted}`)
 
           // Delete cnodeUser entry
-          await cnodeUser.destroy({
-            transaction: t
-          })
+          await cnodeUser.destroy({transaction})
           req.logger.info(redisKey, `deleted cnodeUserEntry`)
         }
 
@@ -284,13 +296,23 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           latestBlockNumber: fetchedLatestBlockNumber,
           lastLogin: fetchedCNodeUser.lastLogin,
           clock: fetchedCNodeUser.clock
-        }, { transaction: t })
+        }, { transaction })
         req.logger.info(redisKey, `Inserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
-        // Make list of all track Files to add after track creation.
+        // Save all clockRecords to DB
+        await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
+          ...clockRecord,
+          cnodeUserUUID: fetchedCnodeUserUUID
+        })), { transaction })
+        req.logger.info(redisKey, 'Recorded all ClockRecord entries in DB')
 
-        // Files with trackUUIDs cannot be created until tracks have been created,
-        // but tracks cannot be created until metadata and cover art files have been created.
+        /*
+         * Make list of all track Files to add after track creation
+         *
+         * Files with trackUUIDs cannot be created until tracks have been created,
+         *    but tracks cannot be created until metadata and cover art files have been created.
+         */
+
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
@@ -302,8 +324,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
           ))
         }
-
-        req.logger.info('Saved all track files to disk.')
+        req.logger.info(redisKey, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
@@ -325,7 +346,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             }
           ))
         }
-        req.logger.info('Saved all non-track files to disk.')
+        req.logger.info(redisKey, 'Saved all non-track files to disk.')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           fileUUID: file.fileUUID,
@@ -338,7 +359,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           fileName: file.fileName,
           dirMultihash: file.dirMultihash,
           clock: file.clock
-        })), { transaction: t })
+        })), { transaction })
         req.logger.info(redisKey, 'created all non-track files')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
@@ -349,7 +370,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           metadataFileUUID: track.metadataFileUUID,
           coverArtFileUUID: track.coverArtFileUUID,
           clock: track.clock
-        })), { transaction: t })
+        })), { transaction })
         req.logger.info(redisKey, 'created all tracks')
 
         // Save all track files to db
@@ -364,7 +385,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           fileName: trackFile.fileName,
           dirMultihash: trackFile.dirMultihash,
           clock: trackFile.clock
-        })), { transaction: t })
+        })), { transaction })
         req.logger.info('saved all track files to db')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
@@ -376,7 +397,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           coverArtFileUUID: audiusUser.coverArtFileUUID,
           profilePicFileUUID: audiusUser.profilePicFileUUID,
           clock: audiusUser.clock
-        })), { transaction: t })
+        })), { transaction })
         req.logger.info('saved all audiususer data to db')
 
         await t.commit()
