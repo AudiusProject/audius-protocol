@@ -107,6 +107,8 @@ module.exports = function (app) {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
+    // option to sync just the db records as opposed to db records and files on disk, defaults to false
+    const dbOnlySync = (req.body.db_only_sync === true || req.body.db_only_sync === 'true')
 
     if (!immediate) {
       req.logger.info('debounce time', config.get('debounceTime'))
@@ -117,13 +119,13 @@ module.exports = function (app) {
           req.logger.info('clear timeout for', wallet, 'time', Date.now())
         }
         syncQueue[wallet] = setTimeout(
-          async () => _nodesync(req, [wallet], creatorNodeEndpoint),
+          async () => _nodesync(req, [wallet], creatorNodeEndpoint, dbOnlySync),
           config.get('debounceTime')
         )
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
     } else {
-      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
+      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
     }
     return successResponse()
   }))
@@ -145,7 +147,7 @@ module.exports = function (app) {
   }))
 }
 
-async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync) {
   const start = Date.now()
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
@@ -294,38 +296,41 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
-        // Save all track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
-          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-          req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
-          await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
-          ))
-        }
+        // if not just db records sync, sync everything
+        if (!dbOnlySync) {
+          // Save all track files to disk in batches (to limit concurrent load)
+          for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
+            const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
+            req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
+            await Promise.all(trackFilesSlice.map(
+              trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            ))
+          }
 
-        req.logger.info('Saved all track files to disk.')
+          req.logger.info('Saved all track files to disk.')
 
-        // Save all non-track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
-          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-          req.logger.info(`NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
-          await Promise.all(nonTrackFilesSlice.map(
-            nonTrackFile => {
-              // Skip over directories since there's no actual content to sync
-              // The files inside the directory are synced separately
-              if (nonTrackFile.type !== 'dir') {
-                // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-                // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-                if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
-                } else {
-                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+          // Save all non-track files to disk in batches (to limit concurrent load)
+          for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
+            const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
+            req.logger.info(`NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
+            await Promise.all(nonTrackFilesSlice.map(
+              nonTrackFile => {
+                // Skip over directories since there's no actual content to sync
+                // The files inside the directory are synced separately
+                if (nonTrackFile.type !== 'dir') {
+                  // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+                  // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+                  if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+                    return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  } else {
+                    return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  }
                 }
               }
-            }
-          ))
+            ))
+          }
+          req.logger.info('Saved all non-track files to disk.')
         }
-        req.logger.info('Saved all non-track files to disk.')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           ...file,
