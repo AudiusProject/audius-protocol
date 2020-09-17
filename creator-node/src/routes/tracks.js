@@ -401,13 +401,14 @@ module.exports = function (app) {
         }
         const numAffectedRows = await models.File.update(
           { trackBlockchainId: track.blockchainId },
-          { where: {
-            multihash: trackSegmentCIDs,
-            cnodeUserUUID,
-            trackBlockchainId: null,
-            type: 'track'
-          },
-          transaction
+          {
+            where: {
+              multihash: trackSegmentCIDs,
+              cnodeUserUUID,
+              trackBlockchainId: null,
+              type: 'track'
+            },
+            transaction
           }
         )
         if (numAffectedRows !== trackSegmentCIDs.length) {
@@ -421,7 +422,7 @@ module.exports = function (app) {
             where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackBlockchainId: track.trackId,
+              trackBlockchainId: track.blockchainId,
               type: 'copy320'
             },
             transaction
@@ -553,7 +554,8 @@ module.exports = function (app) {
       where: {
         type: 'copy320',
         trackBlockchainId: blockchainIdFromTrack
-      }
+      },
+      order: [['clock', 'DESC']]
     })
 
     if (!multihash) {
