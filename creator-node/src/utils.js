@@ -197,7 +197,7 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
 })
 
 /**
- * Rehydrate files and directories per cnode uuid
+ * Rehydrate files and directories per cnode UUID
  * @param {string} cnodeUserUUID
  * @param {object} logContext
  */
@@ -207,7 +207,6 @@ async function rehydrateIpfsPerCnodeUUIDIfNecessary (cnodeUserUUID, { logContext
   const t = await models.sequelize.transaction()
   let files
   try {
-    // Get all files associated with cnodeUUID
     files = await models.File.findAll({ where: { cnodeUserUUID }, transaction: t })
   } catch (e) {
     t.rollback()

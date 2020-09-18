@@ -59,6 +59,7 @@ module.exports = function (app) {
 
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
 
+        // Rely on Redis cache to dedupe rehydrating files from cnode UUIDs that have been recently hydrated
         const entry = await redisClient.get(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`)
         if (!entry) {
           await redisClient.set(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`, cnodeUser.cnodeUserUUID, 'EX', TTL)
