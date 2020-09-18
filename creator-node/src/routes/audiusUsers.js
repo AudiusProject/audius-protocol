@@ -7,7 +7,6 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const DBManager = require('../dbManager')
-// const { logger } = require('../logging')
 
 module.exports = function (app) {
   /**

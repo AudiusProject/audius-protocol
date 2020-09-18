@@ -14,7 +14,7 @@ const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const { logger } = require('../logging.js')
-const { updateClockInCNodeUserAndClockRecords, selectCNodeUserClockSubquery } = require('../clockManager')
+const DBManager = require('../dbManager')
 
 module.exports = function (app) {
   /**
@@ -118,29 +118,25 @@ module.exports = function (app) {
     let transcodeFileUUID
     try {
       // Record transcode file entry in DB
-      await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
-      transcodeFileUUID = (await models.File.create({
-        cnodeUserUUID,
+      const createTranscodeFileQueryObj = {
         multihash: transcodeFileIPFSResp.multihash,
         sourceFile: req.fileName,
         storagePath: transcodeFileIPFSResp.dstPath,
-        type: 'copy320', // TODO - replace with models enum
-        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-      }, { transaction })
-      ).dataValues.fileUUID
+        type: 'copy320' // TODO - replace with models enum
+      }
+      const file = await DBManager.createNewDataRecord(createTranscodeFileQueryObj, cnodeUserUUID, 'File', transaction)
+      transcodeFileUUID = file.fileUUID
 
       // Record all segment file entries in DB
       // Must be written sequentially to ensure clock values are correctly incremented and populated
       for (const { multihash, dstPath } of segmentFileIPFSResps) {
-        await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
-        await models.File.create({
-          cnodeUserUUID,
+        const createSegmentFileQueryObj = {
           multihash,
           sourceFile: req.fileName,
           storagePath: dstPath,
-          type: 'track', // TODO - replace with models enum
-          clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-        }, { transaction })
+          type: 'track' // TODO - replace with models enum
+        }
+        await DBManager.createNewDataRecord(createSegmentFileQueryObj, cnodeUserUUID, 'File', transaction)
       }
 
       await transaction.commit()
@@ -246,17 +242,14 @@ module.exports = function (app) {
     const transaction = await models.sequelize.transaction()
     let fileUUID
     try {
-      await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
-
-      fileUUID = (await models.File.create({
-        cnodeUserUUID,
+      const createFileQueryObj = {
         multihash,
         sourceFile: req.fileName,
         storagePath: dstPath,
-        type: 'metadata', // TODO - replace with models enum
-        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-      }, { transaction })
-      ).dataValues.fileUUID
+        type: 'metadata' // TODO - replace with models enum
+      }
+      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, 'File', transaction)
+      fileUUID = file.fileUUID
 
       await transaction.commit()
     } catch (e) {
@@ -323,7 +316,6 @@ module.exports = function (app) {
       const existingTrackEntry = await models.Track.findOne({
         where: {
           cnodeUserUUID,
-          // metadataFileUUID,
           blockchainId: blockchainTrackId,
           coverArtFileUUID
         },
@@ -331,18 +323,14 @@ module.exports = function (app) {
         transaction
       })
 
-      await updateClockInCNodeUserAndClockRecords(req, 'Track', transaction)
-
-      // Insert new track entry on db (for track update, a new entry is still created with incremented clock val)
-      const track = await models.Track.create({
-        cnodeUserUUID,
+      // Insert track entry in DB
+      const createTrackQueryObj = {
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainTrackId,
-        coverArtFileUUID,
-        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-      }, { transaction }
-      )
+        coverArtFileUUID
+      }
+      const track = await DBManager.createNewDataRecord(createTrackQueryObj, cnodeUserUUID, 'Track', transaction)
 
       /**
        * Associate matching transcode & segment files on DB with new/updated track

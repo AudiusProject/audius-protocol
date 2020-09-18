@@ -22,7 +22,7 @@ const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('.
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { updateClockInCNodeUserAndClockRecords, selectCNodeUserClockSubquery } = require('../clockManager')
+const DBManager = require('../dbManager')
 
 /**
  * Helper method to stream file from file system on creator node
@@ -290,30 +290,26 @@ module.exports = function (app) {
     const transaction = await models.sequelize.transaction()
     try {
       // Record dir file entry in DB
-      await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
-      await models.File.create({
-        cnodeUserUUID,
+      const createDirFileQueryObj = {
         multihash: resizeResp.dir.dirCID,
         sourceFile: null,
         storagePath: resizeResp.dir.dirDestPath,
-        type: 'dir', // TODO - replace with models enum
-        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-      }, { transaction })
+        type: 'dir' // TODO - replace with models enum
+      }
+      await DBManager.createNewDataRecord(createDirFileQueryObj, cnodeUserUUID, 'File', transaction)
 
       // Record all image res file entries in DB
       // Must be written sequentially to ensure clock values are correctly incremented and populated
       for (const file of resizeResp.files) {
-        await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
-        await models.File.create({
-          cnodeUserUUID,
+        const createImageFileQueryObj = {
           multihash: file.multihash,
           sourceFile: file.sourceFile,
           storagePath: file.storagePath,
           type: 'image', // TODO - replace with models enum
           dirMultihash: resizeResp.dir.dirCID,
-          fileName: file.sourceFile.split('/').slice(-1)[0],
-          clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-        })
+          fileName: file.sourceFile.split('/').slice(-1)[0]
+        }
+        await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, 'File', transaction)
       }
 
       req.logger.info(`route time = ${Date.now() - routestart}`)
