@@ -28,7 +28,7 @@ class RehydrateIpfsQueue {
 
     this.addRehydrateIpfsFromFsTask = this.addRehydrateIpfsFromFsIfNecessaryTask.bind(this)
     this.addRehydrateIpfsDirFromFsIfNecessaryTask = this.addRehydrateIpfsDirFromFsIfNecessaryTask.bind(this)
-    this.addRehydrateIpfsPerCnodeUUIDIfNecessary = this.addRehydrateIpfsPerCnodeUUIDIfNecessary.bind(this)
+    this.addRehydrateIpfsPerCnodeUUIDIfNecessaryTask = this.addRehydrateIpfsPerCnodeUUIDIfNecessaryTask.bind(this)
   }
 
   async logStatus (logContext, message) {
@@ -83,13 +83,13 @@ class RehydrateIpfsQueue {
    * @param {string} cnodeUserUUID
    * @param {object} logContext
    */
-  async addRehydrateIpfsPerCnodeUUIDIfNecessary (cnodeUserUUID, { logContext }) {
-    this.logStatus(logContext, 'Adding a rehydrateIpfsPerCnodeUUIDIfNecessary task to the queue!')
+  async addRehydrateIpfsPerCnodeUUIDIfNecessaryTask (cnodeUserUUID, { logContext }) {
+    this.logStatus(logContext, `Adding a rehydrateIpfsPerCnodeUUIDIfNecessary task to the queue for cnode UUID ${cnodeUserUUID}!`)
     const job = await this.queue.add(
       PROCESS_NAMES.rehydrate_uuid,
       { cnodeUserUUID, logContext }
     )
-    this.logStatus(logContext, 'Successfully added a rehydrateIpfsPerCnodeUUIDIfNecessary task!')
+    this.logStatus(logContext, `Successfully added a rehydrateIpfsPerCnodeUUIDIfNecessary task for cnode UUID ${cnodeUserUUID}!`)
 
     const result = await job.finished()
     return result

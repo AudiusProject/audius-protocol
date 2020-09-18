@@ -356,15 +356,13 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   }
 }
 
-module.exports = {
-  Utils,
-  getFileUUIDForImageCID,
-  getIPFSPeerId,
-  rehydrateIpfsFromFsIfNecessary,
-  rehydrateIpfsDirFromFsIfNecessary,
-  rehydrateIpfsPerCnodeUUIDIfNecessary,
-  ipfsSingleByteCat,
-  ipfsCat,
-  ipfsGet,
-  ipfsStat
-}
+module.exports = Utils
+module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
+module.exports.getIPFSPeerId = getIPFSPeerId
+module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
+module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
+module.exports.ipfsSingleByteCat = ipfsSingleByteCat
+module.exports.ipfsCat = ipfsCat
+module.exports.ipfsGet = ipfsGet
+module.exports.ipfsStat = ipfsStat
+module.exports.rehydrateIpfsPerCnodeUUIDIfNecessary = rehydrateIpfsPerCnodeUUIDIfNecessary

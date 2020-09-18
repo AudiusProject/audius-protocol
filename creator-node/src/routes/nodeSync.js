@@ -15,7 +15,9 @@ const NonTrackFileSaveConcurrencyLimit = config.get('nonTrackFileSaveConcurrency
 
 module.exports = function (app) {
   /**
-   * Exports all db data (not files) associated with walletPublicKey[] as JSON.
+   * Exports all db data (not files) associated with walletPublicKey[] as JSON. Also rehydrates files in IPFS node
+   * per cnode UUID, assuming that the files associated with the cnode UUID has not been recently rehydrated in the
+   * past hour.
    * Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
    * @return {
    *  cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
@@ -45,9 +47,9 @@ module.exports = function (app) {
       const cnodeUsersDict = {}
       const TTL = config.get('redisRehydrateCacheTTL')
 
-      // Iterate through cnode users and return the cnode user UUIDs that require rehydration
-      const cnodeUserUUIDsOfFilesToRehydrateArray = await Promise.all(cnodeUsers.map(async cnodeUser => {
-        // Convert sequelize object to plain js object to allow adding additional fields.
+      const cnodeUserUUIDsOfFilesToRehydrateArrayPromises = []
+      for (let i = 0; i < cnodeUsers.length; i++) {
+        const cnodeUser = cnodeUsers[i]
         const cnodeUserDictObj = cnodeUser.toJSON()
 
         // Add cnodeUserUUID data fields.
@@ -57,15 +59,13 @@ module.exports = function (app) {
 
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
 
-        // Use redis cache to check if user with associated wallet has had its files recently rehydrated
-        // If so, do not add to rehydrate array
         const entry = await redisClient.get(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`)
         if (!entry) {
-          // expires in 60s
           await redisClient.set(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`, cnodeUser.cnodeUserUUID, 'EX', TTL)
-          return Promise.resolve(cnodeUser.cnodeUserUUID)
+          cnodeUserUUIDsOfFilesToRehydrateArrayPromises.push(Promise.resolve(cnodeUser.cnodeUserUUID))
         }
-      }))
+      }
+      const cnodeUserUUIDsOfFilesToRehydrateArray = await Promise.all(cnodeUserUUIDsOfFilesToRehydrateArrayPromises)
 
       audiusUsers.forEach(audiusUser => {
         const audiusUserDictObj = audiusUser.toJSON()
@@ -80,6 +80,8 @@ module.exports = function (app) {
         cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
       })
 
+      cnodeUserUUIDsOfFilesToRehydrateArray.forEach(cnodeUUID => {
+        RehydrateIpfsQueue.addRehydrateIpfsPerCnodeUUIDIfNecessaryTask(cnodeUUID, { logContext: req.logContext })
       })
 
       // Expose ipfs node's peer ID.
