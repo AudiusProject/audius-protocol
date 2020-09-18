@@ -11,12 +11,12 @@ def get_route_metrics(args):
     Returns the usage metrics for routes
 
     Args:
-        args: dict THe parsed args from the request
+        args: dict The parsed args from the request
         args.path: string The route path of the query
         args.start_time: date The start of the query
         args.query_string: optional string The query string to filter on
         args.limit: number The max number of responses to return
-        args.bucket_size: string representing a date_trunc operation to aggregate timestamps by
+        args.bucket_size: string A date_trunc operation to aggregate timestamps by
 
     Returns:
         Array of dictionaries with the route, timestamp, count, and unique_count
