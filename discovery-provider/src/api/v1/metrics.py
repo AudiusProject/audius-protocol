@@ -1,10 +1,12 @@
 import logging # pylint: disable=C0302
 from datetime import datetime
+from src.queries.get_genre_metrics import get_genre_metrics
+from src.queries.get_plays_metrics import get_plays_metrics
 from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.helpers import make_response, success_response, to_dict, \
     parse_bool_param, parse_unix_epoch_param, abort_bad_request_param
-from .models.metrics import route_metric, app_name_metric, app_name
+from .models.metrics import route_metric, app_name_metric, app_name, plays_metric, genre_metric
 from src.queries.get_route_metrics import get_route_metrics
 from src.queries.get_app_name_metrics import get_app_name_metrics
 from src.queries.get_app_names import get_app_names
@@ -16,6 +18,8 @@ ns = Namespace('metrics', description='Metrics related operations')
 route_metrics_response = make_response("metrics_reponse", ns, fields.List(fields.Nested(route_metric)))
 app_name_response = make_response("app_name_response", ns, fields.List(fields.Nested(app_name)))
 app_name_metrics_response = make_response("app_name_metrics_response", ns, fields.List(fields.Nested(app_name_metric)))
+plays_metrics_response = make_response("plays_metrics", ns, fields.List(fields.Nested(plays_metric)))
+genre_metrics_response = make_response("genre_metrics", ns, fields.Nested({ "*": genre_metric }))
 
 metrics_route_parser = reqparse.RequestParser()
 metrics_route_parser.add_argument('path', required=False)
@@ -118,6 +122,7 @@ class AppNameListMetrics(Resource):
 metrics_app_name_parser = reqparse.RequestParser()
 metrics_app_name_parser.add_argument('start_time', required=False, type=int)
 metrics_app_name_parser.add_argument('limit', required=False, type=int)
+metrics_app_name_parser.add_argument('bucket_size', required=False)
 
 @ns.route("/app_name/<string:app_name>", doc=False)
 class AppNameMetrics(Resource):
@@ -139,6 +144,7 @@ class AppNameMetrics(Resource):
     def get(self, app_name):
         """Get the app name metrics"""
         args = metrics_app_name_parser.parse_args()
+
         if args.get('limit') is None:
             args['limit'] = 48
         else:
@@ -156,4 +162,80 @@ class AppNameMetrics(Resource):
 
         app_name_metrics = get_app_name_metrics(app_name, args)
         response = success_response(app_name_metrics)
+        return response
+
+
+metrics_plays_parser = reqparse.RequestParser()
+metrics_plays_parser.add_argument('start_time', required=False, type=int)
+metrics_plays_parser.add_argument('limit', required=False, type=int)
+metrics_plays_parser.add_argument('bucket_size', required=False)
+
+@ns.route("/plays", doc=False)
+class PlaysMetrics(Resource):
+    @ns.doc(
+        id="""Get Plays Metrics""",
+        params={
+            'start_time': 'Start Time in Unix Epoch',
+            'limit': 'Limit',
+            'bucket_size': 'Bucket Size',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.expect(metrics_plays_parser)
+    @ns.marshal_with(plays_metrics_response)
+    def get(self):
+        args = metrics_plays_parser.parse_args()
+
+        if args.get('limit') is None:
+            args['limit'] = 48
+        else:
+            args['limit'] = min(args.get('limit'), 48)
+
+        try:
+            args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
+        except:
+            abort_bad_request_param('start_time', ns)
+
+        if args.get('bucket_size') is None:
+            args['bucket_size'] = 'hour'
+        if args.get('bucket_size') not in valid_date_buckets:
+            abort_bad_request_param('bucket_size', ns)
+
+        plays_metrics = get_plays_metrics(args)
+        response = success_response(plays_metrics)
+        return response
+
+
+metrics_genres_parser = reqparse.RequestParser()
+metrics_genres_parser.add_argument('bucket_size', required=False)
+
+@ns.route("/genres", doc=False)
+class GenreMetrics(Resource):
+    @ns.doc(
+        id="""Get Genre Metrics""",
+        params={
+            'bucket_size': 'Bucket Size',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.expect(metrics_genres_parser)
+    @ns.marshal_with(genre_metrics_response)
+    def get(self):
+        args = metrics_genres_parser.parse_args()
+
+        if args.get('bucket_size') is None:
+            args['bucket_size'] = 'hour'
+        if args.get('bucket_size') not in valid_date_buckets:
+            abort_bad_request_param('bucket_size', ns)
+
+        genre_metrics = get_genre_metrics(args)
+        response = success_response(genre_metrics)
         return response

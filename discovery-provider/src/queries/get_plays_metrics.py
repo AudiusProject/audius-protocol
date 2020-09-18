@@ -39,6 +39,7 @@ def _get_plays_metrics(session, args):
     )
 
     metrics = metrics_query.all()
+    logger.warning(metrics)
 
     metrics = [{
         'timestamp': int(time.mktime(m[0].timetuple())),

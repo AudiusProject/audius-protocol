@@ -29,6 +29,9 @@ def _get_genre_metrics(session, args):
             func.count(Track.track_id).label('count')
         )
         .filter(
+            Track.genre != None,
+            Track.genre != '',
+            Track.is_current == True,
             Track.created_at > func.date_trunc(args.get('bucket_size'), datetime.utcnow()),
         )
         .group_by(
@@ -39,6 +42,6 @@ def _get_genre_metrics(session, args):
     genres = {}
     metrics = metrics_query.all()
     for m in metrics:
-      genres[m[0]] = m[1]
+        genres[m[0]] = m[1]
 
     return genres
