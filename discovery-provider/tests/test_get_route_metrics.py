@@ -186,7 +186,7 @@ def test_get_route_metrics_no_matches(app):
 
 
 def test_get_route_metrics_with_daily_buckets(app):
-    """Tests that the route metrics can be queried by non-exact path match"""
+    """Tests that the route metrics can be queried with daily buckets"""
 
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     date1 = (date + timedelta(hours=-1))
@@ -216,7 +216,7 @@ def test_get_route_metrics_with_daily_buckets(app):
 
 
 def test_get_route_metrics_with_weekly_buckets(app):
-    """Tests that the route metrics can be queried by non-exact path match"""
+    """Tests that the route metrics can be queried with weekly buckets"""
 
     date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
     date1 = (date + timedelta(hours=-1))

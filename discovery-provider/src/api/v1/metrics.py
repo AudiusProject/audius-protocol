@@ -125,7 +125,8 @@ class AppNameMetrics(Resource):
         id="""Get Metrics by App Name""",
         params={
             'start_time': 'Start Time in Unix Epoch',
-            'limit': 'Limit'
+            'limit': 'Limit',
+            'bucket_size': 'Bucket Size',
         },
         responses={
             200: 'Success',
@@ -142,10 +143,17 @@ class AppNameMetrics(Resource):
             args['limit'] = 48
         else:
             args['limit'] = min(args.get('limit'), 48)
+
         try:
             args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
         except:
             abort_bad_request_param('start_time', ns)
+
+        if args.get('bucket_size') is None:
+            args['bucket_size'] = 'hour'
+        if args.get('bucket_size') not in valid_date_buckets:
+            abort_bad_request_param('bucket_size', ns)
+
         app_name_metrics = get_app_name_metrics(app_name, args)
         response = success_response(app_name_metrics)
         return response

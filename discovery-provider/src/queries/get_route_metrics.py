@@ -16,6 +16,7 @@ def get_route_metrics(args):
         args.start_time: date The start of the query
         args.query_string: optional string The query string to filter on
         args.limit: number The max number of responses to return
+        args.bucket_size: string representing a date_trunc operation to aggregate timestamps by
 
     Returns:
         Array of dictionaries with the route, timestamp, count, and unique_count
@@ -77,7 +78,5 @@ def _get_route_metrics(session, args):
         'count': m[1],
         'unique_count': m[2],
     } for m in metrics]
-    logger.warning(metrics)
-
 
     return metrics
