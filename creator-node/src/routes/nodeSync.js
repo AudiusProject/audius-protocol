@@ -97,7 +97,7 @@ module.exports = function (app) {
       }
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      await t.rollback()
+      await transaction.rollback()
       return errorResponseServerError(e.message)
     }
   }))

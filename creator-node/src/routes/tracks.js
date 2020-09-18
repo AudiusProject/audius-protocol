@@ -323,7 +323,7 @@ module.exports = function (app) {
       const existingTrackEntry = await models.Track.findOne({
         where: {
           cnodeUserUUID,
-          metadataFileUUID,
+          // metadataFileUUID,
           blockchainId: blockchainTrackId,
           coverArtFileUUID
         },
@@ -411,8 +411,8 @@ module.exports = function (app) {
             transaction
           }
         )
-        if (numAffectedRows !== trackSegmentCIDs.length) {
           logger.error(`\n\n\nnumAffectedRows: ${numAffectedRows}`)
+        if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
           throw new Error('Failed to associate files for every track segment CID.')
         }
       } else { /** If track updated, ensure files exist with trackBlockchainId. */
