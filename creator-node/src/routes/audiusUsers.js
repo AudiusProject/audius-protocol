@@ -6,7 +6,7 @@ const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { updateClockInCNodeUserAndClockRecords, selectCNodeUserClockSubquery } = require('../clockManager')
+const dbManager = require('../dbManager')
 const { logger } = require('../logging')
 
 module.exports = function (app) {
@@ -20,7 +20,7 @@ module.exports = function (app) {
     const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Save file from buffer to IPFS and disk
-    // TODO simplify
+    // TODO simplify (object destructuring?)
     let multihash, dstPath
     try {
       const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
@@ -34,17 +34,14 @@ module.exports = function (app) {
     const transaction = await models.sequelize.transaction()
     let fileUUID
     try {
-      await updateClockInCNodeUserAndClockRecords(req, 'File', transaction)
-
-      fileUUID = (await models.File.create({
-        cnodeUserUUID,
+      const createFileQueryObj = {
         multihash,
         sourceFile: req.fileName,
         storagePath: dstPath,
-        type: 'metadata', // TODO - replace with models enum
-        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-      }, { transaction })
-      ).dataValues.fileUUID
+        type: 'metadata' // TODO - replace with models enum
+      }
+      const file = await dbManager.createNewFileRecord(createFileQueryObj, cnodeUserUUID, transaction)
+      fileUUID = file.fileUUID
 
       await transaction.commit()
     } catch (e) {
@@ -102,7 +99,7 @@ module.exports = function (app) {
     try {
       logger.info(`beginning audiusUsers DB transactions`)
 
-      await updateClockInCNodeUserAndClockRecords(req, 'AudiusUser', transaction)
+      // await updateClockInCNodeUserAndClockRecords(req, 'AudiusUser', transaction)
 
       // Insert new audiusUser entry to DB
       await models.AudiusUser.create({
@@ -111,8 +108,8 @@ module.exports = function (app) {
         metadataJSON,
         blockchainId: blockchainUserId,
         coverArtFileUUID,
-        profilePicFileUUID,
-        clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
+        profilePicFileUUID
+        // clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
       }, { transaction, returning: true })
 
       // Update cnodeUser's latestBlockNumber and clock
