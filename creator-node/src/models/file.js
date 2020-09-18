@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     // only non-null for track files (as opposed to image/metadata files)
-    trackUUID: {
-      type: DataTypes.UUID,
+    trackBlockchainId: {
+      type: DataTypes.INTEGER,
       allowNull: true // `true` as we use File entries for more than just uploaded tracks
     },
     multihash: {
@@ -67,6 +67,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       {
         fields: ['dirMultihash']
+      },
+      {
+        fields: ['trackBlockchainId']
       }
     ]
   })
@@ -75,11 +78,6 @@ module.exports = (sequelize, DataTypes) => {
     File.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',
       sourceKey: 'cnodeUserUUID',
-      onDelete: 'RESTRICT'
-    })
-    File.belongsTo(models.Track, {
-      foreignKey: 'trackUUID',
-      sourceKey: 'trackUUID',
       onDelete: 'RESTRICT'
     })
   }

@@ -97,7 +97,7 @@ module.exports = function (app) {
       }
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      await t.rollback()
+      await transaction.rollback()
       return errorResponseServerError(e.message)
     }
   }))
@@ -110,6 +110,8 @@ module.exports = function (app) {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
+    // option to sync just the db records as opposed to db records and files on disk, defaults to false
+    const dbOnlySync = (req.body.db_only_sync === true || req.body.db_only_sync === 'true')
 
     if (!immediate) {
       req.logger.info('debounce time', config.get('debounceTime'))
@@ -120,13 +122,13 @@ module.exports = function (app) {
           req.logger.info('clear timeout for', wallet, 'time', Date.now())
         }
         syncQueue[wallet] = setTimeout(
-          async () => _nodesync(req, [wallet], creatorNodeEndpoint),
+          async () => _nodesync(req, [wallet], creatorNodeEndpoint, dbOnlySync),
           config.get('debounceTime')
         )
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
     } else {
-      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
+      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
     }
     return successResponse()
   }))
@@ -149,7 +151,7 @@ module.exports = function (app) {
   }))
 }
 
-async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync) {
   const start = Date.now()
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
@@ -255,7 +257,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           const numTrackFilesDeleted = await models.File.destroy({
             where: {
               cnodeUserUUID,
-              trackUUID: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
+              trackBlockchainId: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
             },
             transaction
           })
@@ -309,94 +311,71 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         /*
          * Make list of all track Files to add after track creation
          *
-         * Files with trackUUIDs cannot be created until tracks have been created,
+         * Files with trackBlockchainIds cannot be created until tracks have been created,
          *    but tracks cannot be created until metadata and cover art files have been created.
          */
 
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
-        // Save all track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
-          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-          req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
-          await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
-          ))
-        }
-        req.logger.info(redisKey, 'Saved all track files to disk.')
+        // if not just db records sync, sync everything
+        if (!dbOnlySync) {
+          // Save all track files to disk in batches (to limit concurrent load)
+          for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
+            const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
+            req.logger.info(`TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
+            await Promise.all(trackFilesSlice.map(
+              trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            ))
+          }
+          req.logger.info(redisKey, 'Saved all track files to disk.')
 
-        // Save all non-track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
-          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-          req.logger.info(`NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
-          await Promise.all(nonTrackFilesSlice.map(
-            nonTrackFile => {
-              // Skip over directories since there's no actual content to sync
-              // The files inside the directory are synced separately
-              if (nonTrackFile.type !== 'dir') {
-                // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-                // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-                if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
-                } else {
-                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+          // Save all non-track files to disk in batches (to limit concurrent load)
+          for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
+            const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
+            req.logger.info(`NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
+            await Promise.all(nonTrackFilesSlice.map(
+              nonTrackFile => {
+                // Skip over directories since there's no actual content to sync
+                // The files inside the directory are synced separately
+                if (nonTrackFile.type !== 'dir') {
+                  // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+                  // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+                  if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+                    return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  } else {
+                    return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  }
                 }
               }
-            }
-          ))
+            ))
+          }
+          req.logger.info('Saved all non-track files to disk.')
         }
-        req.logger.info(redisKey, 'Saved all non-track files to disk.')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
-          fileUUID: file.fileUUID,
-          trackUUID: null,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          multihash: file.multihash,
-          sourceFile: file.sourceFile,
-          storagePath: file.storagePath,
-          type: file.type,
-          fileName: file.fileName,
-          dirMultihash: file.dirMultihash,
-          clock: file.clock
+          ...file,
+          trackBlockchainId: null,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'created all non-track files')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
-          trackUUID: track.trackUUID,
-          blockchainId: track.blockchainId,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          metadataJSON: track.metadataJSON,
-          metadataFileUUID: track.metadataFileUUID,
-          coverArtFileUUID: track.coverArtFileUUID,
-          clock: track.clock
+          ...track,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'created all tracks')
 
         // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
-          fileUUID: trackFile.fileUUID,
-          trackUUID: trackFile.trackUUID,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          multihash: trackFile.multihash,
-          sourceFile: trackFile.sourceFile,
-          storagePath: trackFile.storagePath,
-          type: trackFile.type,
-          fileName: trackFile.fileName,
-          dirMultihash: trackFile.dirMultihash,
-          clock: trackFile.clock
+          ...trackFile,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction })
         req.logger.info('saved all track files to db')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
-          audiusUserUUID: audiusUser.audiusUserUUID,
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          blockchainId: audiusUser.blockchainId,
-          metadataJSON: audiusUser.metadataJSON,
-          metadataFileUUID: audiusUser.metadataFileUUID,
-          coverArtFileUUID: audiusUser.coverArtFileUUID,
-          profilePicFileUUID: audiusUser.profilePicFileUUID,
-          clock: audiusUser.clock
+          ...audiusUser,
+          cnodeUserUUID: fetchedCnodeUserUUID
         })), { transaction })
         req.logger.info('saved all audiususer data to db')
 
