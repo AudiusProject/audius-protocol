@@ -49,7 +49,8 @@ contract.only('Random testing', async (accounts) => {
     // const deployerCutLockupDuration = 11
 
     const SystemUser = "system"
-    const TestDuration = 10000 //30s=30000, 3min=180000
+    // const TestDuration = 10000 //30s=30000, 3min=180000
+    const TestDuration = 360000 // 720000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -163,15 +164,15 @@ contract.only('Random testing', async (accounts) => {
     }
 
     const testLog = (user, msg) => {
+        let time = new Date().toUTCString()
         if (user !== SystemUser) {
-            console.log(`${user} - ${msg}`)
+            console.log(`${time} | ${user} - ${msg}`)
         } else {
-            console.log(`${msg}`)
+            console.log(`${time} | ${msg}`)
         }
-
         logs[user].push({
             user,
-            time: Date.now(),
+            time,
             currentRound,
             msg
         })
@@ -232,9 +233,10 @@ contract.only('Random testing', async (accounts) => {
 
             // Randomly generate an amount between min/max bounds
             amount = randAmount(typeInfo.minStake, typeInfo.maxStake)
+            if (amount.lt(typeInfo.minStake)) amount = typeInfo.minStake
 
             // amount = (typeInfo.minStake.add(_lib.toBN(rand(0, 100000)))) // Min + random amount up to 100k WEI
-                testLog(user, `${serviceTypeDiceRoll} dice roll - adding ${web3.utils.hexToUtf8(serviceType)} - ${amount.toString()} audwei `)
+            testLog(user, `${serviceTypeDiceRoll} dice roll - adding ${web3.utils.hexToUtf8(serviceType)} - ${amount.toString()} audwei `)
             let currentBalance = await token.balanceOf(user)
             if (amount.gt(currentBalance)) {
                 let missing = amount.sub(currentBalance)
@@ -280,7 +282,7 @@ contract.only('Random testing', async (accounts) => {
                 amount,
                 { from: delegator }
             )
-            testLog(delegator, `Delegated ${amount} to TargetSP=${randTargetUser}`)
+            testLog(delegator, `Delegated ${amount} to TargetSP=${serviceProvider}`)
         } catch (e) {
             testLog(delegator, `Error delegating ${amount} from ${delegator} to ${serviceProvider}. ${e}`)
         }
@@ -308,6 +310,8 @@ contract.only('Random testing', async (accounts) => {
 
     // TODO: Follow up w/roneil about the following:
     //  Total delegated BY a delegator - should we track this in contract state?
+    //  When decreasing stake, should the total validation be on sum in staking or deployer?
+    //          Or should the SP boot delegator in this case?
     //   
     const randomlyUndelegate = async (user) => {
         let pendingUndelegateReq = await delegateManager.getPendingUndelegateRequest(user, { from: user })
@@ -335,35 +339,37 @@ contract.only('Random testing', async (accounts) => {
 
     const randomlyDecreaseStake = async (user) => {
         let userInfo = await getAccountStakeInfo(user)
-
         let pendingDecreaseReq = await serviceProviderFactory.getPendingDecreaseStakeRequest(user)
         let isRequestPending = !(pendingDecreaseReq.lockupExpiryBlock.eq(_lib.toBN(0)))
         let currentMaxForAcct = userInfo.spDetails.maxAccountStake
         let currentMinForAcct = userInfo.spDetails.minAccountStake
         let currentForDeployer = userInfo.spDetails.deployerStake
-        let extraStake = currentForDeployer.sub(currentMaxForAcct)
-
         // let targetAmount = rand(currentMinForAcct.toNumber(), currentMaxForAcct.toNumber())
 
         // Decrease to the minimum bound
         let decreaseAmount = currentForDeployer.sub(currentMinForAcct)
-
-        // If no request is pending and we are out of bounds, submit a decrease request
-        if (!isRequestPending && !userInfo.spDetails.validBounds) {
-            testLog(user, `randomlyDecreaseStake, validBounds: ${userInfo.spDetails.validBounds}, currentMax: ${currentMaxForAcct}, currentForDeployer: ${currentForDeployer}, extraStake=${extraStake}, decreasing by ${decreaseAmount}`)
-            await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: user })
-        } else if (isRequestPending) {
-            let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
-            let readyToEvaluate = pendingDecreaseReq.lockupExpiryBlock.lte(latestBlock)
-            if (readyToEvaluate) {
-                await serviceProviderFactory.decreaseStake({ from: user })
-                testLog(user, `randomlyDecreaseStake request evaluated | lockupExpiryBlock: ${pendingDecreaseReq.lockupExpiryBlock}, latest=${latestBlock}, readyToEvaluate=${readyToEvaluate}`)
+        try {
+            // If no request is pending and we are out of bounds, submit a decrease request
+            if (!isRequestPending && !userInfo.spDetails.validBounds) {
+                let totalAfterDecrease = userInfo.totalInStakingContract.sub(decreaseAmount)
+                let decreaseToValidBounds = totalAfterDecrease.gte(currentMinForAcct) && totalAfterDecrease.lte(currentMaxForAcct)
+                testLog(user, `randomlyDecreaseStake, validBounds: ${userInfo.spDetails.validBounds}, max: ${currentMaxForAcct}, deployer: ${currentForDeployer}, staking=${userInfo.totalInStakingContract}, decreasing by ${decreaseAmount}, totalAfterDecrease=${totalAfterDecrease}, decreaseToValidBounds=${decreaseToValidBounds}`)
+                await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: user })
+            } else if (isRequestPending) {
+                let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
+                let readyToEvaluate = pendingDecreaseReq.lockupExpiryBlock.lte(latestBlock)
+                if (readyToEvaluate) {
+                    await serviceProviderFactory.decreaseStake({ from: user })
+                    testLog(user, `randomlyDecreaseStake request evaluated | lockupExpiryBlock: ${pendingDecreaseReq.lockupExpiryBlock}, latest=${latestBlock}, readyToEvaluate=${readyToEvaluate}`)
+                }
+            } else {
+                // TODO: ENABLE RANDOMNESS
+                //       Should randomly issue a decrease request tow ithin bounds
+                // let shouldDecrease = rand(0, 100)
+                // if (shouldDecrease < 50) return
             }
-        } else {
-            // TODO: ENABLE RANDOMNESS
-            //       Should randomly issue a decrease request tow ithin bounds
-            // let shouldDecrease = rand(0, 100)
-            // if (shouldDecrease < 50) return
+        } catch(e) {
+            testLog(user, `Error decreasing stake by ${decreaseAmount} for ${user} ${e}`)
         }
     }
 
@@ -476,7 +482,7 @@ contract.only('Random testing', async (accounts) => {
                 } else {
                     await randomlyDelegate(user)
                     await randomlyDecreaseStake(user)
-                    await randomlyUndelegate(user)
+                    // await randomlyUndelegate(user)
                 }
                 // Randomly advance blocks
                 await randomlyAdvanceBlocks()
