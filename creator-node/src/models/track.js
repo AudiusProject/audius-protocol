@@ -4,6 +4,16 @@ module.exports = (sequelize, DataTypes) => {
   const Track = sequelize.define('Track', {
     cnodeUserUUID: {
       type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false
+    },
+    blockchainId: {
+      type: DataTypes.BIGINT,
       allowNull: false
     },
     metadataFileUUID: {
@@ -14,20 +24,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.JSONB,
       allowNull: false
     },
-    blockchainId: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
     coverArtFileUUID: {
       type: DataTypes.UUID,
       allowNull: true
-    },
-    clock: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    clock2: {
-      type: DataTypes.INTEGER
     }
   }, {})
 

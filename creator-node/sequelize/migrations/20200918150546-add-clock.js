@@ -12,16 +12,17 @@ module.exports = {
     // Add 'clock' column to all 4 tables
     await addClockColumn(queryInterface, Sequelize, transaction, false)
 
-    // Add composite uniqueness constraint on (cnodeUserUUID, clock) to all Content Tables
+    // Add composite primary keys on (cnodeUserUUID,clock) to Tracks and AudiusUsers tables
+    // (Files already has PK on fileUUID and cnodeUsers already has PK on cnodeUserUUID)
+    await addCompositePrimaryKeysToAudiusUsersAndTracks(queryInterface, Sequelize, transaction)
+
+    // Add composite unique constraint on (blockchainId, clock) to AudiusUsers and Tracks
+    // Add composite unique constraint on (cnodeUserUUID, clock) to Files
     await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
     // Create Clock table
     await createClockRecordsTable(queryInterface, Sequelize, transaction)
 
-    // await addCompositePrimaryKeys(queryInterface, Sequelize, transaction)
-
-    // TODO - add a primary key to Tracks (blockchainId:clock)
-    // TODO - add a primary key to AudiusUsers (blockchainId:clock)
     // TODO - remove Files unique constraint since pkey does that
 
     await transaction.commit()
@@ -74,14 +75,34 @@ async function addClockColumn (queryInterface, Sequelize, transaction, allowNull
   }, { transaction })
 }
 
-// Add uniqueness constraint on composite (cnodeUserUUId, clock) to Content Tables
+async function addCompositePrimaryKeysToAudiusUsersAndTracks (queryInterface, Sequelize, transaction) {
+  await queryInterface.addConstraint(
+    'AudiusUsers',
+    {
+      type: 'PRIMARY KEY',
+      fields: ['cnodeUserUUID', 'clock'],
+      name: 'AudiusUsers_primary_key_(cnodeUserUUID,clock)',
+      transaction
+    }
+  )
+  await queryInterface.addConstraint(
+    'Tracks',
+    {
+      type: 'PRIMARY KEY',
+      fields: ['cnodeUserUUID', 'clock'],
+      name: 'Tracks_primary_key_(cnodeUserUUID,clock)',
+      transaction
+    }
+  )
+}
+
 async function addCompositeUniqueConstraints (queryInterface, Sequelize, transaction) {
   await queryInterface.addConstraint(
     'AudiusUsers',
     {
       type: 'UNIQUE',
-      fields: ['cnodeUserUUID', 'clock'],
-      name: 'AudiusUsers_unique_(cnodeUserUUID,clock)',
+      fields: ['blockchainId', 'clock'],
+      name: 'AudiusUsers_unique_(blockchainId,clock)',
       transaction
     }
   )
@@ -89,8 +110,8 @@ async function addCompositeUniqueConstraints (queryInterface, Sequelize, transac
     'Tracks',
     {
       type: 'UNIQUE',
-      fields: ['cnodeUserUUID', 'clock'],
-      name: 'Tracks_unique_(cnodeUserUUID,clock)',
+      fields: ['blockchainId', 'clock'],
+      name: 'Tracks_unique_(blockchainId,clock)',
       transaction
     }
   )

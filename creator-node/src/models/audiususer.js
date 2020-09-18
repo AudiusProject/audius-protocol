@@ -1,12 +1,18 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
   const AudiusUser = sequelize.define('AudiusUser', {
-    blockchainId: {
-      type: DataTypes.BIGINT,
-      allowNull: false
-    },
     cnodeUserUUID: {
       type: DataTypes.UUID,
+      primaryKey: true,
+      allowNull: false
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: false
+    },
+    blockchainId: {
+      type: DataTypes.BIGINT,
       allowNull: false
     },
     metadataFileUUID: {
@@ -24,13 +30,6 @@ module.exports = (sequelize, DataTypes) => {
     profilePicFileUUID: {
       type: DataTypes.UUID,
       allowNull: true
-    },
-    clock: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    clock2: {
-      type: DataTypes.INTEGER
     }
   }, {})
   AudiusUser.associate = function (models) {
