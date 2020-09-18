@@ -23,8 +23,6 @@ module.exports = {
     // Create Clock table
     await createClockRecordsTable(queryInterface, Sequelize, transaction)
 
-    // TODO - remove Files unique constraint since pkey does that
-
     await transaction.commit()
   },
 
