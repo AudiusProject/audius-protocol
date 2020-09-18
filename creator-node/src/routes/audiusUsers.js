@@ -6,8 +6,8 @@ const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const dbManager = require('../dbManager')
-const { logger } = require('../logging')
+const DBManager = require('../dbManager')
+// const { logger } = require('../logging')
 
 module.exports = function (app) {
   /**
@@ -40,7 +40,7 @@ module.exports = function (app) {
         storagePath: dstPath,
         type: 'metadata' // TODO - replace with models enum
       }
-      const file = await dbManager.createNewFileRecord(createFileQueryObj, cnodeUserUUID, transaction)
+      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, 'File', transaction)
       fileUUID = file.fileUUID
 
       await transaction.commit()
@@ -95,24 +95,18 @@ module.exports = function (app) {
     }
 
     const transaction = await models.sequelize.transaction()
-
     try {
-      logger.info(`beginning audiusUsers DB transactions`)
-
-      // await updateClockInCNodeUserAndClockRecords(req, 'AudiusUser', transaction)
-
-      // Insert new audiusUser entry to DB
-      await models.AudiusUser.create({
-        cnodeUserUUID,
+      const createAudiusUserQueryObj = {
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainUserId,
         coverArtFileUUID,
         profilePicFileUUID
-        // clock: models.sequelize.literal(`(${selectCNodeUserClockSubquery(cnodeUserUUID)})`)
-      }, { transaction, returning: true })
+      }
+      await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, 'AudiusUser', transaction)
 
-      // Update cnodeUser's latestBlockNumber and clock
+      // Update cnodeUser.latestBlockNumber
+      // TODO - can this be deprecated with new clock logic?
       await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
 
       await transaction.commit()

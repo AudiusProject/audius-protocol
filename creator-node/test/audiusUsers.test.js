@@ -16,7 +16,7 @@ const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiHelpers')
 
-describe.only('test AudiusUsers', function () {
+describe('test AudiusUsers', function () {
   let app, server, session, ipfsMock, libsMock
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -46,7 +46,7 @@ describe.only('test AudiusUsers', function () {
     await server.close()
   })
 
-  it.only('creates Audius user', async function () {
+  it('creates Audius user', async function () {
     const metadata = { test: 'field1' }
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
