@@ -29,7 +29,7 @@ tear_down () {
 run_unit_tests () {
   set +e
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha src/**/*.test.js
+  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js'
   set -e
 }
 

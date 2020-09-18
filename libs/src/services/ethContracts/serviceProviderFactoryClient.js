@@ -100,8 +100,9 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     })
 
     if (registerEvents.length > 0) {
-      const { _endpoint } = registerEvents[registerEvents.length -1].returnValues
+      const { _endpoint, _owner } = registerEvents[registerEvents.length -1].returnValues
       service.endpoint = _endpoint
+      service.owner = _owner
     }
 
     let endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
@@ -178,6 +179,24 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       amount: Utils.toBN(amount),
       lockupExpiryBlock: parseInt(lockupExpiryBlock)
     }
+  }
+
+  /**
+   * Gets the pending decrease stake lockup duration
+   */
+  async getDecreaseStakeLockupDuration () {
+    const requestInfoMethod = await this.getMethod('getDecreaseStakeLockupDuration')
+    const info = await requestInfoMethod.call()
+    return parseInt(info)
+  }
+
+  /**
+   * Gets the deployer cut lockup duration
+   */
+  async getDeployerCutLockupDuration () {
+    const requestInfoMethod = await this.getMethod('getDeployerCutLockupDuration')
+    const info = await requestInfoMethod.call()
+    return parseInt(info)
   }
 
   /**

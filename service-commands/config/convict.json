@@ -25,34 +25,34 @@
   },
   "web3_provider_urls": {
     "env": "WEB3_PROVIDER_URLS",
-    "default":  "http://localhost:8545"
+    "default": "http://localhost:8545"
   },
   "eth_token_address": {
     "env": "ETH_TOKEN_ADDRESS",
-    "default":  "0xF8e679Aa54361467B12c7394BFF57Eb890f6d934"
+    "default": "0xF8e679Aa54361467B12c7394BFF57Eb890f6d934"
   },
   "eth_registry_address": {
     "env": "ETH_REGISTRY_ADDRESS",
-    "default":  "0xB631ABAA63a26311366411b2025F0cAca00DE27F"
+    "default": "0xB631ABAA63a26311366411b2025F0cAca00DE27F"
   },
   "eth_provider_url": {
     "env": "ETH_PROVIDER_URL",
-    "default":  "http://localhost:8546"
+    "default": "http://localhost:8546"
   },
   "eth_owner_wallet": {
     "env": "ETH_OWNER_WALLET",
-    "default":  "0xcccc7428648c4AdC0ae262D3547584dDAE25c465"
+    "default": "0xcccc7428648c4AdC0ae262D3547584dDAE25c465"
   },
   "discprov_whitelist": {
     "env": "DISCPROV_WHITELIST",
-    "default":  "http://localhost:5000"
+    "default": "http://localhost:5000"
   },
   "user_node": {
     "env": "USER_NODE",
-    "default":  "http://cn1_creator-node_1:4000"
+    "default": "http://cn1_creator-node_1:4000"
   },
   "identity_service": {
     "env": "IDENTITY_SERVICE",
-    "default":  "http://localhost:7000"
+    "default": "http://localhost:7000"
   }
 }
