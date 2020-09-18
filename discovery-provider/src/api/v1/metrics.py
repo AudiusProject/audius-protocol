@@ -23,7 +23,10 @@ metrics_route_parser.add_argument('query_string', required=False)
 metrics_route_parser.add_argument('start_time', required=False, type=int)
 metrics_route_parser.add_argument('exact', required=False)
 metrics_route_parser.add_argument('limit', required=False, type=int)
+metrics_route_parser.add_argument('bucket_size', required=False)
 metrics_route_parser.add_argument('version', required=False, action='append')
+
+valid_date_buckets = ['hour', 'day', 'week', 'month', 'quarter', 'year', 'decade', 'century']
 
 @ns.route("/routes", doc=False)
 class RouteMetrics(Resource):
@@ -36,6 +39,7 @@ class RouteMetrics(Resource):
             'start_time': 'Start Time in Unix Epoch',
             'exact': 'Exact Path Query Match',
             'limit': 'Limit',
+            'bucket_size': 'Bucket Size',
             'version': 'API Version Query Filter'
         },
         responses={
@@ -52,6 +56,12 @@ class RouteMetrics(Resource):
             args['limit'] = 48
         else:
             args['limit'] = min(args.get('limit'), 48)
+
+        if args.get('bucket_size') is None:
+            args['bucket_size'] = 'hour'
+        if args.get('bucket_size') not in valid_date_buckets:
+            abort_bad_request_param('bucket_size', ns)
+
         try:
             args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
         except:
@@ -139,4 +149,3 @@ class AppNameMetrics(Resource):
         app_name_metrics = get_app_name_metrics(app_name, args)
         response = success_response(app_name_metrics)
         return response
-
