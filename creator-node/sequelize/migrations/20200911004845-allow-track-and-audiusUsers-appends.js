@@ -69,9 +69,6 @@ module.exports = {
 
       COMMIT;
     `)
-    // TODO - add a primary key to Tracks (blockchainId:clock)
-    // TODO - add a primary key to AudiusUsers (blockchainId:clock)
-    // TODO - remove Files unique constraint since pkey does that
   },
 
   down: (queryInterface, Sequelize) => {

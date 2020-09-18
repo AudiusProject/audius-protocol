@@ -4,7 +4,7 @@ const config = require('../../config')
 const { resFactory, loggerFactory } = require('../../../test/lib/reqMock')
 
 describe('Test read-only middleware', function () {
-  beforeEach(function() {
+  beforeEach(function () {
     config.reset('isReadOnlyMode')
   })
 
@@ -14,8 +14,7 @@ describe('Test read-only middleware', function () {
     config.set('isReadOnlyMode', isReadOnlyMode)
     let nextCalled = false
 
-
-    readOnlyMiddleware({ method }, {}, function() {
+    readOnlyMiddleware({ method }, {}, function () {
       nextCalled = true
     })
 
@@ -36,7 +35,7 @@ describe('Test read-only middleware', function () {
     }
     const res = resFactory()
 
-    readOnlyMiddleware(req, res, function() {
+    readOnlyMiddleware(req, res, function () {
       nextCalled = true
     })
 
@@ -51,7 +50,7 @@ describe('Test read-only middleware', function () {
     config.set('isReadOnlyMode', isReadOnlyMode)
     let nextCalled = false
 
-    readOnlyMiddleware({ method }, {}, function() {
+    readOnlyMiddleware({ method }, {}, function () {
       nextCalled = true
     })
 

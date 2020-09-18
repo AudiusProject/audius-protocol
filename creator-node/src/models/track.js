@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     blockchainId: {
       type: DataTypes.BIGINT,
-      allowNull: false,
+      allowNull: false
     },
     coverArtFileUUID: {
       type: DataTypes.UUID,

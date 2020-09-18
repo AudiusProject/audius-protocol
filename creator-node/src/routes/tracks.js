@@ -411,7 +411,7 @@ module.exports = function (app) {
             transaction
           }
         )
-          logger.error(`\n\n\nnumAffectedRows: ${numAffectedRows}`)
+        logger.error(`\n\n\nnumAffectedRows: ${numAffectedRows}`)
         if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
           throw new Error('Failed to associate files for every track segment CID.')
         }

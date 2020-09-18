@@ -105,7 +105,7 @@ module.exports = function (app) {
       await updateClockInCNodeUserAndClockRecords(req, 'AudiusUser', transaction)
 
       // Insert new audiusUser entry to DB
-      const audiusUser = await models.AudiusUser.create({
+      await models.AudiusUser.create({
         cnodeUserUUID,
         metadataFileUUID,
         metadataJSON,

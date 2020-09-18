@@ -40,5 +40,4 @@ const loggerFactory = () => {
   return logger
 }
 
-
 module.exports = { resFactory, loggerFactory }

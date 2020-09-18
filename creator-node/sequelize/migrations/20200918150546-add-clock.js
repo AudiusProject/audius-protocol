@@ -9,17 +9,20 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction()
 
-    // TODO remove - Add 'clock2' column to all 4 data tables
-    await addClock2Column(queryInterface, Sequelize, transaction, true)
-
     // Add 'clock' column to all 4 tables
     await addClockColumn(queryInterface, Sequelize, transaction, false)
 
     // Add composite uniqueness constraint on (cnodeUserUUID, clock) to all Content Tables
-    await addUniquenessConstraints(queryInterface, Sequelize, transaction)
+    await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
     // Create Clock table
     await createClockRecordsTable(queryInterface, Sequelize, transaction)
+
+    // await addCompositePrimaryKeys(queryInterface, Sequelize, transaction)
+
+    // TODO - add a primary key to Tracks (blockchainId:clock)
+    // TODO - add a primary key to AudiusUsers (blockchainId:clock)
+    // TODO - remove Files unique constraint since pkey does that
 
     await transaction.commit()
   },
@@ -71,37 +74,14 @@ async function addClockColumn (queryInterface, Sequelize, transaction, allowNull
   }, { transaction })
 }
 
-async function addClock2Column (queryInterface, Sequelize, transaction, allowNull) {
-  await queryInterface.addColumn('CNodeUsers', 'clock2', {
-    type: Sequelize.INTEGER,
-    unique: false,
-    allowNull
-  }, { transaction })
-  await queryInterface.addColumn('AudiusUsers', 'clock2', {
-    type: Sequelize.INTEGER,
-    unique: false,
-    allowNull
-  }, { transaction })
-  await queryInterface.addColumn('Tracks', 'clock2', {
-    type: Sequelize.INTEGER,
-    unique: false,
-    allowNull
-  }, { transaction })
-  await queryInterface.addColumn('Files', 'clock2', {
-    type: Sequelize.INTEGER,
-    unique: false,
-    allowNull
-  }, { transaction })
-}
-
 // Add uniqueness constraint on composite (cnodeUserUUId, clock) to Content Tables
-async function addUniquenessConstraints (queryInterface, Sequelize, transaction) {
+async function addCompositeUniqueConstraints (queryInterface, Sequelize, transaction) {
   await queryInterface.addConstraint(
     'AudiusUsers',
     {
       type: 'UNIQUE',
       fields: ['cnodeUserUUID', 'clock'],
-      name: 'AudiusUsers_unique_constraint_(cnodeUserUUID,clock)',
+      name: 'AudiusUsers_unique_(cnodeUserUUID,clock)',
       transaction
     }
   )
@@ -110,7 +90,7 @@ async function addUniquenessConstraints (queryInterface, Sequelize, transaction)
     {
       type: 'UNIQUE',
       fields: ['cnodeUserUUID', 'clock'],
-      name: 'Tracks_unique_constraint_(cnodeUserUUID,clock)',
+      name: 'Tracks_unique_(cnodeUserUUID,clock)',
       transaction
     }
   )
@@ -119,7 +99,7 @@ async function addUniquenessConstraints (queryInterface, Sequelize, transaction)
     {
       type: 'UNIQUE',
       fields: ['cnodeUserUUID', 'clock'],
-      name: 'Files_unique_constraint_(cnodeUserUUID,clock)',
+      name: 'Files_unique_(cnodeUserUUID,clock)',
       transaction
     }
   )

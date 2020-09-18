@@ -58,16 +58,20 @@ module.exports = function (app) {
       })
 
       audiusUsers.forEach(audiusUser => {
-        cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUser.toJSON())
+        const audiusUserDictObj = audiusUser.toJSON()
+        cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUserDictObj)
       })
       tracks.forEach(track => {
-        cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(track.toJSON())
+        let trackDictObj = track.toJSON()
+        cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
       })
       files.forEach(file => {
-        cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(file.toJSON())
+        let fileDictObj = file.toJSON()
+        cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
       })
       clockRecords.forEach(clockRecord => {
-        cnodeUsersDict[clockRecordDictObj['cnodeUserUUID']]['clockRecords'].push(clockRecord.toJSON())
+        let clockRecordDictObj = clockRecord.toJSON()
+        cnodeUsersDict[clockRecordDictObj['cnodeUserUUID']]['clockRecords'].push(clockRecordDictObj)
       })
 
       // Expose ipfs node's peer ID.
@@ -252,7 +256,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
             transaction
           })
           req.logger.info(redisKey, `numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
-          
+
           // TrackFiles must be deleted before associated Tracks can be deleted.
           const numTrackFilesDeleted = await models.File.destroy({
             where: {
@@ -262,20 +266,20 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
             transaction
           })
           req.logger.info(redisKey, `numTrackFilesDeleted ${numTrackFilesDeleted}`)
-          
+
           const numTracksDeleted = await models.Track.destroy({
             where: { cnodeUserUUID },
             transaction
           })
           req.logger.info(redisKey, `numTracksDeleted ${numTracksDeleted}`)
-          
+
           // Delete all remaining files (image / metadata files).
           const numNonTrackFilesDeleted = await models.File.destroy({
             where: { cnodeUserUUID },
             transaction
           })
           req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
-          
+
           const numClockRecordsDeleted = await models.ClockRecord.destroy({
             where: { cnodeUserUUID },
             transaction
@@ -283,7 +287,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           req.logger.info(redisKey, `numClockRecordsDeleted ${numClockRecordsDeleted}`)
 
           // Delete cnodeUser entry
-          await cnodeUser.destroy({transaction})
+          await cnodeUser.destroy({ transaction })
           req.logger.info(redisKey, `deleted cnodeUserEntry`)
         }
 
@@ -379,13 +383,13 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
         })), { transaction })
         req.logger.info('saved all audiususer data to db')
 
-        await t.commit()
+        await transaction.commit()
         req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
         redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
       } catch (e) {
         req.logger.error(redisKey, `Transaction failed for cnodeUserUUID ${fetchedCnodeUserUUID}`, e)
-        await t.rollback()
+        await transaction.rollback()
         redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
         throw new Error(e)
