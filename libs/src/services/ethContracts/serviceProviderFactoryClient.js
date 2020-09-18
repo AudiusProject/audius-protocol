@@ -100,7 +100,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     })
 
     if (registerEvents.length > 0) {
-      const { _endpoint, _owner } = registerEvents[registerEvents.length -1].returnValues
+      const { _endpoint, _owner } = registerEvents[registerEvents.length - 1].returnValues
       service.endpoint = _endpoint
       service.owner = _owner
     }
@@ -114,7 +114,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     })
 
     if (endpointUpdateEvents.length > 0) {
-      const { _newEndpoint } = endpointUpdateEvents[endpointUpdateEvents.length -1].returnValues
+      const { _newEndpoint } = endpointUpdateEvents[endpointUpdateEvents.length - 1].returnValues
       service.endpoint = _newEndpoint
     }
 
@@ -127,7 +127,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     })
 
     if (walletEvents.length > 0) {
-      const { _updatedWallet } = walletEvents[walletEvents.length -1].returnValues
+      const { _updatedWallet } = walletEvents[walletEvents.length - 1].returnValues
       service.delegateOwnerWallet = _updatedWallet
     }
 
