@@ -13,7 +13,7 @@ def get_genre_metrics(args):
     Args:
         args: dict The parsed args from the request
         args.bucket_size: string A date_trunc operation to aggregate by
-    
+
     Returns:
         Array of dictionaries with the play counts and timestamp
     """
@@ -35,7 +35,7 @@ def _get_genre_metrics(session, args):
             Track.created_at > func.date_trunc(args.get('bucket_size'), datetime.utcnow()),
         )
         .group_by(
-          Track.genre
+            Track.genre
         )
     )
 

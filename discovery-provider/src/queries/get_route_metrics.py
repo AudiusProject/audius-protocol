@@ -1,6 +1,6 @@
 import logging
 import time
-from sqlalchemy import func, desc, or_ 
+from sqlalchemy import func, desc, or_
 from src.models import RouteMetrics
 from src.utils import db_session
 

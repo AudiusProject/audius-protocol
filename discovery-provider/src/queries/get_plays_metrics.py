@@ -15,7 +15,7 @@ def get_plays_metrics(args):
         args.start_time: date The start of the query
         args.limit: number The max number of responses to return
         args.bucket_size: string A date_trunc operation to aggregate timestamps by
-    
+
     Returns:
         Array of dictionaries with the play counts and timestamp
     """

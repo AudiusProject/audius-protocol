@@ -43,9 +43,9 @@ def test_get_genre_metrics(app):
         db = get_db()
 
     test_tracks = [
-      {"genre": "Electronic"},
-      {"genre": "Pop"},
-      {"genre": "Electronic"}
+        {"genre": "Electronic"},
+        {"genre": "Pop"},
+        {"genre": "Electronic"}
     ]
 
     populate_mock_db(db, test_tracks)
@@ -60,7 +60,7 @@ def test_get_genre_metrics(app):
 
     assert metrics["Electronic"] == 2
     assert metrics["Pop"] == 1
-    
+
 
 def test_get_genre_metrics_for_month(app):
     """Tests that genre metrics can be queried over a large time range"""
@@ -71,10 +71,10 @@ def test_get_genre_metrics_for_month(app):
         db = get_db()
 
     test_tracks = [
-      {"genre": "Electronic", "created_at": date},
-      {"genre": "Pop", "created_at": date},
-      {"genre": "Electronic", "created_at": date},
-      {"genre": "Electronic", "created_at": before_date},
+        {"genre": "Electronic", "created_at": date},
+        {"genre": "Pop", "created_at": date},
+        {"genre": "Electronic", "created_at": date},
+        {"genre": "Electronic", "created_at": before_date},
     ]
     populate_mock_db(db, test_tracks)
 
@@ -99,4 +99,3 @@ def test_get_genre_metrics_for_month(app):
 
     assert metrics["Electronic"] == 3
     assert metrics["Pop"] == 1
-
