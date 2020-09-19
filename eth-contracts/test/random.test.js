@@ -232,6 +232,7 @@ contract.only('Random testing', async (accounts) => {
             if(!typeInfo) throw new Error('Undefined type information')
 
             // Randomly generate an amount between min/max bounds
+            // TODO: RE-Enable this
             amount = randAmount(typeInfo.minStake, typeInfo.maxStake)
             if (amount.lt(typeInfo.minStake)) amount = typeInfo.minStake
 
@@ -308,11 +309,6 @@ contract.only('Random testing', async (accounts) => {
         await delegate(randTargetUser, _lib.toBN(amount), user)
     }
 
-    // TODO: Follow up w/roneil about the following:
-    //  Total delegated BY a delegator - should we track this in contract state?
-    //  When decreasing stake, should the total validation be on sum in staking or deployer?
-    //          Or should the SP boot delegator in this case?
-    //   
     const randomlyUndelegate = async (user) => {
         let pendingUndelegateReq = await delegateManager.getPendingUndelegateRequest(user, { from: user })
         let isRequestPending = !(pendingUndelegateReq.lockupExpiryBlock.eq(_lib.toBN(0)))
@@ -321,20 +317,44 @@ contract.only('Random testing', async (accounts) => {
         // value = amount delegated by 'user' specified in function arg
         let delegatorInformation = {}
         let validDelegator = false
-        await Promise.all(otherUsers.map(async (otherSpAddress) => {
-            let delStakeForOtherSp = await delegateManager.getDelegatorStakeForServiceProvider(user, otherSpAddress)
-            testLog(user, `randomlyUndelegate: otherSP: ${otherSpAddress} delStakeForOtherSp=${delStakeForOtherSp}`)
-            if (!delStakeForOtherSp.gt(_lib.toBN(0))) return
-            delegatorInformation[otherSpAddress] = delStakeForOtherSp
-            validDelegator = true
-        }))
-        testLog(user, `randomlyUndelegate: validDelegator: ${validDelegator} isRequestPending=${isRequestPending}`)
-        if (validDelegator) {
-            testLog(user, `randomlyUndelegate: ${JSON.stringify(delegatorInformation)}`)
+        await Promise.all(
+            otherUsers.map(
+                async (otherSpAddress) => {
+                    let delStakeForOtherSp = await delegateManager.getDelegatorStakeForServiceProvider(user, otherSpAddress)
+                    // testLog(user, `randomlyUndelegate: otherSP: ${otherSpAddress} delStakeForOtherSp=${delStakeForOtherSp}`)
+                    if (!delStakeForOtherSp.gt(_lib.toBN(0))) return
+                    delegatorInformation[otherSpAddress] = delStakeForOtherSp
+                    validDelegator = true
+                }
+            )
+        )
+        if (isRequestPending) {
+            let lockupExpiryBlock = pendingUndelegateReq.lockupExpiryBlock
+            let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
+            let readyToEvaluate = lockupExpiryBlock.lte(latestBlock)
+            testLog(user, `randomlyUndelegate: isRequestPending=${isRequestPending}, lockupExpiryBlock=${lockupExpiryBlock}, readyToEvaluate=${readyToEvaluate}`)
+            if (readyToEvaluate) {
+                let tokenBalBeforeUndel = await token.balanceOf(user)
+                await delegateManager.undelegateStake({ from: user })
+                let tokenBalAfterUndel = await token.balanceOf(user)
+                let numTokens = tokenBalAfterUndel.sub(tokenBalBeforeUndel)
+                testLog(user, `randomlyUndelegate: Complete! Undelegated ${numTokens} tokens`)
+            }
+        } else if (validDelegator) {
+            // testLog(user, `randomlyUndelegate: validDelegator: ${validDelegator} isRequestPending=${isRequestPending}`)
             let undelegateTargetSP = Object.keys(delegatorInformation)
-            let randomlySelectedUndelegateTarget = undelegateTargetSP[Math.floor(Math.random()*undelegateTargetSP.length)];
-            testLog(user, `randomlyUndelegate: target=${randomlySelectedUndelegateTarget}, amtDel'dToSP=${delegatorInformation[randomlySelectedUndelegateTarget]}`)
+            let randomlySelectedUndelegateTarget = undelegateTargetSP[Math.floor(Math.random()*undelegateTargetSP.length)]
+            // TMP Remove all stake
+            // TODO: randomize this quantity as well
+            let undelegateAmount = delegatorInformation[randomlySelectedUndelegateTarget]
+            testLog(user, `randomlyUndelegate: requesting target=${randomlySelectedUndelegateTarget}, amount=${delegatorInformation[randomlySelectedUndelegateTarget]}`)
+            await delegateManager.requestUndelegateStake(randomlySelectedUndelegateTarget, undelegateAmount, { from: user })
+            testLog(user, `randomlyUndelegate: request submitted. target=${randomlySelectedUndelegateTarget}, undelegateAmount=${undelegateAmount}`)
         }
+    }
+
+    const removeRandomDelegator = async (user) => {
+        testLog(user, `removeRandomDelegator - deciding which delegator to kick`)
     }
 
     const randomlyDecreaseStake = async (user) => {
@@ -345,16 +365,23 @@ contract.only('Random testing', async (accounts) => {
         let currentMinForAcct = userInfo.spDetails.minAccountStake
         let currentForDeployer = userInfo.spDetails.deployerStake
         // let targetAmount = rand(currentMinForAcct.toNumber(), currentMaxForAcct.toNumber())
-
         // Decrease to the minimum bound
         let decreaseAmount = currentForDeployer.sub(currentMinForAcct)
         try {
             // If no request is pending and we are out of bounds, submit a decrease request
             if (!isRequestPending && !userInfo.spDetails.validBounds) {
                 let totalAfterDecrease = userInfo.totalInStakingContract.sub(decreaseAmount)
+                // Determine whether this SP is able to decrease their own stake into a valid state
+                // If not, randomly decrease delegators
                 let decreaseToValidBounds = totalAfterDecrease.gte(currentMinForAcct) && totalAfterDecrease.lte(currentMaxForAcct)
                 testLog(user, `randomlyDecreaseStake, validBounds: ${userInfo.spDetails.validBounds}, max: ${currentMaxForAcct}, deployer: ${currentForDeployer}, staking=${userInfo.totalInStakingContract}, decreasing by ${decreaseAmount}, totalAfterDecrease=${totalAfterDecrease}, decreaseToValidBounds=${decreaseToValidBounds}`)
-                await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: user })
+                // If decreaseToValidBounds === false, KICK OFF DELEGATOR
+                if (!decreaseToValidBounds) {
+                    // Initiate removal of delegator
+                    await removeRandomDelegator(user)
+                } else {
+                    await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: user })
+                }
             } else if (isRequestPending) {
                 let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
                 let readyToEvaluate = pendingDecreaseReq.lockupExpiryBlock.lte(latestBlock)
@@ -477,7 +504,7 @@ contract.only('Random testing', async (accounts) => {
             users.map(async (user) => {
                 let userServiceInfo = await getUserServiceInfo(user)
                 if (userServiceInfo.numServices < minNumServicesPerUser) {
-                    // In this case, our user has not
+                    // In this case, our user has not yet registered
                     await addNewServiceForUser(user)
                 } else {
                     await randomlyDelegate(user)
