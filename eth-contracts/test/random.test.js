@@ -44,13 +44,13 @@ contract.only('Random testing', async (accounts) => {
     const VotingPeriod = 10 
     const ExecutionDelayBlocks = 10
     const UndelegateLockupDuration = 21
-
     const DecreaseStakeLockupDuration = 21
+    const RemoveDelegatorLockupDuration = 21
     // const deployerCutLockupDuration = 11
 
     const SystemUser = "system"
     // const TestDuration = 10000 //30s=30000, 3min=180000
-    const TestDuration = 360000 // 720000
+    const TestDuration = 360000 // 1200000 //360000 // 720000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -140,6 +140,14 @@ contract.only('Random testing', async (accounts) => {
             { from: guardianAddress }
         )
         sysLog(`Updated undelegateLockupDuration to ${UndelegateLockupDuration}`)
+        await governance.guardianExecuteTransaction(
+            delegateManagerKey,
+            _lib.toBN(0),
+            'updateRemoveDelegatorLockupDuration(uint256)',
+            _lib.abiEncode(['uint256'], [RemoveDelegatorLockupDuration]),
+            { from: guardianAddress }
+        )
+        sysLog(`Updated removeDelegatorLockupDuration to ${RemoveDelegatorLockupDuration}`)
     }
 
     const rand = (min, max) => {
@@ -194,9 +202,14 @@ contract.only('Random testing', async (accounts) => {
         }
     }
 
+    const getLatestBlock = async () => {
+        return _lib.toBN((await web3.eth.getBlock('latest')).number)
+    }
+
     const logCurrentBlock = async () => {
-        let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
+        let latestBlock = await getLatestBlock()
         sysLog(`currentBlock - ${latestBlock}`)
+        return latestBlock
     }
 
     const getUserServiceInfo = async (user) => {
@@ -355,6 +368,17 @@ contract.only('Random testing', async (accounts) => {
 
     const removeRandomDelegator = async (user) => {
         testLog(user, `removeRandomDelegator - deciding which delegator to kick`)
+        let delegatorsList = await delegateManager.getDelegatorsList(user, { from: user})
+        testLog(user, `Selecting from: ${delegatorsList}`)
+        let randomlyBootedDelegator = delegatorsList[Math.floor(Math.random()*delegatorsList.length)]
+        testLog(user, `Randomly booting: ${randomlyBootedDelegator}`)
+        await delegateManager.requestRemoveDelegator(user, randomlyBootedDelegator, { from: user })
+        let removeReqExpiryBlock = await delegateManager.getPendingRemoveDelegatorRequest(user, randomlyBootedDelegator)
+        let currentBlock = await getLatestBlock()
+        testLog(user, `Delegator removal of ${randomlyBootedDelegator}, expiryBlock=${removeReqExpiryBlock}, currentBlock=${currentBlock}...advancing blocks`)
+        await advanceBlockTo(removeReqExpiryBlock)
+        await delegateManager.removeDelegator(user, randomlyBootedDelegator, { from: user })
+        testLog(user, `Delegator ${randomlyBootedDelegator} removed!`)
     }
 
     const randomlyDecreaseStake = async (user) => {
@@ -458,6 +482,14 @@ contract.only('Random testing', async (accounts) => {
         await randomlyAdvanceBlocks()
     }
 
+    const advanceBlockTo = async (blockNumber) => {
+        try {
+            await time.advanceBlockTo(blockNumber)
+        } catch(e) {
+            sysLog(`Caught ${e} advancing blocks`)
+        }
+    }
+
     const initiateRound = async (user) => {
         sysLog(`------- Initiating Round -------`)
         let lastFundedBlock = await claimsManager.getLastFundedBlock()
@@ -468,11 +500,7 @@ contract.only('Random testing', async (accounts) => {
         sysLog(`nextFundingRoundBlock: ${nextFundingRoundBlock.toString()}`)
         let latestBlock = await web3.eth.getBlock('latest')
         if (nextFundingRoundBlock.gte(_lib.toBN(latestBlock.number))) {
-            try {
-                await time.advanceBlockTo(nextFundingRoundBlock.add(_lib.toBN(1)))
-            } catch(e) {
-                sysLog(`Caught ${e} advancing blocks`)
-            }
+            await advanceBlockTo(nextFundingRoundBlock.add(_lib.toBN(1)))
         }
         sysLog(`latestBlock: ${latestBlock.number.toString()}`)
         await claimsManager.initiateRound({ from: user })
@@ -488,14 +516,10 @@ contract.only('Random testing', async (accounts) => {
         let latestBlock = await web3.eth.getBlock('latest')
         let latestBlockNumber = _lib.toBN(latestBlock.number)
         let targetBlockNumber = latestBlockNumber.add(numBlocks)
-        try {
-            sysLog(`Randomly advancing ${numBlocks} blocks from ${latestBlockNumber} to ${targetBlockNumber}, ${shouldRandomlyAdvance}/100`)
-            await time.advanceBlockTo(targetBlockNumber)
-            latestBlock = await web3.eth.getBlock('latest')
-            latestBlockNumber = _lib.toBN(latestBlock.number)
-        } catch(e) {
-            sysLog(e)
-        }
+        sysLog(`Randomly advancing ${numBlocks} blocks from ${latestBlockNumber} to ${targetBlockNumber}, ${shouldRandomlyAdvance}/100`)
+        await advanceBlockTo(targetBlockNumber)
+        latestBlock = await web3.eth.getBlock('latest')
+        latestBlockNumber = _lib.toBN(latestBlock.number)
     }
 
     // Add services as expected
