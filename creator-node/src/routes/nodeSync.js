@@ -25,6 +25,7 @@ module.exports = function (app) {
    */
   app.get('/export', handleResponse(async (req, res) => {
     const walletPublicKeys = req.query.wallet_public_key // array
+    const dbOnlySync = (req.query.db_only_sync === true || req.query.db_only_sync === 'true')
 
     const transaction = await models.sequelize.transaction()
     try {
@@ -78,29 +79,32 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       const ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
-      // Rehydrate files if necessary
-      for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
-        const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
-        req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
-        // Ensure all relevant files are available through IPFS at export time
-        await Promise.all(exportFilesSlice.map(async (file) => {
-          try {
-            if (
-              (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
-              // to address legacy single-res image rehydration where images are stored directly under its file CID
-              (file.type === 'image' && file.sourceFile === null)
-            ) {
-              await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
-            } else if (file.type === 'dir') {
-              await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
+      if (!dbOnlySync) {
+        // Rehydrate files if necessary
+        for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
+          const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
+          req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
+          // Ensure all relevant files are available through IPFS at export time
+          await Promise.all(exportFilesSlice.map(async (file) => {
+            try {
+              if (
+                (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
+                // to address legacy single-res image rehydration where images are stored directly under its file CID
+                (file.type === 'image' && file.sourceFile === null)
+              ) {
+                await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
+              } else if (file.type === 'dir') {
+                await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
+              }
+            } catch (e) {
+              req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
             }
-          } catch (e) {
-            req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
-          }
-        }))
+          }))
+        }
       }
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
+      console.error('Error in /export', e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
@@ -116,6 +120,35 @@ module.exports = function (app) {
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
     // option to sync just the db records as opposed to db records and files on disk, defaults to false
     const dbOnlySync = (req.body.db_only_sync === true || req.body.db_only_sync === 'true')
+
+    if (!immediate) {
+      req.logger.info('debounce time', config.get('debounceTime'))
+      // Debounce nodeysnc op
+      for (let wallet of walletPublicKeys) {
+        if (wallet in syncQueue) {
+          clearTimeout(syncQueue[wallet])
+          req.logger.info('clear timeout for', wallet, 'time', Date.now())
+        }
+        syncQueue[wallet] = setTimeout(
+          async () => _nodesync(req, [wallet], creatorNodeEndpoint, dbOnlySync),
+          config.get('debounceTime')
+        )
+        req.logger.info('set timeout for', wallet, 'time', Date.now())
+      }
+    } else {
+      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+    }
+    return successResponse()
+  }))
+
+  // copy the code as the regular sync, just to make sure it's isolated and not called by any other cnode code
+  // force immediate and dbOnlySync to be true
+  app.post('/vector_clock_sync', handleResponse(async (req, res) => {
+    const walletPublicKeys = req.body.wallet // array
+    const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+    const immediate = true
+    // option to sync just the db records as opposed to db records and files on disk, defaults to false
+    const dbOnlySync = true
 
     if (!immediate) {
       req.logger.info('debounce time', config.get('debounceTime'))
@@ -179,7 +212,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       method: 'get',
       baseURL: creatorNodeEndpoint,
       url: '/export',
-      params: { wallet_public_key: walletPublicKeys },
+      params: { wallet_public_key: walletPublicKeys, db_only_sync: dbOnlySync },
       responseType: 'json'
     })
     if (resp.status !== 200) throw new Error(resp.data['error'])
@@ -206,20 +239,23 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
       let userReplicaSet = []
-      try {
-        const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
-        userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
 
-        // push user metadata node to user's replica set if defined
-        if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
+      if (!dbOnlySync) {
+        try {
+          const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
+          userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
 
-        // filter out current node from user's replica set
-        userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
+          // push user metadata node to user's replica set if defined
+          if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
 
-        // Spread + set uniq's the array
-        userReplicaSet = [...new Set(userReplicaSet)]
-      } catch (e) {
-        req.logger.error(`Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash`)
+          // filter out current node from user's replica set
+          userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
+
+          // Spread + set uniq's the array
+          userReplicaSet = [...new Set(userReplicaSet)]
+        } catch (e) {
+          req.logger.error(`Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash`)
+        }
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {

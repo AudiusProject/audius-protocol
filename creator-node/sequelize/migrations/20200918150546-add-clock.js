@@ -10,18 +10,18 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction()
 
     // Add 'clock' column to all 4 tables
-    await addClockColumn(queryInterface, Sequelize, transaction, false)
+    await addClockColumn(queryInterface, Sequelize, transaction, true)
 
-    // Add composite primary keys on (cnodeUserUUID,clock) to Tracks and AudiusUsers tables
-    // (Files already has PK on fileUUID and cnodeUsers already has PK on cnodeUserUUID)
-    await addCompositePrimaryKeysToAudiusUsersAndTracks(queryInterface, Sequelize, transaction)
+    // Create Clock table
+    await createClockRecordsTable(queryInterface, Sequelize, transaction)
 
     // Add composite unique constraint on (blockchainId, clock) to AudiusUsers and Tracks
     // Add composite unique constraint on (cnodeUserUUID, clock) to Files
     await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
-    // Create Clock table
-    await createClockRecordsTable(queryInterface, Sequelize, transaction)
+    // Add composite primary keys on (cnodeUserUUID,clock) to Tracks and AudiusUsers tables
+    // (Files already has PK on fileUUID and cnodeUsers already has PK on cnodeUserUUID)
+    // await addCompositePrimaryKeysToAudiusUsersAndTracks(queryInterface, Sequelize, transaction)
 
     await transaction.commit()
   },

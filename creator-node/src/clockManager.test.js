@@ -39,7 +39,6 @@ describe.skip('Test incrementAndFetchCNodeUserClock', () => {
     })
   })
 
-  
   it('Sequential increment&Fetch', async () => {
     // Explicitly pass in incrementBy value
     const newClockVal1 = await incrementAndFetchCNodeUserClock(req, incrementClockBy)
