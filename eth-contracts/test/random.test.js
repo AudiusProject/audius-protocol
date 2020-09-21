@@ -22,17 +22,21 @@ contract.only('Random testing', async (accounts) => {
     let currentRound = 1
 
     // Test tracking statistics
+    let totalClaimedRewards = _lib.toBN(0)
+    let totalDeployerStaked = _lib.toBN(0)
+    let totalDelegatedAmount = _lib.toBN(0)
     let numDelegateOperations = _lib.toBN(0)
     let numRemoveDelegatorOps = _lib.toBN(0)
-    let totalDelegatedAmount = _lib.toBN(0)
-    let totalClaimedRewards = _lib.toBN(0)
+    let numDecreaseStakeOperations = _lib.toBN(0)
 
     const printTestSummary = () => {
-        console.log(`------------------------ AUDIUS RANDOM TESTING Summary ------------------------\n`)
-        console.log(` totalClaimedRewards: ${totalClaimedRewards}`)
-        console.log(` totalDelegatedAmount: ${totalDelegatedAmount}`)
-        console.log(` numDelegateOperations: ${numDelegateOperations}`)
-        console.log(` numRemoveDelegatorOps: ${numRemoveDelegatorOps}`)
+        console.log(`\n------------------------ AUDIUS RANDOM TESTING Summary ------------------------`)
+        console.log(`totalClaimedRewards: ${totalClaimedRewards}                | Total claimed through protocol rewards`)
+        console.log(`totalDeployerStaked: ${totalDeployerStaked}                | Total staked directly deployers`)
+        console.log(`totalDelegatedAmount: ${totalDelegatedAmount}              | Total delegated `)
+        console.log(`numDelegateOperations: ${numDelegateOperations}            | Number of delegate operations`)
+        console.log(`numRemoveDelegatorOps: ${numRemoveDelegatorOps}            | Number of remove delegator operations`)
+        console.log(`numDecreaseStakeOperations: ${numDecreaseStakeOperations}  | Number of successfully evaluated decrease stake operations`)
     }
 
     // proxyDeployerAddress is used to transfer tokens to service accounts as needed
@@ -62,7 +66,7 @@ contract.only('Random testing', async (accounts) => {
 
     const SystemUser = "system"
     // const TestDuration = 10000 //30s=30000, 3min=180000
-    const TestDuration = 180000 // 1200000=12min //360000 // 720000
+    const TestDuration = 10000 // 1200000=12min //360000 // 720000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -239,7 +243,6 @@ contract.only('Random testing', async (accounts) => {
     }
 
     const addNewServiceForUser = async (user) => {
-        testLog(user, 'Adding new service endpoint')
         try {
             // 50% chance of disc prov, 50% chance of creator node
             let serviceTypeDiceRoll = rand(0, 100)
@@ -259,10 +262,13 @@ contract.only('Random testing', async (accounts) => {
             // Randomly generate an amount between min/max bounds
             // TODO: RE-Enable this
             amount = randAmount(typeInfo.minStake, typeInfo.maxStake)
-            if (amount.lt(typeInfo.minStake)) amount = typeInfo.minStake
+            if (amount.lt(typeInfo.minStake)) {
+                testLog(user, `addNewService - generated invalid stake amount: ${amound}, setting to ${typeInfo.minStake}`)
+                amount = typeInfo.minStake
+            }
 
             // amount = (typeInfo.minStake.add(_lib.toBN(rand(0, 100000)))) // Min + random amount up to 100k WEI
-            testLog(user, `${serviceTypeDiceRoll} dice roll - adding ${web3.utils.hexToUtf8(serviceType)} - ${amount.toString()} audwei `)
+            testLog(user, `${serviceTypeDiceRoll}% roll - adding ${web3.utils.hexToUtf8(serviceType)} - ${amount.toString()} audwei `)
             let currentBalance = await token.balanceOf(user)
             if (amount.gt(currentBalance)) {
                 let missing = amount.sub(currentBalance)
@@ -283,6 +289,7 @@ contract.only('Random testing', async (accounts) => {
             )
             // Confirm system is internally consistent for this user
             await validateAccountStakeBalance(user)
+            totalDeployerStaked = totalDeployerStaked.add(amount)
         } catch (e) {
             testLog(user, `Error registering service provider. ${e}`)
         }
@@ -309,8 +316,8 @@ contract.only('Random testing', async (accounts) => {
                 { from: delegator }
             )
             // Increment test statistics
-            numDelegateOperations.add(_lib.toBN(1))
-            totalDelegatedAmount.add(amount)
+            numDelegateOperations = numDelegateOperations.add(_lib.toBN(1))
+            totalDelegatedAmount = totalDelegatedAmount.add(amount)
             testLog(delegator, `Delegated ${amount} to TargetSP=${serviceProvider}`)
         } catch (e) {
             testLog(delegator, `Error delegating ${amount} from ${delegator} to ${serviceProvider}. ${e}`)
@@ -394,7 +401,7 @@ contract.only('Random testing', async (accounts) => {
         await advanceBlockTo(removeReqExpiryBlock)
         await delegateManager.removeDelegator(user, randomlyBootedDelegator, { from: user })
         testLog(user, `Delegator ${randomlyBootedDelegator} removed!`)
-        numRemoveDelegatorOps.add(_lib.toBN(1))
+        numRemoveDelegatorOps = numRemoveDelegatorOps.add(_lib.toBN(1))
     }
 
     const randomlyDecreaseStake = async (user) => {
@@ -428,6 +435,7 @@ contract.only('Random testing', async (accounts) => {
                 if (readyToEvaluate) {
                     await serviceProviderFactory.decreaseStake({ from: user })
                     testLog(user, `randomlyDecreaseStake request evaluated | lockupExpiryBlock: ${pendingDecreaseReq.lockupExpiryBlock}, latest=${latestBlock}, readyToEvaluate=${readyToEvaluate}`)
+                    numDecreaseStakeOperations = numDecreaseStakeOperations.add(_lib.toBN(0))
                 }
             } else {
                 // TODO: ENABLE RANDOMNESS
@@ -481,7 +489,7 @@ contract.only('Random testing', async (accounts) => {
         let totalAtFundBlock = await staking.totalStakedAt(lastFundedBlock)
         let fundsPerRound = await claimsManager.getFundsPerRound()
         sysLog(`Round INFO lastFundBlock=${lastFundedBlock} - totalAtFundBlock=${totalAtFundBlock} - fundsPerRound=${fundsPerRound}`)
-        // TODO: Randomize this here
+        // TODO: Randomize whether or not a claim is performed
         await Promise.all(
             users.map(
                 async (user) => {
@@ -491,7 +499,7 @@ contract.only('Random testing', async (accounts) => {
                     let postClaimInfo = await getAccountStakeInfo(user)
                     let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
                     testLog(user, `Claimed ${rewards}, totalForUserAtFundBlock=${totalForUserAtFundBlock} - validBounds==${preClaimInfo.spDetails.validBounds}`)
-                    totalClaimedRewards.add(rewards)
+                    totalClaimedRewards = totalClaimedRewards.add(rewards)
                 }
             )
         )
