@@ -1,5 +1,5 @@
 import { web3 } from '@openzeppelin/test-helpers/src/setup'
-import * as _lib from '../utils/lib.js'
+import * as _lib from '../../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
 const Staking = artifacts.require('Staking')
@@ -13,7 +13,7 @@ const AudiusToken = artifacts.require('AudiusToken')
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
 const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
 
-contract.only('Random testing', async (accounts) => {
+contract('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
     let claimsManager, governance, delegateManager
     let users = []
@@ -35,8 +35,8 @@ contract.only('Random testing', async (accounts) => {
         console.log(`totalDeployerStaked: ${totalDeployerStaked}                | Total staked directly deployers`)
         console.log(`totalDelegatedAmount: ${totalDelegatedAmount}              | Total delegated `)
         console.log(`numDelegateOperations: ${numDelegateOperations}            | Number of delegate operations`)
-        console.log(`numRemoveDelegatorOps: ${numRemoveDelegatorOps}            | Number of remove delegator operations`)
         console.log(`numDecreaseStakeOperations: ${numDecreaseStakeOperations}  | Number of successfully evaluated decrease stake operations`)
+        console.log(`numRemoveDelegatorOps: ${numRemoveDelegatorOps}            | Number of remove delegator operations`)
     }
 
     // proxyDeployerAddress is used to transfer tokens to service accounts as needed
@@ -47,7 +47,6 @@ contract.only('Random testing', async (accounts) => {
     const governanceRegKey = web3.utils.utf8ToHex('Governance')
     const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
     const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
-
     const userOffset = 25 
 
     // const numUsers = 1
@@ -63,10 +62,8 @@ contract.only('Random testing', async (accounts) => {
     const DecreaseStakeLockupDuration = 21
     const RemoveDelegatorLockupDuration = 21
     const DeployerCutLockupDuration = FundingRoundBlockDiffForTest + 1
-
     const SystemUser = "system"
-    // const TestDuration = 10000 //30s=30000, 3min=180000
-    const TestDuration = 3600000 // 1200000=12min //360000 // 720000
+    const TestDuration = 3600000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -444,8 +441,8 @@ contract.only('Random testing', async (accounts) => {
                 let readyToEvaluate = pendingDecreaseReq.lockupExpiryBlock.lte(latestBlock)
                 if (readyToEvaluate) {
                     await serviceProviderFactory.decreaseStake({ from: user })
-                    testLog(user, `randomlyDecreaseStake request evaluated | lockupExpiryBlock: ${pendingDecreaseReq.lockupExpiryBlock}, latest=${latestBlock}, readyToEvaluate=${readyToEvaluate}`)
-                    numDecreaseStakeOperations = numDecreaseStakeOperations.add(_lib.toBN(0))
+                    numDecreaseStakeOperations = numDecreaseStakeOperations.add(_lib.toBN(1))
+                    testLog(user, `randomlyDecreaseStake request evaluated | lockupExpiryBlock: ${pendingDecreaseReq.lockupExpiryBlock}, latest=${latestBlock}, numDecreaseStakeOperations=${numDecreaseStakeOperations}`)
                 }
             } else {
                 // TODO: ENABLE RANDOMNESS
@@ -538,7 +535,6 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
             )
         )
         sysLog(`------- Finished Claiming Rewards -------`)
-        await randomlyAdvanceBlocks()
     }
 
     const advanceBlockTo = async (blockNumber) => {
@@ -595,9 +591,7 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
                     await randomlyDecreaseStake(user)
                     await randomlyUndelegate(user)
                 }
-                // Randomly advance blocks
-                await randomlyAdvanceBlocks()
-            })
+           })
         )
     }
 
@@ -606,14 +600,21 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
         let duration = Date.now() - startTime
         await logCurrentBlock()
         while (duration < TestDuration) {
+            let roundStart = Date.now()
             sysLog(`------------------------ AUDIUS RANDOM TESTING - Round ${currentRound}, ${duration}/${TestDuration}ms ------------------------`)
             // Ensure base user state (service requirements satisfied)
             await processUserState(users)
+            await randomlyAdvanceBlocks()
+
             // TODO: Randomize from which acct the round is initiated
             await initiateRound(users[0])
+            await randomlyAdvanceBlocks()
             await claimPendingRewards(users)
+            await randomlyAdvanceBlocks()
             await validateUsers(users)
-            sysLog(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} ------------------------\n`)
+            await randomlyAdvanceBlocks()
+            let roundDuration = Date.now() - roundStart
+            sysLog(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} in ${roundDuration}ms ------------------------\n`)
             // Progress round
             currentRound++
             // Update duration
