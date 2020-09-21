@@ -2,14 +2,8 @@ const models = require('./models')
 const sequelize = models.sequelize
 
 /**
-TODO - consider moving to inside /src/models
-
-TODO consider adding hook to ensure write op can never set clockVal to anything <= current
-
-TODO - any further constraint enforcement needed?
-- DataTables all FK to Clocks table
-    - Clocks table has unique constraint
-//     - dataTables have unique C on (userId + clock)
+ * TODO - add  DataTables all composite FK to Clocks table
+ * - https://stackoverflow.com/questions/9984022/postgres-fk-referencing-composite-pk
  */
 
 class DBManager {
@@ -19,18 +13,19 @@ class DBManager {
    * Steps:
    *  1. increments cnodeUser clock value
    *  2. insert new ClockRecord entry with new clock value
-   *  3. insert new File entry with queryObj and new clock value
+   *  3. insert new Data Table (File, Track, AudiusUser) entry with queryObj and new clock value
    *
    * After initial increment, clock values are read as subquery without reading into JS to guarantee atomicity
-   *
-   * TODO - flesh out jsdoc
-   * @param {*} queryObj - object with file insert data
-   * @param {*} cnodeUserUUID
-   * @param {*} transaction
-   *
+   * 
+   * * TODO - flesh out jsdoc
+   * @param {*} queryObj 
+   * @param {*} cnodeUserUUID 
+   * @param {*} sequelizeTableInstance 
+   * @param {*} transaction 
+   * 
    * TODO - returns
    */
-  static async createNewDataRecord (queryObj, cnodeUserUUID, sourceTable, transaction) {
+  static async createNewDataRecord (queryObj, cnodeUserUUID, sequelizeTableInstance, transaction) {
     // Increment CNodeUser.clock value by 1
     await models.CNodeUser.increment('clock', {
       where: { cnodeUserUUID },
@@ -44,34 +39,24 @@ class DBManager {
     await models.ClockRecord.create({
       cnodeUserUUID,
       clock: selectCNodeUserClockSubqueryLiteral,
-      sourceTable
+      sourceTable: sequelizeTableInstance.name
     }, { transaction })
 
     // Add cnodeUserUUID + clock value to queryObj
     queryObj.cnodeUserUUID = cnodeUserUUID
     queryObj.clock = selectCNodeUserClockSubqueryLiteral
 
-    // Create new File entry with queryObj
-    const modelsInstance = _getModelsInstance(sourceTable)
-    const file = await modelsInstance.create(queryObj, { transaction })
+    // Create new Data table entry with queryObj
+    const file = await sequelizeTableInstance.create(queryObj, { transaction })
 
     return file.dataValues
   }
 }
 
-const _SourceTableToModelInstanceMap = {
-  'AudiusUser': models.AudiusUser,
-  'Track': models.Track,
-  'File': models.File
-}
-
-function _getModelsInstance (sourceTable) {
-  return _SourceTableToModelInstanceMap[sourceTable]
-}
-
 /**
  * @dev source: https://stackoverflow.com/questions/36164694/sequelize-subquery-in-where-clause
  * @param {*} cnodeUserUUID
+ * return string "select * from clock where cnodeuseruuid"
  */
 function _getSelectCNodeUserClockSubqueryLiteral (cnodeUserUUID) {
   const subquery = sequelize.dialect.QueryGenerator.selectQuery('CNodeUsers', {

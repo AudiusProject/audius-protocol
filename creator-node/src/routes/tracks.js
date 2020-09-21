@@ -124,7 +124,7 @@ module.exports = function (app) {
         storagePath: transcodeFileIPFSResp.dstPath,
         type: 'copy320' // TODO - replace with models enum
       }
-      const file = await DBManager.createNewDataRecord(createTranscodeFileQueryObj, cnodeUserUUID, 'File', transaction)
+      const file = await DBManager.createNewDataRecord(createTranscodeFileQueryObj, cnodeUserUUID, models.File, transaction)
       transcodeFileUUID = file.fileUUID
 
       // Record all segment file entries in DB
@@ -136,7 +136,7 @@ module.exports = function (app) {
           storagePath: dstPath,
           type: 'track' // TODO - replace with models enum
         }
-        await DBManager.createNewDataRecord(createSegmentFileQueryObj, cnodeUserUUID, 'File', transaction)
+        await DBManager.createNewDataRecord(createSegmentFileQueryObj, cnodeUserUUID, models.File, transaction)
       }
 
       await transaction.commit()
@@ -248,7 +248,7 @@ module.exports = function (app) {
         storagePath: dstPath,
         type: 'metadata' // TODO - replace with models enum
       }
-      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, 'File', transaction)
+      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, models.File, transaction)
       fileUUID = file.fileUUID
 
       await transaction.commit()
@@ -330,7 +330,7 @@ module.exports = function (app) {
         blockchainId: blockchainTrackId,
         coverArtFileUUID
       }
-      const track = await DBManager.createNewDataRecord(createTrackQueryObj, cnodeUserUUID, 'Track', transaction)
+      const track = await DBManager.createNewDataRecord(createTrackQueryObj, cnodeUserUUID, models.Track, transaction)
 
       /**
        * Associate matching transcode & segment files on DB with new/updated track

@@ -39,7 +39,7 @@ module.exports = function (app) {
         storagePath: dstPath,
         type: 'metadata' // TODO - replace with models enum
       }
-      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, 'File', transaction)
+      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, models.File, transaction)
       fileUUID = file.fileUUID
 
       await transaction.commit()
@@ -102,7 +102,7 @@ module.exports = function (app) {
         coverArtFileUUID,
         profilePicFileUUID
       }
-      await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, 'AudiusUser', transaction)
+      await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
 
       // Update cnodeUser.latestBlockNumber
       // TODO - can this be deprecated with new clock logic?
