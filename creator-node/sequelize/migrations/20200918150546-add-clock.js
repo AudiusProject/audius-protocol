@@ -145,7 +145,6 @@ async function createClockRecordsTable (queryInterface, Sequelize, transaction) 
       allowNull: false
     },
     sourceTable: {
-      // TODO - if this doesn't work, use models/file.js:L46
       type: Sequelize.ENUM('AudiusUser', 'Track', 'File'),
       allowNull: false
     },

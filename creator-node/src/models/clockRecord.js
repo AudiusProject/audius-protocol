@@ -27,7 +27,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     sourceTable: {
-      // TODO - if this doesn't work, use models/file.js:L46
       type: DataTypes.ENUM(
         ...Object.values(SourceTableTypesObj)
       ),

@@ -28,7 +28,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['blockchainId', 'clock']
+      }
+    ]
+  })
 
   Track.associate = function (models) {
     Track.belongsTo(models.CNodeUser, {

@@ -31,7 +31,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['blockchainId', 'clock']
+      }
+    ]
+  })
   AudiusUser.associate = function (models) {
     AudiusUser.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',

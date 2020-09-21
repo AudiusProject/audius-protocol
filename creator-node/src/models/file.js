@@ -67,6 +67,10 @@ module.exports = (sequelize, DataTypes) => {
       },
       {
         fields: ['trackBlockchainId']
+      },
+      {
+        unique: true,
+        fields: ['cnodeUserUUID', 'clock']
       }
     ]
   })
