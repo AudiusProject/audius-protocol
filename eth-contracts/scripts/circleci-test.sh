@@ -1,3 +1,5 @@
+#!/usr/bin/env bash	
+
 <<COMMENT
 CircleCI Specific Test Script
 Removes dependency on docker container, assumes port 8546 is exposed
