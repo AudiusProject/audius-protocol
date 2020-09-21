@@ -24,21 +24,64 @@ module.exports = function (app) {
    * }
    */
   app.get('/export', handleResponse(async (req, res) => {
+    // TODO - allow for offsets in the /export
+    const limit = 25000
     const walletPublicKeys = req.query.wallet_public_key // array
     const dbOnlySync = (req.query.db_only_sync === true || req.query.db_only_sync === 'true')
 
     const transaction = await models.sequelize.transaction()
     try {
       // Fetch cnodeUser for each walletPublicKey.
-      const cnodeUsers = await models.CNodeUser.findAll({ where: { walletPublicKey: walletPublicKeys }, transaction })
+      const cnodeUsers = await models.CNodeUser.findAll({ where: { walletPublicKey: walletPublicKeys }, transaction, raw: true })
       const cnodeUserUUIDs = cnodeUsers.map((cnodeUser) => cnodeUser.cnodeUserUUID)
+      const cnodeUserUUID = cnodeUserUUIDs[0] // assume we only have a single wallet being exported for now
 
       // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files, clockRecords.
       const [audiusUsers, tracks, files, clockRecords] = await Promise.all([
-        models.AudiusUser.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction }),
-        models.Track.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction }),
-        models.File.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction }),
-        models.ClockRecord.findAll({ where: { cnodeUserUUID: cnodeUserUUIDs }, transaction })
+        models.AudiusUser.findAll({
+          where: {
+            cnodeUserUUID: cnodeUserUUIDs,
+            clock: {
+              [models.Sequelize.Op.lte]: limit
+            }
+          },
+          order: [['clock', 'ASC']],
+          transaction,
+          raw: true
+        }),
+        models.Track.findAll({
+          where: {
+            cnodeUserUUID: cnodeUserUUIDs,
+            clock: {
+              [models.Sequelize.Op.lte]: limit
+            }
+          },
+          order: [['clock', 'ASC']],
+          transaction,
+          raw: true
+        }),
+        models.File.findAll({
+          where: {
+            cnodeUserUUID: cnodeUserUUIDs,
+            clock: {
+              [models.Sequelize.Op.lte]: limit
+            }
+          },
+          order: [['clock', 'ASC']],
+          transaction,
+          raw: true
+        }),
+        models.ClockRecord.findAll({
+          where: {
+            cnodeUserUUID: cnodeUserUUIDs,
+            clock: {
+              [models.Sequelize.Op.lte]: limit
+            }
+          },
+          order: [['clock', 'ASC']],
+          transaction,
+          raw: true
+        })
       ])
       await transaction.commit()
 
@@ -46,34 +89,27 @@ module.exports = function (app) {
 
       const cnodeUsersDict = {}
       cnodeUsers.forEach(cnodeUser => {
-        // Convert sequelize object to plain js object to allow adding additional fields.
-        const cnodeUserDictObj = cnodeUser.toJSON()
-
         // Add cnodeUserUUID data fields.
-        cnodeUserDictObj['audiusUsers'] = []
-        cnodeUserDictObj['tracks'] = []
-        cnodeUserDictObj['files'] = []
-        cnodeUserDictObj['clockRecords'] = []
+        cnodeUser['audiusUsers'] = []
+        cnodeUser['tracks'] = []
+        cnodeUser['files'] = []
+        cnodeUser['clockRecords'] = []
 
-        cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUserDictObj
+        cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
+
+        // TODO - remove this once we no longer have a limit in export
+        // this just overrides the clock value to the max clock we're sending over to the secondary so it knows
+        // there's more data to pull
+        if (cnodeUser.clock > limit) {
+          console.log("nodeSync.js#export - cnode user clock value is higher than limit, resetting", clockRecords[clockRecords.length-1].clock)
+          cnodeUser.clock = clockRecords[clockRecords.length-1].clock
+        }
       })
 
-      audiusUsers.forEach(audiusUser => {
-        const audiusUserDictObj = audiusUser.toJSON()
-        cnodeUsersDict[audiusUserDictObj['cnodeUserUUID']]['audiusUsers'].push(audiusUserDictObj)
-      })
-      tracks.forEach(track => {
-        let trackDictObj = track.toJSON()
-        cnodeUsersDict[trackDictObj['cnodeUserUUID']]['tracks'].push(trackDictObj)
-      })
-      files.forEach(file => {
-        let fileDictObj = file.toJSON()
-        cnodeUsersDict[fileDictObj['cnodeUserUUID']]['files'].push(fileDictObj)
-      })
-      clockRecords.forEach(clockRecord => {
-        let clockRecordDictObj = clockRecord.toJSON()
-        cnodeUsersDict[clockRecordDictObj['cnodeUserUUID']]['clockRecords'].push(clockRecordDictObj)
-      })
+      cnodeUsersDict[cnodeUserUUID]['audiusUsers'] = audiusUsers
+      cnodeUsersDict[cnodeUserUUID]['tracks'] = tracks
+      cnodeUsersDict[cnodeUserUUID]['files'] = files
+      cnodeUsersDict[cnodeUserUUID]['clockRecords'] = clockRecords
 
       // Expose ipfs node's peer ID.
       const ipfs = req.app.get('ipfsAPI')

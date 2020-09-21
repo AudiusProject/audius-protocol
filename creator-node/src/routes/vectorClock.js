@@ -86,32 +86,44 @@ module.exports = function (app) {
       } else {
         await models.File.bulkCreate(files, { transaction })
       }
+      
       await models.Track.bulkCreate(tracks, { transaction })
+      
       await models.AudiusUser.bulkCreate(audiusUsers, { transaction })
-      await models.ClockRecord.bulkCreate(clockRecords, { transaction })
+      
+      if (clockRecords.length > 10000) {
+        for (let i = 0; i <= clockRecords.length; i += 10000) {
+          console.log('writing clockrecords from idx', i, i + 10000)
+          await models.ClockRecord.bulkCreate(clockRecords.slice(i, i + 10000), { transaction })
+        }
+      } else {
+        await models.ClockRecord.bulkCreate(clockRecords, { transaction })
+      }
+      
       await cnodeUser.update({ clock }, { transaction })
 
       await transaction.commit()
-
-      // trigger secondary syncs here
-      const axiosReq = {
-        baseURL: 'http://docker.for.mac.localhost:4000',
-        url: '/vector_clock_sync',
-        method: 'post',
-        data: {
-          wallet: [walletPublicKey],
-          creator_node_endpoint: 'http://docker.for.mac.localhost:4000',
-          immediate: true,
-          db_only_sync: true
-        }
-      }
-      await axios(axiosReq)
-
-      return successResponse()
     } catch (e) {
       console.error(e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
+
+    // trigger secondary syncs here
+    const axiosReq = {
+      baseURL: 'http://docker.for.mac.localhost:4000',
+      url: '/vector_clock_sync',
+      method: 'post',
+      data: {
+        wallet: [walletPublicKey],
+        creator_node_endpoint: 'http://docker.for.mac.localhost:4000',
+        immediate: true,
+        db_only_sync: true
+      }
+    }
+    await axios(axiosReq)
+
+    return successResponse()
+    
   }))
 }
