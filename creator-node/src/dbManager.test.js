@@ -40,7 +40,7 @@ describe.only('Test createNewDataRecord()', () => {
   })
 
   /** Wipe all CNodeUsers + dependent data */
-  afterEach(async () => {
+  after(async () => {
     await models.CNodeUser.destroy({
       where: {},
       truncate: true,
