@@ -50,7 +50,7 @@ contract('Random testing', async (accounts) => {
     const userOffset = 25 
 
     // const numUsers = 1
-    const numUsers = 5
+    const numUsers = 15
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
