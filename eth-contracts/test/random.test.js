@@ -1,4 +1,5 @@
 import { web3 } from '@openzeppelin/test-helpers/src/setup'
+import libs from '../../../audius-tooling/service-commands/src/libs.js'
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
@@ -21,6 +22,20 @@ contract.only('Random testing', async (accounts) => {
     let cnTypeInfo, dpTypeInfo
     let currentRound = 1
 
+    // Test tracking statistics
+    let numDelegateOperations = _lib.toBN(0)
+    let numRemoveDelegatorOps = _lib.toBN(0)
+    let totalDelegatedAmount = _lib.toBN(0)
+    let totalClaimedRewards = _lib.toBN(0)
+
+    const printTestSummary = () => {
+        console.log(`------------------------ AUDIUS RANDOM TESTING Summary ------------------------\n`)
+        console.log(` totalClaimedRewards: ${totalClaimedRewards}`)
+        console.log(` totalDelegatedAmount: ${totalDelegatedAmount}`)
+        console.log(` numDelegateOperations: ${numDelegateOperations}`)
+        console.log(` numRemoveDelegatorOps: ${numRemoveDelegatorOps}`)
+    }
+
     // proxyDeployerAddress is used to transfer tokens to service accounts as needed
     const proxyDeployerAddress = accounts[11]
     // guardian is equal to proxyDeployer for test purposes
@@ -37,8 +52,6 @@ contract.only('Random testing', async (accounts) => {
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
-    const numRounds = 5
-
     // const numRounds = 15
     const FundingRoundBlockDiffForTest = 200
     const VotingPeriod = 10 
@@ -50,7 +63,7 @@ contract.only('Random testing', async (accounts) => {
 
     const SystemUser = "system"
     // const TestDuration = 10000 //30s=30000, 3min=180000
-    const TestDuration = 360000 // 1200000 //360000 // 720000
+    const TestDuration = 180000 // 1200000=12min //360000 // 720000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -190,7 +203,7 @@ contract.only('Random testing', async (accounts) => {
         testLog(SystemUser, msg)
     }
 
-    const logTestSummary = () => {
+    const printUserTestSummary = () => {
         let logKeys = Object.keys(logs)
         // Iterate over every user and print summary
         for (var key of logKeys) {
@@ -296,6 +309,9 @@ contract.only('Random testing', async (accounts) => {
                 amount,
                 { from: delegator }
             )
+            // Increment test statistics
+            numDelegateOperations.add(_lib.toBN(1))
+            totalDelegatedAmount.add(amount)
             testLog(delegator, `Delegated ${amount} to TargetSP=${serviceProvider}`)
         } catch (e) {
             testLog(delegator, `Error delegating ${amount} from ${delegator} to ${serviceProvider}. ${e}`)
@@ -319,7 +335,7 @@ contract.only('Random testing', async (accounts) => {
         // Select between 100 and 500 AUD to delegate
         let amount = _lib.toBN(rand(100000000000000000000, 500000000000000000000))
         testLog(user, `randomlyDelegate: maxDelAmt=${maxDelAmount}, targetMax=${targetMax}, current=${current}, selected=${amount}`)
-        await delegate(randTargetUser, _lib.toBN(amount), user)
+        await delegate(randTargetUser, amount, user)
     }
 
     const randomlyUndelegate = async (user) => {
@@ -379,6 +395,7 @@ contract.only('Random testing', async (accounts) => {
         await advanceBlockTo(removeReqExpiryBlock)
         await delegateManager.removeDelegator(user, randomlyBootedDelegator, { from: user })
         testLog(user, `Delegator ${randomlyBootedDelegator} removed!`)
+        numRemoveDelegatorOps.add(_lib.toBN(1))
     }
 
     const randomlyDecreaseStake = async (user) => {
@@ -475,6 +492,7 @@ contract.only('Random testing', async (accounts) => {
                     let postClaimInfo = await getAccountStakeInfo(user)
                     let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
                     testLog(user, `Claimed ${rewards}, totalForUserAtFundBlock=${totalForUserAtFundBlock} - validBounds==${preClaimInfo.spDetails.validBounds}`)
+                    totalClaimedRewards.add(rewards)
                 }
             )
         )
@@ -531,9 +549,10 @@ contract.only('Random testing', async (accounts) => {
                     // In this case, our user has not yet registered
                     await addNewServiceForUser(user)
                 } else {
+                    // TODO: Randomly update deployer cut
                     await randomlyDelegate(user)
                     await randomlyDecreaseStake(user)
-                    // await randomlyUndelegate(user)
+                    await randomlyUndelegate(user)
                 }
                 // Randomly advance blocks
                 await randomlyAdvanceBlocks()
@@ -562,6 +581,7 @@ contract.only('Random testing', async (accounts) => {
         }
         await logCurrentBlock()
         sysLog(`------------------------ AUDIUS RANDOM TESTING SUMMARY - Finished ${currentRound} rounds in ${duration}ms ------------------------`)
-        logTestSummary()
+        printUserTestSummary()
+        printTestSummary()
     })
 })
