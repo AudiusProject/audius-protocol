@@ -19,6 +19,7 @@ describe.only('Test createNewDataRecord()', () => {
   }
 
   const initialClockVal = 0
+  const timeoutMs = 1000
 
   let cnodeUserUUID
 
@@ -40,15 +41,12 @@ describe.only('Test createNewDataRecord()', () => {
 
   /** Wipe all CNodeUsers + dependent data */
   afterEach(async () => {
-    return
     await models.CNodeUser.destroy({
       where: {},
       truncate: true,
       cascade: true // cascades delete to all rows with foreign key on cnodeUser
     })
   })
-
-  // it.only('test', () => {})
 
   it('Sequential createNewDataRecord - create 2 records', async () => {
     const sourceTable = 'File'
@@ -113,94 +111,150 @@ describe.only('Test createNewDataRecord()', () => {
     assert.strictEqual(cnodeUser.clock, initialClockVal + 2)
 
     // Validate ClockRecords table state
-    clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }, order: [['updatedAt', 'DESC']] })
+    clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
     assert.strictEqual(clockRecords.length, 2)
     clockRecord = clockRecords[0].dataValues
-    assert.strictEqual(clockRecord.clock, initialClockVal + 2)
     assert.strictEqual(clockRecord.sourceTable, sourceTable)
+    assert.strictEqual(clockRecord.clock, initialClockVal + 2)
 
     // Validate Files table state
-    files = await models.File.findAll({ where: { cnodeUserUUID }, order: [['updatedAt', 'DESC']] })
+    files = await models.File.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
     assert.strictEqual(files.length, 2)
     file = files[0].dataValues
     assert.strictEqual(file.clock, initialClockVal + 2)
   })
 
-  it.skip('Concurrent createNewDataRecord - create 10 records', async () => {
-    // test two concurrent in separate transactions (simulates routes)
-    const t1 = await models.sequelize.transaction()
-    const t2 = await models.sequelize.transaction()
-
-    // Create new Data record
-    let createFileQueryObj = {
-      multihash: 'testMultihash',
-      sourceFile: 'testSourceFile',
-      storagePath: 'testStoragePath',
-      type: 'metadata' // TODO - replace with models enum
-    }
-    let createdFile = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, sourceTable, transaction)
-    await t1.commit()
-  })
-
-  it.skip('Concurrent pt2', async () => {
-    // test concurrent in same transaction -> this should break
-  })
-
-
-
-  it.only('Concurrent createNewDataRecord', async () => {
+  it('Concurrent createNewDataRecord - successfully makes concurrent calls in separate transactions', async () => {
     const sourceTable = 'File'
-    try {
-      // Add global sequelize hook to add timeout before ClockRecord.create calls to force concurrent ops
-      const modelsCopy = models
-      modelsCopy.sequelize.addHook('beforeCreate', async (instance, options) => {
-        if (instance.constructor.name === 'File') {
-          await utils.timeout(1000)
-        }
-      })
+    const numEntries = 5
 
-      // Replace required models instance with modified models instance
-      proxyquire('./dbManager', { './models': modelsCopy })
+    // Add global sequelize hook to add timeout before ClockRecord.create calls to force concurrent ops
+    const modelsCopy = models
+    modelsCopy.sequelize.addHook('beforeCreate', async (instance, options) => {
+      if (instance.constructor.name === 'ClockRecord') {
+        await utils.timeout(timeoutMs)
+      }
+    })
 
+    // Replace required models instance with modified models instance
+    proxyquire('./dbManager', { './models': modelsCopy })
+
+    // Make multiple concurrent calls - create a transaction for each call
+    const arr = _.range(1, numEntries + 1) // [1, 2, ..., numEntries]
+    let createdFiles = await Promise.all(arr.map(async (i) => {
       const transaction = await models.sequelize.transaction()
+      const createFileQueryObj = {
+        multihash: 'testMultihash',
+        sourceFile: 'testSourceFile',
+        storagePath: 'testStoragePath',
+        type: 'metadata' // TODO - replace with models enum
+      }
+      const createdFile = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, sourceTable, transaction)
+      await transaction.commit()
 
-      // Fire 10 increment&Fetch calls in parallel
-      const arr = _.range(1, 8) // [1,2,3,4,5,6,7,8,9,10]
-      const returnedData = await Promise.all(arr.map(async (i) => {
-        console.log(`calling createNewDataRecord ${i}...`)
+      return createdFile
+    }))
 
+    // Validate returned file objects
+    createdFiles = _.orderBy(createdFiles, ['createdAt'], ['asc'])
+    createdFiles.forEach((createdFile, index) => {
+      assert.strictEqual(createdFile.cnodeUserUUID, cnodeUserUUID)
+      assert.strictEqual(createdFile.clock, initialClockVal + 1 + index)
+    })
+
+    // Validate CNodeUsers table state
+    const cnodeUser = await getCNodeUser(cnodeUserUUID)
+    assert.strictEqual(cnodeUser.clock, initialClockVal + numEntries)
+
+    // Validate ClockRecords table state
+    const clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'ASC']] })
+    assert.strictEqual(clockRecords.length, numEntries)
+    clockRecords.forEach((clockRecord, index) => {
+      clockRecord = clockRecord.dataValues
+      assert.strictEqual(clockRecord.sourceTable, sourceTable)
+      assert.strictEqual(clockRecord.clock, initialClockVal + 1 + index)
+    })
+
+    // Validate Files table state
+    const files = await models.File.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'ASC']] })
+    assert.strictEqual(files.length, numEntries)
+    files.forEach((file, index) => {
+      file = file.dataValues
+      assert.strictEqual(file.clock, initialClockVal + 1 + index)
+    })
+  })
+
+  it('Concurrent createNewDataRecord - fails to make concurrent calls in a single transaction due to ClockRecords_pkey', async () => {
+    const sourceTable = 'File'
+    const numEntries = 5
+
+    // Add global sequelize hook to add timeout before ClockRecord.create calls to force concurrent ops
+    const modelsCopy = models
+    modelsCopy.sequelize.addHook('beforeCreate', async (instance, options) => {
+      if (instance.constructor.name === 'ClockRecord') {
+        await utils.timeout(timeoutMs)
+      }
+    })
+
+    // Replace required models instance with modified models instance
+    proxyquire('./dbManager', { './models': modelsCopy })
+
+    // Attempt to make multiple concurrent calls, re-using the same transaction each time
+    const transaction = await models.sequelize.transaction()
+    try {
+      const arr = _.range(1, numEntries + 1) // [1, 2, ..., numEntries]
+      await Promise.all(arr.map(async (i) => {
         const createFileQueryObj = {
-          multihash: 'testMultihash2',
-          sourceFile: 'testSourceFile2',
-          storagePath: 'testStoragePath2',
+          multihash: 'testMultihash',
+          sourceFile: 'testSourceFile',
+          storagePath: 'testStoragePath',
           type: 'metadata' // TODO - replace with models enum
         }
         const createdFile = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, sourceTable, transaction)
-
         return createdFile
       }))
       await transaction.commit()
     } catch (e) {
-      console.log(e)
-      throw new Error(e)
+      await transaction.rollback()
+      assert.strictEqual(e.name, 'SequelizeUniqueConstraintError')
+      assert.strictEqual(e.original.message, 'duplicate key value violates unique constraint "ClockRecords_pkey"')
     }
-    
+
     /**
-     * TODO
-     * ensure concurrent with multiple transactions always works
-     * ensure concurrent in single transaction always fails due to SequelizeUniqueConstraintError
-     * - test with timeout before ClockRecord to confirm ClockRecord.pkey
-     * - test with timeout before File to confirm File.pkey
-     * - test with timeout before 
+     * Confirm none of the rows were written to DB
      */
 
+    // Validate CNodeUsers table state
+    cnodeUser = await getCNodeUser(cnodeUserUUID)
+    assert.strictEqual(cnodeUser.clock, initialClockVal)
 
-    // // Ensure returned clock values include no duplicates and include each value from 1-10, in any order
-    // const returnedClockValsSorted = returnedClockVals.sort((a, b) => a - b)
-    // assert.deepStrictEqual(returnedClockValsSorted, arr)
+    // Validate ClockRecords table state
+    clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
+    assert.strictEqual(clockRecords.length, 0)
+
+    // Validate Files table state
+    files = await models.File.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
+    assert.strictEqual(files.length, 0)
   })
 
-  it('Force blocked requests to fail', async () => {
-    // return
+  it('Confirm file.pkey will block duplicate clock vals from being written', async () => {
+    const transaction = await models.sequelize.transaction()
+    try {
+      const createFileQueryObj = {
+        cnodeUserUUID,
+        multihash: 'testMultihash',
+        sourceFile: 'testSourceFile',
+        storagePath: 'testStoragePath',
+        type: 'metadata', // TODO - replace with models enum
+        clock: 0
+      }
+      await models.File.create(createFileQueryObj, { transaction })
+      await models.File.create(createFileQueryObj, { transaction })
+      await transaction.commit()
+    } catch (e) {
+      await transaction.rollback()
+      assert.strictEqual(e.name, 'SequelizeUniqueConstraintError')
+      assert.strictEqual(e.original.message, 'duplicate key value violates unique constraint "Files_unique_(cnodeUserUUID,clock)"')
+    }
   })
 })
