@@ -1,5 +1,4 @@
 import { web3 } from '@openzeppelin/test-helpers/src/setup'
-import libs from '../../../audius-tooling/service-commands/src/libs.js'
 import * as _lib from '../utils/lib.js'
 const { time } = require('@openzeppelin/test-helpers')
 
