@@ -62,11 +62,11 @@ contract.only('Random testing', async (accounts) => {
     const UndelegateLockupDuration = 21
     const DecreaseStakeLockupDuration = 21
     const RemoveDelegatorLockupDuration = 21
-    // const deployerCutLockupDuration = 11
+    const DeployerCutLockupDuration = FundingRoundBlockDiffForTest + 1
 
     const SystemUser = "system"
     // const TestDuration = 10000 //30s=30000, 3min=180000
-    const TestDuration = 10000 // 1200000=12min //360000 // 720000
+    const TestDuration = 3600000 // 1200000=12min //360000 // 720000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -148,6 +148,14 @@ contract.only('Random testing', async (accounts) => {
             { from: guardianAddress }
         )
         sysLog(`Updated decreaseStakeLockupDuration to ${DecreaseStakeLockupDuration}`)
+        await governance.guardianExecuteTransaction(
+            serviceProviderFactoryKey,
+            _lib.toBN(0),
+            'updateDeployerCutLockupDuration(uint256)',
+            _lib.abiEncode(['uint256'], [DeployerCutLockupDuration]),
+            { from: guardianAddress }
+        )
+        sysLog(`Updated deployerCutLockupDuration to ${DeployerCutLockupDuration}`)
         await governance.guardianExecuteTransaction(
             delegateManagerKey,
             _lib.toBN(0),
@@ -263,7 +271,7 @@ contract.only('Random testing', async (accounts) => {
             // TODO: RE-Enable this
             amount = randAmount(typeInfo.minStake, typeInfo.maxStake)
             if (amount.lt(typeInfo.minStake)) {
-                testLog(user, `addNewService - generated invalid stake amount: ${amound}, setting to ${typeInfo.minStake}`)
+                testLog(user, `addNewService - generated invalid stake amount: ${amount}, setting to ${typeInfo.minStake}`)
                 amount = typeInfo.minStake
             }
 
@@ -345,6 +353,8 @@ contract.only('Random testing', async (accounts) => {
     }
 
     const randomlyUndelegate = async (user) => {
+        let shouldUndelegate = rand(0, 100)
+        if (shouldUndelegate < 50) return
         let pendingUndelegateReq = await delegateManager.getPendingUndelegateRequest(user, { from: user })
         let isRequestPending = !(pendingUndelegateReq.lockupExpiryBlock.eq(_lib.toBN(0)))
         let otherUsers = users.filter(x=>x!=user)
@@ -448,24 +458,48 @@ contract.only('Random testing', async (accounts) => {
         }
     }
 
+    const updateDeployerCut = async (user) => {
+        let info = await getAccountStakeInfo(user)
+        let pendingUpdateDeployerCutReq = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(user, { from: user }) 
+        let isRequestPending = !(pendingUpdateDeployerCutReq.lockupExpiryBlock.eq(_lib.toBN(0)))
+        if (!info.spDetails.deployerCut.eq(_lib.toBN(0))) {
+            // TODO: Random probability of update
+            // testLog(user, `updateDeployerCut already set to ${info.spDetails.deployerCut}`)
+            return
+        }
+        if (!isRequestPending) {
+            let newCut = rand(0, 99)
+            testLog(user, ` updateDeployerCut to ${newCut} isRequestPending=${isRequestPending}`)
+            await serviceProviderFactory.requestUpdateDeployerCut(user, newCut, { from: user })
+        } else {
+            let latestBlock = _lib.toBN((await web3.eth.getBlock('latest')).number)
+            let readyToEvaluate = pendingUpdateDeployerCutReq.lockupExpiryBlock.lte(latestBlock)
+            if (readyToEvaluate) {
+                await serviceProviderFactory.updateDeployerCut(user, { from: user})
+                testLog(user, `updateDeployerCut evaluating pending request, newCut=${pendingUpdateDeployerCutReq.newDeployerCut}`)
+            }
+        }
+    }
+
     const getAccountStakeInfo = async (account) => {
         let spDetails = await serviceProviderFactory.getServiceProviderDetails(account)
-        let spFactoryStake = spDetails.deployerStake
         let totalInStakingContract = await staking.totalStakedFor(account)
         let totalDelegatedToSP = await delegateManager.getTotalDelegatedToServiceProvider(account)
-        let outsideStake = spFactoryStake.add(totalDelegatedToSP)
+        let outsideStake = spDetails.deployerStake.add(totalDelegatedToSP)
         return {
             totalInStakingContract,
-            spFactoryStake,
             totalDelegatedToSP,
             outsideStake,
-            spDetails
+            spDetails,
+            account
         }
     }
 
     const validateAccountStakeBalance = async (account) => {
         let info = await getAccountStakeInfo(account)
-        let infoStr = `validation | totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()} (spFactoryStake=${info.spFactoryStake} delegation=${info.totalDelegatedToSP})`
+        let infoStr = `validation |\
+inStaking=${info.totalInStakingContract.toString()}, deployerCut=${info.spDetails.deployerCut} validBounds=${info.spDetails.validBounds} \
+outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployerStake} delegation=${info.totalDelegatedToSP}), `
         assert.isTrue(
           info.totalInStakingContract.eq(info.outsideStake),
           `Imbalanced stake for account ${account} - ${infoStr}`
@@ -556,7 +590,7 @@ contract.only('Random testing', async (accounts) => {
                     // In this case, our user has not yet registered
                     await addNewServiceForUser(user)
                 } else {
-                    // TODO: Randomly update deployer cut
+                    await updateDeployerCut(user)
                     await randomlyDelegate(user)
                     await randomlyDecreaseStake(user)
                     await randomlyUndelegate(user)
