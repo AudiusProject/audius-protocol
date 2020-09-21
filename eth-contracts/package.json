@@ -18,6 +18,7 @@
     "test": "npm run truffle-test",
     "test-coverage": "ENABLE_OPTIMIZER=false node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file='test/*.js'",
     "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
+    "test-random": "./scripts/truffle-test.sh --audius-random",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
     "test-circle-ci": "./scripts/circleci-test.sh",

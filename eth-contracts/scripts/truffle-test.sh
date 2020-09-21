@@ -40,6 +40,9 @@ docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 truffles
 if [ $# -eq 0 ]
 	then
 		node_modules/.bin/truffle test test/*.js --network=test_local
+elif [ $1 == '--audius-random' ] && [ $# -eq 1 ]
+	then
+		node_modules/.bin/truffle test test/random/random.test.js --network=test_local
 elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]
 	then
 		node_modules/.bin/truffle test test/*.js --network=test_local --verbose-rpc
