@@ -405,11 +405,13 @@ contract DelegateManager is InitializableV2 {
 
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
 
+        // Total rewards = (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
         (
             uint256 totalBalanceInStaking,
             uint256 totalBalanceInSPFactory,
             uint256 totalActiveFunds,
-            uint256 totalRewards
+            uint256 totalRewards,
+            uint256 deployerCut
         ) = _validateClaimRewards(spFactory, _serviceProvider);
 
         // No-op if balance is already equivalent
@@ -418,21 +420,12 @@ contract DelegateManager is InitializableV2 {
             return;
         }
 
-        // Total rewards
-        // Equal to (balance in staking) - ((balance in sp factory) + (balance in delegate manager))
-
-        // Emit claim event
-        emit Claim(_serviceProvider, totalRewards, totalBalanceInStaking);
-
-        ( ,uint256 deployerCut, , , , ) = spFactory.getServiceProviderDetails(_serviceProvider);
-        uint256 deployerCutBase = spFactory.getServiceProviderDeployerCutBase();
-
         uint256 totalDelegatedStakeIncrease = _distributeDelegateRewards(
             _serviceProvider,
             totalActiveFunds,
             totalRewards,
             deployerCut,
-            deployerCutBase
+            spFactory.getServiceProviderDeployerCutBase()
         );
 
         // Update total delegated to this SP
@@ -440,12 +433,22 @@ contract DelegateManager is InitializableV2 {
             spDelegateInfo[_serviceProvider].totalDelegatedStake.add(totalDelegatedStakeIncrease)
         );
 
-        // Rewards directly allocated to service provider for their stake
+        // spRewardShare represents rewards directly allocated to service provider for their stake
+        // Value is computed as the remainder of total minted rewards after distribution to
+        // delegators, eliminating any potential for precision loss.
         uint256 spRewardShare = totalRewards.sub(totalDelegatedStakeIncrease);
+
+        // Adding the newly calculated reward share to current balance
+        uint256 newSPFactoryBalance = totalBalanceInSPFactory.add(spRewardShare);
+
+        require(
+            totalBalanceInStaking == newSPFactoryBalance.add(spDelegateInfo[_serviceProvider].totalDelegatedStake),
+            "DelegateManager: claimRewards amount mismatch"
+        );
+
         spFactory.updateServiceProviderStake(
             _serviceProvider,
-            /// newSpBalance = totalBalanceInSPFactory + spRewardShare
-            totalBalanceInSPFactory.add(spRewardShare)
+            newSPFactoryBalance
         );
     }
 
@@ -927,14 +930,15 @@ contract DelegateManager is InitializableV2 {
                and do validation
      * @param spFactory - reference to ServiceProviderFactory contract
      * @param _serviceProvider - address for which rewards are being claimed
-     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalActiveFunds, spLockedStake, totalRewards)
+     * @return (totalBalanceInStaking, totalBalanceInSPFactory, totalActiveFunds, spLockedStake, totalRewards, deployerCut)
      */
     function _validateClaimRewards(ServiceProviderFactory spFactory, address _serviceProvider)
     internal returns (
         uint256 totalBalanceInStaking,
         uint256 totalBalanceInSPFactory,
         uint256 totalActiveFunds,
-        uint256 totalRewards
+        uint256 totalRewards,
+        uint256 deployerCut
     )
     {
         // Account for any pending locked up stake for the service provider
@@ -955,7 +959,11 @@ contract DelegateManager is InitializableV2 {
         require(totalBalanceInStaking > 0, "DelegateManager: Stake required for claim");
 
         // Amount in sp factory for claimer
-        (totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_serviceProvider);
+        (
+            totalBalanceInSPFactory,
+            deployerCut,
+            ,,,
+        ) = spFactory.getServiceProviderDetails(_serviceProvider);
         // Require active stake to claim any rewards
         require(
             totalBalanceInSPFactory.sub(spLockedStake) > 0,
@@ -974,11 +982,15 @@ contract DelegateManager is InitializableV2 {
             "DelegateManager: Reward amount mismatch"
         );
 
+        // Emit claim event
+        emit Claim(_serviceProvider, totalRewards, totalBalanceInStaking);
+
         return (
             totalBalanceInStaking,
             totalBalanceInSPFactory,
             totalActiveFunds,
-            mintedRewards
+            mintedRewards,
+            deployerCut
         );
     }
 
