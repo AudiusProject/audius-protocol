@@ -19,10 +19,6 @@ module.exports = {
     // Add composite unique constraint on (cnodeUserUUID, clock) to Files
     await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
-    // Add composite primary keys on (cnodeUserUUID,clock) to Tracks and AudiusUsers tables
-    // (Files already has PK on fileUUID and cnodeUsers already has PK on cnodeUserUUID)
-    // await addCompositePrimaryKeysToAudiusUsersAndTracks(queryInterface, Sequelize, transaction)
-
     await transaction.commit()
   },
 

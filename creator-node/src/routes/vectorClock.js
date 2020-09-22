@@ -124,7 +124,7 @@ module.exports = function (app) {
           method: 'post',
           data: {
             wallet: [walletPublicKey],
-            creator_node_endpoint: 'http://docker.for.mac.localhost:4000',
+            creator_node_endpoint: primary,
             immediate: true,
             db_only_sync: true
           }
