@@ -1,15 +1,15 @@
 import logging  # pylint: disable=C0302
 import datetime
 from dateutil.parser import parse
+from flask.globals import request
 
 from src.models import Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
-    get_users_ids, get_users_by_id, get_pagination_vars
+from src.queries.query_helpers import populate_track_metadata, \
+    get_users_ids, get_users_by_id
 from src.tasks.generate_trending import generate_trending
 from src.utils.redis_cache import extract_key, use_redis_cache
-from flask.globals import request
 
 logger = logging.getLogger(__name__)
 

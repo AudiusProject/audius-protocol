@@ -21,15 +21,17 @@ def extract_key(path, arg_items):
     return key
 
 def use_redis_cache(key, ttl_sec, work_func):
+    """Attemps to return value by key, otherwise cahces and returns `work_func`"""
     redis = redis_connection.get_redis()
     cached_value = redis.get(key)
+
     if cached_value:
         return json.loads(cached_value)
-    else:
-        to_cache = work_func()
-        serialized = dumps(to_cache)
-        redis.set(key, serialized, ttl_sec)
-        return to_cache
+
+    to_cache = work_func()
+    serialized = dumps(to_cache)
+    redis.set(key, serialized, ttl_sec)
+    return to_cache
 
 def cache(**kwargs):
     """

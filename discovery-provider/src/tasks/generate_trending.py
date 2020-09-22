@@ -19,6 +19,7 @@ trending_cache_total_key = 'trending_cache_total'
 # genre restrictions.
 # Returns [{ track_id: number, listens: number }]
 def get_listen_counts(session, time, genre, limit, offset):
+
     # Adds a created_at filter
     # on the base query, if applicable.
     #
