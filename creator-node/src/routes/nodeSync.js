@@ -314,7 +314,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // TODO - replace this check with a clock check (!!!)
           const latestBlockNumber = cnodeUser.latestBlockNumber
           if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-            (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
+            (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber < /*=*/ latestBlockNumber) //TODO put the = back in
           ) {
             throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
               ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
