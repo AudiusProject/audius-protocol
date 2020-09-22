@@ -358,6 +358,13 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           })
           req.logger.info(redisKey, `numClockRecordsDeleted ${numClockRecordsDeleted}`)
 
+          // TODO - should we have this?
+          const numSessionTokensDeleted = await models.SessionToken.destroy({
+            where: { cnodeUserUUID },
+            transaction
+          })
+          req.logger.info(redisKey, `numSessionTokensDeleted ${numSessionTokensDeleted}`)
+
           // Delete cnodeUser entry
           await cnodeUser.destroy({ transaction })
           req.logger.info(redisKey, `deleted cnodeUserEntry`)
