@@ -203,6 +203,13 @@ const config = convict({
     env: 'hlsSegmentType',
     default: 'mpegts'
   },
+  printSequelizeLogs: {
+    doc: 'If we should print logs from sequelize',
+    format: Boolean,
+    env: 'printSequelizeLogs',
+    default: true
+  },
+
 
   // Transcoding settings
   transcodingMaxConcurrency: {
