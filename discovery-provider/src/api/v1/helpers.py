@@ -193,6 +193,10 @@ trending_parser.add_argument('time', required=False)
 trending_parser.add_argument('limit', required=False)
 trending_parser.add_argument('offset', required=False)
 
+full_trending_parser = trending_parser.copy()
+full_trending_parser.add_argument('user_id', required=False)
+
+
 def success_response(entity):
     return api_helpers.success_response(entity, 200, False)
 

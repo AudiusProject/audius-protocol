@@ -8,8 +8,8 @@ from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_response, search_parser, \
-    trending_parser, success_response, abort_bad_request_param, to_dict, \
-    format_offset
+    trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
+    format_offset, decode_string_id
 from .models.tracks import track, track_full
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
@@ -154,6 +154,7 @@ TRENDING_LIMIT = 100
 
 def get_trending(args):
     time = args.get("time") if args.get("time") is not None else 'week'
+    current_user_id = args.get("user_id")
     args = {
         'time': time,
         'genre': args.get("genre", None),
@@ -161,6 +162,9 @@ def get_trending(args):
         'limit': TRENDING_LIMIT,
         'offset': format_offset(args, TRENDING_LIMIT)
     }
+    if (current_user_id):
+        decoded_id = decode_string_id(current_user_id)
+        args["current_user_id"] = decoded_id
     tracks = get_trending_tracks(args)
     return list(map(extend_track, tracks))
 
@@ -187,7 +191,9 @@ class Trending(Resource):
         trending = get_trending(args)
         return success_response(trending)
 
+
 TRENDING_TTL_SEC = 60
+
 @full_ns.route("/trending")
 class FullTrending(Resource):
     def get_cache_key(self):
@@ -199,7 +205,7 @@ class FullTrending(Resource):
 
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
-        args = trending_parser.parse_args()
+        args = full_trending_parser.parse_args()
         offset = int(args.get('offset', 0))
         limit = min(int(args.get('limit', 10)), TRENDING_LIMIT)
         key = self.get_cache_key()
