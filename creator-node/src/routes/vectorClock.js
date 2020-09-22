@@ -6,6 +6,7 @@ const axios = require('axios')
 module.exports = function (app) {
   app.post('/vector_clock_backfill/:wallet', handleResponse(async (req, res, next) => {
     const walletPublicKey = req.params.wallet
+    const { primary, secondaries } = req.body
 
     const transaction = await models.sequelize.transaction()
     try {
@@ -18,6 +19,10 @@ module.exports = function (app) {
         transaction,
         lock: transaction.LOCK.UPDATE // this makes the query SELECT ... FOR UPDATE
       })
+
+      // early exit if cnodeUser not found on primary
+      if (!cnodeUser) return successResponse('No cnodeUser record found on the primary')
+
       // early exit if clock values have been added for CNodeUser
       if (cnodeUser.clock && cnodeUser.clock > 0) return successResponse({ status: 'Already ran successfully!' })
 
@@ -110,18 +115,23 @@ module.exports = function (app) {
     }
 
     // trigger secondary syncs here
-    const axiosReq = {
-      baseURL: 'http://docker.for.mac.localhost:4000',
-      url: '/vector_clock_sync',
-      method: 'post',
-      data: {
-        wallet: [walletPublicKey],
-        creator_node_endpoint: 'http://docker.for.mac.localhost:4000',
-        immediate: true,
-        db_only_sync: true
-      }
+    if (secondaries && secondaries.length > 0) {
+      await Promise.all(secondaries.map(secondary => {
+        console.log('calling sync to secondary', secondary)
+        const axiosReq = {
+          baseURL: secondary,
+          url: '/vector_clock_sync',
+          method: 'post',
+          data: {
+            wallet: [walletPublicKey],
+            creator_node_endpoint: 'http://docker.for.mac.localhost:4000',
+            immediate: true,
+            db_only_sync: true
+          }
+        }
+        return axios(axiosReq)
+      }))  
     }
-    await axios(axiosReq)
 
     return successResponse()
     
