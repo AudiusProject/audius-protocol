@@ -2136,7 +2136,7 @@ contract('DelegateManager', async (accounts) => {
         assert.isTrue(acctInfo.spFactoryStake.eq(DEFAULT_AMOUNT), 'Expect default in sp factory')
       })
 
-      it('Reward mismatch', async () => {
+      it('Balance tracking inconsistency', async () => {
         const staker3Amt = _lib.toBN('384823535956494802781028')
         const staker4Amt = _lib.toBN('462563700468205107730431')
         const staker5Amt = _lib.toBN('221500000000000000000000')
