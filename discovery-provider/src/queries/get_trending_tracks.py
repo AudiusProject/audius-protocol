@@ -8,8 +8,12 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
     get_users_ids, get_users_by_id, get_pagination_vars
 from src.tasks.generate_trending import generate_trending
+from src.utils.redis_cache import extract_key, use_redis_cache
+from flask.globals import request
 
 logger = logging.getLogger(__name__)
+
+SCORES_CACHE_DURATION_SEC = 10 * 60
 
 N = 1
 a = max
@@ -52,23 +56,32 @@ def get_trending_tracks(args):
     query_time = None if time not in ["day", "week", "month", "year"] else time
 
     with db.scoped_session() as session:
-        trending_tracks = generate_trending(
-            session, query_time, args.get('genre', None),
-            limit, offset)
+        def get_unpopulated_trending():
+            trending_tracks = generate_trending(
+                session, query_time, args.get('genre', None),
+                limit, offset)
 
-        track_scores = [z(time, track) for track in trending_tracks['listen_counts']]
-        sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
+            track_scores = [z(time, track) for track in trending_tracks['listen_counts']]
+            sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
 
-        track_ids = [track['track_id'] for track in sorted_track_scores]
+            track_ids = [track['track_id'] for track in sorted_track_scores]
 
-        tracks = session.query(Track).filter(
-            Track.is_current == True,
-            Track.is_unlisted == False,
-            Track.stem_of == None,
-            Track.track_id.in_(track_ids)
-        ).all()
-        tracks = helpers.query_result_to_list(tracks)
+            tracks = session.query(Track).filter(
+                Track.is_current == True,
+                Track.is_unlisted == False,
+                Track.stem_of == None,
+                Track.track_id.in_(track_ids)
+            ).all()
+            tracks = helpers.query_result_to_list(tracks)
+            return (tracks, track_ids)
 
+        # get scored trending tracks, either
+        # through cached redis value, or through `get_unpopulated_trending`
+        cache_keys = {"genre": args.get("genre"), "time": args.get("time")}
+        key = extract_key(f"generated-trending:{request.path}", cache_keys.items())
+        (tracks, track_ids) = use_redis_cache(key, SCORES_CACHE_DURATION_SEC, get_unpopulated_trending)
+
+        # populate track metadata
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
         tracks_map = {track['track_id']: track for track in tracks}

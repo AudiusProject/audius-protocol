@@ -13,14 +13,23 @@ logger = logging.getLogger(__name__)
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
-redis = redis_connection.get_redis()
-
 def extract_key(path, arg_items):
-    req_args = stringify_query_params(arg_items)
-    logger.warning(f"ARGS: {req_args}")
+    # filter out query-params with 'None' values
+    filtered_arg_items = filter(lambda x: x[1] is not None, arg_items)
+    req_args = stringify_query_params(filtered_arg_items)
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
+def use_redis_cache(key, ttl_sec, work_func):
+    redis = redis_connection.get_redis()
+    cached_value = redis.get(key)
+    if cached_value:
+        return json.loads(cached_value)
+    else:
+        to_cache = work_func()
+        serialized = dumps(to_cache)
+        redis.set(key, serialized, ttl_sec)
+        return to_cache
 
 def cache(**kwargs):
     """
@@ -54,6 +63,7 @@ def cache(**kwargs):
     """
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
+    redis = redis_connection.get_redis()
 
     def outer_wrap(func):
         @functools.wraps(func)

@@ -14,7 +14,7 @@ from .models.tracks import track, track_full
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
 from flask.json import dumps
-from src.utils.redis_cache import cache, extract_key
+from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from src.utils import redis_connection
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
@@ -210,16 +210,7 @@ class FullTrending(Resource):
         limit = min(int(args.get('limit', 10)), TRENDING_LIMIT)
         key = self.get_cache_key()
 
-        redis = redis_connection.get_redis()
-        full_trending = None
-        cached_trending = redis.get(key)
-        if cached_trending:
-            full_trending = json.loads(cached_trending)
-        else:
-            full_trending = get_trending(args)
-            serialized = dumps(full_trending)
-            redis.set(key, serialized, TRENDING_TTL_SEC)
-
+        full_trending = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending(args))
         trending = full_trending[offset: limit + offset]
         return success_response(trending)
 
