@@ -38,4 +38,6 @@ user_model_full = ns.clone("user_full", user_model, {
     "handle_lc": fields.String(required=True),
     "is_creator": fields.Boolean(required=True),
     "updated_at": fields.String(required=True),
+    "cover_photo_sizes": fields.String,
+    "profile_picture_sizes": fields.String
 })

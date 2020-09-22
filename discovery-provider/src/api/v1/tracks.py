@@ -3,19 +3,21 @@ import logging  # pylint: disable=C0302
 from flask import redirect
 from flask_restx import Resource, Namespace, fields
 from flask_restx import resource
+import json
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_response, search_parser, \
-    trending_parser, success_response, abort_bad_request_param
+    trending_parser, success_response, abort_bad_request_param, to_dict, \
+    format_offset
 from .models.tracks import track, track_full
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
-from src.utils.config import shared_config
 from flask.json import dumps
-from src.utils.redis_cache import cache
+from src.utils.redis_cache import cache, extract_key
+from src.utils import redis_connection
+from flask.globals import request
 from src.utils.redis_metrics import record_metrics
-
 
 logger = logging.getLogger(__name__)
 ns = Namespace('tracks', description='Track related operations')
@@ -26,6 +28,9 @@ full_track_response = make_response("full_track_response", full_ns, fields.Neste
 
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track)))
+full_tracks_response = make_response(
+    "full_tracks_response", full_ns, fields.List(fields.Nested(track_full))
+)
 
 def get_single_track(track_id, endpoint_ns):
     decoded_id = decode_with_abort(track_id, endpoint_ns)
@@ -53,7 +58,6 @@ class Track(Resource):
     @cache(ttl_sec=5)
     def get(self, track_id):
         """Fetch a track."""
-        logger.warning("HITTING TRACK ENDPOINT")
         return get_single_track(track_id, ns)
 
 @full_ns.route(TRACK_ROUTE)
@@ -146,6 +150,20 @@ class TrackSearchResult(Resource):
         return success_response(tracks)
 
 
+TRENDING_LIMIT = 100
+
+def get_trending(args):
+    time = args.get("time") if args.get("time") is not None else 'week'
+    args = {
+        'time': time,
+        'genre': args.get("genre", None),
+        'with_users': True,
+        'limit': TRENDING_LIMIT,
+        'offset': format_offset(args, TRENDING_LIMIT)
+    }
+    tracks = get_trending_tracks(args)
+    return list(map(extend_track, tracks))
+
 @ns.route("/trending")
 class Trending(Resource):
     @record_metrics
@@ -165,16 +183,37 @@ class Trending(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self):
         """Gets the top 100 trending (most popular) tracks on Audius"""
-        logger.warning("HITTING TRENDING!!!")
         args = trending_parser.parse_args()
-        time = args.get("time") if args.get("time") is not None else 'week'
-        args = {
-            'time': time,
-            'genre': args.get("genre", None),
-            'with_users': True
-        }
-        tracks = get_trending_tracks(args)
-        tracks = list(map(extend_track, tracks))
-        logger.warning("TRACKS!!")
-        logger.warning(tracks)
-        return success_response(tracks)
+        trending = get_trending(args)
+        return success_response(trending)
+
+TRENDING_TTL_SEC = 60
+@full_ns.route("/trending")
+class FullTrending(Resource):
+    def get_cache_key(self):
+        request_items = to_dict(request.args)
+        request_items.pop('limit')
+        request_items.pop('offset')
+        key = extract_key(request.path, request_items.items())
+        return key
+
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        args = trending_parser.parse_args()
+        offset = int(args.get('offset', 0))
+        limit = min(int(args.get('limit', 10)), TRENDING_LIMIT)
+        key = self.get_cache_key()
+
+        redis = redis_connection.get_redis()
+        full_trending = None
+        cached_trending = redis.get(key)
+        if cached_trending:
+            full_trending = json.loads(cached_trending)
+        else:
+            full_trending = get_trending(args)
+            serialized = dumps(full_trending)
+            redis.set(key, serialized, TRENDING_TTL_SEC)
+
+        trending = full_trending[offset: limit + offset]
+        return success_response(trending)
+

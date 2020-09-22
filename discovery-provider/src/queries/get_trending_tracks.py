@@ -43,7 +43,7 @@ def z(time, track):
     return{'score':H*Q,**track}
 
 def get_trending_tracks(args):
-    (limit, offset) = get_pagination_vars()
+    limit, offset = args["limit"], args["offset"]
     current_user_id = get_current_user_id(required=False)
 
     db = get_db_read_replica()

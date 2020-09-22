@@ -1,3 +1,4 @@
+from flask_restx.fields import Boolean
 from src.api.v1.helpers import make_response
 from flask_restx import fields
 from .users import user_model, user_model_full
@@ -22,6 +23,17 @@ remix_parent = ns.model('remix_parent', {
     "tracks": fields.List(fields.Nested(track_element))
 })
 
+full_remix = ns.model('full_remix', {
+    "parent_track_id": fields.String(required=True),
+    "user": fields.Nested(user_model_full, required=True),
+    "has_remix_author_reposted": fields.Boolean(required=True),
+    "has_remix_author_saved": fields.Boolean(required=True)
+})
+
+full_remix_parent = ns.model('full_remix_parent', {
+    "tracks": fields.List(fields.Nested(full_remix))
+})
+
 stem_parent = ns.model('stem_parent', {
     "category": fields.String(required=True),
     "parent_track_id": fields.Integer(required=True)
@@ -30,7 +42,7 @@ stem_parent = ns.model('stem_parent', {
 download = ns.model('download_metadata', {
     "cid": fields.String,
     "is_downloadable": fields.Boolean(required=True),
-    "required_follow": fields.Boolean(required=True),
+    "requires_follow": fields.Boolean(required=True),
 })
 
 field_visibility = ns.model('field_visibility', {
@@ -63,6 +75,7 @@ track = ns.model('Track', {
 
 track_full = ns.clone('track_full', track, {
     "create_date": fields.String,
+    "cover_art_sizes": fields.String,
     "created_at": fields.String,
     "credits_splits": fields.String,
     "download": fields.Nested(download),
@@ -80,5 +93,8 @@ track_full = ns.clone('track_full', track, {
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
     "user_id": fields.String(required=True),
-    "user": fields.Nested(user_model_full, required=True)
+    "user": fields.Nested(user_model_full, required=True),
+    "is_delete": fields.Boolean,
+    "cover_art": fields.String,
+    "remix_of": fields.Nested(full_remix_parent),
 })

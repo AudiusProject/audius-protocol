@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
+redis = redis_connection.get_redis()
 
-def extract_key():
-    path = request.path
-    req_args = request.args.items()
-    req_args = stringify_query_params(req_args)
+def extract_key(path, arg_items):
+    req_args = stringify_query_params(arg_items)
+    logger.warning(f"ARGS: {req_args}")
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
@@ -34,10 +34,10 @@ def cache(**kwargs):
             to convert the function response to request response
 
     Usage Notes:
-        If the wrapper function returns a tuple, the transform function will not
+        If the wrapped function returns a tuple, the transform function will not
         be run on the response. The first item of the tuple must be serializable.
 
-        If the wrapper function returns a single response, the transform function
+        If the wrapped function returns a single response, the transform function
         must be passed to the decorator. The wrapper function response must be
         serializable.
 
@@ -54,12 +54,11 @@ def cache(**kwargs):
     """
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
-    redis = redis_connection.get_redis()
 
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
-            key = extract_key()
+            key = extract_key(request.path, request.args.items())
             cached_resp = redis.get(key)
 
             if cached_resp:
