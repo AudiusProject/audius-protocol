@@ -186,22 +186,9 @@ module.exports = function (app) {
     // option to sync just the db records as opposed to db records and files on disk, defaults to false
     const dbOnlySync = true
 
-    if (!immediate) {
-      req.logger.info('debounce time', config.get('debounceTime'))
-      // Debounce nodeysnc op
-      for (let wallet of walletPublicKeys) {
-        if (wallet in syncQueue) {
-          clearTimeout(syncQueue[wallet])
-          req.logger.info('clear timeout for', wallet, 'time', Date.now())
-        }
-        syncQueue[wallet] = setTimeout(
-          async () => _nodesync(req, [wallet], creatorNodeEndpoint, dbOnlySync),
-          config.get('debounceTime')
-        )
-        req.logger.info('set timeout for', wallet, 'time', Date.now())
-      }
-    } else {
-      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+    let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+    if (errorObj) {
+      return errorResponseServerError(errorObj.message)  
     }
     return successResponse()
   }))
@@ -226,6 +213,7 @@ module.exports = function (app) {
 
 async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync) {
   const start = Date.now()
+  let errorObj = null // object to track if the function errored, returned at the end of the function
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
   // ensure access to each wallet, then acquire it for sync.
@@ -262,9 +250,11 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
 
-    // Attempt to connect directly to target CNode's IPFS node.
-    await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
-    req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    if (!dbOnlySync) {
+      // Attempt to connect directly to target CNode's IPFS node.
+      await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
+      req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    }
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
     for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
@@ -313,11 +303,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Ensure imported data has higher blocknumber than already stored.
           // TODO - replace this check with a clock check (!!!)
           const latestBlockNumber = cnodeUser.latestBlockNumber
-          if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-            (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber < /*=*/ latestBlockNumber) //TODO put the = back in
-          ) {
-            throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
-              ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
+          
+          if (!dbOnlySync) {
+            if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
+              (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber < /*=*/ latestBlockNumber) //TODO put the = back in
+            ) {
+              throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
+                ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
+            }
           }
 
           const cnodeUserUUID = cnodeUser.cnodeUserUUID
@@ -476,6 +469,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
     }
   } catch (e) {
     req.logger.error('Sync Error', e)
+    errorObj = e
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
@@ -485,6 +479,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
     }
     req.logger.info(`DURATION SYNC ${Date.now() - start}`)
   }
+
+  return errorObj
 }
 
 /** Given IPFS node peer addresses, add to bootstrap peers list and manually connect. */

@@ -21,10 +21,16 @@ module.exports = function (app) {
       })
 
       // early exit if cnodeUser not found on primary
-      if (!cnodeUser) return successResponse('No cnodeUser record found on the primary')
+      if (!cnodeUser){
+        await transaction.commit()
+        return successResponse('No cnodeUser record found on the primary')
+      }
 
       // early exit if clock values have been added for CNodeUser
-      if (cnodeUser.clock && cnodeUser.clock > 0) return successResponse({ status: 'Already ran successfully!' })
+      if (cnodeUser.clock && cnodeUser.clock > 0){
+        await transaction.commit()
+        return successResponse({ status: 'Already ran successfully!' })
+      }
 
       // Fetch all data for cnodeUserUUIDs: audiusUsers, tracks, files.
       let [audiusUsers, tracks, files] = await Promise.all([
