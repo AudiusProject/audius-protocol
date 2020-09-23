@@ -1,3 +1,4 @@
+import { uniq } from 'lodash'
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
@@ -36,7 +37,7 @@ const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 const callValue0 = _lib.toBN(0)
 
 
-contract('DelegateManager', async (accounts) => {
+contract.only('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
 
@@ -349,17 +350,30 @@ contract('DelegateManager', async (accounts) => {
   const getTotalDelegatorStake = async (delegator) => {
     let validTypes = await serviceTypeManager.getValidServiceTypes()
     let totalDelegatorStake = _lib.toBN(0)
+    // Track whether we have processed a given service provider
+    // A single SP can have >1 endpoint and we don't need to double count
+    let uniqueSPs = new Set()
     for (const serviceType of validTypes) {
       let numTypeIds = await serviceProviderFactory.getTotalServiceTypeProviders(serviceType)
       let i = 1
       while (i <= numTypeIds) {
         let info = await serviceProviderFactory.getServiceEndpointInfo(serviceType, i)
-        let serviceProvider = info.owner
-        let totalDelegatedToOwner = await delegateManager.getDelegatorStakeForServiceProvider(delegator, serviceProvider)
-        totalDelegatorStake = totalDelegatorStake.add(totalDelegatedToOwner)
-        i++
+        uniqueSPs.add(info.owner)
+       i++
       }
     }
+
+    let spsArray = Array.from(uniqueSPs)
+    for (const sp of spsArray) {
+      let totalDelegatedToOwner = await delegateManager.getDelegatorStakeForServiceProvider(delegator, sp)
+      totalDelegatorStake = totalDelegatorStake.add(totalDelegatedToOwner)
+    }
+
+    let newTotalFromContract = await delegateManager.getTotalDelegation(delegator)
+    assert.isTrue(
+      newTotalFromContract.eq(totalDelegatorStake),
+      `ERROR STATE Calculated:${totalDelegatorStake}, newTotalFromContract:${newTotalFromContract}`
+    )
     return totalDelegatorStake
   }
 
@@ -1887,7 +1901,6 @@ contract('DelegateManager', async (accounts) => {
         info.endpoint === testEndpoint,
         'Expect sp state removal'
       )
-
       // Again try to deregister
       await _lib.deregisterServiceProvider(
         serviceProviderFactory,
