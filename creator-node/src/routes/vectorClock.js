@@ -26,9 +26,22 @@ module.exports = function (app) {
         return successResponse('No cnodeUser record found on the primary')
       }
 
-      // early exit if clock values have been added for CNodeUser
+      // clock values have been added for CNodeUser, check if they're consistent across all nodes before returning success
       if (cnodeUser.clock && cnodeUser.clock > 0){
         await transaction.commit()
+        // first try/catch is to make sure if the secondaries are not synced. if not, we try to sync
+        try {
+          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+        } catch (e) {
+          await _triggerSecondarySyncs(primary, secondaries, walletPublicKey)
+        }
+
+        // if we kick off a sync and it still not fixed, return with error
+        try {
+          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+        } catch (e) {
+          return errorResponseServerError(e)
+        }
         return successResponse({ status: 'Already ran successfully!' })
       }
 
@@ -120,26 +133,49 @@ module.exports = function (app) {
       return errorResponseServerError(e.message)
     }
 
-    // trigger secondary syncs here
-    if (secondaries && secondaries.length > 0) {
-      await Promise.all(secondaries.map(secondary => {
-        console.log('calling sync to secondary', secondary)
-        const axiosReq = {
-          baseURL: secondary,
-          url: '/vector_clock_sync',
-          method: 'post',
-          data: {
-            wallet: [walletPublicKey],
-            creator_node_endpoint: primary,
-            immediate: true,
-            db_only_sync: true
-          }
-        }
-        return axios(axiosReq)
-      }))  
+    try {
+      // trigger secondary syncs here
+      await _triggerSecondarySyncs(primary, secondaries, walletPublicKey)
+      await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+    } catch (e) {
+      return errorResponseServerError(e)
     }
-
     return successResponse()
     
   }))
+}
+
+async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) {
+  const resp = (await Promise.all(secondaries.map(secondary => {
+    const axiosReq = {
+      baseURL: secondary,
+      url: `/sync_status/${walletPublicKey}`,
+      method: 'get'
+    }
+    return axios(axiosReq)
+  }))).map(r => r.data.data.clockValue)
+  
+  resp.map(r => {
+    if (r !== clock) throw new Error(`Secondaries not in sync with primary [${resp}]`)
+  })
+}
+
+async function _triggerSecondarySyncs (primary, secondaries, walletPublicKey) {
+  if (secondaries && secondaries.length > 0) {
+    await Promise.all(secondaries.map(secondary => {
+      console.log('calling sync to secondary', secondary)
+      const axiosReq = {
+        baseURL: secondary,
+        url: '/vector_clock_sync',
+        method: 'post',
+        data: {
+          wallet: [walletPublicKey],
+          creator_node_endpoint: primary,
+          immediate: true,
+          db_only_sync: true
+        }
+      }
+      return axios(axiosReq)
+    }))  
+  }
 }
