@@ -48,7 +48,6 @@ def z(time, track):
 
 def get_trending_tracks(args):
     limit, offset, current_user_id = args.get("limit"), args.get("offset"), args.get("current_user_id")
-    # current_user_id = get_current_user_id(required=False)
 
     db = get_db_read_replica()
 
