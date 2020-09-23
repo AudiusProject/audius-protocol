@@ -7,6 +7,7 @@ module.exports = function (app) {
   app.post('/vector_clock_backfill/:wallet', handleResponse(async (req, res, next) => {
     const walletPublicKey = req.params.wallet
     const { primary, secondaries } = req.body
+    let clock = 0
 
     const transaction = await models.sequelize.transaction()
     try {
@@ -66,7 +67,6 @@ module.exports = function (app) {
       files = []
       let clockRecords = []
 
-      let clock = 0
       allRecords.map(record => {
         clock += 1
         let clockRecord = { cnodeUserUUID: cnodeUser.cnodeUserUUID, clock, createdAt: record.createdAt }
@@ -136,7 +136,7 @@ module.exports = function (app) {
     try {
       // trigger secondary syncs here
       await _triggerSecondarySyncs(primary, secondaries, walletPublicKey)
-      await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+      await _checkSecondaryClockValues(secondaries, walletPublicKey, clock)
     } catch (e) {
       return errorResponseServerError(e)
     }
@@ -146,6 +146,8 @@ module.exports = function (app) {
 }
 
 async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) {
+  if (clock > 25000) clock = 25000
+
   const resp = (await Promise.all(secondaries.map(secondary => {
     const axiosReq = {
       baseURL: secondary,
@@ -156,6 +158,7 @@ async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) 
   }))).map(r => r.data.data.clockValue)
   
   resp.map(r => {
+    
     if (r !== clock) throw new Error(`Secondaries not in sync with primary [${resp}]`)
   })
 }
