@@ -254,23 +254,22 @@ const preloadImage = async url => {
 }
 
 const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
-  let allGateways
-  if (creatorNodeGateways.length === 0) {
-    allGateways = [...CREATOR_NODE_GATEWAY_WHITELIST]
+  let allGateways = []
+  const primary = creatorNodeGateways[0]
+  if (primary) {
+    const rest = new Set(CREATOR_NODE_GATEWAY_WHITELIST)
+    rest.delete(primary)
+    allGateways = [primary, ...rest]
   } else {
-    allGateways = creatorNodeGateways
+    allGateways = [...CREATOR_NODE_GATEWAY_WHITELIST]
   }
-  if (CREATOR_NODE_GATEWAY_WHITELIST) {
-    allGateways = allGateways.filter(gateway =>
-      CREATOR_NODE_GATEWAY_WHITELIST.has(gateway)
-    )
-  }
+
   if (CIDCache.has(cid)) {
     return CIDCache.get(cid)
   }
 
   // Attempt to fetch/load the image using the first creator node gateway
-  const firstImageUrl = `${creatorNodeGateways[0]}${cid}?fromFS=true`
+  const firstImageUrl = `${allGateways[0]}${cid}`
   const preloadedImageUrl = await preloadImage(firstImageUrl)
 
   // If the image is loaded, add to cache and return
