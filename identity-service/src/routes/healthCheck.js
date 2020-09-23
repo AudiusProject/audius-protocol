@@ -103,7 +103,9 @@ module.exports = function (app) {
               if (senderAddress) {
                 if (!failureTxs[senderAddress]) failureTxs[senderAddress] = [txHash]
                 else failureTxs[senderAddress].push(txHash)
-              } else failureTxs['unknown'].push(txHash)
+              } else {
+                failureTxs['unknown'] = (failureTxs['unknown'] || []).concat(txHash)
+              }
             }
           }
         }
