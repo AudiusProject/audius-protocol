@@ -23,8 +23,15 @@ describe('Test createNewDataRecord()', () => {
 
   let cnodeUserUUID, createFileQueryObj
 
-  /** Create cnodeUser + confirm initial clock state + define global vars */
+  /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
   beforeEach(async () => {
+    // Wipe all CNodeUsers + dependent data
+    await models.CNodeUser.destroy({
+      where: {},
+      truncate: true,
+      cascade: true // cascades delete to all rows with foreign key on cnodeUser
+    })
+
     const resp = await createStarterCNodeUser()
     cnodeUserUUID = resp.cnodeUserUUID
     req.session = { cnodeUserUUID }

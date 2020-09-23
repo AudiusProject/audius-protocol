@@ -74,14 +74,8 @@
     }
   },
   "standard": {
-    "globals": [
-      "assert",
-      "beforeEach",
-      "it",
-      "before",
-      "describe",
-      "afterEach",
-      "after"
+    "env": [
+      "mocha"
     ]
   }
 }
