@@ -88,6 +88,8 @@ contract DelegateManager is InitializableV2 {
 
     // Delegator stake total by address
     // delegator -> (totalDelegated)
+    // Note - delegator properties are maintained in a mapping instead of struct
+    // in order to facilitate extensibility in the future.
     mapping (address => uint256) private delegatorTotals;
 
     // Requester to pending undelegate request
@@ -218,8 +220,8 @@ contract DelegateManager is InitializableV2 {
             delegateInfo[delegator][_targetSP].add(_amount)
         );
 
-        // Update total for this delegator
-        delegatorTotals[delegator] = delegatorTotals[delegator].add(_amount);
+        // Update total stake for delegator
+        _updateDelegatorTotal(delegator, delegatorTotals[delegator].add(_amount));
 
         require(
             delegateInfo[delegator][_targetSP] >= minDelegationAmount,
@@ -371,8 +373,8 @@ contract DelegateManager is InitializableV2 {
             delegateInfo[delegator][serviceProvider].sub(unstakeAmount)
         );
 
-        // Update delegator totals
-        delegatorTotals[delegator] = delegatorTotals[delegator].sub(unstakeAmount);
+        // Update total stake for delegator
+        _updateDelegatorTotal(delegator, delegatorTotals[delegator].sub(unstakeAmount));
 
         require(
             (delegateInfo[delegator][serviceProvider] >= minDelegationAmount ||
@@ -525,12 +527,13 @@ contract DelegateManager is InitializableV2 {
             uint256 newDelegateStake = (
              totalBalanceInStakingAfterSlash.mul(preSlashDelegateStake)
             ).div(totalBalanceInStakingPreSlash);
-            // slashAmountForDelegator = preSlashDelegateStake.sub(newDelegateStake);
+            // slashAmountForDelegator = preSlashDelegateStake - newDelegateStake;
             delegateInfo[delegator][_slashAddress] = (
                 delegateInfo[delegator][_slashAddress].sub(preSlashDelegateStake.sub(newDelegateStake))
             );
-            // Update total for this delegator
-            delegatorTotals[delegator] = (
+            // Update total stake for delegator
+            _updateDelegatorTotal(
+                delegator,
                 delegatorTotals[delegator].sub(preSlashDelegateStake.sub(newDelegateStake))
             );
             // Update total decrease amount
@@ -661,7 +664,7 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Update total for this delegator
-        delegatorTotals[_delegator] = delegatorTotals[_delegator].sub(unstakeAmount);
+        _updateDelegatorTotal(_delegator, delegatorTotals[_delegator].sub(unstakeAmount));
 
         if (
             _undelegateRequestIsPending(_delegator) &&
@@ -1075,6 +1078,16 @@ contract DelegateManager is InitializableV2 {
     }
 
     /**
+     * @notice Update total amount delegated from an address
+     * @param _delegator - address of service provider
+     * @param _amount - updated lock up amount
+     */
+    function _updateDelegatorTotal(address _delegator, uint256 _amount) internal
+    {
+        delegatorTotals[_delegator] = _amount;
+    }
+
+    /**
      * @notice Update amount currently locked up for this service provider
      * @param _serviceProvider - address of service provider
      * @param _updatedLockupAmount - updated lock up amount
@@ -1153,7 +1166,8 @@ contract DelegateManager is InitializableV2 {
             );
 
             // Update total for this delegator
-            delegatorTotals[delegator] = (
+            _updateDelegatorTotal(
+                delegator,
                 delegatorTotals[delegator].add(rewardsPriorToSPCut.sub(spDeployerCut))
             );
 
