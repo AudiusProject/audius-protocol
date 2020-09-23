@@ -3,12 +3,12 @@ module.exports = (sequelize, DataTypes) => {
   const AudiusUser = sequelize.define('AudiusUser', {
     cnodeUserUUID: {
       type: DataTypes.UUID,
-      primaryKey: true,
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
       allowNull: false
     },
     clock: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
       allowNull: false
     },
     blockchainId: {

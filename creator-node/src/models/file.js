@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false
     },
-    // only non-null for track files (as opposed to image/metadata files)
+    // only non-null for track/copy320 files (as opposed to image/metadata files)
     trackBlockchainId: {
       type: DataTypes.INTEGER,
-      allowNull: true // `true` as we use File entries for more than just uploaded tracks
+      allowNull: true
     },
     multihash: {
       type: DataTypes.TEXT,
@@ -75,6 +75,10 @@ module.exports = (sequelize, DataTypes) => {
     ]
   })
 
+  /**
+   * @dev - there is intentionally no reference from File.trackBlockchainId to Track.blockchainId. This is to
+   *    remove the two-way association between these models
+   */
   File.associate = function (models) {
     File.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',
@@ -83,7 +87,7 @@ module.exports = (sequelize, DataTypes) => {
     })
   }
 
-  // TODO why no work?
+  // TODO - why is this not externally accessible?
   File.TrackTypes = ['track', 'copy320']
   File.NonTrackTypes = ['dir', 'image', 'metadata']
 

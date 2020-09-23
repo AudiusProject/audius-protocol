@@ -71,14 +71,14 @@ describe('Test createNewDataRecord()', () => {
     assert.strictEqual(cnodeUser.clock, initialClockVal + 1)
 
     // Validate ClockRecords table state
-    let clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }})
+    let clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID } })
     assert.strictEqual(clockRecords.length, 1)
     let clockRecord = clockRecords[0].dataValues
     assert.strictEqual(clockRecord.clock, initialClockVal + 1)
     assert.strictEqual(clockRecord.sourceTable, sequelizeTableInstance.name)
 
     // Validate Files table state
-    let files = await models.File.findAll({ where: { cnodeUserUUID }})
+    let files = await models.File.findAll({ where: { cnodeUserUUID } })
     assert.strictEqual(files.length, 1)
     let file = files[0].dataValues
     assert.strictEqual(file.clock, initialClockVal + 1)
@@ -209,15 +209,15 @@ describe('Test createNewDataRecord()', () => {
      */
 
     // Validate CNodeUsers table state
-    cnodeUser = await getCNodeUser(cnodeUserUUID)
+    const cnodeUser = await getCNodeUser(cnodeUserUUID)
     assert.strictEqual(cnodeUser.clock, initialClockVal)
 
     // Validate ClockRecords table state
-    clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
+    const clockRecords = await models.ClockRecord.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
     assert.strictEqual(clockRecords.length, 0)
 
     // Validate Files table state
-    files = await models.File.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
+    const files = await models.File.findAll({ where: { cnodeUserUUID }, order: [['createdAt', 'DESC']] })
     assert.strictEqual(files.length, 0)
   })
 
@@ -232,6 +232,7 @@ describe('Test createNewDataRecord()', () => {
     const transaction = await models.sequelize.transaction()
     const arr = _.range(1, numEntries + 1) // [1, 2, ..., numEntries]
     const createdFilesResp = []
+    // eslint-disable-next-line no-unused-vars
     for await (const i of arr) {
       const createdFile = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, sequelizeTableInstance, transaction)
       createdFilesResp.push(createdFile)
@@ -328,11 +329,11 @@ describe('Test ClockRecord model', () => {
           '2020-09-21 23:04:06.339 +00:00',
           '2020-09-21 23:04:06.339 +00:00'
         );`,
-        {
-          replacements: { invalidSourceTable },
-          type: 'RAW',
-          raw: true
-        }
+      {
+        replacements: { invalidSourceTable },
+        type: 'RAW',
+        raw: true
+      }
       )
     } catch (e) {
       assert.strictEqual(e.name, 'SequelizeDatabaseError')

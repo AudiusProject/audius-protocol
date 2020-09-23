@@ -19,7 +19,6 @@ module.exports = function (app) {
     const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Save file from buffer to IPFS and disk
-    // TODO simplify (object destructuring?)
     let multihash, dstPath
     try {
       const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
@@ -41,7 +40,6 @@ module.exports = function (app) {
       }
       const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, models.File, transaction)
       fileUUID = file.fileUUID
-
       await transaction.commit()
     } catch (e) {
       await transaction.rollback()
@@ -93,6 +91,7 @@ module.exports = function (app) {
       return errorResponseBadRequest(e.message)
     }
 
+    // Record AudiusUser entry + update CNodeUser entry in DB
     const transaction = await models.sequelize.transaction()
     try {
       const createAudiusUserQueryObj = {
@@ -105,7 +104,6 @@ module.exports = function (app) {
       await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
 
       // Update cnodeUser.latestBlockNumber
-      // TODO - can this be deprecated with new clock logic?
       await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
 
       await transaction.commit()

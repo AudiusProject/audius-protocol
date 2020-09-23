@@ -210,7 +210,6 @@ const config = convict({
     default: true
   },
 
-
   // Transcoding settings
   transcodingMaxConcurrency: {
     doc: 'Maximum ffmpeg processes to spawn concurrently. If unset (-1), set to # of CPU cores available',

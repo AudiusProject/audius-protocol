@@ -21,13 +21,13 @@ module.exports = function (app) {
       })
 
       // early exit if cnodeUser not found on primary
-      if (!cnodeUser){
+      if (!cnodeUser) {
         await transaction.commit()
         return successResponse('No cnodeUser record found on the primary')
       }
 
       // early exit if clock values have been added for CNodeUser
-      if (cnodeUser.clock && cnodeUser.clock > 0){
+      if (cnodeUser.clock && cnodeUser.clock > 0) {
         await transaction.commit()
         return successResponse({ status: 'Already ran successfully!' })
       }
@@ -97,11 +97,11 @@ module.exports = function (app) {
       } else {
         await models.File.bulkCreate(files, { transaction })
       }
-      
+
       await models.Track.bulkCreate(tracks, { transaction })
-      
+
       await models.AudiusUser.bulkCreate(audiusUsers, { transaction })
-      
+
       if (clockRecords.length > 10000) {
         for (let i = 0; i <= clockRecords.length; i += 10000) {
           console.log('writing clockrecords from idx', i, i + 10000)
@@ -110,7 +110,7 @@ module.exports = function (app) {
       } else {
         await models.ClockRecord.bulkCreate(clockRecords, { transaction })
       }
-      
+
       await cnodeUser.update({ clock }, { transaction })
 
       await transaction.commit()
@@ -136,10 +136,9 @@ module.exports = function (app) {
           }
         }
         return axios(axiosReq)
-      }))  
+      }))
     }
 
     return successResponse()
-    
   }))
 }

@@ -22,9 +22,9 @@ const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions')
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 /**
- * Adds file to IPFS then saves file to disk under multihash name
+ * Adds file to IPFS then saves file to disk under /multihash name
  *
- * @dev - only call this function when file is not already stored to disk, else use saveFileToIPFSFromFS()
+
  */
 async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   // make sure user has authenticated before saving file
@@ -45,7 +45,9 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
 }
 
 /**
- * Given file path on disk, adds file to IPFS + re-saves under /multihash.
+ * Given file path on disk, adds file to IPFS + re-saves under /multihash name
+ *
+ * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
 async function saveFileToIPFSFromFS (req, srcPath) {
   // make sure user has authenticated before saving file
