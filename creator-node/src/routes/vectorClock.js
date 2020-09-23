@@ -1,5 +1,4 @@
 const models = require('../models')
-const { sequelize } = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const axios = require('axios')
 
@@ -53,8 +52,13 @@ module.exports = function (app) {
         models.File.findAll({ where: { cnodeUserUUID: cnodeUser.cnodeUserUUID }, transaction, raw: true })
       ])
 
-      audiusUsers.map(record => record.type = 'AudiusUser')
-      tracks.map(record => record.type = 'Track')
+      audiusUsers.forEach(record => {
+        record.type = 'AudiusUser'
+      })
+
+      tracks.forEach(record => {
+        record.type = 'Track'
+      })
       // if it doesn't have a type it's a file
 
       let allRecords = audiusUsers.concat(tracks, files)
@@ -155,7 +159,7 @@ async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) 
     }
     return axios(axiosReq)
   }))).map(r => r.data.data.clockValue)
-  
+
   resp.map(r => {
     if (r !== clock) throw new Error(`Secondaries not in sync with primary [${resp}]`)
   })
