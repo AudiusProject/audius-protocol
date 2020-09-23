@@ -160,11 +160,6 @@ module.exports = function (app) {
   app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
     let walletPublicKey = req.params.walletPublicKey
 
-    // TODO - this doesn't work
-    // if (!ethereumUtils.isValidAddress(walletPublicKey)) {
-    //   return errorResponseBadRequest('Ethereum address is invalid')
-    // }
-
     walletPublicKey = walletPublicKey.toLowerCase()
 
     const cnodeUser = await models.CNodeUser.findOne({

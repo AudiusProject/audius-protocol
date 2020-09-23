@@ -228,7 +228,6 @@ module.exports = function (app) {
     const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Save file from buffer to IPFS and disk
-    // TODO simplify
     let multihash, dstPath
     try {
       const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
@@ -310,7 +309,6 @@ module.exports = function (app) {
       return errorResponseServerError(e.message)
     }
 
-    logger.debug('Beginning POST /tracks DB transactions')
     const transaction = await models.sequelize.transaction()
     try {
       const existingTrackEntry = await models.Track.findOne({
@@ -399,7 +397,6 @@ module.exports = function (app) {
             transaction
           }
         )
-        logger.error(`\n\n\nnumAffectedRows: ${numAffectedRows}`)
         if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
           throw new Error('Failed to associate files for every track segment CID.')
         }
@@ -437,7 +434,6 @@ module.exports = function (app) {
 
       // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
       // TODO - move to subquery to guarantee atomicity.
-      // TODO - can deprecate with clockwork?
       const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction })
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
         throw new Error('Issue in retrieving udpatedCnodeUser')
@@ -452,7 +448,6 @@ module.exports = function (app) {
         await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
       }
 
-      logger.info(`completed POST tracks route`)
       await transaction.commit()
       triggerSecondarySyncs(req)
       return successResponse()

@@ -10,7 +10,7 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction()
 
     // Add 'clock' column to all 4 tables
-    await addClockColumn(queryInterface, Sequelize, transaction, true)
+    await addClockColumn(queryInterface, Sequelize, transaction)
 
     // Create Clock table
     await createClockRecordsTable(queryInterface, Sequelize, transaction)
@@ -20,55 +20,43 @@ module.exports = {
     await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
     await transaction.commit()
+
+    /**
+     * TODO - contents for follow-up migration
+     * - add non-null constraints to Clock columns
+     * - addCompositePrimaryKeysToAudiusUsersAndTracks()
+     */
   },
 
-  // TODO
-  down: async (queryInterface, Sequelize) => {
-    // Remove uniqueness constraints on (cnodeUserUUID, clock) on all 4 tables
-    await queryInterface.removeConstraint(
-      'CNodeUsers',
-      'CNodeUsers_unique_constraint_(cnodeUserUUID,clock)'
-    )
-    await queryInterface.removeConstraint(
-      'AudiusUsers',
-      'AudiusUsers_unique_constraint_(cnodeUserUUID,clock)'
-    )
-    await queryInterface.removeConstraint(
-      'Tracks',
-      'Tracks_unique_constraint_(cnodeUserUUID,clock)'
-    )
-
-    // Remove clock columns on all 4 tables
-    await queryInterface.removeColumn('CNodeUsers', 'clock')
-    await queryInterface.removeColumn('AudiusUsers', 'clock')
-    await queryInterface.removeColumn('Tracks', 'clock')
-    await queryInterface.removeColumn('Files', 'clock')
-  }
+  down: async (queryInterface, Sequelize) => { }
 }
 
-async function addClockColumn (queryInterface, Sequelize, transaction, allowNull) {
+// TODO - enforce non-null constraint in follow-up migration
+async function addClockColumn (queryInterface, Sequelize, transaction) {
   await queryInterface.addColumn('CNodeUsers', 'clock', {
     type: Sequelize.INTEGER,
     unique: false,
-    allowNull
+    allowNull: true
   }, { transaction })
   await queryInterface.addColumn('AudiusUsers', 'clock', {
     type: Sequelize.INTEGER,
     unique: false,
-    allowNull
+    allowNull: true
   }, { transaction })
   await queryInterface.addColumn('Tracks', 'clock', {
     type: Sequelize.INTEGER,
     unique: false,
-    allowNull
+    allowNull: true
   }, { transaction })
   await queryInterface.addColumn('Files', 'clock', {
     type: Sequelize.INTEGER,
     unique: false,
-    allowNull
+    allowNull: true
   }, { transaction })
 }
 
+// TODO - move to and call in follow-up migration
+// eslint-disable-next-line no-unused-vars
 async function addCompositePrimaryKeysToAudiusUsersAndTracks (queryInterface, Sequelize, transaction) {
   await queryInterface.addConstraint(
     'AudiusUsers',
@@ -120,11 +108,15 @@ async function addCompositeUniqueConstraints (queryInterface, Sequelize, transac
   )
 }
 
+/**
+ * TODO - enforce composite foreign key (cnodeUserUUID, clock) on all SourceTables
+ *  - https://stackoverflow.com/questions/9984022/postgres-fk-referencing-composite-pk
+ */
 async function createClockRecordsTable (queryInterface, Sequelize, transaction) {
   await queryInterface.createTable('ClockRecords', {
     cnodeUserUUID: {
       type: Sequelize.UUID,
-      primaryKey: true, // composite PK with clock
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
       unique: false,
       allowNull: false,
       references: {
@@ -136,7 +128,7 @@ async function createClockRecordsTable (queryInterface, Sequelize, transaction) 
     },
     clock: {
       type: Sequelize.INTEGER,
-      primaryKey: true, // composite PK with cnodeUserUUID
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
       unique: false,
       allowNull: false
     },

@@ -1,6 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  // reference models/File.js
+  // TODO - why is this not externally accessible?
   const SourceTableTypesObj = {
     AudiusUser: 'AudiusUser',
     Track: 'Track',
@@ -34,6 +34,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {})
 
+  /**
+   * TODO - enforce composite foreign key (cnodeUserUUID, clock) on all SourceTables
+   *  - https://stackoverflow.com/questions/9984022/postgres-fk-referencing-composite-pk
+   */
   ClockRecord.associate = (models) => {
     ClockRecord.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',

@@ -1,29 +1,15 @@
 const models = require('./models')
 const sequelize = models.sequelize
 
-/**
- * TODO - add  DataTables all composite FK to Clocks table
- * - https://stackoverflow.com/questions/9984022/postgres-fk-referencing-composite-pk
- */
-
 class DBManager {
   /**
    * Given file insert query object and cnodeUserUUID, inserts new file record in DB
    *    and handles all required clock management.
    * Steps:
-   *  1. increments cnodeUser clock value
+   *  1. increments cnodeUser clock value by 1
    *  2. insert new ClockRecord entry with new clock value
    *  3. insert new Data Table (File, Track, AudiusUser) entry with queryObj and new clock value
-   *
-   * After initial increment, clock values are read as subquery without reading into JS to guarantee atomicity
-   * 
-   * * TODO - flesh out jsdoc
-   * @param {*} queryObj 
-   * @param {*} cnodeUserUUID 
-   * @param {*} sequelizeTableInstance 
-   * @param {*} transaction 
-   * 
-   * TODO - returns
+   * In steps 2 and 3, clock values are read as subquery to guarantee atomicity
    */
   static async createNewDataRecord (queryObj, cnodeUserUUID, sequelizeTableInstance, transaction) {
     // Increment CNodeUser.clock value by 1
@@ -35,7 +21,7 @@ class DBManager {
 
     const selectCNodeUserClockSubqueryLiteral = _getSelectCNodeUserClockSubqueryLiteral(cnodeUserUUID)
 
-    // Add row in ClockRecords table using clock value from CNodeUser
+    // Add row in ClockRecords table using new CNodeUser.clock
     await models.ClockRecord.create({
       cnodeUserUUID,
       clock: selectCNodeUserClockSubqueryLiteral,
@@ -46,7 +32,7 @@ class DBManager {
     queryObj.cnodeUserUUID = cnodeUserUUID
     queryObj.clock = selectCNodeUserClockSubqueryLiteral
 
-    // Create new Data table entry with queryObj
+    // Create new Data table entry with queryObj using new CNodeUser.clock
     const file = await sequelizeTableInstance.create(queryObj, { transaction })
 
     return file.dataValues
@@ -54,9 +40,8 @@ class DBManager {
 }
 
 /**
+ * returns string literal `select "clock" from "CNodeUsers" where "cnodeUserUUID" = '${cnodeUserUUID}'`
  * @dev source: https://stackoverflow.com/questions/36164694/sequelize-subquery-in-where-clause
- * @param {*} cnodeUserUUID
- * return string "select * from clock where cnodeuseruuid"
  */
 function _getSelectCNodeUserClockSubqueryLiteral (cnodeUserUUID) {
   const subquery = sequelize.dialect.QueryGenerator.selectQuery('CNodeUsers', {

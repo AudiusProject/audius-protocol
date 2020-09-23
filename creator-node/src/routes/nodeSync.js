@@ -101,8 +101,8 @@ module.exports = function (app) {
         // this just overrides the clock value to the max clock we're sending over to the secondary so it knows
         // there's more data to pull
         if (cnodeUser.clock > limit) {
-          console.log("nodeSync.js#export - cnode user clock value is higher than limit, resetting", clockRecords[clockRecords.length-1].clock)
-          cnodeUser.clock = clockRecords[clockRecords.length-1].clock
+          console.log('nodeSync.js#export - cnode user clock value is higher than limit, resetting', clockRecords[clockRecords.length - 1].clock)
+          cnodeUser.clock = clockRecords[clockRecords.length - 1].clock
         }
       })
 
@@ -188,7 +188,7 @@ module.exports = function (app) {
 
     let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
     if (errorObj) {
-      return errorResponseServerError(errorObj.message)  
+      return errorResponseServerError(errorObj.message)
     }
     return successResponse()
   }))
@@ -303,10 +303,10 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Ensure imported data has higher blocknumber than already stored.
           // TODO - replace this check with a clock check (!!!)
           const latestBlockNumber = cnodeUser.latestBlockNumber
-          
+
           if (!dbOnlySync) {
             if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-              (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber < /*=*/ latestBlockNumber) //TODO put the = back in
+              (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber < /* = */ latestBlockNumber) // TODO put the = back in
             ) {
               throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
                 ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)

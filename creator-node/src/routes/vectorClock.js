@@ -22,13 +22,13 @@ module.exports = function (app) {
       })
 
       // early exit if cnodeUser not found on primary
-      if (!cnodeUser){
+      if (!cnodeUser) {
         await transaction.commit()
         return successResponse('No cnodeUser record found on the primary')
       }
 
       // clock values have been added for CNodeUser, check if they're consistent across all nodes before returning success
-      if (cnodeUser.clock && cnodeUser.clock > 0){
+      if (cnodeUser.clock && cnodeUser.clock > 0) {
         await transaction.commit()
         // first try/catch is to make sure if the secondaries are not synced. if not, we try to sync
         try {
@@ -110,11 +110,11 @@ module.exports = function (app) {
       } else {
         await models.File.bulkCreate(files, { transaction })
       }
-      
+
       await models.Track.bulkCreate(tracks, { transaction })
-      
+
       await models.AudiusUser.bulkCreate(audiusUsers, { transaction })
-      
+
       if (clockRecords.length > 10000) {
         for (let i = 0; i <= clockRecords.length; i += 10000) {
           req.logger.info('writing clockrecords from idx', i, i + 10000)
@@ -123,7 +123,7 @@ module.exports = function (app) {
       } else {
         await models.ClockRecord.bulkCreate(clockRecords, { transaction })
       }
-      
+
       await cnodeUser.update({ clock }, { transaction })
 
       await transaction.commit()
@@ -141,7 +141,6 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
     return successResponse()
-    
   }))
 }
 
@@ -178,6 +177,6 @@ async function _triggerSecondarySyncs (req, primary, secondaries, walletPublicKe
         }
       }
       return axios(axiosReq)
-    }))  
+    }))
   }
 }

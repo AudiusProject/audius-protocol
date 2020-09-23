@@ -11,6 +11,7 @@ const { getLibsMock } = require('./lib/libsMock')
 describe('test Users', function () {
   let app, server, ipfsMock, libsMock
 
+  /** Setup app + global test vars */
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
@@ -225,4 +226,6 @@ describe('test Users', function () {
       .send({})
       .expect(401)
   })
+
+  it('TODO - clock_status test', async function () {})
 })
