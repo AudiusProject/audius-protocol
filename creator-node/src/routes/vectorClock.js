@@ -34,7 +34,7 @@ module.exports = function (app) {
         try {
           await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
         } catch (e) {
-          await _triggerSecondarySyncs(primary, secondaries, walletPublicKey)
+          await _triggerSecondarySyncs(req, primary, secondaries, walletPublicKey)
         }
 
         // if we kick off a sync and it still not fixed, return with error
@@ -82,7 +82,7 @@ module.exports = function (app) {
         }
         clockRecords.push(clockRecord)
       })
-      console.log('final clock value', clock)
+      req.logger.info('final clock value', clock)
 
       // delete the existing records
       await models.AudiusUser.destroy({
@@ -104,7 +104,7 @@ module.exports = function (app) {
       // chunk files by 10000 records to insert if > 10000
       if (files.length > 10000) {
         for (let i = 0; i <= files.length; i += 10000) {
-          console.log('writing files from idx', i, i + 10000)
+          req.logger.info('writing files from idx', i, i + 10000)
           await models.File.bulkCreate(files.slice(i, i + 10000), { transaction })
         }
       } else {
@@ -117,7 +117,7 @@ module.exports = function (app) {
       
       if (clockRecords.length > 10000) {
         for (let i = 0; i <= clockRecords.length; i += 10000) {
-          console.log('writing clockrecords from idx', i, i + 10000)
+          req.logger.info('writing clockrecords from idx', i, i + 10000)
           await models.ClockRecord.bulkCreate(clockRecords.slice(i, i + 10000), { transaction })
         }
       } else {
@@ -135,7 +135,7 @@ module.exports = function (app) {
 
     try {
       // trigger secondary syncs here
-      await _triggerSecondarySyncs(primary, secondaries, walletPublicKey)
+      await _triggerSecondarySyncs(req, primary, secondaries, walletPublicKey)
       await _checkSecondaryClockValues(secondaries, walletPublicKey, clock)
     } catch (e) {
       return errorResponseServerError(e)
@@ -158,15 +158,14 @@ async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) 
   }))).map(r => r.data.data.clockValue)
   
   resp.map(r => {
-    
     if (r !== clock) throw new Error(`Secondaries not in sync with primary [${resp}]`)
   })
 }
 
-async function _triggerSecondarySyncs (primary, secondaries, walletPublicKey) {
+async function _triggerSecondarySyncs (req, primary, secondaries, walletPublicKey) {
   if (secondaries && secondaries.length > 0) {
     await Promise.all(secondaries.map(secondary => {
-      console.log('calling sync to secondary', secondary)
+      req.logger.info(`calling sync to secondary for ${secondary} - ${walletPublicKey}`)
       const axiosReq = {
         baseURL: secondary,
         url: '/vector_clock_sync',
