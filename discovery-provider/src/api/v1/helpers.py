@@ -206,7 +206,14 @@ MAX_LIMIT = 500
 DEFAULT_OFFSET = 0
 MIN_OFFSET = 0
 def format_limit(args, max_limit=MAX_LIMIT):
-    return max(min(int(args.get("limit"), MIN_LIMIT), max_limit), MIN_LIMIT)
+    lim = args.get("limit", DEFAULT_LIMIT)
+    if lim is None:
+        return DEFAULT_LIMIT
+
+    return max(min(int(lim), max_limit), MIN_LIMIT)
 
 def format_offset(args, max_offset=MAX_LIMIT):
-    return max(min(int(args.get("offset"), MIN_OFFSET), max_offset), MIN_OFFSET)
+    offset = args.get("offset", DEFAULT_OFFSET)
+    if offset is None:
+        return DEFAULT_OFFSET
+    return max(min(int(offset), max_offset), MIN_OFFSET)

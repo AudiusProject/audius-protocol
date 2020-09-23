@@ -227,8 +227,8 @@ class FullTrending(Resource):
     def get_cache_key(self):
         """Construct a cache key from genre + user + time"""
         request_items = to_dict(request.args)
-        request_items.pop('limit')
-        request_items.pop('offset')
+        request_items.pop('limit', None)
+        request_items.pop('offset', None)
         key = extract_key(request.path, request_items.items())
         return key
 
