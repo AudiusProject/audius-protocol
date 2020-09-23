@@ -1,4 +1,3 @@
-import { uniq } from 'lodash'
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
@@ -7,7 +6,6 @@ const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
-const ClaimsManager = artifacts.require('ClaimsManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
