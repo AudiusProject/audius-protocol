@@ -1,5 +1,4 @@
 const models = require('../models')
-const { sequelize } = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const axios = require('axios')
 
@@ -7,6 +6,7 @@ module.exports = function (app) {
   app.post('/vector_clock_backfill/:wallet', handleResponse(async (req, res, next) => {
     const walletPublicKey = req.params.wallet
     const { primary, secondaries } = req.body
+    let clock = 0
 
     const transaction = await models.sequelize.transaction()
     try {
@@ -26,9 +26,22 @@ module.exports = function (app) {
         return successResponse('No cnodeUser record found on the primary')
       }
 
-      // early exit if clock values have been added for CNodeUser
+      // clock values have been added for CNodeUser, check if they're consistent across all nodes before returning success
       if (cnodeUser.clock && cnodeUser.clock > 0) {
         await transaction.commit()
+        // first try/catch is to make sure if the secondaries are not synced. if not, we try to sync
+        try {
+          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+        } catch (e) {
+          await _triggerSecondarySyncs(req, primary, secondaries, walletPublicKey)
+        }
+
+        // if we kick off a sync and it still not fixed, return with error
+        try {
+          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+        } catch (e) {
+          return errorResponseServerError(e)
+        }
         return successResponse({ status: 'Already ran successfully!' })
       }
 
@@ -39,8 +52,13 @@ module.exports = function (app) {
         models.File.findAll({ where: { cnodeUserUUID: cnodeUser.cnodeUserUUID }, transaction, raw: true })
       ])
 
-      audiusUsers.map(record => record.type = 'AudiusUser')
-      tracks.map(record => record.type = 'Track')
+      audiusUsers.forEach(record => {
+        record.type = 'AudiusUser'
+      })
+
+      tracks.forEach(record => {
+        record.type = 'Track'
+      })
       // if it doesn't have a type it's a file
 
       let allRecords = audiusUsers.concat(tracks, files)
@@ -53,7 +71,6 @@ module.exports = function (app) {
       files = []
       let clockRecords = []
 
-      let clock = 0
       allRecords.map(record => {
         clock += 1
         let clockRecord = { cnodeUserUUID: cnodeUser.cnodeUserUUID, clock, createdAt: record.createdAt }
@@ -69,7 +86,7 @@ module.exports = function (app) {
         }
         clockRecords.push(clockRecord)
       })
-      console.log('final clock value', clock)
+      req.logger.info('final clock value', clock)
 
       // delete the existing records
       await models.AudiusUser.destroy({
@@ -91,7 +108,7 @@ module.exports = function (app) {
       // chunk files by 10000 records to insert if > 10000
       if (files.length > 10000) {
         for (let i = 0; i <= files.length; i += 10000) {
-          console.log('writing files from idx', i, i + 10000)
+          req.logger.info('writing files from idx', i, i + 10000)
           await models.File.bulkCreate(files.slice(i, i + 10000), { transaction })
         }
       } else {
@@ -104,7 +121,7 @@ module.exports = function (app) {
 
       if (clockRecords.length > 10000) {
         for (let i = 0; i <= clockRecords.length; i += 10000) {
-          console.log('writing clockrecords from idx', i, i + 10000)
+          req.logger.info('writing clockrecords from idx', i, i + 10000)
           await models.ClockRecord.bulkCreate(clockRecords.slice(i, i + 10000), { transaction })
         }
       } else {
@@ -120,25 +137,50 @@ module.exports = function (app) {
       return errorResponseServerError(e.message)
     }
 
-    // trigger secondary syncs here
-    if (secondaries && secondaries.length > 0) {
-      await Promise.all(secondaries.map(secondary => {
-        console.log('calling sync to secondary', secondary)
-        const axiosReq = {
-          baseURL: secondary,
-          url: '/vector_clock_sync',
-          method: 'post',
-          data: {
-            wallet: [walletPublicKey],
-            creator_node_endpoint: primary,
-            immediate: true,
-            db_only_sync: true
-          }
-        }
-        return axios(axiosReq)
-      }))
+    try {
+      // trigger secondary syncs here
+      await _triggerSecondarySyncs(req, primary, secondaries, walletPublicKey)
+      await _checkSecondaryClockValues(secondaries, walletPublicKey, clock)
+    } catch (e) {
+      return errorResponseServerError(e)
     }
-
     return successResponse()
   }))
+}
+
+async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) {
+  if (clock > 25000) clock = 25000
+
+  const resp = (await Promise.all(secondaries.map(secondary => {
+    const axiosReq = {
+      baseURL: secondary,
+      url: `/sync_status/${walletPublicKey}`,
+      method: 'get'
+    }
+    return axios(axiosReq)
+  }))).map(r => r.data.data.clockValue)
+
+  resp.map(r => {
+    if (r !== clock) throw new Error(`Secondaries not in sync with primary [${resp}]`)
+  })
+}
+
+async function _triggerSecondarySyncs (req, primary, secondaries, walletPublicKey) {
+  if (secondaries && secondaries.length > 0) {
+    await Promise.all(secondaries.map(secondary => {
+      req.logger.info(`calling sync to secondary for ${secondary} - ${walletPublicKey}`)
+      const axiosReq = {
+        baseURL: secondary,
+        url: '/vector_clock_sync',
+        method: 'post',
+        data: {
+          wallet: [walletPublicKey],
+          creator_node_endpoint: primary,
+          immediate: true,
+          db_only_sync: true
+        }
+      }
+      return axios(axiosReq)
+    }))
+  }
 }

@@ -182,7 +182,6 @@ module.exports = function (app) {
   app.post('/vector_clock_sync', handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-    const immediate = true
     // option to sync just the db records as opposed to db records and files on disk, defaults to false
     const dbOnlySync = true
 
@@ -306,7 +305,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
 
           if (!dbOnlySync) {
             if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-              (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber < /* = */ latestBlockNumber) // TODO put the = back in
+              (fetchedLatestBlockNumber !== -1 && fetchedLatestBlockNumber <= latestBlockNumber)
             ) {
               throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
                 ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}`)
@@ -351,7 +350,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           })
           req.logger.info(redisKey, `numClockRecordsDeleted ${numClockRecordsDeleted}`)
 
-          // TODO - should we have this?
           const numSessionTokensDeleted = await models.SessionToken.destroy({
             where: { cnodeUserUUID },
             transaction
