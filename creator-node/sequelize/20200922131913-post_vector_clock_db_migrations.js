@@ -13,6 +13,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction()
+    console.log('STARTING MIGRATION')
 
     // delete all data from DataTables where clock is still null + update remaining cnodeUsers clocks to 0
     await queryInterface.sequelize.query(`
