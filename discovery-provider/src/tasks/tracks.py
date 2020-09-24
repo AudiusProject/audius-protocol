@@ -271,10 +271,8 @@ def parse_track_event(
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
-        if not track_record.stem_of:
-            track_record.stem_of = null()
-        if not track_record.remix_of:
-            track_record.remix_of = null()
+        track_record.stem_of = null()
+        track_record.remix_of = null()
         logger.info(f"Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
