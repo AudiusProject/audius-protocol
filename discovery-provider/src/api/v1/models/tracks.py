@@ -58,7 +58,8 @@ track = ns.model('Track', {
     "duration": fields.Integer(required=True),
     # Whether or not the track is downloadable, see `download`
     # on `track_full` for more details
-    "downloadable": fields.Boolean
+    "downloadable": fields.Boolean,
+    "play_count": fields.Integer(required=True)
 })
 
 track_full = ns.clone('track_full', track, {

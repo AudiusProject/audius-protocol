@@ -10,6 +10,7 @@ from .models.metrics import route_metric, app_name_metric, app_name, plays_metri
 from src.queries.get_route_metrics import get_route_metrics
 from src.queries.get_app_name_metrics import get_app_name_metrics
 from src.queries.get_app_names import get_app_names
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ route_metrics_response = make_response("metrics_reponse", ns, fields.List(fields
 app_name_response = make_response("app_name_response", ns, fields.List(fields.Nested(app_name)))
 app_name_metrics_response = make_response("app_name_metrics_response", ns, fields.List(fields.Nested(app_name_metric)))
 plays_metrics_response = make_response("plays_metrics", ns, fields.List(fields.Nested(plays_metric)))
-genre_metrics_response = make_response("genre_metrics", ns, fields.Nested({ "*": genre_metric }))
+genre_metrics_response = make_response("genre_metrics", ns, fields.List(fields.Nested(genre_metric)))
 
 metrics_route_parser = reqparse.RequestParser()
 metrics_route_parser.add_argument('path', required=False)
@@ -53,13 +54,14 @@ class RouteMetrics(Resource):
         }
     )
     @ns.marshal_with(route_metrics_response)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """Get the route metrics"""
         args = metrics_route_parser.parse_args()
         if args.get('limit') is None:
-            args['limit'] = 48
+            args['limit'] = 168
         else:
-            args['limit'] = min(args.get('limit'), 48)
+            args['limit'] = min(args.get('limit'), 168)
 
         if args.get('bucket_size') is None:
             args['bucket_size'] = 'hour'
@@ -85,16 +87,20 @@ class RouteMetrics(Resource):
 
 
 metrics_app_name_list_parser = reqparse.RequestParser()
+metrics_app_name_list_parser.add_argument('start_time', required=False, type=int)
 metrics_app_name_list_parser.add_argument('limit', required=False, type=int)
 metrics_app_name_list_parser.add_argument('offset', required=False, type=int)
+metrics_app_name_list_parser.add_argument('include_unknown', required=False, type=bool)
 
 @ns.route("/app_name", doc=False)
 class AppNameListMetrics(Resource):
     @ns.doc(
         id="""Get App Names""",
         params={
-            'Offset': 'Offset',
-            'limit': 'Limit'
+            'offset': 'Offset',
+            'limit': 'Limit',
+            'start_time': 'Start Time in Unix Epoch',
+            'include_unknown': 'Whether or not to include unknown apps'
         },
         responses={
             200: 'Success',
@@ -104,6 +110,7 @@ class AppNameListMetrics(Resource):
     )
     @ns.expect(metrics_app_name_list_parser)
     @ns.marshal_with(app_name_response)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """List all the app names"""
         args = metrics_app_name_list_parser.parse_args()
@@ -113,6 +120,10 @@ class AppNameListMetrics(Resource):
             args['limit'] = min(args.get('limit'), 100)
         if args.get('offset') is None:
             args['offset'] = 0
+        try:
+            args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
+        except:
+            abort_bad_request_param('start_time', ns)
 
         app_names = get_app_names(args)
         response = success_response(app_names)
@@ -141,14 +152,15 @@ class AppNameMetrics(Resource):
     )
     @ns.expect(metrics_app_name_parser)
     @ns.marshal_with(app_name_metrics_response)
+    @cache(ttl_sec=30 * 60)
     def get(self, app_name):
         """Get the app name metrics"""
         args = metrics_app_name_parser.parse_args()
 
         if args.get('limit') is None:
-            args['limit'] = 48
+            args['limit'] = 168
         else:
-            args['limit'] = min(args.get('limit'), 48)
+            args['limit'] = min(args.get('limit'), 168)
 
         try:
             args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
@@ -187,13 +199,14 @@ class PlaysMetrics(Resource):
     )
     @ns.expect(metrics_plays_parser)
     @ns.marshal_with(plays_metrics_response)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         args = metrics_plays_parser.parse_args()
 
         if args.get('limit') is None:
-            args['limit'] = 48
+            args['limit'] = 168
         else:
-            args['limit'] = min(args.get('limit'), 48)
+            args['limit'] = min(args.get('limit'), 168)
 
         try:
             args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
@@ -211,14 +224,18 @@ class PlaysMetrics(Resource):
 
 
 metrics_genres_parser = reqparse.RequestParser()
-metrics_genres_parser.add_argument('bucket_size', required=False)
+metrics_genres_parser.add_argument('start_time', required=False, type=int)
+metrics_genres_parser.add_argument('limit', required=False, type=int)
+metrics_genres_parser.add_argument('offset', required=False, type=int)
 
 @ns.route("/genres", doc=False)
 class GenreMetrics(Resource):
     @ns.doc(
         id="""Get Genre Metrics""",
         params={
-            'bucket_size': 'Bucket Size',
+            'offset': 'Offset',
+            'limit': 'Limit',
+            'start_time': 'Start Time in Unix Epoch'
         },
         responses={
             200: 'Success',
@@ -228,13 +245,20 @@ class GenreMetrics(Resource):
     )
     @ns.expect(metrics_genres_parser)
     @ns.marshal_with(genre_metrics_response)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         args = metrics_genres_parser.parse_args()
 
-        if args.get('bucket_size') is None:
-            args['bucket_size'] = 'hour'
-        if args.get('bucket_size') not in valid_date_buckets:
-            abort_bad_request_param('bucket_size', ns)
+        if args.get('limit') is None:
+            args['limit'] = 100
+        else:
+            args['limit'] = min(args.get('limit'), 100)
+        if args.get('offset') is None:
+            args['offset'] = 0
+        try:
+            args['start_time'] = parse_unix_epoch_param(args.get('start_time'), 0)
+        except:
+            abort_bad_request_param('start_time', ns)
 
         genre_metrics = get_genre_metrics(args)
         response = success_response(genre_metrics)

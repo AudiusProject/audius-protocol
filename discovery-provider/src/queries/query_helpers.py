@@ -719,12 +719,24 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             followee_playlist_save_dict[playlist_save["save_item_id"]].append(
                 playlist_save)
 
+    track_ids = []
+    for playlist in playlists:
+        for track in playlist['playlist_contents']['track_ids']:
+            track_ids.append(track['track'])
+    play_count_dict = get_track_play_count_dict(session, track_ids)
+
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
         playlist[response_name_constants.repost_count] = playlist_repost_counts.get(
             playlist_id, 0)
         playlist[response_name_constants.save_count] = playlist_save_counts.get(
             playlist_id, 0)
+
+        total_play_count = 0
+        for track in playlist['playlist_contents']['track_ids']:
+            total_play_count += play_count_dict.get(track['track'], 0)
+        playlist[response_name_constants.total_play_count] = total_play_count
+
         # current user specific
         playlist[response_name_constants.followee_reposts] = followee_playlist_repost_dict.get(
             playlist_id, [])

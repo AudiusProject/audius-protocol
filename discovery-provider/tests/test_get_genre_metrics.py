@@ -4,7 +4,7 @@ from src.queries.get_genre_metrics import _get_genre_metrics
 from src.utils.db_session import get_db
 
 
-def populate_mock_db(db, test_tracks):
+def populate_mock_db(db, test_tracks, date):
     """Helper function to populate thee mock DB with plays"""
     with db.scoped_session() as session:
         for i, track_meta in enumerate(test_tracks):
@@ -25,8 +25,8 @@ def populate_mock_db(db, test_tracks):
                 route_id='',
                 track_segments=[],
                 genre=track_meta.get("genre", ""),
-                updated_at=track_meta.get("updated_at", datetime.utcnow()),
-                created_at=track_meta.get("created_at", datetime.utcnow()),
+                updated_at=track_meta.get("updated_at", date),
+                created_at=track_meta.get("created_at", date),
                 is_unlisted=track_meta.get("is_unlisted", False)
             )
             # add block and then flush before
@@ -48,24 +48,28 @@ def test_get_genre_metrics(app):
         {"genre": "Electronic"}
     ]
 
-    populate_mock_db(db, test_tracks)
+    date = datetime.utcnow()
+    before_date = (date + timedelta(hours=-1))
+    populate_mock_db(db, test_tracks, date)
 
     args = {
-        'limit': 10,
-        'bucket_size': 'hour'
+        'start_time': before_date
     }
 
     with db.scoped_session() as session:
         metrics = _get_genre_metrics(session, args)
 
-    assert metrics["Electronic"] == 2
-    assert metrics["Pop"] == 1
+    assert metrics[0]['name'] == "Electronic"
+    assert metrics[0]['count'] == 2
+    assert metrics[1]['name'] == "Pop"
+    assert metrics[1]['count'] == 1
 
 
 def test_get_genre_metrics_for_month(app):
     """Tests that genre metrics can be queried over a large time range"""
     date = datetime.utcnow()
-    before_date = (date + timedelta(days=-12))
+    long_before_date = (date + timedelta(days=-12))
+    before_date = (date + timedelta(days=-1))
 
     with app.app_context():
         db = get_db()
@@ -76,26 +80,28 @@ def test_get_genre_metrics_for_month(app):
         {"genre": "Electronic", "created_at": date},
         {"genre": "Electronic", "created_at": before_date},
     ]
-    populate_mock_db(db, test_tracks)
+    populate_mock_db(db, test_tracks, date)
 
     args = {
-        'limit': 10,
-        'bucket_size': 'hour'
+        'start_time': before_date
     }
 
     with db.scoped_session() as session:
         metrics = _get_genre_metrics(session, args)
 
-    assert metrics["Electronic"] == 2
-    assert metrics["Pop"] == 1
+    assert metrics[0]['name'] == "Electronic"
+    assert metrics[0]['count'] == 2
+    assert metrics[1]['name'] == "Pop"
+    assert metrics[1]['count'] == 1
 
     args2 = {
-        'limit': 10,
-        'bucket_size': 'month'
+        'start_time': long_before_date
     }
 
     with db.scoped_session() as session:
         metrics = _get_genre_metrics(session, args2)
 
-    assert metrics["Electronic"] == 3
-    assert metrics["Pop"] == 1
+    assert metrics[0]['name'] == "Electronic"
+    assert metrics[0]['count'] == 3
+    assert metrics[1]['name'] == "Pop"
+    assert metrics[1]['count'] == 1

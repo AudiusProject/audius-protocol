@@ -44,7 +44,6 @@ def populate_mock_db(db, date1, date2):
 
         session.bulk_save_objects(app_name_rows)
 
-
 def test_get_app_name_metrics(app):
     """Tests that the route metrics are queried correctly from db data"""
     date = datetime.utcnow()
@@ -108,13 +107,13 @@ def test_get_app_name_metrics_with_daily_buckets(app):
     populate_mock_db(db_mock, date, after_date)
 
     app_name = 'joe'
-    args_1 = {
+    args = {
         'limit': 10,
         'start_time': before_date,
         'bucket_size': 'day'
     }
     with db_mock.scoped_session() as session:
-        metrics_1 = _get_app_name_metrics(session, app_name, args_1)
+        metrics_1 = _get_app_name_metrics(session, app_name, args)
 
         assert len(metrics_1) == 1
         assert metrics_1[0]['count'] == 7
