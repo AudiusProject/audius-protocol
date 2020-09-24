@@ -13,7 +13,6 @@ const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { logger } = require('../logging.js')
 const DBManager = require('../dbManager')
 
 module.exports = function (app) {
@@ -52,7 +51,7 @@ module.exports = function (app) {
       segmentFilePaths = transcode[0].filePaths
       transcodedFilePath = transcode[1].filePath
 
-      logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+      req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
@@ -68,12 +67,12 @@ module.exports = function (app) {
       const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
       return { multihash, srcPath: segmentFilePath, dstPath }
     }))
-    logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    req.logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Retrieve all segment durations as map(segment srcFilePath => segment duration)
     codeBlockTimeStart = Date.now()
     const segmentDurations = await getSegmentsDuration(req.fileName, req.file.destination)
-    logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // For all segments, build array of (segment multihash, segment duration)
     let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
@@ -148,12 +147,12 @@ module.exports = function (app) {
 
       return errorResponseServerError(e)
     }
-    logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    req.logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Prune upload artifacts after success
     removeTrackFolder(req, req.fileDir)
 
-    logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
+    req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({
       'transcodedTrackCID': transcodeFileIPFSResp.multihash,
       'transcodedTrackUUID': transcodeFileUUID,
@@ -438,7 +437,7 @@ module.exports = function (app) {
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
         throw new Error('Issue in retrieving udpatedCnodeUser')
       }
-      logger.info(
+      req.logger.info(
         `cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
         current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || \
         given blockNumber ${blockNumber}`
@@ -546,7 +545,7 @@ module.exports = function (app) {
     }
 
     if (libs.identityService) {
-      logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
+      req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
       // Fire and forget listen recording
       // TODO: Consider queueing these requests
       libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
@@ -568,7 +567,7 @@ module.exports = function (app) {
           partition by "blockchainId" order by "clock" desc
         ) from "Tracks"
         where "cnodeUserUUID" = :cnodeUserUUID
-        and ("metadataJSON"->>'is_unlisted')::boolean = false
+        and ("metadataJSON"->>'is_unlisted')::boolean = true
       ) as a
       where a.row_number = 1;`,
       {
