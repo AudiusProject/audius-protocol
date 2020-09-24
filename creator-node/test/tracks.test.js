@@ -584,6 +584,8 @@ describe('test Tracks with real IPFS', function () {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('TODO - POST /tracks tests', async function () {})
+
+  it('TODO - parallel track upload', async function () {})
 })
 
 /**

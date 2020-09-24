@@ -25,7 +25,6 @@ module.exports = {
   down: async (queryInterface, Sequelize) => { }
 }
 
-// TODO - enforce non-null constraint in follow-up migration
 async function addClockColumn (queryInterface, Sequelize, transaction) {
   await queryInterface.addColumn('CNodeUsers', 'clock', {
     type: Sequelize.INTEGER,
@@ -79,10 +78,6 @@ async function addCompositeUniqueConstraints (queryInterface, Sequelize, transac
   )
 }
 
-/**
- * TODO - enforce composite foreign key (cnodeUserUUID, clock) on all SourceTables
- *  - https://stackoverflow.com/questions/9984022/postgres-fk-referencing-composite-pk
- */
 async function createClockRecordsTable (queryInterface, Sequelize, transaction) {
   await queryInterface.createTable('ClockRecords', {
     cnodeUserUUID: {

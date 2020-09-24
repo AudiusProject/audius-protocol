@@ -451,7 +451,7 @@ module.exports = function (app) {
       triggerSecondarySyncs(req)
       return successResponse()
     } catch (e) {
-      logger.error(e.message)
+      req.logger.error(e.message)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }

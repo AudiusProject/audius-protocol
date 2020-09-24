@@ -3,9 +3,13 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 
 const models = require('../src/models')
-const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const DBManager = require('../src/dbManager')
+const blacklistManager = require('../src/blacklistManager')
 const utils = require('../src/utils')
+const { createStarterCNodeUser } = require('./lib/dataSeeds')
+const { getApp } = require('./lib/app')
+const { getIPFSMock } = require('./lib/ipfsMock')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('Test createNewDataRecord()', () => {
   const req = {
@@ -15,16 +19,23 @@ describe('Test createNewDataRecord()', () => {
   }
 
   const getCNodeUser = async (cnodeUserUUID) => {
-    return (await models.CNodeUser.findOne({ where: { cnodeUserUUID } })).dataValues
+    const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID } })
+    return cnodeUser.dataValues
   }
 
   const initialClockVal = 0
   const timeoutMs = 1000
 
-  let cnodeUserUUID, createFileQueryObj
+  let cnodeUserUUID, createFileQueryObj, server
+
+  /** Init server to run DB migrations */
+  before(async function () {
+    const appInfo = await getApp(getIPFSMock(), getLibsMock(), blacklistManager)
+    server = appInfo.server
+  })
 
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
-  beforeEach(async () => {
+  beforeEach(async function () {
     // Wipe all CNodeUsers + dependent data
     await models.CNodeUser.destroy({
       where: {},
@@ -49,12 +60,14 @@ describe('Test createNewDataRecord()', () => {
   })
 
   /** Wipe all CNodeUsers + dependent data */
-  after(async () => {
+  after(async function () {
     await models.CNodeUser.destroy({
       where: {},
       truncate: true,
       cascade: true // cascades delete to all rows with foreign key on cnodeUser
     })
+
+    await server.close()
   })
 
   it('Sequential createNewDataRecord - create 2 records', async () => {
