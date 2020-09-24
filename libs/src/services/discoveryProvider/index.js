@@ -14,7 +14,6 @@ let urlJoin = require('proper-url-join')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-const MAKE_REQUEST_RETRY_COUNT = 3
 const MAX_MAKE_REQUEST_RETRY_COUNT = 20
 
 class DiscoveryProvider {
@@ -475,11 +474,12 @@ class DiscoveryProvider {
   // queryParams - object of query params to be appended to url
   async _makeRequest (requestObj, attemptedRetries = 0) {
     try {
-      const newDiscProvEndpoint = await this.configureHealthyDiscoveryProviderEndpoint(attemptedRetries)
+      const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
       console.log(`curr this.dpEndpt: ${this.discoveryProviderEndpoint} | newDiscProvEndpt: ${newDiscProvEndpoint}`)
-      // If new DP endpoint is selected, reset attemptedRetries count
+      // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
       if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
+        this.discoveryProviderEndpoint = newDiscProvEndpoint
         attemptedRetries = 0
       }
     } catch (e) {
@@ -561,16 +561,15 @@ class DiscoveryProvider {
     if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
       console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
-      this.serviceSelector.removeBackup(this.discoveryProviderEndpoint)
-      this.serviceSelector.addUnhealthy(this.discoveryProviderEndpoint)
 
-      // If there are no more available backups, throw error
-      if (this.serviceSelector.getBackupsSize() === 0) {
-        throw new Error('No more backup Discovery Providers to select from')
-      }
-
-      // Select new endpoint from backups and set as new endpoint
+      // Clear the cached endpoint and select new endpoint from backups
+      this.serviceSelector.clearCached()
       endpoint = await this.serviceSelector.select()
+    }
+
+    // If there are no more available backups, throw error
+    if (!endpoint) {
+      throw new Error('All Discovery Providers are unhealthy and unavailable.')
     }
 
     return endpoint
