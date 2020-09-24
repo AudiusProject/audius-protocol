@@ -16,7 +16,7 @@ const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiHelpers')
 
-describe('test AudiusUsers', function () {
+describe('test AudiusUsers with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -46,7 +46,7 @@ describe('test AudiusUsers', function () {
     await server.close()
   })
 
-  it('creates Audius user', async function () {
+  it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
     const metadata = { test: 'field1' }
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
@@ -62,7 +62,7 @@ describe('test AudiusUsers', function () {
     }
   })
 
-  it('completes Audius user creation', async function () {
+  it('successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
     const metadata = { test: 'field1' }
 
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
@@ -90,7 +90,7 @@ describe('test AudiusUsers', function () {
 // Below block uses actual ipfsClient (unlike first describe block), hence
 // another describe block for this purpose
 // NOTE: these tests mock ipfs client errors; otherwise, for happy path, uses actual ipfsClient
-describe('tests /audius_users/metadata metadata upload with actual ipfsClient for happy path', function () {
+describe('Test AudiusUsers with real IPFS', function () {
   let app, server, session, libsMock, ipfs
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -144,7 +144,7 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient fo
     assert.deepStrictEqual(resp.body.error, 'saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
   })
 
-  it('should successfully add metadata file to filesystem, db, and ipfs', async function () {
+  it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
     const metadata = sortKeys({ spaghetti: 'spaghetti' })
     const resp = await request(app)
       .post('/audius_users/metadata')
@@ -181,5 +181,13 @@ describe('tests /audius_users/metadata metadata upload with actual ipfsClient fo
     // check that the ipfs content matches what we expect
     const metadataBuffer = Buffer.from(JSON.stringify(metadata))
     assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
+  })
+
+  it('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
+
+  })
+
+  it('TODO - multiple uploads', async function () {
+
   })
 })

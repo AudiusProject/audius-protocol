@@ -97,9 +97,12 @@ const getCID = async (req, res) => {
   }
 
   // Don't serve if not found in DB.
-  const queryResults = await models.File.findOne({ where: {
-    multihash: CID
-  } })
+  const queryResults = await models.File.findOne({
+    where: {
+      multihash: CID
+    },
+    order: [['clock', 'DESC']]
+  })
   if (!queryResults) {
     return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
   }
@@ -186,10 +189,13 @@ const getDirCID = async (req, res) => {
 
   // Don't serve if not found in DB.
   // Query for the file based on the dirCID and filename
-  const queryResults = await models.File.findOne({ where: {
-    dirMultihash: dirCID,
-    fileName: filename
-  } })
+  const queryResults = await models.File.findOne({
+    where: {
+      dirMultihash: dirCID,
+      fileName: filename
+    },
+    order: [['clock', 'DESC']]
+  })
   if (!queryResults) {
     return sendResponse(
       req,

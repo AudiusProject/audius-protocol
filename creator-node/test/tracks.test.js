@@ -21,7 +21,7 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 const testAudiusFileNumSegments = 32
 
-describe('test Tracks', function () {
+describe('test Tracks with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock
 
   beforeEach(async () => {
@@ -390,7 +390,7 @@ describe('test Tracks', function () {
   })
 })
 
-describe('test /track_content and /tracks/metadata with actual ipfsClient', function () {
+describe('test Tracks with real IPFS', function () {
   let app, server, session, libsMock, ipfs
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -581,6 +581,9 @@ describe('test /track_content and /tracks/metadata with actual ipfsClient', func
     const metadataBuffer = Buffer.from(JSON.stringify(metadata))
     assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
+
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  it('TODO - POST /tracks tests', async function () {})
 })
 
 /**
