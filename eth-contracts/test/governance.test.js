@@ -43,7 +43,7 @@ const Vote = Object.freeze({
   Yes: 2
 })
 
-contract('Governance.sol', async (accounts) => {
+contract.only('Governance.sol', async (accounts) => {
   let token, registry, staking, stakingProxy, serviceProviderFactory
   let claimsManager, delegateManager, governance, registry0, registryProxy, token0, tokenProxy
 
@@ -51,6 +51,7 @@ contract('Governance.sol', async (accounts) => {
   const votingQuorumPercent = 10
   const maxInProgressProposals = 20
   const maxDescriptionLength = 250
+  const maxNameLength = 250
   const executionDelay = votingPeriod
   const deployerCutLockupDuration = 11
   const undelegateLockupDuration = votingPeriod + executionDelay + 1
@@ -101,7 +102,8 @@ contract('Governance.sol', async (accounts) => {
       votingQuorumPercent,
       guardianAddress,
       maxInProgressProposals,
-      maxDescriptionLength
+      maxDescriptionLength,
+      maxNameLength
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
@@ -318,12 +320,14 @@ contract('Governance.sol', async (accounts) => {
     const governance0 = await Governance.new({ from: proxyDeployerAddress })
     const newMaxInProgressProposals = 100
     const maxDescriptionLength = 100
+    const maxNameLength = maxDescriptionLength
+    const initializeArgumentTypesArray = ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'uint16', 'address']
     
     // Requires non-zero _registryAddress
     let governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-      [0x0, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, proxyDeployerAddress]
+      initializeArgumentTypesArray,
+      [0x0, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -331,15 +335,14 @@ contract('Governance.sol', async (accounts) => {
         proxyAdminAddress,
         governanceCallData,
         { from: proxyDeployerAddress }
-      ),
-      'revert'
+      )
     )
 
     // Requires non-zero _votingPeriod
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-      [registry.address, 0, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, proxyDeployerAddress]
+      initializeArgumentTypesArray,
+      [registry.address, 0, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -347,15 +350,14 @@ contract('Governance.sol', async (accounts) => {
         governance.address,
         governanceCallData,
         { from: proxyDeployerAddress }
-      ),
-      "revert"
+      )
     )
 
     // Requires non-zero _votingQuorumPercent
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-      [registry.address, votingPeriod, executionDelay, 0, newMaxInProgressProposals, maxDescriptionLength, proxyDeployerAddress]
+      initializeArgumentTypesArray,
+      [registry.address, votingPeriod, executionDelay, 0, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -363,15 +365,14 @@ contract('Governance.sol', async (accounts) => {
         governance.address,
         governanceCallData,
         { from: proxyDeployerAddress }
-      ),
-      "revert"
+      )
     )
 
     // Requires non-zero _guardianAddress
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, _lib.addressZero]
+      initializeArgumentTypesArray,
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, _lib.addressZero]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -379,15 +380,14 @@ contract('Governance.sol', async (accounts) => {
         governance.address,
         governanceCallData,
         { from: proxyDeployerAddress }
-      ),
-      "revert"
+      )
     )
 
     // Requires non-zero _maxInProgressProposals
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, 0, maxDescriptionLength, proxyDeployerAddress]
+      initializeArgumentTypesArray,
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, 0, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -395,15 +395,14 @@ contract('Governance.sol', async (accounts) => {
         governance.address,
         governanceCallData,
         { from: proxyDeployerAddress }
-      ),
-      "revert"
+      )
     )
 
     // Requires non-zero _maxDescriptionLength
     governanceCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, 0, proxyDeployerAddress]
+      initializeArgumentTypesArray,
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, 0, maxNameLength, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -411,8 +410,22 @@ contract('Governance.sol', async (accounts) => {
         governance.address,
         governanceCallData,
         { from: proxyDeployerAddress }
-      ),
-      "revert"
+      )
+    )
+
+    // Requires non-zero _maxNameLength
+    governanceCallData = _lib.encodeCall(
+      'initialize',
+      initializeArgumentTypesArray,
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, 0, proxyDeployerAddress]
+    )
+    await _lib.assertRevert(
+      AudiusAdminUpgradeabilityProxy.new(
+        governance0.address,
+        governance.address,
+        governanceCallData,
+        { from: proxyDeployerAddress }
+      )
     )
   })
 
@@ -711,6 +724,60 @@ contract('Governance.sol', async (accounts) => {
         ),
         "Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
       )
+    })
+
+    it('Proposal name', async () => {
+      const proposerAddress = accounts[10]
+      const slashAmount = _lib.toBN(1)
+      const targetAddress = accounts[11]
+      const targetContractRegistryKey = delegateManagerKey
+      const signature = 'slash(uint256,address)'
+      const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
+
+      const nameTooShort = ""
+      const nameTooLong = "-".repeat(maxDescriptionLength + 10)
+      const nameCorrect = proposalName
+
+      // Fail to submit with empty description
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          signature,
+          callData,
+          nameTooShort,
+          proposalDescription,
+          { from: proposerAddress }
+        )
+      )
+
+      // Fail to submit with too long description
+      await _lib.assertRevert(
+        governance.submitProposal(
+          targetContractRegistryKey,
+          callValue0,
+          signature,
+          callData,
+          nameTooLong,
+          proposalDescription,
+          { from: proposerAddress }
+        )
+      )
+
+      // Successfully submit with description of correct length
+      const txReceipt = await governance.submitProposal(
+        targetContractRegistryKey,
+        callValue0,
+        signature,
+        callData,
+        nameCorrect,
+        proposalDescription,
+        { from: proposerAddress }
+      )
+      const tx = _lib.parseTx(txReceipt)
+
+      // Confirm description value in event log
+      assert.equal(tx.event.args.name, nameCorrect, "Expected same event.args.name")
     })
 
     it('Proposal description', async () => {

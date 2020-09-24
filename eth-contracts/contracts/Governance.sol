@@ -130,7 +130,7 @@ contract Governance is InitializableV2 {
     event ProposalSubmitted(
         uint256 indexed proposalId,
         address indexed proposer,
-        string indexed name,
+        string name,
         string description
     );
     event ProposalVoteSubmitted(
