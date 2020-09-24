@@ -108,7 +108,6 @@ contract Governance is InitializableV2 {
         uint256 voteMagnitudeNo;
         uint256 numVotes;
         mapping(address => Vote) votes;
-        string description;
         bytes32 contractHash;
     }
 
@@ -128,7 +127,7 @@ contract Governance is InitializableV2 {
     event ProposalSubmitted(
         uint256 indexed proposalId,
         address indexed proposer,
-        uint256 submissionBlockNumber,
+        string indexed name,
         string description
     );
     event ProposalVoteSubmitted(
@@ -228,7 +227,8 @@ contract Governance is InitializableV2 {
      * @param _callValue - amount of wei to pass with function call if a token transfer is involved
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
-     * @param _description - Text description of proposal to be emitted in event
+     * @param _name - Text proposal of proposal to be emitted in event
+     * @param _description - Text description of proposal to be emitted in event // TODO: emit name instead?
      * @return - ID of new proposal
      */
     function submitProposal(
@@ -236,6 +236,7 @@ contract Governance is InitializableV2 {
         uint256 _callValue,
         string calldata _functionSignature,
         bytes calldata _callData,
+        string calldata _name,
         string calldata _description
     ) external returns (uint256)
     {
@@ -298,7 +299,6 @@ contract Governance is InitializableV2 {
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
             numVotes: 0,
-            description: _description,
             contractHash: _getCodeHash(targetContractAddress)
             /* votes: mappings are auto-initialized to default state */
         });
@@ -309,7 +309,7 @@ contract Governance is InitializableV2 {
         emit ProposalSubmitted(
             newProposalId,
             proposer,
-            block.number,
+            _name,
             _description
         );
 
@@ -779,26 +779,6 @@ contract Governance is InitializableV2 {
         );
 
         return (proposals[_proposalId].contractHash);
-    }
-
-     /**
-     * @notice Get proposal description by proposalId
-     * @dev This is a separate function because the getProposalById returns too many
-            variables already and by adding more, you get the error
-            `InternalCompilerError: Stack too deep, try using fewer variables`
-     * @param _proposalId - id of proposal
-     */
-    function getProposalDescriptionById(uint256 _proposalId)
-    external view returns (string memory)
-    {
-        _requireIsInitialized();
-
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId"
-        );
-
-        return (proposals[_proposalId].description);
     }
 
     /**

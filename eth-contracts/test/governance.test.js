@@ -66,6 +66,7 @@ contract('Governance.sol', async (accounts) => {
   const testEndpoint2 = 'https://localhost:5001'
 
   const proposalDescription = "TestDescription"
+  const proposalName = "Test Proposal Name"
   const stakerAccount1 = accounts[10]
   const stakerAccount2 = accounts[11]
   const delegatorAccount1 = accounts[12]
@@ -569,6 +570,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         ),
@@ -590,6 +592,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           '',
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         ),
@@ -612,6 +615,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         ),
@@ -633,12 +637,13 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         signature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       )
 
       // advance to make eligible to evaluate
-      const proposalStartBlockNumber = parseInt(_lib.parseTx(txReceipt).event.args.submissionBlockNumber)
+      const proposalStartBlockNumber = parseInt(txReceipt.receipt.blockNumber)
       await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
       await _lib.assertRevert(
@@ -647,6 +652,7 @@ contract('Governance.sol', async (accounts) => {
           callValue0,
           signature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         ),
@@ -668,6 +674,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         signature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       )
@@ -687,6 +694,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         signature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       )
@@ -697,6 +705,7 @@ contract('Governance.sol', async (accounts) => {
           callValue0,
           signature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         ),
@@ -723,6 +732,7 @@ contract('Governance.sol', async (accounts) => {
           callValue0,
           signature,
           callData,
+          proposalName,
           descriptionTooShort,
           { from: proposerAddress }
         )
@@ -735,6 +745,7 @@ contract('Governance.sol', async (accounts) => {
           callValue0,
           signature,
           callData,
+          proposalName,
           descriptionTooLong,
           { from: proposerAddress }
         )
@@ -746,6 +757,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         signature,
         callData,
+        proposalName,
         descriptionCorrect,
         { from: proposerAddress }
       )
@@ -753,19 +765,6 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm description value in event log
       assert.equal(tx.event.args.description, descriptionCorrect, "Expected same event.args.description")
-
-      // Fail to getProposalDescriptionById for invalid proposalId
-      await _lib.assertRevert(
-        governance.getProposalDescriptionById.call(0),
-        "Must provide valid non-zero _proposalId"
-      )
-
-      // Confirm description value in onchain storage
-      const proposal = await governance.getProposalById.call(tx.event.args.proposalId)
-      assert.equal(
-        await governance.getProposalDescriptionById.call(proposal.proposalId),
-        descriptionCorrect
-      )
     })
 
     it('Submit Proposal for Slash', async () => {
@@ -785,6 +784,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         functionSignature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       )
@@ -794,14 +794,14 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
       assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
       assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
-      assert.isTrue(parseInt(txParsed.event.args.submissionBlockNumber) > lastBlock, 'Expected event.args.submissionBlockNumber > lastBlock')
+      assert.isTrue(parseInt(txReceipt.receipt.blockNumber) > lastBlock, 'Expected submitProposalTx blockNumber > lastBlock')
       assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
       const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, proposerAddress, 'Expected same proposer')
-      assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
+      assert.isTrue(parseInt(txReceipt.receipt.blockNumber) > lastBlock, 'Expected submitProposalTx blockNumber > lastBlock')
       assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
       assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
       assert.equal(proposal.callValue.toNumber(), callValue0, 'Expected same proposal.callValue')
@@ -812,9 +812,6 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
       assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
       
-      const propDescription = await governance.getProposalDescriptionById.call(proposalId)
-      assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
-
       // Confirm all vote states - all Vote.None
       for (const account of accounts) {
         const vote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
@@ -838,6 +835,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         functionSignature,
         callData,
+        proposalName,
         proposalDescription,
         { from: guardianAddress }
       )
@@ -847,14 +845,14 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
       assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
       assert.equal(txParsed.event.args.proposer, guardianAddress, 'Expected same event.args.proposer')
-      assert.isTrue(parseInt(txParsed.event.args.submissionBlockNumber) > lastBlock, 'Expected event.args.submissionBlockNumber > lastBlock')
+      assert.isTrue(parseInt(txReceipt.receipt.blockNumber) > lastBlock, 'Expected submitProposalTx blockNumber > lastBlock')
       assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
       const proposal = await governance.getProposalById.call(proposalId)
       assert.equal(parseInt(proposal.proposalId), proposalId, 'Expected same proposalId')
       assert.equal(proposal.proposer, guardianAddress, 'Expected same proposer')
-      assert.isTrue(parseInt(proposal.submissionBlockNumber) > lastBlock, 'Expected submissionBlockNumber > lastBlock')
+      assert.isTrue(parseInt(txReceipt.receipt.blockNumber) > lastBlock, 'Expected submitProposalTx blockNumber > lastBlock')
       assert.equal(_lib.toStr(proposal.targetContractRegistryKey), _lib.toStr(targetContractRegistryKey), 'Expected same proposal.targetContractRegistryKey')
       assert.equal(proposal.targetContractAddress, targetContractAddress, 'Expected same proposal.targetContractAddress')
       assert.equal(proposal.callValue.toNumber(), callValue0, 'Expected same proposal.callValue')
@@ -865,9 +863,6 @@ contract('Governance.sol', async (accounts) => {
       assert.equal(parseInt(proposal.voteMagnitudeNo), 0, 'Expected same voteMagnitudeNo')
       assert.equal(parseInt(proposal.numVotes), 0, 'Expected same numVotes')
       
-      const propDescription = await governance.getProposalDescriptionById.call(proposalId)
-      assert.equal(propDescription, proposalDescription, 'Expected same proposalDescription')
-
       // Confirm all vote states - all Vote.None
       for (const account of accounts) {
         const vote = await governance.getVoteByProposalAndVoter.call(proposalId, account)
@@ -901,6 +896,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
@@ -922,7 +918,7 @@ contract('Governance.sol', async (accounts) => {
 
       it('Fail to vote after votingPeriod has ended', async () => {
         // Advance blocks to the next valid claim
-        const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        const proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
 
         await _lib.assertRevert(
@@ -1067,7 +1063,7 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(proposal.voteMagnitudeNo.eq(defaultStakeAmount), 'Expected same voteMagnitudeNo')
         assert.equal(parseInt(proposal.numVotes), 2, 'Expected same numVotes')
 
-        const proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        const proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
@@ -1123,13 +1119,14 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
         await governance.submitVote(proposalId, voter1Vote, { from: voter1Address })
   
         // Advance blocks to end of proposal votingPeriod + executionDelay
-        proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
       })
 
@@ -1153,6 +1150,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
@@ -1167,7 +1165,7 @@ contract('Governance.sol', async (accounts) => {
         )
 
         // Advance blocks to end of proposal votingPeriod
-        proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
 
         await _lib.assertRevert(
@@ -1263,6 +1261,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
@@ -1273,7 +1272,7 @@ contract('Governance.sol', async (accounts) => {
         await governance.submitVote(proposalId, Vote.No, { from: voter2Address })
 
         // Advance blocks to the evaluatable block
-        proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         outcome = Outcome.Rejected
@@ -1318,6 +1317,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
@@ -1325,7 +1325,7 @@ contract('Governance.sol', async (accounts) => {
         outcome = Outcome.QuorumNotMet
 
         // Advance blocks to evaluatable block
-        proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+        proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         evaluateTxReceipt = await governance.evaluateProposalOutcome(
@@ -1362,6 +1362,7 @@ contract('Governance.sol', async (accounts) => {
           callValue,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
@@ -1387,7 +1388,7 @@ contract('Governance.sol', async (accounts) => {
         )
 
         // Advance blocks to the evaluatable block
-        const proposal2StartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt2).event.args.submissionBlockNumber)
+        const proposal2StartBlockNumber = parseInt(submitProposalTxReceipt2.receipt.blockNumber)
         await time.advanceBlockTo(proposal2StartBlockNumber + votingPeriod + executionDelay)
 
         // Evaluate proposal and confirm it fails
@@ -1458,6 +1459,7 @@ contract('Governance.sol', async (accounts) => {
           callValue0,
           functionSignature,
           callData,
+          proposalName,
           proposalDescription,
           { from: proposerAddress }
         )
@@ -1578,6 +1580,7 @@ contract('Governance.sol', async (accounts) => {
             callValue,
             functionSignature,
             callData,
+            proposalName,
             proposalDescription,
             { from: proposerAddress }
           )
@@ -1592,11 +1595,12 @@ contract('Governance.sol', async (accounts) => {
             callValue,
             functionSignature,
             callData,
+            proposalName,
             proposalDescription,
             { from: proposerAddress }
           )
           proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
-          proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+          proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
           await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
           await governance.vetoProposal(
             proposalId,
@@ -1609,11 +1613,12 @@ contract('Governance.sol', async (accounts) => {
             callValue,
             functionSignature,
             callData,
+            proposalName,
             proposalDescription,
             { from: proposerAddress }
           )
           proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
-          proposalStartBlockNumber = parseInt(_lib.parseTx(submitProposalTxReceipt).event.args.submissionBlockNumber)
+          proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
           await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
           await governance.vetoProposal(
             proposalId,
@@ -1657,6 +1662,7 @@ contract('Governance.sol', async (accounts) => {
             callValue0,
             functionSignature,
             callData,
+            proposalName,
             proposalDescription,
             { from: proposerAddress }
           )
@@ -1692,6 +1698,7 @@ contract('Governance.sol', async (accounts) => {
       callValue,
       functionSignature,
       callData,
+      proposalName,
       proposalDescription,
       { from: proposerAddress }
     )
@@ -1701,7 +1708,7 @@ contract('Governance.sol', async (accounts) => {
     await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
 
     // Advance blocks to after proposal evaluation period + execution delay
-    const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.submissionBlockNumber)
+    const proposalStartBlock = parseInt(submitTxReceipt.receipt.blockNumber)
     await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
 
     // Call evaluateProposalOutcome()
@@ -1772,6 +1779,7 @@ contract('Governance.sol', async (accounts) => {
       callValue,
       functionSignature,
       callData,
+      proposalName,
       proposalDescription,
       { from: proposerAddress }
     )
@@ -1784,7 +1792,8 @@ contract('Governance.sol', async (accounts) => {
     await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
 
     // Advance blocks to after proposal evaluation period
-    const proposalStartBlock = parseInt(_lib.parseTx(submitTxReceipt).event.args.submissionBlockNumber)
+    const proposalStartBlock = parseInt(submitTxReceipt.receipt.blockNumber)
+    
     await time.advanceBlockTo(proposalStartBlock + votingPeriod + executionDelay)
 
     // Self destruct before evaluating
@@ -1866,6 +1875,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         functionSignature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       )
@@ -1878,6 +1888,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         functionSignature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       ),
@@ -1922,6 +1933,7 @@ contract('Governance.sol', async (accounts) => {
         callValue0,
         functionSignature,
         callData,
+        proposalName,
         proposalDescription,
         { from: proposerAddress }
       )
