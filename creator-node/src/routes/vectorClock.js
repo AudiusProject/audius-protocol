@@ -23,7 +23,7 @@ module.exports = function (app) {
       // early exit if cnodeUser not found on primary
       if (!cnodeUser) {
         await transaction.commit()
-        return successResponse('No cnodeUser record found on the primary')
+        return successResponse({ status: 'No cnodeUser record found on the primary' })
       }
 
       // clock values have been added for CNodeUser, check if they're consistent across all nodes before returning success

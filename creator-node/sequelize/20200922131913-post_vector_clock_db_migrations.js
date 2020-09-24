@@ -8,7 +8,6 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction()
 
-    // TODO - delete all danging rows without any clock values
     await queryInterface.sequelize.query(`
       DELETE FROM "AudiusUsers" WHERE "clock" IS NULL;
       DELETE FROM "Tracks" WHERE "clock" IS NULL;
@@ -16,10 +15,6 @@ module.exports = {
       UPDATE "CNodeUsers" SET "clock" = 0 WHERE "clock" IS NULL;
     `)
 
-    // ALTER TABLE "AudiusUsers" ALTER COLUMN "clock" SET NOT NULL;
-    // ALTER TABLE "Tracks" ALTER COLUMN "clock" SET NOT NULL;
-    // ALTER TABLE "Files" ALTER COLUMN "clock" SET NOT NULL;
-    // ALTER TABLE "CNodeUsers" ALTER COLUMN "clock" SET NOT NULL;
     await updateClock(queryInterface, Sequelize, transaction, false)
 
     // add back in foreign key constraints for AudiusUsers and Tracks

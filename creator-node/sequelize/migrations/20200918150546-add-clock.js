@@ -20,12 +20,6 @@ module.exports = {
     await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
     await transaction.commit()
-
-    /**
-     * TODO - contents for follow-up migration
-     * - add non-null constraints to Clock columns
-     * - addCompositePrimaryKeysToAudiusUsersAndTracks()
-     */
   },
 
   down: async (queryInterface, Sequelize) => { }
@@ -53,29 +47,6 @@ async function addClockColumn (queryInterface, Sequelize, transaction) {
     unique: false,
     allowNull: true
   }, { transaction })
-}
-
-// TODO - move to and call in follow-up migration
-// eslint-disable-next-line no-unused-vars
-async function addCompositePrimaryKeysToAudiusUsersAndTracks (queryInterface, Sequelize, transaction) {
-  await queryInterface.addConstraint(
-    'AudiusUsers',
-    {
-      type: 'PRIMARY KEY',
-      fields: ['cnodeUserUUID', 'clock'],
-      name: 'AudiusUsers_primary_key_(cnodeUserUUID,clock)',
-      transaction
-    }
-  )
-  await queryInterface.addConstraint(
-    'Tracks',
-    {
-      type: 'PRIMARY KEY',
-      fields: ['cnodeUserUUID', 'clock'],
-      name: 'Tracks_primary_key_(cnodeUserUUID,clock)',
-      transaction
-    }
-  )
 }
 
 async function addCompositeUniqueConstraints (queryInterface, Sequelize, transaction) {
