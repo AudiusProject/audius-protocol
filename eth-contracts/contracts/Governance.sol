@@ -52,6 +52,9 @@ contract Governance is InitializableV2 {
     /// @notice Max number of bytes allowed in a proposal description string
     uint16 private maxDescriptionLength;
 
+    /// @notice Max number of bytes allowed in a proposal name string
+    uint16 private maxNameLength;
+
     /**
      * @notice Address of account that has special Governance permissions. Can veto proposals
      *      and execute transactions directly on contracts.
@@ -184,6 +187,7 @@ contract Governance is InitializableV2 {
         uint256 _votingQuorumPercent,
         uint16 _maxInProgressProposals,
         uint16 _maxDescriptionLength,
+        uint16 _maxNameLength,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
@@ -203,6 +207,9 @@ contract Governance is InitializableV2 {
 
         require(_maxDescriptionLength > 0, "Governance: Requires non-zero _maxDescriptionLength");
         maxDescriptionLength = _maxDescriptionLength;
+
+        require(_maxNameLength > 0, "Governance: Requires non-zero _maxNameLength");
+        maxNameLength = _maxNameLength;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
@@ -280,6 +287,11 @@ contract Governance is InitializableV2 {
         require(
             bytes(_description).length > 0 && bytes(_description).length <= maxDescriptionLength,
             "Governance: _description length must be between 1 and maxDescriptionLength"
+        );
+        // Require description name in bytes is within bounds
+        require(
+            bytes(_name).length > 0 && bytes(_name).length <= maxNameLength,
+            "Governance: _name length must be between 1 and maxNameLength"
         );
 
         // set proposalId
@@ -629,6 +641,22 @@ contract Governance is InitializableV2 {
     }
 
     /**
+     * @notice Set the max length in bytes allowed for a proposal name string
+     * @dev Only callable by self via _executeTransaction
+     * @param _maxNameLength - new value for maxNameLength
+     */
+    function setMaxNameLength(uint16 _maxNameLength) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), "Only callable by self");
+        require(
+            _maxNameLength > 0,
+            "Governance: Requires non-zero _maxnameLength"
+        );
+        maxNameLength = _maxNameLength;
+    }
+
+    /**
      * @notice Set the execution delay for a proposal
      * @dev Only callable by self via _executeTransaction
      * @param _newExecutionDelay - new value for executionDelay
@@ -859,6 +887,13 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         return maxDescriptionLength;
+    }
+
+    /// @notice Get the max length in bytes of a proposal name string
+    function getMaxNameLength() external view returns (uint16) {
+        _requireIsInitialized();
+
+        return maxNameLength;
     }
 
     /// @notice Get the array of all InProgress proposal Ids

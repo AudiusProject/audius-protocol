@@ -234,7 +234,8 @@ export const deployGovernance = async (
   votingQuorum,
   guardianAddress,
   maxInProgressProposals = 20,
-  maxDescriptionLength = 250
+  maxDescriptionLength = 250,
+  maxNameLength = 250
 ) => {
   const Governance = artifacts.require('Governance')
   const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
@@ -242,8 +243,8 @@ export const deployGovernance = async (
   const governance0 = await Governance.new({ from: proxyDeployerAddress })
   const governanceInitializeData = encodeCall(
     'initialize',
-    ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-    [registry.address, votingPeriod, executionDelay, votingQuorum, maxInProgressProposals, maxDescriptionLength, guardianAddress]
+    ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'uint16', 'address'],
+    [registry.address, votingPeriod, executionDelay, votingQuorum, maxInProgressProposals, maxDescriptionLength, maxNameLength, guardianAddress]
   )
   // Initialize proxy with zero address
   const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
