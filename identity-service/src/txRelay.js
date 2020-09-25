@@ -170,7 +170,10 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
 
   // if this promise resolves, it continues to the next step
   // if it errors, the reject is caught by the calling function in the try/catch and handled
+  const startTimeReceipt = new Date()
   const receipt = await receiptPromise
+  const timeReceipt = new Date() - startTimeReceipt
+  req.logger.info(`txRelay - Received recript in ${timeReceipt} for ${JSON.stringify(receipt)}`)
 
   await models.Transaction.create({
     contractRegistryKey: contractRegistryKey,
