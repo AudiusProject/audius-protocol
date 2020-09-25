@@ -359,7 +359,7 @@ const config = convict({
       https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
     `,
     format: 'nat',
-    env: 'timeout',
+    env: 'setTimeout',
     default: 10 * 60 * 1000 // 10 minutes
   },
   timeout: {
