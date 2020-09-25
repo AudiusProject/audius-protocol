@@ -190,6 +190,30 @@ search_parser.add_argument('only_downloadable', required=False, default=False)
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('genre', required=False)
 trending_parser.add_argument('time', required=False)
+trending_parser.add_argument('limit', required=False)
+trending_parser.add_argument('offset', required=False)
+
+full_trending_parser = trending_parser.copy()
+full_trending_parser.add_argument('user_id', required=False)
+
 
 def success_response(entity):
     return api_helpers.success_response(entity, 200, False)
+
+DEFAULT_LIMIT = 100
+MIN_LIMIT = 1
+MAX_LIMIT = 500
+DEFAULT_OFFSET = 0
+MIN_OFFSET = 0
+def format_limit(args, max_limit=MAX_LIMIT):
+    lim = args.get("limit", DEFAULT_LIMIT)
+    if lim is None:
+        return DEFAULT_LIMIT
+
+    return max(min(int(lim), max_limit), MIN_LIMIT)
+
+def format_offset(args, max_offset=MAX_LIMIT):
+    offset = args.get("offset", DEFAULT_OFFSET)
+    if offset is None:
+        return DEFAULT_OFFSET
+    return max(min(int(offset), max_offset), MIN_OFFSET)
