@@ -14,5 +14,17 @@ app_name_metric = ns.model('app_name_metric', {
 })
 
 app_name = ns.model('app_name', {
-    "name": fields.String
+    "name": fields.String,
+    "count": fields.Integer,
+    "unique_count": fields.Integer,
+})
+
+plays_metric = ns.model('plays_metric', {
+    "timestamp": fields.String,
+    "count": fields.Integer,
+})
+
+genre_metric = ns.model('genre', {
+    "name": fields.String,
+    "count": fields.Integer
 })
