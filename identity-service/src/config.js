@@ -388,7 +388,7 @@ const config = convict({
     format: 'nat',
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
-  },
+  }
 })
 
 // if you wanted to load a file
