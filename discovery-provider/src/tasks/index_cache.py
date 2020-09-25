@@ -1,6 +1,5 @@
 import logging
 import json
-from src.utils import db_session
 from src.tasks.celery_app import celery
 from src.tasks.generate_trending import generate_trending, trending_cache_hits_key, \
         trending_cache_miss_key, trending_cache_total_key
