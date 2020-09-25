@@ -93,11 +93,16 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
 
   const gasPrice = await getGasPrice(req, web3)
 
+  req.logger.info(`txRelay - Acquiring nonce lock for ${JSON.stringify(decodedABI)}`)
+  const startTime = new Date()
   // crude spinlock
   while (nonceLocked) { // eslint-disable-line
     await delay(200) // poll lock every 200ms
   }
   nonceLocked = true
+  const timeLocked = new Date() - startTime
+  req.logger.info(`txRelay - Acquired nonce lock in ${timeLocked} for ${JSON.stringify(decodedABI)}`)
+
   let receiptPromise = null
 
   try {
@@ -143,11 +148,13 @@ const sendTransactionInternal = async (req, web3, resetNonce = false, txProps, r
     const prom = new Promise(function (resolve, reject) {
       let resolved = false
       receiptPromise.once('transactionHash', async function (hash) {
+        req.logger.info(`txRelay - received transaction hash ${hash} for sender ${senderAddress}`)
         await redis.hset('txHashToSenderAddress', hash, senderAddress)
         resolved = true
         resolve(hash)
       }).on('error', async function (error) {
         if (!resolved) {
+          req.logger.error(`txRelay - error getting transaction receipt ${error}`)
           await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
           reject(error)
         }
