@@ -258,6 +258,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(health_check.bp)
 
     app.register_blueprint(api_v1.bp)
+    app.register_blueprint(api_v1.bp_full)
 
     return app
 

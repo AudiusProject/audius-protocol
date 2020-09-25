@@ -1,7 +1,8 @@
-import logging # pylint: disable=C0302
+import logging
+from src.queries.get_top_playlists import get_top_playlists # pylint: disable=C0302
 from src.api.v1.models.playlists import playlist_model
 from src.queries.get_playlists import get_playlists
-from flask_restx import Resource, Namespace, fields
+from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
     make_response, success_response, search_parser, abort_bad_request_param
@@ -99,4 +100,42 @@ class PlaylistSearchResult(Resource):
         }
         response = search(search_args)
         playlists = list(map(extend_playlist, response["playlists"]))
+        return success_response(playlists)
+
+top_parser = reqparse.RequestParser()
+top_parser.add_argument('type', required=True)
+top_parser.add_argument('limit', required=False, type=int)
+top_parser.add_argument('offset', required=False, type=int)
+
+@ns.route("/top", doc=False)
+class Top(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Top Playlists""",
+        params={
+            'type': 'album or playlist',
+            'limit': 'limit',
+            'offset': 'offset'
+        }
+    )
+    @ns.marshal_with(playlists_response)
+    @cache(ttl_sec=30 * 60)
+    def get(self):
+        """Gets top playlists."""
+        args = top_parser.parse_args()
+        if args.get('limit') is None:
+            args['limit'] = 100
+        else:
+            args['limit'] = min(args.get('limit'), 100)
+        if args.get('offset') is None:
+            args['offset'] = 0
+        if args.get('type') not in ['album', 'playlist']:
+            abort_bad_request_param('type', ns)
+
+        args['with_users'] = True
+
+        logger.warning(args)
+        response = get_top_playlists(args.type, args)
+
+        playlists = list(map(extend_playlist, response))
         return success_response(playlists)

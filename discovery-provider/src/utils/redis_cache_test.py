@@ -2,7 +2,7 @@ import json
 from time import sleep
 from unittest.mock import patch
 from src.utils.redis_cache import cache
-
+import flask
 
 def test_cache(redis_mock):
     """Test that the redis cache decorator works"""
@@ -10,56 +10,60 @@ def test_cache(redis_mock):
     @patch('src.utils.redis_cache.extract_key')
     def get_mock_cache(extract_key):
 
-        mock_key_1 = 'mock_key'
-        extract_key.return_value = mock_key_1
+        # cache requires a request object
+        app = flask.Flask(__name__)
+        with app.test_request_context('/'):
 
-        # Test a mock function returning two items
-        @cache(ttl_sec=1)
-        def mock_func():
-            return {'name': 'joe'}, 200
+            mock_key_1 = 'mock_key'
+            extract_key.return_value = mock_key_1
 
-        res = mock_func()
-        assert res[0] == {'name': 'joe'}
-        assert res[1] == 200
+            # Test a mock function returning two items
+            @cache(ttl_sec=1)
+            def mock_func():
+                return {'name': 'joe'}, 200
 
-        cached_resp = redis_mock.get(mock_key_1)
-        deserialized = json.loads(cached_resp)
-        assert deserialized == {'name': 'joe'}
+            res = mock_func()
+            assert res[0] == {'name': 'joe'}
+            assert res[1] == 200
 
-        # This should call the function and return the cached response
-        res = mock_func()
-        assert res[0] == {'name': 'joe'}
-        assert res[1] == 200
+            cached_resp = redis_mock.get(mock_key_1)
+            deserialized = json.loads(cached_resp)
+            assert deserialized == {'name': 'joe'}
 
-        # Sleep to wait for the cache to expire
-        sleep(1)
+            # This should call the function and return the cached response
+            res = mock_func()
+            assert res[0] == {'name': 'joe'}
+            assert res[1] == 200
 
-        cached_resp = redis_mock.get(mock_key_1)
-        assert cached_resp is None
+            # Sleep to wait for the cache to expire
+            sleep(1)
 
-        # Test the single response
-        def transform(input):
-            return {'music': input}
+            cached_resp = redis_mock.get(mock_key_1)
+            assert cached_resp is None
 
-        @cache(ttl_sec=1, transform=transform)
-        def mock_func_transform():
-            return 'audius'
+            # Test the single response
+            def transform(input):
+                return {'music': input}
 
-        res = mock_func_transform()
-        assert res == {'music': 'audius'}
+            @cache(ttl_sec=1, transform=transform)
+            def mock_func_transform():
+                return 'audius'
 
-        cached_resp = redis_mock.get(mock_key_1)
-        deserialized = json.loads(cached_resp)
-        assert deserialized == 'audius'
+            res = mock_func_transform()
+            assert res == {'music': 'audius'}
 
-        # This should call the function and return the cached response
-        res = mock_func_transform()
-        assert res == {'music': 'audius'}
+            cached_resp = redis_mock.get(mock_key_1)
+            deserialized = json.loads(cached_resp)
+            assert deserialized == 'audius'
 
-        # Sleep to wait for the cache to expire
-        sleep(1)
+            # This should call the function and return the cached response
+            res = mock_func_transform()
+            assert res == {'music': 'audius'}
 
-        cached_resp = redis_mock.get(mock_key_1)
-        assert cached_resp is None
+            # Sleep to wait for the cache to expire
+            sleep(1)
+
+            cached_resp = redis_mock.get(mock_key_1)
+            assert cached_resp is None
 
     get_mock_cache() # pylint: disable=no-value-for-parameter
