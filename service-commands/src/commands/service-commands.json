@@ -64,14 +64,29 @@
     "port": 5000,
     "up": [
       "cd discovery-provider; rm celerybeat.pid",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
+      "cd discovery-provider; . compose/env/shellEnv1.sh; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down"
+      "cd discovery-provider; . compose/env/shellEnv1.sh; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down"
     ],
     "register": ["cd libs/; node initScripts/local.js register-discprov-1"]
+  },
+  "discovery-provider-2": {
+    "protocol": "http",
+    "host": "audius-disc-prov_web-server_2",
+    "port": 5001,
+    "up": [
+      "cd discovery-provider; rm celerybeat.pid",
+      "cd discovery-provider; . compose/env/shellEnv2.sh; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
+      "echo 'Waiting 5 seconds...'",
+      "sleep 5"
+    ],
+    "down": [
+      "cd discovery-provider; . compose/env/shellEnv2.sh; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down"
+    ],
+    "register": ["cd libs/; node initScripts/local.js register-discprov-2"]
   },
   "content-service": {
     "protocol": "http",
@@ -95,7 +110,7 @@
     "down": [
       "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
-    "register": ["cd libs/; node initScripts/local.js register-cnode #"],
+    "register": ["cd libs/; node initScripts/local.js register-cnode-#"],
     "update-delegate-wallet": ["cd libs/; node initScripts/local.js update-delegate-wallet #"]
   },
   "identity-service": {

@@ -33,7 +33,7 @@
   "spOwnerWalletIndex": 1,
   "spOwnerWallet": "",
   "debounceTime": 30000,
-  "discoveryProviderWhitelist": "http://audius-disc-prov_web-server_1:5000",
+  "discoveryProviderWhitelist": "http://audius-disc-prov_web-server_1:5000,http://audius-disc-prov_web-server_2:5001",
   "identityService": "http://audius-identity-service_identity-service_1:7000",
   "userBlacklist": "",
   "trackBlacklist": "",

@@ -17,7 +17,7 @@ const serviceTypeList = ['discovery-provider', 'creator-node']
 const spDiscProvType = serviceTypeList[0]
 const spCreatorNodeType = serviceTypeList[1]
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
-const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
+const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5001'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
 const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
 const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
@@ -212,7 +212,7 @@ const _registerCnode2 = async (audiusLibs, ethAccounts) => {
 
 // Account 3
 const _registerCnode3 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
+  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
   await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint3, amountOfAuds)
 }
 

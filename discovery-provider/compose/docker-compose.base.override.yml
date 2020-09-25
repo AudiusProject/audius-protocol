@@ -8,14 +8,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     ports:
-      - '5432:5432'
+      - '${DISCOVERY_PROVIDER_DB_HOST_PORT}:5432'
     networks:
       - audius_dev
   redis-server:
     image: redis:3.0-alpine
     command: redis-server --save '' 
     ports:
-      - '5379:6379'
+      - '${DISCOVERY_PROVIDER_REDIS_HOST_PORT}:6379'
     networks:
       - audius_dev
 

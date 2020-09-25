@@ -32,11 +32,13 @@ services:
     restart: always
     command: sh -c '/wait && ls && exec ./scripts/dev-server.sh'
     ports:
-      - '5000:5000'
+      - '${DISCOVERY_PROVIDER_HOST_PORT}:${DISCOVERY_PROVIDER_HOST_PORT}'
     env_file:
       - .env
     depends_on:
       - discovery-provider-db 
+    environment:
+      - FLASK_RUN_PORT=${DISCOVERY_PROVIDER_HOST_PORT}
     volumes:
       - '../.:/audius-discovery-provider'
     networks:

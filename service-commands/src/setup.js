@@ -128,6 +128,7 @@ const Service = Object.freeze({
   INIT_CONTRACTS_INFO: 'init-contracts-info',
   INIT_TOKEN_VERSIONS: 'init-token-versions',
   DISCOVERY_PROVIDER: 'discovery-provider',
+  DISCOVERY_PROVIDER_2: 'discovery-provider-2',
   CONTENT_SERVICE: 'content-service',
   CREATOR_NODE: 'creator-node',
   IDENTITY_SERVICE: 'identity-service',
@@ -213,6 +214,31 @@ const runSetupCommand = async (
 }
 
 const getServiceURL = (service, serviceNumber) => {
+  const commands = serviceCommands[service]
+  if (!commands) {
+    throw new Error(`Invalid service: [${service}]`)
+  }
+
+  if (service === Service.DISCOVERY_PROVIDER) {
+    serviceNumber = 1
+    const healthCheckEndpt1 = `http://${commands.host}:${
+      5000 + parseInt(serviceNumber) - 1
+    }/${HEALTH_CHECK_ENDPOINT}`
+    
+    console.log(`what is the dp1 endpt... ${healthCheckEndpt1}`)
+    return healthCheckEndpt1
+  }
+
+  if (service === Service.DISCOVERY_PROVIDER_2) {
+    serviceNumber = 2
+    const healthCheckEndpt2 = `http://${commands.host}:${
+      5000 + parseInt(serviceNumber) - 1
+    }/${HEALTH_CHECK_ENDPOINT}`
+
+    console.log(`what is the dp2 endpt... ${healthCheckEndpt2}`)
+    return healthCheckEndpt2
+  }
+
   if (service === Service.CREATOR_NODE) {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
@@ -222,10 +248,7 @@ const getServiceURL = (service, serviceNumber) => {
     }/${HEALTH_CHECK_ENDPOINT}`
   }
 
-  const commands = serviceCommands[service]
-  if (!commands) {
-    throw new Error(`Invalid service: [${service}]`)
-  }
+
   const { protocol, host, port } = commands
   return `${protocol}://${host}:${port}/${HEALTH_CHECK_ENDPOINT}`
 }
@@ -318,6 +341,13 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
     [
       Service.DISCOVERY_PROVIDER,
+      SetupCommand.REGISTER,
+      { ...options, retries: 2 }
+    ],
+    [Service.DISCOVERY_PROVIDER_2, SetupCommand.UP],
+    [Service.DISCOVERY_PROVIDER_2, SetupCommand.HEALTH_CHECK],
+    [
+      Service.DISCOVERY_PROVIDER_2,
       SetupCommand.REGISTER,
       { ...options, retries: 2 }
     ],
