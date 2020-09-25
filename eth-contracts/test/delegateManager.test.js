@@ -345,6 +345,11 @@ contract('DelegateManager', async (accounts) => {
     }
   }
 
+  /*
+     Function to re-calculate expected delegator stake total given
+      list of types and IDs, and compare calculated value with 
+      delegator balance tracked on chain
+  */
   const getTotalDelegatorStake = async (delegator) => {
     let validTypes = await serviceTypeManager.getValidServiceTypes()
     let totalDelegatorStake = _lib.toBN(0)
@@ -367,7 +372,7 @@ contract('DelegateManager', async (accounts) => {
       totalDelegatorStake = totalDelegatorStake.add(totalDelegatedToOwner)
     }
 
-    let newTotalFromContract = await delegateManager.getTotalDelegation(delegator)
+    let newTotalFromContract = await delegateManager.getTotalDelegatorStake(delegator)
     assert.isTrue(
       newTotalFromContract.eq(totalDelegatorStake),
       `ERROR STATE Calculated:${totalDelegatorStake}, newTotalFromContract:${newTotalFromContract}`
