@@ -714,7 +714,7 @@ contract('Governance.sol', async (accounts) => {
         )
       )
 
-      // Successfully submit with name
+      // Successfully submit with non-empty name
       const txReceipt = await governance.submitProposal(
         targetContractRegistryKey,
         callValue0,
@@ -754,7 +754,7 @@ contract('Governance.sol', async (accounts) => {
         )
       )
 
-      // Successfully submit with description of correct length
+      // Successfully submit with non-empty description
       const txReceipt = await governance.submitProposal(
         targetContractRegistryKey,
         callValue0,

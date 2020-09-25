@@ -223,8 +223,8 @@ contract Governance is InitializableV2 {
      * @param _callValue - amount of wei to pass with function call if a token transfer is involved
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
-     * @param _name - Text proposal of proposal to be emitted in event
-     * @param _description - Text description of proposal to be emitted in event // TODO: emit name instead?
+     * @param _name - Text name of proposal to be emitted in event
+     * @param _description - Text description of proposal to be emitted in event
      * @return - ID of new proposal
      */
     function submitProposal(
