@@ -9,7 +9,6 @@ const GovernanceUpgraded = artifacts.require('GovernanceUpgraded')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const DelegateManager = artifacts.require('DelegateManager')
-const ClaimsManager = artifacts.require('ClaimsManager')
 const TestContract = artifacts.require('TestContract')
 const Registry = artifacts.require('Registry')
 const AudiusToken = artifacts.require('AudiusToken')
@@ -51,14 +50,13 @@ contract('Governance.sol', async (accounts) => {
   const votingQuorumPercent = 10
   const maxInProgressProposals = 20
   const maxDescriptionLength = 250
-  const maxNameLength = 250
   const executionDelay = votingPeriod
   const deployerCutLockupDuration = 11
   const undelegateLockupDuration = votingPeriod + executionDelay + 1
   const decreaseStakeLockupDuration = undelegateLockupDuration
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress, newUpdateAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -101,9 +99,7 @@ contract('Governance.sol', async (accounts) => {
       executionDelay,
       votingQuorumPercent,
       guardianAddress,
-      maxInProgressProposals,
-      maxDescriptionLength,
-      maxNameLength
+      maxInProgressProposals
     )
     await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
 
@@ -319,15 +315,13 @@ contract('Governance.sol', async (accounts) => {
   it('Initialize require statements', async () => {
     const governance0 = await Governance.new({ from: proxyDeployerAddress })
     const newMaxInProgressProposals = 100
-    const maxDescriptionLength = 100
-    const maxNameLength = maxDescriptionLength
-    const initializeArgumentTypesArray = ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'uint16', 'address']
+    const initializeArgumentTypesArray = ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'address']
     
     // Requires non-zero _registryAddress
     let governanceCallData = _lib.encodeCall(
       'initialize',
       initializeArgumentTypesArray,
-      [0x0, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
+      [0x0, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -342,7 +336,7 @@ contract('Governance.sol', async (accounts) => {
     governanceCallData = _lib.encodeCall(
       'initialize',
       initializeArgumentTypesArray,
-      [registry.address, 0, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
+      [registry.address, 0, executionDelay, votingQuorumPercent, newMaxInProgressProposals, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -357,7 +351,7 @@ contract('Governance.sol', async (accounts) => {
     governanceCallData = _lib.encodeCall(
       'initialize',
       initializeArgumentTypesArray,
-      [registry.address, votingPeriod, executionDelay, 0, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
+      [registry.address, votingPeriod, executionDelay, 0, newMaxInProgressProposals, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -372,7 +366,7 @@ contract('Governance.sol', async (accounts) => {
     governanceCallData = _lib.encodeCall(
       'initialize',
       initializeArgumentTypesArray,
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, maxNameLength, _lib.addressZero]
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, _lib.addressZero]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -387,37 +381,7 @@ contract('Governance.sol', async (accounts) => {
     governanceCallData = _lib.encodeCall(
       'initialize',
       initializeArgumentTypesArray,
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, 0, maxDescriptionLength, maxNameLength, proxyDeployerAddress]
-    )
-    await _lib.assertRevert(
-      AudiusAdminUpgradeabilityProxy.new(
-        governance0.address,
-        governance.address,
-        governanceCallData,
-        { from: proxyDeployerAddress }
-      )
-    )
-
-    // Requires non-zero _maxDescriptionLength
-    governanceCallData = _lib.encodeCall(
-      'initialize',
-      initializeArgumentTypesArray,
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, 0, maxNameLength, proxyDeployerAddress]
-    )
-    await _lib.assertRevert(
-      AudiusAdminUpgradeabilityProxy.new(
-        governance0.address,
-        governance.address,
-        governanceCallData,
-        { from: proxyDeployerAddress }
-      )
-    )
-
-    // Requires non-zero _maxNameLength
-    governanceCallData = _lib.encodeCall(
-      'initialize',
-      initializeArgumentTypesArray,
-      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, maxDescriptionLength, 0, proxyDeployerAddress]
+      [registry.address, votingPeriod, executionDelay, votingQuorumPercent, 0, proxyDeployerAddress]
     )
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
@@ -735,10 +699,9 @@ contract('Governance.sol', async (accounts) => {
       const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
 
       const nameTooShort = ""
-      const nameTooLong = "-".repeat(maxDescriptionLength + 10)
       const nameCorrect = proposalName
 
-      // Fail to submit with empty description
+      // Fail to submit with empty name
       await _lib.assertRevert(
         governance.submitProposal(
           targetContractRegistryKey,
@@ -751,20 +714,7 @@ contract('Governance.sol', async (accounts) => {
         )
       )
 
-      // Fail to submit with too long description
-      await _lib.assertRevert(
-        governance.submitProposal(
-          targetContractRegistryKey,
-          callValue0,
-          signature,
-          callData,
-          nameTooLong,
-          proposalDescription,
-          { from: proposerAddress }
-        )
-      )
-
-      // Successfully submit with description of correct length
+      // Successfully submit with name
       const txReceipt = await governance.submitProposal(
         targetContractRegistryKey,
         callValue0,
@@ -776,7 +726,7 @@ contract('Governance.sol', async (accounts) => {
       )
       const tx = _lib.parseTx(txReceipt)
 
-      // Confirm description value in event log
+      // Confirm name value in event log
       assert.equal(tx.event.args.name, nameCorrect, "Expected same event.args.name")
     })
 
@@ -789,7 +739,6 @@ contract('Governance.sol', async (accounts) => {
       const callData = _lib.abiEncode(['uint256', 'address'], [slashAmount.toNumber(), targetAddress])
 
       const descriptionTooShort = ""
-      const descriptionTooLong = "-".repeat(maxDescriptionLength + 10)
       const descriptionCorrect = proposalDescription
 
       // Fail to submit with empty description
@@ -801,19 +750,6 @@ contract('Governance.sol', async (accounts) => {
           callData,
           proposalName,
           descriptionTooShort,
-          { from: proposerAddress }
-        )
-      )
-
-      // Fail to submit with too long description
-      await _lib.assertRevert(
-        governance.submitProposal(
-          targetContractRegistryKey,
-          callValue0,
-          signature,
-          callData,
-          proposalName,
-          descriptionTooLong,
           { from: proposerAddress }
         )
       )
@@ -2410,47 +2346,6 @@ contract('Governance.sol', async (accounts) => {
         await governance.getMaxInProgressProposals.call(),
         newMaxInProgressProposals,
         'Incorrect maxInProgressProposals value after update'
-      )
-    })
-
-    it('Get/Set maxDescriptionLength', async () => {
-      const newMaxDescriptionLength = maxDescriptionLength * 2
-
-      assert.equal(
-        await governance.getMaxDescriptionLength.call(),
-        maxDescriptionLength,
-        'Incorrect maxDescriptionLength value before update'
-      )
-
-      await _lib.assertRevert(
-        governance.setMaxDescriptionLength(newMaxDescriptionLength),
-        "Only callable by self"
-      )
-
-      // should fail to call setMaxDescriptionLength with invalid value of 0 
-      await _lib.assertRevert(
-        governance.guardianExecuteTransaction(
-          governanceKey,
-          callValue0,
-          'setMaxDescriptionLength(uint16)',
-          _lib.abiEncode(['uint16'], [0]),
-          { from: guardianAddress }
-        ),
-        "Governance: Transaction failed."
-      )
-
-      await governance.guardianExecuteTransaction(
-        governanceKey,
-        callValue0,
-        'setMaxDescriptionLength(uint16)',
-        _lib.abiEncode(['uint16'], [newMaxDescriptionLength]),
-        { from: guardianAddress }
-      )
-
-      assert.equal(
-        await governance.getMaxDescriptionLength.call(),
-        newMaxDescriptionLength,
-        "Incorrect maxDescriptionLength value after update"
       )
     })
 

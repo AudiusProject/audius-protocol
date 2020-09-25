@@ -18,9 +18,6 @@ const VotingQuorumPercent = 10
 // - Setting to 100 by default as that is a sufficiently large value that is not at gas limit risk
 const MaxInProgressProposals = 100
 
-const MaxDescriptionLengthBytes = 250
-const MaxNameLengthBytes = 250
-
 // 24hr * 60min/hr * 60sec/min / ~13 sec/block = 6646 blocks
 const ExecutionDelayBlocks = 6646
 
@@ -41,12 +38,10 @@ module.exports = (deployer, network, accounts) => {
       'initialize',
       [
         'address',
-        'uint256', 
-        'uint256', 
-        'uint256', 
-        'uint16', 
-        'uint16', 
-        'uint16', 
+        'uint256',
+        'uint256',
+        'uint256',
+        'uint16',
         'address'
       ],
       [
@@ -55,8 +50,6 @@ module.exports = (deployer, network, accounts) => {
         ExecutionDelayBlocks,
         VotingQuorumPercent,
         MaxInProgressProposals,
-        MaxDescriptionLengthBytes,
-        MaxNameLengthBytes,
         guardianAddress
       ]
     )
@@ -71,19 +64,19 @@ module.exports = (deployer, network, accounts) => {
 
     // Set governance Address on Governance proxy contract to enable self-upgradeability
     let govAddrFromProxy = await governanceProxy.getAudiusProxyAdminAddress.call()
-    assert.equal(govAddrFromProxy, proxyAdminAddress)
+    assert.strictEqual(govAddrFromProxy, proxyAdminAddress)
     await governanceProxy.setAudiusProxyAdminAddress(governanceProxy.address, { from: proxyAdminAddress })
     govAddrFromProxy = await governanceProxy.getAudiusProxyAdminAddress.call()
-    assert.equal(govAddrFromProxy, governanceProxy.address)
+    assert.strictEqual(govAddrFromProxy, governanceProxy.address)
 
     // Set governance address on Registry proxy contract to enable upgrades
     await registryProxy.setAudiusProxyAdminAddress(governanceProxy.address, { from: proxyAdminAddress })
     let govAddrFromRegProxy = await registryProxy.getAudiusProxyAdminAddress()
-    assert.equal(govAddrFromRegProxy, governanceProxy.address)
+    assert.strictEqual(govAddrFromRegProxy, governanceProxy.address)
 
     // Transfer registry ownership to Governance
     await registry.transferOwnership(governance.address, { from: proxyDeployerAddress })
-    assert.equal(await registry.owner.call(), governance.address)
+    assert.strictEqual(await registry.owner.call(), governance.address)
 
     // Register contract via governance
     await _lib.registerContract(governance, governanceRegKey, governance.address, guardianAddress)
