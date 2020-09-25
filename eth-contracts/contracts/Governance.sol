@@ -34,6 +34,12 @@ contract Governance is InitializableV2 {
     /// @notice Address of Audius staking contract, used to permission Governance method calls
     address private stakingAddress;
 
+    /// @notice Address of Audius ServiceProvider contract, used to permission Governance method calls
+    address private serviceProviderFactoryAddress;
+
+    /// @notice Address of Audius DelegateManager contract, used to permission Governance method calls
+    address private delegateManagerAddress;
+
     /// @notice Period in blocks for which a governance proposal is open for voting
     uint256 private votingPeriod;
 
@@ -105,6 +111,7 @@ contract Governance is InitializableV2 {
         uint256 voteMagnitudeNo;
         uint256 numVotes;
         mapping(address => Vote) votes;
+        mapping(address => uint256) voteMagnitude;
         bytes32 contractHash;
     }
 
@@ -238,6 +245,8 @@ contract Governance is InitializableV2 {
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
 
         address proposer = msg.sender;
 
@@ -323,6 +332,8 @@ contract Governance is InitializableV2 {
     function submitVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
 
         address voter = msg.sender;
 
@@ -337,6 +348,9 @@ contract Governance is InitializableV2 {
 
         // Record vote
         proposals[_proposalId].votes[voter] = _vote;
+
+        // Update stored weight
+        proposals[_proposalId].voteMagnitude[voter] = voterStake;
 
         // Update vote magnitudes
         if (_vote == Vote.Yes) {
@@ -364,11 +378,10 @@ contract Governance is InitializableV2 {
     function updateVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
 
         address voter = msg.sender;
-
-        // Validates new _vote, _proposalId, proposal state, and voter state + returns voterStake
-        uint256 voterStake = _validateVoteAndGetVoterStake(voter, _proposalId, _vote);
 
         // Record previous vote
         Vote previousVote = proposals[_proposalId].votes[voter];
@@ -378,6 +391,9 @@ contract Governance is InitializableV2 {
             previousVote != Vote.None,
             "Governance: To submit new vote, call submitVote()"
         );
+
+        // Validates new _vote, _proposalId, proposal state, and voter state + returns voterStake
+        uint256 voterStake = proposals[_proposalId].voteMagnitude[voter];
 
         // Override previous vote
         proposals[_proposalId].votes[voter] = _vote;
@@ -416,6 +432,8 @@ contract Governance is InitializableV2 {
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
 
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
@@ -546,6 +564,32 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(_stakingAddress != address(0x00), "Governance: Requires non-zero _stakingAddress");
         stakingAddress = _stakingAddress;
+    }
+
+    /**
+     * @notice Set the ServiceProviderFactory address
+     * @dev Only callable by self via _executeTransaction
+     * @param _serviceProviderFactoryAddress - address for new Staking contract
+     */
+    function setServiceProviderFactoryAddress(address _serviceProviderFactoryAddress) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(_serviceProviderFactoryAddress != address(0x00), "Governance: Requires non-zero _serviceProviderFactoryAddress");
+        serviceProviderFactoryAddress = _serviceProviderFactoryAddress;
+    }
+
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by self via _executeTransaction
+     * @param _delegateManagerAddress - address for new DelegateManager contract
+     */
+    function setDelegateManagerAddress(address _delegateManagerAddress) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(_delegateManagerAddress != address(0x00), "Governance: Requires non-zero _delegateManagerAddress");
+        delegateManagerAddress = _delegateManagerAddress;
     }
 
     /**
@@ -795,6 +839,20 @@ contract Governance is InitializableV2 {
         return stakingAddress;
     }
 
+    /// @notice Get the ServiceProviderFactory address
+    function getServiceProviderFactoryAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return serviceProviderFactoryAddress;
+    }
+
+    /// @notice Get the DelegateManager address
+    function getDelegateManagerAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return delegateManagerAddress;
+    }
+
     /// @notice Get the contract voting period
     function getVotingPeriod() external view returns (uint256) {
         _requireIsInitialized();
@@ -965,6 +1023,20 @@ contract Governance is InitializableV2 {
         require(
             stakingAddress != address(0x00),
             "Governance: stakingAddress is not set"
+        );
+    }
+
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "Governance: serviceProviderFactoryAddress is not set"
+        );
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(
+            delegateManagerAddress != address(0x00),
+            "Governance: delegateManagerAddress is not set"
         );
     }
 

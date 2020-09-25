@@ -42,7 +42,7 @@ const Vote = Object.freeze({
   Yes: 2
 })
 
-contract('Governance.sol', async (accounts) => {
+contract.only('Governance.sol', async (accounts) => {
   let token, registry, staking, stakingProxy, serviceProviderFactory
   let claimsManager, delegateManager, governance, registry0, registryProxy, token0, tokenProxy
 
@@ -216,11 +216,13 @@ contract('Governance.sol', async (accounts) => {
     await registry.addContract(delegateManagerKey, delegateManagerProxy.address, { from: proxyDeployerAddress })
 
     // ---- Configuring addresses
-    await _lib.configureGovernanceStakingAddress(
+    await _lib.configureGovernanceContractAddresses(
       governance,
       governanceKey,
       guardianAddress,
-      stakingProxy.address
+      stakingProxy.address,
+      serviceProviderFactory.address,
+      delegateManager.address
     )
     // ---- Set up staking contract permissions
     await _lib.configureStakingContractAddresses(
