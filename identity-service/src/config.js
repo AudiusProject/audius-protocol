@@ -352,7 +352,43 @@ const config = convict({
     format: 'nat',
     default: 10000,
     env: 'pgConnectionPoolIdleTimeout'
-  }
+  },
+  setTimeout: {
+    doc: `
+      Sets the timeout value (in ms) for sockets
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 10 * 60 * 1000 // 10 minutes
+  },
+  timeout: {
+    doc: `
+      Sets the timeout value (in ms) for socket inactivity
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_timeout
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 10 * 60 * 1000 // 10 minutes
+  },
+  keepAliveTimeout: {
+    doc: `
+      Server keep alive timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_keepalivetimeout
+    `,
+    format: 'nat',
+    env: 'keepAliveTimeout',
+    default: 5000 // node.js default value
+  },
+  headersTimeout: {
+    doc: `
+      Server headers timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_headerstimeout
+    `,
+    format: 'nat',
+    env: 'headersTimeout',
+    default: 60 * 1000 // 60s - node.js default value
+  },
 })
 
 // if you wanted to load a file
