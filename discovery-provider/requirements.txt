@@ -1,7 +1,7 @@
 # web3 used to be 5.11.0 but due to a build issue in docker, downgraded to 5.8.0
 web3==5.8.0
 Flask==1.0.4
-psycopg2==2.7.7
+psycopg2==2.8.5
 SQLAlchemy==1.2.5
 alembic==1.0.0
 celery[redis]==4.2.0
@@ -22,3 +22,4 @@ hashids==1.2.0
 fakeredis==1.4.2
 jsonformatter==0.3.0
 py-cid==0.3.0
+pytest-postgresql==2.4.1

@@ -49,3 +49,9 @@ def add_to_blacklist(self, ipld_blacklist_contract, task, session, tx_receipt, b
             continue
         session.add(ipld_blacklist_model)
     return len(new_ipld_blacklist_event)
+
+def is_blacklisted_ipld(session, ipld_blacklist_multihash):
+    ipld_blacklist_entry = (
+        session.query(BlacklistedIPLD).filter(BlacklistedIPLD.ipld == ipld_blacklist_multihash)
+    )
+    return ipld_blacklist_entry.count() > 0

@@ -73,7 +73,7 @@ const createProposal = () => {
   const functionSignature = 'slash(uint256,address)'
   const slashAmount = web3.utils.toWei("500", 'ether')
   const targetAddress = accounts[1]
-  const callData = audius0.ethContracts.GovernanceClient.abiEncode(['uint256', 'address'], [slashAmount, targetAddress])
+  const callData = [slashAmount, targetAddress]
   const description = PROPOSAL_DESCRIPTION
 
   return  {
@@ -84,6 +84,7 @@ const createProposal = () => {
     description,
   }
 }
+
 const submitProposal = async () => {
   const proposal = createProposal()
   return audius0.ethContracts.GovernanceClient.submitProposal(proposal)
@@ -194,6 +195,31 @@ describe('Governance tests', function() {
     await evaluateProposal(id)
     const inProgressIds2 = await audius0.ethContracts.GovernanceClient.getInProgressProposals()
     assert.equal(inProgressIds2.length, 0)
+  })
+
+  it('Gets all proposals', async function() {
+    const blockNumber = await audius0.ethWeb3Manager.getWeb3().eth.getBlockNumber()
+
+    const id = await submitProposal()
+    const inProgressIds = await audius0.ethContracts.GovernanceClient.getProposals(blockNumber)
+    assert.equal(inProgressIds.length, 1)
+    assert.equal(inProgressIds[0].proposalId, id)
+
+    // evaluate
+    await evaluateProposal(id)
+    const inProgressIds2 = await audius0.ethContracts.GovernanceClient.getProposals(blockNumber)
+    assert.equal(inProgressIds.length, 1)
+    assert.equal(inProgressIds[0].proposalId, id)
+  })
+
+  it('Gets a proposal evaluation', async function() {
+    const blockNumber = await audius0.ethWeb3Manager.getWeb3().eth.getBlockNumber()
+
+    const id = await submitProposal()
+    await evaluateProposal(id)
+    const evaluation = await audius0.ethContracts.GovernanceClient.getProposalEvaluation(id)
+    assert.equal(evaluation.length, 1)
+    assert.equal(evaluation[0].returnValues.numVotes, "1")
   })
 
   it('Gets votes by address', async function() {

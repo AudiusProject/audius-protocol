@@ -2,6 +2,7 @@
 repost_count = 'repost_count'  # integer - total repost count of given track/playlist
 save_count = 'save_count'  # integer - total save count of given track/playlist
 play_count = 'play_count' # integer - total play count of given track
+total_play_count = 'total_play_count' # integer - total play count of a given playlist
 # boolean - has current user reposted given track/playlist
 has_current_user_reposted = 'has_current_user_reposted'
 # boolean - has current user saved given track/playlist
@@ -10,7 +11,6 @@ has_current_user_saved = 'has_current_user_saved'
 followee_reposts = 'followee_reposts'
 # array - followees of current user that have saved given track/playlist
 followee_saves = 'followee_saves'
-play_count = 'play_count'  # integer - total number of plays for a given track/playlist
 
 # remix track specific
 remix_of = 'remix_of'  # dictionary - contains an array of parent track ids

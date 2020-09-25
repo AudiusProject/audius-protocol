@@ -113,7 +113,7 @@ class ServiceSelection {
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
-        this.unhealthy = []
+        this.unhealthy = new Set([])
         this.backups = {}
         this.decisionTree.push({ stage: 'Failed Everything. Resetting.' })
         return null

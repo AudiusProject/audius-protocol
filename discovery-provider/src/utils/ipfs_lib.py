@@ -130,7 +130,6 @@ class IPFSClient:
         )
 
     def get_metadata_from_ipfs_node(self, multihash, metadata_format):
-
         try:
             res = self.cat(multihash)
             resp_val = json.loads(res)
@@ -195,7 +194,7 @@ class IPFSClient:
             if gateway_query_address:
                 try:
                     logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                    # use a HEAD request instead of a GET so we can just get the status code without the 
+                    # use a HEAD request instead of a GET so we can just get the status code without the
                     # actual image file, which we don't need
                     r = requests.head(gateway_query_address, timeout=3)
                 except Exception as e:

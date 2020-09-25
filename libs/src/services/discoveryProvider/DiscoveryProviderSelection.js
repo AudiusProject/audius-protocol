@@ -49,21 +49,25 @@ class DiscoveryProviderSelection extends ServiceSelection {
   /** Retrieves a cached discovery provider from localstorage */
   getCached () {
     if (localStorage) {
-      const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
-      if (discProvTimestamp) {
-        const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
+      try {
+        const discProvTimestamp = localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP)
+        if (discProvTimestamp) {
+          const { endpoint: latestEndpoint, timestamp } = JSON.parse(discProvTimestamp)
 
-        const inWhitelist = !this.whitelist || this.whitelist.has(latestEndpoint)
+          const inWhitelist = !this.whitelist || this.whitelist.has(latestEndpoint)
 
-        const timeout = this.reselectTimeout
-          ? this.reselectTimeout
-          : DISCOVERY_PROVIDER_RESELECT_TIMEOUT
-        const isExpired = (Date.now() - timestamp) > timeout
-        if (!inWhitelist || isExpired) {
-          this.clearCached()
-        } else {
-          return latestEndpoint
+          const timeout = this.reselectTimeout
+            ? this.reselectTimeout
+            : DISCOVERY_PROVIDER_RESELECT_TIMEOUT
+          const isExpired = (Date.now() - timestamp) > timeout
+          if (!inWhitelist || isExpired) {
+            this.clearCached()
+          } else {
+            return latestEndpoint
+          }
         }
+      } catch (e) {
+        console.error('Could not retrieve cached discovery endpoint from localStorage', e)
       }
     }
     return null

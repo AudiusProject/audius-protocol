@@ -5,7 +5,7 @@ services:
   celery-worker:
     build: ../.
     restart: always
-    command: sh -c '/wait && exec celery -A src.worker.celery worker'
+    command: sh -c '/wait && exec celery -A src.worker.celery worker --loglevel info'
     env_file:
       - .env
     depends_on:
@@ -18,7 +18,7 @@ services:
   celery-beat:
     build: ../.
     restart: always
-    command: sh -c '/wait && exec celery -A src.worker.celery beat'
+    command: sh -c '/wait && exec celery -A src.worker.celery beat --loglevel info'
     env_file:
       - .env
     depends_on:

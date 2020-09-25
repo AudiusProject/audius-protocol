@@ -31,9 +31,10 @@ run_unit_tests () {
   set -x
   echo Running unit tests...
   # Previous tests
-  ./node_modules/mocha/bin/mocha src/*/*/*.test.js
+  # ./node_modules/mocha/bin/mocha src/*/*/*.test.js
   # Component level unit tests
-  ./node_modules/mocha/bin/mocha src/*/*.test.js
+  # ./node_modules/mocha/bin/mocha src/*/*.test.js
+  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js'
   set -e
 }
 
