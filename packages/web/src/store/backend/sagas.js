@@ -19,6 +19,7 @@ import { getIsReachable } from 'store/reachability/selectors'
 import { hydrateStoreFromCache } from 'store/cache/sagas'
 import { getIsReadOnlyClient } from 'utils/clientUtil'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const REACHABILITY_TIMEOUT_MS = 8 * 1000
@@ -73,6 +74,8 @@ export function* setupBackend() {
     yield take(reachabilityActions.SET_REACHABLE)
     console.info('Reconnected')
   }
+
+  yield call(() => apiClient.init())
 
   if (getIsReadOnlyClient()) {
     // Read only clients do a paired down version of libs init

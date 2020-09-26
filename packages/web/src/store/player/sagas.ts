@@ -74,8 +74,7 @@ export function* watchPlay() {
           gateways,
           {
             title: track.title,
-            artist: owner.name,
-            artwork: track.cover_art_url
+            artist: owner.name
           }
         )
         return () => {}

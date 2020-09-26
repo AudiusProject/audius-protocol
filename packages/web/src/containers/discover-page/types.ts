@@ -8,8 +8,6 @@ import Track from 'models/Track'
 
 type ExtraTrendingLineupProps = {
   antiBot: boolean
-  trendingOrder: ID[]
-  trendingStats: { [key: string]: any }
 }
 
 export interface DiscoverPageContentProps {

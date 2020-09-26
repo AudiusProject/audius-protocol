@@ -7,8 +7,6 @@ export const SET_TRENDING_GENRE = 'DISCOVER/SET_TRENDING_GENRE'
 export const SET_TRENDING_TIME_RANGE = 'DISCOVER/SET_TRENDING_TIME_RANGE'
 export const SET_LAST_FETCHED_TRENDING_GENRE =
   'DISCOVER/SET_LAST_FETCHED_TRENDING_GENRE'
-export const SET_LAST_FETCHED_TIME_RANGE =
-  'DISCOVER/SET_LAST_FETCHED_TIME_RANGE'
 
 export const fetchSuggestedFollowUsers = () => ({
   type: FETCH_SUGGESTED_FOLLOW_USERS
@@ -42,9 +40,4 @@ export const setTrendingTimeRange = timeRange => ({
 export const setLastFetchedTrendingGenre = genre => ({
   type: SET_LAST_FETCHED_TRENDING_GENRE,
   genre
-})
-
-export const setLastFetchedTimeRange = timeRange => ({
-  type: SET_LAST_FETCHED_TIME_RANGE,
-  timeRange
 })

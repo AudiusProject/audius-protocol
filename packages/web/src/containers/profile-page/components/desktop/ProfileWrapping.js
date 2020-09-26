@@ -74,7 +74,6 @@ const Followers = props => {
               followers={follower.follower_count}
               onClickArtistName={() => props.onClickArtistName(follower.handle)}
               verified={follower.is_verified}
-              profileImgUrl={follower.profile_picture_url}
             />
           ))}
       </div>

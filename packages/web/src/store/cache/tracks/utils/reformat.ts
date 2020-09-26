@@ -1,13 +1,15 @@
 import { omit } from 'lodash'
 
 import AudiusBackend from 'services/AudiusBackend'
-import Track from 'models/Track'
+import Track, { TrackMetadata } from 'models/Track'
+import { CoverArtSizes } from 'models/common/ImageSizes'
 
 /**
- * Adds cover_art_url to a track object if it does not have one set
+ * Adds _cover_art_sizes to a track object if it does not have one set
  */
-const addTrackImages = (track: Track) => {
-  if (track.cover_art_url) return track
+const addTrackImages = <T extends TrackMetadata>(
+  track: T
+): T & { duration: number; _cover_art_sizes: CoverArtSizes } => {
   return AudiusBackend.getTrackImages(track)
 }
 
@@ -15,7 +17,7 @@ const addTrackImages = (track: Track) => {
  * Potentially add
  * @param track
  */
-const setIsCoSigned = (track: Track) => {
+const setIsCoSigned = <T extends TrackMetadata>(track: T) => {
   const { remix_of } = track
 
   const remixOfTrack = remix_of?.tracks[0]
@@ -40,7 +42,7 @@ const setIsCoSigned = (track: Track) => {
  * The current erroneous disprov endpoint is `/feed/reposts/<userid>`
  * @param track
  */
-const setDefaultFolloweeSaves = (track: Track) => {
+const setDefaultFolloweeSaves = <T extends TrackMetadata>(track: T) => {
   return {
     ...track,
     followee_saves: track?.followee_saves ?? []
@@ -51,11 +53,12 @@ const setDefaultFolloweeSaves = (track: Track) => {
  * Reformats a track to be used internally within the client
  * This method should *always* be called before a track is cached.
  */
-export const reformat = (track: Track) => {
-  let t = track
-  t = omit(t, 'user')
-  t = addTrackImages(t)
-  t = setIsCoSigned(t)
-  t = setDefaultFolloweeSaves(t)
-  return t
+export const reformat = <T extends TrackMetadata>(track: T): Track => {
+  const t = track
+  const withoutUser = omit(t, 'user')
+  const withImages = addTrackImages(withoutUser)
+  const withCosign = setIsCoSigned(withImages)
+
+  const withDefaultSaves = setDefaultFolloweeSaves(withCosign)
+  return withDefaultSaves
 }

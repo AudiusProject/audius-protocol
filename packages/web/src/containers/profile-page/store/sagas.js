@@ -251,14 +251,9 @@ function* updateProfileAsync(action) {
   if (action.metadata.updatedCoverPhoto) {
     action.metadata._cover_photo_sizes[DefaultSizes.OVERRIDE] =
       action.metadata.updatedCoverPhoto.url
-    // TODO: clean up cover_photo_url, which is to support legacy images
-    action.metadata.cover_photo_url = action.metadata.updatedCoverPhoto.url
   }
   if (creator.updatedProfilePicture) {
     action.metadata._profile_picture_sizes[DefaultSizes.OVERRIDE] =
-      action.metadata.updatedProfilePicture.url
-    // TODO: clean up profile_picture_url, which is to support legacy images
-    action.metadata.profile_picture_url =
       action.metadata.updatedProfilePicture.url
   }
 

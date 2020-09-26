@@ -12,6 +12,5 @@ export default interface DiscoveryPageState {
   feedFilter: FeedFilter
   trendingTimeRange: TimeRange
   trendingGenre: string | null
-  lastFetchedTrendingTimeRange: TimeRange | null
   lastFetchedTrendingGenre: string | null
 }

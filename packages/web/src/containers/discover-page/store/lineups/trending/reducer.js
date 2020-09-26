@@ -2,7 +2,6 @@ import { initialLineupState } from 'store/lineup/reducer'
 import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
 import {
   PREFIX,
-  SET_TRENDING_SCORES,
   TRENDING_WEEK_PREFIX,
   TRENDING_MONTH_PREFIX,
   TRENDING_YEAR_PREFIX
@@ -12,21 +11,7 @@ const initialState = {
   ...initialLineupState,
   antiBot: true,
   dedupe: true,
-  prefix: PREFIX,
-
-  // Array<{
-  //   track_id,
-  // }>
-  trendingOrder: [],
-  // { track_id:
-  //   {
-  //    listens,
-  //    repost_count,
-  //    save_count,
-  //    track_owner_follower_count,
-  //   }
-  // }
-  trendingStats: []
+  prefix: PREFIX
 }
 
 const makeActionsMap = initialState => {
@@ -34,13 +19,6 @@ const makeActionsMap = initialState => {
     [RESET_SUCCEEDED](state, action) {
       const newState = initialState
       return newState
-    },
-    [SET_TRENDING_SCORES](state, action) {
-      return {
-        ...state,
-        trendingOrder: action.trendingOrder,
-        trendingStats: action.trendingStats
-      }
     }
   }
 }

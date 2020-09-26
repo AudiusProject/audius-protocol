@@ -96,7 +96,6 @@ export const UserListModal = (props: UserListModalProps) => {
                   className={styles.artistChipContainer}
                   followers={user.follower_count}
                   verified={user.is_verified}
-                  profileImgUrl={user.profile_picture_url}
                   onClickArtistName={() => {
                     props.onClose()
                     props.onClickArtistName(user.handle)
