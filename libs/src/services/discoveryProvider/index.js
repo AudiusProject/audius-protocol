@@ -476,9 +476,10 @@ class DiscoveryProvider {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
-      console.log(`curr this.dpEndpt: ${this.discoveryProviderEndpoint} | newDiscProvEndpt: ${newDiscProvEndpoint}`)
       // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
       if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
+        console.info(`Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. Switching over to
+          the new Discovery Provider endpoint ${newDiscProvEndpoint}!`)
         this.discoveryProviderEndpoint = newDiscProvEndpoint
         attemptedRetries = 0
       }
@@ -487,7 +488,6 @@ class DiscoveryProvider {
       return
     }
 
-    // Set up disc prov request
     let axiosRequest = this.createDiscProvRequest(requestObj)
 
     let response
@@ -525,6 +525,35 @@ class DiscoveryProvider {
     return parsedResponse.data
   }
 
+  /**
+   * Gets the healthy discovery provider endpoint used in creating the axious request later.
+   * If the number of retries is over the max count for retires, clear the cache and reselect
+   * another healthy discovery provider. Else, return the current discovery provider endpoint
+   * @param {int} attemptedRetries the number of attempted requests made to the current disc prov endpoint
+   */
+  async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
+    let endpoint = this.discoveryProviderEndpoint
+    if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+      // Add to unhealthy list if current disc prov endpoint has reached max retry count
+      console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
+
+      // Clear the cached endpoint and select new endpoint from backups
+      this.serviceSelector.clearCached()
+      endpoint = await this.serviceSelector.select()
+    }
+
+    // If there are no more available backups, throw error
+    if (!endpoint) {
+      throw new Error('All Discovery Providers are unhealthy and unavailable.')
+    }
+
+    return endpoint
+  }
+
+  /**
+   * Creates the discovery provider axiox request object with necessary configs
+   * @param {object} requestObj
+   */
   createDiscProvRequest (requestObj) {
     let requestUrl
 
@@ -552,27 +581,6 @@ class DiscoveryProvider {
       }
     }
     return axiosRequest
-  }
-
-  async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
-    console.log(`attemptdRetries: ${attemptedRetries}`)
-
-    let endpoint = this.discoveryProviderEndpoint
-    if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
-      // Add to unhealthy list if current disc prov endpoint has reached max retry count
-      console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
-
-      // Clear the cached endpoint and select new endpoint from backups
-      this.serviceSelector.clearCached()
-      endpoint = await this.serviceSelector.select()
-    }
-
-    // If there are no more available backups, throw error
-    if (!endpoint) {
-      throw new Error('All Discovery Providers are unhealthy and unavailable.')
-    }
-
-    return endpoint
   }
 }
 

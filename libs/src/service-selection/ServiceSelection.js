@@ -278,10 +278,6 @@ class ServiceSelection {
     this.backups[service] = response
   }
 
-  removeBackup (service) {
-    delete this.backups[service]
-  }
-
   /**
    * Controls how a backup is picked. Overriding methods may choose to use the backup's response.
    * e.g. pick a backup that's the fewest versions behind
@@ -290,6 +286,9 @@ class ServiceSelection {
     return Object.keys(this.backups)[0]
   }
 
+  /**
+   * Returns the size of backups
+   */
   getBackupsSize () {
     return Object.keys(this.backups).length
   }
