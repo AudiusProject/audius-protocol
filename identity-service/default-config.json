@@ -45,5 +45,9 @@
   "browserPushVapidPublicKey": "",
   "browserPushVapidPrivateKey": "",
   "apnKeyId": "",
-  "apnTeamId": ""
+  "apnTeamId": "",
+  "setTimeout": 600000,
+  "timeout": 600000,
+  "keepAliveTimeout": 5000,
+  "headersTimeout": 60000
 }
