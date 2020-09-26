@@ -163,6 +163,5 @@ function setAndValidateEnvVar (key, newValue) {
   process.env[key] = newValue
 
   // everything in process.env is typeof string
-  console.log(process.env[key], newValue)
   assert(process.env[key] === newValue.toString(), 'Env var was not set properly.')
 }
