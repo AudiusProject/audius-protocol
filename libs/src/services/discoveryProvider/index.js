@@ -484,7 +484,7 @@ class DiscoveryProvider {
         attemptedRetries = 0
       }
     } catch (e) {
-      console.error(e.message)
+      console.error(e)
       return
     }
 
@@ -518,7 +518,7 @@ class DiscoveryProvider {
       ) {
         // If disc prov is an unhealthy num blocks behind,
         console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request...`)
-        this._makeRequest(requestObj, attemptedRetries + 1)
+        return this._makeRequest(requestObj, attemptedRetries + 1)
       }
     }
 
