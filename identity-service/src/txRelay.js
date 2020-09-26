@@ -135,6 +135,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     receipt = await web3.eth.sendSignedTransaction(signedTx)
 
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
+    await redis.hset('txHashToSenderAddress', receipt.transactionHash, senderAddress)
   } catch (e) {
     req.logger.error('Error in relay', e)
     await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
