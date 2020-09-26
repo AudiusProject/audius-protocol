@@ -96,7 +96,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   }
 
   try {
-    console.log('selected wallet', wallet.publicKey)
+    req.logger.info('relayTx - selected wallet', wallet.publicKey)
     const privateKeyBuffer = Buffer.from(wallet.privateKey, 'hex')
     const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
     const address = walletAddress.getAddressString()
@@ -134,15 +134,13 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
   } catch (e) {
-    console.error('Error in relay', e)
+    req.logger.error('Error in relay', e)
     throw e
   } finally {
-    setTimeout(() => {
-      wallet.locked = false
-    }, 25000)
+    wallet.locked = false
   }
 
-  req.logger.info(`txRelay - success!!!!! req ${reqBodySHA}`)
+  req.logger.info(`txRelay - success, req ${reqBodySHA}`)
 
   await models.Transaction.create({
     contractRegistryKey: contractRegistryKey,
@@ -160,7 +158,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 const selectWallet = () => {
   let selectedWallet
   for (let wallet of relayerWallets) {
-    logger.info(`trying to select wallet ${JSON.stringify(wallet)} ${typeof wallet}`)
     if (!wallet.locked) {
       wallet.locked = true
       selectedWallet = wallet

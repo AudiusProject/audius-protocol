@@ -83,7 +83,7 @@ const config = convict({
     default: null
   },
   relayerWallets: {
-    doc: 'Relayer objects to send transactions',
+    doc: 'Relayer objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
     format: String,
     env: 'relayerWallets',
     default: null
