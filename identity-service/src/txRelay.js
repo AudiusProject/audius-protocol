@@ -87,7 +87,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
   const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
+  // will be set later. necessary for code outside scope of try block
   let receipt
+  let redisLogParams
   let wallet = selectWallet()
 
   while (!wallet) {
@@ -121,7 +123,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
     const signedTx = '0x' + tx.serialize().toString('hex')
 
-    const redisLogParams = {
+    redisLogParams = {
       date: Math.floor(Date.now() / 1000),
       reqBodySHA,
       txParams,
@@ -135,6 +137,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
   } catch (e) {
     req.logger.error('Error in relay', e)
+    await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     throw e
   } finally {
     wallet.locked = false
@@ -158,7 +161,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 const selectWallet = () => {
   let selectedWallet
   for (let wallet of relayerWallets) {
+    logger.info(`trying to select wallet ${wallet.publicKey}`)
     if (!wallet.locked) {
+      logger.info(`selected wallet ${wallet.publicKey}`)
       wallet.locked = true
       selectedWallet = wallet
       return selectedWallet
