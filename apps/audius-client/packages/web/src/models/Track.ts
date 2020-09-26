@@ -1,12 +1,12 @@
 import Color from 'models/common/Color'
 import { CID, ID, UID } from 'models/common/Identifiers'
 import { CoverArtSizes } from 'models/common/ImageSizes'
-import OnChain from 'models/common/OnChain'
 import Repost from 'models/Repost'
-import User from 'models/User'
+import User, { UserMetadata } from 'models/User'
 import Favorite from 'models/Favorite'
 import Timestamped from './common/Timestamped'
 import { StemCategory } from './Stems'
+import { Nullable } from 'utils/typeUtils'
 
 export interface TrackSegment {
   duration: string
@@ -20,9 +20,13 @@ interface Followee extends User {
 }
 
 export interface Download {
-  is_downloadable: boolean
-  requires_follow: boolean
-  cid: string | null
+  // TODO: figure out why
+  // is_downloadable and requires_follow
+  // are randomly null on some tracks
+  // returned from the API
+  is_downloadable: Nullable<boolean>
+  requires_follow: Nullable<boolean>
+  cid: Nullable<string>
 }
 
 export type FieldVisibility = {
@@ -46,43 +50,47 @@ export type RemixOf = {
 }
 
 export type TrackMetadata = {
-  create_date: string | null
+  activity_timestamp?: string
+  is_delete: boolean
+  track_id: number
   created_at: string
-  isrc: string | null
-  iswc: string | null
-  credits_splits: string | null
-  description: string
-  file_type: string | null
+  isrc: Nullable<string>
+  iswc: Nullable<string>
+  credits_splits: Nullable<string>
+  description: Nullable<string>
   followee_reposts: Repost[]
   followee_saves: Favorite[]
   genre: string
   has_current_user_reposted: boolean
-  is_current: boolean
-  download: Download | null
-  length: number | null
-  license: string
-  mood: string
+  has_current_user_saved: boolean
+  download: Nullable<Download>
+  license: Nullable<string>
+  mood: Nullable<string>
   play_count: number
   owner_id: ID
-  release_date: string
+  release_date: Nullable<string>
   repost_count: number
   save_count: number
-  tags: string
+  tags: Nullable<string>
   title: string
   track_segments: TrackSegment[]
-  cover_art: CID | null
-  cover_art_sizes: CID
+  cover_art: Nullable<CID>
+  cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
   field_visibility?: FieldVisibility
   listenCount?: number
-  dateListened?: string
-  duration: number
+
+  // Optional Fields
   is_invalid?: boolean
   stem_of?: {
     parent_track_id: ID
     category: StemCategory
   }
-  remix_of?: RemixOf
+  remix_of: Nullable<RemixOf>
+
+  // Added fields
+  dateListened?: string
+  duration: number
 } & Timestamped
 
 export type Stem = {
@@ -90,13 +98,8 @@ export type Stem = {
   category: StemCategory
 }
 
-export type Track = {
-  activity_timestamp?: string
-  has_current_user_saved: boolean
-  is_delete: boolean
-  metadata_multihash: CID
-  track_id: number
-  cover_art_url: string
+export type ComputedTrackProperties = {
+  // All below, added clientside
   _cover_art_sizes: CoverArtSizes
   _first_segment?: string
   _followees?: Followee[]
@@ -108,13 +111,15 @@ export type Track = {
   // Present iff remixes have been fetched for a track
   _remixes?: Array<{ track_id: ID }>
   _remixes_count?: number
-
   // Present iff remix parents have been fetched for a track
   _remix_parents?: Array<{ track_id: ID }>
   // Present iff the track has been cosigned
-  _co_sign?: Remix | null
-} & OnChain &
-  TrackMetadata
+  _co_sign?: Nullable<Remix>
+}
+
+export type Track = TrackMetadata & ComputedTrackProperties
+
+export type UserTrackMetadata = TrackMetadata & { user: UserMetadata }
 
 export type UserTrack = Track & {
   user: User

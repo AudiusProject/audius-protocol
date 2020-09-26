@@ -1,14 +1,14 @@
 import Color from 'models/common/Color'
 import { CID, ID } from 'models/common/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
-import OnChain from 'models/common/OnChain'
-import Timestamped from 'models/common/Timestamped'
+import { Nullable } from 'utils/typeUtils'
+import Timestamped from './common/Timestamped'
 
-export default interface User extends OnChain, Timestamped {
+export type UserMetadata = {
   album_count: number
   bio: string | null
-  cover_photo: CID | null
-  creator_node_endpoint: string | null
+  cover_photo: Nullable<CID>
+  creator_node_endpoint: Nullable<string>
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
   followee_count: number
@@ -16,30 +16,33 @@ export default interface User extends OnChain, Timestamped {
   handle: string
   handle_lc: string
   is_creator: boolean
-  is_current: boolean
-  is_ready: boolean
   is_verified: boolean
-  location: string | null
-  metadata_multihash: CID | null
+  location: Nullable<string>
   name: string
   playlist_count: number
-  profile_picture: CID
-  profile_picture_sizes?: CID
+  profile_picture: Nullable<CID>
   repost_count: number
   track_count: number
+  cover_photo_sizes: Nullable<CID>
+  profile_picture_sizes: Nullable<CID>
+
   // Only present on the "current" account
   track_save_count?: number
   user_id: number
-  wallet: string
-  profile_picture_url: string
-  cover_photo_url: string
   twitter_handle?: string
   instagram_handle?: string
   website?: string
   donation?: string
+} & Timestamped
+
+export type ComputedUserProperties = {
   _profile_picture_sizes: ProfilePictureSizes
   _cover_photo_sizes: CoverPhotoSizes
   _collectionIds?: string[]
   _profile_picture_color?: Color
-  _artist_pick: ID
+  _artist_pick?: ID
 }
+
+type User = UserMetadata & ComputedUserProperties
+
+export default User

@@ -47,7 +47,6 @@ const UserList = (props: UserListProps) => {
               className={styles.artistChipContainer}
               followers={user.follower_count}
               verified={user.is_verified}
-              profileImgUrl={user.profile_picture_url}
               onClickArtistName={() => {
                 props.onClickArtistName(user.handle)
               }}

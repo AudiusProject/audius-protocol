@@ -286,16 +286,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         updatedProfilePicture: { file, url, source }
       })
     } catch (err) {
-      const {
-        profile: { profile }
-      } = this.props
       const { updatedProfilePicture } = this.state
       this.setState({
         updatedProfilePicture: {
           ...(updatedProfilePicture && updatedProfilePicture.url
             ? this.state.updatedProfilePicture
-            : profile
-            ? { url: profile.cover_photo_url }
             : {}),
           error: err.message
         }

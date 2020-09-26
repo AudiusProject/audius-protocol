@@ -290,6 +290,15 @@ const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
 }
 
 class AudiusBackend {
+  static currentDiscoveryProvider = null
+  static didSelectDiscoveryProviderListeners = []
+  static addDiscoveryProviderSelectionListener(listener) {
+    AudiusBackend.didSelectDiscoveryProviderListeners.push(listener)
+    if (AudiusBackend.currentDiscoveryProvider !== null) {
+      listener(AudiusBackend.currentDiscoveryProvider)
+    }
+  }
+
   static async getImageUrl(cid, size, gateways) {
     if (!cid) return ''
     try {
@@ -356,6 +365,17 @@ class AudiusBackend {
     }
   }
 
+  // Record the endpoint and reason for selecting the endpoint
+  static discoveryProviderSelectionCallback(endpoint, decisionTree) {
+    track(Name.DISCOVERY_PROVIDER_SELECTION, {
+      endpoint,
+      reason: decisionTree.map(reason => reason.stage).join(' -> ')
+    })
+    AudiusBackend.didSelectDiscoveryProviderListeners.forEach(listener =>
+      listener(endpoint)
+    )
+  }
+
   static async setup() {
     // Wait for web3 to load if necessary
     if (!window.Web3) {
@@ -409,14 +429,6 @@ class AudiusBackend {
     const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
     const { ethWeb3Config } = AudiusBackend.getEthWeb3Config()
 
-    // Recod the endpoint and reason for selecting the endpoint
-    const discoveryProviderSelectionCallback = (endpoint, decisionTree) => {
-      track(Name.DISCOVERY_PROVIDER_SELECTION, {
-        endpoint,
-        reason: decisionTree.map(reason => reason.stage).join(' -> ')
-      })
-    }
-
     try {
       audiusLibs = new AudiusLibs({
         web3Config,
@@ -424,7 +436,7 @@ class AudiusBackend {
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
           null,
           getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
-          discoveryProviderSelectionCallback
+          AudiusBackend.discoveryProviderSelectionCallback
         ),
         identityServiceConfig: AudiusLibs.configIdentityService(
           IDENTITY_SERVICE
@@ -455,7 +467,9 @@ class AudiusBackend {
           IDENTITY_SERVICE
         ),
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-          DISCOVERY_PROVIDER_FALLBACKS.values().next().value
+          DISCOVERY_PROVIDER_FALLBACKS.values().next().value,
+          getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
+          AudiusBackend.discoveryProviderSelectionCallback
         )
       })
       await audiusLibs.init()
@@ -1035,25 +1049,6 @@ class AudiusBackend {
       )
 
       return trackListens
-    } catch (err) {
-      console.error(err.message)
-    }
-  }
-
-  static async getTrendingTracks({ genre, offset, limit, timeRange }) {
-    try {
-      const computedGenre = genre ? encodeURIComponent(genre) : null
-      return withEagerOption(
-        {
-          normal: libs => libs.Track.getTrendingTracks,
-          eager: DiscoveryAPI.getTrendingTracks
-        },
-        computedGenre,
-        timeRange,
-        null /* all tracks */,
-        limit,
-        offset
-      )
     } catch (err) {
       console.error(err.message)
     }

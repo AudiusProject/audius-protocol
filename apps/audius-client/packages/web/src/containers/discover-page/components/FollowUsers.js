@@ -50,7 +50,6 @@ const FollowUsers = props => {
             name={user.name}
             selected={followUsers.includes(user.user_id)}
             onClick={onUserClick(user.user_id)}
-            profileImageUrl={user.profile_picture_url}
             isVerified={user.is_verified}
             followers={user.follower_count}
           />

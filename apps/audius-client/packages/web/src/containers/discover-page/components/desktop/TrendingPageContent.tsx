@@ -180,7 +180,7 @@ const TrendingPageContent = (props: DiscoverPageContentProps) => {
       currentLineup.lineup.status !== Status.LOADING) ||
     (!unfetchedLineup &&
       currentLineup.lineup.status === Status.SUCCESS &&
-      !(currentLineup.lineup as any).trendingOrder.length &&
+      !currentLineup.lineup.entries.length &&
       trendingGenre !== null)
 
   if (shouldMoveToNextTab) {

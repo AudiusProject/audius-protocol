@@ -19,8 +19,7 @@ import {
   SET_FEED_FILTER,
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
-  SET_LAST_FETCHED_TRENDING_GENRE,
-  SET_LAST_FETCHED_TIME_RANGE
+  SET_LAST_FETCHED_TRENDING_GENRE
 } from 'containers/discover-page/store/actions'
 
 import FeedFilter from 'models/FeedFilter'
@@ -36,7 +35,6 @@ const initialState = {
     ? timeRange
     : TimeRange.WEEK,
   trendingGenre: Object.values(GENRES).includes(genre) ? genre : null,
-  lastFetchedTrendingTimeRange: null,
   lastFetchedTrendingGenre: null
 }
 
@@ -69,12 +67,6 @@ const actionsMap = {
     return {
       ...state,
       lastFetchedTrendingGenre: action.genre
-    }
-  },
-  [SET_LAST_FETCHED_TIME_RANGE](state, action) {
-    return {
-      ...state,
-      lastFetchedTrendingTimeRange: action.timeRange
     }
   }
 }

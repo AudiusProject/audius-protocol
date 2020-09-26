@@ -50,7 +50,6 @@ type CardProps = {
   imageSize: ProfilePictureSizes | CoverArtSizes | null
   primaryText: string | React.ReactNode
   secondaryText: string | React.ReactNode
-  cardCoverImageUrl?: string
   cardCoverImageSizes?: CoverArtSizes
   playlistName?: string
   isUser: boolean

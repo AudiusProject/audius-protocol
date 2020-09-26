@@ -1,10 +1,16 @@
 import AudiusBackend from 'services/AudiusBackend'
-import User from 'models/User'
+import User, { UserMetadata } from 'models/User'
+import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
 
 /**
  * Adds profile picture and cover art to a user object if it does not have one set
  * */
-const addUserImages = (user: User) => {
+const addUserImages = <T extends UserMetadata>(
+  user: T
+): T & {
+  _profile_picture_sizes: ProfilePictureSizes
+  _cover_photo_sizes: CoverPhotoSizes
+} => {
   return AudiusBackend.getUserImages(user)
 }
 
@@ -13,7 +19,7 @@ const addUserImages = (user: User) => {
  * During sign-up, it's possible for an account to be created but the set display
  * name transaction to fail, which would leave us in a bad UI state.
  */
-const setDisplayNameToHandleIfUnset = (user: User) => {
+const setDisplayNameToHandleIfUnset = <T extends UserMetadata>(user: T) => {
   if (user.name) return user
   return {
     ...user,
@@ -25,9 +31,8 @@ const setDisplayNameToHandleIfUnset = (user: User) => {
  * Reformats a user to be used internally within the client.
  * This method should *always* be called before a user is cached.
  */
-export const reformat = (user: User) => {
-  let u = user
-  u = addUserImages(u)
-  u = setDisplayNameToHandleIfUnset(u)
-  return u
+export const reformat = <T extends UserMetadata>(user: T): User => {
+  const withImages = addUserImages(user)
+  const withNames = setDisplayNameToHandleIfUnset(withImages)
+  return withNames
 }
