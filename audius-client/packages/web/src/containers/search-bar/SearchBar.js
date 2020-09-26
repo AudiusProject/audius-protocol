@@ -152,7 +152,6 @@ class SearchBar extends Component {
                 ? track.user.creator_node_endpoint
                 : '',
               defaultImage: placeholderArt,
-              imageUrl: track.cover_art_url,
               isVerifiedUser: track.user ? track.user.is_verified : false
             }
           })

@@ -5,51 +5,43 @@ import tracksSagas from 'containers/track-page/store/lineups/tracks/sagas'
 import * as trackPageActions from './actions'
 import * as trackCacheActions from 'store/cache/tracks/actions'
 import { tracksActions } from './lineups/tracks/actions'
-import AudiusBackend from 'services/AudiusBackend'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getIsReachable } from 'store/reachability/selectors'
 import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
 import { getTrack, getUser } from './selectors'
-import { sortByTrendingScore } from 'utils/trendingScorer'
 import TimeRange from 'models/TimeRange'
 import { push as pushRoute } from 'connected-react-router'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 import { getUsers, getUserFromTrack } from 'store/cache/users/selectors'
+import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
+
+const TRENDING_LIMIT = 100
 
 function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     yield call(waitForBackendSetup)
-    let [
+    const [
       weeklyTrendingTracks,
       monthlyTrendingTracks,
       yearlyTrendingTracks
     ] = yield all([
-      call(AudiusBackend.getTrendingTracks, {
+      call(retrieveTrending, {
+        timeRange: TimeRange.WEEK,
         offset: 0,
-        limit: 200,
-        timeRange: 'week'
+        limit: TRENDING_LIMIT
       }),
-      call(AudiusBackend.getTrendingTracks, {
+      call(retrieveTrending, {
+        timeRange: TimeRange.MONTH,
         offset: 0,
-        limit: 200,
-        timeRange: 'month'
+        limit: TRENDING_LIMIT
       }),
-      call(AudiusBackend.getTrendingTracks, {
+      call(retrieveTrending, {
+        timeRange: TimeRange.YEAR,
         offset: 0,
-        limit: 200,
-        timeRange: 'year'
+        limit: TRENDING_LIMIT
       })
     ])
-    yearlyTrendingTracks = yearlyTrendingTracks.listen_counts
-      .sort(sortByTrendingScore(TimeRange.YEAR))
-      .slice(0, 5)
-    weeklyTrendingTracks = weeklyTrendingTracks.listen_counts
-      .sort(sortByTrendingScore(TimeRange.WEEK))
-      .slice(0, 5)
-    monthlyTrendingTracks = monthlyTrendingTracks.listen_counts
-      .sort(sortByTrendingScore(TimeRange.MONTH))
-      .slice(0, 5)
 
     const weeklyTrackIndex = weeklyTrendingTracks.findIndex(
       ({ track_id: trackId }) => trackId === action.trackId

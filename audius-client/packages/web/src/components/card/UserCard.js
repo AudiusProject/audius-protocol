@@ -4,7 +4,6 @@ import cn from 'classnames'
 import { formatCount } from 'utils/formatUtil'
 
 import styles from './UserCard.module.css'
-import placeholderArt from 'assets/img/imageProfilePicEmpty2X.png'
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SquareSizes } from 'models/common/ImageSizes'
@@ -57,7 +56,6 @@ const UserCard = ({
 UserCard.propTypes = {
   className: PropTypes.string,
   name: PropTypes.string,
-  profileImageUrl: PropTypes.string,
   isVerified: PropTypes.bool,
   isMobile: PropTypes.bool,
   followers: PropTypes.number,
@@ -67,7 +65,6 @@ UserCard.propTypes = {
 
 UserCard.defaultProps = {
   isVerified: true,
-  profileImageUrl: placeholderArt,
   onFollow: () => {},
   name: '',
   followers: 0,

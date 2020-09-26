@@ -8,7 +8,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SquareSizes } from 'models/common/ImageSizes'
 import { useUserProfilePicture } from 'hooks/useImageSize'
 
-import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import styles from './ArtistChip.module.css'
 
@@ -55,7 +54,6 @@ ArtistChip.propTypes = {
   className: PropTypes.string,
   userId: PropTypes.number,
   profilePictureSizes: PropTypes.object,
-  profileImgUrl: PropTypes.string,
   name: PropTypes.string,
   handle: PropTypes.string,
   followers: PropTypes.number,
@@ -65,7 +63,6 @@ ArtistChip.propTypes = {
 }
 
 ArtistChip.defaultProps = {
-  profileImgUrl: placeholderProfilePicture,
   name: '',
   followers: 0,
   verified: false,

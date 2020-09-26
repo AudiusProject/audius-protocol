@@ -29,8 +29,6 @@ export const getFeedFilter = state => state.discover.feedFilter
 
 export const getTrendingTimeRange = state => state.discover.trendingTimeRange
 export const getTrendingGenre = state => state.discover.trendingGenre
-export const getLastFetchedTrendingTimeRange = state =>
-  state.discover.lastFetchedTrendingTimeRange
 export const getLastFetchedTrendingGenre = state =>
   state.discover.lastFetchedTrendingGenre
 

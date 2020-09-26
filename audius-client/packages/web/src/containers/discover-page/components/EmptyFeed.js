@@ -76,7 +76,6 @@ EmptyFeed.propTypes = {
     PropTypes.shape({
       user_id: PropTypes.number,
       name: PropTypes.string,
-      profile_picture_url: PropTypes.string,
       handle: PropTypes.string,
       is_verified: PropTypes.bool,
       follower_count: PropTypes.number

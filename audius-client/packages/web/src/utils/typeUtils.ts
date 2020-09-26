@@ -8,3 +8,6 @@ export function removeNullable<T>(
 export type NestedNonNullable<T> = {
   [P in keyof T]: NestedNonNullable<NonNullable<T[P]>>
 }
+
+export type Nullable<T> = T | null
+export type Overwrite<T, U extends keyof T, V> = Omit<T, U> & V

@@ -113,7 +113,6 @@ const TracksLineup = ({
     isPlaying: queuedAndPlaying && playingUid === entry.uid,
     artistName: entry.user.name,
     artistHandle: entry.user.handle,
-    coverArtUrl: entry.cover_art_url,
     trackTitle: entry.title,
     trackId: entry.track_id,
     uid: entry.uid,

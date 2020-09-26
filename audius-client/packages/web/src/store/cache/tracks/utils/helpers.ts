@@ -1,4 +1,4 @@
-import Track from 'models/Track'
+import Track, { UserTrackMetadata } from 'models/Track'
 import User from 'models/User'
 import { Kind } from 'store/types'
 import { put } from 'redux-saga/effects'
@@ -10,9 +10,7 @@ import { makeUid } from 'utils/uid'
  * Adds users from track metadata to cache.
  * @param metadataArray
  */
-export function* addUsersFromTracks(
-  metadataArray: Array<Track & { user?: User }>
-) {
+export function* addUsersFromTracks(metadataArray: UserTrackMetadata[]) {
   const users = metadataArray
     .filter(m => m.user)
     .map(m => {

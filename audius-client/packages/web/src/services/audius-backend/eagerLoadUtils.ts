@@ -31,6 +31,8 @@ if (cachedDiscprov) {
     ]
 }
 
+export const getEagerDiscprov = () => eagerDiscprov
+
 /**
  * Wait for the `LIBS_INITTED_EVENT` or pass through if there
  * already exists a mounted `window.audiusLibs` object.

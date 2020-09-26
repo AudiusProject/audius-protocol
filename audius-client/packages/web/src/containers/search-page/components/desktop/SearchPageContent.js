@@ -151,7 +151,6 @@ class SearchPageContent extends Component {
             size={'small'}
             primaryText={artist.name}
             secondaryText={`${formatCount(artist.follower_count)} Followers`}
-            cardCoverImageUrl={artist.profile_picture_url}
             onClick={onClick}
             menu={{
               type: 'user',
