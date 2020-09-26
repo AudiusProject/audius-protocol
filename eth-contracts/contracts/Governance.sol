@@ -2,6 +2,8 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./Staking.sol";
+import "./ServiceProviderFactory.sol";
+import "./DelegateManager.sol";
 import "./registry/Registry.sol";
 import "./InitializableV2.sol";
 
