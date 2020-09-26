@@ -18,7 +18,7 @@ const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query p
 // if (txs on blockchain / attempted) is less than this percent, health check will error
 // eg. 10 transactions on chain but 120 attempts should error
 const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
-const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
+const RELAY_HEALTH_ACCOUNTS = config.get('relayerWallets').map(wallet => wallet.publicKey)
 
 // flatten one level of nexted arrays
 const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
@@ -80,7 +80,7 @@ module.exports = function (app) {
     let minBlockTime = null
 
     req.logger.info(
-      `Searching for transactions to/from account ${RELAY_HEALTH_ACCOUNT} within blocks ${startBlockNumber} and ${endBlockNumber}`
+      `Searching for transactions to/from account ${RELAY_HEALTH_ACCOUNTS} within blocks ${startBlockNumber} and ${endBlockNumber}`
     )
 
     // Iterate through the range of blocks, looking into the max number of transactions that are from audius
@@ -92,7 +92,7 @@ module.exports = function (app) {
       if (block && block.transactions.length) {
         for (const tx of block.transactions) {
           // If transaction is from audius account, determine success or fail status
-          if (RELAY_HEALTH_ACCOUNT === tx.from) {
+          if (RELAY_HEALTH_ACCOUNTS.includes(tx.from)) {
             const txHash = tx.hash
             const resp = await web3.eth.getTransactionReceipt(txHash)
             txCounter++

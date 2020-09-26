@@ -1,6 +1,17 @@
 const convict = require('convict')
 const fs = require('fs')
 
+// custom array parsing for arrays passed in via string env vars
+convict.addFormat({
+  name: 'string-array',
+  validate: function (val) {
+    return Array.isArray(val)
+  },
+  coerce: function (val) {
+    return JSON.parse(val)
+  }
+})
+
 // Define a schema
 const config = convict({
   dbUrl: {
@@ -84,7 +95,7 @@ const config = convict({
   },
   relayerWallets: {
     doc: 'Relayer objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
-    format: String,
+    format: 'string-array',
     env: 'relayerWallets',
     default: null
   },

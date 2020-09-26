@@ -11,7 +11,7 @@ const { AudiusABIDecoder } = require('@audius/libs')
 const primaryWeb3 = new Web3(new Web3.providers.HttpProvider(config.get('web3Provider')))
 const secondaryWeb3 = new Web3(new Web3.providers.HttpProvider(config.get('secondaryWeb3Provider')))
 
-const relayerConfigs = JSON.parse(config.get('relayerWallets'))
+const relayerConfigs = config.get('relayerWallets')
 
 const MIN_GAS_PRICE = config.get('minGasPrice')
 const HIGH_GAS_PRICE = config.get('highGasPrice')
@@ -137,7 +137,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     await redis.hset('txHashToSenderAddress', receipt.transactionHash, senderAddress)
   } catch (e) {
-    req.logger.error('Error in relay', e)
+    req.logger.error('txRelay - Error in relay', e)
     await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     throw e
   } finally {
@@ -162,9 +162,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 const selectWallet = () => {
   let selectedWallet
   for (let wallet of relayerWallets) {
-    logger.info(`trying to select wallet ${wallet.publicKey}`)
+    logger.info(`txRelay - trying to select wallet ${wallet.publicKey}`)
     if (!wallet.locked) {
-      logger.info(`selected wallet ${wallet.publicKey}`)
+      logger.info(`txRelay - selected wallet ${wallet.publicKey}`)
       wallet.locked = true
       selectedWallet = wallet
       return selectedWallet
