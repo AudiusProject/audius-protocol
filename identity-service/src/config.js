@@ -82,6 +82,12 @@ const config = convict({
     env: 'relayerPublicKey',
     default: null
   },
+  relayerWallets: {
+    doc: 'Relayer objects to send transactions',
+    format: String,
+    env: 'relayerWallets',
+    default: null
+  },
   userVerifierPrivateKey: {
     doc: 'User verifier(used to write users to chain as isVerified) private key',
     format: String,
