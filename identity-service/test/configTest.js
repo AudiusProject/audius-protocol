@@ -9,7 +9,7 @@ const {
 } = require('./lib/generateRandomValues')
 const convict = require('convict')
 
-describe('convict configuration test', function () {
+describe.only('convict configuration test', function () {
   it('Env key and object key names are equal', function () {
     const schema = config.getSchema().properties
 
@@ -69,6 +69,12 @@ describe('convict configuration test', function () {
     const schema = config.getSchema().properties
 
     for (var key in schema) {
+      // special case this property since config.load will override the test value in the env var because of custom type coercion
+      if (key === 'relayerWallets') {
+        assert.deepStrictEqual(Array.isArray(config.get('relayerWallets')), true)
+        continue
+      }
+
       let oldValue = config.get(key)
 
       let format = schema[key].format.toString()
@@ -97,7 +103,7 @@ describe('convict configuration test', function () {
       // convict js converts env vars to its proper type
       assert(
         config.get(key) === validValue,
-        `The config with format type '${schema[key].format}' is still retaining its old value of '${oldValue}' instead of '${validValue}'`)
+        `The config key '${key}' with format type '${schema[key].format}' is still retaining its old value of '${oldValue}' instead of '${validValue}'`)
     }
   })
 })
@@ -157,5 +163,6 @@ function setAndValidateEnvVar (key, newValue) {
   process.env[key] = newValue
 
   // everything in process.env is typeof string
+  console.log(process.env[key], newValue)
   assert(process.env[key] === newValue.toString(), 'Env var was not set properly.')
 }
