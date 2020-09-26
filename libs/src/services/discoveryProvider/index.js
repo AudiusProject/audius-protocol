@@ -560,7 +560,9 @@ class DiscoveryProvider {
 
     if (urlJoin && urlJoin.default) {
       requestUrl = urlJoin.default(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
-    } else { requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams }) }
+    } else {
+      requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    }
 
     const headers = {}
     const currentUserId = this.userStateManager.getCurrentUserId()
