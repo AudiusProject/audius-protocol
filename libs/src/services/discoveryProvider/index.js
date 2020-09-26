@@ -14,7 +14,7 @@ let urlJoin = require('proper-url-join')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-const MAX_MAKE_REQUEST_RETRY_COUNT = 20
+const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 
 class DiscoveryProvider {
   constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
