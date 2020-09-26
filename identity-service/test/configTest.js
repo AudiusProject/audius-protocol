@@ -9,7 +9,7 @@ const {
 } = require('./lib/generateRandomValues')
 const convict = require('convict')
 
-describe.only('convict configuration test', function () {
+describe('convict configuration test', function () {
   it('Env key and object key names are equal', function () {
     const schema = config.getSchema().properties
 
