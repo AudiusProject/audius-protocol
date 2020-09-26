@@ -478,8 +478,9 @@ class DiscoveryProvider {
 
       // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
       if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
-        console.info(`Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. Switching over to
-          the new Discovery Provider endpoint ${newDiscProvEndpoint}!`)
+        let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
+        updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
+        console.info(updateDiscProvEndpointMsg)
         this.discoveryProviderEndpoint = newDiscProvEndpoint
         attemptedRetries = 0
       }
