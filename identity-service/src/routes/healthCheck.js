@@ -164,19 +164,31 @@ module.exports = function (app) {
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
-    let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(), 'ether'))
     let minimumBalance = parseFloat(config.get('minimumBalance'))
-    if (balance >= minimumBalance) {
+    let belowMinimumBalances = []
+    let balances = []
+
+    for (let account of RELAY_HEALTH_ACCOUNTS) {
+      let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
+      balances.push({ account, balance })
+      if (balance < minimumBalance) {
+        belowMinimumBalances.push({ account, balance })
+      }
+    }
+
+    // no accounts below minimum balance
+    if (!belowMinimumBalances.length) {
       return successResponse({
         'above_balance_minimum': true,
         'minimum_balance': minimumBalance,
-        'available_balance': balance
+        'balances': balances
       })
     } else {
       return errorResponseServerError({
         'above_balance_minimum': false,
         'minimum_balance': minimumBalance,
-        'available_balance': balance
+        'balances': balances,
+        'below_minimum_balance': belowMinimumBalances
       })
     }
   }))

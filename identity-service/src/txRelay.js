@@ -184,14 +184,14 @@ const fundRelayerIfEmpty = async () => {
       logger.info(`Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
       const account = (await primaryWeb3.eth.getAccounts())[0]
       await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
-      balance = await getRelayerFunds()
+      balance = await getRelayerFunds(wallet.publicKey)
       logger.info('Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance, 'ether'), 'eth')
     }
   }
 }
 
-const getRelayerFunds = async () => {
-  return primaryWeb3.eth.getBalance(config.get('relayerPublicKey'))
+const getRelayerFunds = async (walletPublicKey) => {
+  return primaryWeb3.eth.getBalance(walletPublicKey)
 }
 
 module.exports = { sendTransaction, getRelayerFunds, fundRelayerIfEmpty }
