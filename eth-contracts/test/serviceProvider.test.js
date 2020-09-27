@@ -239,11 +239,13 @@ contract('ServiceProvider test', async (accounts) => {
     await token.transfer(accounts[11], INITIAL_BAL, { from: proxyDeployerAddress })
 
     // ---- Configuring addresses
-    await _lib.configureGovernanceStakingAddress(
+    await _lib.configureGovernanceContractAddresses(
       governance,
       governanceKey,
       guardianAddress,
-      staking.address
+      staking.address,
+      serviceProviderFactory.address,
+      mockDelegateManager.address
     )
     // ---- Set up staking contract permissions
     await _lib.configureStakingContractAddresses(
