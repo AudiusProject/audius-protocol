@@ -1054,11 +1054,31 @@ contract Governance is InitializableV2 {
             "Governance: Must provide valid non-zero _proposalId"
         );
 
+        ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
+        DelegateManager delegateManager = DelegateManager(delegateManagerAddress);
+
+        // Amount locked up in service provider factory
+        (uint256 spLockedStake,) = spFactory.getPendingDecreaseStakeRequest(_voter);
+        // Amount directly staked by voter in service provider factory
+        (uint256 totalBalanceInSPFactory,,,,,) = spFactory.getServiceProviderDetails(_voter);
+        // Amount delegated by voter to other protocol participants in DelegateManager 
+        uint256 totalDelegatorStake = delegateManager.getTotalDelegatorStake(_voter);
+        // Amount locked up from voter address in DelegateManager
+        (,uint256 delManLockedStake, ) = delegateManager.getPendingUndelegateRequest(_voter);
+
+        // Calculate total in ServiceProviderFactory as staked - locked
+        totalBalanceInSPFactory = totalBalanceInSPFactory.sub(spLockedStake);
+        // Calculate total in DelegateManager as staked - locked
+        totalDelegatorStake = totalDelegatorStake.sub(delManLockedStake);
+
+        uint256 voterStake = totalBalanceInSPFactory.add(totalDelegatorStake);
+        /*
         // Require voter was active Staker at proposal submission time
         uint256 voterStake = Staking(stakingAddress).totalStakedForAt(
             _voter,
             proposals[_proposalId].submissionBlockNumber
         );
+        */
         require(
             voterStake > 0,
             "Governance: Voter must be active staker with non-zero stake."
