@@ -11,6 +11,7 @@ module.exports = {
     // Remove UNIQUE constraint for audiusUserUUID in AudiusUsers table (no unique constraint on blockchainId)
     // Add NOT NULL constraint for blockchainId in AudiusUsers table
 
+    console.log('STARTING MIGRATION 20200911004845-allow-track-and-audiusUsers-appends')
     await queryInterface.sequelize.query(`
       BEGIN;
       -- replace Files table in place with extra trackBlockchainId column and drops the trackUUID column
@@ -62,6 +63,7 @@ module.exports = {
 
       COMMIT;
     `)
+    console.log('FINISHED MIGRATION 20200911004845-allow-track-and-audiusUsers-appends')
   },
 
   down: (queryInterface, Sequelize) => {

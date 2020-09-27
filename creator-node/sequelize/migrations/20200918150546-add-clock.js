@@ -7,6 +7,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    console.log('STARTING MIGRATION 20200918150546-add-clock')
     const transaction = await queryInterface.sequelize.transaction()
 
     // Add 'clock' column to all 4 tables
@@ -20,6 +21,7 @@ module.exports = {
     await addCompositeUniqueConstraints(queryInterface, Sequelize, transaction)
 
     await transaction.commit()
+    console.log('FINISHED MIGRATION 20200918150546-add-clock')
   },
 
   down: async (queryInterface, Sequelize) => { }
