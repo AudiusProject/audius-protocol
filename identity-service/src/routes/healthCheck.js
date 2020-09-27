@@ -88,8 +88,12 @@ module.exports = function (app) {
       // If the max number of transactions have been evaluated, break out
       if (txCounter > maxTransactions) break
       let block = await web3.eth.getBlock(i, true)
+      if (!block) {
+        req.logger.error(`Could not find block for health_check/relay ${i}`)
+        continue
+      }
       if (!minBlockTime || block.timestamp < minBlockTime) minBlockTime = block.timestamp
-      if (block && block.transactions.length) {
+      if (block.transactions.length) {
         for (const tx of block.transactions) {
           // If transaction is from audius account, determine success or fail status
           if (RELAY_HEALTH_ACCOUNTS.includes(tx.from)) {
