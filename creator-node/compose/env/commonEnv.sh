@@ -1,2 +1,0 @@
-export delegateOwnerWallet=0xc2c87570c40f08282056f24dbfa2a321e1551889
-export delegatePrivateKey=0x98f2052770cf89bafd9f557f7bbe684107c135a520a799c2e962765c8385dd04
