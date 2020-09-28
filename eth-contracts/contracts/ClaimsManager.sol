@@ -13,6 +13,11 @@ import "./ServiceProviderFactory.sol";
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
+    using SafeERC20 for ERC20;
+
+    /// @dev - denominator for community pool transfer calculations
+    /// @dev - community reward values are intended to be x/COMMUNITY_PERCENT_BASE
+    uint256 private constant COMMUNITY_PERCENT_BASE = 100;
 
     string private constant ERROR_ONLY_GOVERNANCE = (
         "ClaimsManager: Only callable by Governance contract"
@@ -22,6 +27,9 @@ contract ClaimsManager is InitializableV2 {
     address private stakingAddress;
     address private serviceProviderFactoryAddress;
     address private delegateManagerAddress;
+
+    // Address to which a % of each reward claim is transferred
+    address private communityPoolAddress;
 
     // Claim related configurations
     /**
@@ -48,6 +56,9 @@ contract ClaimsManager is InitializableV2 {
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
+
+    /// @dev - % of rewards transferred to community pool
+    uint256 private communityPoolPercent;
 
     // Struct representing round state
     // 1) Block at which round was funded
@@ -108,6 +119,10 @@ contract ClaimsManager is InitializableV2 {
             fundedAmount: 0,
             totalClaimedInRound: 0
         });
+
+        // Community pool initialized to zero
+        communityPoolPercent = 0;
+        communityPoolAddress = address(0x0);
 
         InitializableV2.initialize();
     }
@@ -173,6 +188,26 @@ contract ClaimsManager is InitializableV2 {
         _requireIsInitialized();
 
         return stakingAddress;
+    }
+
+    /**
+     * @notice Get the community pool address
+     */
+    function getCommunityPoolAddress() external view returns (address)
+    {
+        _requireIsInitialized();
+
+        return communityPoolAddress;
+    }
+
+    /**
+     * @notice Get the community pool %
+     */
+    function getCommunityPoolPercent() external view returns (uint256)
+    {
+        _requireIsInitialized();
+
+        return communityPoolPercent;
     }
 
     /**
@@ -324,11 +359,27 @@ contract ClaimsManager is InitializableV2 {
         // ERC20Mintable always returns true
         audiusToken.mint(address(this), rewardsForClaimer);
 
+        // Calculate % distributed to community
+        uint256 communityRewards;
+        if (communityPoolPercent > 0 && communityPoolAddress != address(0x0)) {
+            communityRewards = (rewardsForClaimer.mul(communityPoolPercent)).div(COMMUNITY_PERCENT_BASE);
+            rewardsForClaimer = rewardsForClaimer.sub(communityRewards);
+        }
+
+        // Approve transfer to staking address for claimer rewards
         // ERC20 always returns true
         audiusToken.approve(stakingAddress, rewardsForClaimer);
 
         // Transfer rewards
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
+
+        // Distribute community rewards
+        if (communityRewards > 0) {
+            // Approve transfer
+            audiusToken.approve(communityPoolAddress, communityRewards);
+            // Transfer rewards
+            ERC20(address(audiusToken)).safeTransferFrom(address(this), communityPoolAddress, communityRewards);
+        }
 
         // Update round claim value
         currentRound.totalClaimedInRound = currentRound.totalClaimedInRound.add(rewardsForClaimer);
@@ -386,6 +437,29 @@ contract ClaimsManager is InitializableV2 {
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         emit FundingRoundBlockDiffUpdated(_newFundingRoundBlockDiff);
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
+    }
+
+    /**
+     * @notice Modify community pool % for each reward
+     * @param _newCommunityPoolPercent - new %
+     */
+    function updateCommunityPoolPercent(uint256 _newCommunityPoolPercent) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        require(_newCommunityPoolPercent <= COMMUNITY_PERCENT_BASE, "ClaimsManager: Community pool % must be < COMMUNITY_PERCENT_BASE");
+        communityPoolPercent = _newCommunityPoolPercent;
+    }
+
+    /**
+     * @notice Modify community pool address
+     * @param _newCommunityPoolAddress - new address for pool
+     */
+    function updateCommunityPoolAddress(address _newCommunityPoolAddress) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        communityPoolAddress = _newCommunityPoolAddress;
     }
 
     // ========================================= Private Functions =========================================

@@ -155,6 +155,11 @@ contract('ClaimsManager', async (accounts) => {
     await expectEvent.inTransaction(txs.govAddressTx.tx, ClaimsManager, 'GovernanceAddressUpdated', { _newGovernanceAddress: governance.address })
     await expectEvent.inTransaction(txs.spAddressTx.tx, ClaimsManager, 'ServiceProviderFactoryAddressUpdated', { _newServiceProviderFactoryAddress: mockStakingCaller.address })
     await expectEvent.inTransaction(txs.delManAddressTx.tx, ClaimsManager, 'DelegateManagerAddressUpdated', { _newDelegateManagerAddress: mockDelegateManager.address })
+
+    let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
+    let communityPoolPercent = await claimsManager.getCommunityPoolPercent()
+    assert.isTrue(_lib.addressZero === communityPoolAddress, "Expect zero adddress")
+    assert.isTrue(communityPoolPercent.eq(_lib.toBN(0)), "Expect zero percent")
   })
 
   it('Initiate a claim', async () => {
@@ -212,6 +217,36 @@ contract('ClaimsManager', async (accounts) => {
       mockDelegateManager.testProcessClaim(staker, 0),
       'Claim already processed for user'
     )
+  })
+
+  it.only('Initiate a claim with community rewards', async () => {
+    let newPercent = 10
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'updateCommunityPoolPercent(uint256)',
+      _lib.abiEncode(['uint256'], [newPercent]),
+      { from: guardianAddress }
+    )
+    let communityPoolPercent = await claimsManager.getCommunityPoolPercent()
+    assert.isTrue(communityPoolPercent.eq(_lib.toBN(newPercent)), "Expect zero percent")
+    let newAddress = accounts[10]
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'updateCommunityPoolAddress(address)',
+      _lib.abiEncode(['address'], [newAddress]),
+      { from: guardianAddress }
+    )
+    let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
+    assert.isTrue(newAddress === communityPoolAddress, "Expect updated adddress")
+    console.log(`Updated`)
+
+    // Stake default amount
+    await approveTransferAndStake(DEFAULT_AMOUNT, staker)
+
+    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    await mockDelegateManager.testProcessClaim(staker, 0)
   })
 
   it('Initiate multiple rounds, 1x block diff', async () => {
@@ -386,7 +421,7 @@ contract('ClaimsManager', async (accounts) => {
     assert.isTrue(accountStake.eq(accountStakeAfterClaim), 'Expect NO reward due to bound violation')
   })
 
-  it('Fail to update addresss calling directly to ClaimsManager contract', async () => {
+  it('Fail to update configs calling directly to ClaimsManager contract', async () => {
     // Governance address
     await _lib.assertRevert(
       claimsManager.setGovernanceAddress(newUpdateAddress),
@@ -410,6 +445,38 @@ contract('ClaimsManager', async (accounts) => {
       claimsManager.setDelegateManagerAddress(newUpdateAddress),
       'Only callable by Governance contract'
     )
+
+    await _lib.assertRevert(
+      claimsManager.updateCommunityPoolAddress(newUpdateAddress),
+      'Only callable by Governance contract'
+    )
+    await _lib.assertRevert(
+      claimsManager.updateCommunityPoolPercent(10),
+      'Only callable by Governance contract'
+    )
+  })
+
+  it('Update community pool configs through Governance', async () => {
+    let newPercent = 10
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'updateCommunityPoolPercent(uint256)',
+      _lib.abiEncode(['uint256'], [newPercent]),
+      { from: guardianAddress }
+    )
+    let communityPoolPercent = await claimsManager.getCommunityPoolPercent()
+    assert.isTrue(communityPoolPercent.eq(_lib.toBN(newPercent)), "Expect zero percent")
+    let newAddress = accounts[10]
+    await governance.guardianExecuteTransaction(
+      claimsManagerProxyKey,
+      callValue0,
+      'updateCommunityPoolAddress(address)',
+      _lib.abiEncode(['address'], [newAddress]),
+      { from: guardianAddress }
+    )
+    let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
+    assert.isTrue(newAddress === communityPoolAddress, "Expect updated adddress")
   })
 
   it('Set the new Governance address if called from current ClaimsManager contract', async () => {
