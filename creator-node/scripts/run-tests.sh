@@ -27,17 +27,13 @@ tear_down () {
 }
 
 run_unit_tests () {
-  set +e
   echo Running unit tests...
   ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js'
-  set -e
 }
 
 run_integration_tests () {
-  set +e
   echo Running integration tests...
   ./node_modules/mocha/bin/mocha --timeout 30000 --exit
-  set -e
 }
 
 if [ "$1" == "standalone_creator" ]; then
