@@ -67,7 +67,7 @@ const execShellCommand = (command, service, { verbose }) => {
     proc.on('close', exitCode => {
       // Running `make stop` when no containers are up exits with a non-zero exit code
       // Ignore that error if occurs (could be better message)
-      if (exitCode !== 0 && service !== 'STOPPING ANY PRE-EXISTING SERVICES' && !command.includes('rm celerybeat.pid')) {
+      if (exitCode !== 0 && service !== 'STOPPING ANY PRE-EXISTING SERVICES') {
         reject(
           new Error(`${service} failed to start for the command: ${command}`)
         )
