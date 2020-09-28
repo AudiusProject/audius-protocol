@@ -55,7 +55,7 @@ const startApp = async () => {
     exitWithError('Cannot startup without delegateOwnerWallet and delegatePrivateKey')
   }
   if (!config.get('creatorNodeEndpoint')) {
-    logger.warning('WARNING - Missing creatorNodeEndpoint configuration')
+    logger.warn('WARNING - Missing creatorNodeEndpoint configuration')
   }
   const storagePath = configFileStorage()
 
