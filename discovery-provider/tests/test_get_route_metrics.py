@@ -217,8 +217,8 @@ def test_get_route_metrics_with_daily_buckets(app):
 
 def test_get_route_metrics_with_weekly_buckets(app):
     """Tests that the route metrics can be queried with weekly buckets"""
-
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    # A Thursday
+    date = datetime(2020, 10, 1).replace(minute=0, second=0, microsecond=0)
     date1 = (date + timedelta(hours=-1))
     date2 = (date + timedelta(days=-2))
     before_date = (date + timedelta(days=-3))
