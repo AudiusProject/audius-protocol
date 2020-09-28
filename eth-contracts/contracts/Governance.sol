@@ -140,13 +140,13 @@ contract Governance is InitializableV2 {
         uint256 indexed proposalId,
         address indexed voter,
         Vote indexed vote,
-        uint256 voterStake
+        uint256 voteMagnitude
     );
     event ProposalVoteUpdated(
         uint256 indexed proposalId,
         address indexed voter,
         Vote indexed vote,
-        uint256 voterStake,
+        uint256 voteMagnitude,
         Vote previousVote
     );
     event ProposalOutcomeEvaluated(
@@ -224,7 +224,8 @@ contract Governance is InitializableV2 {
     // ========================================= Governance Actions =========================================
 
     /**
-     * @notice Submit a proposal for vote. Only callable by stakers with non-zero stake.
+     * @notice Submit a proposal for vote. Only callable by addresses with non-zero total active stake.
+     *      total active stake = total active deployer stake + total active delegator stake
      *
      * @dev _name and _description length is not enforced since they aren't stored on-chain and only event emitted
      *
@@ -264,10 +265,10 @@ contract Governance is InitializableV2 {
             "Governance: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
         );
 
-        // Require proposer is active Staker or guardian address
+        // Require proposer has non-zero total active stake or is guardian address
         require(
-            Staking(stakingAddress).isStaker(proposer) || proposer == guardianAddress,
-            "Governance: Proposer must be active staker with non-zero stake or guardianAddress."
+            _calculateAddressActiveStake(proposer) > 0 || proposer == guardianAddress,
+            "Governance: Proposer must be address with non-zero total active stake or be guardianAddress."
         );
 
         // Require _targetContractRegistryKey points to a valid registered contract
@@ -288,7 +289,6 @@ contract Governance is InitializableV2 {
 
         // Require non-zero name length
         require(bytes(_name).length > 0, "Governance: _name length must be > 0");
-
 
         // set proposalId
         uint256 newProposalId = lastProposalId.add(1);
@@ -339,36 +339,51 @@ contract Governance is InitializableV2 {
 
         address voter = msg.sender;
 
-        // Validates new _vote, _proposalId, proposal state, and voter state + returns voterStake
-        uint256 voterStake = _validateVoteAndGetVoterStake(voter, _proposalId, _vote);
+        // Require proposal votingPeriod is still active
+        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
+        require(
+            block.number > submissionBlockNumber && block.number <= endBlockNumber,
+            "Governance: Proposal votingPeriod has ended"
+        );
 
-        // Ensure previous vote is None
+        // Require voter has non-zero total active stake
+        uint256 voterActiveStake = _calculateAddressActiveStake(voter);
+        require(voterActiveStake > 0, "Governance: Voter must have non-zero total active stake.");
+
+        // Require previous vote is None
         require(
             proposals[_proposalId].votes[voter] == Vote.None,
             "Governance: To update previous vote, call updateVote()"
         );
 
+        // Require vote is either Yes or No
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance: Can only submit a Yes or No vote"
+        );
+
         // Record vote
         proposals[_proposalId].votes[voter] = _vote;
 
-        // Update stored weight
-        proposals[_proposalId].voteMagnitude[voter] = voterStake;
+        // Record voteMagnitude for voter
+        proposals[_proposalId].voteMagnitude[voter] = voterActiveStake;
 
-        // Update vote magnitudes
+        // Update proposal cumulative vote magnitudes
         if (_vote == Vote.Yes) {
-            _increaseVoteMagnitudeYes(_proposalId, voterStake);
+            _increaseVoteMagnitudeYes(_proposalId, voterActiveStake);
         } else {
-            _increaseVoteMagnitudeNo(_proposalId, voterStake);
+            _increaseVoteMagnitudeNo(_proposalId, voterActiveStake);
         }
 
-        // Update numVotes
+        // Increment proposal numVotes
         proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
 
         emit ProposalVoteSubmitted(
             _proposalId,
             voter,
             _vote,
-            voterStake
+            voterActiveStake
         );
     }
 
@@ -385,28 +400,40 @@ contract Governance is InitializableV2 {
 
         address voter = msg.sender;
 
-        // Record previous vote
+        // Require proposal votingPeriod is still active
+        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
+        require(
+            block.number > submissionBlockNumber && block.number <= endBlockNumber,
+            "Governance: Proposal votingPeriod has ended"
+        );
+
+        // Retrieve previous vote
         Vote previousVote = proposals[_proposalId].votes[voter];
 
-        // Ensure previous vote is not None
+        // Require previous vote is not None
         require(
             previousVote != Vote.None,
             "Governance: To submit new vote, call submitVote()"
         );
 
-        // Validates new _vote, _proposalId, proposal state, and voter state + returns voterStake
-        uint256 voterStake = proposals[_proposalId].voteMagnitude[voter];
+        // Require vote is either Yes or No
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance: Can only submit a Yes or No vote"
+        );
 
-        // Override previous vote
+        // Record updated vote
         proposals[_proposalId].votes[voter] = _vote;
 
-        // Update vote magnitudes
+        // Update vote magnitudes, using vote magnitude from when previous vote was submitted
+        uint256 voteMagnitude = proposals[_proposalId].voteMagnitude[voter];
         if (previousVote == Vote.Yes && _vote == Vote.No) {
-            _decreaseVoteMagnitudeYes(_proposalId, voterStake);
-            _increaseVoteMagnitudeNo(_proposalId, voterStake);
+            _decreaseVoteMagnitudeYes(_proposalId, voteMagnitude);
+            _increaseVoteMagnitudeNo(_proposalId, voteMagnitude);
         } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-            _decreaseVoteMagnitudeNo(_proposalId, voterStake);
-            _increaseVoteMagnitudeYes(_proposalId, voterStake);
+            _decreaseVoteMagnitudeNo(_proposalId, voteMagnitude);
+            _increaseVoteMagnitudeYes(_proposalId, voteMagnitude);
         }
         // If _vote == previousVote, no changes needed to vote magnitudes.
 
@@ -416,7 +443,7 @@ contract Governance is InitializableV2 {
             _proposalId,
             voter,
             _vote,
-            voterStake,
+            voteMagnitude,
             previousVote
         );
     }
@@ -1049,63 +1076,36 @@ contract Governance is InitializableV2 {
     }
 
     /**
-     * @notice Helper function to perform validation for submitVote() and updateVote() functions
-     * @dev Validates new _vote, _proposalId, proposal state, and voter state
-     * @return stake of voter at proposal submission time
+     * Calculates and returns active stake for address
+     *
+     * Active stake = (active deployer stake + active delegator stake)
+     *      active deployer stake = (direct deployer stake - locked deployer stake)
+     *          locked deployer stake = amount of pending decreaseStakeRequest for address
+     *      active delegator stake = (total delegator stake - locked delegator stake)
+     *          locked delegator stake = amount of pending undelegateRequest for address
      */
-    function _validateVoteAndGetVoterStake(address _voter, uint256 _proposalId, Vote _vote)
-    private view returns (uint256) {
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId"
-        );
-
+    function _calculateAddressActiveStake(address _address) private view returns (uint256) {
         ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
         DelegateManager delegateManager = DelegateManager(delegateManagerAddress);
 
-        // Amount directly staked by voter in service provider factory
-        (uint256 activeDeployerStake,,,,,) = spFactory.getServiceProviderDetails(_voter);
-        // Amount delegated by voter to other protocol participants in DelegateManager
-        uint256 activeDelegatorStake = delegateManager.getTotalDelegatorStake(_voter);
-        // Amount locked up in service provider factory
-        (uint256 lockedDeployerStake,) = spFactory.getPendingDecreaseStakeRequest(_voter);
-        // Amount locked up from voter address in DelegateManager
-        (,uint256 lockedDelegatorStake, ) = delegateManager.getPendingUndelegateRequest(_voter);
+        // Amount directly staked by address, if any, in ServiceProviderFactory
+        (uint256 directDeployerStake,,,,,) = spFactory.getServiceProviderDetails(_address);
+        // Amount of pending decreasedStakeRequest for address, if any, in ServiceProviderFactory
+        (uint256 lockedDeployerStake,) = spFactory.getPendingDecreaseStakeRequest(_address);
+        // active deployer stake = (direct deployer stake - locked deployer stake)
+        uint256 activeDeployerStake = directDeployerStake.sub(lockedDeployerStake);
 
-        // Calculate total in ServiceProviderFactory as staked - locked
-        activeDeployerStake = activeDeployerStake.sub(lockedDeployerStake);
-        // Calculate total in DelegateManager as staked - locked
-        activeDelegatorStake = activeDelegatorStake.sub(lockedDelegatorStake);
+        // Total amount delegated by address, if any, in DelegateManager
+        uint256 totalDelegatorStake = delegateManager.getTotalDelegatorStake(_address);
+        // Amount of pending undelegateRequest for address, if any, in DelegateManager
+        (,uint256 lockedDelegatorStake, ) = delegateManager.getPendingUndelegateRequest(_address);
+        // active delegator stake = (total delegator stake - locked delegator stake)
+        uint256 activeDelegatorStake = totalDelegatorStake.sub(lockedDelegatorStake);
 
-        // voterStake = activeDeployerStake + activeDelegatorStake
-        uint256 voterStake = activeDeployerStake.add(activeDelegatorStake);
-        // Require voter was active Staker at proposal submission time
-        require(
-            voterStake > 0,
-            "Governance: Voter must be active staker with non-zero stake."
-        );
+        // activeStake = (activeDeployerStake + activeDelegatorStake)
+        uint256 activeStake = activeDeployerStake.add(activeDelegatorStake);
 
-        // Require proposal is still active
-        require(
-            proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance: Cannot vote on inactive proposal."
-        );
-
-        // Require proposal votingPeriod is still active.
-        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
-        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
-        require(
-            block.number > submissionBlockNumber && block.number <= endBlockNumber,
-            "Governance: Proposal votingPeriod has ended"
-        );
-
-        // Require vote is either Yes or No
-        require(
-            _vote == Vote.Yes || _vote == Vote.No,
-            "Governance: Can only submit a Yes or No vote"
-        );
-
-        return voterStake;
+        return activeStake;
     }
 
     // solium-disable security/no-inline-assembly
