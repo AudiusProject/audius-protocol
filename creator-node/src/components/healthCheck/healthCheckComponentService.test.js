@@ -35,18 +35,14 @@ describe('Test Health Check', function () {
 
   it('Should handle no libs', function () {
     const res = healthCheck({}, mockLogger)
-    config.set('creatorNodeEndpoint', 'http://test.endpoint')
-    config.set('spID', 10)
-    let expectedEndpoint = config.get('creatorNodeEndpoint')
-    let expectedSpID = config.get('spID')
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: 'none',
-      spID: expectedSpID,
-      creatorNodeEndpoint: expectedEndpoint
+      spID: config.get('spID'),
+      creatorNodeEndpoint: config.get('creatorNodeEndpoint')
     })
   })
 })
