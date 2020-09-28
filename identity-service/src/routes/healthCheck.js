@@ -78,6 +78,7 @@ module.exports = function (app) {
     let failureTxs = {} // senderAddress: [<txHash>]
     let txCounter = 0
     let minBlockTime = null
+    let maxBlockTime = null
 
     req.logger.info(
       `Searching for transactions to/from relay accounts within blocks ${startBlockNumber} and ${endBlockNumber}`
@@ -93,6 +94,7 @@ module.exports = function (app) {
         continue
       }
       if (!minBlockTime || block.timestamp < minBlockTime) minBlockTime = block.timestamp
+      if (!maxBlockTime || block.timestamp > maxBlockTime) maxBlockTime = block.timestamp
       if (block.transactions.length) {
         for (const tx of block.transactions) {
           // If transaction is from audius account, determine success or fail status
@@ -127,9 +129,9 @@ module.exports = function (app) {
     await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
 
     // check if there have been any attempts in the time window that we processed the block health check
-    const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, '+inf')
-    const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, '+inf')
-    const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, '+inf')
+    const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, maxBlockTime)
+    const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, maxBlockTime)
+    const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, maxBlockTime)
     if ((txCounter / attemptedTxsInRedis.length) < sentVsAttemptThreshold) isError = true
 
     const serverResponse = {
