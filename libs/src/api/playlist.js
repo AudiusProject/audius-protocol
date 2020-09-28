@@ -29,7 +29,9 @@ class Playlists extends Base {
 
   /**
    * get full playlist objects, including tracks, for passed in array of playlistId
-   * @param {Array} playlistId list of playlist ids
+   * @param {number} limit max # of items to return
+   * @param {number} offset offset into list to return from (for pagination)
+   * @param {Array} idsArray list of playlist ids
    * @param {number} targetUserId the user whose playlists we're trying to get
    * @param {boolean} withUsers whether to return users nested within the collection objects
    * @returns {Array} array of playlist objects

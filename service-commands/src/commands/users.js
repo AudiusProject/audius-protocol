@@ -43,4 +43,37 @@ const getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
 
-module.exports = { addUser, upgradeToCreator, autoSelectCreatorNodes, getUser }
+const getLibsUserInfo = async libs => {
+  return libs.getLibsUserInfo()
+}
+
+const updateMultihash = async (libsWrapper, userId, multihashDigest) => {
+  return libsWrapper.updateMultihash(userId, multihashDigest)
+}
+
+const updateProfilePhoto = async (
+  libsWrapper,
+  userId,
+  profilePhotoMultihashDigest
+) => {
+  return libsWrapper.updateProfilePhoto(userId, profilePhotoMultihashDigest)
+}
+
+const updateCoverPhoto = async (
+  libsWrapper,
+  userId,
+  coverPhotoMultihashDigest
+) => {
+  return libsWrapper.updateCoverPhoto(userId, coverPhotoMultihashDigest)
+}
+
+module.exports = {
+  addUser,
+  upgradeToCreator,
+  getUser,
+  autoSelectCreatorNodes,
+  getLibsUserInfo,
+  updateMultihash,
+  updateProfilePhoto,
+  updateCoverPhoto
+}

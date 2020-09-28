@@ -4,12 +4,16 @@ const { _ } = require('lodash')
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
 const consistency1 = require('./tests/test_1.js')
+const ipldBlacklistTests = require('./tests/test_ipldBlacklist')
 
 // Configuration.
 // Should be CLI configurable in the future.
 const NUM_CREATOR_NODES = 3
 const NUM_USERS = 2
-const ACCOUNT_OFFSET = 0 // Increment this if you wish to modify the start account for testing
+
+// Allow command line args for wallet index offset
+const commandLineOffset = parseInt(process.argv.slice(4)[0])
+let accountOffset = commandLineOffset ? commandLineOffset : 0
 
 const {
   runSetupCommand,
@@ -31,7 +35,7 @@ async function tearDownAllServices() {
   logger.info('All services downed.')
 }
 
-const makeTest = (name, testFn, numUsers, numCreatorNodes) => {
+const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
       const res = await testFn({
@@ -48,28 +52,48 @@ const makeTest = (name, testFn, numUsers, numCreatorNodes) => {
   }
   return {
     testName: name,
-    test: wrappedTest
+    test: wrappedTest,
+    numUsers
   }
 }
 
 const testRunner = async tests => {
   let failedTests = []
   // Run each test
-  for (const { testName, test } of tests) {
+  for (let { testName, test, numUsers } of tests) {
     const date = new Date().toISOString()
     const fileLoggerName = `${testName}-${date}`
     const removeLogger = addFileLogger(fileLoggerName)
 
     logger.info(`Running test [${testName}] at [${date}]`)
 
+    let libsArray = []
+
+    // Writing IPLD txns to chain require the 0th account
+    // Here, we init a libs instance with the 0th acc and set it as index 0
+    // in the libs array
+    if (testName.startsWith('ipld')) {
+      // add libs with wallet index 0
+      const libsWithWallet0 = new LibsWrapper(0)
+      await libsWithWallet0.initLibs()
+      libsArray = [libsWithWallet0]
+
+      // if offset is 0, incr by 1 to not use wallet 0
+      accountOffset = accountOffset === 0 ? accountOffset + 1 : accountOffset
+
+      // decr numUsers by 1 as libsWithWallet0 is one of the created users
+      numUsers -= 1
+    }
+
     // Init required libs instances
-    const libsArray = await Promise.all(
-      _.range(NUM_USERS).map(async i => {
-        const l = new LibsWrapper(i + ACCOUNT_OFFSET)
+    const libsInstances = await Promise.all(
+      _.range(numUsers).map(async i => {
+        const l = new LibsWrapper(i + accountOffset)
         await l.initLibs()
         return l
       })
     )
+    libsArray = [...libsArray, ...libsInstances]
 
     const executeAll = makeExecuteAll(libsArray)
     const executeOne = makeExecuteOne(libsArray)
@@ -96,39 +120,52 @@ const testRunner = async tests => {
 async function main() {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
   const cmd = process.argv[3]
-  let enableFaultInjection = true
-  if (cmd === 'up') {
-    await setupAllServices()
-  } else if (cmd === 'down') {
-    await tearDownAllServices()
-  } else if (cmd === 'test') {
-    const test = makeTest(
-      'consistency',
-      consistency1,
-      NUM_USERS,
-      NUM_CREATOR_NODES,
-      enableFaultInjection
-    )
-    await testRunner([test])
-  } else if (cmd === 'test-ci') {
-    enableFaultInjection = false
-    const test = makeTest(
-      'consistency:ci',
-      consistency1,
-      NUM_USERS,
-      NUM_CREATOR_NODES,
-      enableFaultInjection
-    )
-    try {
-      await testRunner([test])
-      logger.info('Exiting testrunner')
-      process.exit()
-    } catch (e) {
-      logger.info('Exiting testrunner with errors', e)
-      process.exit(1)
+
+  switch (cmd) {
+    case 'up': {
+      await setupAllServices()
+      break
     }
-  } else {
-    logger.error('Usage: one of either `up`, `down`, or `test`.')
+    case 'down': {
+      await tearDownAllServices()
+      break
+    }
+    case 'test': {
+      const test = makeTest('consistency', consistency1, {
+        numCreatorNodes: NUM_CREATOR_NODES,
+        numUsers: NUM_USERS
+      })
+      await testRunner([test])
+      break
+    }
+    case 'test-ci': {
+      const test = makeTest('consistency:ci', consistency1, {
+        numCreatorNodes: NUM_CREATOR_NODES,
+        numUsers: NUM_USERS
+      })
+
+      // dynamically create ipld tests
+      const blacklistTests = Object.entries(ipldBlacklistTests).map(
+        ([testName, testLogic]) =>
+          makeTest(testName, testLogic, {
+            numCreatorNodes: 1,
+            numUsers: NUM_USERS
+          })
+      )
+      const tests = [test, ...blacklistTests]
+
+      try {
+        await testRunner(tests)
+        logger.info('Exiting testrunner')
+        process.exit()
+      } catch (e) {
+        logger.error('Exiting testrunner with errors')
+        logger.error(e.message)
+        process.exit(1)
+      }
+    }
+    default:
+      logger.error('Usage: one of either `up`, `down`, `test`, or `test-ci`.')
   }
 }
 

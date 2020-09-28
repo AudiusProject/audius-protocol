@@ -72,12 +72,68 @@ class DelegateManagerClient extends GovernedContractClient {
         _delegator: delegator
       }
     })
-
     return events.map(event => ({
       blockNumber: parseInt(event.blockNumber),
       delegator: event.returnValues._delegator,
-      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
       serviceProvider: event.returnValues._serviceProvider
+    }))
+  }
+
+  async getClaimEvents ({
+    claimer,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('Claim', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _claimer: claimer
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      claimer: event.returnValues._claimer,
+      rewards: Utils.toBN(event.returnValues._rewards),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
+    }))
+  }
+
+  async getSlashEvents ({
+    target,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('Slash', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _target: target
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      target: event.returnValues._target,
+      amount: Utils.toBN(event.returnValues._amount),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
+    }))
+  }
+
+  async getDelegatorRemovedEvents ({
+    target,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('DelegatorRemoved', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _target: target
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      serviceProvider: event.returnValues._serviceProvider,
+      delegator: event.returnValues._delegator,
+      unstakedAmount: Utils.toBN(event.returnValues._unstakedAmount)
     }))
   }
 

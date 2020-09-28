@@ -1,6 +1,7 @@
+from flask_restx.fields import Boolean
 from src.api.v1.helpers import make_response
 from flask_restx import fields
-from .users import user_model
+from .users import user_model, user_model_full
 from .common import favorite, ns, repost
 
 track_artwork = ns.model('track_artwork', {
@@ -22,6 +23,17 @@ remix_parent = ns.model('remix_parent', {
     "tracks": fields.List(fields.Nested(track_element))
 })
 
+full_remix = ns.model('full_remix', {
+    "parent_track_id": fields.String(required=True),
+    "user": fields.Nested(user_model_full, required=True),
+    "has_remix_author_reposted": fields.Boolean(required=True),
+    "has_remix_author_saved": fields.Boolean(required=True)
+})
+
+full_remix_parent = ns.model('full_remix_parent', {
+    "tracks": fields.List(fields.Nested(full_remix))
+})
+
 stem_parent = ns.model('stem_parent', {
     "category": fields.String(required=True),
     "parent_track_id": fields.Integer(required=True)
@@ -30,7 +42,7 @@ stem_parent = ns.model('stem_parent', {
 download = ns.model('download_metadata', {
     "cid": fields.String,
     "is_downloadable": fields.Boolean(required=True),
-    "required_follow": fields.Boolean(required=True),
+    "requires_follow": fields.Boolean(required=True),
 })
 
 field_visibility = ns.model('field_visibility', {
@@ -58,33 +70,32 @@ track = ns.model('Track', {
     "duration": fields.Integer(required=True),
     # Whether or not the track is downloadable, see `download`
     # on `track_full` for more details
-    "downloadable": fields.Boolean
+    "downloadable": fields.Boolean,
+    "play_count": fields.Integer(required=True)
 })
 
 track_full = ns.clone('track_full', track, {
-    "blockhash": fields.String(required=True),
     "create_date": fields.String,
+    "cover_art_sizes": fields.String,
     "created_at": fields.String,
     "credits_splits": fields.String,
     "download": fields.Nested(download),
     "isrc": fields.String,
-    "length": fields.Integer,
     "license": fields.String,
     "iswc": fields.String,
     "field_visibility": fields.Nested(field_visibility),
     "followee_reposts": fields.List(fields.Nested(repost), required=True),
     "has_current_user_reposted": fields.Boolean(required=True),
-    "is_current": fields.Boolean(required=True),
-    "is_delete": fields.Boolean(required=True),
     "is_unlisted": fields.Boolean(required=True),
     "has_current_user_saved": fields.Boolean(required=True),
     "followee_favorites": fields.List(fields.Nested(favorite), required=True),
-    "file_type": fields.String,
     "route_id": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
-    "metadata_multihash": fields.String(required=True),
     "stem_of": fields.Nested(stem_parent),
     "track_segments": fields.List(fields.Nested(track_segment)),
     "updated_at": fields.String,
-    "user_id": fields.String(required=True)
+    "user_id": fields.String(required=True),
+    "user": fields.Nested(user_model_full, required=True),
+    "is_delete": fields.Boolean,
+    "cover_art": fields.String,
+    "remix_of": fields.Nested(full_remix_parent),
 })

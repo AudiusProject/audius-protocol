@@ -83,6 +83,57 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       this.web3Manager.getWalletAddress())
   }
 
+  // Get the deregistered service's most recent endpoint and delegate owner wallet
+  async getDeregisteredService ({
+    serviceType,
+    spID,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let service = { endpoint: '', delegateOwnerWallet: '' }
+    let registerEvents = await contract.getPastEvents('RegisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _spID: spID,
+        _serviceType: Utils.utf8ToHex(serviceType)
+      }
+    })
+
+    if (registerEvents.length > 0) {
+      const { _endpoint, _owner } = registerEvents[registerEvents.length - 1].returnValues
+      service.endpoint = _endpoint
+      service.owner = _owner
+    }
+
+    let endpointUpdateEvents = await contract.getPastEvents('EndpointUpdated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _spID: spID,
+        _serviceType: Utils.utf8ToHex(serviceType)
+      }
+    })
+
+    if (endpointUpdateEvents.length > 0) {
+      const { _newEndpoint } = endpointUpdateEvents[endpointUpdateEvents.length - 1].returnValues
+      service.endpoint = _newEndpoint
+    }
+
+    let walletEvents = await contract.getPastEvents('DelegateOwnerWalletUpdated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _spID: spID,
+        _serviceType: Utils.utf8ToHex(serviceType)
+      }
+    })
+
+    if (walletEvents.length > 0) {
+      const { _updatedWallet } = walletEvents[walletEvents.length - 1].returnValues
+      service.delegateOwnerWallet = _updatedWallet
+    }
+
+    return service
+  }
+
   async increaseStake (amount) {
     const contractAddress = await this.stakingProxyClient.getAddress()
     const tx0 = await this.audiusTokenClient.approve(
@@ -128,6 +179,24 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       amount: Utils.toBN(amount),
       lockupExpiryBlock: parseInt(lockupExpiryBlock)
     }
+  }
+
+  /**
+   * Gets the pending decrease stake lockup duration
+   */
+  async getDecreaseStakeLockupDuration () {
+    const requestInfoMethod = await this.getMethod('getDecreaseStakeLockupDuration')
+    const info = await requestInfoMethod.call()
+    return parseInt(info)
+  }
+
+  /**
+   * Gets the deployer cut lockup duration
+   */
+  async getDeployerCutLockupDuration () {
+    const requestInfoMethod = await this.getMethod('getDeployerCutLockupDuration')
+    const info = await requestInfoMethod.call()
+    return parseInt(info)
   }
 
   /**

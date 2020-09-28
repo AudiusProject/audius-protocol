@@ -4,8 +4,9 @@ from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null
 from src import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, BlacklistedIPLD, Stem, Remix
+from src.models import Track, User, Stem, Remix
 from src.tasks.metadata import track_metadata_format
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     for tx_receipt in track_factory_txs:
         for event_type in track_event_types_arr:
             track_events_tx = getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
+            processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in track_events_tx:
                 event_args = entry["args"]
                 track_id = event_args._trackId if '_trackId' in event_args else event_args._id
@@ -50,8 +52,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                         "events": []
                     }
 
-                track_events[track_id]["events"].append(event_type)
-                track_events[track_id]["track"] = parse_track_event(
+                parsed_track = parse_track_event(
                     self,
                     session,
                     update_task,
@@ -59,12 +60,22 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                     event_type,
                     track_events[track_id]["track"],
                     block_timestamp)
-            num_total_changes += len(track_events_tx)
+
+                # If track record object is None, it has a blacklisted metadata CID
+                if parsed_track is not None:
+                    track_events[track_id]["events"].append(event_type)
+                    track_events[track_id]["track"] = parsed_track
+                    processedEntries += 1
+
+            num_total_changes += processedEntries
+
+    logger.info(f"[track indexing] There are {num_total_changes} events processed.")
 
     for track_id, value_obj in track_events.items():
-        logger.info(f"tracks.py | Adding {value_obj['track']}")
-        invalidate_old_track(session, track_id)
-        session.add(value_obj["track"])
+        if value_obj['events']:
+            logger.info(f"tracks.py | Adding {value_obj['track']}")
+            invalidate_old_track(session, track_id)
+            session.add(value_obj["track"])
 
     return num_total_changes
 
@@ -167,7 +178,8 @@ def parse_track_event(
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, track_metadata_multihash):
-            return track_record
+            logger.info(f"Encountered blacklisted metadata CID {track_metadata_multihash} in indexing new track")
+            return None
 
         owner_id = event_args._trackOwnerId
         handle = (
@@ -182,6 +194,7 @@ def parse_track_event(
         refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
 
         track_record.is_delete = False
+
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
             track_metadata_format
@@ -196,6 +209,11 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
+            # If CID is in IPLD blacklist table, do not continue with indexing
+            if is_blacklisted_ipld(session, track_record.cover_art):
+                logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing new track")
+                return None
+
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
                 is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
@@ -225,7 +243,8 @@ def parse_track_event(
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, upd_track_metadata_multihash):
-            return track_record
+            logger.info(f"Encountered blacklisted metadata CID {upd_track_metadata_multihash} in indexing update track")
+            return None
 
         owner_id = event_args._trackOwnerId
         handle = (
@@ -253,7 +272,12 @@ def parse_track_event(
 
         # if cover_art CID is of a dir, store under _sizes field instead
         if track_record.cover_art:
-            logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
+            # If CID is in IPLD blacklist table, do not continue with indexing
+            if is_blacklisted_ipld(session, track_record.cover_art):
+                logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing update track")
+                return None
+
+            logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
                 is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
                 if is_directory:
@@ -271,21 +295,13 @@ def parse_track_event(
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
-        if not track_record.stem_of:
-            track_record.stem_of = null()
-        if not track_record.remix_of:
-            track_record.remix_of = null()
+        track_record.stem_of = null()
+        track_record.remix_of = null()
         logger.info(f"Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
 
     return track_record
-
-def is_blacklisted_ipld(session, ipld_blacklist_multihash):
-    ipld_blacklist_entry = (
-        session.query(BlacklistedIPLD).filter(BlacklistedIPLD.ipld == ipld_blacklist_multihash)
-    )
-    return ipld_blacklist_entry.count() > 0
 
 def is_valid_json_field(metadata, field):
     if field in metadata and isinstance(metadata[field], dict) and metadata[field]:

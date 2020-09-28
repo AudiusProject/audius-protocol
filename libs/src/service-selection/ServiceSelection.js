@@ -105,7 +105,7 @@ class ServiceSelection {
     // If there are no services left to try, either pick a backup or return null
     if (filteredServices.length === 0) {
       this.decisionTree.push({ stage: 'No Services Left To Try' })
-      if (Object.keys(this.backups).length > 0) {
+      if (this.getBackupsSize() > 0) {
         // Some backup exists
         const backup = this.selectFromBackups()
         this.decisionTree.push({ stage: 'Selected From Backup', val: backup })
@@ -113,7 +113,7 @@ class ServiceSelection {
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
-        this.unhealthy = []
+        this.unhealthy = new Set([])
         this.backups = {}
         this.decisionTree.push({ stage: 'Failed Everything. Resetting.' })
         return null
@@ -284,6 +284,13 @@ class ServiceSelection {
    */
   async selectFromBackups () {
     return Object.keys(this.backups)[0]
+  }
+
+  /**
+   * Returns the size of backups
+   */
+  getBackupsSize () {
+    return Object.keys(this.backups).length
   }
 }
 
