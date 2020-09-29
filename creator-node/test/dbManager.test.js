@@ -59,6 +59,10 @@ describe('Test createNewDataRecord()', () => {
     }
   })
 
+  afterEach(async function () {
+    models.sequelize.removeHook('beforeCreate', 'clockTimeout')
+  })
+
   /** Wipe all CNodeUsers + dependent data */
   after(async function () {
     await models.CNodeUser.destroy({
@@ -145,15 +149,14 @@ describe('Test createNewDataRecord()', () => {
     const numEntries = 5
 
     // Add global sequelize hook to add timeout before ClockRecord.create calls to force concurrent ops
-    const modelsCopy = models
-    modelsCopy.sequelize.addHook('beforeCreate', async (instance, options) => {
+    models.sequelize.addHook('beforeCreate', 'clockTimeout', async (instance, options) => {
       if (instance.constructor.name === 'ClockRecord') {
         await utils.timeout(timeoutMs)
       }
     })
 
     // Replace required models instance with modified models instance
-    proxyquire('../src/dbManager', { './models': modelsCopy })
+    proxyquire('../src/dbManager', { './models': models })
 
     // Make multiple concurrent calls - create a transaction for each call
     const arr = _.range(1, numEntries + 1) // [1, 2, ..., numEntries]
@@ -199,15 +202,14 @@ describe('Test createNewDataRecord()', () => {
     const numEntries = 5
 
     // Add global sequelize hook to add timeout before ClockRecord.create calls to force concurrent ops
-    const modelsCopy = models
-    modelsCopy.sequelize.addHook('beforeCreate', async (instance, options) => {
+    models.sequelize.addHook('beforeCreate', 'clockTimeout', async (instance, options) => {
       if (instance.constructor.name === 'ClockRecord') {
         await utils.timeout(timeoutMs)
       }
     })
 
     // Replace required models instance with modified models instance
-    proxyquire('../src/dbManager', { './models': modelsCopy })
+    proxyquire('../src/dbManager', { './models': models })
 
     // Attempt to make multiple concurrent calls, re-using the same transaction each time
     const transaction = await models.sequelize.transaction()

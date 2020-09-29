@@ -28,7 +28,7 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js' --timeout 100000 --exit
+  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js' --exit
 }
 
 run_integration_tests () {
