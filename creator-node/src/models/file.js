@@ -12,10 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false
     },
-    // only non-null for track files (as opposed to image/metadata files)
-    trackUUID: {
-      type: DataTypes.UUID,
-      allowNull: true // `true` as we use File entries for more than just uploaded tracks
+    // only non-null for track/copy320 files (as opposed to image/metadata files)
+    trackBlockchainId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
     multihash: {
       type: DataTypes.TEXT,
@@ -49,6 +49,10 @@ module.exports = (sequelize, DataTypes) => {
         // track and non types broken down below and attached to Track model
         isIn: [['track', 'metadata', 'image', 'dir', 'copy320']]
       }
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {
     indexes: [
@@ -60,23 +64,30 @@ module.exports = (sequelize, DataTypes) => {
       },
       {
         fields: ['dirMultihash']
+      },
+      {
+        fields: ['trackBlockchainId']
+      },
+      {
+        unique: true,
+        fields: ['cnodeUserUUID', 'clock']
       }
     ]
   })
 
+  /**
+   * @dev - there is intentionally no reference from File.trackBlockchainId to Track.blockchainId. This is to
+   *    remove the two-way association between these models
+   */
   File.associate = function (models) {
     File.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',
       sourceKey: 'cnodeUserUUID',
       onDelete: 'RESTRICT'
     })
-    File.belongsTo(models.Track, {
-      foreignKey: 'trackUUID',
-      sourceKey: 'trackUUID',
-      onDelete: 'RESTRICT'
-    })
   }
 
+  // TODO - why is this not externally accessible?
   File.TrackTypes = ['track', 'copy320']
   File.NonTrackTypes = ['dir', 'image', 'metadata']
 

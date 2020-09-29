@@ -33,7 +33,7 @@ export logLevel='debug' #should be error
 # So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
 if [ -z "${isCIBuild}" ]; then
   # taken from https://stackoverflow.com/a/36591842
-  docker exec -i audius-identity-service_db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_identity_service_test\""
+  docker exec -i audius-identity-service_identity-db_1 /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_identity_service_test\""
 elif [ -x "$(command -v psql)" ]; then
   psql -U postgres -h localhost -p $PG_PORT -tc "SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'" | grep -q 1 || psql -U postgres -h localhost -p $PG_PORT -c "CREATE DATABASE audius_identity_service_test"
 fi

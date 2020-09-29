@@ -58,6 +58,10 @@ class App {
     await new Promise(resolve => {
       server = this.express.listen(this.port, resolve)
     })
+    server.setTimeout(config.get('setTimeout'))
+    server.timeout = config.get('timeout')
+    server.keepAliveTimeout = config.get('keepAliveTimeout')
+    server.headersTimeout = config.get('headersTimeout')
 
     this.express.set('redis', this.redisClient)
 
