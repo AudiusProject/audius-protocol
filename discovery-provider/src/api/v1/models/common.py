@@ -9,26 +9,10 @@ repost = ns.model('repost', {
     "user_id": fields.String(required=True)
 })
 
-repost_full = ns.clone("repost_full", repost, {
-    "blockhash": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
-    "created_at": fields.String(required=True),
-    "is_current": fields.Boolean(required=True),
-    "is_delete": fields.Boolean(required=True),
-})
-
 favorite = ns.model('favorite', {
     "favorite_item_id": fields.String(required=True),
     "favorite_type": fields.String(required=True),
     "user_id": fields.String(required=True)
-})
-
-favorite_full = ns.clone("favorite_full", favorite, {
-    "blockhash": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
-    "created_at": fields.String(required=True),
-    "is_current": fields.Boolean(required=True),
-    "is_delete": fields.Boolean(required=True),
 })
 
 version_metadata = ns.model("version_metadata", {

@@ -1,6 +1,6 @@
-from src.api.v1.helpers import make_response
 from flask_restx import fields
-from src.api.v1.models.users import user_model
+from src.api.v1.models.users import user_model, user_model_full
+from src.api.v1.models.tracks import track_full
 from .common import favorite, ns, repost
 
 playlist_artwork = ns.model('playlist_artwork', {
@@ -30,19 +30,16 @@ playlist_model = ns.model('playlist', {
     "user": fields.Nested(user_model, required=True),
 })
 
-playlist_full = ns.model('playlist_full', playlist_model, {
-    "blockhash": fields.String(required=True),
-    "blocknumber": fields.Integer(required=True),
+full_playlist_model = ns.clone('playlist_full', playlist_model, {
     "created_at": fields.String,
     "followee_reposts": fields.List(fields.Nested(repost)),
     "followee_saves": fields.List(fields.Nested(favorite)),
     "has_current_user_reposted": fields.Boolean(required=True),
     "has_current_user_saved	true": fields.Boolean(required=True),
-    "is_current": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
     "is_private": fields.Boolean(required=True),
-    "upc": fields.String,
     "updated_at": fields.String,
     "playlist_contents": fields.Nested(playlist_contents, required=True),
-    "user_id": fields.String(required=True),
+    "user": fields.Nested(user_model_full, required=True),
+    "tracks": fields.List(fields.Nested(track_full), required=True)
 })
