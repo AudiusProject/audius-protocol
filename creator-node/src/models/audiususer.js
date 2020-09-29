@@ -1,19 +1,18 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
   const AudiusUser = sequelize.define('AudiusUser', {
-    audiusUserUUID: {
+    cnodeUserUUID: {
       type: DataTypes.UUID,
-      allowNull: false,
-      primaryKey: true,
-      defaultValue: DataTypes.UUIDV4
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
+      allowNull: false
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
+      allowNull: false
     },
     blockchainId: {
       type: DataTypes.BIGINT,
-      unique: true,
-      allowNull: true
-    },
-    cnodeUserUUID: {
-      type: DataTypes.UUID,
       allowNull: false
     },
     metadataFileUUID: {
@@ -32,7 +31,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: true
     }
-  }, {})
+  }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['blockchainId', 'clock']
+      }
+    ]
+  })
   AudiusUser.associate = function (models) {
     AudiusUser.belongsTo(models.CNodeUser, {
       foreignKey: 'cnodeUserUUID',

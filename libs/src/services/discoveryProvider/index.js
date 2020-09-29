@@ -14,8 +14,7 @@ let urlJoin = require('proper-url-join')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
-const MAKE_REQUEST_RETRY_COUNT = 3
-const MAX_MAKE_REQUEST_RETRY_COUNT = 20
+const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 
 class DiscoveryProvider {
   constructor (whitelist, userStateManager, ethContracts, web3Manager, reselectTimeout, selectionCallback) {
@@ -473,30 +472,98 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retries = MAKE_REQUEST_RETRY_COUNT, attempedRetries = 0) {
-    if (attempedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
-      console.error('Attempted max request retries.')
+  async _makeRequest (requestObj, attemptedRetries = 0) {
+    try {
+      const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
+
+      // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
+      if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
+        let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
+        updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
+        console.info(updateDiscProvEndpointMsg)
+        this.discoveryProviderEndpoint = newDiscProvEndpoint
+        attemptedRetries = 0
+      }
+    } catch (e) {
+      console.error(e)
       return
     }
 
-    if (!this.discoveryProviderEndpoint) {
-      const endpoint = await this.serviceSelector.select()
-      this.setEndpoint(endpoint)
+    let axiosRequest = this.createDiscProvRequest(requestObj)
+
+    let response
+    let parsedResponse
+    try {
+      response = await axios(axiosRequest)
+      parsedResponse = Utils.parseDataFromResponse(response)
+    } catch (e) {
+      console.error(`Failed to make Discovery Provider request: ${e}`)
+      return this._makeRequest(requestObj, attemptedRetries + 1)
     }
 
-    if (retries === 0) {
-      // Reset the retries count in the case that the newly selected disc prov fails, we can
-      // allow it to try MAKE_REQUEST_RETRIES_COUNT number of times before trying another
-      retries = MAKE_REQUEST_RETRY_COUNT
-      const endpoint = await this.serviceSelector.select()
-      this.setEndpoint(endpoint)
+    if (
+      this.ethContracts &&
+      !this.ethContracts.isInRegressedMode() &&
+      'latest_indexed_block' in parsedResponse &&
+      'latest_chain_block' in parsedResponse
+    ) {
+      const {
+        latest_indexed_block: indexedBlock,
+        latest_chain_block: chainBlock
+      } = parsedResponse
+
+      if (
+        !chainBlock ||
+        !indexedBlock ||
+        (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
+      ) {
+        // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
+        // hopes it will catch up
+        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request...`)
+        return this._makeRequest(requestObj, attemptedRetries + 1)
+      }
     }
 
+    return parsedResponse.data
+  }
+
+  /**
+   * Gets the healthy discovery provider endpoint used in creating the axious request later.
+   * If the number of retries is over the max count for retires, clear the cache and reselect
+   * another healthy discovery provider. Else, return the current discovery provider endpoint
+   * @param {int} attemptedRetries the number of attempted requests made to the current disc prov endpoint
+   */
+  async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
+    let endpoint = this.discoveryProviderEndpoint
+    if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+      // Add to unhealthy list if current disc prov endpoint has reached max retry count
+      console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
+
+      // Clear the cached endpoint and select new endpoint from backups
+      this.serviceSelector.clearCached()
+      endpoint = await this.serviceSelector.select()
+    }
+
+    // If there are no more available backups, throw error
+    if (!endpoint) {
+      throw new Error('All Discovery Providers are unhealthy and unavailable.')
+    }
+
+    return endpoint
+  }
+
+  /**
+   * Creates the discovery provider axiox request object with necessary configs
+   * @param {object} requestObj
+   */
+  createDiscProvRequest (requestObj) {
     let requestUrl
 
     if (urlJoin && urlJoin.default) {
       requestUrl = urlJoin.default(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
-    } else requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    } else {
+      requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+    }
 
     const headers = {}
     const currentUserId = this.userStateManager.getCurrentUserId()
@@ -517,48 +584,7 @@ class DiscoveryProvider {
         data: requestObj.data
       }
     }
-
-    try {
-      const response = await axios(axiosRequest)
-      const parsedResponse = Utils.parseDataFromResponse(response)
-
-      if (
-        this.ethContracts &&
-        !this.ethContracts.isInRegressedMode() &&
-        'latest_indexed_block' in parsedResponse &&
-        'latest_chain_block' in parsedResponse
-      ) {
-        const {
-          latest_indexed_block: indexedBlock,
-          latest_chain_block: chainBlock
-        } = parsedResponse
-
-        if (
-          !chainBlock ||
-          !indexedBlock ||
-          (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
-        ) {
-          // Select a new one
-          console.info(`${this.discoveryProviderEndpoint} is too far behind, reselecting discovery provider`)
-          // Mark the current selection as a backup
-          this.serviceSelector.addBackup(this.discoveryProviderEndpoint, response)
-          // Select a new one
-          const endpoint = await this.serviceSelector.select()
-          this.setEndpoint(endpoint)
-
-          retries = MAKE_REQUEST_RETRY_COUNT // reset retry count when setting a new endpoint
-          throw new Error(`Selected endpoint was too far behind. Indexed: ${indexedBlock} Chain: ${chainBlock}`)
-        }
-      }
-
-      return parsedResponse.data
-    } catch (e) {
-      console.error(e)
-
-      if (retries > 0) {
-        return this._makeRequest(requestObj, retries - 1, attempedRetries + 1)
-      }
-    }
+    return axiosRequest
   }
 }
 

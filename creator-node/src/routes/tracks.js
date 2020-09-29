@@ -5,7 +5,7 @@ const { Buffer } = require('ipfs-http-client')
 const config = require('../config.js')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
-const { saveFileFromBuffer, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
+const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
@@ -13,12 +13,11 @@ const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const DBManager = require('../dbManager')
 
 module.exports = function (app) {
   /**
    * upload track segment files and make avail - will later be associated with Audius track
-   * @dev - currently stores each segment twice, once under random file UUID & once under IPFS multihash
-   *      - this should be addressed eventually
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
@@ -34,13 +33,17 @@ module.exports = function (app) {
 
       return errorResponseBadRequest(req.fileFilterError)
     }
-    const routeTimeStart = Date.now()
-    let codeBlockTimeStart = Date.now()
 
-    // create and save track file transcoded version and segments to disk
+    const routeTimeStart = Date.now()
+    let codeBlockTimeStart
+    const cnodeUserUUID = req.session.cnodeUserUUID
+
+    // Create track transcode and segments, and save all to disk
     let transcodedFilePath
     let segmentFilePaths
     try {
+      codeBlockTimeStart = Date.now()
+
       const transcode = await Promise.all([
         TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext }),
         TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext })
@@ -56,57 +59,27 @@ module.exports = function (app) {
       return errorResponseServerError(err)
     }
 
-    // for each path, call saveFile and get back multihash; return multihash + segment duration
-    // run all async ops in parallel as they are independent
+    // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const t = await models.sequelize.transaction()
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS(req, transcodedFilePath)
+    const segmentFileIPFSResps = await Promise.all(segmentFilePaths.map(async (segmentFilePath) => {
+      const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
+      const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
+      return { multihash, srcPath: segmentFilePath, dstPath }
+    }))
+    req.logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
-    let transcodedFilePromResp
-    let segmentSaveFilePromResps
-    let segmentDurations
-    try {
-      req.logger.info(`segmentFilePaths.length ${segmentFilePaths.length}`)
-      let counter = 1
-      segmentSaveFilePromResps = await Promise.all(segmentFilePaths.map(async filePath => {
-        const absolutePath = path.join(req.fileDir, 'segments', filePath)
-        req.logger.info(`about to perform saveFileToIPFSFromFS #${counter++}`)
-        let response = await saveFileToIPFSFromFS(req, absolutePath, 'track', req.fileName, t)
-        response.segmentName = filePath
-        return response
-      }))
-      transcodedFilePromResp = await saveFileToIPFSFromFS(req, transcodedFilePath, 'copy320', req.fileName)
-      req.logger.info(`Time taken in /track_content for saving segments and transcoding to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    // Retrieve all segment durations as map(segment srcFilePath => segment duration)
+    codeBlockTimeStart = Date.now()
+    const segmentDurations = await getSegmentsDuration(req.fileName, req.file.destination)
+    req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
-      codeBlockTimeStart = Date.now()
-      let fileSegmentPath = path.join(req.fileDir, 'segments')
-      segmentDurations = await getSegmentsDuration(
-        req,
-        fileSegmentPath,
-        req.fileName,
-        req.file.destination
-      )
-      req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
-
-      // Commit transaction
-      codeBlockTimeStart = Date.now()
-      req.logger.info(`attempting to commit tx for file ${req.fileName}`)
-      await t.commit()
-    } catch (e) {
-      req.logger.info(`failed to commit...rolling back. file ${req.fileName}`)
-
-      await t.rollback()
-
-      // Prune upload artifacts
-      removeTrackFolder(req, req.fileDir)
-
-      return errorResponseServerError(e)
-    }
-    req.logger.info(`Time taken in /track_content to commit tx block to db: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
-
-    let trackSegments = segmentSaveFilePromResps.map((saveFileResp, i) => {
-      let segmentName = saveFileResp.segmentName
-      let duration = segmentDurations[segmentName]
-      return { 'multihash': saveFileResp.multihash, 'duration': duration }
+    // For all segments, build array of (segment multihash, segment duration)
+    let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
+      return {
+        multihash: segmentFileIPFSResp.multihash,
+        duration: segmentDurations[segmentFileIPFSResp.srcPath]
+      }
     })
 
     // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
@@ -120,7 +93,7 @@ module.exports = function (app) {
       return errorResponseServerError('Track upload failed - no track segments')
     }
 
-    // Don't allow if any segment CID is in blacklist.
+    // Error if any segment CID is in blacklist.
     try {
       await Promise.all(trackSegments.map(async segmentObj => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
@@ -138,13 +111,51 @@ module.exports = function (app) {
       }
     }
 
-    // Prune upload artifacts
+    // Record entries for transcode and segment files in DB
+    codeBlockTimeStart = Date.now()
+    const transaction = await models.sequelize.transaction()
+    let transcodeFileUUID
+    try {
+      // Record transcode file entry in DB
+      const createTranscodeFileQueryObj = {
+        multihash: transcodeFileIPFSResp.multihash,
+        sourceFile: req.fileName,
+        storagePath: transcodeFileIPFSResp.dstPath,
+        type: 'copy320' // TODO - replace with models enum
+      }
+      const file = await DBManager.createNewDataRecord(createTranscodeFileQueryObj, cnodeUserUUID, models.File, transaction)
+      transcodeFileUUID = file.fileUUID
+
+      // Record all segment file entries in DB
+      // Must be written sequentially to ensure clock values are correctly incremented and populated
+      for (const { multihash, dstPath } of segmentFileIPFSResps) {
+        const createSegmentFileQueryObj = {
+          multihash,
+          sourceFile: req.fileName,
+          storagePath: dstPath,
+          type: 'track' // TODO - replace with models enum
+        }
+        await DBManager.createNewDataRecord(createSegmentFileQueryObj, cnodeUserUUID, models.File, transaction)
+      }
+
+      await transaction.commit()
+    } catch (e) {
+      await transaction.rollback()
+
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError(e)
+    }
+    req.logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+
+    // Prune upload artifacts after success
     removeTrackFolder(req, req.fileDir)
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({
-      'transcodedTrackCID': transcodedFilePromResp.multihash,
-      'transcodedTrackUUID': transcodedFilePromResp.fileUUID,
+      'transcodedTrackCID': transcodeFileIPFSResp.multihash,
+      'transcodedTrackUUID': transcodeFileUUID,
       'track_segments': trackSegments,
       'source_file': req.fileName
     })
@@ -157,11 +168,13 @@ module.exports = function (app) {
   app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
 
-    if (!metadataJSON ||
-        !metadataJSON.owner_id ||
-        !metadataJSON.track_segments ||
-        !Array.isArray(metadataJSON.track_segments) ||
-        !metadataJSON.track_segments.length) {
+    if (
+      !metadataJSON ||
+      !metadataJSON.owner_id ||
+      !metadataJSON.track_segments ||
+      !Array.isArray(metadataJSON.track_segments) ||
+      !metadataJSON.track_segments.length
+    ) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
@@ -187,11 +200,12 @@ module.exports = function (app) {
 
       // See if the track already has a transcoded master
       if (trackId) {
-        const { trackUUID } = await models.Track.findOne({
-          attributes: ['trackUUID'],
+        const { blockchainId } = await models.Track.findOne({
+          attributes: ['blockchainId'],
           where: {
             blockchainId: trackId
-          }
+          },
+          order: [['clock', 'DESC']]
         })
 
         // Error if no DB entry for transcode found
@@ -200,25 +214,45 @@ module.exports = function (app) {
           where: {
             cnodeUserUUID: req.session.cnodeUserUUID,
             type: 'copy320',
-            trackUUID
+            trackBlockchainId: blockchainId
           }
         })
         if (!transcodedFile) {
-          return errorResponseServerError('Failed to find transcoded file ')
+          return errorResponseServerError('Failed to find transcoded file')
         }
       }
     }
 
-    // Store + pin metadata multihash to disk + IPFS.
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
+    const cnodeUserUUID = req.session.cnodeUserUUID
 
-    let multihash, fileUUID
+    // Save file from buffer to IPFS and disk
+    let multihash, dstPath
     try {
-      const saveFileFromBufferResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
-      multihash = saveFileFromBufferResp.multihash
-      fileUUID = saveFileFromBufferResp.fileUUID
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
+      multihash = resp.multihash
+      dstPath = resp.dstPath
     } catch (e) {
-      return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
+      return errorResponseServerError(`/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: ${e}`)
+    }
+
+    // Record metadata file entry in DB
+    const transaction = await models.sequelize.transaction()
+    let fileUUID
+    try {
+      const createFileQueryObj = {
+        multihash,
+        sourceFile: req.fileName,
+        storagePath: dstPath,
+        type: 'metadata' // TODO - replace with models enum
+      }
+      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, models.File, transaction)
+      fileUUID = file.fileUUID
+
+      await transaction.commit()
+    } catch (e) {
+      await transaction.rollback()
+      return errorResponseServerError(`Could not save to db db: ${e}`)
     }
 
     return successResponse({
@@ -234,36 +268,39 @@ module.exports = function (app) {
   app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainTrackId, blockNumber, metadataFileUUID, transcodedTrackUUID } = req.body
 
+    // Input validation
     if (!blockchainTrackId || !blockNumber || !metadataFileUUID) {
       return errorResponseBadRequest('Must include blockchainTrackId, blockNumber, and metadataFileUUID.')
     }
 
-    // Error on outdated blocknumber.
+    // Error on outdated blocknumber
     const cnodeUser = req.session.cnodeUser
     if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber > blockNumber) {
       return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
     }
     const cnodeUserUUID = req.session.cnodeUserUUID
 
-    // Fetch metadataJSON for metadataFileUUID.
+    // Fetch metadataJSON for metadataFileUUID, error if not found or malformatted
     const file = await models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
     if (!file) {
-      return errorResponseBadRequest(`No file found for provided metadataFileUUID ${metadataFileUUID}.`)
+      return errorResponseBadRequest(`No file db record found for provided metadataFileUUID ${metadataFileUUID}.`)
     }
     let metadataJSON
     try {
       metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
-      if (!metadataJSON ||
-          !metadataJSON.track_segments ||
-          !Array.isArray(metadataJSON.track_segments) ||
-          !metadataJSON.track_segments.length) {
+      if (
+        !metadataJSON ||
+        !metadataJSON.track_segments ||
+        !Array.isArray(metadataJSON.track_segments) ||
+        !metadataJSON.track_segments.length
+      ) {
         return errorResponseServerError(`Malformatted metadataJSON stored for metadataFileUUID ${metadataFileUUID}.`)
       }
     } catch (e) {
       return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
     }
 
-    // Get coverArtFileUUID for multihash in metadata object, if present.
+    // Get coverArtFileUUID for multihash in metadata object, else error
     let coverArtFileUUID
     try {
       coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
@@ -271,51 +308,61 @@ module.exports = function (app) {
       return errorResponseServerError(e.message)
     }
 
-    const t = await models.sequelize.transaction()
-
+    const transaction = await models.sequelize.transaction()
     try {
-      // Create / update track entry on db.
-      const resp = (await models.Track.upsert({
-        cnodeUserUUID,
+      const existingTrackEntry = await models.Track.findOne({
+        where: {
+          cnodeUserUUID,
+          blockchainId: blockchainTrackId,
+          coverArtFileUUID
+        },
+        order: [['clock', 'DESC']],
+        transaction
+      })
+
+      // Insert track entry in DB
+      const createTrackQueryObj = {
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainTrackId,
         coverArtFileUUID
-      },
-      { transaction: t, returning: true }
-      ))
-      const track = resp[0]
-      const trackCreated = resp[1]
+      }
+      const track = await DBManager.createNewDataRecord(createTrackQueryObj, cnodeUserUUID, models.Track, transaction)
 
-      /** Associate matching segment files on DB with new/updated track. */
+      /**
+       * Associate matching transcode & segment files on DB with new/updated track
+       * Must be done in same transaction to atomicity
+       *
+       * TODO - consider implications of edge-case -> two attempted /track_content before associate
+       */
 
       const trackSegmentCIDs = metadataJSON.track_segments.map(segment => segment.multihash)
 
-      // if track created, ensure files exist with trackuuid = null and update them.
-      if (trackCreated) {
-        // Update the transcoded 320kbps copy
+      // if track created, ensure files exist with trackBlockchainId = null and update them
+      if (!existingTrackEntry) {
+        // Associate the transcode file db record with trackUUID
         if (transcodedTrackUUID) {
           const transcodedFile = await models.File.findOne({
             where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackUUID: null,
+              trackBlockchainId: null,
               type: 'copy320'
             },
-            transaction: t
+            transaction
           })
           if (!transcodedFile) {
             throw new Error('Did not find a transcoded file for the provided CID.')
           }
           const numAffectedRows = await models.File.update(
-            { trackUUID: track.trackUUID },
+            { trackBlockchainId: track.blockchainId },
             { where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackUUID: null,
-              type: 'copy320'
+              trackBlockchainId: null,
+              type: 'copy320' // TODO - replace with model enum
             },
-            transaction: t
+            transaction
             }
           )
           if (numAffectedRows === 0) {
@@ -323,68 +370,70 @@ module.exports = function (app) {
           }
         }
 
-        // Update the corresponding segment files
+        // Associate all segment file db records with trackUUID
         const trackFiles = await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
-            trackUUID: null,
+            trackBlockchainId: null,
             type: 'track'
           },
-          transaction: t
+          transaction
         })
-        if (trackFiles.length < trackSegmentCIDs.length) {
+
+        if (trackFiles.length !== trackSegmentCIDs.length) {
           throw new Error('Did not find files for every track segment CID.')
         }
         const numAffectedRows = await models.File.update(
-          { trackUUID: track.trackUUID },
-          { where: {
-            multihash: trackSegmentCIDs,
-            cnodeUserUUID,
-            trackUUID: null,
-            type: 'track'
-          },
-          transaction: t
+          { trackBlockchainId: track.blockchainId },
+          {
+            where: {
+              multihash: trackSegmentCIDs,
+              cnodeUserUUID,
+              trackBlockchainId: null,
+              type: 'track'
+            },
+            transaction
           }
         )
-        if (numAffectedRows < trackSegmentCIDs.length) {
+        if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
           throw new Error('Failed to associate files for every track segment CID.')
         }
-      } else { /** If track updated, ensure files exist with trackuuid. */
-        // Check the transcoded copy if present
+      } else { /** If track updated, ensure files exist with trackBlockchainId. */
+        // Ensure transcode file db record exists if uuid provided
         if (transcodedTrackUUID) {
           const transcodedFile = await models.File.findOne({
             where: {
               fileUUID: transcodedTrackUUID,
               cnodeUserUUID,
-              trackUUID: track.trackUUID,
+              trackBlockchainId: track.blockchainId,
               type: 'copy320'
             },
-            transaction: t
+            transaction
           })
           if (!transcodedFile) {
             throw new Error('Did not find the corresponding transcoded file for the provided track UUID.')
           }
         }
 
-        // Check the segment files
+        // Ensure segment file db records exist for all CIDs
         const trackFiles = await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
-            trackUUID: track.trackUUID,
+            trackBlockchainId: track.blockchainId,
             type: 'track'
           },
-          transaction: t
+          transaction
         })
         if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error('Did not find files for every track segment CID with trackUUID.')
+          throw new Error('Did not find files for every track segment CID with trackBlockchainId.')
         }
       }
 
       // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
       // TODO - move to subquery to guarantee atomicity.
-      const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction: t })
+      const updatedCNodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID }, transaction })
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
         throw new Error('Issue in retrieving udpatedCnodeUser')
       }
@@ -394,15 +443,16 @@ module.exports = function (app) {
         given blockNumber ${blockNumber}`
       )
       if (blockNumber > updatedCNodeUser.latestBlockNumber) {
-        await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
+        // Update cnodeUser's latestBlockNumber
+        await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
       }
 
-      await t.commit()
+      await transaction.commit()
       triggerSecondarySyncs(req)
-      return successResponse({ trackUUID: track.trackUUID })
+      return successResponse()
     } catch (e) {
       req.logger.error(e.message)
-      await t.rollback()
+      await transaction.rollback()
       return errorResponseServerError(e.message)
     }
   }))
@@ -414,7 +464,10 @@ module.exports = function (app) {
       return errorResponseBadRequest('Please provide blockchainId.')
     }
 
-    const track = await models.Track.findOne({ where: { blockchainId } })
+    const track = await models.Track.findOne({
+      where: { blockchainId },
+      order: [['clock', 'DESC']]
+    })
     if (!track) {
       return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
     }
@@ -425,11 +478,11 @@ module.exports = function (app) {
     }
 
     // Case: track is marked as downloadable
-    // - Check if downloadable file exists. Since copyFile may or may not have trackUUID association,
-    //    fetch a segmentFile for trackUUID, and find copyFile for segmentFile's sourceFile.
+    // - Check if downloadable file exists. Since copyFile may or may not have trackBlockchainId association,
+    //    fetch a segmentFile for trackBlockchainId, and find copyFile for segmentFile's sourceFile.
     const segmentFile = await models.File.findOne({ where: {
       type: 'track',
-      trackUUID: track.trackUUID
+      trackBlockchainId: track.blockchainId
     } })
     const copyFile = await models.File.findOne({ where: {
       type: 'copy320',
@@ -468,12 +521,13 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
     }
 
-    const { trackUUID } = await models.Track.findOne({
-      attributes: ['trackUUID'],
-      where: { blockchainId }
+    const { blockchainId: blockchainIdFromTrack } = await models.Track.findOne({
+      attributes: ['blockchainId'],
+      where: { blockchainId },
+      order: [['clock', 'DESC']]
     })
 
-    if (!trackUUID) {
+    if (!blockchainIdFromTrack) {
       return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
     }
 
@@ -481,8 +535,9 @@ module.exports = function (app) {
       attributes: ['multihash'],
       where: {
         type: 'copy320',
-        trackUUID
-      }
+        trackBlockchainId: blockchainIdFromTrack
+      },
+      order: [['clock', 'DESC']]
     })
 
     if (!multihash) {
@@ -502,21 +557,28 @@ module.exports = function (app) {
     return getCID(req, res)
   }))
 
-  /** List all unlisted tracks for a user */
+  /**
+   * List all unlisted tracks for a user
+   */
   app.get('/tracks/unlisted', authMiddleware, handleResponse(async (req, res) => {
-    const tracks = await models.Track.findAll({
-      where: {
-        metadataJSON: {
-          is_unlisted: true
-        },
-        cnodeUserUUID: req.session.cnodeUserUUID
+    const tracks = (await models.sequelize.query(
+      `select "metadataJSON"->'title' as "title", "blockchainId" from (
+        select "metadataJSON", "blockchainId", row_number() over (
+          partition by "blockchainId" order by "clock" desc
+        ) from "Tracks"
+        where "cnodeUserUUID" = :cnodeUserUUID
+        and ("metadataJSON"->>'is_unlisted')::boolean = true
+      ) as a
+      where a.row_number = 1;`,
+      {
+        replacements: { cnodeUserUUID: req.session.cnodeUserUUID }
       }
-    })
+    ))[0]
 
     return successResponse({
-      tracks: tracks.map(t => ({
-        title: t.metadataJSON.title,
-        id: t.blockchainId
+      tracks: tracks.map(track => ({
+        title: track.title,
+        id: track.blockchainId
       }))
     })
   }))
