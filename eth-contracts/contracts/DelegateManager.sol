@@ -123,7 +123,18 @@ contract DelegateManager is InitializableV2 {
         uint256 indexed _newTotal
     );
 
-    event DelegatorRemoved(
+    event RemoveDelegatorRequested(
+        address indexed _serviceProvider,
+        address indexed _delegator,
+        uint256 indexed _blocknumber
+    );
+
+    event RemoveDelegatorCancelled(
+        address indexed _serviceProvider,
+        address indexed _delegator
+    );
+
+    event RemoveDelegatorEvaluated(
         address indexed _serviceProvider,
         address indexed _delegator,
         uint256 indexed _unstakedAmount
@@ -589,6 +600,12 @@ contract DelegateManager is InitializableV2 {
         removeDelegatorRequests[_serviceProvider][_delegator] = (
             block.number + removeDelegatorLockupDuration
         );
+
+        emit RemoveDelegatorRequested(
+            _serviceProvider,
+            _delegator,
+            removeDelegatorRequests[_serviceProvider][_serviceProvider]
+        );
     }
 
     /**
@@ -605,9 +622,9 @@ contract DelegateManager is InitializableV2 {
             removeDelegatorRequests[_serviceProvider][_delegator] != 0,
             "DelegateManager: No pending request"
         );
-
         // Reset lockup expiry
         removeDelegatorRequests[_serviceProvider][_delegator] = 0;
+        emit RemoveDelegatorCancelled(_serviceProvider, _delegator);
     }
 
     /**
@@ -677,7 +694,7 @@ contract DelegateManager is InitializableV2 {
 
         // Reset lockup expiry
         removeDelegatorRequests[_serviceProvider][_delegator] = 0;
-        emit DelegatorRemoved(_serviceProvider, _delegator, unstakeAmount);
+        emit RemoveDelegatorEvaluated(_serviceProvider, _delegator, unstakeAmount);
     }
 
     /**
