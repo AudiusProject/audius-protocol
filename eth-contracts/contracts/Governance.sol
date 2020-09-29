@@ -113,7 +113,7 @@ contract Governance is InitializableV2 {
         uint256 voteMagnitudeNo;
         uint256 numVotes;
         mapping(address => Vote) votes;
-        mapping(address => uint256) voteMagnitude;
+        mapping(address => uint256) voteMagnitudes;
         bytes32 contractHash;
     }
 
@@ -367,7 +367,7 @@ contract Governance is InitializableV2 {
         proposals[_proposalId].votes[voter] = _vote;
 
         // Record voteMagnitude for voter
-        proposals[_proposalId].voteMagnitude[voter] = voterActiveStake;
+        proposals[_proposalId].voteMagnitudes[voter] = voterActiveStake;
 
         // Update proposal cumulative vote magnitudes
         if (_vote == Vote.Yes) {
@@ -427,7 +427,7 @@ contract Governance is InitializableV2 {
         proposals[_proposalId].votes[voter] = _vote;
 
         // Update vote magnitudes, using vote magnitude from when previous vote was submitted
-        uint256 voteMagnitude = proposals[_proposalId].voteMagnitude[voter];
+        uint256 voteMagnitude = proposals[_proposalId].voteMagnitudes[voter];
         if (previousVote == Vote.Yes && _vote == Vote.No) {
             _decreaseVoteMagnitudeYes(_proposalId, voteMagnitude);
             _increaseVoteMagnitudeNo(_proposalId, voteMagnitude);
