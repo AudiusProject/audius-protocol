@@ -38,10 +38,13 @@ module.exports = {
     // - (Files already has PK on fileUUID and cnodeUsers already has PK on cnodeUserUUID)
     await addCompositePrimaryKeysToAudiusUsersAndTracks(queryInterface, Sequelize, transaction)
 
-    /**
-     * TODO - enforce composite foreign key (cnodeUserUUID, clock) on all SourceTables
-     *  - https://stackoverflow.com/questions/9984022/postgres-fk-referencing-composite-pk
-     */
+    // Add foreign key constraints from Tracks, AudiusUsers and Files to ClockRecords.
+    // This ensures a data record can never be created without a corresponding ClockRecord.
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "Files" ADD CONSTRAINT "Files_cnodeUserUUID_clock_fkey" FOREIGN KEY ("cnodeUserUUID", "clock") REFERENCES "ClockRecords" ("cnodeUserUUID", "clock") ON DELETE RESTRICT;
+      ALTER TABLE "AudiusUsers" ADD CONSTRAINT "AudiusUsers_cnodeUserUUID_clock_fkey" FOREIGN KEY ("cnodeUserUUID", "clock") REFERENCES "ClockRecords" ("cnodeUserUUID", "clock") ON DELETE RESTRICT;
+      ALTER TABLE "Tracks" ADD CONSTRAINT "Tracks_cnodeUserUUID_clock_fkey" FOREIGN KEY ("cnodeUserUUID", "clock") REFERENCES "ClockRecords" ("cnodeUserUUID", "clock") ON DELETE RESTRICT;
+    `, { transaction })
 
     await transaction.commit()
     console.log('FINISHED MIGRATION 20200922131913-post_vector_clock_db_migrations')
@@ -49,7 +52,7 @@ module.exports = {
 
   /** TODO */
   down: async (queryInterface, Sequelize) => {
-
+    // this is a breaking migration, restoring a previous db dump is the best option to revert
   }
 }
 
