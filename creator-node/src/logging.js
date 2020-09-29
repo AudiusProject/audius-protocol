@@ -20,12 +20,11 @@ function requestNotExcludedFromLogging (url) {
   return (excludedRoutes.indexOf(url) === -1)
 }
 
-function getRequestLoggingContext (req) {
+function getRequestLoggingContext (req, requestID) {
   req.startTime = process.hrtime()
-  const requestID = shortid.generate()
   const urlParts = req.url.split('?')
   return {
-    requestID: requestID,
+    requestID,
     requestMethod: req.method,
     requestHostname: req.hostname,
     requestUrl: urlParts[0],
@@ -39,7 +38,7 @@ function loggingMiddleware (req, res, next) {
   const requestID = shortid.generate()
   res.set('CN-Request-ID', requestID)
 
-  req.logContext = getRequestLoggingContext(req)
+  req.logContext = getRequestLoggingContext(req, requestID)
   req.logger = logger.child(req.logContext)
 
   if (requestNotExcludedFromLogging(req.originalUrl)) {
