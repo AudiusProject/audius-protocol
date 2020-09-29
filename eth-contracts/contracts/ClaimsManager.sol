@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 import "./Staking.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./ServiceProviderFactory.sol";
+/// @notice SafeERC20 imported via Staking.sol
 /// @notice SafeMath imported via ServiceProviderFactory.sol
 /// @notice Governance imported via Staking.sol
 
@@ -28,7 +28,7 @@ contract ClaimsManager is InitializableV2 {
     address private serviceProviderFactoryAddress;
     address private delegateManagerAddress;
 
-    // Address to which a % of each reward claim is transferred
+    /// @dev - Address to which a static amount is transferred at round start
     address private communityPoolAddress;
 
     // Claim related configurations
@@ -57,8 +57,8 @@ contract ClaimsManager is InitializableV2 {
     // Staking contract ref
     ERC20Mintable private audiusToken;
 
-    /// @dev - % of rewards transferred to community pool
-    uint256 private communityPoolPercent;
+    /// @dev - Reward amount transferred to external pool at start of round
+    uint256 private communityFundingAmount;
 
     // Struct representing round state
     // 1) Block at which round was funded
@@ -121,7 +121,7 @@ contract ClaimsManager is InitializableV2 {
         });
 
         // Community pool initialized to zero
-        communityPoolPercent = 0;
+        communityFundingAmount = 0;
         communityPoolAddress = address(0x0);
 
         InitializableV2.initialize();
@@ -201,13 +201,13 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /**
-     * @notice Get the community pool %
+     * @notice Get the community funding amount
      */
-    function getCommunityPoolPercent() external view returns (uint256)
+    function getCommunityFundingAmount() external view returns (uint256)
     {
         _requireIsInitialized();
 
-        return communityPoolPercent;
+        return communityFundingAmount;
     }
 
     /**
@@ -288,6 +288,17 @@ contract ClaimsManager is InitializableV2 {
 
         roundNumber = roundNumber.add(1);
 
+        if (communityFundingAmount > 0 && communityPoolAddress != address(0x0)) {
+            // ERC20Mintable always returns true
+            audiusToken.mint(address(this), communityFundingAmount);
+
+            // Approve transfer to staking address for claimer rewards
+            audiusToken.approve(communityPoolAddress, communityFundingAmount);
+
+            // Transfer to community pool address
+            ERC20(address(audiusToken)).safeTransfer(communityPoolAddress, communityFundingAmount);
+        }
+
         emit RoundInitiated(
             currentRound.fundedBlock,
             roundNumber,
@@ -359,27 +370,12 @@ contract ClaimsManager is InitializableV2 {
         // ERC20Mintable always returns true
         audiusToken.mint(address(this), rewardsForClaimer);
 
-        // Calculate % distributed to community
-        uint256 communityRewards;
-        if (communityPoolPercent > 0 && communityPoolAddress != address(0x0)) {
-            communityRewards = (rewardsForClaimer.mul(communityPoolPercent)).div(COMMUNITY_PERCENT_BASE);
-            rewardsForClaimer = rewardsForClaimer.sub(communityRewards);
-        }
-
         // Approve transfer to staking address for claimer rewards
         // ERC20 always returns true
         audiusToken.approve(stakingAddress, rewardsForClaimer);
 
         // Transfer rewards
         stakingContract.stakeRewards(rewardsForClaimer, _claimer);
-
-        // Distribute community rewards
-        if (communityRewards > 0) {
-            // Approve transfer
-            audiusToken.approve(communityPoolAddress, communityRewards);
-            // Transfer rewards
-            ERC20(address(audiusToken)).safeTransferFrom(address(this), communityPoolAddress, communityRewards);
-        }
 
         // Update round claim value
         currentRound.totalClaimedInRound = currentRound.totalClaimedInRound.add(rewardsForClaimer);
@@ -440,15 +436,14 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /**
-     * @notice Modify community pool % for each reward
-     * @param _newCommunityPoolPercent - new %
+     * @notice Modify community funding amound for each round
+     * @param _newCommunityFundingAmount - new static amount to fund community pool every round
      */
-    function updateCommunityPoolPercent(uint256 _newCommunityPoolPercent) external {
+    function updateCommunityFundingAmount(uint256 _newCommunityFundingAmount) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
-        require(_newCommunityPoolPercent <= COMMUNITY_PERCENT_BASE, "ClaimsManager: Community pool % must be < COMMUNITY_PERCENT_BASE");
-        communityPoolPercent = _newCommunityPoolPercent;
+        communityFundingAmount = _newCommunityFundingAmount;
     }
 
     /**

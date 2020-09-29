@@ -157,9 +157,9 @@ contract('ClaimsManager', async (accounts) => {
     await expectEvent.inTransaction(txs.delManAddressTx.tx, ClaimsManager, 'DelegateManagerAddressUpdated', { _newDelegateManagerAddress: mockDelegateManager.address })
 
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
-    let communityPoolPercent = await claimsManager.getCommunityPoolPercent()
+    let communityFundingAmount = await claimsManager.getCommunityFundingAmount()
     assert.isTrue(_lib.addressZero === communityPoolAddress, "Expect zero adddress")
-    assert.isTrue(communityPoolPercent.eq(_lib.toBN(0)), "Expect zero percent")
+    assert.isTrue(communityFundingAmount.eq(_lib.toBN(0)), "Expect zero percent")
   })
 
   it('Initiate a claim', async () => {
@@ -219,17 +219,18 @@ contract('ClaimsManager', async (accounts) => {
     )
   })
 
-  it.only('Initiate a claim with community rewards', async () => {
-    let newPercent = 10
+  it.only('Initiate a claim with community rewards enabled', async () => {
+    let newCommunityFundingAmount = 10
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       callValue0,
-      'updateCommunityPoolPercent(uint256)',
-      _lib.abiEncode(['uint256'], [newPercent]),
+      'updateCommunityFundingAmount(uint256)',
+      _lib.abiEncode(['uint256'], [newCommunityFundingAmount]),
       { from: guardianAddress }
     )
-    let communityPoolPercent = await claimsManager.getCommunityPoolPercent()
-    assert.isTrue(communityPoolPercent.eq(_lib.toBN(newPercent)), "Expect zero percent")
+    let communityFundingAmount = await claimsManager.getCommunityFundingAmount()
+    assert.isTrue(communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmount)), "Expect zero percent")
+
     let newAddress = accounts[10]
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
@@ -240,12 +241,22 @@ contract('ClaimsManager', async (accounts) => {
     )
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
     assert.isTrue(newAddress === communityPoolAddress, "Expect updated adddress")
-    console.log(`Updated`)
 
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
+    let initialTokenSupply = await token.totalSupply()
 
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    await claimsManager.initiateRound({ from: staker })
+
+    let tokenSupplyAfterRoundInitiated = await token.totalSupply()
+
+    assert.isTrue(
+      (tokenSupplyAfterRoundInitiated).eq(initialTokenSupply.add(communityFundingAmount)),
+      "Expect increase in amount"
+    )
+
+    let communityPoolBal = await token.balanceOf(communityPoolAddress)
+    assert.isTrue(communityPoolBal.eq(communityFundingAmount), "Expect transfer to community pool after 1 round")
     await mockDelegateManager.testProcessClaim(staker, 0)
   })
 
@@ -451,7 +462,7 @@ contract('ClaimsManager', async (accounts) => {
       'Only callable by Governance contract'
     )
     await _lib.assertRevert(
-      claimsManager.updateCommunityPoolPercent(10),
+      claimsManager.updateCommunityFundingAmount(10),
       'Only callable by Governance contract'
     )
   })
@@ -461,12 +472,12 @@ contract('ClaimsManager', async (accounts) => {
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
       callValue0,
-      'updateCommunityPoolPercent(uint256)',
+      'updateCommunityFundingAmount(uint256)',
       _lib.abiEncode(['uint256'], [newPercent]),
       { from: guardianAddress }
     )
-    let communityPoolPercent = await claimsManager.getCommunityPoolPercent()
-    assert.isTrue(communityPoolPercent.eq(_lib.toBN(newPercent)), "Expect zero percent")
+    let communityFundingAmount = await claimsManager.getCommunityFundingAmount()
+    assert.isTrue(communityFundingAmount.eq(_lib.toBN(newPercent)), "Expect zero percent")
     let newAddress = accounts[10]
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
