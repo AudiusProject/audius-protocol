@@ -119,8 +119,27 @@ contract ServiceProviderFactory is InitializableV2 {
       uint256 _unstakeAmount
     );
 
-    event UpdatedStakeAmount(
+    event IncreasedStake(
       address indexed _owner,
+      uint256 indexed _increaseAmount,
+      uint256 indexed _stakeAmount
+    );
+
+    event DecreaseStakeRequested(
+      address indexed _owner,
+      uint256 indexed _decreaseAmount,
+      uint256 indexed _lockupExpiryBlock
+    );
+
+    event DecreaseStakeRequestCancelled(
+      address indexed _owner,
+      uint256 indexed _decreaseAmount,
+      uint256 indexed _lockupExpiryBlock
+    );
+
+    event DecreaseStakeRequestEvaluated(
+      address indexed _owner,
+      uint256 indexed _decreaseAmount,
       uint256 indexed _stakeAmount
     );
 
@@ -399,8 +418,9 @@ contract ServiceProviderFactory is InitializableV2 {
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
 
-        emit UpdatedStakeAmount(
+        emit IncreasedStake(
             msg.sender,
+            _increaseStakeAmount,
             newStakeAmount
         );
 
@@ -439,11 +459,13 @@ contract ServiceProviderFactory is InitializableV2 {
         // Prohibit decreasing stake to invalid bounds
         _validateBalanceInternal(msg.sender, (currentStakeAmount.sub(_decreaseStakeAmount)));
 
+        uint256 expiryBlock = block.number.add(decreaseStakeLockupDuration);
         decreaseStakeRequests[msg.sender] = DecreaseStakeRequest({
             decreaseAmount: _decreaseStakeAmount,
-            lockupExpiryBlock: block.number.add(decreaseStakeLockupDuration)
+            lockupExpiryBlock: expiryBlock
         });
 
+        emit DecreaseStakeRequested(msg.sender, _decreaseStakeAmount, expiryBlock);
         return currentStakeAmount.sub(_decreaseStakeAmount);
     }
 
@@ -467,11 +489,19 @@ contract ServiceProviderFactory is InitializableV2 {
             "ServiceProviderFactory: Decrease stake request must be pending"
         );
 
+        DecreaseStakeRequest memory cancelledRequest = decreaseStakeRequests[_account];
+
         // Clear decrease stake request
         decreaseStakeRequests[_account] = DecreaseStakeRequest({
             decreaseAmount: 0,
             lockupExpiryBlock: 0
         });
+
+        emit DecreaseStakeRequestCancelled(
+            _account,
+            cancelledRequest.decreaseAmount,
+            cancelledRequest.lockupExpiryBlock
+        );
     }
 
     /**
@@ -496,15 +526,16 @@ contract ServiceProviderFactory is InitializableV2 {
             stakingAddress
         );
 
+        uint256 decreaseAmount = decreaseStakeRequests[msg.sender].decreaseAmount;
         // Decrease staked token amount for msg.sender
-        stakingContract.unstakeFor(msg.sender, decreaseStakeRequests[msg.sender].decreaseAmount);
+        stakingContract.unstakeFor(msg.sender, decreaseAmount);
 
         // Query current stake
         uint256 newStakeAmount = stakingContract.totalStakedFor(msg.sender);
 
         // Update deployer total
         spDetails[msg.sender].deployerStake = (
-            spDetails[msg.sender].deployerStake.sub(decreaseStakeRequests[msg.sender].decreaseAmount)
+            spDetails[msg.sender].deployerStake.sub(decreaseAmount)
         );
 
         // Confirm both aggregate account balance and directly staked amount are valid
@@ -519,11 +550,7 @@ contract ServiceProviderFactory is InitializableV2 {
         // Clear decrease stake request
         delete decreaseStakeRequests[msg.sender];
 
-        emit UpdatedStakeAmount(
-            msg.sender,
-            newStakeAmount
-        );
-
+        emit DecreaseStakeRequestEvaluated(msg.sender, decreaseAmount, newStakeAmount);
         return newStakeAmount;
     }
 

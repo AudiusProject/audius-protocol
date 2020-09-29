@@ -105,10 +105,23 @@ contract DelegateManager is InitializableV2 {
         uint256 indexed _increaseAmount
     );
 
-    event DecreaseDelegatedStake(
+    event UndelegateStakeRequested(
         address indexed _delegator,
         address indexed _serviceProvider,
-        uint256 indexed _decreaseAmount
+        uint256 indexed _amount,
+        uint256 _lockupExpiryBlock
+    );
+
+    event UndelegateStakeRequestCancelled(
+        address indexed _delegator,
+        address indexed _serviceProvider,
+        uint256 indexed _amount
+    );
+
+    event UndelegateStakeRequestEvaluated(
+        address indexed _delegator,
+        address indexed _serviceProvider,
+        uint256 indexed _amount
     );
 
     event Claim(
@@ -129,12 +142,12 @@ contract DelegateManager is InitializableV2 {
         uint256 indexed _blocknumber
     );
 
-    event RemoveDelegatorCancelled(
+    event RemoveDelegatorRequestCancelled(
         address indexed _serviceProvider,
         address indexed _delegator
     );
 
-    event RemoveDelegatorEvaluated(
+    event RemoveDelegatorRequestEvaluated(
         address indexed _serviceProvider,
         address indexed _delegator,
         uint256 indexed _unstakedAmount
@@ -294,11 +307,12 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Submit updated request for sender, with target sp, undelegate amount, target expiry block
+        uint256 lockupExpiryBlock = block.number.add(undelegateLockupDuration);
         _updateUndelegateStakeRequest(
             delegator,
             _target,
             _amount,
-            block.number.add(undelegateLockupDuration)
+            lockupExpiryBlock
         );
         // Update total locked for this service provider, increasing by unstake amount
         _updateServiceProviderLockupAmount(
@@ -306,6 +320,7 @@ contract DelegateManager is InitializableV2 {
             spDelegateInfo[_target].totalLockedUpStake.add(_amount)
         );
 
+        emit UndelegateStakeRequested(delegator, _target, _amount, lockupExpiryBlock);
         return delegateInfo[delegator][_target].sub(_amount);
     }
 
@@ -330,6 +345,7 @@ contract DelegateManager is InitializableV2 {
         );
         // Remove pending request
         _resetUndelegateStakeRequest(delegator);
+        emit UndelegateStakeRequestCancelled(delegator, unlockFundsSP, unstakeAmount);
     }
 
     /**
@@ -402,7 +418,7 @@ contract DelegateManager is InitializableV2 {
         // Reset undelegate request
         _resetUndelegateStakeRequest(delegator);
 
-        emit DecreaseDelegatedStake(
+        emit UndelegateStakeRequestEvaluated(
             delegator,
             serviceProvider,
             unstakeAmount);
@@ -624,7 +640,7 @@ contract DelegateManager is InitializableV2 {
         );
         // Reset lockup expiry
         removeDelegatorRequests[_serviceProvider][_delegator] = 0;
-        emit RemoveDelegatorCancelled(_serviceProvider, _delegator);
+        emit RemoveDelegatorRequestCancelled(_serviceProvider, _delegator);
     }
 
     /**
@@ -694,7 +710,7 @@ contract DelegateManager is InitializableV2 {
 
         // Reset lockup expiry
         removeDelegatorRequests[_serviceProvider][_delegator] = 0;
-        emit RemoveDelegatorEvaluated(_serviceProvider, _delegator, unstakeAmount);
+        emit RemoveDelegatorRequestEvaluated(_serviceProvider, _delegator, unstakeAmount);
     }
 
     /**
