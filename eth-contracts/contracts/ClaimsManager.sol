@@ -16,10 +16,6 @@ contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
     using SafeERC20 for ERC20;
 
-    /// @dev - denominator for community pool transfer calculations
-    /// @dev - community reward values are intended to be x/COMMUNITY_PERCENT_BASE
-    uint256 private constant COMMUNITY_PERCENT_BASE = 100;
-
     string private constant ERROR_ONLY_GOVERNANCE = (
         "ClaimsManager: Only callable by Governance contract"
     );
@@ -87,12 +83,19 @@ contract ClaimsManager is InitializableV2 {
       uint256 indexed _newTotal
     );
 
+    event CommunityRewardsTransferred(
+      address indexed _transferAddress,
+      uint256 indexed _amount
+    );
+
     event FundingAmountUpdated(uint256 indexed _amount);
     event FundingRoundBlockDiffUpdated(uint256 indexed _blockDifference);
     event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
     event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
+    event CommunityFundingAmountUpdated(uint256 indexed _amount);
+    event CommunityPoolAddressUpdated(address indexed _newCommunityPoolAddress);
 
     /**
      * @notice Function to initialize the contract
@@ -298,6 +301,8 @@ contract ClaimsManager is InitializableV2 {
 
             // Transfer to community pool address
             ERC20(address(audiusToken)).safeTransfer(communityPoolAddress, communityFundingAmount);
+
+            emit CommunityRewardsTransferred(communityPoolAddress, communityFundingAmount);
         }
 
         emit RoundInitiated(
@@ -445,6 +450,7 @@ contract ClaimsManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         communityFundingAmount = _newCommunityFundingAmount;
+        emit CommunityFundingAmountUpdated(_newCommunityFundingAmount);
     }
 
     /**
@@ -456,6 +462,7 @@ contract ClaimsManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         communityPoolAddress = _newCommunityPoolAddress;
+        emit CommunityPoolAddressUpdated(_newCommunityPoolAddress);
     }
 
     // ========================================= Private Functions =========================================
