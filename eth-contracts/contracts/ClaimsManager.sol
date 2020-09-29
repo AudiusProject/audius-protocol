@@ -296,7 +296,7 @@ contract ClaimsManager is InitializableV2 {
             // ERC20Mintable always returns true
             audiusToken.mint(address(this), communityFundingAmount);
 
-            // Approve transfer to staking address for claimer rewards
+            // Approve transfer to community pool address
             audiusToken.approve(communityPoolAddress, communityFundingAmount);
 
             // Transfer to community pool address
