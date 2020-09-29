@@ -158,7 +158,19 @@ contract ServiceProviderFactory is InitializableV2 {
       address _updatedWallet
     );
 
-    event ServiceProviderCutUpdated(
+    event DeployerCutUpdateRequested(
+      address indexed _owner,
+      uint256 indexed _updatedCut,
+      uint256 indexed _lockupExpiryBlock
+    );
+
+    event DeployerCutUpdateRequestCancelled(
+      address indexed _owner,
+      uint256 indexed _requestedCut,
+      uint256 indexed _finalCut
+    );
+
+    event DeployerCutUpdateRequestEvaluated(
       address indexed _owner,
       uint256 indexed _updatedCut
     );
@@ -653,10 +665,13 @@ contract ServiceProviderFactory is InitializableV2 {
             "ServiceProviderFactory: Service Provider cut cannot exceed base value"
         );
 
+        uint256 expiryBlock = block.number + deployerCutLockupDuration;
         updateDeployerCutRequests[_serviceProvider] = UpdateDeployerCutRequest({
-            lockupExpiryBlock: block.number + deployerCutLockupDuration,
+            lockupExpiryBlock: expiryBlock,
             newDeployerCut: _cut
         });
+
+        emit DeployerCutUpdateRequested(_serviceProvider, _cut, expiryBlock);
     }
 
     /**
@@ -673,8 +688,17 @@ contract ServiceProviderFactory is InitializableV2 {
             ERROR_ONLY_SP_GOVERNANCE
         );
 
+        UpdateDeployerCutRequest memory cancelledRequest = (
+            updateDeployerCutRequests[_serviceProvider]
+        );
+
         // Zero out request information
         delete updateDeployerCutRequests[_serviceProvider];
+        emit DeployerCutUpdateRequestCancelled(
+            _serviceProvider,
+            cancelledRequest.newDeployerCut,
+            spDetails[_serviceProvider].deployerCut
+        );
     }
 
     /**
@@ -705,7 +729,10 @@ contract ServiceProviderFactory is InitializableV2 {
         // Zero out request information
         delete updateDeployerCutRequests[_serviceProvider];
 
-        emit ServiceProviderCutUpdated(_serviceProvider, spDetails[_serviceProvider].deployerCut);
+        emit DeployerCutUpdateRequestEvaluated(
+            _serviceProvider,
+            spDetails[_serviceProvider].deployerCut
+        );
     }
 
     /**

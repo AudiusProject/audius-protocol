@@ -562,11 +562,22 @@ contract('ServiceProvider test', async (accounts) => {
       let deployerCutUpdateDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
       let requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
       let requestBlock = _lib.toBN(requestTx.receipt.blockNumber)
+      let expectedExpiryBlock = requestBlock.add(deployerCutUpdateDuration)
+      await expectEvent.inTransaction(
+        requestTx.tx,
+        ServiceProviderFactory,
+        'DeployerCutUpdateRequested',
+        {
+          _owner: stakerAccount,
+          _updatedCut: _lib.toBN(updatedCutValue),
+          _lockupExpiryBlock: expectedExpiryBlock
+        }
+      )
 
       // Retrieve pending info
       let pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
       assert.isTrue(
-        (requestBlock.add(deployerCutUpdateDuration)).eq(pendingOp.lockupExpiryBlock),
+        (expectedExpiryBlock).eq(pendingOp.lockupExpiryBlock),
         'Unexpected expiry block'
       )
 
@@ -588,7 +599,7 @@ contract('ServiceProvider test', async (accounts) => {
       await expectEvent.inTransaction(
         updateTx.tx,
         ServiceProviderFactory,
-        'ServiceProviderCutUpdated',
+        'DeployerCutUpdateRequestEvaluated',
         { _owner: stakerAccount,
           _updatedCut: `${updatedCutValue}`
         }
@@ -615,7 +626,16 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(updatedCutValue)), 'Expect in flight request')
       assert.isTrue(!pendingOp.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect in flight request')
       // Submit cancellation
-      await serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount, { from: stakerAccount })
+      let cancelTx = await serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        cancelTx.tx,
+        ServiceProviderFactory,
+        'DeployerCutUpdateRequestCancelled',
+        { _owner: stakerAccount,
+          _requestedCut: _lib.toBN(updatedCutValue),
+          _finalCut: _lib.toBN(preUpdatecut)
+        }
+      )
       // Confirm request status
       pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
       assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(0)), 'Expect cancelled request')
