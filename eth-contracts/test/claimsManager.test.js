@@ -219,7 +219,7 @@ contract('ClaimsManager', async (accounts) => {
     )
   })
 
-  it.only('Initiate a claim with community rewards enabled', async () => {
+  it('Initiate a claim with community rewards enabled', async () => {
     let newCommunityFundingAmount = 10
     await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
