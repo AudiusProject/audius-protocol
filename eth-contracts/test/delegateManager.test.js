@@ -1956,6 +1956,12 @@ contract('DelegateManager', async (accounts) => {
 
       // Remove delegator
       let tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'RemoveDelegatorRequested',
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1 }
+      )
       let blocknumber = _lib.toBN(tx.receipt.blockNumber)
       let expectedTarget = blocknumber.add(removeReqDuration)
 
@@ -1968,7 +1974,7 @@ contract('DelegateManager', async (accounts) => {
       await expectEvent.inTransaction(
         tx.tx,
         DelegateManager,
-        'DelegatorRemoved',
+        'RemoveDelegatorEvaluated',
         { _serviceProvider: stakerAccount, _delegator: delegatorAccount1, _unstakedAmount: delegationAmount }
       )
 
@@ -2016,7 +2022,13 @@ contract('DelegateManager', async (accounts) => {
       )
 
       // Cancel and validate request
-      await delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      tx = await delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'RemoveDelegatorCancelled',
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount2 }
+      )
       let requestTargetBlockAfterCancel = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
       assert.isTrue(requestTargetBlockAfterCancel.eq(_lib.toBN(0)), 'Expect reset')
 
