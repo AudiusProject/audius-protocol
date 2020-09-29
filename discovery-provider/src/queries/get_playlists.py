@@ -6,14 +6,15 @@ from src import exceptions
 from src.models import Playlist, RepostType, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, paginate_query, \
+from src.queries.query_helpers import paginate_query, \
   populate_playlist_metadata, get_users_ids, get_users_by_id
 
 logger = logging.getLogger(__name__)
 
+
 def get_playlists(args):
     playlists = []
-    current_user_id = get_current_user_id(required=False)
+    current_user_id = args.get("current_user_id")
     filter_out_private_playlists = True
 
     db = get_db_read_replica()
@@ -63,7 +64,6 @@ def get_playlists(args):
             # retrieve playlist ids list
             playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
 
-            current_user_id = get_current_user_id(required=False)
 
             # bundle peripheral info into playlist results
             playlists = populate_playlist_metadata(

@@ -35,7 +35,7 @@ full_playlist_model = ns.clone('playlist_full', playlist_model, {
     "followee_reposts": fields.List(fields.Nested(repost)),
     "followee_saves": fields.List(fields.Nested(favorite)),
     "has_current_user_reposted": fields.Boolean(required=True),
-    "has_current_user_saved	true": fields.Boolean(required=True),
+    "has_current_user_saved": fields.Boolean(required=True),
     "is_delete": fields.Boolean(required=True),
     "is_private": fields.Boolean(required=True),
     "updated_at": fields.String,
