@@ -73,7 +73,7 @@ contract('ServiceProvider test', async (accounts) => {
     await expectEvent.inTransaction(
       tx.tx,
       ServiceProviderFactory,
-      'IncreasedStake',
+      'IncreaseStake',
       {
         _owner: account,
         _increaseAmount: increase,
