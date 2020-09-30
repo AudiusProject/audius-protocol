@@ -25,10 +25,6 @@ contract ClaimsManager is InitializableV2 {
     address private serviceProviderFactoryAddress;
     address private delegateManagerAddress;
 
-    /// @dev - Address to which a static amount is transferred at round start
-    address private communityPoolAddress;
-
-    // Claim related configurations
     /**
       * @notice - Minimum number of blocks between funding rounds
       *       604800 seconds / week
@@ -54,7 +50,10 @@ contract ClaimsManager is InitializableV2 {
     // Staking contract ref
     ERC20Mintable private audiusToken;
 
-    /// @dev - Reward amount transferred to external pool at start of round
+    /// @dev - Address to which recurringCommunityFundingAmount is transferred at funding round start
+    address private communityPoolAddress;
+
+    /// @dev - Reward amount transferred to communityPoolAddress at funding round start
     uint256 private recurringCommunityFundingAmount;
 
     // Struct representing round state
@@ -124,7 +123,7 @@ contract ClaimsManager is InitializableV2 {
             totalClaimedInRound: 0
         });
 
-        // Community pool initialized to zero
+        // Community pool funding amount and address initialized to zero
         recurringCommunityFundingAmount = 0;
         communityPoolAddress = address(0x0);
 
@@ -287,6 +286,9 @@ contract ClaimsManager is InitializableV2 {
 
         roundNumber = roundNumber.add(1);
 
+        /*
+         * Transfer community funding amount to community pool address, if set
+         */
         if (recurringCommunityFundingAmount > 0 && communityPoolAddress != address(0x0)) {
             // ERC20Mintable always returns true
             audiusToken.mint(address(this), recurringCommunityFundingAmount);
@@ -438,7 +440,8 @@ contract ClaimsManager is InitializableV2 {
 
     /**
      * @notice Modify community funding amound for each round
-     * @param _newRecurringCommunityFundingAmount - new static amount to fund community pool every round
+     * @param _newRecurringCommunityFundingAmount - new reward amount transferred to
+     *          communityPoolAddress at funding round start
      */
     function updateRecurringCommunityFundingAmount(
         uint256 _newRecurringCommunityFundingAmount
@@ -452,7 +455,8 @@ contract ClaimsManager is InitializableV2 {
 
     /**
      * @notice Modify community pool address
-     * @param _newCommunityPoolAddress - new address for pool
+     * @param _newCommunityPoolAddress - new address to which recurringCommunityFundingAmount
+     *          is transferred at funding round start
      */
     function updateCommunityPoolAddress(address _newCommunityPoolAddress) external {
         _requireIsInitialized();

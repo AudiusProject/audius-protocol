@@ -176,8 +176,10 @@ contract('ClaimsManager', async (accounts) => {
     // Get funds per claim
     let fundsPerRound = await claimsManager.getFundsPerRound()
 
+    // Confirm no claim pending initially
     assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
 
+    // Successfully initiate round via governance guardian address
     let initiateTx = await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
     await expectEvent.inTransaction(
       initiateTx.tx,
@@ -207,16 +209,27 @@ contract('ClaimsManager', async (accounts) => {
       (await claimsManager.getTotalClaimedInRound()).eq(fundsPerRound),
       'All funds expected to be claimed')
 
-    // Confirm another claim cannot be immediately funded
+    // Confirm another funding round cannot be immediately started
     await _lib.assertRevert(
       _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
       "Governance: Transaction failed."
     )
 
+    // Confirm another claim cannot be immediately funded
     await _lib.assertRevert(
       mockDelegateManager.testProcessClaim(staker, 0),
       'Claim already processed for user'
     )
+
+    let lastClaimBlock = await claimsManager.getLastFundedBlock()
+    let claimDiff = await claimsManager.getFundingRoundBlockDiff()
+    let nextClaimBlock = lastClaimBlock.add(claimDiff)
+
+    // Advance blocks to the next valid claim
+    await time.advanceBlockTo(nextClaimBlock)
+
+    // Successfully initiate round from non-staked account
+    await claimsManager.initiateRound({ from: accounts[8] })
   })
 
   it('Initiate multiple rounds, 1x block diff', async () => {
