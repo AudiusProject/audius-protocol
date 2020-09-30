@@ -4,6 +4,9 @@ from src.models import User, Track, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_top_genre_users(args):
@@ -83,9 +86,14 @@ def get_top_genre_users(args):
             user_genre_followers_query = user_genre_followers_query.filter(
                 user_genre_query.c.genre.in_(genres))
 
+        logger.warning(user_genre_followers_query)
+
         # If the with_users flag is not set, respond with the user_ids
         users = paginate_query(user_genre_followers_query).all()
         user_ids = list(map(lambda user: user[0], users))
+
+        logger.warning(user_ids)
+
 
         # If the with_users flag is used, retrieve the user metadata
         if with_users:
