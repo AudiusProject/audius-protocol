@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: -1
+    },
+    clock: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {})
 

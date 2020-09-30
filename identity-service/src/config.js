@@ -1,6 +1,17 @@
 const convict = require('convict')
 const fs = require('fs')
 
+// custom array parsing for arrays passed in via string env vars
+convict.addFormat({
+  name: 'string-array',
+  validate: function (val) {
+    return Array.isArray(val)
+  },
+  coerce: function (val) {
+    return JSON.parse(val)
+  }
+})
+
 // Define a schema
 const config = convict({
   dbUrl: {
@@ -80,6 +91,12 @@ const config = convict({
     doc: 'Relayer(used to make relay transactions) public key',
     format: String,
     env: 'relayerPublicKey',
+    default: null
+  },
+  relayerWallets: {
+    doc: 'Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
+    format: 'string-array',
+    env: 'relayerWallets',
     default: null
   },
   userVerifierPrivateKey: {
@@ -352,6 +369,42 @@ const config = convict({
     format: 'nat',
     default: 10000,
     env: 'pgConnectionPoolIdleTimeout'
+  },
+  setTimeout: {
+    doc: `
+      Sets the timeout value (in ms) for sockets
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
+    `,
+    format: 'nat',
+    env: 'setTimeout',
+    default: 10 * 60 * 1000 // 10 minutes
+  },
+  timeout: {
+    doc: `
+      Sets the timeout value (in ms) for socket inactivity
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_timeout
+    `,
+    format: 'nat',
+    env: 'timeout',
+    default: 10 * 60 * 1000 // 10 minutes
+  },
+  keepAliveTimeout: {
+    doc: `
+      Server keep alive timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_keepalivetimeout
+    `,
+    format: 'nat',
+    env: 'keepAliveTimeout',
+    default: 5000 // node.js default value
+  },
+  headersTimeout: {
+    doc: `
+      Server headers timeout
+      https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_headerstimeout
+    `,
+    format: 'nat',
+    env: 'headersTimeout',
+    default: 60 * 1000 // 60s - node.js default value
   }
 })
 
