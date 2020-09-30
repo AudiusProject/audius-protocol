@@ -454,7 +454,7 @@ contract('ClaimsManager', async (accounts) => {
     await expectEvent.inTransaction(
       percentTx.tx,
       ClaimsManager,
-      'CommunityFundingAmountUpdated',
+      'RecurringCommunityFundingAmountUpdated',
       { _amount: _lib.toBN(newCommunityFundingAmt) }
     )
     let communityFundingAmount = await claimsManager.getRecurringCommunityFundingAmount()

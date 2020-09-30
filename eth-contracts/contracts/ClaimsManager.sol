@@ -93,7 +93,7 @@ contract ClaimsManager is InitializableV2 {
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
     event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
-    event CommunityFundingAmountUpdated(uint256 indexed _amount);
+    event RecurringCommunityFundingAmountUpdated(uint256 indexed _amount);
     event CommunityPoolAddressUpdated(address indexed _newCommunityPoolAddress);
 
     /**
@@ -450,7 +450,7 @@ contract ClaimsManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         recurringCommunityFundingAmount = _newRecurringCommunityFundingAmount;
-        emit CommunityFundingAmountUpdated(_newRecurringCommunityFundingAmount);
+        emit RecurringCommunityFundingAmountUpdated(_newRecurringCommunityFundingAmount);
     }
 
     /**
