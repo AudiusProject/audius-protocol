@@ -169,15 +169,13 @@ export const initiateFundingRound = async (governance, claimsManagerRegKey, guar
   const signature = 'initiateRound()'
   const callData = abiEncode([], [])
 
-  const txReceipt = await governance.guardianExecuteTransaction(
+  return await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     callValue0,
     signature,
     callData,
     { from: guardianAddress }
   )
-
-  return parseTx(txReceipt)
 }
 
 export const deployToken = async (
