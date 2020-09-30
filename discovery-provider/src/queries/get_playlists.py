@@ -2,6 +2,7 @@ import logging # pylint: disable=C0302
 import sqlalchemy
 from sqlalchemy import desc
 
+from flask.globals import request
 from src import exceptions
 from src.models import Playlist, RepostType, SaveType
 from src.utils import helpers
@@ -9,7 +10,6 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import paginate_query, \
   populate_playlist_metadata, get_users_ids, get_users_by_id
 from src.utils.redis_cache import extract_key, use_redis_cache
-from flask.globals import request
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,10 @@ def get_playlists(args):
             # redis cache or via get_unpopulated_playlists
             key = make_cache_key(args)
 
-            (playlists, playlist_ids) = use_redis_cache(key, UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC, get_unpopulated_playlists)
+            (playlists, playlist_ids) = use_redis_cache(
+                key,
+                UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC,
+                get_unpopulated_playlists)
 
             # bundle peripheral info into playlist results
             playlists = populate_playlist_metadata(
