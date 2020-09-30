@@ -221,15 +221,18 @@ contract('ClaimsManager', async (accounts) => {
       'Claim already processed for user'
     )
 
+    // Advance blocks to the next valid claim
     let lastClaimBlock = await claimsManager.getLastFundedBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
     let nextClaimBlock = lastClaimBlock.add(claimDiff)
-
-    // Advance blocks to the next valid claim
     await time.advanceBlockTo(nextClaimBlock)
 
     // Successfully initiate round from non-staked account
     await claimsManager.initiateRound({ from: accounts[8] })
+    assert.isTrue(
+      (await staking.totalStakedFor(accounts[8])).isZero(),
+      'Account does not have zero stake'
+    )
   })
 
   it('Initiate multiple rounds, 1x block diff', async () => {
