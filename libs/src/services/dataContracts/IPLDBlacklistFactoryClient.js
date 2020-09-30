@@ -15,8 +15,15 @@ class IPLDBlacklistFactoryClient extends ContractClient {
       nonce,
       sig
     )
+    const contractAddress = await this.getAddress()
 
-    const receipt = await method.send({ from: this.web3Manager.getWalletAddress(), gas: 200000 })
+    // const receipt = await method.send({ from: this.web3Manager.getWalletAddress(), gas: 200000 })
+    const receipt = await this.web3Manager.sendTransaction(
+      method,
+      this.contractRegistryKey,
+      contractAddress,
+      8000000 // how much u pay for each unit of gasssss
+    )
     return receipt
   }
 

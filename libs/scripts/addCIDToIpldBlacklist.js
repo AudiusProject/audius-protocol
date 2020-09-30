@@ -139,6 +139,9 @@ async function createAndInitLibs (network, blacklisterPublicKey) {
 
     audiusLibs = new AudiusLibs(libsConfig)
     await audiusLibs.init()
+
+    // Set owner wallet manually since configuring internal web3 doesnt allow you to enter wallet
+    audiusLibs.web3Manager.setOwnerWallet({ getAddressString: () => '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0' })
   } catch (e) {
     throw new Error(`Error with initializing libs: ${e}`)
   }
@@ -169,18 +172,25 @@ async function addIPLDTxToChain (audiusLibs, digest, privateKey) {
 
 const initializeLibConfigStaging = wallet => {
   return {
-    web3Config: AudiusLibs.configExternalWeb3(
+    // web3Config: AudiusLibs.configExternalWeb3(
+    //   '0x793373aBF96583d5eb71a15d86fFE732CD04D452',
+    //   new Web3(new Web3.providers.HttpProvider('https://sokol.poa.network/')),
+    //   null, // networkId
+    //   wallet, // 0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0
+    //   false // requiresAccount
+    // ),
+    web3Config: AudiusLibs.configInternalWeb3(
       '0x793373aBF96583d5eb71a15d86fFE732CD04D452',
-      new Web3(new Web3.providers.HttpProvider('https://poa-gateway.staging.audius.co')),
-      null, // networkId
-      wallet, // 0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0
-      false // requiresAccount
+      ['https://sokol.poa.network']
     ),
     ethWeb3Config: AudiusLibs.configEthWeb3(
       '0xF8e679Aa54361467B12c7394BFF57Eb890f6d934',
       '0xB631ABAA63a26311366411b2025F0cAca00DE27F',
       new Web3(new Web3.providers.HttpProvider('https://eth-ropsten.alchemyapi.io/v2/Y-vE_LXNPnKsbnmaXxAre7t_xI-PA6KU')),
       wallet
+    ),
+    identityServiceConfig: AudiusLibs.configIdentityService(
+      'https://identityservice.staging.audius.co'
     ),
     isServer: true
   }
