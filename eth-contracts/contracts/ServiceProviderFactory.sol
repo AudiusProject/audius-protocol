@@ -430,7 +430,7 @@ contract ServiceProviderFactory is InitializableV2 {
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
 
-        emit StakeIncreased(
+        emit IncreasedStake(
             msg.sender,
             _increaseStakeAmount,
             newStakeAmount
