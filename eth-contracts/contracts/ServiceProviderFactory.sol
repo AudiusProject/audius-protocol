@@ -119,7 +119,7 @@ contract ServiceProviderFactory is InitializableV2 {
       uint256 _unstakeAmount
     );
 
-    event StakeIncreased(
+    event IncreasedStake(
       address indexed _owner,
       uint256 indexed _increaseAmount,
       uint256 indexed _newStakeAmount
