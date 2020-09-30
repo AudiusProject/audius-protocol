@@ -6,11 +6,16 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
-    paginate_query
+    add_query_pagination
 
 
-def get_followers_for_user(followee_user_id):
+def get_followers_for_user(args):
     users = []
+    followee_user_id = args.get('followee_user_id')
+    current_user_id = args.get('current_user_id')
+    limit = args.get('limit')
+    offset = args.get('offset')
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # correlated subquery sqlalchemy code:
@@ -50,8 +55,8 @@ def get_followers_for_user(followee_user_id):
                 asc(outer_follow.follower_user_id)
             )
         )
-        follower_user_ids_by_follower_count = paginate_query(
-            outer_select).all()
+        follower_user_ids_by_follower_count = add_query_pagination(
+            outer_select, limit, offset).all()
 
         user_ids = [user_id for (user_id, follower_count)
                     in follower_user_ids_by_follower_count]
@@ -66,8 +71,6 @@ def get_followers_for_user(followee_user_id):
             .all()
         )
         users = helpers.query_result_to_list(users)
-
-        current_user_id = get_current_user_id(required=False)
 
         # bundle peripheral info into user results
         users = populate_user_metadata(

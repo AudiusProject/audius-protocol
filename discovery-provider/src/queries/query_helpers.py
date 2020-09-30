@@ -1063,6 +1063,14 @@ def paginate_query(query_obj, apply_offset=True, include_count=False):
         return (modified_query, query_obj.count())
     return modified_query
 
+def add_query_pagination(query_obj, limit, offset, apply_offset=True, include_count=False):
+    modified_query = query_obj.limit(limit)
+    modified_query = modified_query.offset(
+        offset) if apply_offset else modified_query
+    if include_count:
+        return (modified_query, query_obj.count())
+    return modified_query
+
 
 def get_genre_list(genre):
     genre_list = []
