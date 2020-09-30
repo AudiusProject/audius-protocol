@@ -176,12 +176,6 @@ contract('ClaimsManager', async (accounts) => {
     // Get funds per claim
     let fundsPerRound = await claimsManager.getFundsPerRound()
 
-    // Try and initiate from invalid address
-    await _lib.assertRevert(
-      claimsManager.initiateRound({ from: accounts[8] }),
-      'Only callable by staked account or Governance contract'
-    )
-
     assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
 
     let initiateTx = await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)

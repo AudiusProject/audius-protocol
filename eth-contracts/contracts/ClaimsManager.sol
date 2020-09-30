@@ -275,11 +275,6 @@ contract ClaimsManager is InitializableV2 {
         _requireStakingAddressIsSet();
 
         require(
-            Staking(stakingAddress).isStaker(msg.sender) || (msg.sender == governanceAddress),
-            "ClaimsManager: Only callable by staked account or Governance contract"
-        );
-
-        require(
             block.number.sub(currentRound.fundedBlock) > fundingRoundBlockDiff,
             "ClaimsManager: Required block difference not met"
         );
