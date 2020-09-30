@@ -349,7 +349,10 @@ contract Governance is InitializableV2 {
 
         // Require voter has non-zero total active stake
         uint256 voterActiveStake = _calculateAddressActiveStake(voter);
-        require(voterActiveStake > 0, "Governance: Voter must be address with non-zero total active stake.");
+        require(
+            voterActiveStake > 0,
+            "Governance: Voter must be address with non-zero total active stake."
+        );
 
         // Require previous vote is None
         require(
