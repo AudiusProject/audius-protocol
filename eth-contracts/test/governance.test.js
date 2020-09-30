@@ -1,5 +1,5 @@
 import * as _lib from '../utils/lib.js'
-const { time } = require('@openzeppelin/test-helpers')
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const Staking = artifacts.require('Staking')
@@ -587,6 +587,51 @@ contract('Governance.sol', async (accounts) => {
 
     // Confirm registry address has been set
     assert.equal(await governance.getRegistryAddress.call(), registry2.address)
+  })
+
+  it.only('Submit proposal via delegator address', async () => {
+    // An address that has only delegated stake should be able to submit a proposal
+    let delegateAmount = defaultStakeAmount.div(_lib.toBN(2))
+    // Approve staking transfer
+    await token.approve(
+      staking.address,
+      delegateAmount,
+      { from: delegatorAccount1 })
+    // Delegate half default stake amount
+    await delegateManager.delegateStake(
+      stakerAccount1,
+      delegateAmount,
+      { from: delegatorAccount1 }
+    )
+    let delegationFromContract = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+    let totalStakedForDelegator = await staking.totalStakedFor(delegatorAccount1)
+    assert.isTrue(delegationFromContract.eq(delegateAmount), "Expected equivalent value in contract")
+    assert.isTrue(totalStakedForDelegator.eq(_lib.toBN(0)), "No direct stake expected")
+    let targetAddress = stakerAccount2
+    let callValue = _lib.toBN(0)
+    let slashAmount = _lib.toBN(1)
+    let functionSignature = 'slash(uint256,address)'
+    let callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
+    let submitProposalTxReceipt = await governance.submitProposal(
+      delegateManagerKey,
+      callValue,
+      functionSignature,
+      callData,
+      proposalName,
+      proposalDescription,
+      { from: delegatorAccount1 }
+    )
+    await expectEvent.inTransaction(
+      submitProposalTxReceipt.tx,
+      Governance,
+      'ProposalSubmitted',
+      {
+        proposalId: _lib.toBN(1),
+        proposer: delegatorAccount1,
+        name: proposalName,
+        description: proposalDescription
+      }
+    )
   })
 
   describe('Proposal end-to-end test - slash action', async () => {
