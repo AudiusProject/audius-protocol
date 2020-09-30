@@ -333,8 +333,6 @@ contract('DelegateManager', async (accounts) => {
     let tx = await serviceProviderFactory.increaseStake(
       increase,
       { from: account })
-
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
