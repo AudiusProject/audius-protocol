@@ -1,10 +1,11 @@
 pragma solidity ^0.5.0;
 import "./Staking.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "./ServiceProviderFactory.sol";
-/// @notice SafeMath imported via ServiceProviderFactory.sol
+/// @notice ERC20 imported via Staking.sol
+/// @notice SafeERC20 imported via Staking.sol
 /// @notice Governance imported via Staking.sol
+/// @notice SafeMath imported via ServiceProviderFactory.sol
 
 
 /**
@@ -13,6 +14,7 @@ import "./ServiceProviderFactory.sol";
  */
 contract ClaimsManager is InitializableV2 {
     using SafeMath for uint256;
+    using SafeERC20 for ERC20;
 
     string private constant ERROR_ONLY_GOVERNANCE = (
         "ClaimsManager: Only callable by Governance contract"
@@ -23,7 +25,6 @@ contract ClaimsManager is InitializableV2 {
     address private serviceProviderFactoryAddress;
     address private delegateManagerAddress;
 
-    // Claim related configurations
     /**
       * @notice - Minimum number of blocks between funding rounds
       *       604800 seconds / week
@@ -48,6 +49,12 @@ contract ClaimsManager is InitializableV2 {
 
     // Staking contract ref
     ERC20Mintable private audiusToken;
+
+    /// @dev - Address to which recurringCommunityFundingAmount is transferred at funding round start
+    address private communityPoolAddress;
+
+    /// @dev - Reward amount transferred to communityPoolAddress at funding round start
+    uint256 private recurringCommunityFundingAmount;
 
     // Struct representing round state
     // 1) Block at which round was funded
@@ -75,12 +82,19 @@ contract ClaimsManager is InitializableV2 {
       uint256 indexed _newTotal
     );
 
+    event CommunityRewardsTransferred(
+      address indexed _transferAddress,
+      uint256 indexed _amount
+    );
+
     event FundingAmountUpdated(uint256 indexed _amount);
     event FundingRoundBlockDiffUpdated(uint256 indexed _blockDifference);
     event GovernanceAddressUpdated(address indexed _newGovernanceAddress);
     event StakingAddressUpdated(address indexed _newStakingAddress);
     event ServiceProviderFactoryAddressUpdated(address indexed _newServiceProviderFactoryAddress);
     event DelegateManagerAddressUpdated(address indexed _newDelegateManagerAddress);
+    event CommunityFundingAmountUpdated(uint256 indexed _amount);
+    event CommunityPoolAddressUpdated(address indexed _newCommunityPoolAddress);
 
     /**
      * @notice Function to initialize the contract
@@ -108,6 +122,10 @@ contract ClaimsManager is InitializableV2 {
             fundedAmount: 0,
             totalClaimedInRound: 0
         });
+
+        // Community pool funding amount and address initialized to zero
+        recurringCommunityFundingAmount = 0;
+        communityPoolAddress = address(0x0);
 
         InitializableV2.initialize();
     }
@@ -176,6 +194,26 @@ contract ClaimsManager is InitializableV2 {
     }
 
     /**
+     * @notice Get the community pool address
+     */
+    function getCommunityPoolAddress() external view returns (address)
+    {
+        _requireIsInitialized();
+
+        return communityPoolAddress;
+    }
+
+    /**
+     * @notice Get the community funding amount
+     */
+    function getRecurringCommunityFundingAmount() external view returns (uint256)
+    {
+        _requireIsInitialized();
+
+        return recurringCommunityFundingAmount;
+    }
+
+    /**
      * @notice Set the Governance address
      * @dev Only callable by Governance address
      * @param _governanceAddress - address for new Governance contract
@@ -236,11 +274,6 @@ contract ClaimsManager is InitializableV2 {
         _requireStakingAddressIsSet();
 
         require(
-            Staking(stakingAddress).isStaker(msg.sender) || (msg.sender == governanceAddress),
-            "ClaimsManager: Only callable by staked account or Governance contract"
-        );
-
-        require(
             block.number.sub(currentRound.fundedBlock) > fundingRoundBlockDiff,
             "ClaimsManager: Required block difference not met"
         );
@@ -252,6 +285,22 @@ contract ClaimsManager is InitializableV2 {
         });
 
         roundNumber = roundNumber.add(1);
+
+        /*
+         * Transfer community funding amount to community pool address, if set
+         */
+        if (recurringCommunityFundingAmount > 0 && communityPoolAddress != address(0x0)) {
+            // ERC20Mintable always returns true
+            audiusToken.mint(address(this), recurringCommunityFundingAmount);
+
+            // Approve transfer to community pool address
+            audiusToken.approve(communityPoolAddress, recurringCommunityFundingAmount);
+
+            // Transfer to community pool address
+            ERC20(address(audiusToken)).safeTransfer(communityPoolAddress, recurringCommunityFundingAmount);
+
+            emit CommunityRewardsTransferred(communityPoolAddress, recurringCommunityFundingAmount);
+        }
 
         emit RoundInitiated(
             currentRound.fundedBlock,
@@ -324,6 +373,7 @@ contract ClaimsManager is InitializableV2 {
         // ERC20Mintable always returns true
         audiusToken.mint(address(this), rewardsForClaimer);
 
+        // Approve transfer to staking address for claimer rewards
         // ERC20 always returns true
         audiusToken.approve(stakingAddress, rewardsForClaimer);
 
@@ -386,6 +436,34 @@ contract ClaimsManager is InitializableV2 {
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         emit FundingRoundBlockDiffUpdated(_newFundingRoundBlockDiff);
         fundingRoundBlockDiff = _newFundingRoundBlockDiff;
+    }
+
+    /**
+     * @notice Modify community funding amound for each round
+     * @param _newRecurringCommunityFundingAmount - new reward amount transferred to
+     *          communityPoolAddress at funding round start
+     */
+    function updateRecurringCommunityFundingAmount(
+        uint256 _newRecurringCommunityFundingAmount
+    ) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        recurringCommunityFundingAmount = _newRecurringCommunityFundingAmount;
+        emit CommunityFundingAmountUpdated(_newRecurringCommunityFundingAmount);
+    }
+
+    /**
+     * @notice Modify community pool address
+     * @param _newCommunityPoolAddress - new address to which recurringCommunityFundingAmount
+     *          is transferred at funding round start
+     */
+    function updateCommunityPoolAddress(address _newCommunityPoolAddress) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        communityPoolAddress = _newCommunityPoolAddress;
+        emit CommunityPoolAddressUpdated(_newCommunityPoolAddress);
     }
 
     // ========================================= Private Functions =========================================
