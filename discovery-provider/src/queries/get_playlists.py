@@ -8,18 +8,36 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import paginate_query, \
   populate_playlist_metadata, get_users_ids, get_users_by_id
+from src.utils.redis_cache import extract_key, use_redis_cache
+from flask.globals import request
 
 logger = logging.getLogger(__name__)
 
+UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC = 10
+
+def make_cache_key(args):
+    cache_keys = {
+        "user_id": args.get("user_id"),
+        "with_users": args.get("with_users")
+    }
+
+    if args.get("playlist_id"):
+        ids = args.get("playlist_id")
+        ids = map(str, ids)
+        ids = ",".join(ids)
+        cache_keys["playlist_id"] = ids
+
+    key = extract_key(f"unpopulated-playlist:{request.path}", cache_keys.items())
+    return key
 
 def get_playlists(args):
     playlists = []
     current_user_id = args.get("current_user_id")
-    filter_out_private_playlists = True
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        try:
+        def get_unpopulated_playlists():
+            filter_out_private_playlists = True
             playlist_query = (
                 session.query(Playlist)
                 .filter(Playlist.is_current == True)
@@ -64,6 +82,14 @@ def get_playlists(args):
             # retrieve playlist ids list
             playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
 
+            return (playlists, playlist_ids)
+
+        try:
+            # Get unpopulated playlists, either via
+            # redis cache or via get_unpopulated_playlists
+            key = make_cache_key(args)
+
+            (playlists, playlist_ids) = use_redis_cache(key, UNPOPULATED_PLAYLIST_CACHE_DURATION_SEC, get_unpopulated_playlists)
 
             # bundle peripheral info into playlist results
             playlists = populate_playlist_metadata(
