@@ -203,6 +203,12 @@ const config = convict({
     env: 'hlsSegmentType',
     default: 'mpegts'
   },
+  printSequelizeLogs: {
+    doc: 'If we should print logs from sequelize',
+    format: Boolean,
+    env: 'printSequelizeLogs',
+    default: true
+  },
 
   // Transcoding settings
   transcodingMaxConcurrency: {
@@ -291,6 +297,12 @@ const config = convict({
     doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
     format: Boolean,
     env: 'isUserMetadataNode',
+    default: false
+  },
+  isReadOnlyMode: {
+    doc: 'Flag indicating whether to run this node in read only mode (no writes)',
+    format: Boolean,
+    env: 'isReadOnlyMode',
     default: false
   },
   userMetadataNodeUrl: {

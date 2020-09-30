@@ -10,6 +10,8 @@ def get_top_genre_users(args):
     genres = []
     if "genre" in args:
         genres = args.get("genre")
+        if isinstance(genres, str):
+            genres = [genres]
 
     # If the with_users url arg is provided, then populate the user metadata else return user ids
     with_users = args.get("with_users", False)

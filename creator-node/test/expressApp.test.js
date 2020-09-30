@@ -44,7 +44,7 @@ describe('test expressApp', function () {
     // logout endpoint requires login / checks session
     request(app)
       .post('/users/logout')
-      .set('X-Session-ID', session + '1')
+      .set('X-Session-ID', session.sessionToken + '1')
       .expect(401, done)
   })
 
