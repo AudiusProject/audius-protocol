@@ -72,7 +72,7 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = full_playlist_parser.parse_args()
         current_user_id = None
-        if args["user_id"]:
+        if args.get("user_id"):
             current_user_id = decode_string_id(args["user_id"])
 
         playlists = get_playlist(playlist_id, current_user_id)
