@@ -73,11 +73,11 @@ contract('ServiceProvider test', async (accounts) => {
     await expectEvent.inTransaction(
       tx.tx,
       ServiceProviderFactory,
-      'IncreaseStake',
+      'StakeIncreased',
       {
         _owner: account,
         _increaseAmount: increase,
-        _stakeAmount: currentlyStakedForAccount
+        _newStakeAmount: currentlyStakedForAccount
       }
     )
   }
@@ -132,7 +132,7 @@ contract('ServiceProvider test', async (accounts) => {
       {
         _owner: account,
         _decreaseAmount: decrease,
-        _stakeAmount: (await staking.totalStakedFor(account))
+        _newStakeAmount: (await staking.totalStakedFor(account))
       }
     )
   }

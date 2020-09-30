@@ -119,10 +119,10 @@ contract ServiceProviderFactory is InitializableV2 {
       uint256 _unstakeAmount
     );
 
-    event IncreaseStake(
+    event StakeIncreased(
       address indexed _owner,
       uint256 indexed _increaseAmount,
-      uint256 indexed _stakeAmount
+      uint256 indexed _newStakeAmount
     );
 
     event DecreaseStakeRequested(
@@ -140,7 +140,7 @@ contract ServiceProviderFactory is InitializableV2 {
     event DecreaseStakeRequestEvaluated(
       address indexed _owner,
       uint256 indexed _decreaseAmount,
-      uint256 indexed _stakeAmount
+      uint256 indexed _newStakeAmount
     );
 
     event EndpointUpdated(
@@ -430,7 +430,7 @@ contract ServiceProviderFactory is InitializableV2 {
         // Indicate this service provider is within bounds
         spDetails[msg.sender].validBounds = true;
 
-        emit IncreaseStake(
+        emit StakeIncreased(
             msg.sender,
             _increaseStakeAmount,
             newStakeAmount

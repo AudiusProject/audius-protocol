@@ -139,7 +139,7 @@ contract DelegateManager is InitializableV2 {
     event RemoveDelegatorRequested(
         address indexed _serviceProvider,
         address indexed _delegator,
-        uint256 indexed _blocknumber
+        uint256 indexed _lockupExpiryBlock
     );
 
     event RemoveDelegatorRequestCancelled(
@@ -327,7 +327,7 @@ contract DelegateManager is InitializableV2 {
     /**
      * @notice Cancel undelegation request
      */
-    function cancelUndelegateStake() external {
+    function cancelUndelegateStakeRequest() external {
         _requireIsInitialized();
 
         address delegator = msg.sender;
@@ -421,7 +421,8 @@ contract DelegateManager is InitializableV2 {
         emit UndelegateStakeRequestEvaluated(
             delegator,
             serviceProvider,
-            unstakeAmount);
+            unstakeAmount
+        );
 
         // Return new total
         return delegateInfo[delegator][serviceProvider];
@@ -614,7 +615,7 @@ contract DelegateManager is InitializableV2 {
         emit RemoveDelegatorRequested(
             _serviceProvider,
             _delegator,
-            removeDelegatorRequests[_serviceProvider][_serviceProvider]
+            removeDelegatorRequests[_serviceProvider][_delegator]
         );
     }
 
@@ -623,7 +624,7 @@ contract DelegateManager is InitializableV2 {
      * @param _serviceProvider - address of service provider
      * @param _delegator - address of delegator
      */
-    function cancelRemoveDelegator(address _serviceProvider, address _delegator) external {
+    function cancelRemoveDelegatorRequest(address _serviceProvider, address _delegator) external {
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
             ERROR_ONLY_SP_GOVERNANCE

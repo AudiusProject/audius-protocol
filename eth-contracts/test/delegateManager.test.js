@@ -1235,7 +1235,7 @@ contract('DelegateManager', async (accounts) => {
 
     it('Validate undelegate request restrictions', async () => {
       await _lib.assertRevert(
-        delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
+        delegateManager.cancelUndelegateStakeRequest({ from: delegatorAccount1 }),
         'Pending lockup expected')
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
@@ -1746,7 +1746,7 @@ contract('DelegateManager', async (accounts) => {
         'Minimum delegation amount'
       )
       // Cancel request
-      tx = await delegateManager.cancelUndelegateStake({ from: delegatorAccount1 })
+      tx = await delegateManager.cancelUndelegateStakeRequest({ from: delegatorAccount1 })
       await expectEvent.inTransaction(
         tx.tx,
         DelegateManager,
@@ -1796,7 +1796,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(
         undelegateRequestInfo.amount.eq(delegateAmount),
         'Expect request to match undelegate amount')
-      await delegateManager.cancelUndelegateStake({ from: delegatorAccount1 })
+      await delegateManager.cancelUndelegateStakeRequest({ from: delegatorAccount1 })
 
       let undelegateRequestInfoAfterCancel = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       let lockedUpStakeForSpAfterCancel = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
@@ -1981,7 +1981,7 @@ contract('DelegateManager', async (accounts) => {
 
     // Validate behavior around removeDelegator
     //       - expiry block calculated correctly (done)
-    //       - cancelRemoveDelegator behavior resets request (done)
+    //       - cancelRemoveDelegatorRequest behavior resets request (done)
     //       - evaluation window enforced (done) 
     //       - invalid delegator for this sp during call to removeDelegator (done)
     //       - Pending request before call to requestRemoveDelegator
@@ -2010,11 +2010,12 @@ contract('DelegateManager', async (accounts) => {
 
       // Remove delegator
       let tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let lockupExpiryBlock = _lib.toBN(tx.receipt.blockNumber).add(removeReqDuration)
       await expectEvent.inTransaction(
         tx.tx,
         DelegateManager,
         'RemoveDelegatorRequested',
-        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1 }
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1, _lockupExpiryBlock: lockupExpiryBlock }
       )
       let blocknumber = _lib.toBN(tx.receipt.blockNumber)
       let expectedTarget = blocknumber.add(removeReqDuration)
@@ -2071,12 +2072,12 @@ contract('DelegateManager', async (accounts) => {
 
       // Call from wrong account
       await _lib.assertRevert(
-        delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2),
+        delegateManager.cancelRemoveDelegatorRequest(stakerAccount, delegatorAccount2),
         'Only callable by target SP'
       )
 
       // Cancel and validate request
-      tx = await delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      tx = await delegateManager.cancelRemoveDelegatorRequest(stakerAccount, delegatorAccount2, { from: stakerAccount })
       await expectEvent.inTransaction(
         tx.tx,
         DelegateManager,
