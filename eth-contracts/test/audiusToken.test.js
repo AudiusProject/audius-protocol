@@ -2,7 +2,7 @@ import * as _lib from '../utils/lib.js'
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
-contract.only('AudiusToken', async (accounts) => {
+contract('AudiusToken', async (accounts) => {
   let registry, token, governance
 
   // expected initial token values
