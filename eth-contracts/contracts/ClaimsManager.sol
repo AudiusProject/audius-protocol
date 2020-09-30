@@ -55,7 +55,7 @@ contract ClaimsManager is InitializableV2 {
     ERC20Mintable private audiusToken;
 
     /// @dev - Reward amount transferred to external pool at start of round
-    uint256 private communityFundingAmount;
+    uint256 private recurringCommunityFundingAmount;
 
     // Struct representing round state
     // 1) Block at which round was funded
@@ -125,7 +125,7 @@ contract ClaimsManager is InitializableV2 {
         });
 
         // Community pool initialized to zero
-        communityFundingAmount = 0;
+        recurringCommunityFundingAmount = 0;
         communityPoolAddress = address(0x0);
 
         InitializableV2.initialize();
@@ -207,11 +207,11 @@ contract ClaimsManager is InitializableV2 {
     /**
      * @notice Get the community funding amount
      */
-    function getCommunityFundingAmount() external view returns (uint256)
+    function getRecurringCommunityFundingAmount() external view returns (uint256)
     {
         _requireIsInitialized();
 
-        return communityFundingAmount;
+        return recurringCommunityFundingAmount;
     }
 
     /**
@@ -292,17 +292,17 @@ contract ClaimsManager is InitializableV2 {
 
         roundNumber = roundNumber.add(1);
 
-        if (communityFundingAmount > 0 && communityPoolAddress != address(0x0)) {
+        if (recurringCommunityFundingAmount > 0 && communityPoolAddress != address(0x0)) {
             // ERC20Mintable always returns true
-            audiusToken.mint(address(this), communityFundingAmount);
+            audiusToken.mint(address(this), recurringCommunityFundingAmount);
 
             // Approve transfer to community pool address
-            audiusToken.approve(communityPoolAddress, communityFundingAmount);
+            audiusToken.approve(communityPoolAddress, recurringCommunityFundingAmount);
 
             // Transfer to community pool address
-            ERC20(address(audiusToken)).safeTransfer(communityPoolAddress, communityFundingAmount);
+            ERC20(address(audiusToken)).safeTransfer(communityPoolAddress, recurringCommunityFundingAmount);
 
-            emit CommunityRewardsTransferred(communityPoolAddress, communityFundingAmount);
+            emit CommunityRewardsTransferred(communityPoolAddress, recurringCommunityFundingAmount);
         }
 
         emit RoundInitiated(
@@ -443,14 +443,16 @@ contract ClaimsManager is InitializableV2 {
 
     /**
      * @notice Modify community funding amound for each round
-     * @param _newCommunityFundingAmount - new static amount to fund community pool every round
+     * @param _newRecurringCommunityFundingAmount - new static amount to fund community pool every round
      */
-    function updateCommunityFundingAmount(uint256 _newCommunityFundingAmount) external {
+    function updateRecurringCommunityFundingAmount(
+        uint256 _newRecurringCommunityFundingAmount
+    ) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
-        communityFundingAmount = _newCommunityFundingAmount;
-        emit CommunityFundingAmountUpdated(_newCommunityFundingAmount);
+        recurringCommunityFundingAmount = _newRecurringCommunityFundingAmount;
+        emit CommunityFundingAmountUpdated(_newRecurringCommunityFundingAmount);
     }
 
     /**
