@@ -288,12 +288,6 @@ const config = convict({
     env: 'isUserMetadataNode',
     default: false
   },
-  isReadOnlyMode: {
-    doc: 'Flag indicating whether to run this node in read only mode (no writes)',
-    format: Boolean,
-    env: 'isReadOnlyMode',
-    default: false
-  },
   userMetadataNodeUrl: {
     doc: 'address for user metadata node',
     format: String,
