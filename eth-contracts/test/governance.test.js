@@ -1171,33 +1171,56 @@ contract('Governance.sol', async (accounts) => {
           await delegateManager.delegateStake(stakerAccount1, delegateAmount, { from: delegatorAccount1 })
         })
 
-        // Validate behavior with particular stake distributions
-        it('Submit vote from service provider only address w/partial active stake', async () => {
-          const vote = Vote.No
-          let decreaseAmount = defaultStakeAmount.div(_lib.toBN(2))
-          // Lock up partial funds in both spfactory, delegatemanager 
-          await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
-          let stakeInfo = await getStakeInfo(voter1Address)
-          const voteTxReceipt = await governance.submitVote(proposalId, vote, { from: voter1Address })
+        const submitAndVerifyActiveStakeVoteFailure = async (proposal, vote, voter) => {
+          await _lib.assertRevert(
+            governance.submitVote(proposal, vote, { from: voter }),
+            "Governance: Voter must be address with non-zero total active stake" 
+          )
+        } 
+
+        const submitAndVerifyActiveStakeVoteSuccess = async (proposal, vote, voter, expectedVoteMagnitude) => {
+          const voteTxReceipt = await governance.submitVote(proposal, vote, { from: voter })
           await expectEvent.inTransaction(
             voteTxReceipt.tx,
             Governance,
             'ProposalVoteSubmitted',
             {
-              _proposalId: _lib.toBN(proposalId),
-              _voter: voter1Address,
+              _proposalId: _lib.toBN(proposal),
+              _voter: voter,
               _vote: _lib.toBN(vote),
-              _voterStake: stakeInfo.totalActiveStake
+              _voterStake: expectedVoteMagnitude
             }
           )
+          const {vote: voterVote, voteMagnitude} = await governance.getVoteInfoByProposalAndVoter(proposal, voter)
+          assert.equal(voterVote, vote)
+          assert.isTrue(voteMagnitude.eq(expectedVoteMagnitude))
+        }
+
+        // Validate behavior with particular stake distributions
+        it('Submit vote from service provider only address w/partial active stake', async () => {
+          const vote = Vote.No
+          let decreaseAmount = defaultStakeAmount.div(_lib.toBN(2))
+          // Lock up partial funds in spfactory
+          await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
+          let stakeInfo = await getStakeInfo(voter1Address)
+          await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, voter1Address, stakeInfo.totalActiveStake)
+        })
+
+        it('Submit vote from delegator-only address', async () => {
+          const vote = Vote.No
+          // Lock up partial funds in delegatemanager 
+          let stakeInfo = await getStakeInfo(delegatorAccount1)
+          assert.isTrue(stakeInfo.totalDeployerStake.eq(_lib.toBN(0)))
+          assert.isTrue(stakeInfo.totalStake.eq(delegateAmount))
+          assert.isTrue(stakeInfo.totalActiveStake.eq(delegateAmount))
+          await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, delegatorAccount1, stakeInfo.totalActiveStake)
         })
 
         it('Submit vote from delegator-only address w/partially undelegated stake', async () => {
           const vote = Vote.No
           let undelegateAmount = delegateAmount.div(_lib.toBN(2))
           await delegateManager.requestUndelegateStake(stakerAccount1, undelegateAmount, { from: delegatorAccount1 })
-          // Lock up partial funds in both spfactory, delegatemanager 
-          await serviceProviderFactory.requestDecreaseStake(undelegateAmount, { from: voter1Address })
+          // Lock up partial funds in delegatemanager 
           let stakeInfo = await getStakeInfo(delegatorAccount1)
           assert.isTrue(stakeInfo.totalDeployerStake.eq(_lib.toBN(0)))
           assert.isTrue(stakeInfo.totalStake.eq(delegateAmount))
@@ -1214,6 +1237,33 @@ contract('Governance.sol', async (accounts) => {
               _voterStake: stakeInfo.totalActiveStake
             }
           )
+          const {vote: voterVote, voteMagnitude} = await governance.getVoteInfoByProposalAndVoter(proposalId, delegatorAccount1)
+          assert.equal(voterVote, vote)
+          assert.isTrue(voteMagnitude.eq(stakeInfo.totalActiveStake))
+        })
+
+        it('Submit vote from delegator-only addr w/no active stake', async () => {
+          const vote = Vote.No
+          let undelegateAmount = delegateAmount
+          await delegateManager.requestUndelegateStake(stakerAccount1, undelegateAmount, { from: delegatorAccount1 })
+          // Lock up all funds in both delman
+          let stakeInfo = await getStakeInfo(delegatorAccount1)
+          assert.isTrue(stakeInfo.totalStake.eq(delegateAmount))
+          assert.isTrue(stakeInfo.totalDelegatedStake.eq(delegateAmount))
+          assert.isTrue(stakeInfo.totalDeployerStake.eq(_lib.toBN(0)))
+          assert.isTrue(stakeInfo.totalActiveStake.eq(_lib.toBN(0)))
+          await submitAndVerifyActiveStakeVoteFailure(proposalId, vote, delegatorAccount1)
+        })
+
+        it('Submit vote from invalid address', async () => {
+          // Address with no stake in ServiceProviderFactory or DelegateManager
+          const invalidAddress = accounts[14]
+          const totalDelegated = await delegateManager.getTotalDelegatorStake(invalidAddress)
+          const totalStaked = await staking.totalStakedFor(invalidAddress)
+          const spInfo = await serviceProviderFactory.getServiceProviderDetails(invalidAddress)
+          assert.isTrue(totalDelegated.eq(_lib.toBN(0)), "Expect 0")
+          assert.isTrue(totalStaked.eq(_lib.toBN(0)), "Expect 0")
+          assert.isTrue(spInfo.deployerStake.eq(_lib.toBN(0)), "Expect 0")
         })
       })
 
