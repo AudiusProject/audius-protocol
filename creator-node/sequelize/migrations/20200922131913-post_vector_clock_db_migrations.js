@@ -26,7 +26,7 @@ module.exports = {
     await enforceClockNonNullConstraints(queryInterface, Sequelize, transaction)
 
     // add back in foreign key constraints from AudiusUsers and Tracks to Files
-    // there are some records that are orphaned as a result of the 25000 limit 
+    // there are some records that are orphaned as a result of the 25000 limit
     await queryInterface.sequelize.query(`
       ALTER TABLE "AudiusUsers" ADD CONSTRAINT "AudiusUsers_coverArtFileUUID_fkey" FOREIGN KEY ("coverArtFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
       ALTER TABLE "AudiusUsers" ADD CONSTRAINT "AudiusUsers_metadataFileUUID_fkey" FOREIGN KEY ("metadataFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
