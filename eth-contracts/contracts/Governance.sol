@@ -128,46 +128,50 @@ contract Governance is InitializableV2 {
 
     /***** Events *****/
     event ProposalSubmitted(
-        uint256 indexed proposalId,
-        address indexed proposer,
-        string name,
-        string description
+        uint256 indexed _proposalId,
+        address indexed _proposer,
+        string _name,
+        string _description
     );
     event ProposalVoteSubmitted(
-        uint256 indexed proposalId,
-        address indexed voter,
-        Vote indexed vote,
-        uint256 voteMagnitude
+        uint256 indexed _proposalId,
+        address indexed _voter,
+        Vote indexed _vote,
+        uint256 _voterStake
     );
     event ProposalVoteUpdated(
-        uint256 indexed proposalId,
-        address indexed voter,
-        Vote indexed vote,
-        uint256 voteMagnitude,
-        Vote previousVote
+        uint256 indexed _proposalId,
+        address indexed _voter,
+        Vote indexed _vote,
+        uint256 _voterStake,
+        Vote _previousVote
     );
     event ProposalOutcomeEvaluated(
-        uint256 indexed proposalId,
-        Outcome indexed outcome,
-        uint256 voteMagnitudeYes,
-        uint256 voteMagnitudeNo,
-        uint256 numVotes
+        uint256 indexed _proposalId,
+        Outcome indexed _outcome,
+        uint256 _voteMagnitudeYes,
+        uint256 _voteMagnitudeNo,
+        uint256 _numVotes
     );
     event ProposalTransactionExecuted(
-        uint256 indexed proposalId,
-        bool indexed success,
-        bytes returnData
+        uint256 indexed _proposalId,
+        bool indexed _success,
+        bytes _returnData
     );
     event GuardianTransactionExecuted(
-        address indexed targetContractAddress,
-        uint256 callValue,
-        string indexed functionSignature,
-        bytes indexed callData,
-        bytes returnData
+        address indexed _targetContractAddress,
+        uint256 _callValue,
+        string indexed _functionSignature,
+        bytes indexed _callData,
+        bytes _returnData
     );
-    event ProposalVetoed(uint256 indexed proposalId);
-    event RegistryAddressUpdated(address indexed newRegistryAddress);
-    event GuardianshipTransferred(address indexed newGuardianAddress);
+    event ProposalVetoed(uint256 indexed _proposalId);
+    event RegistryAddressUpdated(address indexed _newRegistryAddress);
+    event GuardianshipTransferred(address indexed _newGuardianAddress);
+    event VotingPeriodUpdated(uint256 indexed _newVotingPeriod);
+    event ExecutionDelayUpdated(uint256 indexed _newExecutionDelay);
+    event VotingQuorumPercentUpdated(uint256 indexed _newVotingQuorumPercent);
+    event MaxInProgressProposalsUpdated(uint256 indexed _newMaxInProgressProposals);
 
     /**
      * @notice Initialize the Governance contract
@@ -635,6 +639,7 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(_votingPeriod > 0, ERROR_INVALID_VOTING_PERIOD);
         votingPeriod = _votingPeriod;
+        emit VotingPeriodUpdated(_votingPeriod);
     }
 
     /**
@@ -651,6 +656,7 @@ contract Governance is InitializableV2 {
             ERROR_INVALID_VOTING_QUORUM
         );
         votingQuorumPercent = _votingQuorumPercent;
+        emit VotingQuorumPercentUpdated(_votingQuorumPercent);
     }
 
     /**
@@ -683,6 +689,7 @@ contract Governance is InitializableV2 {
             "Governance: Requires non-zero _newMaxInProgressProposals"
         );
         maxInProgressProposals = _newMaxInProgressProposals;
+        emit MaxInProgressProposalsUpdated(_newMaxInProgressProposals);
     }
 
     /**
@@ -696,6 +703,7 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         // executionDelay does not have to be non-zero
         executionDelay = _newExecutionDelay;
+        emit ExecutionDelayUpdated(_newExecutionDelay);
     }
 
     // ========================================= Guardian Actions =========================================

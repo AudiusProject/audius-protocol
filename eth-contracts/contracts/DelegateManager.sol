@@ -105,10 +105,23 @@ contract DelegateManager is InitializableV2 {
         uint256 indexed _increaseAmount
     );
 
-    event DecreaseDelegatedStake(
+    event UndelegateStakeRequested(
         address indexed _delegator,
         address indexed _serviceProvider,
-        uint256 indexed _decreaseAmount
+        uint256 indexed _amount,
+        uint256 _lockupExpiryBlock
+    );
+
+    event UndelegateStakeRequestCancelled(
+        address indexed _delegator,
+        address indexed _serviceProvider,
+        uint256 indexed _amount
+    );
+
+    event UndelegateStakeRequestEvaluated(
+        address indexed _delegator,
+        address indexed _serviceProvider,
+        uint256 indexed _amount
     );
 
     event Claim(
@@ -123,7 +136,18 @@ contract DelegateManager is InitializableV2 {
         uint256 indexed _newTotal
     );
 
-    event DelegatorRemoved(
+    event RemoveDelegatorRequested(
+        address indexed _serviceProvider,
+        address indexed _delegator,
+        uint256 indexed _lockupExpiryBlock
+    );
+
+    event RemoveDelegatorRequestCancelled(
+        address indexed _serviceProvider,
+        address indexed _delegator
+    );
+
+    event RemoveDelegatorRequestEvaluated(
         address indexed _serviceProvider,
         address indexed _delegator,
         uint256 indexed _unstakedAmount
@@ -283,11 +307,12 @@ contract DelegateManager is InitializableV2 {
         );
 
         // Submit updated request for sender, with target sp, undelegate amount, target expiry block
+        uint256 lockupExpiryBlock = block.number.add(undelegateLockupDuration);
         _updateUndelegateStakeRequest(
             delegator,
             _target,
             _amount,
-            block.number.add(undelegateLockupDuration)
+            lockupExpiryBlock
         );
         // Update total locked for this service provider, increasing by unstake amount
         _updateServiceProviderLockupAmount(
@@ -295,13 +320,14 @@ contract DelegateManager is InitializableV2 {
             spDelegateInfo[_target].totalLockedUpStake.add(_amount)
         );
 
+        emit UndelegateStakeRequested(delegator, _target, _amount, lockupExpiryBlock);
         return delegateInfo[delegator][_target].sub(_amount);
     }
 
     /**
      * @notice Cancel undelegation request
      */
-    function cancelUndelegateStake() external {
+    function cancelUndelegateStakeRequest() external {
         _requireIsInitialized();
 
         address delegator = msg.sender;
@@ -319,6 +345,7 @@ contract DelegateManager is InitializableV2 {
         );
         // Remove pending request
         _resetUndelegateStakeRequest(delegator);
+        emit UndelegateStakeRequestCancelled(delegator, unlockFundsSP, unstakeAmount);
     }
 
     /**
@@ -391,10 +418,11 @@ contract DelegateManager is InitializableV2 {
         // Reset undelegate request
         _resetUndelegateStakeRequest(delegator);
 
-        emit DecreaseDelegatedStake(
+        emit UndelegateStakeRequestEvaluated(
             delegator,
             serviceProvider,
-            unstakeAmount);
+            unstakeAmount
+        );
 
         // Return new total
         return delegateInfo[delegator][serviceProvider];
@@ -583,6 +611,12 @@ contract DelegateManager is InitializableV2 {
         removeDelegatorRequests[_serviceProvider][_delegator] = (
             block.number + removeDelegatorLockupDuration
         );
+
+        emit RemoveDelegatorRequested(
+            _serviceProvider,
+            _delegator,
+            removeDelegatorRequests[_serviceProvider][_delegator]
+        );
     }
 
     /**
@@ -590,7 +624,7 @@ contract DelegateManager is InitializableV2 {
      * @param _serviceProvider - address of service provider
      * @param _delegator - address of delegator
      */
-    function cancelRemoveDelegator(address _serviceProvider, address _delegator) external {
+    function cancelRemoveDelegatorRequest(address _serviceProvider, address _delegator) external {
         require(
             msg.sender == _serviceProvider || msg.sender == governanceAddress,
             ERROR_ONLY_SP_GOVERNANCE
@@ -599,9 +633,9 @@ contract DelegateManager is InitializableV2 {
             removeDelegatorRequests[_serviceProvider][_delegator] != 0,
             "DelegateManager: No pending request"
         );
-
         // Reset lockup expiry
         removeDelegatorRequests[_serviceProvider][_delegator] = 0;
+        emit RemoveDelegatorRequestCancelled(_serviceProvider, _delegator);
     }
 
     /**
@@ -671,7 +705,7 @@ contract DelegateManager is InitializableV2 {
 
         // Reset lockup expiry
         removeDelegatorRequests[_serviceProvider][_delegator] = 0;
-        emit DelegatorRemoved(_serviceProvider, _delegator, unstakeAmount);
+        emit RemoveDelegatorRequestEvaluated(_serviceProvider, _delegator, unstakeAmount);
     }
 
     /**

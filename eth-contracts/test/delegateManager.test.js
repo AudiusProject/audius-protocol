@@ -335,8 +335,6 @@ contract('DelegateManager', async (accounts) => {
     let tx = await serviceProviderFactory.increaseStake(
       increase,
       { from: account })
-
-    let args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
   }
 
   const decreaseRegisteredProviderStake = async (decrease, account) => {
@@ -1239,7 +1237,7 @@ contract('DelegateManager', async (accounts) => {
 
     it('Validate undelegate request restrictions', async () => {
       await _lib.assertRevert(
-        delegateManager.cancelUndelegateStake({ from: delegatorAccount1 }),
+        delegateManager.cancelUndelegateStakeRequest({ from: delegatorAccount1 }),
         'Pending lockup expected')
       await _lib.assertRevert(
         delegateManager.undelegateStake({ from: delegatorAccount1 }),
@@ -1707,17 +1705,14 @@ contract('DelegateManager', async (accounts) => {
       let minDelegateStakeVal = _lib.audToWei(100)
       let minDelegateStake = _lib.toBN(minDelegateStakeVal)
       await updateMinDelegationAmount(minDelegateStakeVal)
-
       assert.isTrue(
         minDelegateStake.eq(await delegateManager.getMinDelegationAmount()),
         'Min delegation not updated')
-
       // Approve staking transfer
       await token.approve(
         stakingAddress,
         minDelegateStake,
         { from: delegatorAccount1 })
-
       // Confirm failure below minimum
       await _lib.assertRevert(
         delegateManager.delegateStake(
@@ -1725,16 +1720,27 @@ contract('DelegateManager', async (accounts) => {
           minDelegateStake.sub(_lib.audToWeiBN(10)),
           { from: delegatorAccount1 }),
         'Minimum delegation amount')
-
       // Delegate min
       await delegateManager.delegateStake(
         stakerAccount,
         minDelegateStake,
         { from: delegatorAccount1 })
-
       // Submit request to undelegate stake that will fail as total amount results in < min amount
       let failUndelegateAmount = minDelegateStake.sub(_lib.audToWeiBN(30))
-      await delegateManager.requestUndelegateStake(stakerAccount, failUndelegateAmount, { from: delegatorAccount1 })
+      let lockupDuration = await delegateManager.getUndelegateLockupDuration()
+      let tx = await delegateManager.requestUndelegateStake(stakerAccount, failUndelegateAmount, { from: delegatorAccount1 })
+      let lockupExpiryBlock = _lib.toBN(tx.receipt.blockNumber).add(lockupDuration)
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'UndelegateStakeRequested',
+        {
+          _delegator: delegatorAccount1,
+          _serviceProvider: stakerAccount,
+          _amount: failUndelegateAmount,
+          _lockupExpiryBlock: lockupExpiryBlock
+        }
+      )
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
       await _lib.assertRevert(
@@ -1742,17 +1748,35 @@ contract('DelegateManager', async (accounts) => {
         'Minimum delegation amount'
       )
       // Cancel request
-      await delegateManager.cancelUndelegateStake({ from: delegatorAccount1 })
-
+      tx = await delegateManager.cancelUndelegateStakeRequest({ from: delegatorAccount1 })
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'UndelegateStakeRequestCancelled',
+        {
+          _delegator: delegatorAccount1,
+          _serviceProvider: stakerAccount,
+          _amount: failUndelegateAmount
+        }
+      )
       // Undelegate all stake and confirm min delegation amount does not prevent withdrawal
       await delegateManager.requestUndelegateStake(stakerAccount, minDelegateStake, { from: delegatorAccount1 })
       undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
-
       // Finalize undelegation, confirm operation is allowed
-      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+      tx = await delegateManager.undelegateStake({ from: delegatorAccount1 })
       assert.equal(_lib.fromBN(await getTotalDelegatorStake(delegatorAccount1)), 0, 'No stake expected')
       assert.equal((await delegateManager.getDelegatorsList(stakerAccount)).length, 0, 'No delegators expected')
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'UndelegateStakeRequestEvaluated',
+        {
+          _delegator: delegatorAccount1,
+          _serviceProvider: stakerAccount,
+          _amount: minDelegateStake
+        }
+      )
     })
 
     it('Cancel undelegate stake resets state', async () => {
@@ -1774,7 +1798,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue(
         undelegateRequestInfo.amount.eq(delegateAmount),
         'Expect request to match undelegate amount')
-      await delegateManager.cancelUndelegateStake({ from: delegatorAccount1 })
+      await delegateManager.cancelUndelegateStakeRequest({ from: delegatorAccount1 })
 
       let undelegateRequestInfoAfterCancel = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       let lockedUpStakeForSpAfterCancel = await delegateManager.getTotalLockedDelegationForServiceProvider(stakerAccount)
@@ -1959,7 +1983,7 @@ contract('DelegateManager', async (accounts) => {
 
     // Validate behavior around removeDelegator
     //       - expiry block calculated correctly (done)
-    //       - cancelRemoveDelegator behavior resets request (done)
+    //       - cancelRemoveDelegatorRequest behavior resets request (done)
     //       - evaluation window enforced (done) 
     //       - invalid delegator for this sp during call to removeDelegator (done)
     //       - Pending request before call to requestRemoveDelegator
@@ -1988,6 +2012,13 @@ contract('DelegateManager', async (accounts) => {
 
       // Remove delegator
       let tx = await delegateManager.requestRemoveDelegator(stakerAccount, delegatorAccount1, { from: stakerAccount })
+      let lockupExpiryBlock = _lib.toBN(tx.receipt.blockNumber).add(removeReqDuration)
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'RemoveDelegatorRequested',
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount1, _lockupExpiryBlock: lockupExpiryBlock }
+      )
       let blocknumber = _lib.toBN(tx.receipt.blockNumber)
       let expectedTarget = blocknumber.add(removeReqDuration)
 
@@ -2000,7 +2031,7 @@ contract('DelegateManager', async (accounts) => {
       await expectEvent.inTransaction(
         tx.tx,
         DelegateManager,
-        'DelegatorRemoved',
+        'RemoveDelegatorRequestEvaluated',
         { _serviceProvider: stakerAccount, _delegator: delegatorAccount1, _unstakedAmount: delegationAmount }
       )
 
@@ -2043,12 +2074,18 @@ contract('DelegateManager', async (accounts) => {
 
       // Call from wrong account
       await _lib.assertRevert(
-        delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2),
+        delegateManager.cancelRemoveDelegatorRequest(stakerAccount, delegatorAccount2),
         'Only callable by target SP'
       )
 
       // Cancel and validate request
-      await delegateManager.cancelRemoveDelegator(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      tx = await delegateManager.cancelRemoveDelegatorRequest(stakerAccount, delegatorAccount2, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'RemoveDelegatorRequestCancelled',
+        { _serviceProvider: stakerAccount, _delegator: delegatorAccount2 }
+      )
       let requestTargetBlockAfterCancel = await delegateManager.getPendingRemoveDelegatorRequest(stakerAccount, delegatorAccount2)
       assert.isTrue(requestTargetBlockAfterCancel.eq(_lib.toBN(0)), 'Expect reset')
 

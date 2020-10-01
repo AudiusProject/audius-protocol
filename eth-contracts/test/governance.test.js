@@ -583,7 +583,7 @@ contract('Governance.sol', async (accounts) => {
 
     // Confirm event log
     setRegistryAddressTx = _lib.parseTx(setRegistryAddressTx)
-    assert.equal(setRegistryAddressTx.event.args.newRegistryAddress, registry2.address, 'Expected newRegistryAddress')
+    assert.equal(setRegistryAddressTx.event.args._newRegistryAddress, registry2.address, 'Expected newRegistryAddress')
 
     // Confirm registry address has been set
     assert.equal(await governance.getRegistryAddress.call(), registry2.address)
@@ -630,10 +630,10 @@ contract('Governance.sol', async (accounts) => {
         Governance,
         'ProposalSubmitted',
         {
-          proposalId: _lib.toBN(1),
-          proposer: delegatorAccount1,
-          name: proposalName,
-          description: proposalDescription
+          _proposalId: _lib.toBN(1),
+          _proposer: delegatorAccount1,
+          _name: proposalName,
+          _description: proposalDescription
         }
       )
     })
@@ -720,9 +720,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Lock up funds in service provider factory
       await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount, { from: stakerAccount1 })
-
     })
-
     // TODO: Test quorum changes somehow?
   })
 
@@ -939,7 +937,7 @@ contract('Governance.sol', async (accounts) => {
       const tx = _lib.parseTx(txReceipt)
 
       // Confirm name value in event log
-      assert.equal(tx.event.args.name, nameCorrect, "Expected same event.args.name")
+      assert.equal(tx.event.args._name, nameCorrect, "Expected same event.args.name")
     })
 
     it('Proposal description', async () => {
@@ -979,7 +977,7 @@ contract('Governance.sol', async (accounts) => {
       const tx = _lib.parseTx(txReceipt)
 
       // Confirm description value in event log
-      assert.equal(tx.event.args.description, descriptionCorrect, "Expected same event.args.description")
+      assert.equal(tx.event.args._description, descriptionCorrect, "Expected same event.args.description")
     })
 
     it('Submit Proposal for Slash', async () => {
@@ -1007,10 +1005,10 @@ contract('Governance.sol', async (accounts) => {
       // Confirm event log
       const txParsed = _lib.parseTx(txReceipt)
       assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
-      assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-      assert.equal(txParsed.event.args.proposer, proposerAddress, 'Expected same event.args.proposer')
+      assert.equal(parseInt(txParsed.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsed.event.args._proposer, proposerAddress, 'Expected same event.args.proposer')
       assert.isTrue(parseInt(txReceipt.receipt.blockNumber) > lastBlock, 'Expected submitProposalTx blockNumber > lastBlock')
-      assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
+      assert.equal(txParsed.event.args._description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
       const proposal = await governance.getProposalById.call(proposalId)
@@ -1059,10 +1057,10 @@ contract('Governance.sol', async (accounts) => {
       // Confirm event log
       const txParsed = _lib.parseTx(txReceipt)
       assert.equal(txParsed.event.name, 'ProposalSubmitted', 'Expected same event name')
-      assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-      assert.equal(txParsed.event.args.proposer, guardianAddress, 'Expected same event.args.proposer')
+      assert.equal(parseInt(txParsed.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+      assert.equal(txParsed.event.args._proposer, guardianAddress, 'Expected same event.args.proposer')
       assert.isTrue(parseInt(txReceipt.receipt.blockNumber) > lastBlock, 'Expected submitProposalTx blockNumber > lastBlock')
-      assert.equal(txParsed.event.args.description, proposalDescription, "Expected same event.args.description")
+      assert.equal(txParsed.event.args._description, proposalDescription, "Expected same event.args.description")
 
       // Call getProposalById() and confirm same values
       const proposal = await governance.getProposalById.call(proposalId)
@@ -1167,10 +1165,10 @@ contract('Governance.sol', async (accounts) => {
         // Confirm event log
         const txParsed = _lib.parseTx(txReceipt)
         assert.equal(txParsed.event.name, 'ProposalVoteSubmitted', 'Expected same event name')
-        assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-        assert.equal(txParsed.event.args.voter, voter1Address, 'Expected same event.args.voter')
-        assert.equal(parseInt(txParsed.event.args.vote), vote, 'Expected same event.args.vote')
-        assert.isTrue(txParsed.event.args.voteMagnitude.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitude')
+        assert.equal(parseInt(txParsed.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsed.event.args._voter, voter1Address, 'Expected same event.args.voter')
+        assert.equal(parseInt(txParsed.event.args._vote), vote, 'Expected same event.args.vote')
+        assert.isTrue(txParsed.event.args._voterStake.eq(defaultStakeAmount), 'Expected same event.args.voterStake')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
@@ -1207,12 +1205,12 @@ contract('Governance.sol', async (accounts) => {
         // voter1 voteYes
         const voteTx1 = await governance.submitVote(proposalId, voteYes, { from: voter1Address })
         const voteTxParsed1 = _lib.parseTx(voteTx1)
-        assert.equal(parseInt(voteTxParsed1.event.args.vote), voteYes, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed1.event.args._vote), voteYes, 'Expected same event.args.vote')
   
         // voter2 voteYes
         const voteTx2 = await governance.submitVote(proposalId, voteYes, { from: voter2Address })
         const voteTxParsed2 = _lib.parseTx(voteTx2)
-        assert.equal(parseInt(voteTxParsed2.event.args.vote), voteYes, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed2.event.args._vote), voteYes, 'Expected same event.args.vote')
 
         await _lib.assertRevert(
           governance.submitVote(proposalId, voteNo, { from: voter1Address }),
@@ -1229,20 +1227,20 @@ contract('Governance.sol', async (accounts) => {
         // voter1 update to voteNo
         const voteTx3 = await governance.updateVote(proposalId, voteNo, { from: voter1Address })
         const voteTxParsed3 = _lib.parseTx(voteTx3)
-        assert.equal(parseInt(voteTxParsed3.event.args.vote), voteNo, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed3.event.args.previousVote), voteYes, 'Expected same event.args.previousVote')
+        assert.equal(parseInt(voteTxParsed3.event.args._vote), voteNo, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed3.event.args._previousVote), voteYes, 'Expected same event.args.previousVote')
   
         // voter1 update to voteYes
         const voteTx4 = await governance.updateVote(proposalId, voteYes, { from: voter1Address })
         const voteTxParsed4 = _lib.parseTx(voteTx4)
-        assert.equal(parseInt(voteTxParsed4.event.args.vote), voteYes, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed4.event.args.previousVote), voteNo, 'Expected same event.args.previousVote')
+        assert.equal(parseInt(voteTxParsed4.event.args._vote), voteYes, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed4.event.args._previousVote), voteNo, 'Expected same event.args.previousVote')
 
         // voter1 update to same
         const voteTx5 = await governance.updateVote(proposalId, voteYes, { from: voter1Address })
         const voteTxParsed5 = _lib.parseTx(voteTx5)
-        assert.equal(parseInt(voteTxParsed5.event.args.vote), voteYes, 'Expected same event.args.vote')
-        assert.equal(parseInt(voteTxParsed5.event.args.previousVote), voteYes, 'Expected same event.args.previousVote')
+        assert.equal(parseInt(voteTxParsed5.event.args._vote), voteYes, 'Expected same event.args.vote')
+        assert.equal(parseInt(voteTxParsed5.event.args._previousVote), voteYes, 'Expected same event.args.previousVote')
   
         // Confirm proposal state
         proposal = await governance.getProposalById.call(proposalId)
@@ -1292,11 +1290,11 @@ contract('Governance.sol', async (accounts) => {
         
         // Confirm outcome state
         assert.equal(txParsedEvent0.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-        assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-        assert.equal(txParsedEvent0.event.args.outcome, Outcome.Rejected, 'Expected same event.args.outcome')
-        assert.isTrue(txParsedEvent0.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-        assert.isTrue(txParsedEvent0.event.args.voteMagnitudeNo.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeNo')
-        assert.equal(parseInt(txParsedEvent0.event.args.numVotes), 2, 'Expected same event.args.numVotes')
+        assert.equal(parseInt(txParsedEvent0.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsedEvent0.event.args._outcome, Outcome.Rejected, 'Expected same event.args.outcome')
+        assert.isTrue(txParsedEvent0.event.args._voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(txParsedEvent0.event.args._voteMagnitudeNo.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(txParsedEvent0.event.args._numVotes), 2, 'Expected same event.args.numVotes')
       })
     })
 
@@ -1375,7 +1373,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
-        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args._proposalId
         
         await _lib.assertRevert(
           governance.evaluateProposalOutcome(
@@ -1413,15 +1411,15 @@ contract('Governance.sol', async (accounts) => {
         // Confirm event logs (2 events)
         const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
         assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected same event name')
-        assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
-        assert.equal(txParsedEvent0.event.args.success, true, 'Expected same txParsedEvent0.event.args.returnData')
-        assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
+        assert.equal(parseInt(txParsedEvent0.event.args._proposalId), proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
+        assert.equal(txParsedEvent0.event.args._success, true, 'Expected same txParsedEvent0.event.args.returnData')
+        assert.equal(txParsedEvent0.event.args._returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
         assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-        assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-        assert.equal(txParsedEvent1.event.args.outcome, outcome, 'Expected same event.args.outcome')
-        assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-        assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-        assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+        assert.equal(parseInt(txParsedEvent1.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsedEvent1.event.args._outcome, outcome, 'Expected same event.args.outcome')
+        assert.isTrue(txParsedEvent1.event.args._voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(txParsedEvent1.event.args._voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(txParsedEvent1.event.args._numVotes), 1, 'Expected same event.args.numVotes')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
@@ -1488,7 +1486,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
-        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args._proposalId
 
         // Submit votes to achieve Outcome.Rejected
         await governance.submitVote(proposalId, Vote.No, { from: voter1Address })
@@ -1503,17 +1501,17 @@ contract('Governance.sol', async (accounts) => {
         const THREE = _lib.toBN(3)
 
         evaluateTxReceipt = await governance.evaluateProposalOutcome(
-          _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
+          _lib.parseTx(submitProposalTxReceipt).event.args._proposalId,
           { from: proposerAddress }
         )
 
         // Confirm event log
         const txParsed = _lib.parseTx(evaluateTxReceipt)
         assert.equal(txParsed.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-        assert.equal(txParsed.event.args.outcome, outcome, 'Expected same event.args.outcome')
-        assert.isTrue(txParsed.event.args.voteMagnitudeYes.isZero(), 'Expected same event.args.voteMagnitudeYes')
-        assert.isTrue(txParsed.event.args.voteMagnitudeNo.eq(defaultStakeAmount.mul(THREE).div(TWO)), 'Expected same event.args.voteMagnitudeNo')
-        assert.isTrue(txParsed.event.args.numVotes.eq(TWO), 'Expected same event.args.numVotes')
+        assert.equal(txParsed.event.args._outcome, outcome, 'Expected same event.args.outcome')
+        assert.isTrue(txParsed.event.args._voteMagnitudeYes.isZero(), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(txParsed.event.args._voteMagnitudeNo.eq(defaultStakeAmount.mul(THREE).div(TWO)), 'Expected same event.args.voteMagnitudeNo')
+        assert.isTrue(txParsed.event.args._numVotes.eq(TWO), 'Expected same event.args.numVotes')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
@@ -1544,7 +1542,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
-        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+        proposalId = _lib.parseTx(submitProposalTxReceipt).event.args._proposalId
         outcome = Outcome.QuorumNotMet
 
         // Advance blocks to evaluatable block
@@ -1552,18 +1550,18 @@ contract('Governance.sol', async (accounts) => {
         await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
 
         evaluateTxReceipt = await governance.evaluateProposalOutcome(
-          _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
+          _lib.parseTx(submitProposalTxReceipt).event.args._proposalId,
           { from: proposerAddress }
         )
 
         // Confirm event log
         const txParsed = _lib.parseTx(evaluateTxReceipt)
         assert.equal(txParsed.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-        assert.equal(parseInt(txParsed.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-        assert.equal(txParsed.event.args.outcome, outcome, 'Expected same event.args.outcome')
-        assert.isTrue(txParsed.event.args.voteMagnitudeYes.isZero(), 'Expected same event.args.voteMagnitudeYes')
-        assert.isTrue(txParsed.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-        assert.isTrue(txParsed.event.args.numVotes.isZero(), 'Expected same event.args.numVotes')
+        assert.equal(parseInt(txParsed.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsed.event.args._outcome, outcome, 'Expected same event.args.outcome')
+        assert.isTrue(txParsed.event.args._voteMagnitudeYes.isZero(), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(txParsed.event.args._voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+        assert.isTrue(txParsed.event.args._numVotes.isZero(), 'Expected same event.args.numVotes')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
@@ -1589,7 +1587,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
-        const proposalId2 = _lib.parseTx(submitProposalTxReceipt2).event.args.proposalId
+        const proposalId2 = _lib.parseTx(submitProposalTxReceipt2).event.args._proposalId
         await governance.submitVote(proposalId2, Vote.Yes, { from: voter1Address })
 
         // Confirm proposal would meet quorum
@@ -1616,7 +1614,7 @@ contract('Governance.sol', async (accounts) => {
 
         // Evaluate proposal and confirm it fails
         await governance.evaluateProposalOutcome(
-          _lib.parseTx(submitProposalTxReceipt2).event.args.proposalId,
+          _lib.parseTx(submitProposalTxReceipt2).event.args._proposalId,
           { from: proposerAddress }
         )
         let proposal2New = await governance.getProposalById.call(proposalId2)
@@ -1655,11 +1653,11 @@ contract('Governance.sol', async (accounts) => {
         
         // Ensure event log confirms correct outcome
         assert.equal(tx.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-        assert.equal(parseInt(tx.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-        assert.equal(tx.event.args.outcome, outcomeTargetContractAddressChanged, 'Expected same event.args.outcome')
-        assert.isTrue(tx.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-        assert.isTrue(tx.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-        assert.equal(parseInt(tx.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+        assert.equal(parseInt(tx.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(tx.event.args._outcome, outcomeTargetContractAddressChanged, 'Expected same event.args.outcome')
+        assert.isTrue(tx.event.args._voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(tx.event.args._voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(tx.event.args._numVotes), 1, 'Expected same event.args.numVotes')
   
         // Ensure chain storage confirms correct outcome
         const proposal = await governance.getProposalById.call(proposalId)
@@ -1709,17 +1707,17 @@ contract('Governance.sol', async (accounts) => {
         // Confirm event logs (2 events)
         const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
         assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected same event name')
-        assert.equal(txParsedEvent0.event.args.proposalId, proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
-        assert.equal(txParsedEvent0.event.args.success, false, 'Expected same txParsedEvent0.event.args.success')
+        assert.equal(txParsedEvent0.event.args._proposalId, proposalId, 'Expected same txParsedEvent0.event.args.proposalId')
+        assert.equal(txParsedEvent0.event.args._success, false, 'Expected same txParsedEvent0.event.args.success')
         // TODO - confirm that returnData = web3.utils.utf8ToHex("Cannot slash more than total currently staked")
         // reference: https://solidity.readthedocs.io/en/develop/abi-spec.html#use-of-dynamic-types
         // assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected same txParsedEvent0.event.args.returnData')
         assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-        assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-        assert.equal(txParsedEvent1.event.args.outcome, Outcome.ApprovedExecutionFailed, 'Expected same event.args.outcome')
-        assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-        assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-        assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+        assert.equal(parseInt(txParsedEvent1.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+        assert.equal(txParsedEvent1.event.args._outcome, Outcome.ApprovedExecutionFailed, 'Expected same event.args.outcome')
+        assert.isTrue(txParsedEvent1.event.args._voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+        assert.isTrue(txParsedEvent1.event.args._voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+        assert.equal(parseInt(txParsedEvent1.event.args._numVotes), 1, 'Expected same event.args.numVotes')
   
         // Call getProposalById() and confirm same values
         const proposal = await governance.getProposalById.call(proposalId)
@@ -1810,7 +1808,7 @@ contract('Governance.sol', async (accounts) => {
             { from: proposerAddress }
           )
           await governance.vetoProposal(
-            _lib.parseTx(submitProposalTxReceipt).event.args.proposalId,
+            _lib.parseTx(submitProposalTxReceipt).event.args._proposalId,
             { from: guardianAddress }
           )
 
@@ -1824,7 +1822,7 @@ contract('Governance.sol', async (accounts) => {
             proposalDescription,
             { from: proposerAddress }
           )
-          proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+          proposalId = _lib.parseTx(submitProposalTxReceipt).event.args._proposalId
           proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
           await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod)
           await governance.vetoProposal(
@@ -1842,7 +1840,7 @@ contract('Governance.sol', async (accounts) => {
             proposalDescription,
             { from: proposerAddress }
           )
-          proposalId = _lib.parseTx(submitProposalTxReceipt).event.args.proposalId
+          proposalId = _lib.parseTx(submitProposalTxReceipt).event.args._proposalId
           proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
           await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
           await governance.vetoProposal(
@@ -1857,7 +1855,7 @@ contract('Governance.sol', async (accounts) => {
           // Confirm event log
           const vetoTx = _lib.parseTx(vetoTxReceipt)
           assert.equal(vetoTx.event.name, 'ProposalVetoed', 'event.name')
-          assert.equal(parseInt(vetoTx.event.args.proposalId), proposalId, 'event.args.proposalId')
+          assert.equal(parseInt(vetoTx.event.args._proposalId), proposalId, 'event.args.proposalId')
 
           // Call getProposalById() and confirm expected outcome
           const proposal = await governance.getProposalById.call(proposalId)
@@ -1927,7 +1925,7 @@ contract('Governance.sol', async (accounts) => {
       proposalDescription,
       { from: proposerAddress }
     )
-    const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
+    const proposalId = _lib.parseTx(submitTxReceipt).event.args._proposalId
 
     // Submit proposal vote for Yes
     await governance.submitVote(proposalId, Vote.Yes, { from: voterAddress })
@@ -1942,15 +1940,15 @@ contract('Governance.sol', async (accounts) => {
     // Confirm event log states - ProposalTransactionExecuted, ProposalOutcomeEvaluated
     const [txParsedEvent0, txParsedEvent1] = _lib.parseTx(evaluateTxReceipt, true)
     assert.equal(txParsedEvent0.event.name, 'ProposalTransactionExecuted', 'Expected event.name')
-    assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected event.args.proposalId')
-    assert.equal(txParsedEvent0.event.args.success, true, 'Expected event.args.returnData')
-    assert.equal(txParsedEvent0.event.args.returnData, returnData, 'Expected event.args.returnData')
+    assert.equal(parseInt(txParsedEvent0.event.args._proposalId), proposalId, 'Expected event.args.proposalId')
+    assert.equal(txParsedEvent0.event.args._success, true, 'Expected event.args.returnData')
+    assert.equal(txParsedEvent0.event.args._returnData, returnData, 'Expected event.args.returnData')
     assert.equal(txParsedEvent1.event.name, 'ProposalOutcomeEvaluated', 'Expected same event name')
-    assert.equal(parseInt(txParsedEvent1.event.args.proposalId), proposalId, 'Expected same event.args.proposalId')
-    assert.equal(txParsedEvent1.event.args.outcome, outcome, 'Expected same event.args.outcome')
-    assert.isTrue(txParsedEvent1.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-    assert.isTrue(txParsedEvent1.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-    assert.equal(parseInt(txParsedEvent1.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+    assert.equal(parseInt(txParsedEvent1.event.args._proposalId), proposalId, 'Expected same event.args.proposalId')
+    assert.equal(txParsedEvent1.event.args._outcome, outcome, 'Expected same event.args.outcome')
+    assert.isTrue(txParsedEvent1.event.args._voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+    assert.isTrue(txParsedEvent1.event.args._voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+    assert.equal(parseInt(txParsedEvent1.event.args._numVotes), 1, 'Expected same event.args.numVotes')
 
     // Call getProposalById() and confirm same values
     const proposal = await governance.getProposalById.call(proposalId)
@@ -2008,7 +2006,7 @@ contract('Governance.sol', async (accounts) => {
       proposalDescription,
       { from: proposerAddress }
     )
-    const proposalId = _lib.parseTx(submitTxReceipt).event.args.proposalId
+    const proposalId = _lib.parseTx(submitTxReceipt).event.args._proposalId
 
     // Retrieve contract hash for proposal
     let proposalContractHash = await governance.getProposalTargetContractHash(proposalId)
@@ -2028,12 +2026,12 @@ contract('Governance.sol', async (accounts) => {
     const evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: proposerAddress })
     const [txParsedEvent0] = _lib.parseTx(evaluateTxReceipt, true)
     assert.equal(txParsedEvent0.event.name, 'ProposalOutcomeEvaluated', 'Expected event.name')
-    assert.equal(parseInt(txParsedEvent0.event.args.proposalId), proposalId, 'Expected event.args.proposalId')
-    assert.equal(txParsedEvent0.event.args.returnData, null, 'Expected event.args.returnData')
-    assert.equal(txParsedEvent0.event.args.outcome, outcome, 'Expected same event.args.outcome')
-    assert.isTrue(txParsedEvent0.event.args.voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
-    assert.isTrue(txParsedEvent0.event.args.voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
-    assert.equal(parseInt(txParsedEvent0.event.args.numVotes), 1, 'Expected same event.args.numVotes')
+    assert.equal(parseInt(txParsedEvent0.event.args._proposalId), proposalId, 'Expected event.args.proposalId')
+    assert.equal(txParsedEvent0.event.args._returnData, null, 'Expected event.args.returnData')
+    assert.equal(txParsedEvent0.event.args._outcome, outcome, 'Expected same event.args.outcome')
+    assert.isTrue(txParsedEvent0.event.args._voteMagnitudeYes.eq(defaultStakeAmount), 'Expected same event.args.voteMagnitudeYes')
+    assert.isTrue(txParsedEvent0.event.args._voteMagnitudeNo.isZero(), 'Expected same event.args.voteMagnitudeNo')
+    assert.equal(parseInt(txParsedEvent0.event.args._numVotes), 1, 'Expected same event.args.numVotes')
 
     // Call getProposalById() and confirm same values
     const proposal = await governance.getProposalById.call(proposalId)
@@ -2216,19 +2214,19 @@ contract('Governance.sol', async (accounts) => {
       // Confirm tx logs
       const guardianExecTx = _lib.parseTx(guardianExecTxReceipt)
       assert.equal(guardianExecTx.event.name, 'GuardianTransactionExecuted', 'event.name')
-      assert.equal(guardianExecTx.event.args.targetContractAddress, targetContractAddress, 'event.args.targetContractAddress')
-      assert.isTrue(guardianExecTx.event.args.callValue.eq(callValue), 'event.args.callValue')
+      assert.equal(guardianExecTx.event.args._targetContractAddress, targetContractAddress, 'event.args.targetContractAddress')
+      assert.isTrue(guardianExecTx.event.args._callValue.eq(callValue), 'event.args.callValue')
       assert.equal(
-        guardianExecTx.event.args.functionSignature,
+        guardianExecTx.event.args._functionSignature,
         _lib.keccak256(web3.utils.utf8ToHex(functionSignature)),
         'event.args.functionSignature'
       )
       assert.equal(
-        guardianExecTx.event.args.callData,
+        guardianExecTx.event.args._callData,
         _lib.keccak256(callData),
         'event.args.callData'
       )
-      assert.equal(guardianExecTx.event.args.returnData, returnData, 'event.args.returnData')
+      assert.equal(guardianExecTx.event.args._returnData, returnData, 'event.args.returnData')
 
       // Confirm Slash action succeeded by checking new Stake + Token values
       const finalStakeAcct2 = await staking.totalStakedFor(targetAddress)
@@ -2394,7 +2392,7 @@ contract('Governance.sol', async (accounts) => {
 
       // Confirm event log
       transferGuardianshipTx = _lib.parseTx(transferGuardianshipTx)
-      assert.equal(transferGuardianshipTx.event.args.newGuardianAddress, newGuardianAddress, 'Expected newGuardianAddress')
+      assert.equal(transferGuardianshipTx.event.args._newGuardianAddress, newGuardianAddress, 'Expected newGuardianAddress')
 
       // Confirm new guardianAddress
       assert.equal(await governance.getGuardianAddress(), newGuardianAddress, 'Expected same guardianAddress')
@@ -2446,12 +2444,18 @@ contract('Governance.sol', async (accounts) => {
         "Transaction failed."
       )
       
-      await governance.guardianExecuteTransaction(
+      let tx = await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
         'setVotingPeriod(uint256)',
         _lib.abiEncode(['uint256'], [newVotingPeriod]),
         { from: guardianAddress }
+      )
+      await expectEvent.inTransaction(
+        tx.tx,
+        Governance,
+        'VotingPeriodUpdated',
+        { _newVotingPeriod: _lib.toBN(newVotingPeriod) }
       )
 
       assert.equal(
@@ -2506,20 +2510,24 @@ contract('Governance.sol', async (accounts) => {
         "Transaction failed."
       )
 
-      await governance.guardianExecuteTransaction(
+      let tx = await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
         'setVotingQuorumPercent(uint256)',
         _lib.abiEncode(['uint256'], [newVotingQuorumPercent]),
         { from: guardianAddress }
       )
-
+      await expectEvent.inTransaction(
+        tx.tx,
+        Governance,
+        'VotingQuorumPercentUpdated',
+        { _newVotingQuorumPercent: _lib.toBN(newVotingQuorumPercent) }
+      )
       assert.equal(
         await governance.getVotingQuorumPercent(),
         newVotingQuorumPercent,
         "Incorrect expected votingQuorumPercent after update"
       )
-
       // set original value
       await governance.guardianExecuteTransaction(
         governanceKey,
@@ -2556,12 +2564,19 @@ contract('Governance.sol', async (accounts) => {
         "Governance: Transaction failed."
       )
 
-      await governance.guardianExecuteTransaction(
+      let tx = await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
         'setMaxInProgressProposals(uint16)',
         _lib.abiEncode(['uint16'], [newMaxInProgressProposals]),
         { from: guardianAddress }
+      )
+
+      await expectEvent.inTransaction(
+        tx.tx,
+        Governance,
+        'MaxInProgressProposalsUpdated',
+        { _newMaxInProgressProposals: _lib.toBN(newMaxInProgressProposals) }
       )
 
       assert.equal(
@@ -2573,26 +2588,28 @@ contract('Governance.sol', async (accounts) => {
 
     it('Get/Set executionDelay', async () => {
       const newExecutionDelay = executionDelay * 2
-
       assert.equal(
         await governance.getExecutionDelay.call(),
         executionDelay,
         "Incorrect executionDelay value before update"
       )
-
       await _lib.assertRevert(
         governance.setExecutionDelay(newExecutionDelay),
         "Only callable by self"
       )
-
-      await governance.guardianExecuteTransaction(
+      let tx = await governance.guardianExecuteTransaction(
         governanceKey,
         callValue0,
         'setExecutionDelay(uint256)',
         _lib.abiEncode(['uint256'], [newExecutionDelay]),
         { from: guardianAddress }
       )
-
+      await expectEvent.inTransaction(
+        tx.tx,
+        Governance,
+        'ExecutionDelayUpdated',
+        { _newExecutionDelay: _lib.toBN(newExecutionDelay) }
+      )
       assert.equal(
         await governance.getExecutionDelay.call(),
         newExecutionDelay,
