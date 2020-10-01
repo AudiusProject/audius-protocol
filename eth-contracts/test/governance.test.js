@@ -1134,6 +1134,7 @@ contract('Governance.sol', async (accounts) => {
       let proposalId, proposerAddress, slashAmount, targetAddress, voter1Address, voter2Address
       let defaultVote, lastBlock, targetContractRegistryKey, targetContractAddress
       let callValue, functionSignature, callData, submitProposalTxReceipt
+      let proposalStartBlockNumber
 
       beforeEach(async () => {
         proposalId = 1
@@ -1160,6 +1161,7 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
+        proposalStartBlockNumber = parseInt(submitProposalTxReceipt.receipt.blockNumber)
       })
 
       describe('Active stake validation', async () => {
@@ -1195,6 +1197,23 @@ contract('Governance.sol', async (accounts) => {
           assert.equal(voterVote, vote)
           assert.isTrue(voteMagnitude.eq(expectedVoteMagnitude))
         }
+
+        it('Evaluate with no votes', async () => {
+          await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
+          let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
+          await expectEvent.inTransaction(
+            evaluateTxReceipt.tx,
+            Governance,
+            'ProposalOutcomeEvaluated',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _outcome: _lib.toBN(Outcome.QuorumNotMet),
+              _voteMagnitudeYes: _lib.toBN(0),
+              _voteMagnitudeNo: _lib.toBN(0),
+              _numVotes: _lib.toBN(0),
+            }
+          )
+        })
 
         // Validate behavior with particular stake distributions
         it('Submit vote from service provider only address w/partial active stake', async () => {
