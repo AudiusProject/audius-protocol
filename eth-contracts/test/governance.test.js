@@ -589,49 +589,141 @@ contract('Governance.sol', async (accounts) => {
     assert.equal(await governance.getRegistryAddress.call(), registry2.address)
   })
 
-  it.only('Submit proposal via delegator address', async () => {
-    // An address that has only delegated stake should be able to submit a proposal
-    let delegateAmount = defaultStakeAmount.div(_lib.toBN(2))
-    // Approve staking transfer
-    await token.approve(
-      staking.address,
-      delegateAmount,
-      { from: delegatorAccount1 })
-    // Delegate half default stake amount
-    await delegateManager.delegateStake(
-      stakerAccount1,
-      delegateAmount,
-      { from: delegatorAccount1 }
-    )
-    let delegationFromContract = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
-    let totalStakedForDelegator = await staking.totalStakedFor(delegatorAccount1)
-    assert.isTrue(delegationFromContract.eq(delegateAmount), "Expected equivalent value in contract")
-    assert.isTrue(totalStakedForDelegator.eq(_lib.toBN(0)), "No direct stake expected")
+  describe('Active stake verification', async () => {
     let targetAddress = stakerAccount2
     let callValue = _lib.toBN(0)
     let slashAmount = _lib.toBN(1)
     let functionSignature = 'slash(uint256,address)'
     let callData = _lib.abiEncode(['uint256', 'address'], [_lib.fromBN(slashAmount), targetAddress])
-    let submitProposalTxReceipt = await governance.submitProposal(
-      delegateManagerKey,
-      callValue,
-      functionSignature,
-      callData,
-      proposalName,
-      proposalDescription,
-      { from: delegatorAccount1 }
-    )
-    await expectEvent.inTransaction(
-      submitProposalTxReceipt.tx,
-      Governance,
-      'ProposalSubmitted',
-      {
-        proposalId: _lib.toBN(1),
-        proposer: delegatorAccount1,
-        name: proposalName,
-        description: proposalDescription
-      }
-    )
+    // An address that has only delegated stake should be able to submit a proposal
+    let delegateAmount = defaultStakeAmount.div(_lib.toBN(2))
+    beforeEach(async() => {
+      // Approve staking transfer
+      await token.approve(
+        staking.address,
+        delegateAmount,
+        { from: delegatorAccount1 })
+      // Delegate half default stake amount
+      await delegateManager.delegateStake(
+        stakerAccount1,
+        delegateAmount,
+        { from: delegatorAccount1 }
+      )
+    })
+
+    it('Submit proposal via delegator address', async () => {
+      let delegationFromContract = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      let totalStakedForDelegator = await staking.totalStakedFor(delegatorAccount1)
+      assert.isTrue(delegationFromContract.eq(delegateAmount), "Expected equivalent value in contract")
+      assert.isTrue(totalStakedForDelegator.eq(_lib.toBN(0)), "No direct stake expected")
+      let submitProposalTxReceipt = await governance.submitProposal(
+        delegateManagerKey,
+        callValue,
+        functionSignature,
+        callData,
+        proposalName,
+        proposalDescription,
+        { from: delegatorAccount1 }
+      )
+      await expectEvent.inTransaction(
+        submitProposalTxReceipt.tx,
+        Governance,
+        'ProposalSubmitted',
+        {
+          proposalId: _lib.toBN(1),
+          proposer: delegatorAccount1,
+          name: proposalName,
+          description: proposalDescription
+        }
+      )
+    })
+
+    it('Submit proposal via delegator address w/no active stake', async () => {
+      let delegationFromContract = await delegateManager.getTotalDelegatorStake(delegatorAccount1)
+      let totalStakedForDelegator = await staking.totalStakedFor(delegatorAccount1)
+      assert.isTrue(delegationFromContract.eq(delegateAmount), "Expected equivalent value in contract")
+      assert.isTrue(totalStakedForDelegator.eq(_lib.toBN(0)), "No direct stake expected")
+      await delegateManager.requestUndelegateStake(
+        stakerAccount1,
+        delegationFromContract,
+        { from: delegatorAccount1 }
+      )
+      await _lib.assertRevert(
+        governance.submitProposal(
+          delegateManagerKey,
+          callValue,
+          functionSignature,
+          callData,
+          proposalName,
+          proposalDescription,
+          { from: delegatorAccount1 }
+        ),
+        "Governance: Proposer must be address with non-zero total active stake or be guardianAddress"
+      )
+    })
+
+    it('Submit proposal from invalid address', async () => {
+      // Address with no stake in ServiceProviderFactory or DelegateManager
+      let invalidAddress = accounts[14]
+      let totalDelegated = await delegateManager.getTotalDelegatorStake(invalidAddress)
+      assert.isTrue(totalDelegated.eq(_lib.toBN(0)), "Expect 0")
+      let totalStaked = await staking.totalStakedFor(invalidAddress)
+      assert.isTrue(totalStaked.eq(_lib.toBN(0)), "Expect 0")
+      let spInfo = await serviceProviderFactory.getServiceProviderDetails(invalidAddress)
+      assert.isTrue(spInfo.deployerStake.eq(_lib.toBN(0)), "Expect 0")
+      await _lib.assertRevert(
+        governance.submitProposal(
+          delegateManagerKey,
+          callValue,
+          functionSignature,
+          callData,
+          proposalName,
+          proposalDescription,
+          { from: invalidAddress }
+        ),
+        "Governance: Proposer must be address with non-zero total active stake or be guardianAddress"
+      )
+    })
+
+    it('Submit proposal via service provider address w/no active stake', async () => {
+      // Account with all stake locked up in sp factory
+      // Expected to fail
+      await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount, { from: stakerAccount1 })
+      await _lib.assertRevert(
+        governance.submitProposal(
+          delegateManagerKey,
+          callValue,
+          functionSignature,
+          callData,
+          proposalName,
+          proposalDescription,
+          { from: stakerAccount1 }
+        ),
+        "Governance: Proposer must be address with non-zero total active stake or be guardianAddress"
+      )
+    })
+
+    it('Submit proposal via service provider + delegator address w/no active stake', async () => {
+      // Account has delegated some stake, and has deployer stake
+      // Account has locked up all stake in sp factory, delegate manager
+      // Expected fail
+      // Approve staking transfer
+      await token.transfer(stakerAccount1, delegateAmount, { from: proxyDeployerAddress })
+      await token.approve(staking.address, delegateAmount, { from: stakerAccount1 })
+
+      // Delegate half default stake amount from stakerAccount1 -> stakerAccount2
+      await delegateManager.delegateStake(
+        stakerAccount2,
+        delegateAmount,
+        { from: stakerAccount1 }
+      )
+
+      // Lock up funds in service provider factory
+      await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount, { from: stakerAccount1 })
+
+    })
+
+    // TODO: Test quorum changes somehow?
   })
 
   describe('Proposal end-to-end test - slash action', async () => {
