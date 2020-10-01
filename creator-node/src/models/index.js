@@ -10,7 +10,7 @@ const basename = path.basename(__filename)
 const db = {}
 
 const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
-  logging: true,
+  logging: globalConfig.get('printSequelizeLogs'),
   operatorsAliases: false,
   pool: {
     max: 100,
