@@ -306,8 +306,8 @@ describe('Test createNewDataRecord()', () => {
       await transaction.commit()
     } catch (e) {
       await transaction.rollback()
-      assert.strictEqual(e.name, 'SequelizeForeignKeyConstraintError')
-      assert.strictEqual(e.original.message, 'insert or update on table "Files" violates foreign key constraint "Files_cnodeUserUUID_clock_fkey"')
+      assert.strictEqual(e.name, 'SequelizeUniqueConstraintError')
+      assert.strictEqual(e.original.message, 'duplicate key value violates unique constraint "Files_unique_(cnodeUserUUID,clock)"')
     }
   })
 })

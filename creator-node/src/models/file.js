@@ -85,8 +85,6 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: 'cnodeUserUUID',
       onDelete: 'RESTRICT'
     })
-    // File also has a composite foreign key on ClockRecords (cnodeUserUUID, clock)
-    // sequelize does not support composite foreign keys
   }
 
   // TODO - why is this not externally accessible?
