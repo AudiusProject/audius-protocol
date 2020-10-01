@@ -1,3 +1,4 @@
+import { before } from 'lodash'
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
@@ -608,7 +609,7 @@ contract('Governance.sol', async (accounts) => {
     }
   }
 
-  describe('SubmitProposal Active Stake Validation', async () => {
+  describe('Submit Proposal Active Stake Validation', async () => {
     let targetAddress = stakerAccount2
     let callValue = _lib.toBN(0)
     let slashAmount = _lib.toBN(1)
@@ -1159,6 +1160,61 @@ contract('Governance.sol', async (accounts) => {
           proposalDescription,
           { from: proposerAddress }
         )
+      })
+
+      describe('Active stake validation', async () => {
+        let delegateAmount = defaultStakeAmount.div(_lib.toBN(2))
+        beforeEach(async() => {
+          // Approve staking transfer
+          await token.approve(staking.address, delegateAmount, { from: delegatorAccount1 })
+          // Delegate half default stake amount
+          await delegateManager.delegateStake(stakerAccount1, delegateAmount, { from: delegatorAccount1 })
+        })
+
+        // Validate behavior with particular stake distributions
+        it('Submit vote from service provider only address w/partial active stake', async () => {
+          const vote = Vote.No
+          let decreaseAmount = defaultStakeAmount.div(_lib.toBN(2))
+          // Lock up partial funds in both spfactory, delegatemanager 
+          await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
+          let stakeInfo = await getStakeInfo(voter1Address)
+          const voteTxReceipt = await governance.submitVote(proposalId, vote, { from: voter1Address })
+          await expectEvent.inTransaction(
+            voteTxReceipt.tx,
+            Governance,
+            'ProposalVoteSubmitted',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _voter: voter1Address,
+              _vote: _lib.toBN(vote),
+              _voterStake: stakeInfo.totalActiveStake
+            }
+          )
+        })
+
+        it('Submit vote from delegator-only address w/partially undelegated stake', async () => {
+          const vote = Vote.No
+          let undelegateAmount = delegateAmount.div(_lib.toBN(2))
+          await delegateManager.requestUndelegateStake(stakerAccount1, undelegateAmount, { from: delegatorAccount1 })
+          // Lock up partial funds in both spfactory, delegatemanager 
+          await serviceProviderFactory.requestDecreaseStake(undelegateAmount, { from: voter1Address })
+          let stakeInfo = await getStakeInfo(delegatorAccount1)
+          assert.isTrue(stakeInfo.totalDeployerStake.eq(_lib.toBN(0)))
+          assert.isTrue(stakeInfo.totalStake.eq(delegateAmount))
+          assert.isTrue(stakeInfo.totalActiveStake.eq(delegateAmount.sub(undelegateAmount)))
+          const voteTxReceipt = await governance.submitVote(proposalId, vote, { from: delegatorAccount1 })
+          await expectEvent.inTransaction(
+            voteTxReceipt.tx,
+            Governance,
+            'ProposalVoteSubmitted',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _voter: delegatorAccount1,
+              _vote: _lib.toBN(vote),
+              _voterStake: stakeInfo.totalActiveStake
+            }
+          )
+        })
       })
 
       it('Fail to vote with invalid proposalId', async () => {
