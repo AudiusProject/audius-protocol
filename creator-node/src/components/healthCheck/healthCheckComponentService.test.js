@@ -33,7 +33,9 @@ describe('Test Health Check', function () {
       service: 'creator-node',
       healthy: true,
       git: undefined,
-      selectedDiscoveryProvider: 'none'
+      selectedDiscoveryProvider: 'none',
+      spID: config.get('spID'),
+      creatorNodeEndpoint: config.get('creatorNodeEndpoint')
     })
   })
 })
