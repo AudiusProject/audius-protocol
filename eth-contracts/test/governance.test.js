@@ -1242,7 +1242,7 @@ contract('Governance.sol', async (accounts) => {
           assert.isTrue(voteMagnitude.eq(stakeInfo.totalActiveStake))
         })
 
-        it('Submit vote from delegator-only addr w/no active stake', async () => {
+        it('Submit vote from delegator-only address w/no active stake', async () => {
           const vote = Vote.No
           let undelegateAmount = delegateAmount
           await delegateManager.requestUndelegateStake(stakerAccount1, undelegateAmount, { from: delegatorAccount1 })
@@ -1256,6 +1256,7 @@ contract('Governance.sol', async (accounts) => {
         })
 
         it('Submit vote from invalid address', async () => {
+          const vote = Vote.No
           // Address with no stake in ServiceProviderFactory or DelegateManager
           const invalidAddress = accounts[14]
           const totalDelegated = await delegateManager.getTotalDelegatorStake(invalidAddress)
@@ -1264,6 +1265,89 @@ contract('Governance.sol', async (accounts) => {
           assert.isTrue(totalDelegated.eq(_lib.toBN(0)), "Expect 0")
           assert.isTrue(totalStaked.eq(_lib.toBN(0)), "Expect 0")
           assert.isTrue(spInfo.deployerStake.eq(_lib.toBN(0)), "Expect 0")
+          await submitAndVerifyActiveStakeVoteFailure(proposalId, vote, invalidAddress)
+        })
+
+        it('Submit vote from service provider only address w/no active stake', async () => {
+          const vote = Vote.No
+          // Initiate decrease stake request of all assets
+          await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount, { from: stakerAccount1 })
+          let stakeInfo = await getStakeInfo(stakerAccount1)
+          assert.isTrue(stakeInfo.totalStake.eq(defaultStakeAmount))
+          assert.isTrue(stakeInfo.totalDeployerStake.eq(defaultStakeAmount))
+          assert.isTrue(stakeInfo.totalDelegatedStake.eq(_lib.toBN(0)))
+          assert.isTrue(stakeInfo.totalActiveStake.eq(_lib.toBN(0)))
+          await submitAndVerifyActiveStakeVoteFailure(proposalId, vote, stakerAccount1)
+        })
+
+        it('Submit vote from delegator + sp address w/partial active stake', async () => {
+          const vote = Vote.No
+          await token.transfer(stakerAccount1, delegateAmount, { from: proxyDeployerAddress })
+          await token.approve(staking.address, delegateAmount, { from: stakerAccount1 })
+          // Delegate half default stake amount from stakerAccount1 -> stakerAccount2
+          // Now this account has staked through serviceProviderFactory AND delegateManager
+          await delegateManager.delegateStake(stakerAccount2, delegateAmount, { from: stakerAccount1 })
+          // Lock up partial funds in both spfactory, delegatemanager 
+          await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount.div(_lib.toBN(2)), { from: stakerAccount1 })
+          await delegateManager.requestUndelegateStake(stakerAccount2, delegateAmount.div(_lib.toBN(3)), { from: stakerAccount1 })
+          let stakeInfo = await getStakeInfo(stakerAccount1)
+          await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, stakerAccount1, stakeInfo.totalActiveStake)
+        })
+
+        it('Submit vote from delegator + sp address w/no active stake', async () => {
+          const vote = Vote.No
+          await token.transfer(stakerAccount1, delegateAmount, { from: proxyDeployerAddress })
+          await token.approve(staking.address, delegateAmount, { from: stakerAccount1 })
+          // Delegate half default stake amount from stakerAccount1 -> stakerAccount2
+          // Now this account has staked through serviceProviderFactory AND delegateManager
+          await delegateManager.delegateStake(stakerAccount2, delegateAmount, { from: stakerAccount1 })
+          await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount, { from: stakerAccount1 })
+          await delegateManager.requestUndelegateStake(stakerAccount2, delegateAmount, { from: stakerAccount1 })
+          let stakeInfo = await getStakeInfo(stakerAccount1)
+          assert.isTrue(stakeInfo.totalActiveStake.eq(_lib.toBN(0)), "Expect zero stake")
+          await submitAndVerifyActiveStakeVoteFailure(proposalId, vote, stakerAccount1)
+        })
+
+        it('Update vote fails to increase magnitude past initial vote, even if new value has been staked by this address', async () => {
+          const voteYes = Vote.No
+          const voteNo = Vote.No
+          let stakeInfo1 = await getStakeInfo(stakerAccount1)
+
+          // Submit vote with initial state, from staker account
+          await submitAndVerifyActiveStakeVoteSuccess(proposalId, voteNo, stakerAccount1, stakeInfo1.totalActiveStake)
+
+          // Increase stake for account
+          let increaseAmount = defaultStakeAmount.div(_lib.toBN(2))
+          await token.transfer(stakerAccount1, increaseAmount, { from: proxyDeployerAddress })
+          await token.approve(staking.address, increaseAmount, { from: stakerAccount1 })
+          await serviceProviderFactory.increaseStake(increaseAmount, { from: stakerAccount1 })
+
+          // Confirm updated stake on chain
+          let stakeInfo2 = await getStakeInfo(stakerAccount1)
+          assert.isTrue(stakeInfo2.totalStake.eq(stakeInfo1.totalDeployerStake.add(increaseAmount)), "Mismatched state")
+
+          // Confirm voter active stake has changed
+          assert.isTrue((stakeInfo2.totalActiveStake.sub(stakeInfo1.totalActiveStake)).eq(increaseAmount), "Expect increase in active stake")
+
+          // Submit vote update 
+          // Confirm that voter stake is equal to the initial active, and note active prior to update
+          const voteTx3 = await governance.updateVote(proposalId, voteYes, { from: stakerAccount1 })
+          await expectEvent.inTransaction(
+            voteTx3.tx,
+            Governance,
+            'ProposalVoteUpdated',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _voter: stakerAccount1,
+              _vote: _lib.toBN(voteYes),
+              _voterStake: stakeInfo1.totalActiveStake,
+              _previousVote: _lib.toBN(voteNo)
+            }
+          )
+          // Confirm vote magnitude after the update is equal to initial vote magnitude, NOT totalActiveStake after increase
+          const {vote: voterVote, voteMagnitude} = await governance.getVoteInfoByProposalAndVoter(proposalId, stakerAccount1)
+          assert.equal(voterVote, voteYes)
+          assert.isTrue(voteMagnitude.eq(stakeInfo1.totalActiveStake))
         })
       })
 
