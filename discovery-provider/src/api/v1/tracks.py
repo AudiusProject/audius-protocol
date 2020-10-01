@@ -194,7 +194,7 @@ def get_trending(args):
     }
 
     # decode and add user_id if necessary
-    if (current_user_id):
+    if current_user_id:
         decoded_id = decode_string_id(current_user_id)
         args["current_user_id"] = decoded_id
 

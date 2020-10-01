@@ -1,6 +1,6 @@
 import logging # pylint: disable=C0302
 
-from src.models import Track
+from src.models import AggregatePlays, Track, User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_current_user_id, paginate_query, parse_sort_param, \
@@ -10,8 +10,15 @@ logger = logging.getLogger(__name__)
 
 def get_tracks(args):
     tracks = []
+    current_user_id = args.get("current_user_id")
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
+        if "handle" in args:
+            handle = args.get("handle")
+            user_id = session.query(User.user_id).filter(User.handle == handle).first()
+            args["user_id"] = user_id
+
         # Create initial query
         base_query = session.query(Track)
         base_query = base_query.filter(Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None)
@@ -47,21 +54,32 @@ def get_tracks(args):
                 Track.blocknumber >= min_block_number
             )
 
-        whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
-        base_query = parse_sort_param(base_query, Track, whitelist_params)
+        if "sort" in args:
+            if args["sort"] == "date":
+                logger.warning('sort by date')
+                base_query = base_query.order_by(Track.created_at.desc(), Track.track_id.desc())
+            elif args["sort"] == "plays":
+                logger.info("sort by plays")
+                base_query = base_query.join(
+                    AggregatePlays,
+                    AggregatePlays.play_item_id == Track.track_id
+                ).order_by(
+                    AggregatePlays.count.desc()
+                )
+        else:
+            whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
+            base_query = parse_sort_param(base_query, Track, whitelist_params)
         query_results = paginate_query(base_query).all()
         tracks = helpers.query_result_to_list(query_results)
 
         track_ids = list(map(lambda track: track["track_id"], tracks))
-
-        current_user_id = get_current_user_id(required=False)
 
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if args.get("with_users", False):
             user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list)
+            users = get_users_by_id(session, user_id_list, current_user_id)
             for track in tracks:
                 user = users[track['owner_id']]
                 if user:
