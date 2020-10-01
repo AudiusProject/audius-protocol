@@ -20,14 +20,16 @@ playlists_response = make_response("playlist_response", ns, fields.List(fields.N
 full_playlists_response = make_response("full_playlist_response", full_ns, fields.List(fields.Nested(full_playlist_model)))
 
 def get_playlist(playlist_id, current_user_id):
+    """Returns a single playlist, or None"""
     args = {
         "playlist_id": [playlist_id],
         "with_users": True,
         "current_user_id": current_user_id
     }
     playlists = get_playlists(args)
-    playlists = list(map(extend_playlist, playlists))
-    return playlists
+    if playlists:
+        return extend_playlist(playlists[0])
+    return None
 
 def get_tracks_for_playlist(playlist_id, current_user_id=None):
     args = {"playlist_id": playlist_id, "with_users": True, "current_user_id": current_user_id}
@@ -55,8 +57,8 @@ class Playlist(Resource):
     def get(self, playlist_id):
         """Fetch a playlist."""
         playlist_id = decode_with_abort(playlist_id, ns)
-        playlists =  get_playlist(playlist_id, None)
-        response = success_response(playlists)
+        playlist = get_playlist(playlist_id, None)
+        response = success_response([playlist] if playlist else [])
         return response
 
 playlist_tracks_response = make_response("playlist_tracks_response", ns, fields.List(fields.Nested(track)))
@@ -75,11 +77,11 @@ class FullPlaylist(Resource):
         if args.get("user_id"):
             current_user_id = decode_string_id(args["user_id"])
 
-        playlists = get_playlist(playlist_id, current_user_id)
-        if playlists:
+        playlist = get_playlist(playlist_id, current_user_id)
+        if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
-            playlists[0]["tracks"] = tracks
-        response = success_response(playlists)
+            playlist["tracks"] = tracks
+        response = success_response([playlist] if playlist else [])
         return response
 
 @ns.route("/<string:playlist_id>/tracks")
