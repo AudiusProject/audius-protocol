@@ -608,7 +608,7 @@ contract('Governance.sol', async (accounts) => {
     }
   }
 
-  describe('Active stake verification', async () => {
+  describe('SubmitProposal Active Stake Validation', async () => {
     let targetAddress = stakerAccount2
     let callValue = _lib.toBN(0)
     let slashAmount = _lib.toBN(1)
@@ -631,7 +631,7 @@ contract('Governance.sol', async (accounts) => {
       )
     })
 
-    const submitAndVerifySlashProposal = async(senderAccount, ) => {
+    const submitAndVerifySlashProposalSubmitted = async(senderAccount, ) => {
       let submitProposalTxReceipt = await governance.submitProposal(
         delegateManagerKey,
         callValue,
@@ -675,7 +675,7 @@ contract('Governance.sol', async (accounts) => {
       let totalStakedForDelegator = await staking.totalStakedFor(delegatorAccount1)
       assert.isTrue(delegationFromContract.eq(delegateAmount), "Expected equivalent value in contract")
       assert.isTrue(totalStakedForDelegator.eq(_lib.toBN(0)), "No direct stake expected")
-      await submitAndVerifySlashProposal(delegatorAccount1)
+      await submitAndVerifySlashProposalSubmitted(delegatorAccount1)
     })
 
     it('Submit proposal from delegator-only address w/partially undelegated stake', async () => {
@@ -692,7 +692,7 @@ contract('Governance.sol', async (accounts) => {
       let stakeInfo = await getStakeInfo(delegatorAccount1)
       assert.isTrue(stakeInfo.totalActiveStake.gt(_lib.toBN(0)), "Expect some active stake")
       assert.isTrue(stakeInfo.totalLockedUpStake.gt(_lib.toBN(0)), "Expect some locked stake")
-      await submitAndVerifySlashProposal(delegatorAccount1)
+      await submitAndVerifySlashProposalSubmitted(delegatorAccount1)
     })
 
     it('Submit proposal via delegator address w/no active stake', async () => {
@@ -729,6 +729,22 @@ contract('Governance.sol', async (accounts) => {
       await submitAndVerifySlashProposalFailure(stakerAccount1)
     })
 
+    it('Submit proposal from delegator + sp address w/partial active stake', async () => {
+      await token.transfer(stakerAccount1, delegateAmount, { from: proxyDeployerAddress })
+      await token.approve(staking.address, delegateAmount, { from: stakerAccount1 })
+
+      // Delegate half default stake amount from stakerAccount1 -> stakerAccount2
+      await delegateManager.delegateStake(
+        stakerAccount2,
+        delegateAmount,
+        { from: stakerAccount1 }
+      )
+      // Lock up partial funds in both spfactory, delegatemanager 
+      await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount.div(_lib.toBN(2)), { from: stakerAccount1 })
+      await delegateManager.requestUndelegateStake(stakerAccount2, delegateAmount.div(_lib.toBN(3)), { from: stakerAccount1 })
+      await submitAndVerifySlashProposalSubmitted(stakerAccount1)
+    })
+
     it('Submit proposal via service provider + delegator address w/no active stake', async () => {
       // Account has delegated some stake, and has deployer stake
       // Account has locked up all stake in sp factory, delegate manager
@@ -742,7 +758,7 @@ contract('Governance.sol', async (accounts) => {
         delegateAmount,
         { from: stakerAccount1 }
       )
-      // Lock up funds in service provider factory
+      // Lock up funds in service provider factory and delegate manager by initiating withrdawal
       await serviceProviderFactory.requestDecreaseStake(defaultStakeAmount, { from: stakerAccount1 })
       await delegateManager.requestUndelegateStake(stakerAccount2, delegateAmount, { from: stakerAccount1 })
       let stakeInfo = await getStakeInfo(stakerAccount1)
