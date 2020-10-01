@@ -2,54 +2,29 @@ const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
 
 const models = require('../models')
-const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
+const { saveFileFromBuffer } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const DBManager = require('../dbManager')
 
 module.exports = function (app) {
-  /**
-   * Create AudiusUser from provided metadata, and make metadata available to network
-   */
+  /** Create AudiusUser from provided metadata, and make metadata available to network. */
   app.post('/audius_users/metadata', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body.metadata
+
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const cnodeUserUUID = req.session.cnodeUserUUID
+    let multihash, fileUUID
 
-    // Save file from buffer to IPFS and disk
-    let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
-      multihash = resp.multihash
-      dstPath = resp.dstPath
+      const saveFileFromBufferResp = await saveFileFromBuffer(req, metadataBuffer, 'metadata')
+      multihash = saveFileFromBufferResp.multihash
+      fileUUID = saveFileFromBufferResp.fileUUID
     } catch (e) {
-      return errorResponseServerError(`saveFileFromBufferToIPFSAndDisk op failed: ${e}`)
+      return errorResponseServerError(`Could not save file to disk, ipfs, and/or db: ${e}`)
     }
 
-    // Record metadata file entry in DB
-    const transaction = await models.sequelize.transaction()
-    let fileUUID
-    try {
-      const createFileQueryObj = {
-        multihash,
-        sourceFile: req.fileName,
-        storagePath: dstPath,
-        type: 'metadata' // TODO - replace with models enum
-      }
-      const file = await DBManager.createNewDataRecord(createFileQueryObj, cnodeUserUUID, models.File, transaction)
-      fileUUID = file.fileUUID
-      await transaction.commit()
-    } catch (e) {
-      await transaction.rollback()
-      return errorResponseServerError(`Could not save to db: ${e}`)
-    }
-
-    return successResponse({
-      'metadataMultihash': multihash,
-      'metadataFileUUID': fileUUID
-    })
+    return successResponse({ 'metadataMultihash': multihash, 'metadataFileUUID': fileUUID })
   }))
 
   /**
@@ -73,7 +48,7 @@ module.exports = function (app) {
     // Fetch metadataJSON for metadataFileUUID.
     const file = await models.File.findOne({ where: { fileUUID: metadataFileUUID, cnodeUserUUID } })
     if (!file) {
-      return errorResponseBadRequest(`No file db record found for provided metadataFileUUID ${metadataFileUUID}.`)
+      return errorResponseBadRequest(`No file found for provided metadataFileUUID ${metadataFileUUID}.`)
     }
     let metadataJSON
     try {
@@ -91,26 +66,26 @@ module.exports = function (app) {
       return errorResponseBadRequest(e.message)
     }
 
-    // Record AudiusUser entry + update CNodeUser entry in DB
-    const transaction = await models.sequelize.transaction()
+    const t = await models.sequelize.transaction()
     try {
-      const createAudiusUserQueryObj = {
+      // Insert / update audiusUser entry on db.
+      const audiusUser = await models.AudiusUser.upsert({
+        cnodeUserUUID,
         metadataFileUUID,
         metadataJSON,
         blockchainId: blockchainUserId,
         coverArtFileUUID,
         profilePicFileUUID
-      }
-      await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
+      }, { transaction: t, returning: true })
 
-      // Update cnodeUser.latestBlockNumber
-      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
+      // Update cnodeUser's latestBlockNumber.
+      await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction: t })
 
-      await transaction.commit()
+      await t.commit()
       triggerSecondarySyncs(req)
-      return successResponse()
+      return successResponse({ audiusUserUUID: audiusUser.audiusUserUUID })
     } catch (e) {
-      await transaction.rollback()
+      await t.rollback()
       return errorResponseServerError(e.message)
     }
   }))

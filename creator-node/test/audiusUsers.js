@@ -5,7 +5,6 @@ const path = require('path')
 const fs = require('fs')
 
 const models = require('../src/models')
-
 const ipfsClient = require('../src/ipfsClient')
 const config = require('../src/config')
 const BlacklistManager = require('../src/blacklistManager')
@@ -16,7 +15,7 @@ const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiHelpers')
 
-describe('test AudiusUsers with mocked IPFS', function () {
+describe('test AudiusUsers', function () {
   let app, server, session, ipfsMock, libsMock
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -46,23 +45,23 @@ describe('test AudiusUsers with mocked IPFS', function () {
     await server.close()
   })
 
-  it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
+  it('creates Audius user', async function () {
     const metadata = { test: 'field1' }
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('testCIDLink')
 
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'testCIDLink' || !resp.body.metadataFileUUID) {
+    if (resp.body.metadataMultihash !== 'testCIDLink') {
       throw new Error('invalid return data')
     }
   })
 
-  it('successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
+  it('completes Audius user creation', async function () {
     const metadata = { test: 'field1' }
 
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
@@ -71,7 +70,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
 
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({ metadata })
       .expect(200)
 
@@ -81,7 +80,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
 
     await request(app)
       .post('/audius_users')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
       .expect(200)
   })
@@ -90,7 +89,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
 // Below block uses actual ipfsClient (unlike first describe block), hence
 // another describe block for this purpose
 // NOTE: these tests mock ipfs client errors; otherwise, for happy path, uses actual ipfsClient
-describe('Test AudiusUsers with real IPFS', function () {
+describe('tests /audius_users/metadata metadata upload with actual ipfsClient for happy path', function () {
   let app, server, session, libsMock, ipfs
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -123,7 +122,7 @@ describe('Test AudiusUsers with real IPFS', function () {
   it('should fail if metadata is not found in request body', async function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({ dummy: 'data' })
       .expect(500)
 
@@ -137,18 +136,18 @@ describe('Test AudiusUsers with real IPFS', function () {
     const metadata = { metadata: 'spaghetti' }
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send(metadata)
       .expect(500)
 
-    assert.deepStrictEqual(resp.body.error, 'saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
+    assert.deepStrictEqual(resp.body.error, 'Could not save file to disk, ipfs, and/or db: Error: ipfs add failed!')
   })
 
-  it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
+  it('should successfully add metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({ spaghetti: 'spaghetti' })
     const resp = await request(app)
       .post('/audius_users/metadata')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({ metadata })
       .expect(200)
 
@@ -181,13 +180,5 @@ describe('Test AudiusUsers with real IPFS', function () {
     // check that the ipfs content matches what we expect
     const metadataBuffer = Buffer.from(JSON.stringify(metadata))
     assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
-  })
-
-  it('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
-
-  })
-
-  it('TODO - multiple uploads', async function () {
-
   })
 })

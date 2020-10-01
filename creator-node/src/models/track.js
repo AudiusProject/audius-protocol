@@ -2,18 +2,14 @@
 
 module.exports = (sequelize, DataTypes) => {
   const Track = sequelize.define('Track', {
+    trackUUID: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      primaryKey: true,
+      defaultValue: DataTypes.UUIDV4
+    },
     cnodeUserUUID: {
       type: DataTypes.UUID,
-      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
-      allowNull: false
-    },
-    clock: {
-      type: DataTypes.INTEGER,
-      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
-      allowNull: false
-    },
-    blockchainId: {
-      type: DataTypes.BIGINT,
       allowNull: false
     },
     metadataFileUUID: {
@@ -24,18 +20,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.JSONB,
       allowNull: false
     },
+    blockchainId: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      unique: true
+    },
     coverArtFileUUID: {
       type: DataTypes.UUID,
       allowNull: true
     }
-  }, {
-    indexes: [
-      {
-        unique: true,
-        fields: ['blockchainId', 'clock']
-      }
-    ]
-  })
+  }, {})
 
   Track.associate = function (models) {
     Track.belongsTo(models.CNodeUser, {
@@ -43,7 +37,12 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'cnodeUserUUID',
       onDelete: 'RESTRICT'
     })
-    Track.belongsTo(models.File, {
+    Track.belongsTo(models.File, { // belongsTo, or hasMany?
+      foreignKey: 'trackUUID',
+      targetKey: 'trackUUID',
+      onDelete: 'RESTRICT'
+    })
+    Track.belongsTo(models.File, { // belongsTo, or hasOne
       foreignKey: 'metadataFileUUID',
       targetKey: 'fileUUID',
       onDelete: 'RESTRICT'

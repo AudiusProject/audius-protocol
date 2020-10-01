@@ -99,7 +99,7 @@ async function triggerSecondarySyncs (req) {
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
-    req.logger.error(`SIDTEST: primary ${primary} calling sync against: ${secondaries}`)
+
     await Promise.all(secondaries.map(async secondary => {
       if (!secondary || !_isFQDN(secondary)) return
       const axiosReq = {

@@ -11,12 +11,8 @@ async function createStarterCNodeUser () {
 }
 
 async function createStarterCNodeUserWithKey (walletPublicKey) {
-  const cnodeUser = await CNodeUser.create({ walletPublicKey, clock: 0 })
-  const sessionToken = await sessionManager.createSession(cnodeUser.cnodeUserUUID)
-  return {
-    cnodeUserUUID: cnodeUser.cnodeUserUUID,
-    sessionToken: sessionToken
-  }
+  const cnodeUser = await CNodeUser.create({ walletPublicKey })
+  return sessionManager.createSession(cnodeUser.cnodeUserUUID)
 }
 
 module.exports = { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants }
