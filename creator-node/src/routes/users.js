@@ -15,9 +15,6 @@ const CHALLENGE_TTL_SECONDS = 120
 const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
-  /**
-   * Creates CNodeUser table entry if one doesn't already exist
-   */
   app.post('/users', handleResponse(async (req, res, next) => {
     let walletAddress = req.body.walletAddress
     if (!ethereumUtils.isValidAddress(walletAddress)) {
@@ -35,12 +32,7 @@ module.exports = function (app) {
       return successResponse() // do nothing if user already exists
     }
 
-    // Create CNodeUser entry for wallet with clock = 0
-    await models.CNodeUser.create({
-      walletPublicKey: walletAddress,
-      clock: 0
-    })
-
+    await models.CNodeUser.create({ walletPublicKey: walletAddress })
     return successResponse()
   }))
 
@@ -152,22 +144,5 @@ module.exports = function (app) {
   app.post('/users/logout', authMiddleware, syncLockMiddleware, handleResponse(async (req, res, next) => {
     await sessionManager.deleteSession(req.get(sessionManager.sessionTokenHeader))
     return successResponse()
-  }))
-
-  /**
-   * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
-   */
-  app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
-    let walletPublicKey = req.params.walletPublicKey
-
-    walletPublicKey = walletPublicKey.toLowerCase()
-
-    const cnodeUser = await models.CNodeUser.findOne({
-      where: { walletPublicKey }
-    })
-
-    const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
-
-    return successResponse({ clockValue })
   }))
 }

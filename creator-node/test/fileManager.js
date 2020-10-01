@@ -6,7 +6,7 @@ const fsExtra = require('fs-extra')
 const path = require('path')
 
 const { ipfs } = require('../src/ipfsClient')
-const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
+const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBuffer } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
 
@@ -24,8 +24,7 @@ const req = {
     cnodeUserUUID: uuid()
   },
   logger: {
-    info: () => {},
-    error: () => {}
+    info: () => {}
   },
   app: {
     get: key => {
@@ -39,8 +38,9 @@ const req = {
 const segmentsDirPath = 'test/test-segments'
 const sourceFile = 'segment001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
+const fileType = 'track'
 
-// consts used for testing saveFileFromBufferToIPFSAndDisk()
+// consts used for testing saveFileFromBuffer()
 const metadata = {
   test: 'field1',
   track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
@@ -72,7 +72,7 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileToIPFSFromFS(reqOverride, srcPath)
+        await saveFileToIPFSFromFS(reqOverride, srcPath, fileType, sourceFile)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -88,7 +88,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
         assert.fail('Should not have passed if ipfs is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs is down!')
@@ -104,10 +104,26 @@ describe('test fileManager', () => {
       sinon.stub(fs, 'copyFileSync').throws(new Error('Failed to copy files!!'))
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
+      }
+    })
+
+    /**
+     * Given: a file is being saved to ipfs from fs
+     * When: the db connection is down
+     * Then: an error is thrown
+     */
+    it('should throw an error if db connection is down', async () => {
+      sinon.stub(models.File, 'findOrCreate').rejects(new Error('Failed to find or create file!!!'))
+
+      try {
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
+        assert.fail('Should not have passed if db connection is down.')
+      } catch (e) {
+        assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
       }
     })
 
@@ -120,10 +136,10 @@ describe('test fileManager', () => {
      *  - that segment should be present in IPFS
      */
     it('should pass saving file to ipfs from fs (happy path)', async () => {
-      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
+      sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: 'data' }])
 
       try {
-        await saveFileToIPFSFromFS(req, srcPath)
+        await saveFileToIPFSFromFS(req, srcPath, fileType, sourceFile)
       } catch (e) {
         assert.fail(e.message)
       }
@@ -151,8 +167,8 @@ describe('test fileManager', () => {
     })
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToIPFSAndDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileFromBufferToIPFSAndDisk()', () => {
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBuffer() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  describe('test saveFileFromBuffer()', () => {
     /**
      * Given: a file buffer is being saved to ipfs, fs, and db
      * When: cnodeUserUUID is not present
@@ -170,7 +186,7 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(reqOverride, buffer)
+        await saveFileFromBuffer(reqOverride, buffer, 'metadata')
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -186,7 +202,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        await saveFileFromBuffer(req, buffer, 'metadata')
         assert.fail('Should not have passed if ipfs is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs is down!')
@@ -202,10 +218,26 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'add').resolves([{ hash: 'bad/path/fail' }]) // pass bad data to writeFile()
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        await saveFileFromBuffer(req, buffer, 'metadata')
         assert.fail('Should not have passed if writing to filesystem fails.')
       } catch (e) {
         assert.ok(e.message)
+      }
+    })
+
+    /**
+     * Given: a file buffer is being saved to ipfs, fs, and db
+     * When: adding reference to db fails
+     * Then: an error is thrown
+     */
+    it('should throw an error if writing reference to db fails', async () => {
+      sinon.stub(models.File, 'findOrCreate').rejects(new Error('Failed to find or create file!!!'))
+
+      try {
+        await saveFileFromBuffer(req, buffer, 'metadata')
+        assert.fail('Should not have if db connection is down.')
+      } catch (e) {
+        assert.deepStrictEqual(e.message, 'Failed to find or create file!!!')
       }
     })
 
@@ -215,11 +247,11 @@ describe('test fileManager', () => {
     * Then: ipfs, fs, and db should have the buffer contents
     */
     it('should pass saving file from buffer (happy path)', async () => {
-      sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
+      sinon.stub(models.File, 'findOrCreate').returns([{ dataValues: { fileUUID: 'uuid' } }])
 
       let resp
       try {
-        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        resp = await saveFileFromBuffer(req, buffer, 'metadata')
       } catch (e) {
         assert.fail(e.message)
       }

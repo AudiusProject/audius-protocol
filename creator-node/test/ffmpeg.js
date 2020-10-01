@@ -29,6 +29,7 @@ describe('test segmentFile()', () => {
       await segmentFile(null, null, {})
       assert.fail('Should have thrown error with bad params')
     } catch (e) {
+      console.error(e)
       assert.ok(e.message)
     }
   })
@@ -46,6 +47,7 @@ describe('test segmentFile()', () => {
       await segmentFile(fileDir, fileName, {})
       assert.fail('Should have thrown error when segmenting a bad track (image)')
     } catch (e) {
+      console.error(e)
       assert.deepStrictEqual(e.message, 'FFMPEG Error')
     }
   })
@@ -62,6 +64,7 @@ describe('test segmentFile()', () => {
     try {
       await segmentFile(fileDir, fileName, {})
     } catch (e) {
+      console.error(e)
       assert.fail(e.message)
     }
 

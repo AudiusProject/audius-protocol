@@ -3,8 +3,8 @@ const fs = require('fs')
 
 const SEGMENT_REGEXP = /(segment[0-9]*.ts)/
 
-// Parse m3u8 file from HLS output and return map(segment filePath (segmentName) => segment duration)
-async function getSegmentsDuration (filename, filedir) {
+// Parse m3u8 file from HLS output and return mapped segment durations
+async function getSegmentsDuration (req, segmentPath, filename, filedir) {
   return new Promise((resolve, reject) => {
     try {
       let splitResults = filename.split('.')

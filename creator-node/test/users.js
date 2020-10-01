@@ -11,7 +11,6 @@ const { getLibsMock } = require('./lib/libsMock')
 describe('test Users', function () {
   let app, server, ipfsMock, libsMock
 
-  /** Setup app + global test vars */
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
@@ -217,15 +216,13 @@ describe('test Users', function () {
     const session = await createStarterCNodeUser()
     await request(app)
       .post('/users/logout')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({})
       .expect(200)
     await request(app)
       .post('/users/logout')
-      .set('X-Session-ID', session.sessionToken)
+      .set('X-Session-ID', session)
       .send({})
       .expect(401)
   })
-
-  it('TODO - clock_status test', async function () {})
 })
