@@ -420,7 +420,8 @@ contract('DelegateManager', async (accounts) => {
       outsideStake,
       lockedUpDelegatorStake,
       totalActiveStake,
-      spDecreaseRequest
+      spDecreaseRequest,
+      delegators
     }
 
     if (print) {
@@ -2363,30 +2364,40 @@ contract('DelegateManager', async (accounts) => {
           staker6Amt,
           stakerAccount6
         )
- 
         // Approve staking transfer from account 1
         let delegateAmount = _lib.toBN('368189417720410270532')
         await token.approve(
           stakingAddress,
           delegateAmount,
           { from: stakerAccount2 })
-  
         // Delegate to staker2 from staker1 
         await delegateManager.delegateStake(
           stakerAccount3,
           delegateAmount,
           { from: stakerAccount2 })
-
+        let totalBalanceInSPFactoryPreSlash = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount3)).deployerStake
+        let sp3DelegatedStakePreSlash = await delegateManager.getTotalDelegatedToServiceProvider(stakerAccount3)
+        let totalBalanceInStakingPreSlash = await staking.totalStakedFor(stakerAccount3) 
         // Perform slash
-        await _lib.slash('184823535956735802285029', stakerAccount3, governance, delegateManagerKey, guardianAddress)
-
+        let slashAmountStr = '184823535956735802285029'
+        await _lib.slash(slashAmountStr, stakerAccount3, governance, delegateManagerKey, guardianAddress)
+        let totalBalanceInStakingAfterSlash = await staking.totalStakedFor(stakerAccount3) 
+        let sp3NewDelegateStake = (totalBalanceInStakingAfterSlash.mul(sp3DelegatedStakePreSlash)).div(totalBalanceInStakingPreSlash)
+        let totalDelegatedStakeDecrease = sp3DelegatedStakePreSlash.sub(sp3NewDelegateStake)
+        let totalStakeDecrease = totalBalanceInStakingPreSlash.sub(totalBalanceInStakingAfterSlash)
+        let totalSPFactoryBalanceDecrease = totalStakeDecrease.sub(totalDelegatedStakeDecrease)
+        let expectedSp3DeployerStake = totalBalanceInSPFactoryPreSlash.sub(totalSPFactoryBalanceDecrease)
         // Validate all accounts
         await validateAccountStakeBalance(stakerAccount)
         await validateAccountStakeBalance(stakerAccount2)
-        await validateAccountStakeBalance(stakerAccount3)
+        let sp3Info = await validateAccountStakeBalance(stakerAccount3)
         await validateAccountStakeBalance(stakerAccount4)
         await validateAccountStakeBalance(stakerAccount5)
         await validateAccountStakeBalance(stakerAccount6)
+        assert.isTrue(
+          expectedSp3DeployerStake.eq(sp3Info.spFactoryStake),
+          `Expected ${expectedSp3DeployerStake}, found ${sp3Info.spFactoryStake}`
+        )
       })
 
       it('Decrease in reward for pending stake decrease', async () => {
