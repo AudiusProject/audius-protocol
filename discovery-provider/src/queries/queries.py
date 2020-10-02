@@ -65,6 +65,8 @@ def get_users_route():
         args["id"] = parse_id_array_param(request.args.getlist("id"))
     if "min_block_number" in request.args:
         args["min_block_number"] = request.args.get("min_block_number", type=int)
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
     users = get_users(args)
     return api_helpers.success_response(users)
 
@@ -84,6 +86,8 @@ def get_tracks_route():
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     if "min_block_number" in request.args:
         args["min_block_number"] = request.args.get("min_block_number", type=int)
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
     tracks = get_tracks(args)
     return api_helpers.success_response(tracks)
 

@@ -1080,13 +1080,14 @@ def get_genre_list(genre):
     return genre_list
 
 
-def get_users_by_id(session, user_ids):
+def get_users_by_id(session, user_ids, current_user_id=None):
     user_query = session.query(User).filter(
         User.is_current == True, User.wallet != None, User.handle != None)
     users_results = user_query.filter(User.user_id.in_(user_ids)).all()
     users = helpers.query_result_to_list(users_results)
 
-    current_user_id = get_current_user_id(required=False)
+    if not current_user_id:
+        current_user_id = get_current_user_id(required=False)
     # bundle peripheral info into user results
     populated_users = populate_user_metadata(
         session, user_ids, users, current_user_id)

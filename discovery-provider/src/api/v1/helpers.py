@@ -63,6 +63,10 @@ def add_playlist_artwork(playlist):
     return playlist
 
 def add_user_artwork(user):
+    # Legacy CID-only references to images
+    user["cover_photo_legacy"] = user["cover_photo"]
+    user["profile_picture_legacy"] = user["profile_picture"]
+
     endpoint = get_primary_endpoint(user)
     if not endpoint:
         return user
@@ -104,6 +108,8 @@ def extend_remix_of(remix_of):
     def extend_track_element(track):
         track_id = track["parent_track_id"]
         track["parent_track_id"] = encode_int_id(track_id)
+        if ("user" in track):
+            track["user"] = extend_user(track["user"])
         return track
 
     if not remix_of or not "tracks" in remix_of or not remix_of["tracks"]:
