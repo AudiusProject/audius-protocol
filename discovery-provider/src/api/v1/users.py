@@ -196,7 +196,7 @@ class FullTrackList(Resource):
         }
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
-        return tracks
+        return success_response(tracks)
 
 
 @full_ns.route("/handle/<string:handle>/tracks")
