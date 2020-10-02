@@ -1215,6 +1215,81 @@ contract('Governance.sol', async (accounts) => {
           )
         })
 
+        /*
+         submit proposal (measure totalStakedAt this block)
+         → submit vote(s) to meet quorum
+         → increase stake in system (either from voter or diff acct)
+         → call evaluate and confirm quorum calc is unaffected and proposal still passes and voteMagnitudes are the same
+        */
+        it('Confirm quorum change after submission does not prevent proposal evaluation', async () => {
+          let totalStakeAtProposalTime = await staking.totalStakedAt(_lib.toBN(proposalStartBlockNumber))
+          let proposal = await governance.getProposalById(proposalId)
+          let totalVotedStake = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
+          let proposalParticipationPercent = (totalVotedStake.mul(_lib.toBN(100))).div(totalStakeAtProposalTime)
+          // Vote from stakerAccount1 with current stake
+          const voteYes = Vote.Yes
+          await governance.submitVote(proposalId, voteYes, { from: stakerAccount1 })
+
+          proposal = await governance.getProposalById(proposalId)
+          totalVotedStake = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
+          proposalParticipationPercent = (totalVotedStake.mul(_lib.toBN(100))).div(totalStakeAtProposalTime)
+
+          // Increase stake from a new account by delegating
+          let additionalDelegationAmount = defaultStakeAmount.mul(_lib.toBN(13))
+          await token.transfer(delegatorAccount1, additionalDelegationAmount, { from: proxyDeployerAddress })
+          await token.approve(staking.address, additionalDelegationAmount, { from: delegatorAccount1 })
+          await delegateManager.delegateStake(stakerAccount2, additionalDelegationAmount,{ from: delegatorAccount1 })
+
+          let delegatorInfo = await getStakeInfo(delegatorAccount1)
+          assert.isTrue(delegatorInfo.totalDeployerStake.eq(_lib.toBN(0)), "No deployer stake expected")
+          assert.isTrue(
+            delegatorInfo.totalDelegatedStake.eq(delegateAmount.add(additionalDelegationAmount)),
+            "Delegator stake expected"
+          )
+
+          // Current total stake
+          let totalCurrentStake = await staking.totalStaked()
+          proposal = await governance.getProposalById(proposalId)
+          totalVotedStake = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
+          proposalParticipationPercent = (totalVotedStake.mul(_lib.toBN(100))).div(totalStakeAtProposalTime)
+          let totalParticipationPercent = (totalVotedStake.mul(_lib.toBN(100))).div(totalCurrentStake)
+
+          // Vote from stakerAccount2
+          await governance.submitVote(proposalId, voteYes, { from: stakerAccount2 })
+          let staker2Info = await getStakeInfo(stakerAccount2)
+          const {vote: voterVote, voteMagnitude} = await governance.getVoteInfoByProposalAndVoter(proposalId, stakerAccount2)
+          assert.isTrue(voteMagnitude.eq(staker2Info.totalDeployerStake), "Expect delegated stake exclusion")
+
+          // Increase stake from account 1
+          let increaseAmount = defaultStakeAmount.mul(_lib.toBN(5))
+          await token.transfer(stakerAccount1, increaseAmount, { from: proxyDeployerAddress })
+          await token.approve(staking.address, increaseAmount, { from: stakerAccount1 })
+          await serviceProviderFactory.increaseStake(increaseAmount, { from: stakerAccount1})
+
+          totalCurrentStake = await staking.totalStaked()
+          proposal = await governance.getProposalById(proposalId)
+          totalVotedStake = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
+          proposalParticipationPercent = (totalVotedStake.mul(_lib.toBN(100))).div(totalStakeAtProposalTime)
+          totalParticipationPercent = (totalVotedStake.mul(_lib.toBN(100))).div(totalCurrentStake)
+          // Confirm that all votes are < current quorum given totalStake
+          assert.isTrue(totalParticipationPercent.lt(_lib.toBN(votingQuorumPercent)), "Total participation should be less than quorum")
+          // Confirm that all votes are > proposal expected quorum
+          assert.isTrue(proposalParticipationPercent.gt(_lib.toBN(votingQuorumPercent)), "Total particpation from initial proposal submission should be greater than quorum")
+          await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
+          let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
+          // Confirm approved executed despite not meeting quorum
+          await expectEvent.inTransaction(
+            evaluateTxReceipt.tx,
+            Governance,
+            'ProposalOutcomeEvaluated',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _outcome: _lib.toBN(Outcome.ApprovedExecuted),
+              _numVotes: _lib.toBN(2)
+            }
+          )
+        })
+
         // Validate behavior with particular stake distributions
         it('Submit vote from service provider only address w/partial active stake', async () => {
           const vote = Vote.No
