@@ -63,6 +63,10 @@ def add_playlist_artwork(playlist):
     return playlist
 
 def add_user_artwork(user):
+    # Legacy CID-only references to images
+    user["cover_photo_legacy"] = user["cover_photo"]
+    user["profile_picture_legacy"] = user["profile_picture"]
+
     endpoint = get_primary_endpoint(user)
     if not endpoint:
         return user
