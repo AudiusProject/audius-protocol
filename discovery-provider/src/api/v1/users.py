@@ -1,4 +1,5 @@
 import logging
+from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
 from src.api.v1.models.users import user_model, user_model_full
@@ -10,10 +11,11 @@ from src.queries.get_tracks import get_tracks
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_favorite, extend_track, \
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, make_response, search_parser, success_response, abort_bad_request_param, \
     get_default_max, decode_string_id
 from .models.tracks import track, track_full
+from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -242,6 +244,140 @@ class HandleFullTrackList(Resource):
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
+
+USER_REPOSTS_ROUTE = "/<string:user_id>/reposts"
+
+user_reposts_route_parser = reqparse.RequestParser()
+user_reposts_route_parser.add_argument('user_id', required=False)
+user_reposts_route_parser.add_argument('limit', required=False, type=int)
+user_reposts_route_parser.add_argument('offset', required=False, type=int)
+
+reposts_response = make_response("reposts", full_ns, fields.List(fields.Nested(activity_model)))
+@ns.route(USER_REPOSTS_ROUTE)
+class RepostList(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User's Reposts""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(reposts_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        decoded_id = decode_with_abort(user_id, ns)
+        args = user_reposts_route_parser.parse_args()
+
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args.get("user_id"))
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+
+        args = {
+            "user_id": decoded_id,
+            "current_user_id": current_user_id,
+            "with_users": True,
+            "filter_deleted": True,
+            "limit": limit,
+            "offset": offset
+        }
+        reposts = get_repost_feed_for_user(decoded_id, args)
+        activities = list(map(extend_activity, reposts))
+
+        return success_response(activities)
+
+full_reposts_response = make_response("full_reposts", full_ns, fields.List(fields.Nested(activity_model_full)))
+@full_ns.route(USER_REPOSTS_ROUTE)
+class FullRepostList(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User's Reposts""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(full_reposts_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        decoded_id = decode_with_abort(user_id, ns)
+        args = user_reposts_route_parser.parse_args()
+
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args.get("user_id"))
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+
+        args = {
+            "current_user_id": current_user_id,
+            "with_users": True,
+            "filter_deleted": True,
+            "limit": limit,
+            "offset": offset
+        }
+        reposts = get_repost_feed_for_user(decoded_id, args)
+        activities = list(map(extend_activity, reposts))
+
+        return success_response(activities)
+
+
+@full_ns.route("/handle/<string:handle>/reposts")
+class HandleFullRepostList(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User's Reposts""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(full_reposts_response)
+    @cache(ttl_sec=5)
+    def get(self, handle):
+        args = user_reposts_route_parser.parse_args()
+
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args.get("user_id"))
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+
+        args = {
+            "handle": handle,
+            "current_user_id": current_user_id,
+            "with_users": True,
+            "filter_deleted": True,
+            "limit": limit,
+            "offset": offset
+        }
+        reposts = get_repost_feed_for_user(None, args)
+        activities = list(map(extend_activity, reposts))
+
+        return success_response(activities)
 
 
 favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(favorite)))

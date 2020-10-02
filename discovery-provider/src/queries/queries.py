@@ -175,6 +175,7 @@ def get_repost_feed_for_user_route(user_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    args["current_user_id"] = get_current_user_id(required=False) 
     feed_results = get_repost_feed_for_user(user_id, args)
     return api_helpers.success_response(feed_results)
 
