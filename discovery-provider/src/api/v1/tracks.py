@@ -232,6 +232,7 @@ class FullTrending(Resource):
         key = extract_key(request.path, request_items.items())
         return key
 
+    @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         args = full_trending_parser.parse_args()
