@@ -1289,17 +1289,57 @@ contract('Governance.sol', async (accounts) => {
 
         // Validate behavior with particular stake distributions
         it('Submit vote from service provider only address w/partial active stake', async () => {
-          const vote = Vote.No
-          let decreaseAmount = defaultStakeAmount.div(_lib.toBN(2))
+          const vote = Vote.Yes
+          let decreaseAmount = defaultStakeAmount.div(_lib.toBN(2)).sub(_lib.toBN(1)) // (defaultStakeAmount / 2) + 1
           // Lock up partial funds in spfactory
           await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
           let stakeInfo = await getStakeInfo(voter1Address)
           await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, voter1Address, stakeInfo.totalActiveStake)
 
-          // TODO:
-          // call getProposalByID, confirm voteMagYes and voteMAgNo are aligned with active and not total stake
-          // call evaluate, confirm that even though totalStake of voters would cause proposal to meet quorum, active stake will not
-          // ^do this in one other test in this describe block where active stake of voters will cause proposal to meet quorum and pass
+          let proposal = await governance.getProposalById(proposalId)
+          assert.isTrue(proposal.voteMagnitudeYes.eq(stakeInfo.totalActiveStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to equal active stake ${stakeInfo.totalActiveStake.toString()}`)
+          assert.isFalse(proposal.voteMagnitudeYes.eq(stakeInfo.totalStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to NOT equal total stake ${stakeInfo.totalStake.toString()}`)
+
+          await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
+          let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
+
+          await expectEvent.inTransaction(
+            evaluateTxReceipt.tx,
+            Governance,
+            'ProposalOutcomeEvaluated',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _outcome: _lib.toBN(Outcome.ApprovedExecuted),
+              _numVotes: _lib.toBN(1)
+            }
+          )
+        })
+
+        it('Submit vote from service provider only address w/partial active stake under quorum, execution will fail', async () => {
+          const vote = Vote.Yes
+          let decreaseAmount = defaultStakeAmount.sub(_lib.toBN(_lib.audToWei('1'))) // reduce active stake to 1 aud from 1000
+          // Lock up partial funds in spfactory
+          await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
+          let stakeInfo = await getStakeInfo(voter1Address)
+          await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, voter1Address, stakeInfo.totalActiveStake)
+
+          let proposal = await governance.getProposalById(proposalId)
+          assert.isTrue(proposal.voteMagnitudeYes.eq(stakeInfo.totalActiveStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to equal active stake ${stakeInfo.totalActiveStake.toString()}`)
+          assert.isFalse(proposal.voteMagnitudeYes.eq(stakeInfo.totalStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to NOT equal total stake ${stakeInfo.totalStake.toString()}`)
+
+          await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
+          let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
+
+          await expectEvent.inTransaction(
+            evaluateTxReceipt.tx,
+            Governance,
+            'ProposalOutcomeEvaluated',
+            {
+              _proposalId: _lib.toBN(proposalId),
+              _outcome: _lib.toBN(Outcome.QuorumNotMet),
+              _numVotes: _lib.toBN(1)
+            }
+          )
         })
 
         it('Submit vote from delegator-only address', async () => {
