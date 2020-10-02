@@ -540,10 +540,54 @@ contract('Governance.sol', async (accounts) => {
      */
   })
 
-  it.skip('TODO - delegateManagerAddress management', async () => {
-    /**
-     * TODO - is basically a mirror of the above two tests: "stakingAddress management" and "serviceProviderFactoryAddress management"
-     */
+  it('DelegateManagerAddress management', async () => {
+    // Deploy DelegateManager contract
+    const delegateManagerInitializeData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address', 'uint256'],
+      [token.address, governance.address, undelegateLockupDuration]
+    )
+    let delegateManager1 = await DelegateManager.new({ from: proxyDeployerAddress })
+    let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
+      delegateManager1.address,
+      governance.address,
+      delegateManagerInitializeData,
+      { from: proxyDeployerAddress }
+    )
+    let delegateManager2 = await DelegateManager.at(delegateManagerProxy.address)
+
+    // Confirm staking address cannot be set from non-governance address
+    await _lib.assertRevert(
+      governance.setDelegateManagerAddress(
+        delegateManager2.address,
+        { from: proxyDeployerAddress }
+      ),
+      "revert"
+    )
+
+    // Confirm staking address cannot be set to zero address
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setDelegateManagerAddress(address)',
+        _lib.abiEncode(['address'], [_lib.addressZero]),
+        { from: guardianAddress }
+      ),
+      "revert"
+    )
+
+    // Successfully set staking address via governance
+    await governance.guardianExecuteTransaction(
+      governanceKey,
+      callValue0,
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [delegateManager2.address]),
+      { from: guardianAddress }
+    )
+
+    // Confirm staking address has been set
+    assert.equal(await governance.getDelegateManagerAddress(), delegateManager2.address)
   })
 
   it('registryAddress management', async () => {
