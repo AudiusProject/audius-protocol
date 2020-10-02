@@ -3,7 +3,7 @@ import logging # pylint: disable=C0302
 from src.models import AggregatePlays, Track, User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, paginate_query, parse_sort_param, \
+from src.queries.query_helpers import paginate_query, parse_sort_param, \
   populate_track_metadata, get_users_ids, get_users_by_id
 
 logger = logging.getLogger(__name__)
@@ -56,10 +56,8 @@ def get_tracks(args):
 
         if "sort" in args:
             if args["sort"] == "date":
-                logger.warning('sort by date')
                 base_query = base_query.order_by(Track.created_at.desc(), Track.track_id.desc())
             elif args["sort"] == "plays":
-                logger.info("sort by plays")
                 base_query = base_query.join(
                     AggregatePlays,
                     AggregatePlays.play_item_id == Track.track_id

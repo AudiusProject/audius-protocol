@@ -112,7 +112,12 @@ class TrackList(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User's Tracks""",
-        params={'user_id': 'A User ID'},
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+            'sort': 'Sort mode'
+        },
         responses={
             200: 'Success',
             400: 'Bad request',
@@ -130,10 +135,7 @@ class TrackList(Resource):
         if args.get("user_id"):
             current_user_id = decode_string_id(args.get("user_id"))
 
-        sort = None
-        if args.get("sort"):
-            sort = args["sort"]
-
+        sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
 
@@ -156,7 +158,12 @@ class FullTrackList(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User's Tracks""",
-        params={'user_id': 'A User ID'},
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+            'sort': 'Sort mode'
+        },
         responses={
             200: 'Success',
             400: 'Bad request',
@@ -174,10 +181,7 @@ class FullTrackList(Resource):
         if args.get("user_id"):
             current_user_id = decode_string_id(args.get("user_id"))
 
-        sort = None
-        if args.get("sort"):
-            sort = args["sort"]
-
+        sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
 
@@ -200,7 +204,12 @@ class HandleFullTrackList(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User's Tracks""",
-        params={'user_id': 'A User ID'},
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+            'sort': 'Sort mode'
+        },
         responses={
             200: 'Success',
             400: 'Bad request',
@@ -217,10 +226,7 @@ class HandleFullTrackList(Resource):
         if args.get("user_id"):
             current_user_id = decode_string_id(args.get("user_id"))
 
-        sort = None
-        if args.get("sort"):
-            sort = args["sort"]
-
+        sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
 
