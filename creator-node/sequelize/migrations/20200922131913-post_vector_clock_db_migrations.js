@@ -26,10 +26,13 @@ module.exports = {
     await enforceClockNonNullConstraints(queryInterface, Sequelize, transaction)
 
     // add back in foreign key constraints from AudiusUsers and Tracks to Files
+    // there are some records that are orphaned as a result of the 25000 limit, so we need to delete those records from the Tracks table
     await queryInterface.sequelize.query(`
       ALTER TABLE "AudiusUsers" ADD CONSTRAINT "AudiusUsers_coverArtFileUUID_fkey" FOREIGN KEY ("coverArtFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
       ALTER TABLE "AudiusUsers" ADD CONSTRAINT "AudiusUsers_metadataFileUUID_fkey" FOREIGN KEY ("metadataFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
       ALTER TABLE "AudiusUsers" ADD CONSTRAINT "AudiusUsers_profilePicFileUUID_fkey" FOREIGN KEY ("profilePicFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
+      DELETE FROM "Tracks" WHERE "metadataFileUUID" IN (SELECT "metadataFileUUID" FROM "Tracks" t LEFT OUTER JOIN "Files" f ON t."metadataFileUUID" = f."fileUUID" WHERE f."fileUUID" IS NULL AND t."metadataFileUUID" IS NOT NULL);
+      DELETE FROM "Tracks" WHERE "coverArtFileUUID" IN (SELECT "coverArtFileUUID" FROM "Tracks" t LEFT OUTER JOIN "Files" f ON t."coverArtFileUUID" = f."fileUUID" WHERE f."fileUUID" IS NULL AND t."coverArtFileUUID" IS NOT NULL);
       ALTER TABLE "Tracks" ADD CONSTRAINT "Tracks_coverArtFileUUID_fkey " FOREIGN KEY ("coverArtFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
       ALTER TABLE "Tracks" ADD CONSTRAINT "Tracks_metadataFileUUID_fkey" FOREIGN KEY ("metadataFileUUID") REFERENCES "Files" ("fileUUID") ON DELETE RESTRICT;
     `, { transaction })

@@ -1,5 +1,4 @@
 const versionInfo = require('../../../.version.json')
-const config = require('../../config')
 
 /**
  * Perform a basic health check, returning the
@@ -13,9 +12,7 @@ const healthCheck = ({ libs } = {}, logger) => {
     ...versionInfo,
     'healthy': true,
     'git': process.env.GIT_SHA,
-    'selectedDiscoveryProvider': 'none',
-    'creatorNodeEndpoint': config.get('creatorNodeEndpoint'),
-    'spID': config.get('spID')
+    'selectedDiscoveryProvider': 'none'
   }
 
   if (libs) {
