@@ -1343,6 +1343,10 @@ contract('Governance.sol', async (accounts) => {
           let proposal = await governance.getProposalById(proposalId)
           assert.isTrue(proposal.voteMagnitudeYes.eq(stakeInfo.totalActiveStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to equal active stake ${stakeInfo.totalActiveStake.toString()}`)
           assert.isFalse(proposal.voteMagnitudeYes.eq(stakeInfo.totalStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to NOT equal total stake ${stakeInfo.totalStake.toString()}`)
+          let totalVotedStake = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
+
+          let minQuorumStake = (stakeInfo.totalStake.mul(_lib.toBN(votingQuorumPercent))).div(_lib.toBN(100)) // (total stake * quorum %) / 100
+          assert.isTrue(totalVotedStake.gt(minQuorumStake), "Total voted stake should be greater than quorum")
 
           await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
           let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
@@ -1366,11 +1370,15 @@ contract('Governance.sol', async (accounts) => {
           await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
           let stakeInfo = await getStakeInfo(voter1Address)
           await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, voter1Address, stakeInfo.totalActiveStake)
-
           let proposal = await governance.getProposalById(proposalId)
+          let totalVotedStake = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
+
           assert.isTrue(proposal.voteMagnitudeYes.eq(stakeInfo.totalActiveStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to equal active stake ${stakeInfo.totalActiveStake.toString()}`)
           assert.isFalse(proposal.voteMagnitudeYes.eq(stakeInfo.totalStake), `Expected voteMagnitudeYes: ${proposal.voteMagnitudeYes.toString()} to NOT equal total stake ${stakeInfo.totalStake.toString()}`)
 
+          let minQuorumStake = (stakeInfo.totalStake.mul(_lib.toBN(votingQuorumPercent))).div(_lib.toBN(100)) // (total stake * quorum %) / 100
+          assert.isTrue(totalVotedStake.lt(minQuorumStake), "Total voted stake should be less than quorum")
+          
           await time.advanceBlockTo(proposalStartBlockNumber + votingPeriod + executionDelay)
           let evaluateTxReceipt = await governance.evaluateProposalOutcome(proposalId, { from: stakerAccount1 })
 
