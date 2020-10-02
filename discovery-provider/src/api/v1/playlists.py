@@ -1,15 +1,19 @@
 import logging
 from src.queries.get_top_playlists import get_top_playlists # pylint: disable=C0302
 from src.api.v1.models.playlists import playlist_model, full_playlist_model
+from src.api.v1.models.users import user_model_full
 from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
-    make_response, success_response, search_parser, abort_bad_request_param, decode_string_id
+    make_response, success_response, search_parser, abort_bad_request_param, decode_string_id, \
+    extend_user, get_default_max
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
+from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
+from src.queries.get_savers_for_playlist import get_savers_for_playlist
 
 logger = logging.getLogger(__name__)
 
@@ -177,3 +181,88 @@ class Top(Resource):
 
         playlists = list(map(extend_playlist, response))
         return success_response(playlists)
+
+playlist_favorites_route_parser = reqparse.RequestParser()
+playlist_favorites_route_parser.add_argument('user_id', required=False)
+playlist_favorites_route_parser.add_argument('limit', required=False, type=int)
+playlist_favorites_route_parser.add_argument('offset', required=False, type=int)
+playlist_favorites_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+@full_ns.route("/<string:playlist_id>/favorites")
+class FullTrackFavorites(Resource):
+    @full_ns.expect(playlist_favorites_route_parser)
+    @full_ns.doc(
+        id="""Get Users that Favorited a Playlist""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(playlist_favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, playlist_id):
+        args = playlist_favorites_route_parser.parse_args()
+        decoded_id = decode_with_abort(playlist_id, full_ns)
+        limit = get_default_max(args.get('limit'), 10, 100)
+        offset = get_default_max(args.get('offset'), 0)
+        
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args["user_id"])
+        args = {
+            'save_playlist_id': decoded_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        users = get_savers_for_playlist(args)
+        users = list(map(extend_user, users))
+
+        return success_response(users)
+
+playlist_reposts_route_parser = reqparse.RequestParser()
+playlist_reposts_route_parser.add_argument('user_id', required=False)
+playlist_reposts_route_parser.add_argument('limit', required=False, type=int)
+playlist_reposts_route_parser.add_argument('offset', required=False, type=int)
+playlist_reposts_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+@full_ns.route("/<string:playlist_id>/reposts")
+class FullTrackReposts(Resource):
+    @full_ns.expect(playlist_reposts_route_parser)
+    @full_ns.doc(
+        id="""Get Users that Reposted a Playlist""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(playlist_reposts_response)
+    @cache(ttl_sec=5)
+    def get(self, playlist_id):
+        args = playlist_reposts_route_parser.parse_args()
+        decoded_id = decode_with_abort(playlist_id, full_ns)
+        limit = get_default_max(args.get('limit'), 10, 100)
+        offset = get_default_max(args.get('offset'), 0)
+        
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args["user_id"])
+        args = {
+            'repost_playlist_id': decoded_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        users = get_reposters_for_playlist(args)
+        users = list(map(extend_user, users))
+        return success_response(users)

@@ -224,3 +224,13 @@ def format_offset(args, max_offset=MAX_LIMIT):
     if offset is None:
         return DEFAULT_OFFSET
     return max(min(int(offset), max_offset), MIN_OFFSET)
+
+
+def get_default_max(value, default, max=None):
+    if not isinstance(value, int):
+        return default
+    elif max is None:
+        return value
+    else:
+        return min(value, max)
+
