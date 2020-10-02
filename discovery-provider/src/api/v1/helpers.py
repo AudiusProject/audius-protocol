@@ -1,9 +1,12 @@
+import logging
 from src import api_helpers
 from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
 from src.queries.search_queries import SearchKind
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 HASH_MIN_LENGTH = 5
 HASH_SALT = "azowernasdfoia"
@@ -158,6 +161,10 @@ def extend_playlist(playlist):
     if ("user" in playlist):
         playlist["user"] = extend_user(playlist["user"])
     playlist = add_playlist_artwork(playlist)
+
+    playlist["followee_reposts"] = list(map(extend_repost, playlist["followee_reposts"]))
+    playlist["followee_saves"] = list(map(extend_favorite, playlist["followee_saves"]))
+
     playlist["favorite_count"] = playlist["save_count"]
     return playlist
 

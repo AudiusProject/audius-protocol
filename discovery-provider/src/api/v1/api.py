@@ -32,5 +32,4 @@ bp_full = Blueprint('api_v1_full', __name__, url_prefix='/v1/full')
 api_v1_full = ApiWithHTTPS(bp_full, version='1.0')
 api_v1_full.add_namespace(full_tracks_ns)
 api_v1_full.add_namespace(full_playlists_ns)
-
 api_v1_full.add_namespace(full_users_ns)

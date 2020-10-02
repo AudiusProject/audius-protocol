@@ -60,6 +60,8 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: 'fileUUID',
       onDelete: 'RESTRICT'
     })
+    // AudiusUser also has a composite foreign key on ClockRecords (cnodeUserUUID, clock)
+    // sequelize does not support composite foreign keys
   }
   return AudiusUser
 }
