@@ -7,9 +7,6 @@ from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
     add_query_pagination
-import logging
-
-logger = logging.getLogger(__name__)
 
 def get_followees_for_user(args):
     users = []
@@ -52,8 +49,6 @@ def get_followees_for_user(args):
             .group_by(outer_follow.followee_user_id)
             .order_by(desc(response_name_constants.follower_count))
         )
-        logger.warn(limit)
-        logger.warn(offset)
         followee_user_ids_by_follower_count = add_query_pagination(
             outer_select, limit, offset).all()
 

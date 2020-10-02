@@ -166,12 +166,12 @@ class FollowerUsers(Resource):
         if args.get("user_id"):
             current_user_id = decode_string_id(args["user_id"])
         args = {
-            'follower_user_id': decoded_id,
+            'followee_user_id': decoded_id,
             'current_user_id': current_user_id,
             'limit': limit,
             'offset': offset
         }
-        users = get_followees_for_user(args)
+        users = get_followers_for_user(args)
         users = list(map(extend_user, users))
         return success_response(users)
 
@@ -211,11 +211,11 @@ class FollowingUsers(Resource):
         if args.get("user_id"):
             current_user_id = decode_string_id(args["user_id"])
         args = {
-            'followee_user_id': decoded_id,
+            'follower_user_id': decoded_id,
             'current_user_id': current_user_id,
             'limit': limit,
             'offset': offset
         }
-        users = get_followers_for_user(args)
+        users = get_followees_for_user(args)
         users = list(map(extend_user, users))
         return success_response(users)
