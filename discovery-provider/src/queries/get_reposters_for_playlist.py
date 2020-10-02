@@ -42,7 +42,12 @@ def get_reposters_for_playlist(args):
 
         # Get all Users that reposted Playlist, ordered by follower_count desc & paginated.
         query = (
-            session.query(User)
+            session.query(
+                User,
+                # Replace null values from left outer join with 0 to ensure sort works correctly.
+                (func.coalesce(follower_count_subquery.c.follower_count, 0)).label(
+                    response_name_constants.follower_count)
+            )
             # Left outer join to associate users with their follower count.
             .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
             .filter(
@@ -65,7 +70,8 @@ def get_reposters_for_playlist(args):
 
         # Fix format to return only Users objects with follower_count field.
         if user_results:
-            user_results = helpers.query_result_to_list(user_results)
+            users, _ = zip(*user_results)
+            user_results = helpers.query_result_to_list(users)
             # bundle peripheral info into user results
             user_ids = [user['user_id'] for user in user_results]
             user_results = populate_user_metadata(
