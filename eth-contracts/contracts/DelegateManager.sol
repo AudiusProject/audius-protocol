@@ -577,11 +577,17 @@ contract DelegateManager is InitializableV2 {
             spDelegateInfo[_slashAddress].totalDelegatedStake.sub(totalDelegatedStakeDecrease)
         );
 
-        // Recalculate SP direct stake
-        uint256 newSpBalance = (
-          totalBalanceInStakingAfterSlash.mul(totalBalanceInSPFactory)
-        ).div(totalBalanceInStakingPreSlash);
-        spFactory.updateServiceProviderStake(_slashAddress, newSpBalance);
+        // Remaining decrease applied to service provider
+        uint256 totalStakeDecrease = (
+            totalBalanceInStakingPreSlash.sub(totalBalanceInStakingAfterSlash)
+        );
+        uint256 totalSPFactoryBalanceDecrease = (
+            totalStakeDecrease.sub(totalDelegatedStakeDecrease)
+        );
+        spFactory.updateServiceProviderStake(
+            _slashAddress,
+            totalBalanceInSPFactory.sub(totalSPFactoryBalanceDecrease)
+        );
     }
 
     /**
