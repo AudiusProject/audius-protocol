@@ -1039,6 +1039,7 @@ contract Governance is InitializableV2 {
      *      log(2^256/(10^27*100))/log(1.07) ~= 1635
      *
      * TODO - document that this is at diff blocknumber and some slight inconsistency
+     *          this is per our discussion around documenting the inconcinstency
      */
     function _quorumMet(Proposal memory proposal, Staking stakingContract)
     internal view returns (bool)

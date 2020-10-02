@@ -43,15 +43,6 @@ const Vote = Object.freeze({
   Yes: 2
 })
 
-/**
- * TODO test cases for every case:
- *  address that has SP + delegator
- *  address that has only one or other
- *  address that has locked up full stake
- *  so cannot vote despite being SP
- *  same for delegator
- */
-
 contract('Governance.sol', async (accounts) => {
   let token, registry, staking, stakingProxy, serviceProviderFactory
   let claimsManager, delegateManager, governance, registry0, registryProxy, token0, tokenProxy
@@ -484,7 +475,7 @@ contract('Governance.sol', async (accounts) => {
     assert.equal(await governance2.getStakingAddress.call(), staking2.address)
   })
 
-  it('serviceProviderFactoryAddress management', async () => {
+  it('TODO INCOMPLETE - serviceProviderFactoryAddress management', async () => {
     // Deploy Registry
     const registry2 = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
 
@@ -544,10 +535,16 @@ contract('Governance.sol', async (accounts) => {
     // const serviceProviderFactory2 = await ServiceProviderFactory.at(serviceProviderFactoryProxy2.address)
     await registry2.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy2.address, { from: proxyDeployerAddress })
 
-
+    /**
+     * TODO - see lines 445-475 from above test. need to mirror those here
+     */
   })
 
-  it.skip('TODO - delegateManagerAddress management', async () => {})
+  it.skip('TODO - delegateManagerAddress management', async () => {
+    /**
+     * TODO - is basically a mirror of the above two tests: "stakingAddress management" and "serviceProviderFactoryAddress management"
+     */
+  })
 
   it('registryAddress management', async () => {
     // Confirm initial registryAddress value
@@ -1298,6 +1295,11 @@ contract('Governance.sol', async (accounts) => {
           await serviceProviderFactory.requestDecreaseStake(decreaseAmount, { from: voter1Address })
           let stakeInfo = await getStakeInfo(voter1Address)
           await submitAndVerifyActiveStakeVoteSuccess(proposalId, vote, voter1Address, stakeInfo.totalActiveStake)
+
+          // TODO:
+          // call getProposalByID, confirm voteMagYes and voteMAgNo are aligned with active and not total stake
+          // call evaluate, confirm that even though totalStake of voters would cause proposal to meet quorum, active stake will not
+          // ^do this in one other test in this describe block where active stake of voters will cause proposal to meet quorum and pass
         })
 
         it('Submit vote from delegator-only address', async () => {
