@@ -1779,10 +1779,10 @@ contract('Governance.sol', async (accounts) => {
         }
 
         // Confirm quorum was correctly calculated
-        const totalActiveStake = await staking.totalStakedAt.call(proposal.submissionBlockNumber)
+        const totalStakeAtSubmission = await staking.totalStakedAt.call(proposal.submissionBlockNumber)
         const totalVotedStake = parseInt(proposal.voteMagnitudeYes) + parseInt(proposal.voteMagnitudeNo)
         // div before mul bc js does large number math incorrectly
-        const participationPercent = totalVotedStake / totalActiveStake * 100
+        const participationPercent = totalVotedStake / totalStakeAtSubmission * 100
         assert.isAtLeast(participationPercent, votingQuorumPercent, 'Quorum met')
   
         // Confirm Slash action succeeded by checking new Stake + Token values
@@ -1851,10 +1851,10 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(proposal.numVotes.eq(TWO), 'Expected same numVotes')
 
         // Confirm quorum was correctly calculated
-        const totalActiveStake = await staking.totalStakedAt.call(proposal.submissionBlockNumber)
+        const totalStakeAtSubmission = await staking.totalStakedAt.call(proposal.submissionBlockNumber)
         const totalVotedStake = parseInt(proposal.voteMagnitudeYes) + parseInt(proposal.voteMagnitudeNo)
         // div before mul bc js does large number math incorrectly
-        const participationPercent = totalVotedStake / totalActiveStake * 100
+        const participationPercent = totalVotedStake / totalStakeAtSubmission * 100
         assert.isAtLeast(participationPercent, votingQuorumPercent, 'Quorum met')
       })
 
@@ -1901,10 +1901,10 @@ contract('Governance.sol', async (accounts) => {
         assert.isTrue(proposal.numVotes.isZero(), 'Expected same numVotes')
 
         // Confirm quorum was correctly calculated
-        const totalActiveStake = await staking.totalStakedAt.call(proposal.submissionBlockNumber)
+        const totalStakeAtSubmission = await staking.totalStakedAt.call(proposal.submissionBlockNumber)
         const totalVotedStake = parseInt(proposal.voteMagnitudeYes) + parseInt(proposal.voteMagnitudeNo)
         // div before mul bc js does large number math incorrectly
-        const participationPercent = totalVotedStake / totalActiveStake * 100
+        const participationPercent = totalVotedStake / totalStakeAtSubmission * 100
         assert.isBelow(participationPercent, votingQuorumPercent, 'Quorum not met')
 
         // Submit new proposal + vote
@@ -1924,7 +1924,7 @@ contract('Governance.sol', async (accounts) => {
         let proposal2 = await governance.getProposalById.call(proposalId2)
         const totalVotedStake2 = parseInt(proposal2.voteMagnitudeNo) + parseInt(proposal2.voteMagnitudeYes)
         // div before mul bc js does large number math incorrectly
-        let participationPercent2 = totalVotedStake2 / totalActiveStake * 100
+        let participationPercent2 = totalVotedStake2 / totalStakeAtSubmission * 100
         let latestVotingQuorumPercent = parseInt(await governance.getVotingQuorumPercent.call())
         assert.isAtLeast(participationPercent2, latestVotingQuorumPercent, 'Quorum would be met')
 
@@ -1953,7 +1953,7 @@ contract('Governance.sol', async (accounts) => {
         // Confirm quorum was correctly calculated
         const totalVotedStake2New = parseInt(proposal2New.voteMagnitudeYes) + parseInt(proposal2New.voteMagnitudeNo)
         // div before mul bc js does large number math incorrectly
-        const participationPercent2New = totalVotedStake2New / totalActiveStake * 100
+        const participationPercent2New = totalVotedStake2New / totalStakeAtSubmission * 100
         latestVotingQuorumPercent = parseInt(await governance.getVotingQuorumPercent.call())
         assert.isBelow(participationPercent2New, latestVotingQuorumPercent, 'Quorum not met')
       })
