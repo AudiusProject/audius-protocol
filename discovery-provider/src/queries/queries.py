@@ -225,7 +225,7 @@ def get_followers_for_user_route(followee_user_id):
         'limit': limit,
         'offset': offset
     }
-    users = get_followers_for_user(followee_user_id)
+    users = get_followers_for_user(args)
     return api_helpers.success_response(users)
 
 

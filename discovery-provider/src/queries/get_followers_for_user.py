@@ -5,8 +5,7 @@ from src.models import User, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_current_user_id, populate_user_metadata, \
-    add_query_pagination
+from src.queries.query_helpers import populate_user_metadata, add_query_pagination
 
 
 def get_followers_for_user(args):
