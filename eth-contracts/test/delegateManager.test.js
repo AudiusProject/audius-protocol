@@ -2302,7 +2302,7 @@ contract('DelegateManager', async (accounts) => {
 
         totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
   
-        totalStakedForStaker2 = await staking.totalStakedFor(stakerAccount2) 
+        totalStakedForStaker2 = await staking.totalStakedFor(stakerAccount2)
         sp2Stake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount2)).deployerStake
         sp2DelegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(stakerAccount2)
   
@@ -2316,6 +2316,119 @@ contract('DelegateManager', async (accounts) => {
         await validateAccountStakeBalance(stakerAccount4)
         await validateAccountStakeBalance(stakerAccount5)
         await validateAccountStakeBalance(stakerAccount6)
+      })
+
+      it.only('Slashing inconsistency', async () => {
+        const staker3Amt = _lib.toBN('384823535956494802781028')
+        const staker4Amt = _lib.toBN('462563700468205107730431')
+        const staker5Amt = _lib.toBN('221500000000000000000000')
+        const staker6Amt = _lib.toBN('201000000000000000000000')
+        await token.transfer(stakerAccount3, INITIAL_BAL, { from: proxyDeployerAddress })
+        await token.transfer(stakerAccount4, INITIAL_BAL, { from: proxyDeployerAddress })
+        await token.transfer(stakerAccount5, INITIAL_BAL, { from: proxyDeployerAddress })
+        await token.transfer(stakerAccount6, INITIAL_BAL, { from: proxyDeployerAddress })
+        let totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint2,
+          staker3Amt,
+          stakerAccount3
+        )
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint3,
+          staker4Amt,
+          stakerAccount4
+        )
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint4,
+          staker5Amt,
+          stakerAccount5
+        )
+        await _lib.registerServiceProvider(
+          token,
+          staking,
+          serviceProviderFactory,
+          testDiscProvType,
+          testEndpoint5,
+          staker6Amt,
+          stakerAccount6
+        )
+ 
+        // Approve staking transfer from account 1
+        let delegateAmount = _lib.toBN('368189417720410270532')
+        await token.approve(
+          stakingAddress,
+          delegateAmount,
+          { from: stakerAccount2 })
+  
+        // Delegate to staker2 from staker1 
+        await delegateManager.delegateStake(
+          stakerAccount3,
+          delegateAmount,
+          { from: stakerAccount2 })
+
+        totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+        let totalStakedForStaker2 = await staking.totalStakedFor(stakerAccount2) 
+        let sp3Stake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount3)).deployerStake
+        let sp3DelegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(stakerAccount3)
+        let totalStakedForStaker3 = await staking.totalStakedFor(stakerAccount3) 
+        let totalStakedForStaker4 = await staking.totalStakedFor(stakerAccount4) 
+        let totalStakedForStaker5 = await staking.totalStakedFor(stakerAccount5)
+
+        let sp3StakePreSlash = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount3)).deployerStake
+        let sp3DelegatedStakePreSlash = await delegateManager.getTotalDelegatedToServiceProvider(stakerAccount3)
+        let totalStakedForStaker3PreSlash = await staking.totalStakedFor(stakerAccount3) 
+
+        console.log('preslash', {
+          totalStakedForAccount,
+          totalStakedForStaker2,
+          sp3Stake,
+          sp3DelegatedStake,
+          totalStakedForStaker3,
+          totalStakedForStaker4,
+          totalStakedForStaker5
+        })
+
+        let slashAmount = _lib.toBN('184823535956735802285029')
+        await _lib.slash('184823535956735802285029', stakerAccount3, governance, delegateManagerKey, guardianAddress)
+
+        totalStakedForAccount = await staking.totalStakedFor(stakerAccount)
+        totalStakedForStaker2 = await staking.totalStakedFor(stakerAccount2) 
+        sp3Stake = (await serviceProviderFactory.getServiceProviderDetails(stakerAccount3)).deployerStake
+        sp3DelegatedStake = await delegateManager.getTotalDelegatedToServiceProvider(stakerAccount3)
+        totalStakedForStaker3 = await staking.totalStakedFor(stakerAccount3) 
+        totalStakedForStaker4 = await staking.totalStakedFor(stakerAccount4) 
+        totalStakedForStaker5 = await staking.totalStakedFor(stakerAccount5)
+
+        let sp3DelegatedSlashAmount = (sp3DelegatedStakePreSlash.mul(slashAmount)).div(totalStakedForStaker3PreSlash)
+        let sp3DelegateAmountAfterSlash = sp3DelegatedStakePreSlash.sub(sp3DelegatedSlashAmount)
+        
+        let sp3StakedSlashAmount = (sp3StakePreSlash.mul(slashAmount)).div(totalStakedForStaker3PreSlash)
+        let sp3StakeAmountAfterSlash = sp3StakePreSlash.sub(sp3StakedSlashAmount)
+        
+
+        console.log('after slash 1', {
+          totalStakedForAccount,
+          totalStakedForStaker2,
+          sp3Stake,
+          sp3DelegatedStake,
+          totalStakedForStaker3,
+          totalStakedForStaker4,
+          totalStakedForStaker5
+        })
+        assert.isTrue(sp3DelegateAmountAfterSlash.eq(sp3DelegatedStake), `Delegate amount after slash: ${sp3DelegatedStake} not equal to expected amount: ${sp3DelegateAmountAfterSlash}`)
+        assert.isTrue(sp3StakeAmountAfterSlash.eq(sp3Stake), `Staked amount after slash: ${sp3StakeAmountAfterSlash} not equal to expected amount: ${sp3Stake}`)
       })
 
       it('Decrease in reward for pending stake decrease', async () => {
