@@ -1,12 +1,12 @@
 from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
-from flask_restx import Resource, Namespace, fields
+from flask_restx import Resource, Namespace, fields, reqparse
 from flask_restx import resource
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
-    extend_track, make_response, search_parser, \
+    extend_track, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
     format_offset, format_limit, decode_string_id
 from .models.tracks import track, track_full
@@ -16,6 +16,9 @@ from flask.json import dumps
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
+from src.api.v1.models.users import user_model_full
+from src.queries.get_reposters_for_track import get_reposters_for_track
+from src.queries.get_savers_for_track import get_savers_for_track
 
 logger = logging.getLogger(__name__)
 
@@ -244,3 +247,87 @@ class FullTrending(Resource):
         trending = full_trending[offset: limit + offset]
         return success_response(trending)
 
+track_favorites_route_parser = reqparse.RequestParser()
+track_favorites_route_parser.add_argument('user_id', required=False)
+track_favorites_route_parser.add_argument('limit', required=False, type=int)
+track_favorites_route_parser.add_argument('offset', required=False, type=int)
+track_favorites_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+@full_ns.route("/<string:track_id>/favorites")
+class FullTrackFavorites(Resource):
+    @full_ns.expect(track_favorites_route_parser)
+    @full_ns.doc(
+        id="""Get Users that Favorited a Track""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(track_favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = track_favorites_route_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        limit = get_default_max(args.get('limit'), 10, 100)
+        offset = get_default_max(args.get('offset'), 0)
+
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args["user_id"])
+        args = {
+            'save_track_id': decoded_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        users = get_savers_for_track(args)
+        users = list(map(extend_user, users))
+
+        return success_response(users)
+
+track_reposts_route_parser = reqparse.RequestParser()
+track_reposts_route_parser.add_argument('user_id', required=False)
+track_reposts_route_parser.add_argument('limit', required=False, type=int)
+track_reposts_route_parser.add_argument('offset', required=False, type=int)
+track_reposts_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+@full_ns.route("/<string:track_id>/reposts")
+class FullTrackReposts(Resource):
+    @full_ns.expect(track_reposts_route_parser)
+    @full_ns.doc(
+        id="""Get Users that Reposted a Track""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(track_reposts_response)
+    @cache(ttl_sec=5)
+    def get(self, track_id):
+        args = track_reposts_route_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        limit = get_default_max(args.get('limit'), 10, 100)
+        offset = get_default_max(args.get('offset'), 0)
+
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(args["user_id"])
+        args = {
+            'repost_track_id': decoded_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        users = get_reposters_for_track(args)
+        users = list(map(extend_user, users))
+        return success_response(users)

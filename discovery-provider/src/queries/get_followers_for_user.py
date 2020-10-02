@@ -7,7 +7,6 @@ from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_user_metadata, add_query_pagination
 
-
 def get_followers_for_user(args):
     users = []
     followee_user_id = args.get('followee_user_id')
