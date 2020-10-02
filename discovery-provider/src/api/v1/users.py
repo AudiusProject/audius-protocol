@@ -141,7 +141,7 @@ class FollowerUsers(Resource):
     @record_metrics
     @ns.expect(followers_route_parser)
     @ns.doc(
-        id="""Get User's Followers""",
+        id="""All users that follow the provided user""",
         params={
             'user_id': 'A User ID',
             'limit': 'Limit',
@@ -156,7 +156,6 @@ class FollowerUsers(Resource):
     @full_ns.marshal_with(followers_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        """Fetch followers for a user."""
         decoded_id = decode_with_abort(user_id, full_ns)
         args = followers_route_parser.parse_args()
         limit = get_default_max(args.get('limit'), 10, 100)
@@ -186,7 +185,7 @@ class FollowingUsers(Resource):
     @record_metrics
     @full_ns.expect(following_route_parser)
     @full_ns.doc(
-        id="""Get Users that Requested User Follows""",
+        id="""All users that the provided user follows""",
         params={
             'user_id': 'A User ID',
             'limit': 'Limit',
@@ -201,7 +200,6 @@ class FollowingUsers(Resource):
     @full_ns.marshal_with(following_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
-        """Fetch users that requested user follows."""
         decoded_id = decode_with_abort(user_id, full_ns)
         args = following_route_parser.parse_args()
         limit = get_default_max(args.get('limit'), 10, 100)
