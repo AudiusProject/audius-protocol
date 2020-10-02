@@ -104,6 +104,8 @@ def extend_remix_of(remix_of):
     def extend_track_element(track):
         track_id = track["parent_track_id"]
         track["parent_track_id"] = encode_int_id(track_id)
+        if ("user" in track):
+            track["user"] = extend_user(track["user"])
         return track
 
     if not remix_of or not "tracks" in remix_of or not remix_of["tracks"]:
