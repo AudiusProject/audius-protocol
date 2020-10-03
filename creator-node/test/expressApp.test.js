@@ -14,7 +14,7 @@ describe('test expressApp', function () {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    await BlacklistManager.blacklist(ipfsMock)
+    await BlacklistManager.init(ipfsMock)
 
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
 

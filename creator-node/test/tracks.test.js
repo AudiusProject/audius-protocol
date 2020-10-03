@@ -29,7 +29,7 @@ describe('test Tracks with mocked IPFS', function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
-    await blacklistManager.blacklist(ipfsMock)
+    await BlacklistManager.init(ipfsMock)
 
     app = appInfo.app
     server = appInfo.server
@@ -409,7 +409,7 @@ describe('test Tracks with real IPFS', function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(ipfs, libsMock, blacklistManager)
-    await blacklistManager.blacklist(ipfs)
+    await BlacklistManager.init(ipfs)
 
     app = appInfo.app
     server = appInfo.server
