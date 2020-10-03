@@ -14,7 +14,6 @@ const { getCNodeUser, stringifiedDateFields, destroyUsers } = require('./utils')
 const nock = require('nock')
 const config = require('../src/config')
 
-
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 
@@ -211,7 +210,6 @@ describe('test nodesync', function () {
   })
 
   it.only('test /sync', async function () {
-
     // Setup
 
     const TEST_ENDPOINT = 'http://test-cn.co'
@@ -221,7 +219,7 @@ describe('test nodesync', function () {
     // Make ipfs add return the cid
     // used to create the readstream
     ipfsMock.add = function * (content) {
-      const {path} = content
+      const { path } = content
       const cid = path.split('/')[1]
       yield {
         cid: {
@@ -240,13 +238,13 @@ describe('test nodesync', function () {
     const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
     const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
     const audiusUser = cnodeUser.audiusUsers[0]
-    const {tracks, files, clockRecords} = cnodeUser
+    const { tracks, files, clockRecords } = cnodeUser
 
     // Setup mocked responses
     nock(TEST_ENDPOINT)
       .persist()
       .get(uri => {
-        console.log({uri})
+        console.log({ uri })
         return uri.includes('/export')
       })
       .reply(200, sampleExport)
@@ -254,16 +252,15 @@ describe('test nodesync', function () {
     nock(userMetadataURI)
       .persist()
       .get(uri => {
-        console.log({uri})
+        console.log({ uri })
         return uri.includes('/ipfs')
       })
-      .reply(200, {data: Buffer.alloc(32)})
-
+      .reply(200, { data: Buffer.alloc(32) })
 
     // test: sync
 
     const { sessionToken } = await createStarterCNodeUser()
-     await request(app)
+    await request(app)
       .post('/sync')
       .set('X-Session-ID', sessionToken)
       .send({
@@ -272,12 +269,11 @@ describe('test nodesync', function () {
         immediate: true
       }).expect(200)
 
-
     // verify: expected files are all on disc
 
     // verify clock records
     for (let exportedRecord of clockRecords) {
-      const { cnodeUserUUID, clock, sourceTable, createdAt, updatedAt} = exportedRecord
+      const { cnodeUserUUID, clock, sourceTable, createdAt, updatedAt } = exportedRecord
       const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
         where: {
           clock,
@@ -293,7 +289,7 @@ describe('test nodesync', function () {
 
     // verify files
     for (let exportedFile of files) {
-      const { fileUUID, cnodeUserUUID, multihash, clock} = exportedFile
+      const { fileUUID, cnodeUserUUID, multihash, clock } = exportedFile
       const localFile = stringifiedDateFields(await models.File.findOne({
         where: {
           clock,
@@ -308,7 +304,7 @@ describe('test nodesync', function () {
 
     // verify tracks
     for (let exportedTrack of tracks) {
-      const { cnodeUserUUID, clock, blockchainId, metadataFileUUID} = exportedTrack
+      const { cnodeUserUUID, clock, blockchainId, metadataFileUUID } = exportedTrack
       const localFile = stringifiedDateFields(await models.Track.findOne({
         where: {
           clock,
@@ -336,7 +332,7 @@ describe('test nodesync', function () {
       lastLogin: cnodeUser.lastLogin,
       latestBlockNumber: cnodeUser.latestBlockNumber,
       clock: cnodeUser.clock,
-      createdAt: cnodeUser.createdAt,
+      createdAt: cnodeUser.createdAt
     }
 
     assert.deepStrictEqual(localAudiusUser, audiusUser)
@@ -344,13 +340,12 @@ describe('test nodesync', function () {
     // verify CNodeUser
     let localCnodeUser = stringifiedDateFields(await models.CNodeUser.find({
       where: {
-        cnodeUserUUID: cnodeUser.cnodeUserUUID,
+        cnodeUserUUID: cnodeUser.cnodeUserUUID
       },
       raw: true
     }))
     localCnodeUser = _.omit(localCnodeUser, ['updatedAt'])
 
     assert.deepStrictEqual(localCnodeUser, exportedCnodeUser)
-
   })
 })
