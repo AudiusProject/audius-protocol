@@ -2434,8 +2434,8 @@ contract('DelegateManager', async (accounts) => {
       })
 
       it('Slash cancels pending undelegate request', async () => {
-        // Initiate lockup of all 
-        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT, { from: stakerAccount })
+        // Lock 1/2 stake
+        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
