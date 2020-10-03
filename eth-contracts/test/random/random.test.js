@@ -54,7 +54,7 @@ contract('Random testing', async (accounts) => {
     const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
     const userOffset = 25 
 
-    const numUsers = 3// 15
+    const numUsers = 15
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
@@ -334,32 +334,44 @@ contract('Random testing', async (accounts) => {
     }
 
     const randomlySlash = async () => {
+        let slashPercent = 30
+        let slashDiceRoll = rand(0, 100)
+        let shouldSlash = slashDiceRoll < slashPercent
+        sysLog(`Slash rolled ${slashDiceRoll}, min required ${slashPercent}%`)
+        if (!shouldSlash) return
+
         let randSlashTarget = users[Math.floor(Math.random()*users.length)] 
         let targetInfo = await getAccountStakeInfo(randSlashTarget)
         let totalStakeForSlashTarget = targetInfo.totalInStakingContract 
-        // dice roll to slash ALL or portion
-        // 20% chance of slashing ALL stake
-        let shouldSlashAll = rand(0, 100) > 80
+        if (totalStakeForSlashTarget.eq(_lib.toBN(0))) {
+            testLog(randSlashTarget, `randomlySlash - No stake found for user ${randSlashTarget}`)
+        }
+        // Dice roll to slash ALL or portion
+        // 10% chance of slashing ALL stake
+        let shouldSlashAll = rand(0, 100) > 90
         let slashAmount
-        sysLog(`Random slash ${randSlashTarget} has ${totalStakeForSlashTarget} tokens, shouldSlashAll=${shouldSlashAll}`)
-        shouldSlashAll = true // tmp
+        testLog(randSlashTarget, `Random slash ${randSlashTarget} has ${totalStakeForSlashTarget} tokens, shouldSlashAll=${shouldSlashAll}`)
         if (shouldSlashAll) {
             slashAmount = totalStakeForSlashTarget
         } else {
             // Slash between 1/10 and 1/2 of stake
             slashAmount = randAmount(totalStakeForSlashTarget.div(_lib.toBN(10)), totalStakeForSlashTarget.div(_lib.toBN(2)))
         }
-        sysLog(`Randomly slashing ${randSlashTarget} ${slashAmount} tokens`)
-        await _lib.slash(
-            slashAmount.toString(),
-            randSlashTarget,
-            governance,
-            delegateManagerKey,
-            guardianAddress
-        )
+        testLog(randSlashTarget, `Randomly slashing ${randSlashTarget} ${slashAmount} tokens`)
+        try {
+            await _lib.slash(
+                slashAmount.toString(),
+                randSlashTarget,
+                governance,
+                delegateManagerKey,
+                guardianAddress
+            )
+        } catch(e) {
+            console.log(e)
+        }
         numSlashOperations = numSlashOperations.add(_lib.toBN(1))
         totalSlashedAmount = totalSlashedAmount.add(slashAmount)
-        sysLog(`Randomly slashed ${randSlashTarget} ${slashAmount}`)
+        testLog(randSlashTarget, `Randomly slashed ${randSlashTarget} ${slashAmount}`)
     }
 
     const randomlyDelegate = async (user) => {
@@ -541,7 +553,17 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
     const validateUsers = async (users) => {
         sysLog(`------- Validating User State -------`)
         await Promise.all(users.map(async (user) => {
-            await validateAccountStakeBalance(user)
+            let info = await validateAccountStakeBalance(user)
+            // If out of bounds, transfer minimum stake
+            // let withinBounds = info.spDetails.withinBounds
+            let lowerBoundViolated = info.totalInStakingContract.lt(info.spDetails.minAccountStake)
+            if (lowerBoundViolated) {
+                let increaseAmount = await info.spDetails.minAccountStake
+                testLog(user, `Increasing stake by ${increaseAmount}`)
+                await token.transfer(user, increaseAmount, { from: proxyDeployerAddress })
+                await token.approve(staking.address, increaseAmount, { from: user })
+                await serviceProviderFactory.increaseStake(increaseAmount, { from: user })
+            }
         }))
         sysLog(`------- Finished Validating User State -------`)
     }
@@ -566,16 +588,7 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
                         testLog(user, `Claimed ${rewards}, totalForUserAtFundBlock=${totalForUserAtFundBlock} - validBounds==${preClaimInfo.spDetails.validBounds}`)
                         totalClaimedRewards = totalClaimedRewards.add(rewards)
                     } catch(e) {
-                        if (e.message.search('Stake required for claim')) {
-                            // This user has been slashed
-                            let minRequiredStake = preClaimInfo.spDetails.minAccountStake
-                            await token.transfer(user, minRequiredStake, { from: proxyDeployerAddress })
-                            await token.approve(staking.address, minRequiredStake, { from: user })
-                            await serviceProviderFactory.increaseStake(minRequiredStake, { from: user })
-                            testLog(user, `Increased stake to ${minRequiredStake} after failed claim operation`)
-                        } else {
-                            throw e
-                        }
+                        console.log(e)
                     }
                 }
             )
@@ -659,8 +672,10 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
 
             await randomlyAdvanceBlocks()
             await claimPendingRewards(users)
+
             await randomlyAdvanceBlocks()
             await validateUsers(users)
+
             await randomlyAdvanceBlocks()
             let roundDuration = Date.now() - roundStart
             sysLog(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} in ${roundDuration}ms ------------------------\n`)

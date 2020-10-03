@@ -348,12 +348,12 @@ contract ClaimsManager is InitializableV2 {
 
         // Once they claim the zero reward amount, stake can be modified once again
         // Subtract total locked amount for SP from stake at fund block
-        uint256 claimerTotalStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
+        uint256 totalActiveClaimerStake = totalStakedAtFundBlockForClaimer.sub(_totalLockedForSP);
         uint256 totalStakedAtFundBlock = stakingContract.totalStakedAt(currentRound.fundedBlock);
 
         // Calculate claimer rewards
         uint256 rewardsForClaimer = (
-          claimerTotalStake.mul(fundingAmount)
+          totalActiveClaimerStake.mul(fundingAmount)
         ).div(totalStakedAtFundBlock);
 
         // For a claimer violating bounds, no new tokens are minted
@@ -365,7 +365,7 @@ contract ClaimsManager is InitializableV2 {
                 _claimer,
                 0,
                 totalStakedAtFundBlockForClaimer,
-                claimerTotalStake
+                totalActiveClaimerStake
             );
             return 0;
         }

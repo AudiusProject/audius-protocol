@@ -1022,7 +1022,6 @@ contract DelegateManager is InitializableV2 {
 
         // Amount stored in staking contract for owner
         totalBalanceInStaking = Staking(stakingAddress).totalStakedFor(_serviceProvider);
-        require(totalBalanceInStaking > 0, "DelegateManager: Stake required for claim");
 
         // Amount in sp factory for claimer
         (
@@ -1031,10 +1030,12 @@ contract DelegateManager is InitializableV2 {
             ,,,
         ) = spFactory.getServiceProviderDetails(_serviceProvider);
         // Require active stake to claim any rewards
+        /*
         require(
             totalBalanceInSPFactory.sub(spLockedStake) > 0,
             "DelegateManager: Service Provider stake required"
         );
+        */
 
         // Amount in delegate manager staked to service provider
         uint256 totalBalanceOutsideStaking = (

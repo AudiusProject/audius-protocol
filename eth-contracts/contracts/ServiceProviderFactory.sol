@@ -405,9 +405,8 @@ contract ServiceProviderFactory is InitializableV2 {
             spDetails[msg.sender].numberOfEndpoints > 0,
             "ServiceProviderFactory: Registered endpoint required to increase stake"
         );
-        // Prevent increases in stake unless 
         require(
-            !_claimPending(msg.sender) || spDetails[msg.sender].validBounds == false,
+            !_claimPending(msg.sender),
             "ServiceProviderFactory: No claim expected to be pending prior to stake transfer"
         );
 
