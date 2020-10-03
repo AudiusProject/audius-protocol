@@ -1,7 +1,7 @@
 from flask_restx import fields
 from src.api.v1.models.users import user_model, user_model_full
 from src.api.v1.models.tracks import track_full
-from .common import favorite, ns, repost
+from .common import IsPlaylist, favorite, ns, repost
 
 playlist_artwork = ns.model('playlist_artwork', {
     "150x150": fields.String,
@@ -31,6 +31,7 @@ playlist_model = ns.model('playlist', {
 })
 
 full_playlist_model = ns.clone('playlist_full', playlist_model, {
+    "is": IsPlaylist,
     "created_at": fields.String,
     "followee_reposts": fields.List(fields.Nested(repost)),
     "followee_saves": fields.List(fields.Nested(favorite)),

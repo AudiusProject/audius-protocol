@@ -2,7 +2,7 @@ from flask_restx.fields import Boolean
 from src.api.v1.helpers import make_response
 from flask_restx import fields
 from .users import user_model, user_model_full
-from .common import favorite, ns, repost
+from .common import IsTrack, favorite, ns, repost
 
 track_artwork = ns.model('track_artwork', {
     "150x150": fields.String,
@@ -75,6 +75,7 @@ track = ns.model('Track', {
 })
 
 track_full = ns.clone('track_full', track, {
+    "is": IsTrack,
     "create_date": fields.String,
     "cover_art_sizes": fields.String,
     "created_at": fields.String,
