@@ -66,8 +66,7 @@ contract('Random testing', async (accounts) => {
     const RemoveDelegatorLockupDuration = 21
     const DeployerCutLockupDuration = FundingRoundBlockDiffForTest + 1
     const SystemUser = "system"
-    // const TestDuration = 3600000
-    const TestDuration = 36000
+    const TestDuration = 3600000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -337,7 +336,7 @@ contract('Random testing', async (accounts) => {
         let slashPercent = 30
         let slashDiceRoll = rand(0, 100)
         let shouldSlash = slashDiceRoll < slashPercent
-        sysLog(`Slash rolled ${slashDiceRoll}, min required ${slashPercent}%`)
+        sysLog(`Slash rolled ${slashDiceRoll}, max-${slashPercent}%`)
         if (!shouldSlash) return
 
         let randSlashTarget = users[Math.floor(Math.random()*users.length)] 
