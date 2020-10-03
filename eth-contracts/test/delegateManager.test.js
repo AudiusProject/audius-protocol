@@ -2434,17 +2434,37 @@ contract('DelegateManager', async (accounts) => {
       })
 
       it('Slash cancels pending undelegate request', async () => {
-        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
+        // Initiate lockup of all 
+        await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT, { from: stakerAccount })
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
 
-        // Slash
-        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress)
+        // Initiate a round
+        await claimsManager.initiateRound({ from: accounts[10] })
 
+        // Slash all stake while pending request
+        await _lib.slash(DEFAULT_AMOUNT.toString(), slasherAccount, governance, delegateManagerKey, guardianAddress)
+
+        // Validate pending decrease stake request status on chain
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
         assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
+
+        // Confirm successful claim of zero after getting slashed 
+        let claimTx = await delegateManager.claimRewards(stakerAccount)
+        await expectEvent.inTransaction(
+          claimTx.tx,
+          DelegateManager,
+          'Claim',
+          {
+            _claimer: stakerAccount,
+            _rewards: _lib.toBN(0)
+          }
+        )
+        let info = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(info.spFactoryStake.eq(_lib.toBN(0)), 'No stake expected')
+        assert.isTrue(info.totalInStakingContract.eq(_lib.toBN(0)), 'No stake expected')
       })
 
       it('Update decreaseStakeLockupDuration', async () => {
