@@ -333,10 +333,10 @@ contract('Random testing', async (accounts) => {
     }
 
     const randomlySlash = async () => {
-        let slashPercent = 30
+        let slashPercent = 50
         let slashDiceRoll = rand(0, 100)
         let shouldSlash = slashDiceRoll < slashPercent
-        sysLog(`Slash rolled ${slashDiceRoll}, max-${slashPercent}%`)
+        sysLog(`Slash rolled ${slashDiceRoll}, probability=${slashPercent}%, shouldSlash=${shouldSlash}`)
         if (!shouldSlash) return
 
         let randSlashTarget = users[Math.floor(Math.random()*users.length)] 
