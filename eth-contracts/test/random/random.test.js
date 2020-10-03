@@ -66,7 +66,7 @@ contract('Random testing', async (accounts) => {
     const RemoveDelegatorLockupDuration = 21
     const DeployerCutLockupDuration = FundingRoundBlockDiffForTest + 1
     const SystemUser = "system"
-    const TestDuration = 3600000
+    const TestDuration = 7200000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
