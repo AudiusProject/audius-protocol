@@ -158,7 +158,7 @@ full_tracks_response = make_response("full_tracks", full_ns, fields.List(fields.
 @full_ns.route(USER_TRACKS_ROUTE)
 class FullTrackList(Resource):
     @record_metrics
-    @ns.doc(
+    @full_ns.doc(
         id="""Get User's Tracks""",
         params={
             'user_id': 'A User ID',
@@ -172,7 +172,7 @@ class FullTrackList(Resource):
             500: 'Server error'
         }
     )
-    @ns.marshal_with(full_tracks_response)
+    @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch a list of tracks for a user."""
@@ -204,7 +204,7 @@ class FullTrackList(Resource):
 @full_ns.route("/handle/<string:handle>/tracks")
 class HandleFullTrackList(Resource):
     @record_metrics
-    @ns.doc(
+    @full_ns.doc(
         id="""Get User's Tracks""",
         params={
             'user_id': 'A User ID',
@@ -218,7 +218,7 @@ class HandleFullTrackList(Resource):
             500: 'Server error'
         }
     )
-    @ns.marshal_with(full_tracks_response)
+    @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=5)
     def get(self, handle):
         """Fetch a list of tracks for a user."""
@@ -299,7 +299,7 @@ full_reposts_response = make_response("full_reposts", full_ns, fields.List(field
 @full_ns.route(USER_REPOSTS_ROUTE)
 class FullRepostList(Resource):
     @record_metrics
-    @ns.doc(
+    @full_ns.doc(
         id="""Get User's Reposts""",
         params={
             'user_id': 'A User ID',
@@ -312,7 +312,7 @@ class FullRepostList(Resource):
             500: 'Server error'
         }
     )
-    @ns.marshal_with(full_reposts_response)
+    @full_ns.marshal_with(full_reposts_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         decoded_id = decode_with_abort(user_id, ns)
@@ -341,7 +341,7 @@ class FullRepostList(Resource):
 @full_ns.route("/handle/<string:handle>/reposts")
 class HandleFullRepostList(Resource):
     @record_metrics
-    @ns.doc(
+    @full_ns.doc(
         id="""Get User's Reposts""",
         params={
             'user_id': 'A User ID',
@@ -354,7 +354,7 @@ class HandleFullRepostList(Resource):
             500: 'Server error'
         }
     )
-    @ns.marshal_with(full_reposts_response)
+    @full_ns.marshal_with(full_reposts_response)
     @cache(ttl_sec=5)
     def get(self, handle):
         args = user_reposts_route_parser.parse_args()
