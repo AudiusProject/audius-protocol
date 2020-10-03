@@ -12,6 +12,7 @@ const AudiusToken = artifacts.require('AudiusToken')
 
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
 const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
+const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 contract('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
@@ -25,18 +26,22 @@ contract('Random testing', async (accounts) => {
     let totalClaimedRewards = _lib.toBN(0)
     let totalDeployerStaked = _lib.toBN(0)
     let totalDelegatedAmount = _lib.toBN(0)
+    let totalSlashedAmount = _lib.toBN(0)
     let numDelegateOperations = _lib.toBN(0)
     let numRemoveDelegatorOps = _lib.toBN(0)
     let numDecreaseStakeOperations = _lib.toBN(0)
+    let numSlashOperations = _lib.toBN(0)
 
     const printTestSummary = () => {
         console.log(`\n------------------------ AUDIUS RANDOM TESTING Summary ------------------------`)
         console.log(`totalClaimedRewards: ${totalClaimedRewards}                | Total claimed through protocol rewards`)
         console.log(`totalDeployerStaked: ${totalDeployerStaked}                | Total staked directly deployers`)
         console.log(`totalDelegatedAmount: ${totalDelegatedAmount}              | Total delegated `)
+        console.log(`totalSlashedAmount: ${totalSlashedAmount}                  | Total slashed value `)
         console.log(`numDelegateOperations: ${numDelegateOperations}            | Number of delegate operations`)
         console.log(`numDecreaseStakeOperations: ${numDecreaseStakeOperations}  | Number of successfully evaluated decrease stake operations`)
         console.log(`numRemoveDelegatorOps: ${numRemoveDelegatorOps}            | Number of remove delegator operations`)
+        console.log(`numSlashOperations: ${numSlashOperations}                  | Number of slash operations`)
     }
 
     // proxyDeployerAddress is used to transfer tokens to service accounts as needed
@@ -49,12 +54,10 @@ contract('Random testing', async (accounts) => {
     const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
     const userOffset = 25 
 
-    // const numUsers = 1
     const numUsers = 15
     const minNumServicesPerUser = 1
     const maxNumServicesPerUser = 2 // TODO: CONSUME THIS
 
-    // const numRounds = 15
     const FundingRoundBlockDiffForTest = 200
     const VotingPeriod = 10 
     const ExecutionDelayBlocks = 10
@@ -63,7 +66,7 @@ contract('Random testing', async (accounts) => {
     const RemoveDelegatorLockupDuration = 21
     const DeployerCutLockupDuration = FundingRoundBlockDiffForTest + 1
     const SystemUser = "system"
-    const TestDuration = 3600000
+    const TestDuration = 7200000
 
     // TODO: Add non-SP delegators after everything else
     beforeEach(async () => {
@@ -175,21 +178,21 @@ contract('Random testing', async (accounts) => {
         return Math.floor(Math.random() * (max - min) + min)
     }
 
+    const fromWei = (bn) => {
+        return web3.utils.fromWei(bn.toString(), 'ether')
+    }
+
     // Convert from wei -> eth to generate a random number
     // Helper converts back to wei prior to returning 
     const randAmount = (min, max) => {
-        let minNum = fromWei(min)
-        let maxNum = fromWei(max)
+        let minNum = parseInt(fromWei(min))
+        let maxNum = parseInt(fromWei(max))
         let randNum = rand(minNum, maxNum)
         return _lib.toBN(web3.utils.toWei(randNum.toString(), 'ether'))
     }
 
     const makeDummyEndpoint = (user, type) => {
         return `https://${user}-${type}:${rand(0, 10000000000)}`
-    }
-
-    const fromWei = (bn) => {
-        return web3.utils.fromWei(bn.toString(), 'ether')
     }
 
     const testLog = (user, msg) => {
@@ -327,6 +330,47 @@ contract('Random testing', async (accounts) => {
         } catch (e) {
             testLog(delegator, `Error delegating ${amount} from ${delegator} to ${serviceProvider}. ${e}`)
         }
+    }
+
+    const randomlySlash = async () => {
+        let slashPercent = 50
+        let slashDiceRoll = rand(0, 100)
+        let shouldSlash = slashDiceRoll < slashPercent
+        sysLog(`Slash rolled ${slashDiceRoll}, probability=${slashPercent}%, shouldSlash=${shouldSlash}`)
+        if (!shouldSlash) return
+
+        let randSlashTarget = users[Math.floor(Math.random()*users.length)] 
+        let targetInfo = await getAccountStakeInfo(randSlashTarget)
+        let totalStakeForSlashTarget = targetInfo.totalInStakingContract 
+        if (totalStakeForSlashTarget.eq(_lib.toBN(0))) {
+            testLog(randSlashTarget, `randomlySlash - No stake found for user ${randSlashTarget}`)
+        }
+        // Dice roll to slash ALL or portion
+        // 10% chance of slashing ALL stake
+        let shouldSlashAll = rand(0, 100) > 90
+        let slashAmount
+        testLog(randSlashTarget, `Random slash ${randSlashTarget} has ${totalStakeForSlashTarget} tokens, shouldSlashAll=${shouldSlashAll}`)
+        if (shouldSlashAll) {
+            slashAmount = totalStakeForSlashTarget
+        } else {
+            // Slash between 1/10 and 1/2 of stake
+            slashAmount = randAmount(totalStakeForSlashTarget.div(_lib.toBN(10)), totalStakeForSlashTarget.div(_lib.toBN(2)))
+        }
+        testLog(randSlashTarget, `Randomly slashing ${randSlashTarget} ${slashAmount} tokens`)
+        try {
+            await _lib.slash(
+                slashAmount.toString(),
+                randSlashTarget,
+                governance,
+                delegateManagerKey,
+                guardianAddress
+            )
+        } catch(e) {
+            console.log(e)
+        }
+        numSlashOperations = numSlashOperations.add(_lib.toBN(1))
+        totalSlashedAmount = totalSlashedAmount.add(slashAmount)
+        testLog(randSlashTarget, `Randomly slashed ${randSlashTarget} ${slashAmount}`)
     }
 
     const randomlyDelegate = async (user) => {
@@ -508,7 +552,17 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
     const validateUsers = async (users) => {
         sysLog(`------- Validating User State -------`)
         await Promise.all(users.map(async (user) => {
-            await validateAccountStakeBalance(user)
+            let info = await validateAccountStakeBalance(user)
+            // If out of bounds, transfer minimum stake
+            // let withinBounds = info.spDetails.withinBounds
+            let lowerBoundViolated = info.totalInStakingContract.lt(info.spDetails.minAccountStake)
+            if (lowerBoundViolated) {
+                let increaseAmount = await info.spDetails.minAccountStake
+                testLog(user, `Increasing stake by ${increaseAmount}`)
+                await token.transfer(user, increaseAmount, { from: proxyDeployerAddress })
+                await token.approve(staking.address, increaseAmount, { from: user })
+                await serviceProviderFactory.increaseStake(increaseAmount, { from: user })
+            }
         }))
         sysLog(`------- Finished Validating User State -------`)
     }
@@ -526,11 +580,15 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
                 async (user) => {
                     let preClaimInfo = await getAccountStakeInfo(user)
                     let totalForUserAtFundBlock = await staking.totalStakedForAt(user, lastFundedBlock)
-                    let tx = await delegateManager.claimRewards(user, { from: user })
-                    let postClaimInfo = await getAccountStakeInfo(user)
-                    let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
-                    testLog(user, `Claimed ${rewards}, totalForUserAtFundBlock=${totalForUserAtFundBlock} - validBounds==${preClaimInfo.spDetails.validBounds}`)
-                    totalClaimedRewards = totalClaimedRewards.add(rewards)
+                    try {
+                        let tx = await delegateManager.claimRewards(user, { from: user })
+                        let postClaimInfo = await getAccountStakeInfo(user)
+                        let rewards = postClaimInfo.totalInStakingContract.sub(preClaimInfo.totalInStakingContract)
+                        testLog(user, `Claimed ${rewards}, totalForUserAtFundBlock=${totalForUserAtFundBlock} - validBounds==${preClaimInfo.spDetails.validBounds}`)
+                        totalClaimedRewards = totalClaimedRewards.add(rewards)
+                    } catch(e) {
+                        console.log(e)
+                    }
                 }
             )
         )
@@ -608,10 +666,15 @@ outside=${info.outsideStake.toString()}=(deployerStake=${info.spDetails.deployer
 
             // TODO: Randomize from which acct the round is initiated
             await initiateRound(users[0])
+
+            await randomlySlash()
+
             await randomlyAdvanceBlocks()
             await claimPendingRewards(users)
+
             await randomlyAdvanceBlocks()
             await validateUsers(users)
+
             await randomlyAdvanceBlocks()
             let roundDuration = Date.now() - roundStart
             sysLog(`------------------------ AUDIUS RANDOM TESTING - Finished Round ${currentRound} in ${roundDuration}ms ------------------------\n`)
