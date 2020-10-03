@@ -2,6 +2,7 @@ const request = require('supertest')
 const models = require('../src/models')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
+const { getIPFSMock } = require('./lib/ipfsMock')
 const { createStarterCNodeUser, testEthereumConstants } = require('./lib/dataSeeds')
 const blacklistManager = require('../src/blacklistManager')
 const ipfsClient = require('../src/ipfsClient')
@@ -10,33 +11,37 @@ const path = require('path')
 const assert = require('assert')
 const _ = require('lodash')
 const { getCNodeUser, stringifiedDateFields, destroyUsers } = require('./utils')
+const nock = require('nock')
+const config = require('../src/config')
+
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
+const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 
-let server, app, ipfs, libsMock
+let server, app, ipfs
 
 describe('test nodesync', function () {
-  before(async function () {
-    ipfs = ipfsClient.ipfs
-    libsMock = getLibsMock()
-    const appInfo = await getApp(ipfs, libsMock, blacklistManager)
-    server = appInfo.server
-    app = appInfo.app
-  })
+  this.timeout(3000000)
 
   beforeEach(async function () {
     await destroyUsers()
   })
 
   after(async function () {
-    await destroyUsers()
+    // await destroyUsers()
     await server.close()
   })
 
   it('test /export', async function () {
-    const MAX_CLOCK_VAL = 37
-
     // SETUP
+
+    ipfs = ipfsClient.ipfs
+    const libsMock = getLibsMock()
+    const appInfo = await getApp(ipfs, libsMock, blacklistManager)
+    server = appInfo.server
+    app = appInfo.app
+
+    const MAX_CLOCK_VAL = 37
 
     // Create user
     const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser()
@@ -205,10 +210,147 @@ describe('test nodesync', function () {
     assert.deepStrictEqual(clockRecords.length, MAX_CLOCK_VAL)
   })
 
-  it('test /sync', function () {
-    /**
-         * mock export request obj + ensure all files are avail on test IPFS node
-         * confirm sync successfully
-         */
+  it.only('test /sync', async function () {
+
+    // Setup
+
+    const TEST_ENDPOINT = 'http://test-cn.co'
+    const userMetadataURI = config.get('userMetadataNodeUrl')
+    const ipfsMock = getIPFSMock()
+
+    // Make ipfs add return the cid
+    // used to create the readstream
+    ipfsMock.add = function * (content) {
+      const {path} = content
+      const cid = path.split('/')[1]
+      yield {
+        cid: {
+          toString: () => cid
+        }
+      }
+    }
+    const libsMock = getLibsMock()
+    const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
+    server = appInfo.server
+    app = appInfo.app
+
+    const { pubKey } = testEthereumConstants
+
+    // Get the saved export
+    const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
+    const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
+    const audiusUser = cnodeUser.audiusUsers[0]
+    const {tracks, files, clockRecords} = cnodeUser
+
+    // Setup mocked responses
+    nock(TEST_ENDPOINT)
+      .persist()
+      .get(uri => {
+        console.log({uri})
+        return uri.includes('/export')
+      })
+      .reply(200, sampleExport)
+
+    nock(userMetadataURI)
+      .persist()
+      .get(uri => {
+        console.log({uri})
+        return uri.includes('/ipfs')
+      })
+      .reply(200, {data: Buffer.alloc(32)})
+
+
+    // test: sync
+
+    const { sessionToken } = await createStarterCNodeUser()
+     await request(app)
+      .post('/sync')
+      .set('X-Session-ID', sessionToken)
+      .send({
+        wallet: [pubKey.toLowerCase()],
+        creator_node_endpoint: TEST_ENDPOINT,
+        immediate: true
+      }).expect(200)
+
+
+    // verify: expected files are all on disc
+
+    // verify clock records
+    for (let exportedRecord of clockRecords) {
+      const { cnodeUserUUID, clock, sourceTable, createdAt, updatedAt} = exportedRecord
+      const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+        where: {
+          clock,
+          cnodeUserUUID,
+          sourceTable,
+          createdAt,
+          updatedAt
+        },
+        raw: true
+      }))
+      assert.deepStrictEqual(localRecord, exportedRecord)
+    }
+
+    // verify files
+    for (let exportedFile of files) {
+      const { fileUUID, cnodeUserUUID, multihash, clock} = exportedFile
+      const localFile = stringifiedDateFields(await models.File.findOne({
+        where: {
+          clock,
+          cnodeUserUUID,
+          multihash,
+          fileUUID
+        },
+        raw: true
+      }))
+      assert.deepStrictEqual(localFile, exportedFile)
+    }
+
+    // verify tracks
+    for (let exportedTrack of tracks) {
+      const { cnodeUserUUID, clock, blockchainId, metadataFileUUID} = exportedTrack
+      const localFile = stringifiedDateFields(await models.Track.findOne({
+        where: {
+          clock,
+          cnodeUserUUID,
+          blockchainId,
+          metadataFileUUID
+        },
+        raw: true
+      }))
+      assert.deepStrictEqual(localFile, exportedTrack)
+    }
+
+    // verify AudiusUser
+    const localAudiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
+      where: {
+        cnodeUserUUID: audiusUser.cnodeUserUUID,
+        clock: audiusUser.clock
+      },
+      raw: true
+    }))
+
+    const exportedCnodeUser = {
+      cnodeUserUUID: cnodeUser.cnodeUserUUID,
+      walletPublicKey: cnodeUser.walletPublicKey,
+      lastLogin: cnodeUser.lastLogin,
+      latestBlockNumber: cnodeUser.latestBlockNumber,
+      clock: cnodeUser.clock,
+      createdAt: cnodeUser.createdAt,
+    }
+
+    assert.deepStrictEqual(localAudiusUser, audiusUser)
+
+    // verify CNodeUser
+    let localCnodeUser = stringifiedDateFields(await models.CNodeUser.find({
+      where: {
+        cnodeUserUUID: cnodeUser.cnodeUserUUID,
+      },
+      raw: true
+    }))
+    localCnodeUser = _.omit(localCnodeUser, ['updatedAt'])
+
+    assert.deepStrictEqual(localCnodeUser, exportedCnodeUser)
+
   })
 })

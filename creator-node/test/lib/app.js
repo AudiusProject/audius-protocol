@@ -20,6 +20,7 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
 
   const mockServiceRegistry = {
     ipfs: ipfsMock,
+    ipfsLatest: ipfsMock,
     libs: libsMock,
     blacklistManager: blacklistManager,
     redis: redisClient
