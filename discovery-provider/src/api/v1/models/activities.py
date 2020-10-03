@@ -1,4 +1,4 @@
-from flask_restx import Namespace, fields
+from flask_restx import fields
 from flask_restx.fields import MarshallingError
 from flask_restx.marshalling import marshal
 from .common import ns
