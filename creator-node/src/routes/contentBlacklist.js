@@ -1,7 +1,7 @@
-const { handleResponse, successResponse, errorResponse } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponse, recoverWallet, errorResponseUnauthorized } = require('../apiHelpers')
 const BlacklistManager = require('../blacklistManager')
-
 const models = require('../models')
+const config = require('../config')
 
 module.exports = function (app) {
   /**
@@ -27,16 +27,6 @@ module.exports = function (app) {
     const trackIdsBlacklist = trackIdObjsBlacklist.map(entry => entry.id)
     const userIdsBlacklist = userIdObjsBlacklist.map(entry => entry.id)
 
-    // let trackBlockchainIds = []
-    // if (userIdsBlacklist.length > 0) {
-    //   trackBlockchainIds = (await models.sequelize.query(
-    //     'select "blockchainId" from "Tracks" where "cnodeUserUUID" in (' +
-    //         'select "cnodeUserUUID" from "AudiusUsers" where "blockchainId" in (:userBlacklist)' +
-    //       ');'
-    //     , { replacements: { userIdsBlacklist } }
-    //   ))[0]
-    // }
-
     return successResponse({ blacklistedIds: { trackIds: trackIdsBlacklist, userIds: userIdsBlacklist } })
   }))
 
@@ -46,7 +36,16 @@ module.exports = function (app) {
    * 3. If so, also add associated segments to redis
    */
   app.post('/blacklist/add', handleResponse(async (req, res) => {
-    const { id, type } = req.query
+    let { id, type, timestamp, signature } = req.query
+    id = parseInt(id)
+
+    // Recover public wallet of requester
+    const recoveredPublicWallet = recoverWallet({ id, type, timestamp }, signature)
+    if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
+      return errorResponseUnauthorized(`\n\n\nsignature: ${signature} || recovered: ${recoveredPublicWallet} || config: ${config.get('delegateOwnerWallet')}`)
+
+    //   return errorResponseUnauthorized("Requester's public key does does not match Creator Node's delegate owner wallet.")
+    }
 
     // Add entry to ContentBlacklist table
     let resp
@@ -67,7 +66,6 @@ module.exports = function (app) {
           BlacklistManager.add([], [id])
           break
         }
-
         case 'TRACK': {
           BlacklistManager.add([id])
           break
@@ -84,23 +82,35 @@ module.exports = function (app) {
    * 3. If so, also remove associated segments from redis
    */
   app.post('/blacklist/delete', handleResponse(async (req, res) => {
-    const { id, type } = req.query
+    const { id, type, timestamp, signature } = req.query
 
-    let resp
+    let numRowsDestroyed
     try {
-      resp = await models.ContentBlacklist.destroy({
+      numRowsDestroyed = await models.ContentBlacklist.destroy({
         where: {
           id,
           type
         }
       })
-      req.logger.info(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
     } catch (e) {
       return errorResponse(500, `Error with removing entry with type (${type}) and id (${id}): ${e}`)
     }
 
-    console.log('HELLO WHAT IS THE RESP HEREEERERE')
-    console.log(resp)
+    if (numRowsDestroyed) {
+      req.logger.info(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
+      switch (type) {
+        case 'USER': {
+          BlacklistManager.remove([], [id])
+          break
+        }
+        case 'TRACK': {
+          BlacklistManager.remove([id])
+          break
+        }
+      }
+    } else {
+      req.logger.info(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
+    }
 
     return successResponse({ type, id })
   }))

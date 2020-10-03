@@ -1,13 +1,17 @@
-const models = require('../src/models')
 const axios = require('axios')
+const Web3 = require('web3')
+const web3 = new Web3()
+
+const models = require('../src/models')
 // const config = require('../src/config')
+const { sortKeys, recoverWallet } = require('../src/apiHelpers')
 
 // node updateContentBlacklist.js <action> <type> <id>
 // node updateContentBlacklist.js add user 1
 // node updateContentBlacklist.js delete track 5
 
-// Private key
-const PRIVATE_KEY = '0x7c973a0dde056c6af857ddd6c441a4557e9c2e6db8aa93b4c50b7d5afdb1bb7b'
+const PUBLIC_KEY = '0x360cfb2148414923aff6f1e2da4223a597ff7901'
+const PRIVATE_KEY = '0xf21e444e3cb4482dbb49f3b03ef6bf12f02ffe12448207eee156dc8b023cc34d'
 // const PRIVATE_KEY = config.get('delegatePrivateKey')
 
 // Available action types
@@ -79,19 +83,21 @@ function parseArgs () {
 }
 
 /**
- * Adds entry to content blacklist of type and id
+ * 1. Signs the object {type, id, timestamp} when sorted and stringified
+ * 2. Sends axios request to add entry to content blacklist of type and id
  * @param {string} type
  * @param {int} id
  */
 async function addToContentBlacklist (type, id) {
-  // axios request with type and id as query params
+  const { timestamp, signature } = generateTimestampAndSignature(type, id)
+
   let resp
   try {
     resp = await axios({
       // url: `${config.get('creatorNodeEndpoint')}/blacklist/add`,
       url: 'http://localhost:4000/blacklist/add',
       method: 'post',
-      params: { type, id },
+      params: { type, id, timestamp, signature },
       responseType: 'json'
     })
   } catch (e) {
@@ -102,19 +108,21 @@ async function addToContentBlacklist (type, id) {
 }
 
 /**
- * Removes entry from content blacklist of type and id
+ * 1. Signs the data with PRIVATE_KEY specified in this script
+ * 2. Sends axios request to remove entry from content blacklist of type and id
  * @param {string} type
  * @param {int} id
  */
 async function removeFromContentBlacklist (type, id) {
-  // axios req with type and id as query params
+  const { timestamp, signature } = generateTimestampAndSignature(type, id)
+
   let resp
   try {
     resp = await axios({
       // url: `${config.get('creatorNodeEndpoint')}/blacklist/add`,
       url: 'http://localhost:4000/blacklist/delete',
       method: 'post',
-      params: { type, id },
+      params: { type, id, timestamp, signature },
       responseType: 'json'
     })
   } catch (e) {
@@ -124,5 +132,29 @@ async function removeFromContentBlacklist (type, id) {
   return resp.data
 }
 
+/**
+ * Signs the object {type, id, timestamp} when sorted and stringified with the PRIVATE_KEY.
+ * Used for authentication in the Creator Node to ensure request to add to/remove from
+ * ContentBlacklist is from an authorized user.
+ * @param {string} type
+ * @param {int} id
+ */
+function generateTimestampAndSignature (type, id) {
+  // Generate data
+  const timestamp = new Date().toISOString()
+  const toSignObj = { type, id, timestamp }
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(toSignObj))
+
+  const toSignHash = web3.utils.keccak256(toSignStr)
+
+  console.log('what is the hash in script')
+  console.log(toSignHash)
+
+  // Generate signature with hashed data and private key
+  const signedResponse = web3.eth.accounts.sign(toSignHash, PRIVATE_KEY)
+
+  return { timestamp, signature: signedResponse.signature }
+}
+
 run()
-// addToContentBlacklist()

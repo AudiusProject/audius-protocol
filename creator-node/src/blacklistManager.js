@@ -61,7 +61,7 @@ class BlacklistManager {
   static async add (trackIdsToBlacklist = [], userIdsToBlacklist = []) {
     // Get tracks from param and by parsing through user tracks
     const tracks = await this.getTracksFromUsers(userIdsToBlacklist)
-    trackIdsToBlacklist = [tracks.map(track => track.blockchainId), ...trackIdsToBlacklist]
+    trackIdsToBlacklist = [...tracks.map(track => track.blockchainId), ...trackIdsToBlacklist]
 
     // Dedupe trackIds
     const trackIds = new Set(trackIdsToBlacklist)
@@ -85,7 +85,7 @@ class BlacklistManager {
   static async remove (trackIdsToRemove = [], userIdsToRemove = []) {
     // Get tracks from param and by parsing through user tracks
     const tracks = await this.getTracksFromUsers(userIdsToRemove)
-    trackIdsToRemove = [tracks.map(track => track.blockchainId), ...trackIdsToRemove]
+    trackIdsToRemove = [...tracks.map(track => track.blockchainId), ...trackIdsToRemove]
 
     // Dedupe trackIds
     let trackIds = new Set(trackIdsToRemove)
@@ -107,8 +107,6 @@ class BlacklistManager {
    * @param {[int]} userIdsBlacklist
    */
   static async getTracksFromUsers (userIdsBlacklist) {
-    console.log('huh what is thing')
-    console.log(userIdsBlacklist)
     let tracks = []
     if (userIdsBlacklist.length > 0) {
       // ? this actually returns the entire track and not just blockchainId

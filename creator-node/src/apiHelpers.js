@@ -107,6 +107,7 @@ const recoverWallet = (data, signature) => {
 
   return recoveredWallet
 }
+module.exports.recoverWallet = recoverWallet
 
 const sortKeys = x => {
   if (typeof x !== 'object' || !x) { return x }
