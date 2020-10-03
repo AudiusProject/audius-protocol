@@ -1030,12 +1030,6 @@ contract DelegateManager is InitializableV2 {
             ,,,
         ) = spFactory.getServiceProviderDetails(_serviceProvider);
         // Require active stake to claim any rewards
-        /*
-        require(
-            totalBalanceInSPFactory.sub(spLockedStake) > 0,
-            "DelegateManager: Service Provider stake required"
-        );
-        */
 
         // Amount in delegate manager staked to service provider
         uint256 totalBalanceOutsideStaking = (
