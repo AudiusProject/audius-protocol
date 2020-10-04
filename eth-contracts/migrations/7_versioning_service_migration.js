@@ -196,5 +196,14 @@ module.exports = (deployer, network, accounts) => {
       await claimsManager.getServiceProviderFactoryAddress(),
       'Expect updated claims manager'
     )
+    // Set ServiceProviderFactory address in Governance
+    await governance.guardianExecuteTransaction(
+      governanceKey,
+      _lib.toBN(0),
+      'setServiceProviderFactoryAddress(address)',
+      _lib.abiEncode(['address'], [serviceProviderFactoryProxy.address]),
+      { from: guardianAddress }
+    )
+    assert.equal(await governance.getServiceProviderFactoryAddress.call(), serviceProviderFactoryProxy.address)
   })
 }

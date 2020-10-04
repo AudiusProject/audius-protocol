@@ -12,7 +12,8 @@ const governanceRegKey = web3.utils.utf8ToHex('Governance')
 // 48hr * 60 min/hr * 60 sec/min / ~13 sec/block = 13292 blocks
 const VotingPeriod = 13292
 // Required percent of total stake to have been voted with on proposal
-const VotingQuorumPercent = 10
+// Default to 5%
+const VotingQuorumPercent = 5
 
 // Max number of concurrent InProgress proposals
 // - Setting to 100 by default as that is a sufficiently large value that is not at gas limit risk

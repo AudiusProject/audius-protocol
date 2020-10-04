@@ -121,13 +121,14 @@ contract('ClaimsManager', async (accounts) => {
       _lib.abiEncode(['address'], [claimsManager.address]),
       { from: guardianAddress }
     )
-
     // ---- Configuring addresses
-    await _lib.configureGovernanceStakingAddress(
+    await _lib.configureGovernanceContractAddresses(
       governance,
       governanceKey,
       guardianAddress,
-      stakingProxy.address
+      stakingProxy.address,
+      mockStakingCaller.address,
+      mockDelegateManager.address
     )
     // ---- Set up staking contract permissions
     await _lib.configureStakingContractAddresses(
@@ -139,7 +140,6 @@ contract('ClaimsManager', async (accounts) => {
       claimsManagerProxy.address,
       mockDelegateManager.address
     )
-
     // --- Set up claims manager contract permissions
     let txs = await _lib.configureClaimsManagerContractAddresses(
       governance,
@@ -150,7 +150,6 @@ contract('ClaimsManager', async (accounts) => {
       mockStakingCaller.address,
       mockDelegateManager.address
     )
-
     await expectEvent.inTransaction(txs.stakingAddressTx.tx, ClaimsManager, 'StakingAddressUpdated', { _newStakingAddress: stakingProxy.address })
     await expectEvent.inTransaction(txs.govAddressTx.tx, ClaimsManager, 'GovernanceAddressUpdated', { _newGovernanceAddress: governance.address })
     await expectEvent.inTransaction(txs.spAddressTx.tx, ClaimsManager, 'ServiceProviderFactoryAddressUpdated', { _newServiceProviderFactoryAddress: mockStakingCaller.address })
