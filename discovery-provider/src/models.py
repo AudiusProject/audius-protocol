@@ -436,6 +436,19 @@ play_item_id={self.play_item_id}\
 updated_at={self.updated_at}\
 created_at={self.created_at}>"
 
+class AggregatePlays(Base):
+    __tablename__ = "aggregate_plays"
+
+    play_item_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    count = Column(Integer, nullable=False, index=False)
+
+    Index('play_item_id_idx', 'play_item_id', unique=False)
+
+    def __repr__(self):
+        return f"<AggregatePlays(\
+play_item_id={self.play_iteme_id},\
+count={self.count}>"
+
 class RouteMetrics(Base):
     __tablename__ = "route_metrics"
 

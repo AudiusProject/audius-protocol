@@ -556,7 +556,7 @@ contract('DelegateManager', async (accounts) => {
         'Stake value in SPFactory and Staking.sol must be equal')
     })
 
-    it('Fail to claim for an address that has zero stake', async () => {
+    it('Claim zero for an address that has zero stake', async () => {
       await claimsManager.initiateRound({ from: stakerAccount })
 
       // Claim from a separate account to confirm claimRewards can be called by any address
@@ -564,9 +564,23 @@ contract('DelegateManager', async (accounts) => {
       let fakeSPAddress = accounts[9]
       assert.isTrue(claimerAddress !== stakerAccount, 'Expected different claimer account')
       assert.isTrue(claimerAddress !== stakerAccount, 'Expected fake service provider address')
-      await _lib.assertRevert(
-        delegateManager.claimRewards(fakeSPAddress, { from: claimerAddress }),
-        "Stake required for claim"
+      let preClaimInfo = await getAccountStakeInfo(fakeSPAddress)
+
+      let tx = await delegateManager.claimRewards(fakeSPAddress, { from: claimerAddress })
+      let postClaimInfo = await getAccountStakeInfo(fakeSPAddress)
+      assert.isTrue(
+        postClaimInfo.totalInStakingContract.eq(preClaimInfo.totalInStakingContract),
+        "Expect no reward for an account claiming"
+      )
+      await expectEvent.inTransaction(
+        tx.tx,
+        DelegateManager,
+        'Claim',
+        {
+          _claimer: fakeSPAddress,
+          _rewards: _lib.toBN(0),
+          _newTotal: _lib.toBN(0)
+        }
       )
     })
 
@@ -2113,7 +2127,7 @@ contract('DelegateManager', async (accounts) => {
 
     describe('Service provider decrease stake behavior', async () => {
       it('claimReward disabled if no active stake for SP', async () => {
-        // Request decrease all of stake
+        // Request decrease all of stake through deregister
         await _lib.deregisterServiceProvider(
           serviceProviderFactory,
           testDiscProvType,
@@ -2124,12 +2138,14 @@ contract('DelegateManager', async (accounts) => {
         let acctInfo = await getAccountStakeInfo(stakerAccount)
         let spStake = acctInfo.spFactoryStake
         assert.isTrue(spStake.gt(_lib.toBN(0)), 'Expect non-zero stake')
+        let preClaimInfo = await getAccountStakeInfo(stakerAccount)
         // Transaction will fail since maximum stake for the account is now zero after the deregister
-        await _lib.assertRevert(
-          delegateManager.claimRewards(stakerAccount, { from: stakerAccount }),
-          'Service Provider stake required'
+        await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+        let postClaimInfo = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(
+          postClaimInfo.totalInStakingContract.eq(preClaimInfo.totalInStakingContract),
+          "Expect no reward for an account claiming"
         )
-
         let deregisterRequestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         await time.advanceBlockTo(deregisterRequestInfo.lockupExpiryBlock)
         // Withdraw all stake
@@ -2420,17 +2436,37 @@ contract('DelegateManager', async (accounts) => {
       })
 
       it('Slash cancels pending undelegate request', async () => {
+        // Lock 1/2 stake
         await serviceProviderFactory.requestDecreaseStake(DEFAULT_AMOUNT.div(_lib.toBN(2)), { from: stakerAccount })
         let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).gt(_lib.toBN(0)), 'Expected lockup expiry block to be set')
         assert.isTrue((requestInfo.amount).gt(_lib.toBN(0)), 'Expected amount to be set')
 
-        // Slash
-        await _lib.slash(_lib.audToWei(5), slasherAccount, governance, delegateManagerKey, guardianAddress)
+        // Initiate a round
+        await claimsManager.initiateRound({ from: accounts[10] })
 
+        // Slash all stake while pending request
+        await _lib.slash(DEFAULT_AMOUNT.toString(), slasherAccount, governance, delegateManagerKey, guardianAddress)
+
+        // Validate pending decrease stake request status on chain
         requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(stakerAccount)
         assert.isTrue((requestInfo.lockupExpiryBlock).eq(_lib.toBN(0)), 'Expected lockup expiry block reset')
         assert.isTrue((requestInfo.amount).eq(_lib.toBN(0)), 'Expected amount reset')
+
+        // Confirm successful claim of zero after getting slashed 
+        let claimTx = await delegateManager.claimRewards(stakerAccount)
+        await expectEvent.inTransaction(
+          claimTx.tx,
+          DelegateManager,
+          'Claim',
+          {
+            _claimer: stakerAccount,
+            _rewards: _lib.toBN(0)
+          }
+        )
+        let info = await getAccountStakeInfo(stakerAccount)
+        assert.isTrue(info.spFactoryStake.eq(_lib.toBN(0)), 'No stake expected')
+        assert.isTrue(info.totalInStakingContract.eq(_lib.toBN(0)), 'No stake expected')
       })
 
       it('Update decreaseStakeLockupDuration', async () => {
