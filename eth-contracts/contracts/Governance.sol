@@ -1038,8 +1038,8 @@ contract Governance is InitializableV2 {
      *      With 7% annual token supply inflation, multiplication can overflow ~1635 years at the earliest:
      *      log(2^256/(10^27*100))/log(1.07) ~= 1635
      *
-     * TODO - document that this is at diff blocknumber and some slight inconsistency
-     *          this is per our discussion around documenting the inconcinstency
+     * @dev Note that quorum is evaluated based on total staked at proposal submission
+     *      not total staked at proposal evaluation, this is expected behavior
      */
     function _quorumMet(Proposal memory proposal, Staking stakingContract)
     internal view returns (bool)
