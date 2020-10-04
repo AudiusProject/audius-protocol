@@ -475,69 +475,58 @@ contract('Governance.sol', async (accounts) => {
     assert.equal(await governance2.getStakingAddress.call(), staking2.address)
   })
 
-  it('TODO INCOMPLETE - serviceProviderFactoryAddress management', async () => {
-    // Deploy Registry
-    const registry2 = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
-
-    // Deploy + register Governance
-    const governance2 = await _lib.deployGovernance(
-      artifacts,
-      proxyAdminAddress,
-      proxyDeployerAddress,
-      registry2,
-      votingPeriod,
-      executionDelay,
-      votingQuorumPercent,
-      guardianAddress
-    )
-    await registry2.addContract(governanceKey, governance2.address, { from: proxyDeployerAddress })
-
-    // Deploy + register AudiusToken
-    const token2 = await _lib.deployToken(
-      artifacts,
-      proxyAdminAddress,
-      proxyDeployerAddress,
-      tokenOwnerAddress,
-      governance2.address
-    )
-    await registry2.addContract(tokenRegKey, token2.address, { from: proxyDeployerAddress })
-
-    // Deploy + register ClaimsManager
-    const claimsManager2 = await _lib.deployClaimsManager(
-      artifacts,
-      registry2,
-      governance2,
-      proxyDeployerAddress,
-      guardianAddress,
-      token.address,
-      10,
-      claimsManagerProxyKey
-    )
-
+  it.only('ServiceProviderFactoryAddress management', async () => {
     // Deploy + register ServiceProviderFactory
     const serviceProviderFactory2_0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata2 = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'uint256', 'uint256'],
       [
-        governance2.address,
-        claimsManager2.address,
+        governance.address,
+        claimsManager.address,
         decreaseStakeLockupDuration,
         deployerCutLockupDuration
       ]
     )
     const serviceProviderFactoryProxy2 = await AudiusAdminUpgradeabilityProxy.new(
       serviceProviderFactory2_0.address,
-      governance2.address,
+      governance.address,
       serviceProviderFactoryCalldata2,
       { from: proxyAdminAddress }
     )
-    // const serviceProviderFactory2 = await ServiceProviderFactory.at(serviceProviderFactoryProxy2.address)
-    await registry2.addContract(serviceProviderFactoryKey, serviceProviderFactoryProxy2.address, { from: proxyDeployerAddress })
 
-    /**
-     * TODO - see lines 445-475 from above test. need to mirror those here
-     */
+    let serviceProviderFactory2 = await ServiceProviderFactory.at(serviceProviderFactoryProxy2.address)
+    // Confirm serviceProviderFactory address cannot be set from non-governance address
+    await _lib.assertRevert(
+      governance.setServiceProviderFactoryAddress(
+        serviceProviderFactory2.address,
+        { from: proxyDeployerAddress }
+      ),
+      "revert"
+    )
+    // Confirm serviceProviderFactory cannot be set to zero address
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        governanceKey,
+        callValue0,
+        'setServiceProviderFactoryAddress(address)',
+        _lib.abiEncode(['address'], [_lib.addressZero]),
+        { from: guardianAddress }
+      ),
+      "revert"
+    )
+
+    // Successfully set serviceProviderFactoryAddress via governance
+    await governance.guardianExecuteTransaction(
+      governanceKey,
+      callValue0,
+      'setServiceProviderFactoryAddress(address)',
+      _lib.abiEncode(['address'], [serviceProviderFactory2.address]),
+      { from: guardianAddress }
+    )
+
+    // Confirm serviceProviderFactoryAddress has been set
+    assert.equal(await governance.getServiceProviderFactoryAddress(), serviceProviderFactory2.address)
   })
 
   it('DelegateManagerAddress management', async () => {
@@ -556,7 +545,7 @@ contract('Governance.sol', async (accounts) => {
     )
     let delegateManager2 = await DelegateManager.at(delegateManagerProxy.address)
 
-    // Confirm staking address cannot be set from non-governance address
+    // Confirm delegateManager address cannot be set from non-governance address
     await _lib.assertRevert(
       governance.setDelegateManagerAddress(
         delegateManager2.address,
@@ -565,7 +554,7 @@ contract('Governance.sol', async (accounts) => {
       "revert"
     )
 
-    // Confirm staking address cannot be set to zero address
+    // Confirm delegateManager cannot be set to zero address
     await _lib.assertRevert(
       governance.guardianExecuteTransaction(
         governanceKey,
@@ -577,7 +566,7 @@ contract('Governance.sol', async (accounts) => {
       "revert"
     )
 
-    // Successfully set staking address via governance
+    // Successfully set delegateManager via governance
     await governance.guardianExecuteTransaction(
       governanceKey,
       callValue0,
@@ -586,7 +575,7 @@ contract('Governance.sol', async (accounts) => {
       { from: guardianAddress }
     )
 
-    // Confirm staking address has been set
+    // Confirm delegateManager has been set
     assert.equal(await governance.getDelegateManagerAddress(), delegateManager2.address)
   })
 
@@ -807,7 +796,6 @@ contract('Governance.sol', async (accounts) => {
       assert.isTrue(stakeInfo.totalActiveStake.eq(_lib.toBN(0)), "Expect zero active stake")
       await submitAndVerifySlashProposalFailure(stakerAccount1)
     })
-    // TODO: Test quorum changes somehow?
   })
 
   describe('Proposal end-to-end test - slash action', async () => {
