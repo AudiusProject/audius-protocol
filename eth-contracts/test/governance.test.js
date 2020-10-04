@@ -1,4 +1,3 @@
-import { before } from 'lodash'
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
@@ -475,7 +474,7 @@ contract('Governance.sol', async (accounts) => {
     assert.equal(await governance2.getStakingAddress.call(), staking2.address)
   })
 
-  it.only('ServiceProviderFactoryAddress management', async () => {
+  it('ServiceProviderFactoryAddress management', async () => {
     // Deploy + register ServiceProviderFactory
     const serviceProviderFactory2_0 = await ServiceProviderFactory.new({ from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata2 = _lib.encodeCall(
