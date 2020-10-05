@@ -4,6 +4,7 @@ const { BufferListStream } = require('bl')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
+const BlacklistManager = require('./blacklistManager')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -197,6 +198,12 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
 
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
+
+  if (await BlacklistManager.CIDIsInBlacklist(multihash)) {
+    logger.error(`rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`)
+    return
+  }
+
   let ipfsPath = multihash
   if (filename != null) {
     // Indicates we are retrieving a directory multihash
@@ -264,6 +271,11 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
 
 async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   const logger = genericLogger.child(logContext)
+
+  if (await BlacklistManager.CIDIsInBlacklist(dirHash)) {
+    logger.error(`rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`)
+    return
+  }
 
   let findOriginalFileQuery = await models.File.findAll({
     where: {

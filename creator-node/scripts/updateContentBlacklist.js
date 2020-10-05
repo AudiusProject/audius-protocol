@@ -148,9 +148,6 @@ function generateTimestampAndSignature (type, id) {
 
   const toSignHash = web3.utils.keccak256(toSignStr)
 
-  console.log('what is the hash in script')
-  console.log(toSignHash)
-
   // Generate signature with hashed data and private key
   const signedResponse = web3.eth.accounts.sign(toSignHash, PRIVATE_KEY)
 

@@ -8,26 +8,8 @@ module.exports = function (app) {
    * Retrieves all blacklisted tracksIds and userIds
   */
   app.get('/blacklist', handleResponse(async (req, res) => {
-    const trackIdObjsBlacklist = await models.ContentBlacklist.findAll({
-      attributes: ['id'],
-      where: {
-        type: 'TRACK'
-      },
-      raw: true
-    })
-
-    const userIdObjsBlacklist = await models.ContentBlacklist.findAll({
-      attributes: ['id'],
-      where: {
-        type: 'USER'
-      },
-      raw: true
-    })
-
-    const trackIdsBlacklist = trackIdObjsBlacklist.map(entry => entry.id)
-    const userIdsBlacklist = userIdObjsBlacklist.map(entry => entry.id)
-
-    return successResponse({ blacklistedIds: { trackIds: trackIdsBlacklist, userIds: userIdsBlacklist } })
+    const idsToBlacklist = await BlacklistManager.getTrackAndUserIdsToBlacklist()
+    return successResponse(idsToBlacklist)
   }))
 
   /**
@@ -42,9 +24,8 @@ module.exports = function (app) {
     // Recover public wallet of requester
     const recoveredPublicWallet = recoverWallet({ id, type, timestamp }, signature)
     if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
-      return errorResponseUnauthorized(`\n\n\nsignature: ${signature} || recovered: ${recoveredPublicWallet} || config: ${config.get('delegateOwnerWallet')}`)
-
-    //   return errorResponseUnauthorized("Requester's public key does does not match Creator Node's delegate owner wallet.")
+      // return errorResponseUnauthorized(`\n\n\nsignature: ${signature} || recovered: ${recoveredPublicWallet} || config: ${config.get('delegateOwnerWallet')}`)
+      return errorResponseUnauthorized("Requester's public key does does not match Creator Node's delegate owner wallet.")
     }
 
     // Add entry to ContentBlacklist table
@@ -82,7 +63,15 @@ module.exports = function (app) {
    * 3. If so, also remove associated segments from redis
    */
   app.post('/blacklist/delete', handleResponse(async (req, res) => {
-    const { id, type, timestamp, signature } = req.query
+    let { id, type, timestamp, signature } = req.query
+    id = parseInt(id)
+
+    // Recover public wallet of requester
+    const recoveredPublicWallet = recoverWallet({ id, type, timestamp }, signature)
+    if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
+      // return errorResponseUnauthorized(`\n\n\nsignature: ${signature} || recovered: ${recoveredPublicWallet} || config: ${config.get('delegateOwnerWallet')}`)
+      return errorResponseUnauthorized("Requester's public key does does not match Creator Node's delegate owner wallet.")
+    }
 
     let numRowsDestroyed
     try {
