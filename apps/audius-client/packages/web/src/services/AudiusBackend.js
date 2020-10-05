@@ -980,34 +980,6 @@ class AudiusBackend {
     }
   }
 
-  static async getTrackListenCounts(trackIds) {
-    if (trackIds.length === 0) return []
-    try {
-      const res = await withEagerOption(
-        {
-          normal: libs => libs.Track.getTrackListens,
-          eager: IdentityAPI.getTrackListens,
-          endpoint: IDENTITY_SERVICE
-        },
-        'millennium',
-        trackIds,
-        null /** startTime */,
-        null /** endTime */,
-        trackIds.length /** limit */,
-        0 /** offset */
-      )
-      if (Object.keys(res).length === 0) {
-        return trackIds.map(id => ({ trackId: id, listens: 0 }))
-      }
-
-      // Since we query for `millennium` here, there is only one response
-      return res[Object.keys(res)[0]].listenCounts
-    } catch (err) {
-      console.error(err.message)
-      return []
-    }
-  }
-
   static async getTrackListens(trackIds, start, end, period) {
     if (trackIds.length === 0) return []
     try {

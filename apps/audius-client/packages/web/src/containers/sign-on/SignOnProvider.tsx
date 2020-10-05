@@ -202,9 +202,14 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
         selectedUserIds.length
       )
     }
-    if (page === Pages.LOADING && isMobile) {
-      this.onStartListening()
-      return
+    if (page === Pages.LOADING) {
+      this.props.recordCompleteCreating()
+      if (isMobile) {
+        // Immediately go to the listening view because we don't
+        // support uploads on mobile
+        this.onStartListening()
+        return
+      }
     }
     this.addRouteHash(page)
     this.props.nextPage(isMobile)
@@ -529,6 +534,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
         users,
         count
       })
+      dispatch(trackEvent)
+    },
+    recordCompleteCreating: () => {
+      const trackEvent: TrackEvent = make(
+        Name.CREATE_ACCOUNT_COMPLETE_CREATING,
+        {}
+      )
       dispatch(trackEvent)
     },
     recordFinish: (enterMode: 'upload' | 'listen') => {

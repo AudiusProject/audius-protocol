@@ -47,7 +47,8 @@ export enum Genre {
   DRUM_AND_BASS = 'Drum & Bass',
   DUBSTEP = 'Dubstep',
   JERSEY_CLUB = 'Jersey Club',
-  VAPORWARE = 'Vaporwave'
+  VAPORWARE = 'Vaporwave',
+  MOOMBAHTON = 'Moombahton'
 }
 
 export const ELECTRONIC_PREFIX = 'Electronic - '
@@ -72,7 +73,8 @@ export const ELECTRONIC_SUBGENRES: { [key in Genre]?: string } = {
   [Genre.DRUM_AND_BASS]: `${ELECTRONIC_PREFIX}Drum & Bass`,
   [Genre.DUBSTEP]: `${ELECTRONIC_PREFIX}Dubstep`,
   [Genre.JERSEY_CLUB]: `${ELECTRONIC_PREFIX}Jersey Club`,
-  [Genre.VAPORWARE]: `${ELECTRONIC_PREFIX}Vaporwave`
+  [Genre.VAPORWARE]: `${ELECTRONIC_PREFIX}Vaporwave`,
+  [Genre.MOOMBAHTON]: `${ELECTRONIC_PREFIX}Moombahton`
 }
 
 export const getCannonicalName = (genre: Genre | any) => {
