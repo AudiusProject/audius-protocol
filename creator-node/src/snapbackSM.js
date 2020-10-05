@@ -15,7 +15,10 @@ class SnapbackSM {
     this.initialized = false
     // Toggle to switch logs
     this.debug = true
-    if (!this.audiusLibs) throw new Error('Invalid libs provided to SnapbackSM')
+    // Throw an error if running as creator node and no libs are provided
+    if (!this.audiusLibs && !config.get('isUserMetadataNode')) {
+      throw new Error('Invalid libs provided to SnapbackSM')
+    }
     // State machine queue processes all user operations
     this.stateMachineQueue = this.createBullQueue('creator-node-state-machine')
     // Sync queue handles issuing sync request from primary -> secondary
