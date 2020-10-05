@@ -16,7 +16,7 @@ def get_tracks(args):
     with db.scoped_session() as session:
         if "handle" in args:
             handle = args.get("handle")
-            user_id = session.query(User.user_id).filter(User.handle == handle).first()
+            user_id = session.query(User.user_id).filter(User.handle_lc == handle.lower()).first()
             args["user_id"] = user_id
 
         # Create initial query

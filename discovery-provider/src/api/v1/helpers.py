@@ -174,6 +174,21 @@ def extend_playlist(playlist):
     playlist["favorite_count"] = playlist["save_count"]
     return playlist
 
+def extend_activity(item):
+    if item.get("track_id"):
+        return {
+            "item_type": 'track',
+            "timestamp": item["activity_timestamp"],
+            "item": extend_track(item)
+        }
+    if item.get("playlist_id"):
+        return {
+            "item_type": 'playlist',
+            "timestamp": item["activity_timestamp"],
+            "item": extend_playlist(item)
+        }
+    return None
+
 def abort_bad_request_param(param, namespace):
     namespace.abort(400, "Oh no! Bad request parameter {}.".format(param))
 
