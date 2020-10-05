@@ -13,7 +13,7 @@ import TimeRange from 'models/TimeRange'
 import { push as pushRoute } from 'connected-react-router'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
-import { getUsers, getUserFromTrack } from 'store/cache/users/selectors'
+import { getUsers } from 'store/cache/users/selectors'
 import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
 
 const TRENDING_LIMIT = 100
@@ -79,10 +79,9 @@ function* getTrackRanks(trackId) {
 }
 
 function* getMoreByThisArtist(trackId, ownerHandle) {
-  const owner = yield select(getUserFromTrack, { id: trackId })
   yield put(
     tracksActions.fetchLineupMetadatas(0, 6, false, {
-      ownerHandle: owner.handle,
+      ownerHandle,
       trackId
     })
   )
@@ -96,6 +95,7 @@ function* watchFetchTrack() {
       : [trackId]
 
     try {
+      yield fork(getMoreByThisArtist, trackId, ownerHandle)
       const trackIds = yield call(retrieveTracks, {
         trackIds: ids,
         canBeUnlisted,
@@ -116,8 +116,6 @@ function* watchFetchTrack() {
         }
       }
 
-      // Async load lineup and track ranks
-      yield fork(getMoreByThisArtist, trackId, ownerHandle)
       yield fork(getTrackRanks, trackId)
 
       yield put(trackPageActions.fetchTrackSucceeded(trackId))
