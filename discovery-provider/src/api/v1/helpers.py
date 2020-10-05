@@ -134,7 +134,6 @@ def parse_unix_epoch_param(time, default=0):
     return datetime.utcfromtimestamp(time)
 
 def extend_track(track):
-    track["is"] = "track"
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if ("user" in track):
@@ -161,7 +160,6 @@ def extend_track(track):
     return track
 
 def extend_playlist(playlist):
-    playlist["is"] = "playlist"
     playlist_id = encode_int_id(playlist["playlist_id"])
     owner_id = encode_int_id(playlist["playlist_owner_id"])
     playlist["id"] = playlist_id
@@ -179,13 +177,15 @@ def extend_playlist(playlist):
 def extend_activity(item):
     if item.get("track_id"):
         return {
-            "item": extend_track(item),
-            "timestamp": item["activity_timestamp"]
+            "item_type": 'track',
+            "timestamp": item["activity_timestamp"],
+            "item": extend_track(item)
         }
     if item.get("playlist_id"):
         return {
-            "item": extend_playlist(item),
-            "timestamp": item["activity_timestamp"]
+            "item_type": 'playlist',
+            "timestamp": item["activity_timestamp"],
+            "item": extend_playlist(item)
         }
     return None
 

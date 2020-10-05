@@ -30,15 +30,3 @@ full_response = ns.model("full_response", {
     "timestamp": fields.String(required=True),
     "version": fields.Nested(version_metadata, required=True),
 })
-
-class IsTrack(fields.Raw):
-    def format(self, value):
-        if value == "track":
-            return "track"
-        raise MarshallingError("Not a track")
-
-class IsPlaylist(fields.Raw):
-    def format(self, value):
-        if value == "playlist":
-            return "playlist"
-        raise MarshallingError("Not a playlist")
