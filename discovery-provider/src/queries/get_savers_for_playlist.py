@@ -70,7 +70,7 @@ def get_savers_for_playlist(args):
         # Fix format to return only Users objects with follower_count field.
         if user_results:
             users, _ = zip(*user_results)
-            user_results = helpers.query_result_to_list(user_results)
+            user_results = helpers.query_result_to_list(users)
             # bundle peripheral info into user results
             user_ids = [user['user_id'] for user in user_results]
             user_results = populate_user_metadata(

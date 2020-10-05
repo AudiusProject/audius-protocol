@@ -14,7 +14,7 @@ from src.queries.get_followers_for_user import get_followers_for_user
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, make_response, search_parser, success_response, abort_bad_request_param, \
-    get_default_max, decode_string_id, encode_int_id
+    get_default_max, decode_string_id
 from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache

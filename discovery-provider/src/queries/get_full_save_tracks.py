@@ -1,10 +1,9 @@
-from src import exceptions
-from src.models import Track, Playlist, Save, SaveType
+from src.models import Track, Save, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import add_query_pagination, populate_track_metadata, \
-  get_users_by_id, get_users_ids
+    get_users_by_id, get_users_ids
 
 def get_full_save_tracks(args):
     user_id = args.get('user_id')
@@ -13,7 +12,6 @@ def get_full_save_tracks(args):
     offset = args.get('offset')
     filter_deleted = args.get("filter_deleted")
 
-    save_results = []
     db = get_db_read_replica()
     with db.scoped_session() as session:
         base_query = (
@@ -24,17 +22,18 @@ def get_full_save_tracks(args):
                 Save.user_id == user_id,
                 Save.is_current == True,
                 Save.is_delete == False,
-                Save.save_type == 'track'
+                Save.save_type == SaveType.track
             )
         )
 
         # Allow filtering of deletes
         if filter_deleted:
-          base_query = base_query.filter(
-              Track.is_delete == False
-          )
+            base_query = base_query.filter(
+                Track.is_delete == False
+            )
 
-        base_query = base_query.order_by(Save.created_at.desc(), Track.track_id.desc())
+        base_query = base_query.order_by(
+            Save.created_at.desc(), Track.track_id.desc())
 
         query_results = add_query_pagination(base_query, limit, offset).all()
         tracks, save_dates = zip(*query_results)
@@ -42,7 +41,8 @@ def get_full_save_tracks(args):
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # bundle peripheral info into track results
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        tracks = populate_track_metadata(
+            session, track_ids, tracks, current_user_id)
 
         if args.get("with_users", False):
             user_id_list = get_users_ids(tracks)
