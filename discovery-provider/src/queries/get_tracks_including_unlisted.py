@@ -11,9 +11,18 @@ from src.queries.query_helpers import get_current_user_id, populate_track_metada
 logger = logging.getLogger(__name__)
 
 
-def get_tracks_including_unlisted(args, body):
+def get_tracks_including_unlisted(args):
+    """Fetch a track, allowing unlisted.
+
+    Args:
+        args: dict
+        args.identifiers: array of { handle, id, url_title} dicts
+        args.current_user_id: optional current user ID
+        args.filter_deleted: filter deleted tracks
+        args.with_users: include users in unlisted tracks
+    """
     tracks = []
-    identifiers = body["tracks"]
+    identifiers = args["identifiers"]
     for i in identifiers:
         helpers.validate_arguments(i, ["handle", "id", "url_title"])
 
@@ -73,7 +82,7 @@ def get_tracks_including_unlisted(args, body):
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Populate metadata
-        current_user_id = get_current_user_id(required=False)
+        current_user_id = args.get("current_user_id")
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
 

@@ -19,6 +19,7 @@ from src.utils.redis_metrics import record_metrics
 from src.api.v1.models.users import user_model_full
 from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
+from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,31 @@ full_tracks_response = make_response(
 
 # Get single track
 
-def get_single_track(track_id, endpoint_ns):
-    decoded_id = decode_with_abort(track_id, endpoint_ns)
-    args = {"id": [decoded_id], "with_users": True, "filter_deleted": True}
+def get_single_track(track_id, current_user_id, endpoint_ns):
+    args = {
+        "id": [track_id],
+        "with_users": True,
+        "filter_deleted": True,
+        "current_user_id": current_user_id
+    }
     tracks = get_tracks(args)
+    if not tracks:
+        abort_not_found(track_id, endpoint_ns)
+    single_track = extend_track(tracks[0])
+    return success_response(single_track)
+
+def get_unlisted_track(track_id, url_title, handle, current_user_id, endpoint_ns):
+    args = {
+        "identifiers": [{
+           "handle": handle,
+           "url_title": url_title,
+           "id": track_id
+        }],
+        "filter_deleted": False,
+        "with_users": True,
+        "current_user_id": current_user_id
+    }
+    tracks = get_tracks_including_unlisted(args)
     if not tracks:
         abort_not_found(track_id, endpoint_ns)
     single_track = extend_track(tracks[0])
@@ -64,7 +86,14 @@ class Track(Resource):
     @cache(ttl_sec=5)
     def get(self, track_id):
         """Fetch a track."""
-        return get_single_track(track_id, ns)
+        decoded_id = decode_with_abort(track_id, ns)
+        return get_single_track(decoded_id, None, ns)
+
+full_track_parser = reqparse.RequestParser()
+full_track_parser.add_argument('handle')
+full_track_parser.add_argument('url_title')
+full_track_parser.add_argument('show_unlisted', type=bool)
+full_track_parser.add_argument('user_id')
 
 @full_ns.route(TRACK_ROUTE)
 class FullTrack(Resource):
@@ -72,7 +101,21 @@ class FullTrack(Resource):
     @full_ns.marshal_with(full_track_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
-        return get_single_track(track_id, full_ns)
+        args = full_track_parser.parse_args()
+        decoded_id = decode_with_abort(track_id, full_ns)
+        current_user_id = args.get("user_id")
+        if current_user_id:
+            current_user_id = decode_string_id(current_user_id)
+            logger.warning("GOT CURRENT USER ID!")
+            logger.warning("current_user_id")
+
+        if args.get("show_unlisted"):
+            url_title, handle = args.get("url_title"), args.get("handle")
+            if not (url_title and handle):
+                full_ns.abort(400, "Unlisted tracks require url_title and handle")
+            return get_unlisted_track(decoded_id, url_title, handle, current_user_id, full_ns)
+
+        return get_single_track(decoded_id, current_user_id, full_ns)
 
 # Stream
 
