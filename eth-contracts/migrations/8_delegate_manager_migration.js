@@ -128,5 +128,14 @@ module.exports = (deployer, network, accounts) => {
       await delegateManager.getClaimsManagerAddress(),
       'Failed to set claims address'
     )
+    // Set DelegateManager address in Governance
+    await governance.guardianExecuteTransaction(
+      governanceKey,
+      _lib.toBN(0),
+      'setDelegateManagerAddress(address)',
+      _lib.abiEncode(['address'], [delegateManagerProxy.address]),
+      { from: guardianAddress }
+    )
+    assert.equal(await governance.getDelegateManagerAddress.call(), delegateManagerProxy.address)
   })
 }
