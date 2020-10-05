@@ -4,14 +4,14 @@ const web3 = new Web3()
 
 const models = require('../src/models')
 // const config = require('../src/config')
-const { sortKeys, recoverWallet } = require('../src/apiHelpers')
+const { sortKeys } = require('../src/apiHelpers')
 
 // node updateContentBlacklist.js <action> <type> <id>
 // node updateContentBlacklist.js add user 1
 // node updateContentBlacklist.js delete track 5
 
-const PUBLIC_KEY = '0x360cfb2148414923aff6f1e2da4223a597ff7901'
-const PRIVATE_KEY = '0xf21e444e3cb4482dbb49f3b03ef6bf12f02ffe12448207eee156dc8b023cc34d'
+// const PUBLIC_KEY = '0x8114bf583a3036dd4da30816003a37a4466ef817'
+const PRIVATE_KEY = '0x8b86274b0eef19dc09c0a4b72ccfb2fda73d5bc9d119fac10dde796602f2e3f3'
 // const PRIVATE_KEY = config.get('delegatePrivateKey')
 
 // Available action types

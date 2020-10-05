@@ -7,7 +7,7 @@ const sinon = require('sinon')
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 const ipfsClient = require('../src/ipfsClient')
-const blacklistManager = require('../src/blacklistManager')
+const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
 
@@ -28,7 +28,7 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
     await BlacklistManager.init(ipfsMock)
 
     app = appInfo.app
@@ -408,7 +408,7 @@ describe('test Tracks with real IPFS', function () {
     ipfs = ipfsClient.ipfs
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfs, libsMock, blacklistManager)
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
     await BlacklistManager.init(ipfs)
 
     app = appInfo.app
@@ -499,7 +499,7 @@ describe('test Tracks with real IPFS', function () {
   })
 
   it('should throw an error if segment is blacklisted', async function () {
-    sinon.stub(blacklistManager, 'CIDIsInBlacklist').returns(true)
+    sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
