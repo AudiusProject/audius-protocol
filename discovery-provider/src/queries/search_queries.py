@@ -595,7 +595,10 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         # pylint: disable=C0301
         f"""
         select playlist_id from (
-            select playlist_id, (sum(score) + (:name_weight * similarity(coalesce(playlist_name, ''), query))) as total_score from (
+            select
+                playlist_id,
+                (sum(score) + (:name_weight * similarity(coalesce(playlist_name, ''), query))) as total_score
+            from (
                 select
                     d."playlist_id" as playlist_id, d."word" as word, similarity(d."word", :query) as score,
                     d."playlist_name" as playlist_name, :query as query

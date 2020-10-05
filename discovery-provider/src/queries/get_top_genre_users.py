@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import func, asc, desc
 
 from src.models import User, Track, Follow
@@ -5,11 +6,15 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
 
+logger = logging.getLogger(__name__)
+
 
 def get_top_genre_users(args):
     genres = []
     if "genre" in args:
         genres = args.get("genre")
+        if isinstance(genres, str):
+            genres = [genres]
 
     # If the with_users url arg is provided, then populate the user metadata else return user ids
     with_users = args.get("with_users", False)

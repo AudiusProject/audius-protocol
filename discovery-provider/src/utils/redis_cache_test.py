@@ -1,8 +1,8 @@
 import json
 from time import sleep
 from unittest.mock import patch
-from src.utils.redis_cache import cache
 import flask
+from src.utils.redis_cache import cache
 
 def test_cache(redis_mock):
     """Test that the redis cache decorator works"""

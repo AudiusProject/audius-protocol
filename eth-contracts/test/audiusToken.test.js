@@ -7,7 +7,7 @@ contract('AudiusToken', async (accounts) => {
 
   // expected initial token values
   const NAME = "Audius"
-  const SYMBOL = "AUDS"
+  const SYMBOL = "AUDIO"
   const DECIMALS = 18  // standard - imitates relationship between Ether and Wei
   const INITIAL_SUPPLY = Math.pow(10,27) // 10^27 = 1 billion tokens, 18 decimal places
 
