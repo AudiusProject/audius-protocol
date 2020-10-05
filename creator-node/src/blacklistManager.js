@@ -37,10 +37,6 @@ class BlacklistManager {
     const trackIdsBlacklist = trackIdObjsBlacklist.map(entry => entry.id)
     const userIdsBlacklist = userIdObjsBlacklist.map(entry => entry.id)
 
-    console.log('here are the trackids and userids')
-    console.log(trackIdsBlacklist)
-    console.log(userIdsBlacklist)
-
     const trackIds = new Set(trackIdsBlacklist)
 
     // Fetch all tracks created by users in userBlacklist
@@ -49,8 +45,6 @@ class BlacklistManager {
       trackIds.add(parseInt(track.blockchainId))
     }
 
-    console.log('the resp')
-    console.log({ trackIdsToBlacklist: [...trackIds], userIdsToBlacklist: userIdsBlacklist })
     return { trackIdsToBlacklist: [...trackIds], userIdsToBlacklist: userIdsBlacklist }
   }
 
