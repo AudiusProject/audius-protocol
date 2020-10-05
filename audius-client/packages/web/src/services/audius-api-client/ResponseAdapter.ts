@@ -6,7 +6,7 @@ import { decodeHashId } from 'utils/route/hashIds'
 import { removeNullable } from 'utils/typeUtils'
 import { APIFavorite, APIRemix, APIRepost, APITrack, APIUser } from './types'
 
-const makeUser = (user: APIUser): UserMetadata | undefined => {
+export const makeUser = (user: APIUser): UserMetadata | undefined => {
   const decodedUserId = decodeHashId(user.id)
   if (!decodedUserId) {
     return undefined
