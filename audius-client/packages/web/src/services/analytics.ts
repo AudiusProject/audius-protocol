@@ -5,14 +5,25 @@ import { ID, PlayableType } from 'models/common/Identifiers'
 export const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
 export enum Name {
+  // When the user opens the create account page
   CREATE_ACCOUNT_OPEN = 'Create Account: Open',
+  // When the user continues past the email page
   CREATE_ACCOUNT_COMPLETE_EMAIL = 'Create Account: Complete Email',
+  // When the user continues past the password page
   CREATE_ACCOUNT_COMPLETE_PASSWORD = 'Create Account: Complete Password',
+  // When the user starts integrating with twitter
   CREATE_ACCOUNT_START_TWITTER = 'Create Account: Start Twitter',
+  // When the user continues past the "twitter connection page"
   CREATE_ACCOUNT_COMPLETE_TWITTER = 'Create Account: Complete Twitter',
+  // When the user continues past the "profile info page"
   CREATE_ACCOUNT_COMPLETE_PROFILE = 'Create Account: Complete Profile',
+  // When the user continues past the follow page
   CREATE_ACCOUNT_COMPLETE_FOLLOW = 'Create Account: Complete Follow',
+  // When the user continues past the loading page
+  CREATE_ACCOUNT_COMPLETE_CREATING = 'Create Account: Complete Creating',
+  // When the user continues past the entire signup modal
   CREATE_ACCOUNT_FINISH = 'Create Account: Finish',
+
   SIGN_IN_OPEN = 'Sign In: Open',
   SIGN_IN_FINISH = 'Sign In: Finish',
   SETTINGS_CHANGE_THEME = 'Settings: Change Theme',
@@ -132,6 +143,9 @@ type CreateAccountCompleteFollow = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_FOLLOW
   users: string
   count: number
+}
+type CreateAccountCompleteCreating = {
+  eventName: Name.CREATE_ACCOUNT_COMPLETE_CREATING
 }
 type CreateAccountOpenFinish = {
   eventName: Name.CREATE_ACCOUNT_FINISH
@@ -637,6 +651,7 @@ export type AllTrackingEvents =
   | CreateAccountCompleteTwitter
   | CreateAccountCompleteProfile
   | CreateAccountCompleteFollow
+  | CreateAccountCompleteCreating
   | CreateAccountOpenFinish
   | SignInOpen
   | SignInFinish
