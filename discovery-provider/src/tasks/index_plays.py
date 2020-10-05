@@ -33,7 +33,8 @@ def get_track_plays(self, db):
         most_recent_play_date = session.query(
             Play.updated_at
         ).order_by(
-            desc(Play.updated_at)
+            desc(Play.updated_at),
+            desc(Play.id)
         ).first()
         if most_recent_play_date == None:
             # Make the date way back in the past to get the first play count onwards
