@@ -34,7 +34,9 @@ export type APIUser = {
   is_creator: boolean
   updated_at: string
   cover_photo_sizes: Nullable<CID>
+  cover_photo_legacy: Nullable<CID>
   profile_picture_sizes: Nullable<CID>
+  profile_picture_legacy: Nullable<CID>
 }
 
 export type APIRepost = {

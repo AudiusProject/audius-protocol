@@ -1,6 +1,4 @@
-import { call } from 'redux-saga/effects'
-
-import AudiusBackend from 'services/AudiusBackend'
+import { call, select } from 'redux-saga/effects'
 
 import {
   PREFIX,
@@ -8,35 +6,26 @@ import {
 } from 'containers/deleted-page/store/lineups/more-by/actions'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getLineup } from 'containers/deleted-page/store/selectors'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import { ID } from 'models/common/Identifiers'
-import Track, { UserTrack } from 'models/Track'
+import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
+import { getUserId } from 'store/account/selectors'
 
 function* getTracks({
-  offset,
-  limit,
   payload
 }: {
   offset: number
   limit: number
-  payload: { userId: ID | null }
+  payload: { handle: string }
 }) {
-  const { userId } = payload
-  const tracks: UserTrack[] = yield call(AudiusBackend.getArtistTracks, {
-    offset,
-    limit,
-    userId,
-    filterDeleted: true
+  const { handle } = payload
+  const currentUserId = yield select(getUserId)
+  const processed = yield call(retrieveUserTracks, {
+    handle,
+    currentUserId,
+    sort: 'plays',
+    limit: 5
   })
-  const processed: Track[] = yield call(processAndCacheTracks, tracks)
 
-  return (
-    processed
-      // Sort by listen count desc
-      .sort((a, b) => b.play_count - a.play_count)
-      // Take only the first 5
-      .slice(0, 5)
-  )
+  return processed
 }
 
 const sourceSelector = () => PREFIX

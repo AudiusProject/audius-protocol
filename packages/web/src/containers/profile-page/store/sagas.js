@@ -40,6 +40,8 @@ import { getIsReachable } from 'store/reachability/selectors'
 import { isMobile } from 'utils/clientUtil'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { processAndCacheUsers } from 'store/cache/users/utils'
+import { getUser } from 'store/cache/users/selectors'
+import { waitForValue } from 'utils/sagaHelpers'
 
 function* watchFetchProfile() {
   yield takeLatest(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -49,6 +51,7 @@ function* fetchProfileAsync(action) {
   try {
     let user
     if (action.handle) {
+      yield fork(fetchUserSocials, action.handle)
       user = yield call(
         fetchUserByHandle,
         action.handle,
@@ -110,6 +113,25 @@ function* fetchProfileAsync(action) {
     if (!isReachable) return
     throw err
   }
+}
+
+function* fetchUserSocials(handle) {
+  const user = yield call(waitForValue, getUser, { handle })
+  const socials = yield call(AudiusBackend.getCreatorSocialHandle, user.handle)
+  yield put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: user.user_id,
+        metadata: {
+          twitter_handle: socials.twitterHandle || null,
+          instagram_handle: socials.instagramHandle || null,
+          website: socials.website || null,
+          donation: socials.donation || null,
+          _artist_pick: socials.pinnedTrackId || null
+        }
+      }
+    ])
+  )
 }
 
 function* watchFetchFollowUsers(action) {

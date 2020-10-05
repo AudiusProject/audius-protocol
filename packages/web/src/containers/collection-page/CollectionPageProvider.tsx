@@ -751,7 +751,7 @@ class CollectionPage extends Component<
       refresh: this.refreshCollection
     }
 
-    if (metadata?.is_delete || metadata?._marked_deleted) {
+    if ((metadata?.is_delete || metadata?._marked_deleted) && user) {
       return (
         <DeletedPage
           title={title}

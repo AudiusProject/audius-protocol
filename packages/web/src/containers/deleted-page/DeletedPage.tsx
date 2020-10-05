@@ -11,7 +11,7 @@ type DeletedPageContentProps = {
   description: string
   canonicalUrl: string
   playable: Playable
-  user: User | null
+  user: User
 }
 
 const DeletedPage = ({

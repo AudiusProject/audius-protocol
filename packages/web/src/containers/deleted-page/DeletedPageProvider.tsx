@@ -10,7 +10,6 @@ import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { AppState } from 'store/types'
 import { DeletedPageProps as MobileDeletedPageProps } from './components/mobile/DeletedPage'
 import { DeletedPageProps as DesktopDeletedPageProps } from './components/desktop/DeletedPage'
-import { ID } from 'models/common/Identifiers'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { profilePage } from 'utils/route'
@@ -22,7 +21,7 @@ type OwnProps = {
   title: string
   description: string
   canonicalUrl: string
-  user: User | null
+  user: User
   playable: Playable
 
   children:
@@ -77,7 +76,7 @@ const DeletedPageProvider = ({
       playTrack: play,
       actions: moreByActions,
       loadMore: (offset: number, limit: number) => {
-        loadMore(offset, limit, { userId: user?.user_id ?? null })
+        loadMore(offset, limit, { handle: user?.handle })
       }
     }
   }
@@ -113,7 +112,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-    loadMore: (offset: number, limit: number, payload: { userId: ID | null }) =>
+    loadMore: (offset: number, limit: number, payload: { handle: string }) =>
       dispatch(
         moreByActions.fetchLineupMetadatas(offset, limit, false, payload)
       ),
