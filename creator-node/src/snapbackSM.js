@@ -59,6 +59,12 @@ class SnapbackSM {
   */
   async init () {
     const endpoint = config.get('creatorNodeEndpoint')
+    const isUserMetadata = config.get('isUserMetadataNode')
+    if (isUserMetadata) {
+      this.log(`SnapbackSM disabled for userMetadataNode. ${endpoint}, isUserMetadata=${isUserMetadata}`)
+      return
+    }
+
     if (!this.initialized) {
       this.log(`Initializing SnapbackSM`)
       this.log(`Retrieving spID for ${endpoint}`)
