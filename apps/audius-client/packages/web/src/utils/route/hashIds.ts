@@ -19,8 +19,9 @@ export const decodeHashId = (id: string): Nullable<number> => {
   }
 }
 
-export const encodeHashId = (id: number): Nullable<string> => {
+export const encodeHashId = (id: number | null = null): Nullable<string> => {
   try {
+    if (id === null) return null
     const encodedId = hashids.encode(id)
     return encodedId
   } catch (e) {

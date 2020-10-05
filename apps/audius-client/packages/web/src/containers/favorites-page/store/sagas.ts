@@ -7,7 +7,7 @@ import Track from 'models/Track'
 import { ID } from 'models/common/Identifiers'
 import Collection from 'models/Collection'
 import { getCollection } from 'store/cache/collections/selectors'
-import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { createUserListProvider } from 'containers/user-list/utils'
 import { FavoriteType } from 'models/Favorite'
 import { trackFavoriteError, playlistFavoriteError } from './actions'
@@ -17,11 +17,12 @@ const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_saves.map(r => r.user_id),
-  fetchAllUsersForEntity: ({ limit, offset, entityId }) =>
-    AudiusBackend.getFavoritersForPlaylist({
+  fetchAllUsersForEntity: ({ limit, offset, entityId, currentUserId }) =>
+    apiClient.getPlaylistFavoriteUsers({
       limit,
       offset,
-      playlistId: entityId
+      playlistId: entityId,
+      currentUserId
     }),
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (collection: Collection, combinedUserIDs: ID[]) =>
@@ -33,8 +34,13 @@ const getTrackFavorites = createUserListProvider<Track>({
   getExistingEntity: getTrack,
   extractUserIDSubsetFromEntity: (track: Track) =>
     track.followee_saves.map(r => r.user_id),
-  fetchAllUsersForEntity: ({ limit, offset, entityId }) =>
-    AudiusBackend.getFavoritersForTrack({ limit, offset, trackId: entityId }),
+  fetchAllUsersForEntity: ({ limit, offset, entityId, currentUserId }) =>
+    apiClient.getTrackFavoriteUsers({
+      limit,
+      offset,
+      trackId: entityId,
+      currentUserId
+    }),
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (track: Track, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < track.save_count,

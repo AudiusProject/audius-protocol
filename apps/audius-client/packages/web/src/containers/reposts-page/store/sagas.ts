@@ -8,7 +8,7 @@ import { ID } from 'models/common/Identifiers'
 import { RepostType } from './types'
 import Collection from 'models/Collection'
 import { getCollection } from 'store/cache/collections/selectors'
-import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { createUserListProvider } from 'containers/user-list/utils'
 import { trackRepostError, playlistRepostError } from './actions'
 import { watchRepostsError } from './errorSagas'
@@ -17,11 +17,12 @@ const getPlaylistReposts = createUserListProvider<Collection>({
   getExistingEntity: getCollection,
   extractUserIDSubsetFromEntity: (collection: Collection) =>
     collection.followee_reposts.map(r => r.user_id),
-  fetchAllUsersForEntity: ({ limit, offset, entityId }) =>
-    AudiusBackend.getRepostersForPlaylist({
+  fetchAllUsersForEntity: ({ limit, offset, entityId, currentUserId }) =>
+    apiClient.getPlaylistRepostUsers({
       limit,
       offset,
-      playlistId: entityId
+      playlistId: entityId,
+      currentUserId
     }),
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (collection: Collection, combinedUserIDs: ID[]) =>
@@ -36,13 +37,20 @@ const getTrackReposts = createUserListProvider<Track>({
   fetchAllUsersForEntity: ({
     limit,
     offset,
-    entityId
+    entityId,
+    currentUserId
   }: {
     limit: number
     offset: number
     entityId: ID
+    currentUserId: ID | null
   }) =>
-    AudiusBackend.getRepostersForTrack({ limit, offset, trackId: entityId }),
+    apiClient.getTrackRepostUsers({
+      limit,
+      offset,
+      trackId: entityId,
+      currentUserId
+    }),
   selectCurrentUserIDsInList: getUserIds,
   canFetchMoreUsers: (track: Track, combinedUserIDs: ID[]) =>
     combinedUserIDs.length < track.repost_count,

@@ -1,10 +1,10 @@
 import { AppState } from 'store/types'
 
-import { fetchUsers } from 'store/cache/users/sagas'
-import User from 'models/User'
+import User, { UserMetadata } from 'models/User'
 import { call, select } from 'redux-saga/effects'
 import { ID } from 'models/common/Identifiers'
-import { getAccountUser } from 'store/account/selectors'
+import { getAccountUser, getUserId } from 'store/account/selectors'
+import { processAndCacheUsers } from 'store/cache/users/utils'
 
 export type UserListProviderArgs<T> = {
   // Gets the track or playlist we're referencing.
@@ -21,7 +21,8 @@ export type UserListProviderArgs<T> = {
     limit: number
     offset: number
     entityId: ID
-  }) => Promise<User[]>
+    currentUserId: ID | null
+  }) => Promise<UserMetadata[]>
 
   includeCurrentUser: (entity: T) => boolean
 
@@ -64,12 +65,14 @@ export function createUserListProvider<T>({
     const subsetIds = extractUserIDSubsetFromEntity(existingEntity)
     const subsetIdSet = new Set(subsetIds)
 
+    const userId = yield select(getUserId)
     // Get the next page of users
     const offset = currentPage * pageSize
     const allUsers: User[] = yield call(fetchAllUsersForEntity, {
       limit: pageSize,
       offset,
-      entityId: id
+      entityId: id,
+      currentUserId: userId
     })
     if (includeCurrentUser(existingEntity)) {
       const currentUser = yield select(getAccountUser)
@@ -96,8 +99,7 @@ export function createUserListProvider<T>({
     combinedUserIds = [...new Set(combinedUserIds)]
 
     // Insert new users into the cache
-    yield call(fetchUsers, combinedUserIds)
-
+    yield processAndCacheUsers(allUsers)
     const hasMoreUsers = canFetchMoreUsers(existingEntity, combinedUserIds)
 
     return { userIds: combinedUserIds, hasMore: hasMoreUsers }
