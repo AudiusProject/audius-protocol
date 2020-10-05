@@ -26,7 +26,6 @@ import { ID } from 'models/common/Identifiers'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
 import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import User from 'models/User'
-import { ArtistDashboardTrack } from './store/types'
 import { withClassNullGuard } from 'utils/withNullGuard'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
@@ -241,7 +240,7 @@ export class ArtistDashboardPage extends Component<
     TotalPlaysChart.preload()
   }
 
-  formatMetadata(trackMetadatas: ArtistDashboardTrack[]): DataSourceTrack[] {
+  formatMetadata(trackMetadatas: Track[]): DataSourceTrack[] {
     return trackMetadatas
       .map((metadata, i) => ({
         ...metadata,
@@ -251,7 +250,7 @@ export class ArtistDashboardPage extends Component<
         time: metadata.duration,
         saves: metadata.save_count,
         reposts: metadata.repost_count,
-        plays: metadata.listenCount
+        plays: metadata.play_count
       }))
       .filter(meta => !meta.is_invalid)
   }

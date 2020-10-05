@@ -9,23 +9,6 @@ import { waitForValue } from 'utils/sagaHelpers'
 import AudiusBackend from 'services/AudiusBackend'
 import { formatUrlName } from 'utils/formatUtil'
 
-function* getListenCountsForTracks(tracks) {
-  const trackIds = tracks.map(t => t.track_id)
-
-  const trackListenCounts = yield call(
-    AudiusBackend.getTrackListenCounts,
-    trackIds
-  )
-  const trackListenCountMap = {}
-  trackListenCounts.forEach(track => {
-    trackListenCountMap[track.trackId] = track.listens
-  })
-  tracks.forEach(track => {
-    track.listenCount = trackListenCountMap[track.track_id]
-  })
-  return trackIds
-}
-
 function* fetchDashboardAsync(action) {
   yield call(waitForBackendSetup)
 
@@ -37,9 +20,10 @@ function* fetchDashboardAsync(action) {
     userId: account.user_id
   })
 
-  const trackIds = yield call(getListenCountsForTracks, tracks)
+  const trackIds = tracks.map(t => t.track_id)
   const playlists = yield call(AudiusBackend.getPlaylists, account.user_id, [])
   const now = moment()
+
   yield call(fetchDashboardListenDataAsync, {
     trackIds: trackIds,
     start: now.clone().subtract(1, 'years').toISOString(),
@@ -64,7 +48,6 @@ function* fetchDashboardAsync(action) {
       AudiusBackend.getTracksIncludingUnlisted,
       identifiersWithRouteURL
     )
-    yield call(getListenCountsForTracks, fullUnlistedTracks)
   }
 
   if (

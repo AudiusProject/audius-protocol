@@ -19,7 +19,7 @@ export const makeGetDashboard = () => {
         playlists: account ? account.playlist_count : 0,
         // albums: account ? account.album_count : 0,
         plays: tracks.reduce(
-          (totalPlays, track) => totalPlays + (track.listenCount || 0),
+          (totalPlays, track) => totalPlays + (track.play_count || 0),
           0
         ),
         reposts: account ? account.repost_count : 0,
