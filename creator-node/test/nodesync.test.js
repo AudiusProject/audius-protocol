@@ -3,14 +3,14 @@ const models = require('../src/models')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const { getIPFSMock } = require('./lib/ipfsMock')
-const { createStarterCNodeUser, testEthereumConstants } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, testEthereumConstants, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
 const blacklistManager = require('../src/blacklistManager')
 const ipfsClient = require('../src/ipfsClient')
 const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
 const _ = require('lodash')
-const { getCNodeUser, stringifiedDateFields, destroyUsers } = require('./utils')
+const { stringifiedDateFields } = require('./lib/utils')
 const nock = require('nock')
 const config = require('../src/config')
 
@@ -119,7 +119,7 @@ describe('test nodesync', function () {
         where: {
           multihash: transcodedTrackCID,
           fileUUID: transcodedTrackUUID,
-          clock: 3
+          type: 'copy320'
         },
         raw: true
       })))
@@ -130,7 +130,7 @@ describe('test nodesync', function () {
         const segment = await models.File.findOne({
           where: {
             multihash: hash,
-            clock: i + 4 // starts @ 4 due to user creation + update
+            type: 'track'
           },
           raw: true
         })
@@ -212,7 +212,9 @@ describe('test nodesync', function () {
       const ipfsMock = getIPFSMock()
 
       // Make ipfs add return the cid
-      // used to create the readstream
+      // used to create the readstream.
+      // Used in the final step of
+      // `saveFileForMultihash`
       ipfsMock.add = function * (content) {
         const { path } = content
         const cid = path.split('/')[1]

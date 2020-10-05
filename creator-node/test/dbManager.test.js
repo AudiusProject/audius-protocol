@@ -6,11 +6,10 @@ const models = require('../src/models')
 const DBManager = require('../src/dbManager')
 const blacklistManager = require('../src/blacklistManager')
 const utils = require('../src/utils')
-const { createStarterCNodeUser } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { getCNodeUser, destroyUsers } = require('./utils')
 
 describe('Test createNewDataRecord()', () => {
   const req = {
