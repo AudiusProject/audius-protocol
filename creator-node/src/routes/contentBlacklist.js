@@ -1,6 +1,5 @@
 const { handleResponse, successResponse, errorResponse, recoverWallet, errorResponseUnauthorized } = require('../apiHelpers')
 const BlacklistManager = require('../blacklistManager')
-const models = require('../models')
 const config = require('../config')
 
 module.exports = function (app) {
@@ -15,29 +14,23 @@ module.exports = function (app) {
   /**
    * 1. Verifies that request is from authenticated user
    * 2. If so, add a track or user id to ContentBlacklist
-   * 3. If so, also add associated segments to redis
    */
   app.post('/blacklist/add', handleResponse(async (req, res) => {
     let { id, type, timestamp, signature } = req.query
     id = parseInt(id)
 
-    // Recover public wallet of requester
-    const recoveredPublicWallet = recoverWallet({ id, type, timestamp }, signature)
-    if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
-      // return errorResponseUnauthorized(`\n\n\nsignature: ${signature} || recovered: ${recoveredPublicWallet} || config: ${config.get('delegateOwnerWallet')}`)
-      return errorResponseUnauthorized("Requester's public key does does not match Creator Node's delegate owner wallet.")
+    try {
+      verifyRequest({ id, type, timestamp }, signature)
+    } catch (e) {
+      return errorResponseUnauthorized(e.mesage)
     }
 
-    // Add entry to ContentBlacklist table
+    // Add entry to ContentBlacklist table via BlacklistManager
     let resp
     try {
-      resp = await models.ContentBlacklist.create({ id, type })
-      req.logger.info(`Added entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
+      resp = await BlacklistManager.addToDb({ id, type })
     } catch (e) {
-      if (!e.message.includes('Validation error')) {
-        return errorResponse(500, `Error with adding entry with type (${type}) and id (${id}): ${e}`)
-      }
-      req.logger.info(`Entry with type (${type}) and id (${id}) already exists!`)
+      return errorResponse(500, e.message)
     }
 
     // Add to redis blacklist via BlacklistManager
@@ -60,33 +53,28 @@ module.exports = function (app) {
   /**
    * 1. Verifies that request is from authenticated user
    * 2. If so, remove a track or user id in ContentBlacklist and redis
-   * 3. If so, also remove associated segments from redis
    */
   app.post('/blacklist/delete', handleResponse(async (req, res) => {
     let { id, type, timestamp, signature } = req.query
     id = parseInt(id)
 
-    // Recover public wallet of requester
-    const recoveredPublicWallet = recoverWallet({ id, type, timestamp }, signature)
-    if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
-      // return errorResponseUnauthorized(`\n\n\nsignature: ${signature} || recovered: ${recoveredPublicWallet} || config: ${config.get('delegateOwnerWallet')}`)
-      return errorResponseUnauthorized("Requester's public key does does not match Creator Node's delegate owner wallet.")
+    try {
+      verifyRequest({ id, type, timestamp }, signature)
+    } catch (e) {
+      return errorResponseUnauthorized(e.mesage)
     }
 
+    // Remove entry from ContentBlacklist table via BlacklistManager
     let numRowsDestroyed
     try {
-      numRowsDestroyed = await models.ContentBlacklist.destroy({
-        where: {
-          id,
-          type
-        }
-      })
+      numRowsDestroyed = BlacklistManager.remove({ id, type })
     } catch (e) {
-      return errorResponse(500, `Error with removing entry with type (${type}) and id (${id}): ${e}`)
+      return errorResponse(500, e.message)
     }
 
+    // Remove from redis blacklsit via BlacklistManager
     if (numRowsDestroyed) {
-      req.logger.info(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
+      req.logger.info(`Removed entry with type (${type}) and id (${id}) from the ContentBlacklist table!`)
       switch (type) {
         case 'USER': {
           BlacklistManager.remove([], [id])
@@ -103,4 +91,16 @@ module.exports = function (app) {
 
     return successResponse({ type, id })
   }))
+}
+
+/**
+ * Verify that the requester is authorized to make changes to ContentBlacklist
+ * @param {{id: int, type: enum, timestamp: string}} obj raw data to be used in recovering the public wallet
+ * @param {string} signature
+ */
+function verifyRequest ({ id, type, timestamp }, signature) {
+  const recoveredPublicWallet = recoverWallet({ id, type, timestamp }, signature)
+  if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
+    throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
+  }
 }

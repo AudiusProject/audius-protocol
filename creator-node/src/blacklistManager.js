@@ -64,9 +64,9 @@ class BlacklistManager {
     const segmentCIDsToBlacklist = await this.getCIDsFromTrackIds([...trackIds])
 
     try {
-      await this.addTrackIdsToRedis(trackIdsToBlacklist)
-      await this.addUserIdsToRedis(userIdsToBlacklist)
-      await this.addCIDsToRedis(segmentCIDsToBlacklist)
+      await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
+      await this.addToRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToBlacklist)
+      await this.addToRedis(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, segmentCIDsToBlacklist)
     } catch (e) {
       throw new Error(`Failed to add to blacklist: ${e}`)
     }
@@ -82,15 +82,15 @@ class BlacklistManager {
     trackIdsToRemove = [...tracks.map(track => track.blockchainId), ...trackIdsToRemove]
 
     // Dedupe trackIds
-    let trackIds = new Set(trackIdsToRemove)
+    const trackIds = new Set(trackIdsToRemove)
 
     // Retrieves CIDs from deduped trackIds
     const segmentCIDsToRemove = await this.getCIDsFromTrackIds([...trackIds])
 
     try {
-      await this.removeTrackIdsFromRedis(trackIdsToRemove)
-      await this.removeUserIdsFromRedis(userIdsToRemove)
-      await this.removeCIDsFromRedis(segmentCIDsToRemove)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToRemove)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToRemove)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, segmentCIDsToRemove)
     } catch (e) {
       throw new Error(`Failed to remove from blacklist: ${e}`)
     }
@@ -98,12 +98,11 @@ class BlacklistManager {
 
   /**
    * Retrieves track objects from specified users
-   * @param {[int]} userIdsBlacklist
+   * @param {int[]} userIdsBlacklist
    */
   static async getTracksFromUsers (userIdsBlacklist) {
     let tracks = []
     if (userIdsBlacklist.length > 0) {
-      // ? this actually returns the entire track and not just blockchainId
       tracks = (await models.sequelize.query(
         'select "blockchainId" from "Tracks" where "cnodeUserUUID" in (' +
         'select "cnodeUserUUID" from "AudiusUsers" where "blockchainId" in (:userIdsBlacklist)' +
@@ -114,7 +113,10 @@ class BlacklistManager {
     return tracks
   }
 
-  /** Retrieves the CIDs for each trackId in trackIds and returns a deduped list of segments CIDs */
+  /**
+   * Retrieves the CIDs for each trackId in trackIds and returns a deduped list of segments CIDs
+   * @param {int[]} trackIds
+   */
   static async getCIDsFromTrackIds (trackIds) {
     const tracks = await models.Track.findAll({ where: { blockchainId: trackIds } })
 
@@ -132,65 +134,87 @@ class BlacklistManager {
     return [...segmentCIDs]
   }
 
-  static async addUserIdsToRedis (userIds) {
-    if (!userIds || userIds.length === 0) return
+  /**
+   * Adds entry to ContentBlacklist table
+   * @param {int} id user or track id
+   * @param {enum} type ['USER', 'TRACK']
+   */
+  static async addToDb ({ id, type }) {
+    let resp
     try {
-      const resp = await redis.sadd(REDIS_SET_BLACKLIST_USERID_KEY, userIds)
-      logger.info(`redis set add ${REDIS_SET_BLACKLIST_USERID_KEY} response: ${resp}`)
+      resp = await models.ContentBlacklist.create({ id, type })
     } catch (e) {
-      throw new Error(`Unable to add [${userIds.toString()}] to redis`)
+      if (!e.message.includes('Validation error')) {
+        throw new Error(`Error with adding entry with type (${type}) and id (${id}): ${e}`)
+      }
+      console.log(`Entry with type (${type}) and id (${id}) already exists!`)
+    }
+
+    if (resp) {
+      console.log(`Added entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
+    }
+
+    return { type, id }
+  }
+
+  /**
+   * Removes entry from Contentblacklist table
+   * @param {int} id user or track id
+   * @param {enum} type ['USER', 'TRACK']
+   */
+  static async removeFromDb ({ id, type }) {
+    let numRowsDestroyed
+    try {
+      numRowsDestroyed = await models.ContentBlacklist.destroy({
+        where: {
+          id,
+          type
+        }
+      })
+    } catch (e) {
+      throw new Error(`Error with removing entry with type (${type}) and id (${id}): ${e}`)
+    }
+
+    if (numRowsDestroyed) {
+      console.log(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
+    } else {
+      console.log(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
+    }
+
+    return { type, id }
+  }
+
+  /**
+   * Adds key with value to redis
+   * @param {string} key
+   * @param {int[]} value
+   */
+  static async addToRedis (key, value) {
+    if (!value || value.length === 0) return
+    try {
+      const resp = await redis.sadd(key, value)
+      logger.info(`redis set add ${key} response ${resp}`)
+    } catch (e) {
+      throw new Error(`Unable to add [${value.toString()}] to redis`)
     }
   }
 
-  static async addTrackIdsToRedis (trackIds) {
-    if (!trackIds || trackIds.length === 0) return
+  /**
+   * Removes key with value to redis
+   * @param {string} key
+   * @param {int[]} value
+   */
+  static async removeFromRedis (key, value) {
+    if (!value || value.length === 0) return
     try {
-      const resp = await redis.sadd(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIds)
-      logger.info(`redis set add ${REDIS_SET_BLACKLIST_TRACKID_KEY} response: ${resp}`)
+      const resp = await redis.srem(key, value)
+      logger.info(`redis set remove ${key} response: ${resp}`)
     } catch (e) {
-      throw new Error(`Unable to add [${trackIds.toString()}] to redis`)
+      throw new Error(`Unable to remove [${value.toString()}] from redis`)
     }
   }
 
-  static async addCIDsToRedis (CIDs) {
-    if (!CIDs || CIDs.length === 0) return
-    try {
-      const resp = await redis.sadd(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, CIDs)
-      logger.info(`redis set add ${REDIS_SET_BLACKLIST_SEGMENTCID_KEY} response: ${resp}.`)
-    } catch (e) {
-      throw new Error(`Unable to add [${CIDs.toString()}] to redis`)
-    }
-  }
-
-  static async removeUserIdsFromRedis (userIds) {
-    if (!userIds || userIds.length === 0) return
-    try {
-      const resp = await redis.srem(REDIS_SET_BLACKLIST_USERID_KEY, userIds)
-      logger.info(`redis set remove ${REDIS_SET_BLACKLIST_USERID_KEY} response: ${resp}`)
-    } catch (e) {
-      throw new Error(`Unable to remove [${userIds.toString()}] from redis`)
-    }
-  }
-
-  static async removeTrackIdsFromRedis (trackIds) {
-    if (!trackIds || trackIds.length === 0) return
-    try {
-      const resp = await redis.srem(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIds)
-      logger.info(`redis set remove ${REDIS_SET_BLACKLIST_TRACKID_KEY} response: ${resp}`)
-    } catch (e) {
-      throw new Error(`Unable to remove [${trackIds.toString()}] from redis`)
-    }
-  }
-
-  static async removeCIDsFromRedis (CIDs) {
-    if (!CIDs || CIDs.length === 0) return
-    try {
-      const resp = await redis.srem(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, CIDs)
-      logger.info(`redis set remove ${REDIS_SET_BLACKLIST_SEGMENTCID_KEY} response: ${resp}`)
-    } catch (e) {
-      throw new Error(`Unable to remove [${CIDs.toString()}] from redis`)
-    }
-  }
+  /** Checks if userid, trackId, and CID exists in redis  */
 
   static async userIdIsInBlacklist (userId) {
     return redis.sismember(REDIS_SET_BLACKLIST_USERID_KEY, userId)
