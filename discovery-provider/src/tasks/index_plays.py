@@ -18,7 +18,7 @@ JOB = 'index-plays'
 
 def get_time_diff(previous_time):
     # Returns the time difference in milliseconds
-    return int(time.time() - previous_time * 1000)
+    return int((time.time() - previous_time) * 1000)
 
 # Retrieve the play counts from the identity service
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
@@ -42,6 +42,8 @@ def get_track_plays(self, db):
                 2000, 1, 1, 0, 0).timestamp()
         else:
             most_recent_play_date = most_recent_play_date[0].timestamp()
+
+        job_extra_info['most_recent_play_date'] = get_time_diff(start_time)
 
         # Create and query identity service endpoint for track play counts
         identity_url = update_play_count.shared_config['discprov']['identity_service_url']
@@ -187,7 +189,7 @@ def get_track_plays(self, db):
 
         if plays:
             session.bulk_save_objects(plays)
-            session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+            session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
         job_extra_info['number_rows_insert'] = len(plays)
         job_extra_info['insert_refresh_time'] = get_time_diff(
