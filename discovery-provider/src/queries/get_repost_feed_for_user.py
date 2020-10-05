@@ -14,7 +14,7 @@ def get_repost_feed_for_user(user_id, args):
     with db.scoped_session() as session:
         if "handle" in args:
             handle = args.get("handle")
-            user_id = session.query(User.user_id).filter(User.handle == handle).first()
+            user_id = session.query(User.user_id).filter(User.handle_lc == handle.lower()).first()
 
         # query all reposts by user
         repost_query = (
