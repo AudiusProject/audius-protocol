@@ -12,14 +12,13 @@ import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getTracks } from 'store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { AppState } from 'store/types'
-import { encodeHashId } from 'utils/route/hashIds'
 
 type RetrieveTrendingArgs = {
   timeRange: TimeRange
   genre?: string
   offset: number
   limit: number
-  currentUserId?: ID
+  currentUserId: ID | null
 }
 
 export function* retrieveTrending({
@@ -47,15 +46,11 @@ export function* retrieveTrending({
     return tracks
   }
 
-  const encodedUserId = currentUserId
-    ? encodeHashId(currentUserId) ?? undefined
-    : undefined
-
   const apiTracks: UserTrackMetadata[] = yield apiClient.getTrending({
     genre,
     offset,
     limit,
-    currentUserId: encodedUserId,
+    currentUserId,
     timeRange
   })
 

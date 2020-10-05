@@ -1,6 +1,5 @@
 import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
-import AudiusBackend from 'services/AudiusBackend'
 import {
   PREFIX,
   tracksActions
@@ -12,64 +11,44 @@ import {
 } from 'containers/profile-page/store/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getTrack } from 'store/cache/tracks/selectors'
-import { fetchUserByHandle } from 'store/cache/users/sagas'
 import { tracksActions as lineupActions } from './actions'
 import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
-import { retrieveTracks, processAndCacheTracks } from 'store/cache/tracks/utils'
+import { retrieveTracks } from 'store/cache/tracks/utils'
 
-import { TracksSortMode } from 'containers/profile-page/store/types'
-
-const sortByTime = 'created_at:desc,track_id:desc'
-
-const userTracks = {
-  userId: '',
-  tracks: []
-}
-
-const getSortedTracks = async ({ offset, limit, payload, user }) => {
-  if (payload.sort === TracksSortMode.POPULAR) {
-    if (user.user_id === userTracks.userId && offset !== 0) {
-      return userTracks.tracks.slice(offset, limit + offset)
-    }
-    // Get All artist Tracks
-    // For all tracks, get listen_count
-    const tracks = await AudiusBackend.getArtistTracks({
-      offset: 0,
-      limit: user.track_count,
-      userId: user.user_id,
-      filterDeleted: true
-    })
-
-    const sortedPopularTracks = tracks
-      .filter(t => !t.is_delete)
-      // Sort by listen count desc
-      .sort((a, b) => b.play_count - a.play_count)
-
-    userTracks.userId = user.user_id
-    userTracks.tracks = sortedPopularTracks
-
-    return sortedPopularTracks.slice(offset, offset + limit)
-  } else {
-    return AudiusBackend.getArtistTracks({
-      offset,
-      limit,
-      userId: payload.userId,
-      sort: sortByTime,
-      filterDeleted: true
-    })
-  }
-}
+import { getUserId } from 'store/account/selectors'
+import { retrieveUserTracks } from './retrieveUserTracks'
+import { waitForValue } from 'utils/sagaHelpers'
+import { getUser } from 'store/cache/users/selectors'
+import { TracksSortMode } from '../../types'
 
 function* getTracks({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)
-  const user = yield call(fetchUserByHandle, handle, new Set(['_artist_pick']))
-  // If the artist has pinned a track, retrieve the pinned track and merge the response with
-  // the query for the arist tracks.
+  const currentUserId = yield select(getUserId)
+
+  // Wait for user to receive social handles
+  // We need to know ahead of time whether we want to request
+  // the "artist pick" track in addition to the artist's tracks.
+  // TODO: Move artist pick to chain/discprov to avoid this extra trip
+  const user = yield call(
+    waitForValue,
+    getUser,
+    {
+      handle: handle.toLowerCase()
+    },
+    user => 'twitter_handle' in user
+  )
+  const sort = payload.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
 
   if (user._artist_pick) {
-    let [pinnedTrack, trackResponse] = yield all([
+    let [pinnedTrack, processed] = yield all([
       call(retrieveTracks, { trackIds: [user._artist_pick] }),
-      call(getSortedTracks, { offset, limit, payload, user })
+      call(retrieveUserTracks, {
+        handle,
+        currentUserId,
+        sort,
+        limit,
+        offset
+      })
     ])
 
     // Pinned tracks *should* be unpinned
@@ -79,7 +58,6 @@ function* getTracks({ offset, limit, payload }) {
       pinnedTrack = []
     }
 
-    const processed = yield call(processAndCacheTracks, trackResponse)
     const pinnedTrackIndex = processed.findIndex(
       track => track.track_id === user._artist_pick
     )
@@ -106,13 +84,13 @@ function* getTracks({ offset, limit, payload }) {
       return processed
     }
   } else {
-    const trackResponse = yield call(getSortedTracks, {
-      offset,
+    const processed = yield call(retrieveUserTracks, {
+      handle,
+      currentUserId,
+      sort,
       limit,
-      payload,
-      user
+      offset
     })
-    const processed = yield call(processAndCacheTracks, trackResponse)
     return processed
   }
 }

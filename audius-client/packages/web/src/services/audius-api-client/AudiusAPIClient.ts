@@ -16,7 +16,9 @@ const ENDPOINT_MAP = {
   playlistRepostUsers: (playlistId: string) =>
     `/playlists/${playlistId}/reposts`,
   playlistFavoriteUsers: (playlistId: string) =>
-    `/playlists/${playlistId}/favorites`
+    `/playlists/${playlistId}/favorites`,
+  userByHandle: (handle: string) => `/users/handle/${handle}`,
+  userTracksByHandle: (handle: string) => `/users/handle/${handle}/tracks`
 }
 
 const TRENDING_LIMIT = 100
@@ -25,7 +27,7 @@ type GetTrendingArgs = {
   timeRange?: TimeRange
   offset?: number
   limit?: number
-  currentUserId?: string
+  currentUserId: ID | null
   genre?: string
 }
 
@@ -71,6 +73,19 @@ type GetPlaylistFavoriteUsersArgs = {
   offset?: number
 }
 
+type GetUserByHandleArgs = {
+  handle: string
+  currentUserId: ID | null
+}
+
+type GetUserTracksByHandleArgs = {
+  handle: string
+  currentUserId: ID | null
+  sort?: 'date' | 'plays'
+  offset?: number
+  limit?: number
+}
+
 type InitializationState =
   | { state: 'uninitialized ' }
   | {
@@ -94,11 +109,12 @@ class AudiusAPIClient {
     genre
   }: GetTrendingArgs) {
     this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const params = {
       time: timeRange,
       limit,
       offset,
-      user_id: currentUserId,
+      user_id: encodedCurrentUserId || undefined,
       genre
     }
 
@@ -119,13 +135,13 @@ class AudiusAPIClient {
     offset
   }: GetFollowingArgs) {
     this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedProfileUserId = encodeHashId(profileUserId)
     if (!encodedProfileUserId) {
       throw new Error(`Unable to encode profile user id: ${profileUserId}`)
     }
     const params = {
-      user_id: encodedUserId || undefined,
+      user_id: encodedCurrentUserId || undefined,
       limit,
       offset
     }
@@ -149,13 +165,13 @@ class AudiusAPIClient {
     offset
   }: GetFollowersArgs) {
     this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedProfileUserId = encodeHashId(profileUserId)
     if (!encodedProfileUserId) {
       throw new Error(`Unable to encode profile user id: ${profileUserId}`)
     }
     const params = {
-      user_id: encodedUserId || undefined,
+      user_id: encodedCurrentUserId || undefined,
       limit,
       offset
     }
@@ -179,13 +195,13 @@ class AudiusAPIClient {
     offset
   }: GetTrackRepostUsersArgs) {
     this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedTrackId = encodeHashId(trackId)
     if (!encodedTrackId) {
       throw new Error(`Unable to encode profile user id: ${trackId}`)
     }
     const params = {
-      user_id: encodedUserId || undefined,
+      user_id: encodedCurrentUserId || undefined,
       limit,
       offset
     }
@@ -209,13 +225,13 @@ class AudiusAPIClient {
     offset
   }: GetTrackFavoriteUsersArgs) {
     this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedTrackId = encodeHashId(trackId)
     if (!encodedTrackId) {
       throw new Error(`Unable to encode profile user id: ${trackId}`)
     }
     const params = {
-      user_id: encodedUserId || undefined,
+      user_id: encodedCurrentUserId || undefined,
       limit,
       offset
     }
@@ -239,13 +255,13 @@ class AudiusAPIClient {
     offset
   }: GetPlaylistRepostUsersArgs) {
     this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedPlaylistId = encodeHashId(playlistId)
     if (!encodedPlaylistId) {
       throw new Error(`Unable to encode profile user id: ${playlistId}`)
     }
     const params = {
-      user_id: encodedUserId || undefined,
+      user_id: encodedCurrentUserId || undefined,
       limit,
       offset
     }
@@ -269,13 +285,13 @@ class AudiusAPIClient {
     offset
   }: GetPlaylistFavoriteUsersArgs) {
     this._assertInitialized()
-    const encodedUserId = encodeHashId(currentUserId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedPlaylistId = encodeHashId(playlistId)
     if (!encodedPlaylistId) {
       throw new Error(`Unable to encode profile user id: ${playlistId}`)
     }
     const params = {
-      user_id: encodedUserId || undefined,
+      user_id: encodedCurrentUserId || undefined,
       limit,
       offset
     }
@@ -289,6 +305,47 @@ class AudiusAPIClient {
     const adapted = followingResponse.data
       .map(adapter.makeUser)
       .filter(removeNullable)
+    return adapted
+  }
+
+  async getUserByHandle({ handle, currentUserId }: GetUserByHandleArgs) {
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    this._assertInitialized()
+    const params = {
+      user_id: encodedCurrentUserId || undefined
+    }
+
+    const endpoint = this._constructUrl(
+      ENDPOINT_MAP.userByHandle(handle),
+      params
+    )
+    const response: APIResponse<APIUser[]> = await this._getResponse(endpoint)
+    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
+    return adapted
+  }
+
+  async getUserTracksByHandle({
+    handle,
+    currentUserId,
+    sort = 'date',
+    limit,
+    offset
+  }: GetUserTracksByHandleArgs) {
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    this._assertInitialized()
+    const params = {
+      user_id: encodedCurrentUserId || undefined,
+      sort,
+      limit,
+      offset
+    }
+
+    const endpoint = this._constructUrl(
+      ENDPOINT_MAP.userTracksByHandle(handle),
+      params
+    )
+    const response: APIResponse<APITrack[]> = await this._getResponse(endpoint)
+    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
     return adapted
   }
 

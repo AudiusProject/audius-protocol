@@ -15,8 +15,8 @@ export const makeUser = (user: APIUser): UserMetadata | undefined => {
   const newUser = {
     ...user,
     user_id: decodedUserId,
-    cover_photo: user.cover_photo_sizes,
-    profile_picture: user.profile_picture_sizes,
+    cover_photo: user.cover_photo_sizes || user.cover_photo_legacy,
+    profile_picture: user.profile_picture_sizes || user.profile_picture_legacy,
     id: undefined
   }
 

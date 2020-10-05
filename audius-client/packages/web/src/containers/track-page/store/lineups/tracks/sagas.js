@@ -1,5 +1,4 @@
 import { call, select } from 'redux-saga/effects'
-import AudiusBackend from 'services/AudiusBackend'
 
 import {
   PREFIX,
@@ -9,28 +8,25 @@ import {
   getSourceSelector as sourceSelector,
   getLineup
 } from 'containers/track-page/store/selectors'
-import { getUserFromTrack } from 'store/cache/users/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
+import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
+import { getUserId } from 'store/account/selectors'
 
 function* getTracks({ offset, limit, payload }) {
-  const { trackId } = payload
-
-  const user = yield select(getUserFromTrack, { id: trackId })
-
-  const tracks = yield call(AudiusBackend.getArtistTracks, {
-    offset,
-    limit,
-    userId: user.user_id,
-    filterDeleted: true
+  const { ownerHandle, trackId } = payload
+  const currentUserId = yield select(getUserId)
+  const processed = yield call(retrieveUserTracks, {
+    handle: ownerHandle,
+    currentUserId,
+    sort: 'plays',
+    limit: 6
   })
-  const processed = yield call(processAndCacheTracks, tracks)
 
   // Add the hero track into the lineup so that the queue can pull directly from the lineup
   // TODO: Create better ad-hoc add to queue methods and use that instead of this
-  const track = yield select(getTrack, { id: trackId })
+  const track = yield call(waitForValue, getTrack, { id: trackId })
   const lineup = [track]
 
   const remixParentTrackId = track._remix_parents?.[0]?.track_id
@@ -44,15 +40,8 @@ function* getTracks({ offset, limit, payload }) {
   return lineup.concat(
     processed
       // Filter out any track that happens to be the hero track
-      // or is deleted or is the remix parent track.
-      .filter(
-        t =>
-          t.track_id !== trackId &&
-          t.track_id !== remixParentTrackId &&
-          !t.is_delete
-      )
-      // Sort by play count desc
-      .sort((a, b) => b.play_count - a.play_count)
+      // or is the remix parent track.
+      .filter(t => t.track_id !== trackId && t.track_id !== remixParentTrackId)
       // Take only the first 5
       .slice(0, 5)
   )
