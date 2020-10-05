@@ -8,12 +8,13 @@ from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_tracks import get_tracks
+from src.queries.get_full_save_tracks import get_full_save_tracks
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, make_response, search_parser, success_response, abort_bad_request_param, \
-    get_default_max, decode_string_id
+    get_default_max, decode_string_id, encode_int_id
 from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache
@@ -401,6 +402,48 @@ class FavoritedTracks(Resource):
         favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
+
+favorite_route_parser = reqparse.RequestParser()
+favorite_route_parser.add_argument('user_id', required=False, type=str)
+favorite_route_parser.add_argument('limit', required=False, type=int)
+favorite_route_parser.add_argument('offset', required=False, type=int)
+favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(activity_model_full)))
+@full_ns.route("/<string:user_id>/favorites/tracks")
+class FavoritedTracks(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get User's Favorite Tracks""",
+        params={'user_id': 'A User ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.expect(favorite_route_parser)
+    @full_ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        """Fetch favorited tracks for a user."""
+        args = favorite_route_parser.parse_args()
+        decoded_id = decode_with_abort(user_id, ns)
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(user_id)
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+        get_tracks_args = {
+            "filter_deleted": False,
+            "user_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+            "with_users": True
+        }
+        track_saves = get_full_save_tracks(get_tracks_args)
+        tracks = list(map(extend_activity, track_saves))
+        return success_response(tracks)
 
 user_search_result = make_response("user_search", ns, fields.List(fields.Nested(user_model)))
 
