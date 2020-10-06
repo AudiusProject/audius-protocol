@@ -43,9 +43,11 @@ class ServiceRegistry {
     await this.blacklistManager.blacklist(this.ipfs)
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     this.libs = audiusLibs
-    // Initialize state machine
-    this.snapbackSM = new SnapbackSM(this.libs)
-    await this.snapbackSM.init()
+    // Conditionally initialize state machine
+    if (!config.get('isUserMetadataNode')) {
+      this.snapbackSM = new SnapbackSM(this.libs)
+      await this.snapbackSM.init()
+    }
   }
 }
 
