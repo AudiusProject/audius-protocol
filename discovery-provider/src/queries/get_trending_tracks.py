@@ -90,7 +90,7 @@ def get_trending_tracks(args):
 
         if args.get("with_users", False):
             user_id_list = get_users_ids(sorted_tracks)
-            users = get_users_by_id(session, user_id_list)
+            users = get_users_by_id(session, user_id_list, current_user_id)
             for track in sorted_tracks:
                 user = users[track['owner_id']]
                 if user:

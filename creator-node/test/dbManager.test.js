@@ -6,7 +6,7 @@ const models = require('../src/models')
 const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const utils = require('../src/utils')
-const { createStarterCNodeUser } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
@@ -16,11 +16,6 @@ describe('Test createNewDataRecord()', () => {
     logger: {
       error: (msg) => console.log(msg)
     }
-  }
-
-  const getCNodeUser = async (cnodeUserUUID) => {
-    const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID } })
-    return cnodeUser.dataValues
   }
 
   const initialClockVal = 0
@@ -37,12 +32,7 @@ describe('Test createNewDataRecord()', () => {
   /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
   beforeEach(async function () {
     // Wipe all CNodeUsers + dependent data
-    await models.CNodeUser.destroy({
-      where: {},
-      truncate: true,
-      cascade: true // cascades delete to all rows with foreign key on cnodeUser
-    })
-
+    await destroyUsers()
     const resp = await createStarterCNodeUser()
     cnodeUserUUID = resp.cnodeUserUUID
     req.session = { cnodeUserUUID }

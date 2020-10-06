@@ -1,9 +1,12 @@
+import logging
 from sqlalchemy import func, asc, desc
 
 from src.models import User, Track, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
+
+logger = logging.getLogger(__name__)
 
 
 def get_top_genre_users(args):
