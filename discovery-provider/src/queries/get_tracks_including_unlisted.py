@@ -6,13 +6,13 @@ from flask.globals import request
 from src.models import Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
+from src.queries.query_helpers import populate_track_metadata, \
     paginate_query, get_users_by_id, get_users_ids
 from src.utils.redis_cache import extract_key, use_redis_cache
 
 logger = logging.getLogger(__name__)
 
-UNPOPULATED_TRACK_CACHE_DURATION_SEC = 20
+UNPOPULATED_TRACK_CACHE_DURATION_SEC = 10
 
 def make_cache_key(args):
     ids = map(lambda x: str(x["id"]), args.get("identifiers"))
@@ -23,7 +23,6 @@ def make_cache_key(args):
         "with_users": args.get("with_user")
     }
     key = extract_key(f"unpopulated-tracks:{request.path}", cache_keys.items())
-    logger.warning(f"KEY IS: {key}")
     return key
 
 def get_tracks_including_unlisted(args):

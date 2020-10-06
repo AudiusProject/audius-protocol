@@ -106,8 +106,6 @@ class FullTrack(Resource):
         current_user_id = args.get("user_id")
         if current_user_id:
             current_user_id = decode_string_id(current_user_id)
-            logger.warning("GOT CURRENT USER ID!")
-            logger.warning("current_user_id")
 
         if args.get("show_unlisted"):
             url_title, handle = args.get("url_title"), args.get("handle")
