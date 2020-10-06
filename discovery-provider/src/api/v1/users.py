@@ -19,7 +19,7 @@ from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-
+from src.queries.get_top_genre_users import get_top_genre_users
 
 logger = logging.getLogger(__name__)
 
@@ -568,4 +568,43 @@ class FollowingUsers(Resource):
         }
         users = get_followees_for_user(args)
         users = list(map(extend_user, users))
+        return success_response(users)
+
+top_genre_users_route_parser = reqparse.RequestParser()
+top_genre_users_route_parser.add_argument('genre', required=False, action='append')
+top_genre_users_route_parser.add_argument('limit', required=False, type=int)
+top_genre_users_route_parser.add_argument('offset', required=False, type=int)
+top_genre_users_response = make_response("top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full)))
+@full_ns.route("/genre/top")
+class FullTopGenreUsers(Resource):
+    @full_ns.expect(top_genre_users_route_parser)
+    @full_ns.doc(
+        id="""Get the Top Users for a Given Genre""",
+        params={
+            'genre': 'List of Genres',
+            'limit': 'Limit',
+            'offset': 'Offset'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(top_genre_users_response)
+    @cache(ttl_sec=60*60*24)
+    def get(self):
+        args = top_genre_users_route_parser.parse_args()
+        limit = get_default_max(args.get('limit'), 10, 100)
+        offset = get_default_max(args.get('offset'), 0)
+
+        get_top_genre_users_args = {
+            'limit': limit,
+            'offset': offset,
+            'with_users': True
+        }
+        if args['genre'] is not None:
+            get_top_genre_users_args['genre'] = args['genre']
+        top_users = get_top_genre_users(get_top_genre_users_args)
+        users = list(map(extend_user, top_users['users']))
         return success_response(users)
