@@ -50,6 +50,11 @@ http {
       proxy_pass http://node:8000;
     }
 
+    # Proxy bedtime api.js before /embed/api
+    location = /embed/api.js {
+      proxy_pass ${BEDTIME_URL}api.js;
+    }
+
     # Bedtime API routes.
     location /embed/api {
       add_header 'Access-Control-Allow-Origin' '*' always;
