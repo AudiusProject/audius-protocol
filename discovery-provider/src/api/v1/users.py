@@ -8,7 +8,7 @@ from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_tracks import get_tracks
-from src.queries.get_full_save_tracks import get_full_save_tracks
+from src.queries.get_save_tracks import get_save_tracks
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 
@@ -441,7 +441,7 @@ class FavoritedTracks(Resource):
             "offset": offset,
             "with_users": True
         }
-        track_saves = get_full_save_tracks(get_tracks_args)
+        track_saves = get_save_tracks(get_tracks_args)
         tracks = list(map(extend_activity, track_saves))
         return success_response(tracks)
 

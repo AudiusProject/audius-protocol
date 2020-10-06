@@ -5,7 +5,7 @@ from src.queries import response_name_constants
 from src.queries.query_helpers import add_query_pagination, populate_track_metadata, \
     get_users_by_id, get_users_ids
 
-def get_full_save_tracks(args):
+def get_save_tracks(args):
     user_id = args.get('user_id')
     current_user_id = args.get('current_user_id')
     limit = args.get('limit')
