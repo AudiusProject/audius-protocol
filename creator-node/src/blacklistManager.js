@@ -6,6 +6,11 @@ const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
 const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
 
+const types = Object.freeze({
+  track: 'TRACK',
+  user: 'USER'
+})
+
 class BlacklistManager {
   static async init (ipfs) {
     try {
@@ -21,7 +26,7 @@ class BlacklistManager {
     const trackIdObjsBlacklist = await models.ContentBlacklist.findAll({
       attributes: ['id'],
       where: {
-        type: 'TRACK'
+        type: types.track
       },
       raw: true
     })
@@ -29,7 +34,7 @@ class BlacklistManager {
     const userIdObjsBlacklist = await models.ContentBlacklist.findAll({
       attributes: ['id'],
       where: {
-        type: 'USER'
+        type: types.user
       },
       raw: true
     })
@@ -177,11 +182,11 @@ class BlacklistManager {
 
     if (numRowsDestroyed) {
       console.log(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
-    } else {
-      console.log(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
+      return { type, id }
     }
 
-    return { type, id }
+    console.log(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
+    return null
   }
 
   /**
@@ -212,6 +217,11 @@ class BlacklistManager {
     } catch (e) {
       throw new Error(`Unable to remove [${value.toString()}] from redis`)
     }
+  }
+
+  /** Retrieves the types {USER, TRACK} */
+  static getTypes () {
+    return types
   }
 
   /** Checks if userid, trackId, and CID exists in redis  */

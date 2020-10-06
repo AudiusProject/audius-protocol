@@ -1,14 +1,16 @@
-const { handleResponse, successResponse, errorResponse, recoverWallet, errorResponseUnauthorized } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponse, recoverWallet, errorResponseUnauthorized, errorResponseBadRequest } = require('../apiHelpers')
 const BlacklistManager = require('../blacklistManager')
 const config = require('../config')
+
+const TYPES_SET = new Set(['USER', 'TRACK'])
 
 module.exports = function (app) {
   /**
    * Retrieves all blacklisted tracksIds and userIds
   */
   app.get('/blacklist', handleResponse(async (req, res) => {
-    const idsToBlacklist = await BlacklistManager.getTrackAndUserIdsToBlacklist()
-    return successResponse(idsToBlacklist)
+    const { trackIdsToBlacklist, userIdsToBlacklist } = await BlacklistManager.getTrackAndUserIdsToBlacklist()
+    return successResponse({ trackIds: trackIdsToBlacklist, userIds: userIdsToBlacklist })
   }))
 
   /**
@@ -16,8 +18,14 @@ module.exports = function (app) {
    * 2. If so, add a track or user id to ContentBlacklist
    */
   app.post('/blacklist/add', handleResponse(async (req, res) => {
-    let { id, type, timestamp, signature } = req.query
-    id = parseInt(id)
+    let parsedQueryParams
+    try {
+      parsedQueryParams = parseQueryParams(req.query)
+    } catch (e) {
+      return errorResponseBadRequest(e.message)
+    }
+
+    const { id, type, timestamp, signature } = parsedQueryParams
 
     try {
       verifyRequest({ id, type, timestamp }, signature)
@@ -26,37 +34,29 @@ module.exports = function (app) {
     }
 
     // Add entry to ContentBlacklist table via BlacklistManager
-    let resp
     try {
-      resp = await BlacklistManager.addToDb({ id, type })
+      await addToBlacklist({ type, id })
     } catch (e) {
       return errorResponse(500, e.message)
-    }
-
-    // Add to redis blacklist via BlacklistManager
-    if (resp) {
-      switch (resp.type) {
-        case 'USER': {
-          BlacklistManager.add([], [id])
-          break
-        }
-        case 'TRACK': {
-          BlacklistManager.add([id])
-          break
-        }
-      }
     }
 
     return successResponse({ type, id })
   }))
 
+  // fix this sigh
   /**
    * 1. Verifies that request is from authenticated user
    * 2. If so, remove a track or user id in ContentBlacklist and redis
    */
   app.post('/blacklist/delete', handleResponse(async (req, res) => {
-    let { id, type, timestamp, signature } = req.query
-    id = parseInt(id)
+    let parsedQueryParams
+    try {
+      parsedQueryParams = parseQueryParams(req.query)
+    } catch (e) {
+      return errorResponseBadRequest(e.message)
+    }
+
+    const { id, type, timestamp, signature } = parsedQueryParams
 
     try {
       verifyRequest({ id, type, timestamp }, signature)
@@ -64,33 +64,33 @@ module.exports = function (app) {
       return errorResponseUnauthorized(e.mesage)
     }
 
-    // Remove entry from ContentBlacklist table via BlacklistManager
-    let numRowsDestroyed
+    // Remove entry from ContentBlacklist table and redis via BlacklistManager
     try {
-      numRowsDestroyed = BlacklistManager.remove({ id, type })
+      await removeFromBlacklist({ type, id })
     } catch (e) {
       return errorResponse(500, e.message)
     }
 
-    // Remove from redis blacklsit via BlacklistManager
-    if (numRowsDestroyed) {
-      req.logger.info(`Removed entry with type (${type}) and id (${id}) from the ContentBlacklist table!`)
-      switch (type) {
-        case 'USER': {
-          BlacklistManager.remove([], [id])
-          break
-        }
-        case 'TRACK': {
-          BlacklistManager.remove([id])
-          break
-        }
-      }
-    } else {
-      req.logger.info(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
-    }
-
     return successResponse({ type, id })
   }))
+}
+
+function parseQueryParams (queryParams) {
+  let { id, type, timestamp, signature } = queryParams
+
+  if (!id || !type || !timestamp || !signature) {
+    throw new Error('Missing query params: [id, type, timestamp, signature]')
+  }
+
+  type = type.toUpperCase()
+
+  if (!TYPES_SET.has(type) || isNaN(id)) {
+    throw new Error(`Improper type [${type}] or id [${id}]`)
+  }
+
+  id = parseInt(id)
+
+  return { type, id, timestamp, signature }
 }
 
 /**
@@ -103,4 +103,53 @@ function verifyRequest ({ id, type, timestamp }, signature) {
   if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
   }
+}
+
+async function removeFromBlacklist ({ type, id }) {
+  let resp
+  try {
+    // remove from ContentBlacklist
+    resp = await BlacklistManager.removeFromDb({ id, type })
+
+    if (resp) {
+      // remove from redis
+      switch (resp.type) {
+        case 'USER': {
+          await BlacklistManager.remove([], [resp.id])
+          break
+        }
+        case 'TRACK': {
+          await BlacklistManager.remove([resp.id])
+          break
+        }
+      }
+    }
+  } catch (e) {
+    throw e
+  }
+  return resp
+}
+
+async function addToBlacklist ({ type, id }) {
+  let resp
+  try {
+    // add to ContentBlacklist
+    resp = await BlacklistManager.addToDb({ id, type })
+
+    // add to redis
+    switch (resp.type) {
+      case 'USER': {
+        await BlacklistManager.add([], [resp.id])
+        break
+      }
+      case 'TRACK': {
+        await BlacklistManager.add([resp.id])
+        break
+      }
+    }
+  } catch (e) {
+    throw e
+  }
+
+  return resp
 }

@@ -57,7 +57,7 @@ async function run () {
     console.error(e)
   } finally {
     // close db connection at end of script
-    models.sequelize.close()
+    await models.sequelize.close()
   }
 }
 
