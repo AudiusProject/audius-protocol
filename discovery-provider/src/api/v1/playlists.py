@@ -231,7 +231,7 @@ playlist_reposts_route_parser.add_argument('limit', required=False, type=int)
 playlist_reposts_route_parser.add_argument('offset', required=False, type=int)
 playlist_reposts_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:playlist_id>/reposts")
-class FullTrackReposts(Resource):
+class FullPlaylistReposts(Resource):
     @full_ns.expect(playlist_reposts_route_parser)
     @full_ns.doc(
         id="""Get Users that Reposted a Playlist""",

@@ -1,4 +1,5 @@
 import logging
+from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
@@ -334,6 +335,9 @@ class FullRepostList(Resource):
             "offset": offset
         }
         reposts = get_repost_feed_for_user(decoded_id, args)
+        for repost in reposts:
+            if "playlist_id" in repost:
+                repost["tracks"] = get_tracks_for_playlist(repost["playlist_id"], current_user_id)
         activities = list(map(extend_activity, reposts))
 
         return success_response(activities)
@@ -376,6 +380,9 @@ class HandleFullRepostList(Resource):
             "offset": offset
         }
         reposts = get_repost_feed_for_user(None, args)
+        for repost in reposts:
+            if "playlist_id" in repost:
+                repost["tracks"] = get_tracks_for_playlist(repost["playlist_id"], current_user_id)
         activities = list(map(extend_activity, reposts))
 
         return success_response(activities)

@@ -4,13 +4,15 @@ from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveTy
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_current_user_id, get_repost_counts, get_save_counts, \
+from src.queries.query_helpers import get_repost_counts, get_save_counts, \
     paginate_query, get_users_by_id, get_users_ids
 
 
 def get_repost_feed_for_user(user_id, args):
     feed_results = {}
     db = get_db_read_replica()
+    current_user_id = args.get("current_user_id")
+
     with db.scoped_session() as session:
         if "handle" in args:
             handle = args.get("handle")
@@ -116,7 +118,6 @@ def get_repost_feed_for_user(user_id, args):
             if save_type in (SaveType.playlist, SaveType.album)
         }
 
-        current_user_id = get_current_user_id(required=False)
         requested_user_is_current_user = False
         user_reposted_track_ids = {}
         user_reposted_playlist_ids = {}
