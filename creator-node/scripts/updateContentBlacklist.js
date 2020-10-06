@@ -1,18 +1,11 @@
 const axios = require('axios')
-const Web3 = require('web3')
-const web3 = new Web3()
 
-const models = require('../src/models')
-// const config = require('../src/config')
-const { sortKeys } = require('../src/apiHelpers')
+const config = require('../src/config')
+const { generateTimestampAndSignature } = require('../src/apiHelpers')
 
-// node updateContentBlacklist.js <action> <type> <id>
-// node updateContentBlacklist.js add user 1
-// node updateContentBlacklist.js delete track 5
-
-// const PUBLIC_KEY = '0x8114bf583a3036dd4da30816003a37a4466ef817'
-const PRIVATE_KEY = '0x8b86274b0eef19dc09c0a4b72ccfb2fda73d5bc9d119fac10dde796602f2e3f3'
-// const PRIVATE_KEY = config.get('delegatePrivateKey')
+// const PUBLIC_KEY = config.get('delegateOwnerWallet')
+const PRIVATE_KEY = config.get('delegatePrivateKey')
+const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 
 // Available action types
 // TODO: add to config or something
@@ -37,6 +30,7 @@ async function run () {
     console.error(`\nIncorrect script usage: ${e.message}`)
     console.error(`action: [${ACTION_ARR.toString()}]\ntype: [${TYPES_ARR.toString()}]\nid: [integer of 0 or greater]`)
     console.error(`Script usage: node addToContentBlacklist.js <action> <type> <id>`)
+    return
   }
 
   // Add or remove type and id entry to ContentBlacklist
@@ -55,9 +49,6 @@ async function run () {
     console.log(`Successfully performed [${action}] for type [${type}] and id [${id}]`)
   } catch (e) {
     console.error(e)
-  } finally {
-    // close db connection at end of script
-    await models.sequelize.close()
   }
 }
 
@@ -67,7 +58,7 @@ async function run () {
 function parseArgs () {
   const args = process.argv.slice(2)
   if (args.length !== 3) {
-    throw new Error('Too many args provided.')
+    throw new Error('Incorrect number of args provided.')
   }
 
   const action = args[0].toUpperCase()
@@ -89,13 +80,12 @@ function parseArgs () {
  * @param {int} id
  */
 async function addToContentBlacklist (type, id) {
-  const { timestamp, signature } = generateTimestampAndSignature(type, id)
+  const { timestamp, signature } = generateTimestampAndSignature({ type, id }, PRIVATE_KEY)
 
   let resp
   try {
     resp = await axios({
-      // url: `${config.get('creatorNodeEndpoint')}/blacklist/add`,
-      url: 'http://localhost:4000/blacklist/add',
+      url: `${CREATOR_NODE_ENDPOINT}/blacklist/add`,
       method: 'post',
       params: { type, id, timestamp, signature },
       responseType: 'json'
@@ -114,13 +104,12 @@ async function addToContentBlacklist (type, id) {
  * @param {int} id
  */
 async function removeFromContentBlacklist (type, id) {
-  const { timestamp, signature } = generateTimestampAndSignature(type, id)
+  const { timestamp, signature } = generateTimestampAndSignature({ type, id }, PRIVATE_KEY)
 
   let resp
   try {
     resp = await axios({
-      // url: `${config.get('creatorNodeEndpoint')}/blacklist/add`,
-      url: 'http://localhost:4000/blacklist/delete',
+      url: `${CREATOR_NODE_ENDPOINT}/blacklist/add`,
       method: 'post',
       params: { type, id, timestamp, signature },
       responseType: 'json'
@@ -130,28 +119,6 @@ async function removeFromContentBlacklist (type, id) {
   }
 
   return resp.data
-}
-
-/**
- * Signs the object {type, id, timestamp} when sorted and stringified with the PRIVATE_KEY.
- * Used for authentication in the Creator Node to ensure request to add to/remove from
- * ContentBlacklist is from an authorized user.
- * @param {string} type
- * @param {int} id
- */
-function generateTimestampAndSignature (type, id) {
-  // Generate data
-  const timestamp = new Date().toISOString()
-  const toSignObj = { type, id, timestamp }
-  // JSON stringify automatically removes white space given 1 param
-  const toSignStr = JSON.stringify(sortKeys(toSignObj))
-
-  const toSignHash = web3.utils.keccak256(toSignStr)
-
-  // Generate signature with hashed data and private key
-  const signedResponse = web3.eth.accounts.sign(toSignHash, PRIVATE_KEY)
-
-  return { timestamp, signature: signedResponse.signature }
 }
 
 run()

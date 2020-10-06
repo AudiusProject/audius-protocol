@@ -1,0 +1,3 @@
+export delegateOwnerWallet=0xe06acb357abd256081962076f988aecdcea8ac0c
+export delegatePrivateKey=0x7393593825767048cde4d1f8e3d9c7fab4f3ba5a4c2c23eb066679a194a47965
+export creatorNodeEndpoint=http://cn3_creator-node_1:4002

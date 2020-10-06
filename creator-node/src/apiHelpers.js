@@ -61,38 +61,44 @@ const isValidResponse = module.exports.isValidResponse = (resp) => {
 }
 
 module.exports.successResponse = (obj = {}) => {
-  // generate timestamp
-  const timestamp = new Date().toISOString()
-
-  // format data to sign
-  let toSign = {
+  const toSignData = {
     data: {
       ...obj
     },
     // TODO: remove duplication of obj -- kept for backwards compatibility
     ...obj,
     signer: config.get('delegateOwnerWallet'),
-    ...versionInfo,
-    timestamp
+    ...versionInfo
   }
 
-  const toSignStr = JSON.stringify(sortKeys(toSign))
-
-  // hash data
-  const toSignHash = web3.utils.keccak256(toSignStr)
-
-  // generate signature with hashed data and private key
-  const signedResponse = web3.eth.accounts.sign(toSignHash, config.get('delegatePrivateKey'))
-
-  const responseWithSignature = { ...toSign, signature: signedResponse.signature }
+  const { timestamp, signature } = generateTimestampAndSignature(toSignData, config.get('delegatePrivateKey'))
 
   return {
     statusCode: 200,
     object: {
-      ...responseWithSignature
+      ...toSignData,
+      timestamp,
+      signature
     }
   }
 }
+
+/**
+ * Generate the timestamp and signature for api signing
+ * @param {object} data
+ * @param {string} privateKey
+ */
+const generateTimestampAndSignature = (data, privateKey) => {
+  const timestamp = new Date().toISOString()
+  const toSignObj = { ...data, timestamp }
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(toSignObj))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return { timestamp, signature: signedResponse.signature }
+}
+module.exports.generateTimestampAndSignature = generateTimestampAndSignature
 
 /**
  * Recover the public wallet address

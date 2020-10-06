@@ -12,7 +12,7 @@ const types = Object.freeze({
 })
 
 class BlacklistManager {
-  static async init (ipfs) {
+  static async init () {
     try {
       const { trackIdsToBlacklist, userIdsToBlacklist } = await this.getTrackAndUserIdsToBlacklist()
       await this.add(trackIdsToBlacklist, userIdsToBlacklist)
@@ -224,7 +224,21 @@ class BlacklistManager {
     return types
   }
 
-  /** Checks if userid, trackId, and CID exists in redis  */
+  /** Retrieves redis keys */
+
+  static getRedisTrackIdKey () {
+    return REDIS_SET_BLACKLIST_TRACKID_KEY
+  }
+
+  static getRedisUserIdKey () {
+    return REDIS_SET_BLACKLIST_USERID_KEY
+  }
+
+  static getRedisSegmentCIDKey () {
+    return REDIS_SET_BLACKLIST_SEGMENTCID_KEY
+  }
+
+  /** Checks if userId, trackId, and CID exists in redis  */
 
   static async userIdIsInBlacklist (userId) {
     return redis.sismember(REDIS_SET_BLACKLIST_USERID_KEY, userId)
