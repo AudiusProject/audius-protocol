@@ -383,7 +383,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           walletPublicKey: fetchedWalletPublicKey,
           latestBlockNumber: fetchedLatestBlockNumber,
           lastLogin: fetchedCNodeUser.lastLogin,
-          clock: fetchedCNodeUser.clock
+          clock: fetchedCNodeUser.clock,
+          createdAt: fetchedCNodeUser.createdAt
         }, { transaction })
         req.logger.info(redisKey, `Inserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
