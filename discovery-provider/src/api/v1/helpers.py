@@ -62,6 +62,19 @@ def add_playlist_artwork(playlist):
     playlist["artwork"] = artwork
     return playlist
 
+
+def add_playlist_added_timestamps(playlist):
+    if not "playlist_contents" in playlist:
+        return playlist
+    added_timestamps = []
+    for track in playlist["playlist_contents"]["track_ids"]:
+        added_timestamps.append({
+            "track_id": encode_int_id(track["track"]),
+            "timestamp": track["time"]
+        })
+    return added_timestamps
+
+
 def add_user_artwork(user):
     # Legacy CID-only references to images
     user["cover_photo_legacy"] = user["cover_photo"]
@@ -159,7 +172,8 @@ def extend_track(track):
 
     return track
 
-def extend_playlist(playlist):
+
+def extend_playlist(playlist, include_tracks=False):
     playlist_id = encode_int_id(playlist["playlist_id"])
     owner_id = encode_int_id(playlist["playlist_owner_id"])
     playlist["id"] = playlist_id
@@ -168,11 +182,15 @@ def extend_playlist(playlist):
         playlist["user"] = extend_user(playlist["user"])
     playlist = add_playlist_artwork(playlist)
 
+    playlist["followee_favorites"] = list(map(extend_favorite, playlist["followee_saves"]))
     playlist["followee_reposts"] = list(map(extend_repost, playlist["followee_reposts"]))
-    playlist["followee_saves"] = list(map(extend_favorite, playlist["followee_saves"]))
 
     playlist["favorite_count"] = playlist["save_count"]
+    playlist["added_timestamps"] = add_playlist_added_timestamps(playlist)
+    playlist["cover_art"] = playlist["playlist_image_multihash"]
+    playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
     return playlist
+
 
 def extend_activity(item):
     if item.get("track_id"):
