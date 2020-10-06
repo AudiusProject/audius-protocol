@@ -18,7 +18,8 @@ const ENDPOINT_MAP = {
   playlistFavoriteUsers: (playlistId: string) =>
     `/playlists/${playlistId}/favorites`,
   userByHandle: (handle: string) => `/users/handle/${handle}`,
-  userTracksByHandle: (handle: string) => `/users/handle/${handle}/tracks`
+  userTracksByHandle: (handle: string) => `/users/handle/${handle}/tracks`,
+  userFavoritedTracks: (userId: string) => `/users/${userId}/favorites/tracks`
 }
 
 const TRENDING_LIMIT = 100
@@ -84,6 +85,13 @@ type GetUserTracksByHandleArgs = {
   sort?: 'date' | 'plays'
   offset?: number
   limit?: number
+}
+
+type GetProfileListArgs = {
+  profileUserId: ID
+  currentUserId: ID | null
+  limit?: number
+  offset?: number
 }
 
 type InitializationState =
@@ -346,6 +354,40 @@ class AudiusAPIClient {
     )
     const response: APIResponse<APITrack[]> = await this._getResponse(endpoint)
     const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
+    return adapted
+  }
+
+  async getFavoritedTracks({
+    profileUserId,
+    currentUserId,
+    limit,
+    offset
+  }: GetProfileListArgs) {
+    this._assertInitialized()
+    const encodedUserId = encodeHashId(currentUserId)
+    const encodedProfileUserId = encodeHashId(profileUserId)
+    if (!encodedProfileUserId) {
+      throw new Error(`Unable to encode profile user id: ${profileUserId}`)
+    }
+    const params = {
+      user_id: encodedUserId || undefined,
+      limit,
+      offset
+    }
+
+    const endpoint = this._constructUrl(
+      ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
+      params
+    )
+    const favoritedTrackResponse: APIResponse<
+      { timestamp: string; item_type: 'track'; item: APITrack }[]
+    > = await this._getResponse(endpoint)
+    const adapted = favoritedTrackResponse.data
+      .map(({ item, ...props }) => ({
+        timestamp: props.timestamp,
+        track: adapter.makeTrack(item)
+      }))
+      .filter(removeNullable)
     return adapted
   }
 
