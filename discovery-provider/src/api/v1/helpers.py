@@ -173,7 +173,7 @@ def extend_track(track):
     return track
 
 
-def extend_playlist(playlist, include_tracks=False):
+def extend_playlist(playlist):
     playlist_id = encode_int_id(playlist["playlist_id"])
     owner_id = encode_int_id(playlist["playlist_owner_id"])
     playlist["id"] = playlist_id
