@@ -4,8 +4,7 @@ import sqlalchemy
 from src.models import Playlist, Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_pagination_vars, \
-    populate_track_metadata, add_users_to_tracks
+from src.queries.query_helpers import populate_track_metadata, add_users_to_tracks
 
 logger = logging.getLogger(__name__)
 
