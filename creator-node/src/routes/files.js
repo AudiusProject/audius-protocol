@@ -1,5 +1,6 @@
 const Redis = require('ioredis')
 const fs = require('fs')
+const path = require('path')
 var contentDisposition = require('content-disposition')
 
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
@@ -23,6 +24,8 @@ const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+
+const FILE_SYSTEM_REGEX = /\/file_storage\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
  * Helper method to stream file from file system on creator node
@@ -368,6 +371,44 @@ module.exports = function (app) {
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
+
+  /**
+   * Serve file from FS without doing a db check
+   * @param req.query.path the fs path for the file. should not have leading /file_storage prefix
+   */
+  // TODO - add auth here
+  app.get('/file_lookup', handleResponse(async (req, res) => {
+    const filePath = path.normalize(req.query.filePath)
+    console.log('filePath', filePath)
+
+    // no filePath passed in
+    if(!filePath) return errorResponseBadRequest(`Invalid request, no path provided`)
+
+    // check that the regex works and verify it's not blacklisted
+    const match = FILE_SYSTEM_REGEX.exec(filePath)
+    if(!match) return errorResponseBadRequest(`Invalid filePath provided`)
+
+    const { outer, inner } = match.groups
+    if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
+      return errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`)
+    }
+    res.setHeader('Content-Disposition', contentDisposition(outer))
+
+    // if there's an inner CID, check if CID is blacklisted and set content disposition header
+    if (inner) {
+      if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {
+        return errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`)
+      }
+      res.setHeader('Content-Disposition', contentDisposition(inner))
+    }
+
+    try {
+      return await streamFromFileSystem(req, res, filePath)
+    } catch (e) {
+      console.log('Error retrieving file', e)
+      return errorResponseNotFound(`File with path not found`)
+    }
+  }))
 }
 
 module.exports.getCID = getCID
