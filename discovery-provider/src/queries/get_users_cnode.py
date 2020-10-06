@@ -1,7 +1,6 @@
 import logging # pylint: disable=C0302
-from sqlalchemy import asc, or_
+import sqlalchemy
 
-from src import exceptions
 from src.models import User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -27,7 +26,7 @@ def get_users_cnode(cnode_endpoint_string):
                 ("creator_node_endpoints") [3] as "secondary2"
                 FROM
                 (
-                    SELECT 
+                    SELECT
                     "user_id",
                     "wallet",
                     string_to_array("creator_node_endpoint", ',') as "creator_node_endpoints"
@@ -41,9 +40,10 @@ def get_users_cnode(cnode_endpoint_string):
                 ) as "s"
             ) as "t"
             WHERE
-            t.primary = ':primaryurl'
+            t.primary = :primaryurl
             AND t.secondary1 is not NULL;
             """
         )
         users = session.execute(users_res, { "primaryurl": cnode_endpoint_string }).fetchall()
-    return users
+        users_dict = [dict(row) for row in users]
+    return users_dict

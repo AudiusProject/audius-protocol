@@ -530,8 +530,9 @@ def get_previously_private_playlists_route():
 @bp.route("/users/creator_node", methods=("GET",))
 def get_creator_node_users():
     try:
-        cnode_url = request.args.creator_node_endpoint
+        cnode_url = request.args.get("creator_node_endpoint")
+        logger.warn(cnode_url)
         users = get_users_cnode(cnode_url)
         return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400) 
+        logger.warn(cnode_url)
