@@ -124,18 +124,11 @@ async function getOwnEndpoint (req) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
-  let spOwnerWallet
-  if (config.get('spOwnerWallet')) {
-    spOwnerWallet = config.get('spOwnerWallet')
-  } else if (config.get('ethWallets') && config.get('spOwnerWalletIndex') && Array.isArray(config.get('ethWallets')) && config.get('ethWallets').length > config.get('spOwnerWalletIndex')) {
-    spOwnerWallet = config.get('ethWallets')[config.get('spOwnerWalletIndex')]
-  } else {
-    throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
-  }
+  let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
+  if (!creatorNodeEndpoint) throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
 
-  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
-  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
-
+  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
+  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)]
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
       spInfo.length === 0 ||
