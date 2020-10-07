@@ -6,7 +6,7 @@ from src.queries.get_app_names import get_app_names
 def test_get_app_names(db_mock):
     """Tests that get_app_names returns the app names"""
 
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
     before_date = (date + timedelta(hours=-1))
 
     app_names = [{

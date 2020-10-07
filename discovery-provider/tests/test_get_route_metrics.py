@@ -83,7 +83,7 @@ def populate_mock_db_multiple_dates(db, date1, date2):
 def test_get_route_metrics_exact(app):
     """Tests that the route metrics can queried by exact path match"""
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     before_date = (date + timedelta(hours=-1))
 
     with app.app_context():
@@ -110,7 +110,7 @@ def test_get_route_metrics_exact(app):
 def test_get_route_metrics_non_exact(app):
     """Tests that the route metrics can be queried by non-exact path match"""
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     before_date = (date + timedelta(hours=-1))
 
     with app.app_context():
@@ -136,7 +136,7 @@ def test_get_route_metrics_non_exact(app):
 def test_get_route_metrics_query_string(app):
     """Tests that the route metrics are queried with query_string parameter"""
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     before_date = (date + timedelta(hours=-1))
 
     with app.app_context():
@@ -163,7 +163,7 @@ def test_get_route_metrics_query_string(app):
 def test_get_route_metrics_no_matches(app):
     """Tests that route metrics returns nothing if no matching query_string"""
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     before_date = (date + timedelta(hours=-1))
 
     with app.app_context():
@@ -188,7 +188,7 @@ def test_get_route_metrics_no_matches(app):
 def test_get_route_metrics_with_daily_buckets(app):
     """Tests that the route metrics can be queried with daily buckets"""
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     date1 = (date + timedelta(hours=-1))
     date2 = (date + timedelta(days=-2))
     before_date = (date + timedelta(days=-3))
