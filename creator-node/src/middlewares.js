@@ -119,6 +119,9 @@ async function triggerSecondarySyncs (req) {
 }
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
+// TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
+// services has been registered, and we can't register the service unless the service starts up.
+// Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
 async function getOwnEndpoint (req) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')

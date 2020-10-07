@@ -57,7 +57,7 @@ const startApp = async () => {
     exitWithError('Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint')
   }
 
-  // fail if delegatePrivateKey doesn't derive to wallet address
+  // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
   const privateKeyBuffer = Buffer.from(config.get('delegatePrivateKey').replace('0x', ''), 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
