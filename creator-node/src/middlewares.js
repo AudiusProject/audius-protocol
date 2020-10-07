@@ -125,7 +125,7 @@ async function getOwnEndpoint (req) {
   const libs = req.app.get('audiusLibs')
 
   let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
-  if (!creatorNodeEndpoint) throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
+  if (!creatorNodeEndpoint) throw new Error('Must provide either creatorNodeEndpoint config var.')
 
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
   const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)]
