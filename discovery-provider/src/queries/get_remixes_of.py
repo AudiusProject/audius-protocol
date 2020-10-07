@@ -21,9 +21,9 @@ def make_cache_key(args):
     return extract_key(f"unpopulated-remix-parents:{request.path}", cache_keys.items())
 
 def get_remixes_of(args):
-    track_id = args["track_id"]
-    current_user_id = args["current_user_id"]
-    limit, offset = args["limit"], args["offset"]
+    track_id = args.get("track_id")
+    current_user_id = args.get("current_user_id")
+    limit, offset = args.get("limit"), args.get("offset")
     db = get_db_read_replica()
 
     with db.scoped_session() as session:
@@ -121,6 +121,7 @@ def get_remixes_of(args):
             tracks = helpers.query_result_to_list(tracks)
             track_ids = list(map(lambda track: track["track_id"], tracks))
             return (tracks, track_ids, count)
+
         key = make_cache_key(args)
         (tracks, track_ids, count) = use_redis_cache(key, UNPOPULATED_REMIXES_CACHE_DURATION_SEC, get_unpopulated_remixes)
 

@@ -395,6 +395,7 @@ remixes_parser = reqparse.RequestParser()
 remixes_parser.add_argument('user_id', required=False)
 remixes_parser.add_argument('limit', required=False, default=10)
 remixes_parser.add_argument('offset', required=False, default=0)
+
 @full_ns.route("/<string:track_id>/remixes")
 class FullRemixesRoute(Resource):
     @full_ns.marshal_with(remixes_response)
@@ -408,12 +409,10 @@ class FullRemixesRoute(Resource):
             "with_users": True,
             "track_id": decoded_id,
             "current_user_id": current_user_id,
-            "limit": request_args.get("limit"),
-            "offset": request_args.get("offset")
+            "limit": format_limit(request_args),
+            "offset": format_offset(request_args)
         }
         response = get_remixes_of(args)
-        logger.warning(f'count: {response["count"]}')
-        logger.warning(f'track: {response["tracks"][0]}')
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)
 
@@ -422,6 +421,7 @@ remixing_parser = reqparse.RequestParser()
 remixing_parser.add_argument('user_id', required=False)
 remixing_parser.add_argument('limit', required=False, default=10)
 remixing_parser.add_argument('offset', required=False, default=0)
+
 @full_ns.route("/<string:track_id>/remixing")
 class FullRemixingRoute(Resource):
     @full_ns.marshal_with(remixing_response)
@@ -435,8 +435,8 @@ class FullRemixingRoute(Resource):
             "with_users": True,
             "track_id": decoded_id,
             "current_user_id": current_user_id,
-            "limit": request_args.get("limit"),
-            "offset": request_args.get("offset")
+            "limit": format_limit(request_args),
+            "offset": format_offset(request_args)
         }
         tracks = get_remix_track_parents(args)
         tracks = list(map(extend_track, tracks))
