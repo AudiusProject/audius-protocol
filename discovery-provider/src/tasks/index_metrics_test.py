@@ -22,7 +22,7 @@ def test_process_route_keys(redis_mock, db_mock):
 
     redis_mock.hmset(key, routes)
 
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
 
     with db_mock.scoped_session() as session:
         RouteMetrics.__table__.create(db_mock._engine)
@@ -90,7 +90,7 @@ def test_process_app_name_keys(redis_mock, db_mock):
 
     redis_mock.hmset(key, app_names)
 
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
 
     with db_mock.scoped_session() as session:
         AppNameMetrics.__table__.create(db_mock._engine)
@@ -127,7 +127,7 @@ def test_sweep_metrics(redis_mock, db_mock):
         "music": "1"
     }
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     before_date = (date + timedelta(hours=-1))
     after_date = (date + timedelta(hours=1))
 
