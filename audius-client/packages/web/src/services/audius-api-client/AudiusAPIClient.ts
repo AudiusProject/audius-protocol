@@ -19,7 +19,8 @@ const ENDPOINT_MAP = {
     `/playlists/${playlistId}/favorites`,
   userByHandle: (handle: string) => `/users/handle/${handle}`,
   userTracksByHandle: (handle: string) => `/users/handle/${handle}/tracks`,
-  userFavoritedTracks: (userId: string) => `/users/${userId}/favorites/tracks`
+  userFavoritedTracks: (userId: string) => `/users/${userId}/favorites/tracks`,
+  topGenreUsers: '/users/genre/top'
 }
 
 const TRENDING_LIMIT = 100
@@ -90,6 +91,12 @@ type GetUserTracksByHandleArgs = {
 type GetProfileListArgs = {
   profileUserId: ID
   currentUserId: ID | null
+  limit?: number
+  offset?: number
+}
+
+type GetTopArtistGenresArgs = {
+  genres?: string[]
   limit?: number
   offset?: number
 }
@@ -391,6 +398,25 @@ class AudiusAPIClient {
     return adapted
   }
 
+  async getTopArtistGenres({ genres, limit, offset }: GetTopArtistGenresArgs) {
+    this._assertInitialized()
+
+    const params = {
+      genre: genres,
+      limit,
+      offset
+    }
+
+    const endpoint = this._constructUrl(ENDPOINT_MAP.topGenreUsers, params)
+    const favoritedTrackResponse: APIResponse<
+      APIUser[]
+    > = await this._getResponse(endpoint)
+    const adapted = favoritedTrackResponse.data
+      .map(adapter.makeUser)
+      .filter(removeNullable)
+    return adapted
+  }
+
   init() {
     if (this.initializationState.state === 'initialized') return
 
@@ -442,13 +468,20 @@ class AudiusAPIClient {
 
   _constructUrl(
     path: string,
-    queryParams: { [key: string]: string | number | undefined | null }
+    queryParams: {
+      [key: string]: string | number | undefined | null | Array<string>
+    }
   ) {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
     const params = Object.entries(queryParams)
       .filter(p => p[1] !== undefined && p[1] !== null)
-      .map(p => `${p[0]}=${encodeURIComponent(p[1]!)}`)
+      .map(p => {
+        if (Array.isArray(p[1])) {
+          return p[1].map(val => `${p[0]}=${encodeURIComponent(val)}`).join('&')
+        }
+        return `${p[0]}=${encodeURIComponent(p[1]!)}`
+      })
       .join('&')
     return `${this.initializationState.endpoint}${path}?${params}`
   }
