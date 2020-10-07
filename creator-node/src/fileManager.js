@@ -156,16 +156,8 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       req.logger.debug(`saveFileForMultihash - retrieved file for multihash ${multihash} from local ipfs node`)
 
       // Write file to disk.
-      const destinationStream = fs.createWriteStream(expectedStoragePath)
-      fileBL.pipe(destinationStream)
-      await new Promise((resolve, reject) => {
-        destinationStream.on('finish', () => {
-          fileFound = true
-          resolve()
-        })
-        destinationStream.on('error', err => { reject(err) })
-        fileBL.on('error', err => { destinationStream.end(); reject(err) })
-      })
+      await Utils.writeStreamToFileSystem(fileBL, expectedStoragePath)
+      fileFound = true
       req.logger.info(`saveFileForMultihash - wrote file to ${expectedStoragePath}, obtained via ipfs get`)
     } catch (e) {
       req.logger.info(`saveFileForMultihash - Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
@@ -203,16 +195,9 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         throw new Error(`Couldn't find files on other creator nodes`)
       }
 
-      const destinationStream = fs.createWriteStream(expectedStoragePath)
-      response.data.pipe(destinationStream)
-      await new Promise((resolve, reject) => {
-        destinationStream.on('finish', () => {
-          fileFound = true
-          resolve()
-        })
-        destinationStream.on('error', err => { reject(err) })
-        response.data.on('error', err => { destinationStream.end(); reject(err) })
-      })
+      // Write file to disk
+      await Utils.writeStreamToFileSystem(response.data, expectedStoragePath)
+      fileFound = true
 
       req.logger.info(`saveFileForMultihash - wrote file to ${expectedStoragePath}`)
     } catch (e) {

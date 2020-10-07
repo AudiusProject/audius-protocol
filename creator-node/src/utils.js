@@ -1,9 +1,13 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 const { BufferListStream } = require('bl')
+const axios = require('axios')
+
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
+const { serviceRegistry } = require('./serviceRegistry')
+const config = require('./config')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -195,6 +199,38 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
+async function findCIDInNetwork (filePath, logger) {
+  const { libs } = serviceRegistry
+  const creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
+  creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
+  let node
+  // TODO - add this to redis cache so we don't bombard other cnodes with requests
+  // TODO - remove this cnode from the list
+  for (let index = 0; index < creatorNodes.length; index++) {
+    node = creatorNodes[index]
+    console.log("node", node)
+    try {
+      const resp = await axios({
+        method: 'get',
+        url: `${node.endpoint}/file_lookup`,
+        params: {
+          filePath
+        },
+        responseType: 'stream',
+        timeout: 1000
+      })
+      if (resp.data) {
+        await writeStreamToFileSystem(resp.data, filePath)
+        logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
+        break
+      }
+    } catch (e) {
+      // logger.error(`Error fetching file from other cnode ${node.endpoint} ${e.message}`)
+      continue
+    }
+  }
+}
+
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
   let ipfsPath = multihash
@@ -223,7 +259,8 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
         let addResp = await ipfs.addFromFs(storagePath, { pin: false })
         logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
-        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
+        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}, about to search other creator nodes`)
+        await findCIDInNetwork(storagePath, logger)
       }
     } catch (e) {
       logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
@@ -313,6 +350,18 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   }
 }
 
+async function writeStreamToFileSystem (stream, expectedStoragePath) {
+  const destinationStream = fs.createWriteStream(expectedStoragePath)
+  stream.pipe(destinationStream)
+  return new Promise((resolve, reject) => {
+    destinationStream.on('finish', () => {
+      resolve()
+    })
+    destinationStream.on('error', err => { reject(err) })
+    stream.on('error', err => { destinationStream.end(); reject(err) })
+  })
+}
+
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
@@ -322,3 +371,4 @@ module.exports.ipfsSingleByteCat = ipfsSingleByteCat
 module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet
 module.exports.ipfsStat = ipfsStat
+module.exports.writeStreamToFileSystem = writeStreamToFileSystem

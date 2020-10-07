@@ -95,6 +95,24 @@ module.exports.successResponse = (obj = {}) => {
 }
 
 /**
+ * Generate the timestamp and signature for api signing
+ * @param {object} data
+ * @param {string} privateKey
+ */
+const generateTimestampAndSignature = (data, privateKey) => {
+  const timestamp = new Date().toISOString()
+  const toSignObj = { ...data, timestamp }
+  // JSON stringify automatically removes white space given 1 param
+  const toSignStr = JSON.stringify(sortKeys(toSignObj))
+  const toSignHash = web3.utils.keccak256(toSignStr)
+  const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
+
+  return { timestamp, signature: signedResponse.signature }
+}
+module.exports.generateTimestampAndSignature = generateTimestampAndSignature
+
+
+/**
  * Recover the public wallet address
  * @param {*} data obj with structure {...data, timestamp}
  * @param {*} signature signature generated with signed data
