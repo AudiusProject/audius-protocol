@@ -89,14 +89,14 @@
     "host": "localhost",
     "port": 4000,
     "up": [
-      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
       "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "register": ["cd libs/; node initScripts/local.js register-cnode #"],
-    "update-delegate-wallet": ["cd libs/; node initScripts/local.js update-delegate-wallet #"]
+    "update-delegate-wallet": ["cd libs/; node initScripts/local.js update-cnode-config #"]
   },
   "identity-service": {
     "protocol": "http",

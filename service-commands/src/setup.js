@@ -145,8 +145,7 @@ const getServiceCommands = (service, serviceNumber) => {
     // If it's an array of commands, try interpolating
     let val = commands[cur]
     if (Array.isArray(val)) {
-      // Replace all occurrences of '#'
-      val = val.map(command => command.replace(/#/g, serviceNumber))
+      val = val.map(command => command.replace('#', serviceNumber))
     }
     return {
       ...acc,
