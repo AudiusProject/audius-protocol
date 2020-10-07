@@ -1,4 +1,5 @@
 import logging
+from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
@@ -8,6 +9,7 @@ from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_tracks import get_tracks
+from src.queries.get_save_tracks import get_save_tracks
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 
@@ -18,7 +20,7 @@ from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
-
+from src.queries.get_top_genre_users import get_top_genre_users
 
 logger = logging.getLogger(__name__)
 
@@ -333,6 +335,9 @@ class FullRepostList(Resource):
             "offset": offset
         }
         reposts = get_repost_feed_for_user(decoded_id, args)
+        for repost in reposts:
+            if "playlist_id" in repost:
+                repost["tracks"] = get_tracks_for_playlist(repost["playlist_id"], current_user_id)
         activities = list(map(extend_activity, reposts))
 
         return success_response(activities)
@@ -375,6 +380,9 @@ class HandleFullRepostList(Resource):
             "offset": offset
         }
         reposts = get_repost_feed_for_user(None, args)
+        for repost in reposts:
+            if "playlist_id" in repost:
+                repost["tracks"] = get_tracks_for_playlist(repost["playlist_id"], current_user_id)
         activities = list(map(extend_activity, reposts))
 
         return success_response(activities)
@@ -401,6 +409,48 @@ class FavoritedTracks(Resource):
         favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
+
+favorite_route_parser = reqparse.RequestParser()
+favorite_route_parser.add_argument('user_id', required=False, type=str)
+favorite_route_parser.add_argument('limit', required=False, type=int)
+favorite_route_parser.add_argument('offset', required=False, type=int)
+favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(activity_model_full)))
+@full_ns.route("/<string:user_id>/favorites/tracks")
+class FavoritedTracks(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get User's Favorite Tracks""",
+        params={'user_id': 'A User ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.expect(favorite_route_parser)
+    @full_ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        """Fetch favorited tracks for a user."""
+        args = favorite_route_parser.parse_args()
+        decoded_id = decode_with_abort(user_id, ns)
+        current_user_id = None
+        if args.get("user_id"):
+            current_user_id = decode_string_id(user_id)
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+        get_tracks_args = {
+            "filter_deleted": False,
+            "user_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+            "with_users": True
+        }
+        track_saves = get_save_tracks(get_tracks_args)
+        tracks = list(map(extend_activity, track_saves))
+        return success_response(tracks)
 
 user_search_result = make_response("user_search", ns, fields.List(fields.Nested(user_model)))
 
@@ -525,4 +575,43 @@ class FollowingUsers(Resource):
         }
         users = get_followees_for_user(args)
         users = list(map(extend_user, users))
+        return success_response(users)
+
+top_genre_users_route_parser = reqparse.RequestParser()
+top_genre_users_route_parser.add_argument('genre', required=False, action='append')
+top_genre_users_route_parser.add_argument('limit', required=False, type=int)
+top_genre_users_route_parser.add_argument('offset', required=False, type=int)
+top_genre_users_response = make_response("top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full)))
+@full_ns.route("/genre/top")
+class FullTopGenreUsers(Resource):
+    @full_ns.expect(top_genre_users_route_parser)
+    @full_ns.doc(
+        id="""Get the Top Users for a Given Genre""",
+        params={
+            'genre': 'List of Genres',
+            'limit': 'Limit',
+            'offset': 'Offset'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(top_genre_users_response)
+    @cache(ttl_sec=60*60*24)
+    def get(self):
+        args = top_genre_users_route_parser.parse_args()
+        limit = get_default_max(args.get('limit'), 10, 100)
+        offset = get_default_max(args.get('offset'), 0)
+
+        get_top_genre_users_args = {
+            'limit': limit,
+            'offset': offset,
+            'with_users': True
+        }
+        if args['genre'] is not None:
+            get_top_genre_users_args['genre'] = args['genre']
+        top_users = get_top_genre_users(get_top_genre_users_args)
+        users = list(map(extend_user, top_users['users']))
         return success_response(users)
