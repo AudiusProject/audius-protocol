@@ -4,8 +4,8 @@ function getLibsMock () {
   const libsMock = {
     ethContracts: {
       ServiceProviderFactoryClient: {
-        getServiceProviderIdFromAddress: sinon.mock().atLeast(1),
-        getServiceProviderInfo: sinon.mock().atLeast(1)
+        getServiceProviderIdFromEndpoint: sinon.mock().atLeast(1),
+        getServiceEndpointInfo: sinon.mock().atLeast(1)
       }
     },
     User: {
@@ -15,8 +15,8 @@ function getLibsMock () {
       discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
     }
   }
-  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress.returns('1')
-  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo.returns({ 'endpoint': 'http://localhost:5000' })
+  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint.returns('1')
+  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo.returns({ 'endpoint': 'http://localhost:5000' })
   libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://localhost:5000', 'blocknumber': 10, 'track_blocknumber': 10 }])
   libsMock.User.getUsers.atMost(10)
 
