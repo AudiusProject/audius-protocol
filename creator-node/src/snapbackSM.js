@@ -124,6 +124,21 @@ class SnapbackSM {
     return resp.data.clockValue
   }
 
+  async issueSecondarySync (userWallet, secondaryEndpoint, primaryEndpoint) {
+    let syncRequestParameters = {
+      baseURL: secondaryEndpoint,
+      url: '/sync',
+      method: 'post',
+      data: {
+        wallet: [userWallet],
+        creator_node_endpoint: primaryEndpoint,
+        immediate: true,
+        state_machine: true // state machine specific flag
+      }
+    }
+    await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
+  }
+
   /*
     Main state machine processing function
   */
@@ -143,58 +158,32 @@ class SnapbackSM {
       await this.recoverSpID()
       return
     }
-
-    let usersList = await this.getNodePrimaryUsers()
-    // TODO: Don't access config object or abstract 
+    // TODO: Don't access config object every timeor abstract 
     let ownEndpoint = config.get('creatorNodeEndpoint')
-
-    console.log(usersList)
+    let usersList = await this.getNodePrimaryUsers()
     // Issue queries to secondaries for each user
     await Promise.all(usersList.map(async (user)=>{
       let userWallet = user.wallet
       let secondary1 = user.secondary1
       let secondary2 = user.secondary2
       let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
-      this.log(`processStateMachineOperation |${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
-      this.log(`processStateMachineOperation |${userWallet} primaryClock=${primaryClockValue}`)
       let secondary1ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
       let secondary2ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
       let secondary1SyncRequired = primaryClockValue > secondary1ClockValue
       let secondary2SyncRequired = primaryClockValue > secondary2ClockValue
+      this.log(`processStateMachineOperation |${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
+      this.log(`processStateMachineOperation |${userWallet} primaryClock=${primaryClockValue}`)
       this.log(`processStateMachineOperation |${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
       this.log(`processStateMachineOperation |${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
-
       // Enqueue sync for secondary1 if required
       if (secondary1SyncRequired) {
         // Issue sync
-        let syncRequestParameters = {
-          baseURL: secondary1,
-          url: '/sync',
-          method: 'post',
-          data: {
-            wallet: [userWallet],
-            creator_node_endpoint: ownEndpoint,
-            immediate: true,
-            state_machine: true // state machine specific flag
-          }
-        }
-        await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
+        await this.issueSecondarySync(userWallet, secondary1, ownEndpoint)
       }
       // Enqueue sync for secondary2 if required
-      if (secondary1SyncRequired) {
+      if (secondary2SyncRequired) {
         // Issue sync
-        let syncRequestParameters = {
-          baseURL: secondary1,
-          url: '/sync',
-          method: 'post',
-          data: {
-            wallet: [userWallet],
-            creator_node_endpoint: ownEndpoint,
-            immediate: true,
-            state_machine: true // state machine specific flag
-          }
-        }
-        await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
+        await this.issueSecondarySync(userWallet, secondary2, ownEndpoint)
       }
     }))
   }
