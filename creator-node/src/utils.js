@@ -6,7 +6,12 @@ const axios = require('axios')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
-const { serviceRegistry } = require('./serviceRegistry')
+let serviceRegistry
+setTimeout(() => {
+  serviceRegistry = (require('./serviceRegistry')).serviceRegistry
+  console.log("importing serviceRegistry", serviceRegistry)
+}, 0)
+
 const config = require('./config')
 
 class Utils {
