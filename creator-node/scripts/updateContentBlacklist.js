@@ -1,32 +1,29 @@
 const axios = require('axios')
 
 const models = require('../src/models')
-const config = require('../src/config')
 const { generateTimestampAndSignature } = require('../src/apiHelpers')
 
-// const PUBLIC_KEY = config.get('delegateOwnerWallet')
-const PRIVATE_KEY = config.get('delegatePrivateKey')
+const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 
 // Available action types
-// TODO: add to config or something
 const ACTION_ARR = ['ADD', 'DELETE']
 const ACTION_SET = new Set(ACTION_ARR)
 const TYPES_ARR = models.ContentBlacklist.Types
 const TYPES_SET = new Set(TYPES_ARR)
 
+// Script usage:
+// node updateContentBlacklist.js <action> <type> <id>
+// node updateContentBlacklist.js add user 1
+// node updateContentBlacklist.js delete track 4
+
 /**
  * Process command line args and either add or delete an entry in/to ContentBlacklist table
  */
 async function run () {
-  let action, type, id
-
-  // Parse args
+  let args
   try {
-    const args = parseArgs()
-    action = args.action
-    type = args.type
-    id = args.id
+    args = parseEnvVarsAndArgs()
   } catch (e) {
     console.error(`\nIncorrect script usage: ${e.message}`)
     console.error(`action: [${ACTION_ARR.toString()}]\ntype: [${TYPES_ARR.toString()}]\nid: [integer of 0 or greater]`)
@@ -34,6 +31,7 @@ async function run () {
     return
   }
 
+  const { action, type, id } = args
   // Add or remove type and id entry to ContentBlacklist
   try {
     switch (action) {
@@ -54,9 +52,15 @@ async function run () {
 }
 
 /**
- * Parses the command line args
+ * Parses the environment variables and command line args
  */
-function parseArgs () {
+function parseEnvVarsAndArgs () {
+  if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY) {
+    let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}] or private key [${PRIVATE_KEY}] have not been exported. `
+    errorMsg += "Please export environment variables 'delegatePrivateKey' and 'creatorNodeEndpoint'."
+    throw new Error(errorMsg)
+  }
+
   const args = process.argv.slice(2)
   if (args.length !== 3) {
     throw new Error('Incorrect number of args provided.')
@@ -110,7 +114,7 @@ async function removeFromContentBlacklist (type, id) {
   let resp
   try {
     resp = await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/blacklist/add`,
+      url: `${CREATOR_NODE_ENDPOINT}/blacklist/delete`,
       method: 'post',
       params: { type, id, timestamp, signature },
       responseType: 'json'
