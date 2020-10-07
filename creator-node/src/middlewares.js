@@ -127,7 +127,7 @@ async function getOwnEndpoint (req) {
   if (!creatorNodeEndpoint) throw new Error('Must provide either creatorNodeEndpoint config var.')
 
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
-  if(!spId) throw new Error('Cannot get spId for node')
+  if (!spId) throw new Error('Cannot get spId for node')
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
