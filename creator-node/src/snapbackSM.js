@@ -143,6 +143,9 @@ class SnapbackSM {
     }
 
     let usersList = await this.getNodePrimaryUsers()
+    // TODO: Don't access config object or abstract 
+    let ownEndpoint = config.get('creatorNodeEndpoint')
+
     console.log(usersList)
     this.log(usersList)
     this.log(`usersList: ${usersList}`)
@@ -161,6 +164,36 @@ class SnapbackSM {
       let secondary2SyncRequired = primaryClockValue > secondary2ClockValue
       this.log(`processStateMachineOperation |${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
       this.log(`processStateMachineOperation |${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
+      // Enqueue sync for secondary1 if required
+      if (secondary1SyncRequired) {
+        // Issue sync
+        let syncRequestParameters = {
+          baseURL: secondary1,
+          url: '/sync',
+          method: 'post',
+          data: {
+            wallet: [userWallet],
+            creator_node_endpoint: ownEndpoint,
+            immediate: true,
+            state_machine: true // state machine specific flag
+          }
+        }
+      }
+      // Enqueue sync for secondary2 if required
+      if (secondary1SyncRequired) {
+        // Issue sync
+        let syncRequestParameters = {
+          baseURL: secondary1,
+          url: '/sync',
+          method: 'post',
+          data: {
+            wallet: [userWallet],
+            creator_node_endpoint: ownEndpoint,
+            immediate: true,
+            state_machine: true // state machine specific flag
+          }
+        }
+      }
     }))
   }
 
