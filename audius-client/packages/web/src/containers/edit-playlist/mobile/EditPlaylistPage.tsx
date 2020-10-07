@@ -291,7 +291,7 @@ const EditPlaylistPage = g(
               <EditableRow
                 label='Description'
                 format={Format.TEXT_AREA}
-                initialValue={formFields.description}
+                initialValue={formFields?.description ?? undefined}
                 placeholderValue={messages.placeholderDescription}
                 onChange={onUpdateDescription}
                 centerLeftElement={false}

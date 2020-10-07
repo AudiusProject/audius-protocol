@@ -170,10 +170,8 @@ class SearchBar extends Component {
                   )
                 : '',
               id: playlist.playlist_id,
-              imageMultihash:
-                playlist.playlist_image_sizes_multihash ||
-                playlist.playlist_image_multihash,
-              size: playlist.playlist_image_sizes_multihash
+              imageMultihash: playlist.cover_art_sizes || playlist.cover_art,
+              size: playlist.cover_art_sizes
                 ? SquareSizes.SIZE_150_BY_150
                 : null,
               defaultImage: placeholderArt,
@@ -198,12 +196,8 @@ class SearchBar extends Component {
               primary: album.playlist_name,
               secondary: album.user ? album.user.name : '',
               id: album.playlist_id,
-              imageMultihash:
-                album.playlist_image_sizes_multihash ||
-                album.playlist_image_multihash,
-              size: album.playlist_image_sizes_multihash
-                ? SquareSizes.SIZE_150_BY_150
-                : null,
+              imageMultihash: album.cover_art_sizes || album.cover_art,
+              size: album.cover_art_sizes ? SquareSizes.SIZE_150_BY_150 : null,
               defaultImage: placeholderArt,
               creatorNodeEndpoint: album.user
                 ? album.user.creator_node_endpoint

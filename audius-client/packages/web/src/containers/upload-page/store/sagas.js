@@ -56,7 +56,7 @@ const UPLOAD_TIMEOUT_MILLIS = 60 /* min */ * 60 /* sec */ * 1000 /* ms */
 const combineMetadata = (trackMetadata, collectionMetadata) => {
   const metadata = trackMetadata
 
-  metadata.cover_art_sizes = collectionMetadata.playlist_image_sizes_multihash
+  metadata.cover_art_sizes = collectionMetadata.cover_art_sizes
   metadata.artwork = collectionMetadata.artwork
 
   if (!metadata.genre) metadata.genre = collectionMetadata.genre
@@ -593,7 +593,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
     AudiusBackend.uploadImage,
     collectionMetadata.artwork.file
   )
-  collectionMetadata.playlist_image_sizes_multihash = coverArtResp.dirCID
+  collectionMetadata.cover_art_sizes = coverArtResp.dirCID
 
   // Then upload tracks
   const tracksWithMetadata = tracks.map(track => {
@@ -649,8 +649,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
           userId,
           playlist =>
             playlist &&
-            (!collectionMetadata.artwork ||
-              playlist.playlist_image_sizes_multihash)
+            (!collectionMetadata.artwork || playlist.cover_art_sizes)
         )
       },
       function* (confirmedPlaylist) {

@@ -331,10 +331,7 @@ class AudiusBackend {
   static getCollectionImages(collection) {
     const coverArtSizes = {}
 
-    if (
-      !collection.playlist_image_sizes_multihash &&
-      !collection.playlist_image_multihash
-    ) {
+    if (!collection.cover_art_sizes && !collection.cover_art) {
       coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt
     }
 
@@ -1422,10 +1419,10 @@ class AudiusBackend {
       if (error) return { playlistId, error }
 
       // If this playlist is being created from an existing cover art, use it.
-      if (metadata.playlist_image_sizes_multihash) {
+      if (metadata.cover_art_sizes) {
         await audiusLibs.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
           playlistId,
-          Utils.formatOptionalMultihash(metadata.playlist_image_sizes_multihash)
+          Utils.formatOptionalMultihash(metadata.cover_art_sizes)
         )
       } else if (coverArt) {
         await audiusLibs.Playlist.updatePlaylistCoverPhoto(playlistId, coverArt)
