@@ -7,6 +7,8 @@ const { logger } = require('./logging')
 
 const DevDelayInMS = 10000
 
+// TODO: Discuss w/draj how to handle a long upload where the stateMachine starts processing during the operation
+
 /*
   Snap back state machine
   Ensures file availability through sync and user replica operations
@@ -147,15 +149,12 @@ class SnapbackSM {
     let ownEndpoint = config.get('creatorNodeEndpoint')
 
     console.log(usersList)
-    this.log(usersList)
-    this.log(`usersList: ${usersList}`)
     // Issue queries to secondaries for each user
     await Promise.all(usersList.map(async (user)=>{
       let userWallet = user.wallet
       let secondary1 = user.secondary1
       let secondary2 = user.secondary2
       let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
-      this.log(``)
       this.log(`processStateMachineOperation |${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
       this.log(`processStateMachineOperation |${userWallet} primaryClock=${primaryClockValue}`)
       let secondary1ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
@@ -164,6 +163,7 @@ class SnapbackSM {
       let secondary2SyncRequired = primaryClockValue > secondary2ClockValue
       this.log(`processStateMachineOperation |${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
       this.log(`processStateMachineOperation |${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
+
       // Enqueue sync for secondary1 if required
       if (secondary1SyncRequired) {
         // Issue sync
@@ -178,6 +178,7 @@ class SnapbackSM {
             state_machine: true // state machine specific flag
           }
         }
+        await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
       }
       // Enqueue sync for secondary2 if required
       if (secondary1SyncRequired) {
@@ -193,14 +194,43 @@ class SnapbackSM {
             state_machine: true // state machine specific flag
           }
         }
+        await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
       }
     }))
   }
+
+  // Main sync queue job
+  async processSyncOperation(job) {
+    logger.info('------------------Process SYNC------------------')
+    logger.info(job.data)
+    let syncRequestParameters = job.data.syncRequestParameters
+    logger.info(syncRequestParameters)
+    // TODO: Expand this and actually check validity of data params
+    let isValidSyncJobData = (
+      ('baseURL' in syncRequestParameters) &&
+      ('url' in syncRequestParameters) &&
+      ('method' in syncRequestParameters) &&
+      ('data' in syncRequestParameters)
+    )
+    logger.info(`isValidSync ${isValidSyncJobData}`)
+    if (!isValidSyncJobData) {
+      logger.error(`Invalid sync data found`)
+      logger.error(job.data)
+      return
+    }
+    // Issue sync request to secondary
+    await axios(syncRequestParameters)
+    logger.info('------------------END Process SYNC------------------')
+  }
+
 
   /*
     Initialize the configs necessary to run
   */
   async init () {
+    await this.stateMachineQueue.empty()
+    await this.syncQueue.empty()
+
     const endpoint = config.get('creatorNodeEndpoint')
     const isUserMetadata = config.get('isUserMetadataNode')
     if (isUserMetadata) {
@@ -236,12 +266,25 @@ class SnapbackSM {
         try {
           await this.processStateMachineOperation(job)
         } catch (e) {
-          this.log(`Error processing ${e}`)
+          this.log(`stateMachineQueue error processing ${e}`)
         } finally {
           // TODO: Remove dev mode
           this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
           await utils.timeout(DevDelayInMS)
           this.stateMachineQueue.add({ startTime: Date.now() })
+          done()
+        }
+      }
+    )
+    this.syncQueue.process(
+      async (job, done) => {
+        try {
+          await this.processSyncOperation(job)
+        } catch (e) {
+          this.log(`syncQueue error processing ${e}`)
+        } finally {
+          // Restart job
+          // Can be replaced with cron after development is complete
           done()
         }
       }
