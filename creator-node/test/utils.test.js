@@ -18,7 +18,7 @@ describe('test src/utils.js', () => {
   it('will not rehydrate in rehydrateIpfsFromFsIfNecessary if CID is in BlacklistManager', async () => {
     const multihash = 'testCID'
     const storagePath = 'storagePath'
-    const logContext = ''
+    const logContext = {}
 
     // Add CID to BlacklistManager
     await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)
@@ -40,7 +40,7 @@ describe('test src/utils.js', () => {
   it('will not rehydrate in rehydrateIpfsDirFromFsIfNecessary if CID is in BlacklistManager', async () => {
     const multihash = 'testCID'
     const storagePath = 'storagePath'
-    const logContext = ''
+    const logContext = {}
 
     // Add CID to BlacklistManager
     await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)

@@ -14,9 +14,9 @@ const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
 
-// Dummy keys
-const DELEGATE_OWNER_WALLET = '0x2cd48ce4ce408198b520e01fe132bdbdc08d6bda'
-const DELEGATE_PRIVATE_KEY = '0x3ab83ce9422b045ec4dadb68ecc91df19e5b17216bec409936c2573a67d81fbe'
+// Dummy keys from circle config.yml
+const DELEGATE_OWNER_WALLET = '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
+const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
