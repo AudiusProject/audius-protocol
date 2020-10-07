@@ -13,6 +13,7 @@ import { MountPlacement, ComponentPlacement } from 'components/types'
 import { useRecord, make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import { UploadPageState } from '../store/types'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 import {
   fullTrackPage,
@@ -77,16 +78,13 @@ const getShareTextUrl = async (
       const title = upload.tracks[0].metadata.title
       const parent_track_id =
         upload.tracks[0].metadata?.remix_of?.tracks[0].parent_track_id
+      if (!parent_track_id) return { text: '', url: '' }
 
       const getPage = fullUrl ? fullTrackPage : trackPage
       const url = getPage(user.handle, title, upload.completionId)
-      const tracks = await AudiusBackend.getAllTracks({
-        offset: 0,
-        limit: 1,
-        idsArray: [parent_track_id],
-        withUsers: true
-      })
-      const parentTrack = tracks[0]
+      const parentTrack = await apiClient.getTrack({ id: parent_track_id })
+      if (!parentTrack) return { text: '', url: '' }
+
       const parentTrackUser = parentTrack.user
 
       let twitterHandle = await getTwitterHandleByUserHandle(
