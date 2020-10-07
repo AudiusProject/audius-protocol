@@ -48,7 +48,7 @@ def test_get_genre_metrics(app):
         {"genre": "Electronic"}
     ]
 
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
     before_date = (date + timedelta(hours=-1))
     populate_mock_db(db, test_tracks, date)
 
@@ -67,7 +67,7 @@ def test_get_genre_metrics(app):
 
 def test_get_genre_metrics_for_month(app):
     """Tests that genre metrics can be queried over a large time range"""
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
     long_before_date = (date + timedelta(days=-12))
     before_date = (date + timedelta(days=-1))
 

@@ -239,7 +239,12 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
-
+  spID: {
+    doc: 'ID of creator node in ethContracts ServiceProviderFactory',
+    format: Number,
+    env: 'spID',
+    default: 0
+  },
   ethProviderUrl: {
     doc: 'eth provider url',
     format: String,
@@ -330,7 +335,12 @@ const config = convict({
     env: 'dataNetworkId',
     default: null
   },
-
+  creatorNodeEndpoint: {
+    doc: 'http endpoint registered on chain for cnode',
+    format: String,
+    env: 'creatorNodeEndpoint',
+    default: null
+  },
   // Service selection
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
@@ -344,7 +354,6 @@ const config = convict({
     env: 'identityService',
     default: ''
   },
-
   /** Manual content blacklists */
   userBlacklist: {
     doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',

@@ -1,6 +1,7 @@
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
+const SnapbackSM = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 
@@ -27,6 +28,8 @@ class ServiceRegistry {
     // this.audiusLibs isn't initialized until
     // `initServices` is called.
     this.audiusLibs = null
+    // this.snapbackSM isn't initialized until 'initServices'
+    this.snapbackSM = null
   }
 
   /**
@@ -40,6 +43,11 @@ class ServiceRegistry {
     await this.blacklistManager.init()
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     this.libs = audiusLibs
+    // Conditionally initialize state machine
+    if (!config.get('isUserMetadataNode')) {
+      this.snapbackSM = new SnapbackSM(this.libs)
+      await this.snapbackSM.init()
+    }
   }
 }
 
