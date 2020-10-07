@@ -103,8 +103,11 @@ def get_tracks_including_unlisted_route():
         args["filter_deleted"] = parse_bool_param(request.args.get("filter_deleted"))
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-    tracks = get_tracks_including_unlisted(
-        args, request.get_json())
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
+    identifiers = request.get_json()["tracks"]
+    args["identifiers"] = identifiers
+    tracks = get_tracks_including_unlisted(args)
     return api_helpers.success_response(tracks)
 
 
