@@ -45,56 +45,6 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_delegator",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_serviceProvider",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_decreaseAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "DecreaseDelegatedStake",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_serviceProvider",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_delegator",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_unstakedAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "DelegatorRemoved",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
           "name": "_newGovernanceAddress",
           "type": "address"
         }
@@ -185,6 +135,75 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "RemoveDelegatorRequestCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_unstakedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RemoveDelegatorRequestEvaluated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "name": "RemoveDelegatorRequested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_newServiceProviderFactoryAddress",
           "type": "address"
         }
@@ -241,6 +260,87 @@
         }
       ],
       "name": "UndelegateLockupDurationUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "UndelegateStakeRequestCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "UndelegateStakeRequestEvaluated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_serviceProvider",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "name": "UndelegateStakeRequested",
       "type": "event"
     },
     {
@@ -332,7 +432,7 @@
     {
       "constant": false,
       "inputs": [],
-      "name": "cancelUndelegateStake",
+      "name": "cancelUndelegateStakeRequest",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -422,7 +522,7 @@
           "type": "address"
         }
       ],
-      "name": "cancelRemoveDelegator",
+      "name": "cancelRemoveDelegatorRequest",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -598,6 +698,27 @@
           "internalType": "address[]",
           "name": "",
           "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_delegator",
+          "type": "address"
+        }
+      ],
+      "name": "getTotalDelegatorStake",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "payable": false,
