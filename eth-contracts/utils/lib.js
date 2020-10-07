@@ -169,15 +169,13 @@ export const initiateFundingRound = async (governance, claimsManagerRegKey, guar
   const signature = 'initiateRound()'
   const callData = abiEncode([], [])
 
-  const txReceipt = await governance.guardianExecuteTransaction(
+  return await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
     callValue0,
     signature,
     callData,
     { from: guardianAddress }
   )
-
-  return parseTx(txReceipt)
 }
 
 export const deployToken = async (
@@ -233,8 +231,7 @@ export const deployGovernance = async (
   executionDelay,
   votingQuorum,
   guardianAddress,
-  maxInProgressProposals = 20,
-  maxDescriptionLength = 250
+  maxInProgressProposals = 20
 ) => {
   const Governance = artifacts.require('Governance')
   const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
@@ -242,8 +239,8 @@ export const deployGovernance = async (
   const governance0 = await Governance.new({ from: proxyDeployerAddress })
   const governanceInitializeData = encodeCall(
     'initialize',
-    ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'uint16', 'address'],
-    [registry.address, votingPeriod, executionDelay, votingQuorum, maxInProgressProposals, maxDescriptionLength, guardianAddress]
+    ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'address'],
+    [registry.address, votingPeriod, executionDelay, votingQuorum, maxInProgressProposals, guardianAddress]
   )
   // Initialize proxy with zero address
   const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -330,19 +327,19 @@ export const slash = async (slashAmount, slashAccount, governance, delegateManag
 }
 
 // Test helper to set staking address in Governance
-export const configureGovernanceStakingAddress = async (
+export const configureGovernanceContractAddresses = async (
   governance,
   governanceKey,
   guardianAddress,
-  stakingAddress
+  stakingAddress,
+  serviceProviderFactoryAddress,
+  delegateManagerAddress
 ) => {
-
   await assertRevert(
     governance.evaluateProposalOutcome(0),
     "stakingAddress is not set"
   )
-
-  const txReceipt = await governance.guardianExecuteTransaction(
+  let txReceipt = await governance.guardianExecuteTransaction(
     governanceKey,
     toBN(0),
     'setStakingAddress(address)',
@@ -350,7 +347,24 @@ export const configureGovernanceStakingAddress = async (
     { from: guardianAddress }
   )
   assert.equal(stakingAddress, await governance.getStakingAddress(), 'Expect staking in governance to be set')
-
+  // Set ServiceProviderFactory address in Governance
+  txReceipt = await governance.guardianExecuteTransaction(
+    governanceKey,
+    toBN(0),
+    'setServiceProviderFactoryAddress(address)',
+    abiEncode(['address'], [serviceProviderFactoryAddress]),
+    { from: guardianAddress }
+  )
+  assert.equal(await governance.getServiceProviderFactoryAddress.call(), serviceProviderFactoryAddress)
+  // Set DelegateManager address in Governance
+  txReceipt = await governance.guardianExecuteTransaction(
+    governanceKey,
+    toBN(0),
+    'setDelegateManagerAddress(address)',
+    abiEncode(['address'], [delegateManagerAddress]),
+    { from: guardianAddress }
+  )
+  assert.equal(await governance.getDelegateManagerAddress.call(), delegateManagerAddress)
   return parseTx(txReceipt)
 }
 

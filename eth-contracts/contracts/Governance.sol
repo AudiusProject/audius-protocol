@@ -2,6 +2,8 @@ pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "./Staking.sol";
+import "./ServiceProviderFactory.sol";
+import "./DelegateManager.sol";
 import "./registry/Registry.sol";
 import "./InitializableV2.sol";
 
@@ -9,9 +11,6 @@ import "./InitializableV2.sol";
 contract Governance is InitializableV2 {
     using SafeMath for uint256;
 
-    string private constant ERROR_INVALID_PROPOSAL = (
-        "Governance: Must provide valid non-zero _proposalId"
-    );
     string private constant ERROR_ONLY_GOVERNANCE = (
         "Governance: Only callable by self"
     );
@@ -34,6 +33,12 @@ contract Governance is InitializableV2 {
     /// @notice Address of Audius staking contract, used to permission Governance method calls
     address private stakingAddress;
 
+    /// @notice Address of Audius ServiceProvider contract, used to permission Governance method calls
+    address private serviceProviderFactoryAddress;
+
+    /// @notice Address of Audius DelegateManager contract, used to permission Governance method calls
+    address private delegateManagerAddress;
+
     /// @notice Period in blocks for which a governance proposal is open for voting
     uint256 private votingPeriod;
 
@@ -48,9 +53,6 @@ contract Governance is InitializableV2 {
     /// @notice Max number of InProgress proposals possible at once
     /// @dev uint16 gives max possible value of 65,535
     uint16 private maxInProgressProposals;
-
-    /// @notice Max number of bytes allowed in a proposal description string
-    uint16 private maxDescriptionLength;
 
     /**
      * @notice Address of account that has special Governance permissions. Can veto proposals
@@ -108,7 +110,7 @@ contract Governance is InitializableV2 {
         uint256 voteMagnitudeNo;
         uint256 numVotes;
         mapping(address => Vote) votes;
-        string description;
+        mapping(address => uint256) voteMagnitudes;
         bytes32 contractHash;
     }
 
@@ -126,46 +128,50 @@ contract Governance is InitializableV2 {
 
     /***** Events *****/
     event ProposalSubmitted(
-        uint256 indexed proposalId,
-        address indexed proposer,
-        uint256 submissionBlockNumber,
-        string description
+        uint256 indexed _proposalId,
+        address indexed _proposer,
+        string _name,
+        string _description
     );
     event ProposalVoteSubmitted(
-        uint256 indexed proposalId,
-        address indexed voter,
-        Vote indexed vote,
-        uint256 voterStake
+        uint256 indexed _proposalId,
+        address indexed _voter,
+        Vote indexed _vote,
+        uint256 _voterStake
     );
     event ProposalVoteUpdated(
-        uint256 indexed proposalId,
-        address indexed voter,
-        Vote indexed vote,
-        uint256 voterStake,
-        Vote previousVote
+        uint256 indexed _proposalId,
+        address indexed _voter,
+        Vote indexed _vote,
+        uint256 _voterStake,
+        Vote _previousVote
     );
     event ProposalOutcomeEvaluated(
-        uint256 indexed proposalId,
-        Outcome indexed outcome,
-        uint256 voteMagnitudeYes,
-        uint256 voteMagnitudeNo,
-        uint256 numVotes
+        uint256 indexed _proposalId,
+        Outcome indexed _outcome,
+        uint256 _voteMagnitudeYes,
+        uint256 _voteMagnitudeNo,
+        uint256 _numVotes
     );
     event ProposalTransactionExecuted(
-        uint256 indexed proposalId,
-        bool indexed success,
-        bytes returnData
+        uint256 indexed _proposalId,
+        bool indexed _success,
+        bytes _returnData
     );
     event GuardianTransactionExecuted(
-        address indexed targetContractAddress,
-        uint256 callValue,
-        string indexed functionSignature,
-        bytes indexed callData,
-        bytes returnData
+        address indexed _targetContractAddress,
+        uint256 _callValue,
+        string indexed _functionSignature,
+        bytes indexed _callData,
+        bytes _returnData
     );
-    event ProposalVetoed(uint256 indexed proposalId);
-    event RegistryAddressUpdated(address indexed newRegistryAddress);
-    event GuardianshipTransferred(address indexed newGuardianAddress);
+    event ProposalVetoed(uint256 indexed _proposalId);
+    event RegistryAddressUpdated(address indexed _newRegistryAddress);
+    event GuardianshipTransferred(address indexed _newGuardianAddress);
+    event VotingPeriodUpdated(uint256 indexed _newVotingPeriod);
+    event ExecutionDelayUpdated(uint256 indexed _newExecutionDelay);
+    event VotingQuorumPercentUpdated(uint256 indexed _newVotingQuorumPercent);
+    event MaxInProgressProposalsUpdated(uint256 indexed _newMaxInProgressProposals);
 
     /**
      * @notice Initialize the Governance contract
@@ -184,7 +190,6 @@ contract Governance is InitializableV2 {
         uint256 _executionDelay,
         uint256 _votingQuorumPercent,
         uint16 _maxInProgressProposals,
-        uint16 _maxDescriptionLength,
         address _guardianAddress
     ) public initializer {
         require(_registryAddress != address(0x00), ERROR_INVALID_REGISTRY);
@@ -201,9 +206,6 @@ contract Governance is InitializableV2 {
             "Governance: Requires non-zero _maxInProgressProposals"
         );
         maxInProgressProposals = _maxInProgressProposals;
-
-        require(_maxDescriptionLength > 0, "Governance: Requires non-zero _maxDescriptionLength");
-        maxDescriptionLength = _maxDescriptionLength;
 
         require(
             _votingQuorumPercent > 0 && _votingQuorumPercent <= 100,
@@ -223,12 +225,18 @@ contract Governance is InitializableV2 {
     // ========================================= Governance Actions =========================================
 
     /**
-     * @notice Submit a proposal for vote. Only callable by stakers with non-zero stake.
+     * @notice Submit a proposal for vote. Only callable by addresses with non-zero total active stake.
+     *      total active stake = total active deployer stake + total active delegator stake
+     *
+     * @dev _name and _description length is not enforced since they aren't stored on-chain and only event emitted
+     *
      * @param _targetContractRegistryKey - Registry key for the contract concerning this proposal
      * @param _callValue - amount of wei to pass with function call if a token transfer is involved
      * @param _functionSignature - function signature of the function to be executed if proposal is successful
      * @param _callData - encoded value(s) to call function with if proposal is successful
+     * @param _name - Text name of proposal to be emitted in event
      * @param _description - Text description of proposal to be emitted in event
+     *
      * @return - ID of new proposal
      */
     function submitProposal(
@@ -236,11 +244,14 @@ contract Governance is InitializableV2 {
         uint256 _callValue,
         string calldata _functionSignature,
         bytes calldata _callData,
+        string calldata _name,
         string calldata _description
     ) external returns (uint256)
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
 
         address proposer = msg.sender;
 
@@ -256,10 +267,10 @@ contract Governance is InitializableV2 {
             "Governance: Number of InProgress proposals already at max. Please evaluate if possible, or wait for current proposals' votingPeriods to expire."
         );
 
-        // Require proposer is active Staker or guardian address
+        // Require proposer has non-zero total active stake or is guardian address
         require(
-            Staking(stakingAddress).isStaker(proposer) || proposer == guardianAddress,
-            "Governance: Proposer must be active staker with non-zero stake or guardianAddress."
+            _calculateAddressActiveStake(proposer) > 0 || proposer == guardianAddress,
+            "Governance: Proposer must be address with non-zero total active stake or be guardianAddress."
         );
 
         // Require _targetContractRegistryKey points to a valid registered contract
@@ -275,11 +286,11 @@ contract Governance is InitializableV2 {
             "Governance: _functionSignature cannot be empty."
         );
 
-        // Require description length in bytes is within bounds
-        require(
-            bytes(_description).length > 0 && bytes(_description).length <= maxDescriptionLength,
-            "Governance: _description length must be between 1 and maxDescriptionLength"
-        );
+        // Require non-zero description length
+        require(bytes(_description).length > 0, "Governance: _description length must be > 0");
+
+        // Require non-zero name length
+        require(bytes(_name).length > 0, "Governance: _name length must be > 0");
 
         // set proposalId
         uint256 newProposalId = lastProposalId.add(1);
@@ -298,9 +309,9 @@ contract Governance is InitializableV2 {
             voteMagnitudeYes: 0,
             voteMagnitudeNo: 0,
             numVotes: 0,
-            description: _description,
             contractHash: _getCodeHash(targetContractAddress)
             /* votes: mappings are auto-initialized to default state */
+            /* voteMagnitudes: mappings are auto-initialized to default state */
         });
 
         // Append new proposalId to inProgressProposals array
@@ -309,7 +320,7 @@ contract Governance is InitializableV2 {
         emit ProposalSubmitted(
             newProposalId,
             proposer,
-            block.number,
+            _name,
             _description
         );
 
@@ -319,79 +330,118 @@ contract Governance is InitializableV2 {
     }
 
     /**
-     * @notice Vote on an active Proposal. Only callable by stakers with non-zero stake.
+     * @notice Vote on an active Proposal. Only callable by addresses with non-zero active stake.
      * @param _proposalId - id of the proposal this vote is for
      * @param _vote - can be either {Yes, No} from Vote enum. No other values allowed
      */
     function submitVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
+        _requireValidProposalId(_proposalId);
 
         address voter = msg.sender;
 
-        // Validates new _vote, _proposalId, proposal state, and voter state + returns voterStake
-        uint256 voterStake = _validateVoteAndGetVoterStake(voter, _proposalId, _vote);
+        // Require proposal votingPeriod is still active
+        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
+        require(
+            block.number > submissionBlockNumber && block.number <= endBlockNumber,
+            "Governance: Proposal votingPeriod has ended"
+        );
 
-        // Ensure previous vote is None
+        // Require voter has non-zero total active stake
+        uint256 voterActiveStake = _calculateAddressActiveStake(voter);
+        require(
+            voterActiveStake > 0,
+            "Governance: Voter must be address with non-zero total active stake."
+        );
+
+        // Require previous vote is None
         require(
             proposals[_proposalId].votes[voter] == Vote.None,
             "Governance: To update previous vote, call updateVote()"
         );
 
+        // Require vote is either Yes or No
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance: Can only submit a Yes or No vote"
+        );
+
         // Record vote
         proposals[_proposalId].votes[voter] = _vote;
 
-        // Update vote magnitudes
+        // Record voteMagnitude for voter
+        proposals[_proposalId].voteMagnitudes[voter] = voterActiveStake;
+
+        // Update proposal cumulative vote magnitudes
         if (_vote == Vote.Yes) {
-            _increaseVoteMagnitudeYes(_proposalId, voterStake);
+            _increaseVoteMagnitudeYes(_proposalId, voterActiveStake);
         } else {
-            _increaseVoteMagnitudeNo(_proposalId, voterStake);
+            _increaseVoteMagnitudeNo(_proposalId, voterActiveStake);
         }
 
-        // Update numVotes
+        // Increment proposal numVotes
         proposals[_proposalId].numVotes = proposals[_proposalId].numVotes.add(1);
 
         emit ProposalVoteSubmitted(
             _proposalId,
             voter,
             _vote,
-            voterStake
+            voterActiveStake
         );
     }
 
     /**
-     * @notice Update previous vote on an active Proposal. Only callable by stakers with non-zero stake.
+     * @notice Update previous vote on an active Proposal. Only callable by addresses with non-zero active stake.
      * @param _proposalId - id of the proposal this vote is for
      * @param _vote - can be either {Yes, No} from Vote enum. No other values allowed
      */
     function updateVote(uint256 _proposalId, Vote _vote) external {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
+        _requireValidProposalId(_proposalId);
 
         address voter = msg.sender;
 
-        // Validates new _vote, _proposalId, proposal state, and voter state + returns voterStake
-        uint256 voterStake = _validateVoteAndGetVoterStake(voter, _proposalId, _vote);
+        // Require proposal votingPeriod is still active
+        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
+        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
+        require(
+            block.number > submissionBlockNumber && block.number <= endBlockNumber,
+            "Governance: Proposal votingPeriod has ended"
+        );
 
-        // Record previous vote
+        // Retrieve previous vote
         Vote previousVote = proposals[_proposalId].votes[voter];
 
-        // Ensure previous vote is not None
+        // Require previous vote is not None
         require(
             previousVote != Vote.None,
             "Governance: To submit new vote, call submitVote()"
         );
 
-        // Override previous vote
+        // Require vote is either Yes or No
+        require(
+            _vote == Vote.Yes || _vote == Vote.No,
+            "Governance: Can only submit a Yes or No vote"
+        );
+
+        // Record updated vote
         proposals[_proposalId].votes[voter] = _vote;
 
-        // Update vote magnitudes
+        // Update vote magnitudes, using vote magnitude from when previous vote was submitted
+        uint256 voteMagnitude = proposals[_proposalId].voteMagnitudes[voter];
         if (previousVote == Vote.Yes && _vote == Vote.No) {
-            _decreaseVoteMagnitudeYes(_proposalId, voterStake);
-            _increaseVoteMagnitudeNo(_proposalId, voterStake);
+            _decreaseVoteMagnitudeYes(_proposalId, voteMagnitude);
+            _increaseVoteMagnitudeNo(_proposalId, voteMagnitude);
         } else if (previousVote == Vote.No && _vote == Vote.Yes) {
-            _decreaseVoteMagnitudeNo(_proposalId, voterStake);
-            _increaseVoteMagnitudeYes(_proposalId, voterStake);
+            _decreaseVoteMagnitudeNo(_proposalId, voteMagnitude);
+            _increaseVoteMagnitudeYes(_proposalId, voteMagnitude);
         }
         // If _vote == previousVote, no changes needed to vote magnitudes.
 
@@ -401,7 +451,7 @@ contract Governance is InitializableV2 {
             _proposalId,
             voter,
             _vote,
-            voterStake,
+            voteMagnitude,
             previousVote
         );
     }
@@ -419,11 +469,9 @@ contract Governance is InitializableV2 {
     {
         _requireIsInitialized();
         _requireStakingAddressIsSet();
-
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            ERROR_INVALID_PROPOSAL
-        );
+        _requireServiceProviderFactoryAddressIsSet();
+        _requireDelegateManagerAddressIsSet();
+        _requireValidProposalId(_proposalId);
 
         // Require proposal has not already been evaluated.
         require(
@@ -453,6 +501,7 @@ contract Governance is InitializableV2 {
         if (targetContractAddress != proposals[_proposalId].targetContractAddress) {
             outcome = Outcome.TargetContractAddressChanged;
         }
+        // target contract code hash changed -> close proposal without execution.
         else if (_getCodeHash(targetContractAddress) != proposals[_proposalId].contractHash) {
             outcome = Outcome.TargetContractCodeHashChanged;
         }
@@ -512,15 +561,11 @@ contract Governance is InitializableV2 {
      */
     function vetoProposal(uint256 _proposalId) external {
         _requireIsInitialized();
+        _requireValidProposalId(_proposalId);
 
         require(
             msg.sender == guardianAddress,
             "Governance: Only guardian can veto proposals."
-        );
-
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId."
         );
 
         require(
@@ -552,6 +597,38 @@ contract Governance is InitializableV2 {
     }
 
     /**
+     * @notice Set the ServiceProviderFactory address
+     * @dev Only callable by self via _executeTransaction
+     * @param _serviceProviderFactoryAddress - address for new ServiceProviderFactory contract
+     */
+    function setServiceProviderFactoryAddress(address _serviceProviderFactoryAddress) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(
+            _serviceProviderFactoryAddress != address(0x00),
+            "Governance: Requires non-zero _serviceProviderFactoryAddress"
+        );
+        serviceProviderFactoryAddress = _serviceProviderFactoryAddress;
+    }
+
+    /**
+     * @notice Set the DelegateManager address
+     * @dev Only callable by self via _executeTransaction
+     * @param _delegateManagerAddress - address for new DelegateManager contract
+     */
+    function setDelegateManagerAddress(address _delegateManagerAddress) external {
+        _requireIsInitialized();
+
+        require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
+        require(
+            _delegateManagerAddress != address(0x00),
+            "Governance: Requires non-zero _delegateManagerAddress"
+        );
+        delegateManagerAddress = _delegateManagerAddress;
+    }
+
+    /**
      * @notice Set the voting period for a Governance proposal
      * @dev Only callable by self via _executeTransaction
      * @param _votingPeriod - new voting period
@@ -562,6 +639,7 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         require(_votingPeriod > 0, ERROR_INVALID_VOTING_PERIOD);
         votingPeriod = _votingPeriod;
+        emit VotingPeriodUpdated(_votingPeriod);
     }
 
     /**
@@ -578,6 +656,7 @@ contract Governance is InitializableV2 {
             ERROR_INVALID_VOTING_QUORUM
         );
         votingQuorumPercent = _votingQuorumPercent;
+        emit VotingQuorumPercentUpdated(_votingQuorumPercent);
     }
 
     /**
@@ -610,22 +689,7 @@ contract Governance is InitializableV2 {
             "Governance: Requires non-zero _newMaxInProgressProposals"
         );
         maxInProgressProposals = _newMaxInProgressProposals;
-    }
-
-    /**
-     * @notice Set the max length in bytes allowed for a proposal description string
-     * @dev Only callable by self via _executeTransaction
-     * @param _newMaxDescriptionLength - new value for maxDescriptionLength
-     */
-    function setMaxDescriptionLength(uint16 _newMaxDescriptionLength) external {
-        _requireIsInitialized();
-
-        require(msg.sender == address(this), "Only callable by self");
-        require(
-            _newMaxDescriptionLength > 0,
-            "Governance: Requires non-zero _newMaxDescriptionLength"
-        );
-        maxDescriptionLength = _newMaxDescriptionLength;
+        emit MaxInProgressProposalsUpdated(_newMaxInProgressProposals);
     }
 
     /**
@@ -639,6 +703,7 @@ contract Governance is InitializableV2 {
         require(msg.sender == address(this), ERROR_ONLY_GOVERNANCE);
         // executionDelay does not have to be non-zero
         executionDelay = _newExecutionDelay;
+        emit ExecutionDelayUpdated(_newExecutionDelay);
     }
 
     // ========================================= Guardian Actions =========================================
@@ -736,12 +801,7 @@ contract Governance is InitializableV2 {
     )
     {
         _requireIsInitialized();
-
-        // TODO: Move error to string
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId"
-        );
+        _requireValidProposalId(_proposalId);
 
         Proposal memory proposal = proposals[_proposalId];
         return (
@@ -758,10 +818,12 @@ contract Governance is InitializableV2 {
             proposal.voteMagnitudeNo,
             proposal.numVotes
             /** @notice - votes mapping cannot be returned by external function */
+            /** @notice - voteMagnitudes mapping cannot be returned by external function */
+            /** @notice - returning contractHash leads to stack too deep compiler error, see getProposalTargetContractHash() */
         );
     }
 
-     /**
+    /**
      * @notice Get proposal target contract hash by proposalId
      * @dev This is a separate function because the getProposalById returns too many
             variables already and by adding more, you get the error
@@ -772,52 +834,27 @@ contract Governance is InitializableV2 {
     external view returns (bytes32)
     {
         _requireIsInitialized();
-
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId"
-        );
+        _requireValidProposalId(_proposalId);
 
         return (proposals[_proposalId].contractHash);
     }
 
-     /**
-     * @notice Get proposal description by proposalId
-     * @dev This is a separate function because the getProposalById returns too many
-            variables already and by adding more, you get the error
-            `InternalCompilerError: Stack too deep, try using fewer variables`
-     * @param _proposalId - id of proposal
-     */
-    function getProposalDescriptionById(uint256 _proposalId)
-    external view returns (string memory)
-    {
-        _requireIsInitialized();
-
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId"
-        );
-
-        return (proposals[_proposalId].description);
-    }
-
     /**
-     * @notice Get how a voter voted for a given proposal
+     * @notice Get vote direction and vote magnitude for a given proposal and voter
      * @param _proposalId - id of the proposal
      * @param _voter - address of the voter we want to check
-     * @return returns a value from the Vote enum if a valid vote, otherwise returns no value
+     * @return returns vote direction and magnitude if valid vote, else default values
      */
-    function getVoteByProposalAndVoter(uint256 _proposalId, address _voter)
-    external view returns (Vote)
+    function getVoteInfoByProposalAndVoter(uint256 _proposalId, address _voter)
+    external view returns (Vote vote, uint256 voteMagnitude)
     {
         _requireIsInitialized();
+        _requireValidProposalId(_proposalId);
 
-        // TODO: Move error to string
-        require(
-            _proposalId <= lastProposalId && _proposalId > 0,
-            "Governance: Must provide valid non-zero _proposalId"
+        return (
+            proposals[_proposalId].votes[_voter],
+            proposals[_proposalId].voteMagnitudes[_voter]
         );
-        return proposals[_proposalId].votes[_voter];
     }
 
     /// @notice Get the contract Guardian address
@@ -832,6 +869,20 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         return stakingAddress;
+    }
+
+    /// @notice Get the ServiceProviderFactory address
+    function getServiceProviderFactoryAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return serviceProviderFactoryAddress;
+    }
+
+    /// @notice Get the DelegateManager address
+    function getDelegateManagerAddress() external view returns (address) {
+        _requireIsInitialized();
+
+        return delegateManagerAddress;
     }
 
     /// @notice Get the contract voting period
@@ -872,13 +923,6 @@ contract Governance is InitializableV2 {
         _requireIsInitialized();
 
         return executionDelay;
-    }
-
-    /// @notice Get the max length in bytes of a proposal description string
-    function getMaxDescriptionLength() external view returns (uint16) {
-        _requireIsInitialized();
-
-        return maxDescriptionLength;
     }
 
     /// @notice Get the array of all InProgress proposal Ids
@@ -993,6 +1037,9 @@ contract Governance is InitializableV2 {
      *          can sum to at most the entire token supply of 10^27
      *      With 7% annual token supply inflation, multiplication can overflow ~1635 years at the earliest:
      *      log(2^256/(10^27*100))/log(1.07) ~= 1635
+     *
+     * @dev Note that quorum is evaluated based on total staked at proposal submission
+     *      not total staked at proposal evaluation, this is expected behavior
      */
     function _quorumMet(Proposal memory proposal, Staking stakingContract)
     internal view returns (bool)
@@ -1014,49 +1061,58 @@ contract Governance is InitializableV2 {
         );
     }
 
-    /**
-     * @notice Helper function to perform validation for submitVote() and updateVote() functions
-     * @dev Validates new _vote, _proposalId, proposal state, and voter state
-     * @return stake of voter at proposal submission time
-     */
-    function _validateVoteAndGetVoterStake(address _voter, uint256 _proposalId, Vote _vote)
-    private view returns (uint256) {
+    function _requireServiceProviderFactoryAddressIsSet() private view {
+        require(
+            serviceProviderFactoryAddress != address(0x00),
+            "Governance: serviceProviderFactoryAddress is not set"
+        );
+    }
+
+    function _requireDelegateManagerAddressIsSet() private view {
+        require(
+            delegateManagerAddress != address(0x00),
+            "Governance: delegateManagerAddress is not set"
+        );
+    }
+
+    function _requireValidProposalId(uint256 _proposalId) private view {
         require(
             _proposalId <= lastProposalId && _proposalId > 0,
             "Governance: Must provide valid non-zero _proposalId"
         );
+    }
 
-        // Require voter was active Staker at proposal submission time
-        uint256 voterStake = Staking(stakingAddress).totalStakedForAt(
-            _voter,
-            proposals[_proposalId].submissionBlockNumber
-        );
-        require(
-            voterStake > 0,
-            "Governance: Voter must be active staker with non-zero stake."
-        );
+    /**
+     * Calculates and returns active stake for address
+     *
+     * Active stake = (active deployer stake + active delegator stake)
+     *      active deployer stake = (direct deployer stake - locked deployer stake)
+     *          locked deployer stake = amount of pending decreaseStakeRequest for address
+     *      active delegator stake = (total delegator stake - locked delegator stake)
+     *          locked delegator stake = amount of pending undelegateRequest for address
+     */
+    function _calculateAddressActiveStake(address _address) private view returns (uint256) {
+        ServiceProviderFactory spFactory = ServiceProviderFactory(serviceProviderFactoryAddress);
+        DelegateManager delegateManager = DelegateManager(delegateManagerAddress);
 
-        // Require proposal is still active
-        require(
-            proposals[_proposalId].outcome == Outcome.InProgress,
-            "Governance: Cannot vote on inactive proposal."
-        );
+        // Amount directly staked by address, if any, in ServiceProviderFactory
+        (uint256 directDeployerStake,,,,,) = spFactory.getServiceProviderDetails(_address);
+        // Amount of pending decreasedStakeRequest for address, if any, in ServiceProviderFactory
+        (uint256 lockedDeployerStake,) = spFactory.getPendingDecreaseStakeRequest(_address);
+        // active deployer stake = (direct deployer stake - locked deployer stake)
+        uint256 activeDeployerStake = directDeployerStake.sub(lockedDeployerStake);
 
-        // Require proposal votingPeriod is still active.
-        uint256 submissionBlockNumber = proposals[_proposalId].submissionBlockNumber;
-        uint256 endBlockNumber = submissionBlockNumber.add(votingPeriod);
-        require(
-            block.number > submissionBlockNumber && block.number <= endBlockNumber,
-            "Governance: Proposal votingPeriod has ended"
-        );
+        // Total amount delegated by address, if any, in DelegateManager
+        uint256 totalDelegatorStake = delegateManager.getTotalDelegatorStake(_address);
+        // Amount of pending undelegateRequest for address, if any, in DelegateManager
+        (,uint256 lockedDelegatorStake, ) = delegateManager.getPendingUndelegateRequest(_address);
+        // active delegator stake = (total delegator stake - locked delegator stake)
+        uint256 activeDelegatorStake = totalDelegatorStake.sub(lockedDelegatorStake);
 
-        // Require vote is either Yes or No
-        require(
-            _vote == Vote.Yes || _vote == Vote.No,
-            "Governance: Can only submit a Yes or No vote"
-        );
+        // activeStake = (activeDeployerStake + activeDelegatorStake)
+        uint256 activeStake = activeDeployerStake.add(activeDelegatorStake);
 
-        return voterStake;
+        return activeStake;
     }
 
     // solium-disable security/no-inline-assembly

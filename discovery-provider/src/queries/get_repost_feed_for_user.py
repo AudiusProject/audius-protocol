@@ -1,17 +1,23 @@
 from sqlalchemy import desc, or_
 
-from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType
+from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType, User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_current_user_id, get_repost_counts, get_save_counts, \
+from src.queries.query_helpers import get_repost_counts, get_save_counts, \
     paginate_query, get_users_by_id, get_users_ids
 
 
 def get_repost_feed_for_user(user_id, args):
     feed_results = {}
     db = get_db_read_replica()
+    current_user_id = args.get("current_user_id")
+
     with db.scoped_session() as session:
+        if "handle" in args:
+            handle = args.get("handle")
+            user_id = session.query(User.user_id).filter(User.handle_lc == handle.lower()).first()
+
         # query all reposts by user
         repost_query = (
             session.query(Repost)
@@ -112,7 +118,6 @@ def get_repost_feed_for_user(user_id, args):
             if save_type in (SaveType.playlist, SaveType.album)
         }
 
-        current_user_id = get_current_user_id(required=False)
         requested_user_is_current_user = False
         user_reposted_track_ids = {}
         user_reposted_playlist_ids = {}
@@ -233,6 +238,7 @@ def get_repost_feed_for_user(user_id, args):
                 track["track_id"], False)
             track[response_name_constants.followee_reposts] = followees_track_repost_dict.get(
                 track["track_id"], [])
+            track[response_name_constants.followee_saves] = []
             track[response_name_constants.activity_timestamp] = track_repost_dict[track["track_id"]]["created_at"]
 
         for playlist in playlists:
@@ -248,6 +254,7 @@ def get_repost_feed_for_user(user_id, args):
                 user_saved_playlist_dict.get(playlist["playlist_id"], False)
             playlist[response_name_constants.followee_reposts] = \
                 followees_playlist_repost_dict.get(playlist["playlist_id"], [])
+            playlist[response_name_constants.followee_saves] = []
             playlist[response_name_constants.activity_timestamp] = \
                 playlist_repost_dict[playlist["playlist_id"]]["created_at"]
 

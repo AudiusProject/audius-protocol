@@ -38,6 +38,38 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "_newCommunityPoolAddress",
+          "type": "address"
+        }
+      ],
+      "name": "CommunityPoolAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_transferAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "CommunityRewardsTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_newDelegateManagerAddress",
           "type": "address"
         }
@@ -82,6 +114,19 @@
         }
       ],
       "name": "GovernanceAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RecurringCommunityFundingAmountUpdated",
       "type": "event"
     },
     {
@@ -285,6 +330,36 @@
       "type": "function"
     },
     {
+      "constant": true,
+      "inputs": [],
+      "name": "getCommunityPoolAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getRecurringCommunityFundingAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [
         {
@@ -425,6 +500,36 @@
         }
       ],
       "name": "updateFundingRoundBlockDiff",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_newRecurringCommunityFundingAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateRecurringCommunityFundingAmount",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_newCommunityPoolAddress",
+          "type": "address"
+        }
+      ],
+      "name": "updateCommunityPoolAddress",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",

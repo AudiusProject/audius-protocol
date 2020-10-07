@@ -31,7 +31,7 @@ from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
-from src.queries.query_helpers import get_current_user_id
+from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 
 from src.utils.redis_metrics import record_metrics
 
@@ -65,6 +65,8 @@ def get_users_route():
         args["id"] = parse_id_array_param(request.args.getlist("id"))
     if "min_block_number" in request.args:
         args["min_block_number"] = request.args.get("min_block_number", type=int)
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
     users = get_users(args)
     return api_helpers.success_response(users)
 
@@ -84,6 +86,8 @@ def get_tracks_route():
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     if "min_block_number" in request.args:
         args["min_block_number"] = request.args.get("min_block_number", type=int)
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
     tracks = get_tracks(args)
     return api_helpers.success_response(tracks)
 
@@ -99,8 +103,11 @@ def get_tracks_including_unlisted_route():
         args["filter_deleted"] = parse_bool_param(request.args.get("filter_deleted"))
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-    tracks = get_tracks_including_unlisted(
-        args, request.get_json())
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
+    identifiers = request.get_json()["tracks"]
+    args["identifiers"] = identifiers
+    tracks = get_tracks_including_unlisted(args)
     return api_helpers.success_response(tracks)
 
 
@@ -123,6 +130,8 @@ def get_playlists_route():
         args["user_id"] = request.args.get("user_id", type=int)
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
     playlists = get_playlists(args)
     return api_helpers.success_response(playlists)
 
@@ -169,6 +178,7 @@ def get_repost_feed_for_user_route(user_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    args["current_user_id"] = get_current_user_id(required=False)
     feed_results = get_repost_feed_for_user(user_id, args)
     return api_helpers.success_response(feed_results)
 
@@ -217,7 +227,15 @@ def get_playlist_repost_intersection_users_route(repost_playlist_id, follower_us
 @bp.route("/users/followers/<int:followee_user_id>", methods=("GET",))
 @record_metrics
 def get_followers_for_user_route(followee_user_id):
-    users = get_followers_for_user(followee_user_id)
+    current_user_id = get_current_user_id(required=False)
+    (limit, offset) = get_pagination_vars()
+    args = {
+        'followee_user_id': followee_user_id,
+        'current_user_id': current_user_id,
+        'limit': limit,
+        'offset': offset
+    }
+    users = get_followers_for_user(args)
     return api_helpers.success_response(users)
 
 
@@ -225,7 +243,15 @@ def get_followers_for_user_route(followee_user_id):
 @bp.route("/users/followees/<int:follower_user_id>", methods=("GET",))
 @record_metrics
 def get_followees_for_user_route(follower_user_id):
-    users = get_followees_for_user(follower_user_id)
+    current_user_id = get_current_user_id(required=False)
+    (limit, offset) = get_pagination_vars()
+    args = {
+        'follower_user_id': follower_user_id,
+        'current_user_id': current_user_id,
+        'limit': limit,
+        'offset': offset
+    }
+    users = get_followees_for_user(args)
     return api_helpers.success_response(users)
 
 
@@ -234,7 +260,15 @@ def get_followees_for_user_route(follower_user_id):
 @record_metrics
 def get_reposters_for_track_route(repost_track_id):
     try:
-        user_results = get_reposters_for_track(repost_track_id)
+        current_user_id = get_current_user_id(required=False)
+        (limit, offset) = get_pagination_vars()
+        args = {
+            'repost_track_id': repost_track_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        user_results = get_reposters_for_track(args)
         return api_helpers.success_response(user_results)
     except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
@@ -245,7 +279,15 @@ def get_reposters_for_track_route(repost_track_id):
 @record_metrics
 def get_reposters_for_playlist_route(repost_playlist_id):
     try:
-        user_results = get_reposters_for_playlist(repost_playlist_id)
+        current_user_id = get_current_user_id(required=False)
+        (limit, offset) = get_pagination_vars()
+        args = {
+            'repost_playlist_id': repost_playlist_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        user_results = get_reposters_for_playlist(args)
         return api_helpers.success_response(user_results)
     except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
@@ -256,7 +298,15 @@ def get_reposters_for_playlist_route(repost_playlist_id):
 @record_metrics
 def get_savers_for_track_route(save_track_id):
     try:
-        user_results = get_savers_for_track(save_track_id)
+        current_user_id = get_current_user_id(required=False)
+        (limit, offset) = get_pagination_vars()
+        args = {
+            'save_track_id': save_track_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        user_results = get_savers_for_track(args)
         return api_helpers.success_response(user_results)
     except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
@@ -267,7 +317,15 @@ def get_savers_for_track_route(save_track_id):
 @record_metrics
 def get_savers_for_playlist_route(save_playlist_id):
     try:
-        user_results = get_savers_for_playlist(save_playlist_id)
+        current_user_id = get_current_user_id(required=False)
+        (limit, offset) = get_pagination_vars()
+        args = {
+            'save_playlist_id': save_playlist_id,
+            'current_user_id': current_user_id,
+            'limit': limit,
+            'offset': offset
+        }
+        user_results = get_savers_for_playlist(args)
         return api_helpers.success_response(user_results)
     except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
