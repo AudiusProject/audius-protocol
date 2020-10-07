@@ -99,6 +99,7 @@ async function triggerSecondarySyncs (req) {
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
+    req.logger.error(`SIDTEST: primary ${primary} calling sync against: ${secondaries}`)
     await Promise.all(secondaries.map(async secondary => {
       if (!secondary || !_isFQDN(secondary)) return
       const axiosReq = {
@@ -119,28 +120,30 @@ async function triggerSecondarySyncs (req) {
 }
 
 /** Retrieves current FQDN registered on-chain with node's owner wallet. */
-// TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
-// services has been registered, and we can't register the service unless the service starts up.
-// Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
 async function getOwnEndpoint (req) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
-  let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
-  if (!creatorNodeEndpoint) throw new Error('Must provide either creatorNodeEndpoint config var.')
+  let spOwnerWallet
+  if (config.get('spOwnerWallet')) {
+    spOwnerWallet = config.get('spOwnerWallet')
+  } else if (config.get('ethWallets') && config.get('spOwnerWalletIndex') && Array.isArray(config.get('ethWallets')) && config.get('ethWallets').length > config.get('spOwnerWalletIndex')) {
+    spOwnerWallet = config.get('ethWallets')[config.get('spOwnerWalletIndex')]
+  } else {
+    throw new Error('Must provide either spOwnerWallet or ethWallets and spOwnerWalletIndex config vars.')
+  }
 
-  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
-  if (!spId) throw new Error('Cannot get spId for node')
-  const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)
+  const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(spOwnerWallet, 'creator-node')
+  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfo('creator-node', spId)]
+
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
-      !spInfo.hasOwnProperty('endpoint') ||
-      !(spInfo.owner !== config.get('spOwnerWallet')) ||
-      !(spInfo.delegateOwnerWallet !== config.get('delegateOwnerWallet')) ||
-      (spInfo['endpoint'] && !_isFQDN(spInfo['endpoint']))) {
-    throw new Error(`Cannot getOwnEndpoint for node ${spInfo}`)
+      spInfo.length === 0 ||
+      !spInfo[0].hasOwnProperty('endpoint') ||
+      (spInfo[0]['endpoint'] && !_isFQDN(spInfo[0]['endpoint']))) {
+    throw new Error('fail')
   }
-  return spInfo['endpoint']
+  return spInfo[0]['endpoint']
 }
 
 /** Get all creator node endpoints for user by wallet from discprov. */
