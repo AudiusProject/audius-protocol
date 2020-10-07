@@ -170,4 +170,24 @@ module.exports = function (app) {
 
     return successResponse({ clockValue })
   }))
+  /**
+   * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
+   */
+  app.get('/users/batch_clock_status', handleResponse(async (req, res) => {
+    // TODO: Limit max size
+    const walletPublicKeys = req.query.wallet_public_key // array
+    const cnode_users = await models.CNodeUser.findAll({
+      where: {
+        walletPublicKey: {
+          [models.Sequelize.Op.in]: walletPublicKeys
+        }
+      }
+    })
+    return successResponse({
+      users: cnode_users.map(cnode_user => ({
+        walletPublicKey: cnode_user.walletPublicKey,
+        clock: cnode_user.clock
+      }))
+    })
+  }))
 }
