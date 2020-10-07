@@ -21,10 +21,11 @@ services:
       - redisHost=${COMPOSE_PROJECT_NAME}_creator-node-redis_1
       - dbUrl=postgres://postgres:postgres@${COMPOSE_PROJECT_NAME}_creator-node-db_1:5432/audius_creator_node
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_creator-node-db_1:5432, ${COMPOSE_PROJECT_NAME}_creator-node-redis_1:6379
+      - port=${CREATOR_NODE_HOST_PORT}
       - spOwnerWalletIndex=${SP_OWNER_WALLET_INDEX}
       - delegateOwnerWallet=${delegateOwnerWallet}
       - delegatePrivateKey=${delegatePrivateKey}
-      - port=${CREATOR_NODE_HOST_PORT}
+      - creatorNodeEndpoint=${creatorNodeEndpoint}
     env_file:
       - ./env/base.env
     ports:
