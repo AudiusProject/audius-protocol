@@ -1,10 +1,19 @@
 import Favorite from 'models/Favorite'
 import Repost from 'models/Repost'
 import { Remix, UserTrackMetadata } from 'models/Track'
+import { UserCollectionMetadata, Variant } from 'models/Collection'
 import { UserMetadata } from 'models/User'
 import { decodeHashId } from 'utils/route/hashIds'
 import { removeNullable } from 'utils/typeUtils'
-import { APIFavorite, APIRemix, APIRepost, APITrack, APIUser } from './types'
+import {
+  APIActivity,
+  APIFavorite,
+  APIRemix,
+  APIRepost,
+  APITrack,
+  APIPlaylist,
+  APIUser
+} from './types'
 
 export const makeUser = (user: APIUser): UserMetadata | undefined => {
   const decodedUserId = decodeHashId(user.id)
@@ -117,4 +126,83 @@ export const makeTrack = (track: APITrack): UserTrackMetadata | undefined => {
   delete marshalled.favorite_count
 
   return marshalled
+}
+
+export const makePlaylist = (
+  playlist: APIPlaylist
+): UserCollectionMetadata | undefined => {
+  const decodedPlaylistId = decodeHashId(playlist.id)
+  const decodedOwnerId = decodeHashId(playlist.user_id)
+  const user = makeUser(playlist.user)
+  if (!decodedPlaylistId || !decodedOwnerId || !user) {
+    return undefined
+  }
+
+  const saves = playlist.followee_favorites
+    .map(makeFavorite)
+    .filter(removeNullable)
+
+  const reposts = playlist.followee_reposts
+    .map(makeRepost)
+    .filter(removeNullable)
+
+  const playlistContents = {
+    track_ids: playlist.added_timestamps
+      .map(ts => {
+        const decoded = decodeHashId(ts.track_id)
+        if (decoded) {
+          return {
+            track: decoded,
+            time: ts.timestamp
+          }
+        }
+        return null
+      })
+      .filter(removeNullable)
+  }
+
+  const tracks = playlist.tracks
+    .map(track => makeTrack(track))
+    .filter(removeNullable)
+
+  const marshalled = {
+    ...playlist,
+    variant: Variant.USER_GENERATED,
+    user,
+    tracks,
+    playlist_id: decodedPlaylistId,
+    playlist_owner_id: decodedOwnerId,
+    followee_saves: saves,
+    followee_reposts: reposts,
+    save_count: playlist.favorite_count,
+    playlist_contents: playlistContents,
+
+    // Fields to prune
+    id: undefined,
+    user_id: undefined,
+    followee_favorites: undefined,
+    artwork: undefined,
+    favorite_count: undefined,
+    added_timestamps: undefined
+  }
+
+  delete marshalled.id
+  delete marshalled.user_id
+  delete marshalled.followee_favorites
+  delete marshalled.artwork
+  delete marshalled.favorite_count
+  delete marshalled.added_timestamps
+
+  return marshalled as UserCollectionMetadata
+}
+
+export const makeActivity = (
+  activity: APIActivity
+): UserTrackMetadata | UserCollectionMetadata | undefined => {
+  switch (activity.item_type) {
+    case 'track':
+      return makeTrack(activity.item)
+    case 'playlist':
+      return makePlaylist(activity.item)
+  }
 }

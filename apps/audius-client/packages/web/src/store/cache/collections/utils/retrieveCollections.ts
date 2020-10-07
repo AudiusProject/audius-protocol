@@ -10,6 +10,9 @@ import { reformat } from './reformat'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import { addUsersFromCollections } from './addUsersFromCollections'
 import { makeUid } from 'utils/uid'
+import { addTracksFromCollections } from './addTracksFromCollections'
+import { getUserId } from 'store/account/selectors'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 function* markCollectionDeleted(
   collectionMetadatas: Collection[]
@@ -68,6 +71,20 @@ export function* retrieveTracksForCollections(
     }
   })
 }
+
+/**
+ * Retrieves a single collection via API client
+ * @param playlistId
+ */
+function* retrieveCollection(playlistId: ID) {
+  const userId = yield select(getUserId)
+  const playlists = yield apiClient.getPlaylist({
+    playlistId,
+    currentUserId: userId
+  })
+  return playlists
+}
+
 export function* retrieveCollections(
   userId: ID | null,
   collectionIds: ID[],
@@ -90,13 +107,16 @@ export function* retrieveCollections(
       return selected
     },
     retrieveFromSource: function* (ids: ID[]) {
-      // Fetch it
-      const metadatas: UserCollection[] = yield call(
-        AudiusBackend.getPlaylists,
-        userId,
-        ids
-      )
-      // Process deletions
+      let metadatas: UserCollection[]
+
+      if (ids.length === 1) {
+        metadatas = yield call(retrieveCollection, ids[0])
+      } else {
+        // TODO: Remove this branch when we have batched endpoints in new V1 api.
+        metadatas = yield call(AudiusBackend.getPlaylists, userId, ids)
+      }
+
+      // Process any local deletions on the client
       const metadatasWithDeleted: UserCollection[] = yield call(
         markCollectionDeleted,
         metadatas
@@ -106,6 +126,7 @@ export function* retrieveCollections(
     },
     onBeforeAddToCache: function* (metadatas: UserCollection[]) {
       yield addUsersFromCollections(metadatas)
+      yield addTracksFromCollections(metadatas)
 
       if (fetchTracks) {
         yield call(retrieveTracksForCollections, metadatas, new Set())
