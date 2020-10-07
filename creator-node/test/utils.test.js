@@ -18,7 +18,7 @@ describe('test src/utils.js', () => {
   it('will not rehydrate in rehydrateIpfsFromFsIfNecessary if CID is in BlacklistManager', async () => {
     const multihash = 'testCID'
     const storagePath = 'storagePath'
-    const logContext = {}
+    const logContext = ''
 
     // Add CID to BlacklistManager
     await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)
@@ -28,7 +28,6 @@ describe('test src/utils.js', () => {
     const ipfsAddFromFsSpy = sinon.spy(ipfs, 'addFromFs')
     const ipfsAddSpy = sinon.spy(ipfsLatest, 'add')
 
-    // Call rehydrateIpfsFromFsIfNecessary()
     await utils.rehydrateIpfsFromFsIfNecessary(multihash, storagePath, logContext)
 
     // Make sure rehydration does not occur
@@ -41,7 +40,7 @@ describe('test src/utils.js', () => {
   it('will not rehydrate in rehydrateIpfsDirFromFsIfNecessary if CID is in BlacklistManager', async () => {
     const multihash = 'testCID'
     const storagePath = 'storagePath'
-    const logContext = {}
+    const logContext = ''
 
     // Add CID to BlacklistManager
     await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)
@@ -50,7 +49,6 @@ describe('test src/utils.js', () => {
     const ipfsSingleByteCatSpy = sinon.spy(utils, 'ipfsSingleByteCat')
     const ipfsAddSpy = sinon.spy(ipfsLatest, 'add')
 
-    // Call rehydrateIpfsDirFromFsIfNecessary()
     await utils.rehydrateIpfsDirFromFsIfNecessary(multihash, storagePath, logContext)
 
     // Make sure rehydration does not occur

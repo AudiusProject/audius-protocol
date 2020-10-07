@@ -6,9 +6,10 @@ const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
 const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
 
-const types = Object.freeze({
-  track: 'TRACK',
-  user: 'USER'
+const TYPES_ARR = models.ContentBlacklist.Types
+const types = {}
+TYPES_ARR.map(type => {
+  types[type.toLowerCase()] = type
 })
 
 class BlacklistManager {
@@ -51,6 +52,24 @@ class BlacklistManager {
     }
 
     return { trackIdsToBlacklist: [...trackIds], userIdsToBlacklist: userIdsBlacklist }
+  }
+
+  /**
+   * Retrieves track objects from specified users
+   * @param {int[]} userIdsBlacklist
+   */
+  static async getTracksFromUsers (userIdsBlacklist) {
+    let tracks = []
+
+    if (userIdsBlacklist.length > 0) {
+      tracks = (await models.sequelize.query(
+        'select "blockchainId" from "Tracks" where "cnodeUserUUID" in (' +
+        'select "cnodeUserUUID" from "AudiusUsers" where "blockchainId" in (:userIdsBlacklist)' +
+        ');',
+        { replacements: { userIdsBlacklist } }
+      ))[0]
+    }
+    return tracks
   }
 
   /**
@@ -102,23 +121,6 @@ class BlacklistManager {
   }
 
   /**
-   * Retrieves track objects from specified users
-   * @param {int[]} userIdsBlacklist
-   */
-  static async getTracksFromUsers (userIdsBlacklist) {
-    let tracks = []
-    if (userIdsBlacklist.length > 0) {
-      tracks = (await models.sequelize.query(
-        'select "blockchainId" from "Tracks" where "cnodeUserUUID" in (' +
-        'select "cnodeUserUUID" from "AudiusUsers" where "blockchainId" in (:userIdsBlacklist)' +
-        ');',
-        { replacements: { userIdsBlacklist } }
-      ))[0]
-    }
-    return tracks
-  }
-
-  /**
    * Retrieves the CIDs for each trackId in trackIds and returns a deduped list of segments CIDs
    * @param {int[]} trackIds
    */
@@ -147,12 +149,9 @@ class BlacklistManager {
   static async addToDb ({ id, type }) {
     let resp
     try {
-      resp = await models.ContentBlacklist.create({ id, type })
+      resp = await models.ContentBlacklist.findOrCreate({ where: { id, type } })
     } catch (e) {
-      if (!e.message.includes('Validation error')) {
-        throw new Error(`Error with adding entry with type (${type}) and id (${id}): ${e}`)
-      }
-      console.log(`Entry with type (${type}) and id (${id}) already exists!`)
+      throw new Error(`Error with adding entry with type (${type}) and id (${id}): ${e}`)
     }
 
     if (resp) {

@@ -11,8 +11,17 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.ENUM('USER', 'TRACK'),
       primaryKey: true
+    },
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE
+    },
+    updatedAt: {
+      allowNull: false,
+      type: DataTypes.DATE
     }
   })
 
+  ContentBlacklist.Types = ['USER', 'TRACK']
   return ContentBlacklist
 }

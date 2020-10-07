@@ -1,8 +1,10 @@
-const { handleResponse, successResponse, errorResponse, recoverWallet, errorResponseUnauthorized, errorResponseBadRequest } = require('../apiHelpers')
+const models = require('../models')
 const BlacklistManager = require('../blacklistManager')
 const config = require('../config')
 
-const TYPES_SET = new Set(['USER', 'TRACK'])
+const { handleResponse, successResponse, recoverWallet, errorResponseUnauthorized, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+
+const TYPES_SET = new Set(models.ContentBlacklist.Types)
 
 module.exports = function (app) {
   /**
@@ -37,13 +39,12 @@ module.exports = function (app) {
     try {
       await addToBlacklist({ type, id })
     } catch (e) {
-      return errorResponse(500, e.message)
+      return errorResponseServerError(e.message)
     }
 
     return successResponse({ type, id })
   }))
 
-  // fix this sigh
   /**
    * 1. Verifies that request is from authenticated user
    * 2. If so, remove a track or user id in ContentBlacklist and redis
@@ -68,13 +69,17 @@ module.exports = function (app) {
     try {
       await removeFromBlacklist({ type, id })
     } catch (e) {
-      return errorResponse(500, e.message)
+      return errorResponseServerError(e.message)
     }
 
     return successResponse({ type, id })
   }))
 }
 
+/**
+ * Parse query params. Should contain id, type, timestamp, signature
+ * @param {object} queryParams
+ */
 function parseQueryParams (queryParams) {
   let { id, type, timestamp, signature } = queryParams
 

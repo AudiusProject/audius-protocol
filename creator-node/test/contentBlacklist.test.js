@@ -30,24 +30,6 @@ describe('test ContentBlacklist', function () {
 
     process.env.delegateOwnerWallet = DELEGATE_OWNER_WALLET
     process.env.delegatePrivateKey = DELEGATE_PRIVATE_KEY
-    process.env.storagePath = path.join(process.cwd(), 'file_storage')
-
-    // For some reason, needs to have a stub and set as env var for code to work
-    sinon.stub(config, 'get').callsFake(key => {
-      switch (key) {
-        case 'delegateOwnerWallet': {
-          return DELEGATE_OWNER_WALLET
-        }
-
-        case 'delegatePrivateKey': {
-          return DELEGATE_PRIVATE_KEY
-        }
-
-        case 'storagePath': {
-          return path.join(process.cwd(), 'file_storage')
-        }
-      }
-    })
 
     const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
     await BlacklistManager.init()
@@ -337,8 +319,7 @@ describe('test ContentBlacklist', function () {
         testField: 'testValue'
       }
     }
-
-    const { body: { data: { metadataFileUUID } } } = await request(app)
+    const { body: { data: { metadataMultihash, metadataFileUUID } } } = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
       .send(metadata)
@@ -358,7 +339,7 @@ describe('test ContentBlacklist', function () {
     // Upload a track
     const file = fs.readFileSync(testAudioFilePath)
     // set track content
-    const { body: { transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } } = await request(app)
+    const { body: { transcodedTrackCID, transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
@@ -366,14 +347,15 @@ describe('test ContentBlacklist', function () {
 
     // set track metadata
     const trackMetadata = {
+      test: 'field1',
       owner_id: 1,
       track_segments: trackSegments
     }
-    const { body: { metadataFileUUID: trackMetadataFileUUID } } = await request(app)
+    const { body: { metadataMultihash: trackMetadataMultihash, metadataFileUUID: trackMetadataFileUUID } } = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', sessionToken)
       .send({ metadata: trackMetadata, source_file: sourceFile })
-    // associate track metadata with track
+      // associate track metadata with track
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', sessionToken)
