@@ -8,7 +8,9 @@ from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
-    format_offset, format_limit, decode_string_id, stem_from_track
+    format_offset, format_limit, decode_string_id, stem_from_track, \
+    get_current_user_id
+
 from .models.tracks import track, track_full, stem_full, remixes_response
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
@@ -363,10 +365,8 @@ class FullTrackReposts(Resource):
         decoded_id = decode_with_abort(track_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
+        current_user_id = get_current_user_id(args)
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
         args = {
             'repost_track_id': decoded_id,
             'current_user_id': current_user_id,
@@ -386,8 +386,6 @@ class FullTrackStems(Resource):
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
         stems = get_stems_of(decoded_id)
-        logger.warning("STEMSSS")
-        logger.warning(stems)
         stems = list(map(stem_from_track, stems))
         return success_response(stems)
 
@@ -404,10 +402,12 @@ class FullRemixesRoute(Resource):
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
         request_args = remixes_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+
         args = {
             "with_users": True,
             "track_id": decoded_id,
-            "current_user_id": request_args.get("user_id"),
+            "current_user_id": current_user_id,
             "limit": request_args.get("limit"),
             "offset": request_args.get("offset")
         }
@@ -429,10 +429,12 @@ class FullRemixingRoute(Resource):
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
         request_args = remixes_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+
         args = {
             "with_users": True,
             "track_id": decoded_id,
-            "current_user_id": request_args.get("user_id"),
+            "current_user_id": current_user_id,
             "limit": request_args.get("limit"),
             "offset": request_args.get("offset")
         }

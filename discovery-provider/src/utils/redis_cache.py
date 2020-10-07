@@ -26,9 +26,11 @@ def use_redis_cache(key, ttl_sec, work_func):
     cached_value = redis.get(key)
 
     if cached_value:
+        logger.info("HIT USE CACHE")
         logger.info(f"Redis Cache - hit {key}")
         return json.loads(cached_value)
 
+    logger.info("MISS USE CACHE")
     logger.info(f"Redis Cache - miss {key}")
     to_cache = work_func()
     serialized = dumps(to_cache)
