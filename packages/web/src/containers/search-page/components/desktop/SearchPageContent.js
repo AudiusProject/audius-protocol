@@ -210,7 +210,6 @@ class SearchPageContent extends Component {
             secondaryText={`${playlist.user.name} • ${
               playlist.trackCount
             } Track${playlist.trackCount > 1 ? 's' : ''}`}
-            cardCoverImageUrl={playlist.cover_art_url}
             onClick={onClick}
             menu={{
               type: 'playlist',
@@ -271,7 +270,6 @@ class SearchPageContent extends Component {
             imageSize={album._cover_art_sizes}
             primaryText={album.playlist_name}
             secondaryText={album.user.name}
-            cardCoverImageUrl={album.cover_art_url}
             onClick={onClick}
             menu={{
               type: 'album',

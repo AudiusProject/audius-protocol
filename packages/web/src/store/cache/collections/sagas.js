@@ -57,7 +57,7 @@ function* createPlaylistAsync(action) {
   if (action.initTrackId) {
     const track = yield select(getTrack, { id: action.initTrackId })
     action.formFields._cover_art_sizes = track._cover_art_sizes
-    action.formFields.playlist_image_sizes_multihash = track.cover_art_sizes
+    action.formFields.cover_art_sizes = track.cover_art_sizes
   }
 
   yield call(waitForBackendSetup)
@@ -147,8 +147,7 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
         // If the user is trying to upload artwork, check that an artwork gets set.
         if (formFields.artwork && formFields.artwork.file) {
           check = playlist =>
-            some([playlist], toConfirm) &&
-            playlist.playlist_image_sizes_multihash
+            some([playlist], toConfirm) && playlist.cover_art_sizes
         } else {
           check = playlist => some([playlist], toConfirm)
         }
@@ -297,8 +296,7 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
           check = playlist => {
             return (
               some([playlist], toConfirm) &&
-              playlist.playlist_image_sizes_multihash !==
-                formFields.playlist_image_sizes_multihash
+              playlist.cover_art_sizes !== formFields.cover_art_sizes
             )
           }
         } else {
@@ -1101,17 +1099,14 @@ function* watchFetchCoverArt() {
       if (
         !collection ||
         !user ||
-        (!collection.playlist_image_sizes_multihash &&
-          !collection.playlist_image_multihash)
+        (!collection.cover_art_sizes && !collection.cover_art)
       )
         return
 
       const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
-      const multihash =
-        collection.playlist_image_sizes_multihash ||
-        collection.playlist_image_multihash
+      const multihash = collection.cover_art_sizes || collection.cover_art
       const coverArtSize =
-        multihash === collection.playlist_image_sizes_multihash ? size : null
+        multihash === collection.cover_art_sizes ? size : null
       const url = yield call(
         AudiusBackend.getImageUrl,
         multihash,

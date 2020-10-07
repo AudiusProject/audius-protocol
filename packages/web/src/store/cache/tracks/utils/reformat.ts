@@ -20,7 +20,7 @@ const addTrackImages = <T extends TrackMetadata>(
 const setIsCoSigned = <T extends TrackMetadata>(track: T) => {
   const { remix_of } = track
 
-  const remixOfTrack = remix_of?.tracks[0]
+  const remixOfTrack = remix_of?.tracks?.[0]
 
   const isCoSigned =
     remixOfTrack &&

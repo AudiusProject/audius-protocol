@@ -1,7 +1,6 @@
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
 
 import * as collectionActions from './actions'
-import { fetchUserByHandle } from 'store/cache/users/sagas'
 import { retrieveCollections } from 'store/cache/collections/utils'
 import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
@@ -13,23 +12,11 @@ import { makeUid } from 'utils/uid'
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
     const collectionId = action.id
-    const handle = action.handle
 
-    let user
-    if (handle) {
-      user = yield call(fetchUserByHandle, handle)
-      if (!user) {
-        yield put(collectionActions.fetchCollectionFailed())
-      }
-    }
-
-    // Retrieve collections and fetch nested tracks
-    const { collections, uids: collectionUids } = yield call(
-      retrieveCollections,
-      user?.user_id ?? null,
-      [collectionId],
-      true
-    )
+    const {
+      collections,
+      uids: collectionUids
+    } = yield call(retrieveCollections, null, [collectionId])
 
     if (Object.values(collections).length === 0) {
       yield put(collectionActions.fetchCollectionFailed())

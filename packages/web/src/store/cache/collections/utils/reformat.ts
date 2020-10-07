@@ -6,7 +6,6 @@ import { omit } from 'lodash'
  * Adds cover_art_url to a collection object if it does not have one set
  */
 const addCollectionImages = (collection: Collection) => {
-  if (collection.cover_art_url) return collection
   return AudiusBackend.getCollectionImages(collection)
 }
 
