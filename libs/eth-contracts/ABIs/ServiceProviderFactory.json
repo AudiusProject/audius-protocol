@@ -33,6 +33,81 @@
         {
           "indexed": true,
           "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_decreaseAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "name": "DecreaseStakeRequestCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_decreaseAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_newStakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "DecreaseStakeRequestEvaluated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_decreaseAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "name": "DecreaseStakeRequested",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
           "name": "_newDelegateManagerAddress",
           "type": "address"
         }
@@ -69,6 +144,75 @@
         }
       ],
       "name": "DelegateOwnerWalletUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_requestedCut",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_finalCut",
+          "type": "uint256"
+        }
+      ],
+      "name": "DeployerCutUpdateRequestCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_updatedCut",
+          "type": "uint256"
+        }
+      ],
+      "name": "DeployerCutUpdateRequestEvaluated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_updatedCut",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_lockupExpiryBlock",
+          "type": "uint256"
+        }
+      ],
+      "name": "DeployerCutUpdateRequested",
       "type": "event"
     },
     {
@@ -163,6 +307,31 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_increaseAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_newStakeAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "IncreasedStake",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "uint256",
           "name": "_spID",
           "type": "uint256"
@@ -193,25 +362,6 @@
         }
       ],
       "name": "RegisteredServiceProvider",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_updatedCut",
-          "type": "uint256"
-        }
-      ],
-      "name": "ServiceProviderCutUpdated",
       "type": "event"
     },
     {
@@ -251,25 +401,6 @@
         }
       ],
       "name": "UpdateDeployerCutLockupDurationUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_stakeAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "UpdatedStakeAmount",
       "type": "event"
     },
     {
