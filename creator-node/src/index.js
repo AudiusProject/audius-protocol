@@ -2,6 +2,7 @@
 
 const ON_DEATH = require('death')
 const path = require('path')
+const EthereumWallet = require('ethereumjs-wallet')
 
 const initializeApp = require('./app')
 const config = require('./config')
@@ -54,6 +55,13 @@ const startApp = async () => {
 
   if (!delegateOwnerWallet || !delegatePrivateKey || !creatorNodeEndpoint) {
     exitWithError('Cannot startup without delegateOwnerWallet, delegatePrivateKey, and creatorNodeEndpoint')
+  }
+
+  // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
+  const privateKeyBuffer = Buffer.from(config.get('delegatePrivateKey').replace('0x', ''), 'hex')
+  const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
+  if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
+    throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
   }
   const storagePath = configFileStorage()
 
