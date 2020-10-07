@@ -318,7 +318,7 @@ describe('test ContentBlacklist', function () {
         testField: 'testValue'
       }
     }
-    const { body: { data: { metadataMultihash, metadataFileUUID } } } = await request(app)
+    const { body: { data: { metadataFileUUID } } } = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
       .send(metadata)
@@ -338,7 +338,7 @@ describe('test ContentBlacklist', function () {
     // Upload a track
     const file = fs.readFileSync(testAudioFilePath)
     // set track content
-    const { body: { transcodedTrackCID, transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } } = await request(app)
+    const { body: { transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
@@ -350,7 +350,7 @@ describe('test ContentBlacklist', function () {
       owner_id: 1,
       track_segments: trackSegments
     }
-    const { body: { metadataMultihash: trackMetadataMultihash, metadataFileUUID: trackMetadataFileUUID } } = await request(app)
+    const { body: { metadataFileUUID: trackMetadataFileUUID } } = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', sessionToken)
       .send({ metadata: trackMetadata, source_file: sourceFile })

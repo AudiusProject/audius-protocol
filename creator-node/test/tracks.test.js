@@ -446,6 +446,29 @@ describe('test Tracks with real IPFS', function () {
       .expect(500)
   })
 
+  // Note: if hashing logic from ipfs ever changes, this test will fail
+  it('sends forbidden error response if track segments are in BlacklistManager', async function () {
+    // Add CIDs from testTrackData.json file to BlacklistManager
+    let testTrackJSON
+    try {
+      const testTrackData = fs.readFileSync(path.join(__dirname, 'testTrackData.json'))
+      testTrackJSON = JSON.parse(testTrackData)
+    } catch (e) {
+      assert.fail(`Could not parse testTrack metadata json: ${e}`)
+    }
+    const testTrackCIDs = testTrackJSON.map(segment => segment.multihash)
+    await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
+
+    // Attempt to associate track content and get forbidden error
+    const file = fs.readFileSync(testAudioFilePath)
+    await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session.sessionToken)
+      .expect(403)
+  })
+
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
