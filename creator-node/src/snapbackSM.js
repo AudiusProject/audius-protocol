@@ -161,31 +161,47 @@ class SnapbackSM {
     // TODO: Don't access config object every timeor abstract 
     let ownEndpoint = config.get('creatorNodeEndpoint')
     let usersList = await this.getNodePrimaryUsers()
+
+    // Generate list of wallets to query clock number
+    let nodeVectorClockQueryList = {}
+
     // Issue queries to secondaries for each user
-    await Promise.all(usersList.map(async (user)=>{
-      let userWallet = user.wallet
-      let secondary1 = user.secondary1
-      let secondary2 = user.secondary2
-      let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
-      let secondary1ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
-      let secondary2ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
-      let secondary1SyncRequired = primaryClockValue > secondary1ClockValue
-      let secondary2SyncRequired = primaryClockValue > secondary2ClockValue
-      this.log(`processStateMachineOperation |${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
-      this.log(`processStateMachineOperation |${userWallet} primaryClock=${primaryClockValue}`)
-      this.log(`processStateMachineOperation |${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
-      this.log(`processStateMachineOperation |${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
-      // Enqueue sync for secondary1 if required
-      if (secondary1SyncRequired) {
-        // Issue sync
-        await this.issueSecondarySync(userWallet, secondary1, ownEndpoint)
-      }
-      // Enqueue sync for secondary2 if required
-      if (secondary2SyncRequired) {
-        // Issue sync
-        await this.issueSecondarySync(userWallet, secondary2, ownEndpoint)
-      }
-    }))
+    await Promise.all(
+      usersList.map(
+        async (user)=>{
+          let userWallet = user.wallet
+          let secondary1 = user.secondary1
+          let secondary2 = user.secondary2
+          let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
+          let secondary1ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
+          let secondary2ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
+          let secondary1SyncRequired = primaryClockValue > secondary1ClockValue
+          let secondary2SyncRequired = primaryClockValue > secondary2ClockValue
+          this.log(`processStateMachineOperation |${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
+          this.log(`processStateMachineOperation |${userWallet} primaryClock=${primaryClockValue}`)
+          this.log(`processStateMachineOperation |${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
+          this.log(`processStateMachineOperation |${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
+          // Enqueue sync for secondary1 if required
+          if (secondary1SyncRequired) {
+            // Issue sync
+            await this.issueSecondarySync(userWallet, secondary1, ownEndpoint)
+          }
+          // Enqueue sync for secondary2 if required
+          if (secondary2SyncRequired) {
+            // Issue sync
+            await this.issueSecondarySync(userWallet, secondary2, ownEndpoint)
+          }
+
+          if(!nodeVectorClockQueryList[secondary1]) { nodeVectorClockQueryList[secondary1] = []}
+          if(!nodeVectorClockQueryList[secondary2]) { nodeVectorClockQueryList[secondary2] = []}
+          nodeVectorClockQueryList[secondary1].push(userWallet)
+          nodeVectorClockQueryList[secondary2].push(userWallet)
+        }
+      )
+    )
+
+    // TODO: Process nodeVectorClockQueryList and issue in batches
+    console.log(nodeVectorClockQueryList)
   }
 
   // Main sync queue job
