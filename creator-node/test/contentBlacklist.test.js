@@ -49,7 +49,6 @@ describe('test ContentBlacklist', function () {
   })
 
   after(async () => {
-    await models.sequelize.close()
     await redis.del(BlacklistManager.getRedisSegmentCIDKey())
     await redis.del(BlacklistManager.getRedisUserIdKey())
     await redis.del(BlacklistManager.getRedisTrackIdKey())

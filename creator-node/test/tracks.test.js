@@ -467,6 +467,9 @@ describe('test Tracks with real IPFS', function () {
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(403)
+
+    // Clear redis of segment CIDs
+    await BlacklistManager.removeFromRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
   })
 
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
