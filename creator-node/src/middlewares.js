@@ -99,7 +99,6 @@ async function triggerSecondarySyncs (req) {
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
-    req.logger.error(`SIDTEST: primary ${primary} calling sync against: ${secondaries}`)
     await Promise.all(secondaries.map(async secondary => {
       if (!secondary || !_isFQDN(secondary)) return
       const axiosReq = {
@@ -128,15 +127,17 @@ async function getOwnEndpoint (req) {
   if (!creatorNodeEndpoint) throw new Error('Must provide either creatorNodeEndpoint config var.')
 
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
-  const spInfo = [await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)]
+  if(!spId) throw new Error('Cannot get spId for node')
+  const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
-      spInfo.length === 0 ||
-      !spInfo[0].hasOwnProperty('endpoint') ||
-      (spInfo[0]['endpoint'] && !_isFQDN(spInfo[0]['endpoint']))) {
-    throw new Error('fail')
+      !spInfo.hasOwnProperty('endpoint') ||
+      !(spInfo.owner !== config.get('spOwnerWallet')) ||
+      !(spInfo.delegateOwnerWallet !== config.get('delegateOwnerWallet')) ||
+      (spInfo['endpoint'] && !_isFQDN(spInfo['endpoint']))) {
+    throw new Error(`Cannot getOwnEndpoint for node ${spInfo}`)
   }
-  return spInfo[0]['endpoint']
+  return spInfo['endpoint']
 }
 
 /** Get all creator node endpoints for user by wallet from discprov. */
