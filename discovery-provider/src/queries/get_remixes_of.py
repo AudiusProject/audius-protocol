@@ -4,13 +4,17 @@ from src import exceptions
 from src.models import Track, Repost, RepostType, Save, SaveType, Remix
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
-    paginate_query, add_users_to_tracks, create_save_count_subquery, \
+from src.queries.query_helpers import populate_track_metadata, \
+    add_query_pagination, add_users_to_tracks, create_save_count_subquery, \
     create_repost_count_subquery
 
 
-def get_remixes_of(track_id, args):
+def get_remixes_of(args):
+    track_id = args["track_id"]
+    current_user_id = args["current_user_id"]
+    limit, offset = args["limit"], args["offset"]
     db = get_db_read_replica()
+
     with db.scoped_session() as session:
         # Fetch the parent track to get the track's owner id
         parent_track = session.query(Track).filter(
@@ -100,11 +104,10 @@ def get_remixes_of(track_id, args):
             )
         )
 
-        (tracks, count) = paginate_query(base_query, True, True)
+        (tracks, count) = add_query_pagination(base_query, limit, offset, True, True)
         tracks = tracks.all()
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
-        current_user_id = get_current_user_id(required=False)
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
 

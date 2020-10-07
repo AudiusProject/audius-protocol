@@ -99,3 +99,14 @@ track_full = ns.clone('track_full', track, {
     "cover_art": fields.String,
     "remix_of": fields.Nested(full_remix_parent),
 })
+
+stem_full = ns.model('stem_full', {
+    "id": fields.String(required=True),
+    "parent_id": fields.String(required=True),
+    "category": fields.String(required=True)
+})
+
+remixes_response = ns.model('remixes_response', {
+    "count": fields.Integer(required=True),
+    "tracks": fields.List(fields.Nested(track_full))
+})

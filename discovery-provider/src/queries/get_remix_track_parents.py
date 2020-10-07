@@ -3,11 +3,15 @@ from sqlalchemy import desc, and_
 from src.models import Track, Remix
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
-    paginate_query, add_users_to_tracks
+from src.queries.query_helpers import populate_track_metadata, \
+    add_query_pagination, add_users_to_tracks
 
 
-def get_remix_track_parents(track_id, args):
+def get_remix_track_parents(args):
+    track_id = args.get("track_id")
+    current_user_id = args.get("current_user_id")
+    limit = args.get("limit")
+    offset = args.get("offset")
     db = get_db_read_replica()
     with db.scoped_session() as session:
         base_query = (
@@ -29,10 +33,9 @@ def get_remix_track_parents(track_id, args):
             )
         )
 
-        tracks = paginate_query(base_query).all()
+        tracks = add_query_pagination(base_query, limit, offset).all()
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
-        current_user_id = get_current_user_id(required=False)
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if args.get("with_users", False):

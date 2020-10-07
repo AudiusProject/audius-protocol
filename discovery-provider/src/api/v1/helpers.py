@@ -172,6 +172,15 @@ def extend_track(track):
 
     return track
 
+def stem_from_track(track):
+    track_id = encode_int_id(track["track_id"])
+    parent_id = encode_int_id(track["stem_of"]["parent_track_id"])
+    category = track["stem_of"]["category"]
+    return {
+        "id": track_id,
+        "parent_id": parent_id,
+        "category": category
+    }
 
 def extend_playlist(playlist):
     playlist_id = encode_int_id(playlist["playlist_id"])
