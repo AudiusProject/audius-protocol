@@ -108,12 +108,6 @@ class GovernanceClient extends ContractClient {
     return parseInt(delay)
   }
 
-  async getMaxDescriptionLength () {
-    const method = await this.getMethod('getMaxDescriptionLength')
-    const length = await method.call()
-    return parseInt(length)
-  }
-
   async setExecutionDelay (
     delay
   ) {
@@ -141,16 +135,6 @@ class GovernanceClient extends ContractClient {
     return formattedProposal
   }
 
-  async getProposalDescriptionById (
-    id
-  ) {
-    const method = await this.getMethod(
-      'getProposalDescriptionById',
-      id
-    )
-    return method.call()
-  }
-
   async getProposalTargetContractHash (
     id
   ) {
@@ -174,10 +158,24 @@ class GovernanceClient extends ContractClient {
     let events = await contract.getPastEvents('ProposalSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
-        proposer: addresses
+        _proposer: addresses
       }
     })
     return events.map(this.formatProposalEvent)
+  }
+
+  async getProposalSubmission (
+    proposalId,
+    queryStartBlock = 0
+  ) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('ProposalSubmitted', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _proposalId: proposalId
+      }
+    })
+    return this.formatProposalEvent(events[0])
   }
 
   async getInProgressProposals () {
@@ -191,6 +189,7 @@ class GovernanceClient extends ContractClient {
     callValue,
     functionSignature,
     callData, // array of args, e.g. [slashAmount, targetAddress]
+    name,
     description
   }) {
     const argumentTypes = functionSignature.match(/.*\((?<args>.*)\)/).groups.args.split(',')
@@ -202,12 +201,13 @@ class GovernanceClient extends ContractClient {
       callValue,
       functionSignature,
       encodedCallData,
+      name,
       description
     )
     // Increased gas because submitting can be expensive
     const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
     if (tx && tx.events && tx.events.ProposalSubmitted && tx.events.ProposalSubmitted.returnValues) {
-      const id = tx.events.ProposalSubmitted.returnValues.proposalId
+      const id = tx.events.ProposalSubmitted.returnValues._proposalId
       return id
     }
     throw new Error('submitProposal: txn malformed')
@@ -257,7 +257,7 @@ class GovernanceClient extends ContractClient {
     const events = await contract.getPastEvents('ProposalOutcomeEvaluated', {
       fromBlock: queryStartBlock,
       filter: {
-        proposalId: proposalId
+        _proposalId: proposalId
       }
     })
     return events
@@ -285,7 +285,7 @@ class GovernanceClient extends ContractClient {
     let events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
-        proposalId: proposalId
+        _proposalId: proposalId
       }
     })
     return events.map(this.formatVote)
@@ -299,7 +299,7 @@ class GovernanceClient extends ContractClient {
     let events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
-        voter: addresses
+        _voter: addresses
       }
     })
     return events.map(this.formatVote)
@@ -313,7 +313,7 @@ class GovernanceClient extends ContractClient {
     let events = await contract.getPastEvents('ProposalVoteUpdated', {
       fromBlock: queryStartBlock,
       filter: {
-        voter: addresses
+        _voter: addresses
       }
     })
     return events.map(this.formatVote)
@@ -324,12 +324,12 @@ class GovernanceClient extends ContractClient {
     voterAddress
   }) {
     const method = await this.getMethod(
-      'getVoteByProposalAndVoter',
+      'getVoteInfoByProposalAndVoter',
       proposalId,
       voterAddress
     )
-    const vote = await method.call()
-    return parseInt(vote)
+    const result = await method.call()
+    return parseInt(result.vote)
   }
 
   // Helpers
@@ -373,10 +373,10 @@ class GovernanceClient extends ContractClient {
   formatProposalEvent (proposalEvent) {
     const event = proposalEvent.returnValues
     return {
-      proposalId: parseInt(event.proposalId),
-      proposer: event.proposer,
-      submissionBlockNumber: parseInt(event.submissionBlockNumber),
-      description: event.description,
+      proposalId: parseInt(event._proposalId),
+      proposer: event._proposer,
+      description: event._description,
+      name: event._name,
       blockNumber: proposalEvent.blockNumber
     }
   }
@@ -387,10 +387,10 @@ class GovernanceClient extends ContractClient {
   formatVote (voteEvent) {
     const event = voteEvent.returnValues
     return {
-      proposalId: parseInt(event.proposalId),
-      voter: event.voter,
-      vote: parseInt(event.vote),
-      voterStake: this.toBN(event.voterStake),
+      proposalId: parseInt(event._proposalId),
+      voter: event._voter,
+      vote: parseInt(event._vote),
+      voterStake: this.toBN(event._voterStake),
       blockNumber: voteEvent.blockNumber
     }
   }
