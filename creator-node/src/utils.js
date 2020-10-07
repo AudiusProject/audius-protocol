@@ -200,7 +200,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
   const logger = genericLogger.child(logContext)
 
   if (await BlacklistManager.CIDIsInBlacklist(multihash)) {
-    logger.error(`rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`)
+    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`)
     return
   }
 
@@ -273,7 +273,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   const logger = genericLogger.child(logContext)
 
   if (await BlacklistManager.CIDIsInBlacklist(dirHash)) {
-    logger.error(`rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`)
+    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`)
     return
   }
 

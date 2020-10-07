@@ -5,7 +5,6 @@ const fs = require('fs')
 const path = require('path')
 
 const BlacklistManager = require('../src/blacklistManager')
-const config = require('../src/config')
 const models = require('../src/models')
 const ipfsClient = require('../src/ipfsClient')
 const redis = require('../src/redis')

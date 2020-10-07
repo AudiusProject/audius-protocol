@@ -9,6 +9,7 @@ const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddlewar
 const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
+const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
@@ -29,6 +30,7 @@ app.use('/image_upload', imageReqLimiter)
 // import routes
 require('./routes')(app)
 app.use('/', healthCheckRoutes)
+app.use('/', contentBlacklistRoutes)
 
 function errorHandler (err, req, res, next) {
   req.logger.error('Internal server error')
