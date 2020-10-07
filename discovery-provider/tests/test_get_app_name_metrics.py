@@ -46,7 +46,7 @@ def populate_mock_db(db, date1, date2):
 
 def test_get_app_name_metrics(app):
     """Tests that the route metrics are queried correctly from db data"""
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
     before_date = (date + timedelta(hours=-1))
     after_date = (date + timedelta(hours=1))
 
@@ -97,7 +97,7 @@ def test_get_app_name_metrics(app):
 
 def test_get_app_name_metrics_with_daily_buckets(app):
     """Tests that the app metrics can be queried with daily buckets"""
-    date = datetime.utcnow()
+    date = datetime(2020, 10, 4, 10, 35, 0)
     before_date = (date + timedelta(hours=-1))
     after_date = (date + timedelta(hours=1))
 
