@@ -4,7 +4,7 @@ To add to the ContentBlacklist table:
 1. export the keys `delegatePrivateKey` and `creatorNodeEndpoint` in your terminal
 ```
 $ export delegatePrivateKey='your_private_key'
-$ export creatorNodeEndpoint='http://the_creator_node_endpoint" 
+$ export creatorNodeEndpoint='http://the_creator_node_endpoint' 
 ```
 2. Run the script `scripts/update-content-blacklist.sh`. Refer to the script for usage!
 
