@@ -19,6 +19,7 @@ import * as socialActions from 'store/social/users/actions'
 import * as backendActions from 'store/backend/actions'
 
 import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getCityAndRegion } from 'services/Location'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { fetchUsers } from 'store/cache/users/sagas'
@@ -82,23 +83,24 @@ function* fetchAllFollowArtist() {
 
 function* fetchFollowArtistGenre(followArtistCategory) {
   const genres = followArtistCategoryGenreMappings[followArtistCategory]
-  const { error, users } = yield call(
-    AudiusBackend.getTopAristGenres,
-    genres,
-    31
-  )
-  if (error || !users) {
-    yield put(signOnActions.fetchFollowArtistsFailed(error))
-  }
-  const userOptions = users
-    .filter(user => !defaultFollowUserIds.has(user.user_id))
-    .slice(0, 30)
+  try {
+    const users = yield apiClient.getTopArtistGenres({
+      genres,
+      limit: 31,
+      offset: 0
+    })
+    const userOptions = users
+      .filter(user => !defaultFollowUserIds.has(user.user_id))
+      .slice(0, 30)
 
-  yield call(processAndCacheUsers, userOptions)
-  const userIds = userOptions.map(({ user_id: id }) => id)
-  yield put(
-    signOnActions.fetchFollowArtistsSucceeded(followArtistCategory, userIds)
-  )
+    yield call(processAndCacheUsers, userOptions)
+    const userIds = userOptions.map(({ user_id: id }) => id)
+    yield put(
+      signOnActions.fetchFollowArtistsSucceeded(followArtistCategory, userIds)
+    )
+  } catch (err) {
+    yield put(signOnActions.fetchFollowArtistsFailed(err))
+  }
 }
 
 const isResrtictedHandle = handle => restrictedHandles.has(handle.toLowerCase())
