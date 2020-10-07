@@ -106,7 +106,7 @@ def get_playlists(args):
 
             if args.get("with_users", False):
                 user_id_list = get_users_ids(playlists)
-                users = get_users_by_id(session, user_id_list)
+                users = get_users_by_id(session, user_id_list, current_user_id)
                 for playlist in playlists:
                     user = users[playlist['playlist_owner_id']]
                     if user:

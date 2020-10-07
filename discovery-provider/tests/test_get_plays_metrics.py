@@ -30,7 +30,7 @@ def populate_mock_db(db, date1, date2):
 def test_get_plays_metrics(app):
     """Tests that plays metrics can be queried"""
 
-    date = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    date = datetime(2020, 10, 4).replace(minute=0, second=0, microsecond=0)
     date1 = (date + timedelta(hours=-1))
     date2 = (date + timedelta(days=-2))
     before_date = (date + timedelta(days=-3))

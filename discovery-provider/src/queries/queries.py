@@ -103,8 +103,11 @@ def get_tracks_including_unlisted_route():
         args["filter_deleted"] = parse_bool_param(request.args.get("filter_deleted"))
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-    tracks = get_tracks_including_unlisted(
-        args, request.get_json())
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
+    identifiers = request.get_json()["tracks"]
+    args["identifiers"] = identifiers
+    tracks = get_tracks_including_unlisted(args)
     return api_helpers.success_response(tracks)
 
 
@@ -175,7 +178,7 @@ def get_repost_feed_for_user_route(user_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-    args["current_user_id"] = get_current_user_id(required=False) 
+    args["current_user_id"] = get_current_user_id(required=False)
     feed_results = get_repost_feed_for_user(user_id, args)
     return api_helpers.success_response(feed_results)
 
