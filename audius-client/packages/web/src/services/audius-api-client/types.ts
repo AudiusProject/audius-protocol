@@ -9,7 +9,7 @@ import {
 import { FavoriteType } from 'models/Favorite'
 import { Download, FieldVisibility, TrackSegment } from 'models/Track'
 
-type OpaqueID = string
+export type OpaqueID = string
 type PlaylistContents = {
   track_ids: Array<{ time: number; track: number }>
 }

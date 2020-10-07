@@ -7,12 +7,14 @@ import { getTracks as getTracksSelector } from 'store/cache/tracks/selectors'
 import { Kind, AppState } from 'store/types'
 import { addUsersFromTracks } from './helpers'
 import AudiusBackend from 'services/AudiusBackend'
-import Track, { UserTrack } from 'models/Track'
+import Track, { UserTrackMetadata } from 'models/Track'
 import {
   fetchAndProcessRemixes,
   fetchAndProcessRemixParents
 } from './fetchAndProcessRemixes'
 import { fetchAndProcessStems } from './fetchAndProcessStems'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId } from 'store/account/selectors'
 
 type UnlistedTrackRequest = { id: ID; url_title: string; handle: string }
 type RetrieveTracksArgs = {
@@ -41,6 +43,8 @@ export function* retrieveTracks({
   withRemixes = false,
   withRemixParents = false
 }: RetrieveTracksArgs) {
+  const currentUserId: number | null = yield select(getUserId)
+
   // In the case of unlisted tracks, trackIds contains metadata used to fetch tracks
   const ids = canBeUnlisted
     ? (trackIds as UnlistedTrackRequest[]).map(({ id }) => id)
@@ -101,18 +105,41 @@ export function* retrieveTracks({
       return selected
     },
     retrieveFromSource: function* (ids: ID[] | UnlistedTrackRequest[]) {
-      let fetched: Track[]
+      let fetched: UserTrackMetadata[]
       if (canBeUnlisted) {
-        fetched = yield call(
-          AudiusBackend.getTracksIncludingUnlisted,
-          trackIds as UnlistedTrackRequest[]
-        )
+        const ids = trackIds as UnlistedTrackRequest[]
+        // TODO: remove the AudiusBackend
+        // branches here when we support
+        // bulk track fetches in the API.
+        if (ids.length > 1) {
+          fetched = yield call(
+            AudiusBackend.getTracksIncludingUnlisted,
+            trackIds as UnlistedTrackRequest[]
+          )
+        } else {
+          fetched = yield call(args => apiClient.getTrack(args), {
+            id: ids[0].id,
+            currentUserId,
+            unlistedArgs: {
+              urlTitle: ids[0].url_title,
+              handle: ids[0].handle
+            }
+          })
+        }
       } else {
-        fetched = yield call(AudiusBackend.getAllTracks, {
-          offset: 0,
-          limit: ids.length,
-          idsArray: ids as ID[]
-        })
+        const ids = trackIds as number[]
+        if (ids.length > 1) {
+          fetched = yield call(AudiusBackend.getAllTracks, {
+            offset: 0,
+            limit: ids.length,
+            idsArray: ids as ID[]
+          })
+        } else {
+          fetched = yield call(args => apiClient.getTrack(args), {
+            id: ids[0],
+            currentUserId
+          })
+        }
       }
       return fetched
     },
@@ -121,7 +148,7 @@ export function* retrieveTracks({
     forceRetrieveFromSource: false,
     shouldSetLoading: true,
     deleteExistingEntry: false,
-    onBeforeAddToCache: function* (tracks: UserTrack[]) {
+    onBeforeAddToCache: function* (tracks: UserTrackMetadata[]) {
       yield addUsersFromTracks(tracks)
       return tracks.map(track => reformat(track))
     }

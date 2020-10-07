@@ -11,6 +11,8 @@ import {
   getConfirmLength,
   getIsDone
 } from 'store/confirmer/selectors'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId } from 'store/account/selectors'
 
 const POLLING_FREQUENCY_MILLIS = 2000
 
@@ -48,16 +50,24 @@ export function* pollTrack(
   handle,
   check = track => track
 ) {
-  let tracks = yield call(AudiusBackend.getTracksIncludingUnlisted, [
-    { id: trackId, url_title: trackTitle, handle }
-  ])
-  while (!(tracks.length && check(tracks[0]))) {
-    yield delay(POLLING_FREQUENCY_MILLIS)
-    tracks = yield call(AudiusBackend.getTracksIncludingUnlisted, [
-      { id: trackId, url_title: trackTitle, handle }
-    ])
+  const userId = yield select(getUserId)
+  function* fetchTrack() {
+    const track = yield call(args => apiClient.getTrack(args), {
+      id: trackId,
+      currentUserId: userId,
+      unlistedArgs: {
+        urlTitle: trackTitle,
+        handle
+      }
+    })
+    return track
   }
-  return tracks[0]
+  let track = yield call(fetchTrack)
+  while (!(track && check(track))) {
+    yield delay(POLLING_FREQUENCY_MILLIS)
+    track = yield call(fetchTrack)
+  }
+  return track
 }
 
 /**
