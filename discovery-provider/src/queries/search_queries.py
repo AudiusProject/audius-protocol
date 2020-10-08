@@ -419,7 +419,10 @@ def track_search_query(
         # pylint: disable=C0301
         f"""
         select track_id from (
-            select track_id, (sum(score) + (:title_weight * similarity(coalesce(title, ''), query))) as total_score from (
+            select
+                track_id,
+                (sum(score) + (:title_weight * similarity(coalesce(title, ''), query))) as total_score
+            from (
                 select
                     d."track_id" as track_id, d."word" as word, similarity(d."word", :query) as score,
                     d."track_title" as title, :query as query
@@ -436,7 +439,8 @@ def track_search_query(
                 }
                 where d."word" % :query
                 {
-                    "and s.save_type='track' and s.is_current=true and s.is_delete=false and s.user_id = :current_user_id"
+                    "and s.save_type='track' and s.is_current=true and " +
+                    "s.is_delete=false and s.user_id = :current_user_id"
                     if personalized and current_user_id
                     else ""
                 }
@@ -591,7 +595,10 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         # pylint: disable=C0301
         f"""
         select playlist_id from (
-            select playlist_id, (sum(score) + (:name_weight * similarity(coalesce(playlist_name, ''), query))) as total_score from (
+            select
+                playlist_id,
+                (sum(score) + (:name_weight * similarity(coalesce(playlist_name, ''), query))) as total_score
+            from (
                 select
                     d."playlist_id" as playlist_id, d."word" as word, similarity(d."word", :query) as score,
                     d."playlist_name" as playlist_name, :query as query

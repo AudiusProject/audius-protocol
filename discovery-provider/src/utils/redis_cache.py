@@ -13,14 +13,27 @@ logger = logging.getLogger(__name__)
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
-
-def extract_key():
-    path = request.path
-    req_args = request.args.items()
-    req_args = stringify_query_params(req_args)
+def extract_key(path, arg_items):
+    # filter out query-params with 'None' values
+    filtered_arg_items = filter(lambda x: x[1] is not None, arg_items)
+    req_args = stringify_query_params(filtered_arg_items)
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
+def use_redis_cache(key, ttl_sec, work_func):
+    """Attemps to return value by key, otherwise cahces and returns `work_func`"""
+    redis = redis_connection.get_redis()
+    cached_value = redis.get(key)
+
+    if cached_value:
+        logger.info(f"Redis Cache - hit {key}")
+        return json.loads(cached_value)
+
+    logger.info(f"Redis Cache - miss {key}")
+    to_cache = work_func()
+    serialized = dumps(to_cache)
+    redis.set(key, serialized, ttl_sec)
+    return to_cache
 
 def cache(**kwargs):
     """
@@ -34,10 +47,10 @@ def cache(**kwargs):
             to convert the function response to request response
 
     Usage Notes:
-        If the wrapper function returns a tuple, the transform function will not
+        If the wrapped function returns a tuple, the transform function will not
         be run on the response. The first item of the tuple must be serializable.
 
-        If the wrapper function returns a single response, the transform function
+        If the wrapped function returns a single response, the transform function
         must be passed to the decorator. The wrapper function response must be
         serializable.
 
@@ -59,15 +72,17 @@ def cache(**kwargs):
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
-            key = extract_key()
+            key = extract_key(request.path, request.args.items())
             cached_resp = redis.get(key)
 
             if cached_resp:
+                logger.info(f"Redis Cache - hit {key}")
                 deserialized = json.loads(cached_resp)
                 if transform is not None:
                     return transform(deserialized)
                 return deserialized, 200
 
+            logger.info(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:

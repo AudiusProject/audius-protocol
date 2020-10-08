@@ -18,7 +18,7 @@ const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query p
 // if (txs on blockchain / attempted) is less than this percent, health check will error
 // eg. 10 transactions on chain but 120 attempts should error
 const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
-const RELAY_HEALTH_ACCOUNT = config.get('relayerPublicKey')
+const RELAY_HEALTH_ACCOUNTS = new Set(config.get('relayerWallets').map(wallet => wallet.publicKey))
 
 // flatten one level of nexted arrays
 const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
@@ -78,9 +78,10 @@ module.exports = function (app) {
     let failureTxs = {} // senderAddress: [<txHash>]
     let txCounter = 0
     let minBlockTime = null
+    let maxBlockTime = null
 
     req.logger.info(
-      `Searching for transactions to/from account ${RELAY_HEALTH_ACCOUNT} within blocks ${startBlockNumber} and ${endBlockNumber}`
+      `Searching for transactions to/from relay accounts within blocks ${startBlockNumber} and ${endBlockNumber}`
     )
 
     // Iterate through the range of blocks, looking into the max number of transactions that are from audius
@@ -88,11 +89,16 @@ module.exports = function (app) {
       // If the max number of transactions have been evaluated, break out
       if (txCounter > maxTransactions) break
       let block = await web3.eth.getBlock(i, true)
+      if (!block) {
+        req.logger.error(`Could not find block for health_check/relay ${i}`)
+        continue
+      }
       if (!minBlockTime || block.timestamp < minBlockTime) minBlockTime = block.timestamp
-      if (block && block.transactions.length) {
+      if (!maxBlockTime || block.timestamp > maxBlockTime) maxBlockTime = block.timestamp
+      if (block.transactions.length) {
         for (const tx of block.transactions) {
           // If transaction is from audius account, determine success or fail status
-          if (RELAY_HEALTH_ACCOUNT === tx.from) {
+          if (RELAY_HEALTH_ACCOUNTS.has(tx.from)) {
             const txHash = tx.hash
             const resp = await web3.eth.getTransactionReceipt(txHash)
             txCounter++
@@ -103,7 +109,9 @@ module.exports = function (app) {
               if (senderAddress) {
                 if (!failureTxs[senderAddress]) failureTxs[senderAddress] = [txHash]
                 else failureTxs[senderAddress].push(txHash)
-              } else failureTxs['unknown'].push(txHash)
+              } else {
+                failureTxs['unknown'] = (failureTxs['unknown'] || []).concat(txHash)
+              }
             }
           }
         }
@@ -121,9 +129,9 @@ module.exports = function (app) {
     await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
 
     // check if there have been any attempts in the time window that we processed the block health check
-    const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, '+inf')
-    const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, '+inf')
-    const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, '+inf')
+    const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, maxBlockTime)
+    const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, maxBlockTime)
+    const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, maxBlockTime)
     if ((txCounter / attemptedTxsInRedis.length) < sentVsAttemptThreshold) isError = true
 
     const serverResponse = {
@@ -162,19 +170,31 @@ module.exports = function (app) {
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
-    let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(), 'ether'))
     let minimumBalance = parseFloat(config.get('minimumBalance'))
-    if (balance >= minimumBalance) {
+    let belowMinimumBalances = []
+    let balances = []
+
+    for (let account of RELAY_HEALTH_ACCOUNTS) {
+      let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
+      balances.push({ account, balance })
+      if (balance < minimumBalance) {
+        belowMinimumBalances.push({ account, balance })
+      }
+    }
+
+    // no accounts below minimum balance
+    if (!belowMinimumBalances.length) {
       return successResponse({
         'above_balance_minimum': true,
         'minimum_balance': minimumBalance,
-        'available_balance': balance
+        'balances': balances
       })
     } else {
       return errorResponseServerError({
         'above_balance_minimum': false,
         'minimum_balance': minimumBalance,
-        'available_balance': balance
+        'balances': balances,
+        'below_minimum_balance': belowMinimumBalances
       })
     }
   }))

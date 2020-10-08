@@ -5,11 +5,15 @@ from src.models import User, Track, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from src.queries.query_helpers import paginate_query
+from src.queries.query_helpers import populate_user_metadata, add_query_pagination
 
-
-def get_savers_for_track(save_track_id):
+def get_savers_for_track(args):
     user_results = []
+    current_user_id = args.get('current_user_id')
+    save_track_id = args.get('save_track_id')
+    limit = args.get('limit')
+    offset = args.get('offset')
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
         # Ensure Track exists for provided save_track_id.
@@ -60,13 +64,15 @@ def get_savers_for_track(save_track_id):
             )
             .order_by(desc(response_name_constants.follower_count))
         )
-        user_results = paginate_query(query).all()
+        user_results = add_query_pagination(query, limit, offset).all()
 
         # Fix format to return only Users objects with follower_count field.
         if user_results:
-            users, follower_counts = zip(*user_results)
+            users, _ = zip(*user_results)
             user_results = helpers.query_result_to_list(users)
-            for i, user in enumerate(user_results):
-                user[response_name_constants.follower_count] = follower_counts[i]
+            # bundle peripheral info into user results
+            user_ids = [user['user_id'] for user in user_results]
+            user_results = populate_user_metadata(
+                session, user_ids, user_results, current_user_id)
 
     return user_results

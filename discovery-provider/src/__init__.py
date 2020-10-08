@@ -258,6 +258,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(health_check.bp)
 
     app.register_blueprint(api_v1.bp)
+    app.register_blueprint(api_v1.bp_full)
 
     return app
 
@@ -292,7 +293,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_play_count": {
                 "task": "update_play_count",
-                "schedule": timedelta(seconds=10)
+                "schedule": timedelta(seconds=60)
             },
             "update_metrics": {
                 "task": "update_metrics",

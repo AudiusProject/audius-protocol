@@ -68,28 +68,73 @@ contract('ServiceProvider test', async (accounts) => {
       { from: account }
     )
 
-    const args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    return args
+    let currentlyStakedForAccount = await staking.totalStakedFor(account)
+
+    await expectEvent.inTransaction(
+      tx.tx,
+      ServiceProviderFactory,
+      'IncreasedStake',
+      {
+        _owner: account,
+        _increaseAmount: increase,
+        _newStakeAmount: currentlyStakedForAccount
+      }
+    )
   }
 
   const getStakeAmountForAccount = async (account) => staking.totalStakedFor(account)
 
-  const decreaseRegisteredProviderStake = async (decrease, account) => {
+  const decreaseRegisteredProviderStake = async (decrease, account, cancelRequest = false) => {
     if(!web3.utils.isBN(decrease)) {
       decrease = web3.utils.toBN(decrease)
     }
-
     // Request decrease in stake
-    await serviceProviderFactory.requestDecreaseStake(decrease, { from: account })
-
+    let tx = await serviceProviderFactory.requestDecreaseStake(decrease, { from: account })
     let requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(account)
+    await expectEvent.inTransaction(
+      tx.tx,
+      ServiceProviderFactory,
+      'DecreaseStakeRequested',
+      {
+        _owner: account,
+        _decreaseAmount: decrease,
+        _lockupExpiryBlock: requestInfo.lockupExpiryBlock
+      }
+    )
+
+    if (cancelRequest) {
+      tx = await serviceProviderFactory.cancelDecreaseStakeRequest(account, { from: account })
+      await expectEvent.inTransaction(
+        tx.tx,
+        ServiceProviderFactory,
+        'DecreaseStakeRequestCancelled',
+        {
+          _owner: account,
+          _decreaseAmount: decrease,
+          _lockupExpiryBlock: requestInfo.lockupExpiryBlock
+        }
+      )
+      requestInfo = await serviceProviderFactory.getPendingDecreaseStakeRequest(account)
+      assert.isTrue(requestInfo.lockupExpiryBlock.eq(_lib.toBN(0)), "Expect reset of lockup expiry block")
+      assert.isTrue(requestInfo.amount.eq(_lib.toBN(0)), "Expect reset of decrease amt")
+      return
+    }
+
     // Advance to valid block
     await time.advanceBlockTo(requestInfo.lockupExpiryBlock)
 
     // Approve token transfer from staking contract to account
-    const tx = await serviceProviderFactory.decreaseStake({ from: account })
-    const args = tx.logs.find(log => log.event === 'UpdatedStakeAmount').args
-    return args
+    tx = await serviceProviderFactory.decreaseStake({ from: account })
+    await expectEvent.inTransaction(
+      tx.tx,
+      ServiceProviderFactory,
+      'DecreaseStakeRequestEvaluated',
+      {
+        _owner: account,
+        _decreaseAmount: decrease,
+        _newStakeAmount: (await staking.totalStakedFor(account))
+      }
+    )
   }
 
   const getServiceProviderIdsFromAddress = async (account, type) => {
@@ -239,11 +284,13 @@ contract('ServiceProvider test', async (accounts) => {
     await token.transfer(accounts[11], INITIAL_BAL, { from: proxyDeployerAddress })
 
     // ---- Configuring addresses
-    await _lib.configureGovernanceStakingAddress(
+    await _lib.configureGovernanceContractAddresses(
       governance,
       governanceKey,
       guardianAddress,
-      staking.address
+      staking.address,
+      serviceProviderFactory.address,
+      mockDelegateManager.address
     )
     // ---- Set up staking contract permissions
     await _lib.configureStakingContractAddresses(
@@ -517,11 +564,22 @@ contract('ServiceProvider test', async (accounts) => {
       let deployerCutUpdateDuration = await serviceProviderFactory.getDeployerCutLockupDuration()
       let requestTx = await serviceProviderFactory.requestUpdateDeployerCut(stakerAccount, updatedCutValue, { from: stakerAccount })
       let requestBlock = _lib.toBN(requestTx.receipt.blockNumber)
+      let expectedExpiryBlock = requestBlock.add(deployerCutUpdateDuration)
+      await expectEvent.inTransaction(
+        requestTx.tx,
+        ServiceProviderFactory,
+        'DeployerCutUpdateRequested',
+        {
+          _owner: stakerAccount,
+          _updatedCut: _lib.toBN(updatedCutValue),
+          _lockupExpiryBlock: expectedExpiryBlock
+        }
+      )
 
       // Retrieve pending info
       let pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
       assert.isTrue(
-        (requestBlock.add(deployerCutUpdateDuration)).eq(pendingOp.lockupExpiryBlock),
+        (expectedExpiryBlock).eq(pendingOp.lockupExpiryBlock),
         'Unexpected expiry block'
       )
 
@@ -543,7 +601,7 @@ contract('ServiceProvider test', async (accounts) => {
       await expectEvent.inTransaction(
         updateTx.tx,
         ServiceProviderFactory,
-        'ServiceProviderCutUpdated',
+        'DeployerCutUpdateRequestEvaluated',
         { _owner: stakerAccount,
           _updatedCut: `${updatedCutValue}`
         }
@@ -570,7 +628,16 @@ contract('ServiceProvider test', async (accounts) => {
       assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(updatedCutValue)), 'Expect in flight request')
       assert.isTrue(!pendingOp.lockupExpiryBlock.eq(_lib.toBN(0)), 'Expect in flight request')
       // Submit cancellation
-      await serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount, { from: stakerAccount })
+      let cancelTx = await serviceProviderFactory.cancelUpdateDeployerCut(stakerAccount, { from: stakerAccount })
+      await expectEvent.inTransaction(
+        cancelTx.tx,
+        ServiceProviderFactory,
+        'DeployerCutUpdateRequestCancelled',
+        { _owner: stakerAccount,
+          _requestedCut: _lib.toBN(updatedCutValue),
+          _finalCut: _lib.toBN(preUpdatecut)
+        }
+      )
       // Confirm request status
       pendingOp = await serviceProviderFactory.getPendingUpdateDeployerCutRequest(stakerAccount)
       assert.isTrue(pendingOp.newDeployerCut.eq(_lib.toBN(0)), 'Expect cancelled request')
@@ -703,6 +770,9 @@ contract('ServiceProvider test', async (accounts) => {
         (await token.balanceOf(stakerAccount)).eq(initialBal.add(decreaseStakeAmount)),
         'Expect increase in token balance after decreasing stake'
       )
+
+      // Issue and cancel decrease stake request
+      await decreaseRegisteredProviderStake(decreaseStakeAmount, stakerAccount, true)
     })
 
     it('Fails to decrease more than staked', async () => {

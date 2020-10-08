@@ -66,7 +66,7 @@ class DelegateManagerClient extends GovernedContractClient {
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('DecreaseDelegatedStake', {
+    let events = await contract.getPastEvents('UndelegateStakeRequestEvaluated', {
       fromBlock: queryStartBlock,
       filter: {
         _delegator: delegator
