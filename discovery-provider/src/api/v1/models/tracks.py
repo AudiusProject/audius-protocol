@@ -103,7 +103,9 @@ track_full = ns.clone('track_full', track, {
 stem_full = ns.model('stem_full', {
     "id": fields.String(required=True),
     "parent_id": fields.String(required=True),
-    "category": fields.String(required=True)
+    "category": fields.String(required=True),
+    "cid": fields.String(required=True),
+    "user_id": fields.String(required=True)
 })
 
 remixes_response = ns.model('remixes_response', {

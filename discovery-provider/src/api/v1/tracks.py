@@ -2,7 +2,6 @@ from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
 from flask_restx import Resource, Namespace, fields, reqparse
-from flask_restx import resource
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \

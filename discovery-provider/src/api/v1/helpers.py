@@ -179,7 +179,9 @@ def stem_from_track(track):
     return {
         "id": track_id,
         "parent_id": parent_id,
-        "category": category
+        "category": category,
+        "cid": track["download"]["cid"],
+        "user_id": encode_int_id(track["owner_id"])
     }
 
 def extend_playlist(playlist):
