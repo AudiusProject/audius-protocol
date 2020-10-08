@@ -5,7 +5,7 @@ const utils = require('./utils')
 const models = require('./models')
 const { logger } = require('./logging')
 
-const DevDelayInMS = 10000
+const DevDelayInMS = 20000
 
 // TODO: Discuss w/draj how to handle a long upload where the stateMachine starts processing during the operation
 
@@ -132,7 +132,7 @@ class SnapbackSM {
       data: {
         wallet: [userWallet],
         creator_node_endpoint: primaryEndpoint,
-        immediate: true,
+        // immediate: true,    // If set to true, the endpoint will not return until completed
         state_machine: true // state machine specific flag
       }
     }
@@ -244,10 +244,15 @@ class SnapbackSM {
 
   // Main sync queue job
   async processSyncOperation(job) {
-    logger.info('------------------Process SYNC------------------')
-    logger.info(job.data)
-    let syncRequestParameters = job.data.syncRequestParameters
-    logger.info(syncRequestParameters)
+    const syncRequestParameters = job.data.syncRequestParameters
+    const syncWallet = syncRequestParameters.data.wallet[0]
+    const primaryClockValue = await this.getUserPrimaryClockValue(syncWallet)
+    const secondaryUrl = syncRequestParameters.baseURL
+    this.log(`------------------Process SYNC | User ${syncWallet} ------------------`)
+    this.log(job.data)
+    this.log(syncRequestParameters)
+    this.log(`syncWallet:${syncWallet}`)
+    this.log(`secondaryUrl:${secondaryUrl}`)
     // TODO: Expand this and actually check validity of data params
     let isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -255,7 +260,7 @@ class SnapbackSM {
       ('method' in syncRequestParameters) &&
       ('data' in syncRequestParameters)
     )
-    logger.info(`isValidSync ${isValidSyncJobData}`)
+    this.log(`isValidSync ${isValidSyncJobData}`)
     if (!isValidSyncJobData) {
       logger.error(`Invalid sync data found`)
       logger.error(job.data)
@@ -265,11 +270,45 @@ class SnapbackSM {
     await axios(syncRequestParameters)
 
     // Monitor the sync status
-
+    let syncMonitoringRequestParameters = {
+      method: 'get',
+      baseURL: secondaryUrl,
+      url: `/sync_status/${syncWallet}`,
+      responseType: 'json'
+    }
+    // sync_status is expected to fail during an ongoing sync operation, monitor until success or timeout
+    let syncAttemptCompleted = false
+    // 1minute in ms 
+    let maxSyncMonitoringDurationInMs = 60000
+    let startTime = Date.now()
+    while (!syncAttemptCompleted) {
+      try {
+        let syncMonitoringResp = await axios(syncMonitoringRequestParameters)
+        let respData = syncMonitoringResp.data.data
+        this.log(`processSync secondary response: ${JSON.stringify(respData)}`)
+        if (respData.clockValue === primaryClockValue) {
+          syncAttemptCompleted = true
+          this.log(`processSync clockValue from secondary:${respData.clockValue}, primary:${primaryClockValue}`)
+        }
+      } catch(e) {
+        this.log(`processSync error querying sync_status: ${e}`)
+      }
+      if (Date.now() - startTime > maxSyncMonitoringDurationInMs) {
+        this.log(`ERROR: processSync timeout for ${syncWallet}`)
+        syncAttemptCompleted = true
+      }
+      // 1s delay between retries
+      await utils.timeout(1000)
+    }
+    console.log(syncMonitoringRequestParameters)
+    this.log(syncMonitoringRequestParameters)
+    let syncMonitoringResp = await axios(syncMonitoringRequestParameters)
+    let respData = syncMonitoringResp.data.data
+    console.log(respData)
 
     // Exit when sync status is computed
     // Determine how many times to retry this operation
-    logger.info('------------------END Process SYNC------------------')
+    this.log('------------------END Process SYNC------------------')
   }
 
   async initializeInternal () {
