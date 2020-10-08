@@ -685,58 +685,6 @@ class AudiusBackend {
     }
   }
 
-  static async getStems({ trackId }) {
-    try {
-      const stems = await withEagerOption(
-        {
-          normal: libs => libs.Track.getStemsForTrack,
-          eager: DiscoveryAPI.getStemsForTrack
-        },
-        trackId
-      )
-      return stems
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-  }
-
-  static async getRemixesOfTrack({ trackId, offset, limit }) {
-    try {
-      const remixes = await withEagerOption(
-        {
-          normal: libs => libs.Track.getRemixesOfTrack,
-          eager: DiscoveryAPI.getRemixesOfTrack
-        },
-        trackId,
-        limit,
-        offset
-      )
-      return remixes
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-  }
-
-  static async getRemixTrackParents({ trackId, offset, limit }) {
-    try {
-      const remixes = await withEagerOption(
-        {
-          normal: libs => libs.Track.getRemixTrackParents,
-          eager: DiscoveryAPI.getRemixTrackParents
-        },
-        trackId,
-        limit,
-        offset
-      )
-      return remixes
-    } catch (e) {
-      console.error(e)
-      throw e
-    }
-  }
-
   static async getSocialFeed({
     filter,
     offset,
