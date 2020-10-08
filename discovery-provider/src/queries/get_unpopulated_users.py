@@ -45,14 +45,12 @@ def get_unpopulated_users(session, user_ids):
         return cached_users_results
 
     cached_users = {}
-    cached_user_ids = set()
     for cached_user in cached_users_results:
         if cached_user:
             cached_users[cached_user['user_id']] = cached_user
-            cached_user_ids.add(cached_user['user_id'])
 
     user_ids_to_fetch = filter(
-        lambda user_id: user_id not in cached_user_ids, user_ids)
+        lambda user_id: user_id not in cached_users, user_ids)
 
     users = (
         session

@@ -27,7 +27,7 @@ def set_tracks_in_cache(tracks):
         redis.set(key, serialized, ttl_sec)
 
 
-def get_unpopulated_tracks(session, track_ids):
+def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
     """
     Fetches tracks by checking the redis cache first then
     going to DB and writes to cache if not present
@@ -43,25 +43,29 @@ def get_unpopulated_tracks(session, track_ids):
     cached_tracks_results = get_cached_tracks(track_ids)
     has_all_tracks_cached = cached_tracks_results.count(None) == 0
     if has_all_tracks_cached:
+        if filter_deleted:
+            return list(filter(lambda track: not track['is_delete'], cached_tracks_results))
         return cached_tracks_results
 
     # Create a dict of cached tracks
     cached_tracks = {}
-    cached_track_ids = set()
     for cached_track in cached_tracks_results:
         if cached_track:
             cached_tracks[cached_track['track_id']] = cached_track
-            cached_track_ids.add(cached_track['track_id'])
 
     track_ids_to_fetch = filter(
-        lambda track_id: track_id not in cached_track_ids, track_ids)
+        lambda track_id: track_id not in cached_tracks, track_ids)
 
-    tracks = (
+    tracks_query = (
         session.query(Track)
         .filter(Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None)
         .filter(Track.track_id.in_(track_ids_to_fetch))
-        .all()
     )
+
+    if filter_deleted:
+        tracks_query = tracks_query.filter(Track.is_delete == False)
+
+    tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)
     queried_tracks = {track['track_id']: track for track in tracks}
 
@@ -71,7 +75,8 @@ def get_unpopulated_tracks(session, track_ids):
     tracks_response = []
     for track_id in track_ids:
         if track_id in cached_tracks:
-            tracks_response.append(cached_tracks[track_id])
+            if not filter_deleted or not cached_tracks[track_id]['is_delete']:
+                tracks_response.append(cached_tracks[track_id])
         elif track_id in queried_tracks:
             tracks_response.append(queried_tracks[track_id])
 
