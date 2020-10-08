@@ -173,8 +173,7 @@ class SnapbackSM {
     // Issue queries to secondaries for each user
     await Promise.all(
       usersList.map(
-        async (user)=>{
-          this.log(`${user.wallet} - p1`)
+        async (user) => {
           let userWallet = user.wallet
           let secondary1 = user.secondary1
           let secondary2 = user.secondary2
@@ -226,7 +225,7 @@ class SnapbackSM {
         let secondary2ClockValue = secondaryNodeUserClockStatus[secondary2][userWallet]
         let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue
         let secondary2SyncRequired = secondary2ClockValue === undefined ? true : primaryClockValue > secondary2ClockValue
-        this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1SyncRequired} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2SyncRequired}, syncRequired=${secondary2SyncRequired})`)
+        this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
         // Enqueue sync for secondary1 if required
         if (secondary1SyncRequired) {
           // Issue sync

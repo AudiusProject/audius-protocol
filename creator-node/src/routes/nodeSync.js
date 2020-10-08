@@ -313,15 +313,13 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
         // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
         if (cnodeUser) {
           // Ensure imported data has higher blocknumber than already stored.
-          // TODO - replace this check with a clock check (!!!)
           const latestBlockNumber = cnodeUser.latestBlockNumber
           const latestClockValue = cnodeUser.clock
 
           if (!dbOnlySync) {
             if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-              (fetchedLatestBlockNumber !== -1 && (fetchedLatestBlockNumber <= latestBlockNumber && latestClockValue >= fetchedLatestClockVal))
+              (latestClockValue >= fetchedLatestClockVal)
             ) {
-              // TODO: DISCUSS THIS CONDITION CHANGE W DRAJ AND SID
               throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
                 ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}. \
                 fetched latestClockVal: ${fetchedLatestClockVal}, self latestClockVal: ${latestClockValue}`)
