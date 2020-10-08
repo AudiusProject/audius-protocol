@@ -46,7 +46,7 @@ search_full_response = make_response("search_full_response", full_ns, fields.Nes
 class FullSearch(Resource):
     @full_ns.expect(search_route_parser)
     @full_ns.doc(
-        id="""Get Users/Tracks/Playlists/ALbums that best match the search query""",
+        id="""Get Users/Tracks/Playlists/Albums that best match the search query""",
         params={
             'user_id': 'A User ID of the requesting user to personalize the response',
             'query': 'Search query text',
@@ -90,7 +90,7 @@ search_autocomplete_response = make_response("search_autocomplete_response", ful
 class FullSearch(Resource):
     @full_ns.expect(search_route_parser)
     @full_ns.doc(
-        id="""Get Users/Tracks/Playlists/ALbums that best match the search query""",
+        id="""Get Users/Tracks/Playlists/albums that best match the search query""",
         params={
             'user_id': 'A User ID of the requesting user to personalize the response',
             'query': 'Search query text',
