@@ -2,9 +2,9 @@ import logging
 from sqlalchemy import func, asc, desc
 
 from src.models import User, Track, Follow
-from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
+from src.queries.get_unpopulated_users import get_unpopulated_users
 
 logger = logging.getLogger(__name__)
 
@@ -92,12 +92,7 @@ def get_top_genre_users(args):
 
         # If the with_users flag is used, retrieve the user metadata
         if with_users:
-            user_query = session.query(User).filter(
-                User.user_id.in_(user_ids),
-                User.is_current == True
-            )
-            users = user_query.all()
-            users = helpers.query_result_to_list(users)
+            users = get_unpopulated_users(session, user_ids)
             queried_user_ids = list(map(lambda user: user["user_id"], users))
             users = populate_user_metadata(
                 session, queried_user_ids, users, None)
