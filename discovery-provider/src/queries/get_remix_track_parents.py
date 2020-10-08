@@ -1,5 +1,5 @@
-from sqlalchemy import desc, and_
 import logging  # pylint: disable=C0302
+from sqlalchemy import desc, and_
 from flask.globals import request
 from src.models import Track, Remix
 from src.utils import helpers
@@ -64,7 +64,11 @@ def get_remix_track_parents(args):
             return (tracks, track_ids)
 
         key = make_cache_key(args)
-        (tracks, track_ids) = use_redis_cache(key, UNPOPULATED_REMIX_PARENTS_CACHE_DURATION_SEC, get_unpopulated_remix_parents)
+        (tracks, track_ids) = use_redis_cache(
+            key,
+            UNPOPULATED_REMIX_PARENTS_CACHE_DURATION_SEC,
+            get_unpopulated_remix_parents
+        )
 
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
         if args.get("with_users", False):

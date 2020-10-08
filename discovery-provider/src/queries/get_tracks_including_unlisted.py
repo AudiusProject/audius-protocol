@@ -81,7 +81,7 @@ def get_tracks_including_unlisted(args):
             def filter_fn(track):
                 input_track = identifiers_map[track["track_id"]]
                 route_id = helpers.create_track_route_id(input_track["url_title"],
-                                                        input_track["handle"])
+                                                         input_track["handle"])
 
                 return not track["is_unlisted"] or track["route_id"] == route_id
 

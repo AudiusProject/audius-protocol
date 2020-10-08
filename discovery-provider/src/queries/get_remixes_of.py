@@ -98,7 +98,7 @@ def get_remixes_of(args):
                         case(
                             [
                                 (and_(Repost.created_at == None,
-                                    Save.created_at == None), 0),
+                                      Save.created_at == None), 0),
                             ],
                             else_=(
                                 func.coalesce(repost_count_subquery.c.repost_count, 0) + \
@@ -123,7 +123,11 @@ def get_remixes_of(args):
             return (tracks, track_ids, count)
 
         key = make_cache_key(args)
-        (tracks, track_ids, count) = use_redis_cache(key, UNPOPULATED_REMIXES_CACHE_DURATION_SEC, get_unpopulated_remixes)
+        (tracks, track_ids, count) = use_redis_cache(
+            key,
+            UNPOPULATED_REMIXES_CACHE_DURATION_SEC,
+            get_unpopulated_remixes
+        )
 
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
