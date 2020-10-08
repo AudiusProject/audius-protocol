@@ -3,9 +3,8 @@ import datetime
 from dateutil.parser import parse
 from flask.globals import request
 
-from src.models import Track
-from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import populate_track_metadata, \
     get_users_ids, get_users_by_id
 from src.tasks.generate_trending import generate_trending
@@ -65,13 +64,7 @@ def get_trending_tracks(args):
 
             track_ids = [track['track_id'] for track in sorted_track_scores]
 
-            tracks = session.query(Track).filter(
-                Track.is_current == True,
-                Track.is_unlisted == False,
-                Track.stem_of == None,
-                Track.track_id.in_(track_ids)
-            ).all()
-            tracks = helpers.query_result_to_list(tracks)
+            tracks = get_unpopulated_tracks(session, track_ids)
             return (tracks, track_ids)
 
         # get scored trending tracks, either

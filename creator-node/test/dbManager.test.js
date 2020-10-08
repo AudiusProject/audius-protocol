@@ -4,7 +4,7 @@ const _ = require('lodash')
 
 const models = require('../src/models')
 const DBManager = require('../src/dbManager')
-const blacklistManager = require('../src/blacklistManager')
+const BlacklistManager = require('../src/blacklistManager')
 const utils = require('../src/utils')
 const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
@@ -25,7 +25,7 @@ describe('Test createNewDataRecord()', () => {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getIPFSMock(), getLibsMock(), blacklistManager)
+    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 

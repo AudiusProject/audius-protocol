@@ -97,7 +97,7 @@ module.exports = function (app) {
     try {
       await Promise.all(trackSegments.map(async segmentObj => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
-          throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+          throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
         }
       }))
     } catch (e) {
@@ -105,7 +105,7 @@ module.exports = function (app) {
       removeTrackFolder(req, req.fileDir)
 
       if (e.message.indexOf('blacklisted') >= 0) {
-        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node: ${e}`)
       } else {
         return errorResponseServerError(e.message)
       }

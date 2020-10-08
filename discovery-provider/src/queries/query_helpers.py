@@ -11,6 +11,7 @@ from src.queries import response_name_constants
 from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix
 from src.utils import helpers
 from src.utils.config import shared_config
+from src.queries.get_unpopulated_users import get_unpopulated_users
 
 logger = logging.getLogger(__name__)
 
@@ -1081,10 +1082,7 @@ def get_genre_list(genre):
 
 
 def get_users_by_id(session, user_ids, current_user_id=None):
-    user_query = session.query(User).filter(
-        User.is_current == True, User.wallet != None, User.handle != None)
-    users_results = user_query.filter(User.user_id.in_(user_ids)).all()
-    users = helpers.query_result_to_list(users_results)
+    users = get_unpopulated_users(session, user_ids)
 
     if not current_user_id:
         current_user_id = get_current_user_id(required=False)
@@ -1374,7 +1372,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     )
 
 
-def add_users_to_tracks(session, tracks):
+def add_users_to_tracks(session, tracks, current_user_id=None):
     """
     Fetches the owners for the tracks and adds them to the track dict under the key 'user'
 
@@ -1388,7 +1386,7 @@ def add_users_to_tracks(session, tracks):
     Returns: None
     """
     user_id_list = get_users_ids(tracks)
-    users = get_users_by_id(session, user_id_list)
+    users = get_users_by_id(session, user_id_list, current_user_id)
     for track in tracks:
         user = users[track['owner_id']]
         if user:

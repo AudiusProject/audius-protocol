@@ -488,10 +488,15 @@ def get_top_genre_users_route():
 @record_metrics
 def get_remixes_of_route(track_id):
     args = to_dict(request.args)
+    args["track_id"] = track_id
+    args["current_user_id"] = get_current_user_id(required=False)
+    limit, offset = get_pagination_vars()
+    args["limit"] = limit
+    args["offset"] = offset
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     try:
-        remixes = get_remixes_of(track_id, args)
+        remixes = get_remixes_of(args)
         return api_helpers.success_response(remixes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -504,7 +509,12 @@ def get_remix_track_parents_route(track_id):
     args = to_dict(request.args)
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-    tracks = get_remix_track_parents(track_id, args)
+    args["track_id"] = track_id
+    args["current_user_id"] = get_current_user_id(required=False)
+    limit, offset = get_pagination_vars()
+    args["limit"] = limit
+    args["offset"] = offset
+    tracks = get_remix_track_parents(args)
     return api_helpers.success_response(tracks)
 
 
