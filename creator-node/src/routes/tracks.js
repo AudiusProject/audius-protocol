@@ -381,7 +381,8 @@ module.exports = function (app) {
           transaction
         })
 
-        if (trackFiles.length !== trackSegmentCIDs.length) {
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          req.logger.error(`Did not find files for every track segment CID for user ${cnodeUserUUID} ${trackFiles} ${trackSegmentCIDs}`)
           throw new Error('Did not find files for every track segment CID.')
         }
         const numAffectedRows = await models.File.update(
@@ -396,7 +397,8 @@ module.exports = function (app) {
             transaction
           }
         )
-        if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
+        if (parseInt(numAffectedRows, 10) < trackSegmentCIDs.length) {
+          req.logger.error(`Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${numAffectedRows} ${trackSegmentCIDs.length}`)
           throw new Error('Failed to associate files for every track segment CID.')
         }
       } else { /** If track updated, ensure files exist with trackBlockchainId. */
