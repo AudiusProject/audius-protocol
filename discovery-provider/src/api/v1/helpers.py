@@ -149,15 +149,21 @@ def parse_unix_epoch_param(time, default=0):
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
-    if ("user" in track):
+    if "user" in track:
         track["user"] = extend_user(track["user"])
     track["id"] = track_id
     track["user_id"] = owner_id
-    track["followee_favorites"] = list(map(extend_favorite, track["followee_saves"]))
-    track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
+    if "followee_saves" in track:
+        track["followee_favorites"] = list(map(extend_favorite, track["followee_saves"]))
+    if "followee_reposts" in track:
+        track["followee_reposts"] = list(map(extend_repost, track["followee_reposts"]))
+    if "remix_of" in track:
+        track["remix_of"] = extend_remix_of(track["remix_of"])
+
     track = add_track_artwork(track)
-    track["remix_of"] = extend_remix_of(track["remix_of"])
-    track["favorite_count"] = track["save_count"]
+
+    if "save_count" in track:
+        track["favorite_count"] = track["save_count"]
 
     duration = 0.
     for segment in track["track_segments"]:
@@ -189,14 +195,16 @@ def extend_playlist(playlist):
     owner_id = encode_int_id(playlist["playlist_owner_id"])
     playlist["id"] = playlist_id
     playlist["user_id"] = owner_id
-    if ("user" in playlist):
-        playlist["user"] = extend_user(playlist["user"])
     playlist = add_playlist_artwork(playlist)
+    if "user" in playlist:
+        playlist["user"] = extend_user(playlist["user"])
+    if "followee_saves" in playlist:
+        playlist["followee_favorites"] = list(map(extend_favorite, playlist["followee_saves"]))
+    if "followee_reposts" in playlist:
+        playlist["followee_reposts"] = list(map(extend_repost, playlist["followee_reposts"]))
+    if "save_count" in playlist:
+        playlist["favorite_count"] = playlist["save_count"]
 
-    playlist["followee_favorites"] = list(map(extend_favorite, playlist["followee_saves"]))
-    playlist["followee_reposts"] = list(map(extend_repost, playlist["followee_reposts"]))
-
-    playlist["favorite_count"] = playlist["save_count"]
     playlist["added_timestamps"] = add_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]

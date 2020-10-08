@@ -1,11 +1,11 @@
 from sqlalchemy import func, desc
 from sqlalchemy.orm import aliased
 
-from src.models import User, Follow
-from src.utils import helpers
+from src.models import Follow
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.query_helpers import populate_user_metadata, add_query_pagination
+from src.queries.get_unpopulated_users import get_unpopulated_users
 
 def get_followees_for_user(args):
     users = []
@@ -55,15 +55,7 @@ def get_followees_for_user(args):
                     in followee_user_ids_by_follower_count]
 
         # get all users for above user_ids
-        users = (
-            session.query(User)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(user_ids)
-            )
-            .all()
-        )
-        users = helpers.query_result_to_list(users)
+        users = get_unpopulated_users(session, user_ids)
 
         # bundle peripheral info into user results
         users = populate_user_metadata(
