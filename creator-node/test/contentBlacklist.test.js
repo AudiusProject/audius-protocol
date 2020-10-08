@@ -248,6 +248,19 @@ describe('test ContentBlacklist', function () {
 
   // Tests that should return error responses
 
+  it("should throw error if delegate private key does not match that of the creator node's", async () => {
+    const id = generateRandomNaturalNumber()
+    const type = BlacklistManager.getTypes().user
+    const BAD_KEY = '0xBADKEY4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
+
+    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, BAD_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, id, timestamp, signature })
+      .expect(401)
+  })
+
   it('should throw error if query params does not contain all necessary keys', async () => {
     const id = generateRandomNaturalNumber()
     const type = BlacklistManager.getTypes().track

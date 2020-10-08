@@ -6,51 +6,42 @@ const getAllContentBlacklist = async () => {
 }
 
 const addToContentBlacklist = async ({ type, id }) => {
-  let resp
-  try {
-    // add to ContentBlacklist
-    resp = await BlacklistManager.addToDb({ id, type })
+  // add to ContentBlacklist
+  const resp = await BlacklistManager.addToDb({ id, type })
 
-    // add to redis
-    switch (resp.type) {
-      case 'USER': {
-        await BlacklistManager.add([], [resp.id])
-        break
-      }
-      case 'TRACK': {
-        await BlacklistManager.add([resp.id])
-        break
-      }
+  // add to redis
+  switch (resp.type) {
+    case 'USER': {
+      await BlacklistManager.add([], [resp.id])
+      break
     }
-  } catch (e) {
-    throw e
+    case 'TRACK': {
+      await BlacklistManager.add([resp.id])
+      break
+    }
   }
 
   return resp
 }
 
 const removeFromContentBlacklist = async ({ type, id }) => {
-  let resp
-  try {
-    // remove from ContentBlacklist
-    resp = await BlacklistManager.removeFromDb({ id, type })
+  // remove from ContentBlacklist
+  const resp = await BlacklistManager.removeFromDb({ id, type })
 
-    if (resp) {
-      // remove from redis
-      switch (resp.type) {
-        case 'USER': {
-          await BlacklistManager.remove([], [resp.id])
-          break
-        }
-        case 'TRACK': {
-          await BlacklistManager.remove([resp.id])
-          break
-        }
+  if (resp) {
+    // remove from redis
+    switch (resp.type) {
+      case 'USER': {
+        await BlacklistManager.remove([], [resp.id])
+        break
+      }
+      case 'TRACK': {
+        await BlacklistManager.remove([resp.id])
+        break
       }
     }
-  } catch (e) {
-    throw e
   }
+
   return resp
 }
 

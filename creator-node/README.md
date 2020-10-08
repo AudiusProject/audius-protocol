@@ -1,6 +1,6 @@
 An Audius Creator Node maintains the availability of creators' content on IPFS. The information stored includes audius user metadata, images, and audio content. The content is backed by either aws S3 or a local directory.
 
-To add to the ContentBlacklist table:
+To blacklist content on an already running node:
 1. export the keys `delegatePrivateKey` and `creatorNodeEndpoint` in your terminal
 ```
 $ export delegatePrivateKey='your_private_key'
