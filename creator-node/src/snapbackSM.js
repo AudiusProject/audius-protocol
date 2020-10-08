@@ -6,6 +6,7 @@ const models = require('./models')
 const { logger } = require('./logging')
 
 const DevDelayInMS = 20000
+const MaxParallelSyncJobs = 10
 
 // TODO: Discuss w/draj how to handle a long upload where the stateMachine starts processing during the operation
 
@@ -318,7 +319,6 @@ class SnapbackSM {
     return this.initialized
   }
 
-
   /*
     Initialize the configs necessary to run
   */
@@ -362,8 +362,10 @@ class SnapbackSM {
         }
       }
     )
+
     // Entrypoint to the sync queue, as drained will issue syncs
     this.syncQueue.process(
+      MaxParallelSyncJobs,
       async (job, done) => {
         try {
           await this.processSyncOperation(job)
