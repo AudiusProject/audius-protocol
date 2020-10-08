@@ -4,15 +4,15 @@ import { reformat } from './reformat'
 import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
 import { addUsersFromTracks } from './helpers'
-import Track, { UserTrackMetadata } from 'models/Track'
+import Track, { TrackMetadata } from 'models/Track'
 
 /**
  * Processes tracks, adding users and calling `reformat`, before
  * caching the tracks.
  * @param tracks
  */
-export function* processAndCacheTracks(
-  tracks: UserTrackMetadata[]
+export function* processAndCacheTracks<T extends TrackMetadata>(
+  tracks: T[]
 ): Generator<any, Track[], any> {
   // Add users
   yield addUsersFromTracks(tracks)

@@ -1,7 +1,5 @@
 import { call, put } from 'redux-saga/effects'
 
-import AudiusBackend from 'services/AudiusBackend'
-
 import {
   PREFIX,
   tracksActions
@@ -11,6 +9,9 @@ import { LineupSagas } from 'store/lineup/sagas'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { setCount } from '../../slice'
 import { AppState } from 'store/types'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId } from 'store/account/selectors'
+import { select } from 'redux-saga-test-plan/matchers'
 
 function* getTracks({
   offset,
@@ -24,10 +25,12 @@ function* getTracks({
   const { trackId } = payload
   if (!trackId) return []
 
-  const { tracks, count } = yield call(AudiusBackend.getRemixesOfTrack, {
+  const currentUserId = yield select(getUserId)
+  const { tracks, count } = yield call(args => apiClient.getRemixes(args), {
     trackId,
     offset,
-    limit
+    limit,
+    currentUserId
   })
 
   yield put(setCount({ count }))
