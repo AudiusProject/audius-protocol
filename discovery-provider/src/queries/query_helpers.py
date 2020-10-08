@@ -1374,7 +1374,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     )
 
 
-def add_users_to_tracks(session, tracks):
+def add_users_to_tracks(session, tracks, current_user_id=None):
     """
     Fetches the owners for the tracks and adds them to the track dict under the key 'user'
 
@@ -1388,7 +1388,7 @@ def add_users_to_tracks(session, tracks):
     Returns: None
     """
     user_id_list = get_users_ids(tracks)
-    users = get_users_by_id(session, user_id_list)
+    users = get_users_by_id(session, user_id_list, current_user_id)
     for track in tracks:
         user = users[track['owner_id']]
         if user:

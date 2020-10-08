@@ -5,6 +5,7 @@ const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const config = require('./config')
+const BlacklistManager = require('./blacklistManager')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -239,6 +240,12 @@ async function rehydrateIpfsPerCnodeUUIDIfNecessary (cnodeUserUUID, { logContext
 
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
+
+  if (await BlacklistManager.CIDIsInBlacklist(multihash)) {
+    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`)
+    return
+  }
+
   let ipfsPath = multihash
   if (filename != null) {
     // Indicates we are retrieving a directory multihash
@@ -306,6 +313,11 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
 
 async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   const logger = genericLogger.child(logContext)
+
+  if (await BlacklistManager.CIDIsInBlacklist(dirHash)) {
+    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`)
+    return
+  }
 
   let findOriginalFileQuery = await models.File.findAll({
     where: {

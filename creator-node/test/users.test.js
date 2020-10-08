@@ -17,7 +17,7 @@ describe('test Users', function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
-    await BlacklistManager.blacklist(ipfsMock)
+    await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
