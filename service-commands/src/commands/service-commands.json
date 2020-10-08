@@ -63,7 +63,7 @@
     "host": "audius-disc-prov_web-server_1",
     "port": 5000,
     "up": [
-      "cd discovery-provider; rm celerybeat.pid",
+      "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
       "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
