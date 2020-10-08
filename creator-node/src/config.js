@@ -354,19 +354,6 @@ const config = convict({
     env: 'identityService',
     default: ''
   },
-  /** Manual content blacklists */
-  userBlacklist: {
-    doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',
-    format: String,
-    env: 'userBlacklist',
-    default: ''
-  },
-  trackBlacklist: {
-    doc: 'Comma-separated list of track blockchain IDs that creator node should avoid serving / storing',
-    format: String,
-    env: 'trackBlacklist',
-    default: ''
-  },
   creatorNodeIsDebug: {
     doc: 'Whether the creatornode is in debug mode.',
     format: Boolean,
