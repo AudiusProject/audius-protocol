@@ -1,8 +1,8 @@
 import logging  # pylint: disable=C0302
 from flask_restx import Resource, Namespace, fields, reqparse
-from src.api.v1.helpers import extend_track, make_response, get_default_max, \
+from src.api.v1.helpers import extend_track, make_response, \
     success_response, format_offset, format_limit, decode_string_id, \
-    extend_user, extend_track, extend_playlist
+    extend_user, extend_track, extend_playlist, get_current_user_id
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from src.utils.redis_metrics import record_metrics
@@ -64,12 +64,10 @@ class FullSearch(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = search_route_parser.parse_args()
-        limit = get_default_max(args.get('limit'), 10, 100)
-        offset = get_default_max(args.get('offset'), 0)
+        offset = format_offset(args)
+        limit = format_limit(args)
+        current_user_id = get_current_user_id(args)
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
         search_args = {
           "is_auto_complete": False,
           "kind": args.get("kind", "all"),
@@ -108,12 +106,10 @@ class FullSearch(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = search_route_parser.parse_args()
-        limit = get_default_max(args.get('limit'), 10, 100)
-        offset = get_default_max(args.get('offset'), 0)
+        offset = format_offset(args)
+        limit = format_limit(args)
+        current_user_id = get_current_user_id(args)
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
         search_args = {
           "is_auto_complete": True,
           "kind": args.get("kind", "all"),

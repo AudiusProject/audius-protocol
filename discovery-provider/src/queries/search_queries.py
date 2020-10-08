@@ -465,7 +465,7 @@ def track_search_query(
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
-    tracks = get_unpopulated_tracks(session, track_ids)
+    tracks = get_unpopulated_tracks(session, track_ids, True)
 
     if is_auto_complete == True:
         # fetch users for tracks
@@ -482,7 +482,7 @@ def track_search_query(
             session, track_ids, tracks, current_user_id)
 
     # preserve order from track_ids above
-    tracks = [next(t for t in tracks if t["track_id"] == track_id)
+    tracks = [next((t for t in tracks if t["track_id"] == track_id), None)
               for track_id in track_ids]
     return tracks
 
@@ -603,12 +603,11 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
 
     # playlist_ids is list of tuples - simplify to 1-D list
     playlist_ids = [i[0] for i in playlist_ids]
-    playlists = get_unpopulated_playlists(session, playlist_ids)
+    playlists = get_unpopulated_playlists(session, playlist_ids, True)
 
-    if is_auto_complete == True:
+    if is_auto_complete:
         # fetch users for playlists
-        playlist_owner_ids = list(
-            map(lambda playlist: playlist["playlist_owner_id"], playlists))
+        playlist_owner_ids = list(map(lambda playlist: playlist["playlist_owner_id"], playlists))
         users = get_unpopulated_users(session, playlist_owner_ids)
         users_dict = {user["user_id"]: user for user in users}
 
@@ -627,6 +626,6 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         )
 
     # preserve order from playlist_ids above
-    playlists = [next(p for p in playlists if p["playlist_id"]
-                      == playlist_id) for playlist_id in playlist_ids]
+    playlists = [next((p for p in playlists if p["playlist_id"]
+                       == playlist_id), None) for playlist_id in playlist_ids]
     return playlists
