@@ -95,10 +95,7 @@ module.exports = function (app) {
       const TTL = config.get('redisRehydrateCacheTTL')
 
       const cnodeUserUUIDsOfFilesToRehydratePromises = []
-      for (let i = 0; i < cnodeUsers.length; i++) {
-        let cnodeUser = cnodeUsers[i]
-        // const cnodeUserDictObj = cnodeUser.toJSON()
-
+      cnodeUsers.map(async cnodeUser => {
         // Add cnodeUserUUID data fields.
         cnodeUser['audiusUsers'] = []
         cnodeUser['tracks'] = []
@@ -117,7 +114,7 @@ module.exports = function (app) {
         }
 
         if (!dbOnlySync) {
-        // Rely on Redis cache to dedupe rehydrating files from cnode UUIDs that have been recently hydrated
+          // Rely on Redis cache to dedupe rehydrating files from cnode UUIDs that have been recently hydrated
           const entry = await redisClient.get(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`)
           if (!entry) {
             await redisClient.set(`recently_rehydrated_wallet_${cnodeUser.walletPublicKey}`, cnodeUser.cnodeUserUUID, 'EX', TTL)
@@ -126,7 +123,7 @@ module.exports = function (app) {
             cnodeUserUUIDsOfFilesToRehydratePromises.push(Promise.resolve(cnodeUser.cnodeUserUUID))
           }
         }
-      }
+      })
 
       audiusUsers.forEach(audiusUser => {
         cnodeUsersDict[audiusUser.cnodeUserUUID]['audiusUsers'].push(audiusUser)

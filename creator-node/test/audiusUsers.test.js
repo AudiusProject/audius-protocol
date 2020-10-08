@@ -19,16 +19,6 @@ const { sortKeys } = require('../src/apiHelpers')
 describe('test AudiusUsers with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock
 
-  // Will need a '.' in front of storagePath to look at current dir
-  // a '/' will search the root dir
-  before(async () => {
-    const originalStoragePath = config.get('storagePath')
-    if (originalStoragePath.slice(0, 1) === '/') {
-      const updatedStoragePath = '.' + originalStoragePath
-      config.set('storagePath', updatedStoragePath)
-    }
-  })
-
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
