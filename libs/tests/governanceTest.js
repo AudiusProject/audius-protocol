@@ -18,6 +18,7 @@ let sp1
 let sp2
 const DEFAULT_STAKE = 210000
 const PROPOSAL_DESCRIPTION = 'TestDescription'
+const PROPOSAL_NAME = 'TestName'
 const testServiceType = 'discovery-provider'
 
 const setupAccounts = async () => {
@@ -75,13 +76,15 @@ const createProposal = () => {
   const targetAddress = accounts[1]
   const callData = [slashAmount, targetAddress]
   const description = PROPOSAL_DESCRIPTION
+  const name = PROPOSAL_NAME
 
-  return  {
+  return {
     targetContractRegistryKey,
     callValue,
     functionSignature,
     callData,
-    description,
+    name,
+    description
   }
 }
 
@@ -179,12 +182,6 @@ describe('Governance tests', function() {
     assert.equal(updateVotes[0].vote, 1)
   })
 
-  it('Gets proposal description', async function() {
-    const id = await submitProposal()
-    const description = await audius0.ethContracts.GovernanceClient.getProposalDescriptionById(id)
-    assert.equal(description, PROPOSAL_DESCRIPTION)
-  })
-
   it('Gets in progress proposals', async function() {
     const id = await submitProposal()
     const inProgressIds = await audius0.ethContracts.GovernanceClient.getInProgressProposals()
@@ -219,7 +216,16 @@ describe('Governance tests', function() {
     await evaluateProposal(id)
     const evaluation = await audius0.ethContracts.GovernanceClient.getProposalEvaluation(id)
     assert.equal(evaluation.length, 1)
-    assert.equal(evaluation[0].returnValues.numVotes, "1")
+    assert.equal(evaluation[0].returnValues._numVotes, "1")
+  })
+
+  it('Gets a proposal submisson', async function() {
+    const blockNumber = await audius0.ethWeb3Manager.getWeb3().eth.getBlockNumber()
+
+    const id = await submitProposal()
+    const submission = await audius0.ethContracts.GovernanceClient.getProposalSubmission(id)
+    assert.equal(submission.description, PROPOSAL_DESCRIPTION)
+    assert.equal(submission.name, PROPOSAL_NAME)
   })
 
   it('Gets votes by address', async function() {
@@ -261,11 +267,6 @@ describe('Governance tests', function() {
   it('Gets execution delay', async function() {
     const delay = await audius0.ethContracts.GovernanceClient.getExecutionDelay()
     assert.ok(typeof delay === 'number')
-  })
-
-  it('Gets max description length', async function() {
-    const length = await audius0.ethContracts.GovernanceClient.getMaxDescriptionLength()
-    assert.ok(typeof length === 'number')
   })
 
   it('Gets target contract hash', async function() {

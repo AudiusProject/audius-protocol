@@ -6,32 +6,45 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "uint256",
+          "name": "_newExecutionDelay",
+          "type": "uint256"
+        }
+      ],
+      "name": "ExecutionDelayUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "address",
-          "name": "targetContractAddress",
+          "name": "_targetContractAddress",
           "type": "address"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "callValue",
+          "name": "_callValue",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "string",
-          "name": "functionSignature",
+          "name": "_functionSignature",
           "type": "string"
         },
         {
           "indexed": true,
           "internalType": "bytes",
-          "name": "callData",
+          "name": "_callData",
           "type": "bytes"
         },
         {
           "indexed": false,
           "internalType": "bytes",
-          "name": "returnData",
+          "name": "_returnData",
           "type": "bytes"
         }
       ],
@@ -44,7 +57,7 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "newGuardianAddress",
+          "name": "_newGuardianAddress",
           "type": "address"
         }
       ],
@@ -57,31 +70,44 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "proposalId",
+          "name": "_newMaxInProgressProposals",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxInProgressProposalsUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "enum Governance.Outcome",
-          "name": "outcome",
+          "name": "_outcome",
           "type": "uint8"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "voteMagnitudeYes",
+          "name": "_voteMagnitudeYes",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "voteMagnitudeNo",
+          "name": "_voteMagnitudeNo",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "numVotes",
+          "name": "_numVotes",
           "type": "uint256"
         }
       ],
@@ -94,25 +120,25 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "proposalId",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "proposer",
+          "name": "_proposer",
           "type": "address"
         },
         {
           "indexed": false,
-          "internalType": "uint256",
-          "name": "submissionBlockNumber",
-          "type": "uint256"
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
         },
         {
           "indexed": false,
           "internalType": "string",
-          "name": "description",
+          "name": "_description",
           "type": "string"
         }
       ],
@@ -125,19 +151,19 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "proposalId",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "bool",
-          "name": "success",
+          "name": "_success",
           "type": "bool"
         },
         {
           "indexed": false,
           "internalType": "bytes",
-          "name": "returnData",
+          "name": "_returnData",
           "type": "bytes"
         }
       ],
@@ -150,7 +176,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "proposalId",
+          "name": "_proposalId",
           "type": "uint256"
         }
       ],
@@ -163,25 +189,25 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "proposalId",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "voter",
+          "name": "_voter",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "enum Governance.Vote",
-          "name": "vote",
+          "name": "_vote",
           "type": "uint8"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "voterStake",
+          "name": "_voterStake",
           "type": "uint256"
         }
       ],
@@ -194,31 +220,31 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "proposalId",
+          "name": "_proposalId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "address",
-          "name": "voter",
+          "name": "_voter",
           "type": "address"
         },
         {
           "indexed": true,
           "internalType": "enum Governance.Vote",
-          "name": "vote",
+          "name": "_vote",
           "type": "uint8"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "voterStake",
+          "name": "_voterStake",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "enum Governance.Vote",
-          "name": "previousVote",
+          "name": "_previousVote",
           "type": "uint8"
         }
       ],
@@ -231,11 +257,37 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "newRegistryAddress",
+          "name": "_newRegistryAddress",
           "type": "address"
         }
       ],
       "name": "RegistryAddressUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_newVotingPeriod",
+          "type": "uint256"
+        }
+      ],
+      "name": "VotingPeriodUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_newVotingQuorumPercent",
+          "type": "uint256"
+        }
+      ],
+      "name": "VotingQuorumPercentUpdated",
       "type": "event"
     },
     {
@@ -257,6 +309,21 @@
       ],
       "payable": false,
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getDelegateManagerAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -298,21 +365,6 @@
           "internalType": "uint256[]",
           "name": "",
           "type": "uint256[]"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getMaxDescriptionLength",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
         }
       ],
       "payable": false,
@@ -419,27 +471,6 @@
           "type": "uint256"
         }
       ],
-      "name": "getProposalDescriptionById",
-      "outputs": [
-        {
-          "internalType": "string",
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_proposalId",
-          "type": "uint256"
-        }
-      ],
       "name": "getProposalTargetContractHash",
       "outputs": [
         {
@@ -456,6 +487,21 @@
       "constant": true,
       "inputs": [],
       "name": "getRegistryAddress",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getServiceProviderFactoryAddress",
       "outputs": [
         {
           "internalType": "address",
@@ -496,12 +542,17 @@
           "type": "address"
         }
       ],
-      "name": "getVoteByProposalAndVoter",
+      "name": "getVoteInfoByProposalAndVoter",
       "outputs": [
         {
           "internalType": "enum Governance.Vote",
-          "name": "",
+          "name": "vote",
           "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "voteMagnitude",
+          "type": "uint256"
         }
       ],
       "payable": false,
@@ -612,11 +663,6 @@
           "type": "uint16"
         },
         {
-          "internalType": "uint16",
-          "name": "_maxDescriptionLength",
-          "type": "uint16"
-        },
-        {
           "internalType": "address",
           "name": "_guardianAddress",
           "type": "address"
@@ -656,12 +702,12 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "_newExecutionDelay",
-          "type": "uint256"
+          "internalType": "address",
+          "name": "_delegateManagerAddress",
+          "type": "address"
         }
       ],
-      "name": "setExecutionDelay",
+      "name": "setDelegateManagerAddress",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -671,12 +717,12 @@
       "constant": false,
       "inputs": [
         {
-          "internalType": "uint16",
-          "name": "_newMaxDescriptionLength",
-          "type": "uint16"
+          "internalType": "uint256",
+          "name": "_newExecutionDelay",
+          "type": "uint256"
         }
       ],
-      "name": "setMaxDescriptionLength",
+      "name": "setExecutionDelay",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -707,6 +753,21 @@
         }
       ],
       "name": "setRegistryAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_serviceProviderFactoryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setServiceProviderFactoryAddress",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -779,6 +840,11 @@
           "internalType": "bytes",
           "name": "_callData",
           "type": "bytes"
+        },
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
         },
         {
           "internalType": "string",

@@ -172,6 +172,17 @@ def extend_track(track):
 
     return track
 
+def stem_from_track(track):
+    track_id = encode_int_id(track["track_id"])
+    parent_id = encode_int_id(track["stem_of"]["parent_track_id"])
+    category = track["stem_of"]["category"]
+    return {
+        "id": track_id,
+        "parent_id": parent_id,
+        "category": category,
+        "cid": track["download"]["cid"],
+        "user_id": encode_int_id(track["owner_id"])
+    }
 
 def extend_playlist(playlist):
     playlist_id = encode_int_id(playlist["playlist_id"])
@@ -227,6 +238,13 @@ def make_response(name, namespace, modelType):
 def to_dict(multi_dict):
     """Converts a multi dict into a dict where only list entries are not flat"""
     return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
+
+def get_current_user_id(args):
+    """Gets current_user_id from args featuring a "user_id" key"""
+    if args.get("user_id"):
+        return decode_string_id(args["user_id"])
+    return None
+
 
 
 search_parser = reqparse.RequestParser()
