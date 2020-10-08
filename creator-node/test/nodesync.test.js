@@ -4,7 +4,7 @@ const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { createStarterCNodeUser, testEthereumConstants, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
-const blacklistManager = require('../src/blacklistManager')
+const BlacklistManager = require('../src/blacklistManager')
 const ipfsClient = require('../src/ipfsClient')
 const fs = require('fs')
 const path = require('path')
@@ -29,7 +29,7 @@ describe('test nodesync', function () {
     beforeEach(async function () {
       const ipfs = ipfsClient.ipfs
       const libsMock = getLibsMock()
-      const appInfo = await getApp(ipfs, libsMock, blacklistManager)
+      const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
       server = appInfo.server
       app = appInfo.app
     })
@@ -226,7 +226,7 @@ describe('test nodesync', function () {
       }
 
       const libsMock = getLibsMock()
-      const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
+      const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
       server = appInfo.server
       app = appInfo.app
     })
