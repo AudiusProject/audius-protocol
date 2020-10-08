@@ -7,7 +7,7 @@ import { getTracks as getTracksSelector } from 'store/cache/tracks/selectors'
 import { Kind, AppState } from 'store/types'
 import { addUsersFromTracks } from './helpers'
 import AudiusBackend from 'services/AudiusBackend'
-import Track, { UserTrackMetadata } from 'models/Track'
+import Track, { TrackMetadata, UserTrackMetadata } from 'models/Track'
 import {
   fetchAndProcessRemixes,
   fetchAndProcessRemixParents
@@ -148,7 +148,7 @@ export function* retrieveTracks({
     forceRetrieveFromSource: false,
     shouldSetLoading: true,
     deleteExistingEntry: false,
-    onBeforeAddToCache: function* (tracks: UserTrackMetadata[]) {
+    onBeforeAddToCache: function* <T extends TrackMetadata>(tracks: T[]) {
       yield addUsersFromTracks(tracks)
       return tracks.map(track => reformat(track))
     }

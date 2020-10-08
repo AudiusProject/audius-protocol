@@ -1,12 +1,14 @@
 import { call, put } from 'redux-saga/effects'
 import { ID } from 'models/common/Identifiers'
 import { Kind } from 'store/types'
-import AudiusBackend from 'services/AudiusBackend'
-import { RemixUserTrack } from 'models/Track'
+import { UserTrackMetadata } from 'models/Track'
 import { waitForValue } from 'utils/sagaHelpers'
 import { getTrack } from '../selectors'
 import * as cacheActions from 'store/cache/actions'
 import { processAndCacheTracks } from './processAndCacheTracks'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId } from 'store/account/selectors'
+import { select } from 'redux-saga-test-plan/matchers'
 
 const INITIAL_FETCH_LIMIT = 6
 
@@ -18,15 +20,17 @@ const INITIAL_FETCH_LIMIT = 6
  * @param trackId the parent track for which to fetch remixes
  */
 export function* fetchAndProcessRemixes(trackId: ID) {
+  const currentUserId = yield select(getUserId)
   const {
     tracks: remixes,
     count
-  }: { tracks: Array<RemixUserTrack>; count: number } = yield call(
-    AudiusBackend.getRemixesOfTrack,
+  }: { tracks: UserTrackMetadata[]; count: number } = yield call(
+    args => apiClient.getRemixes(args),
     {
       trackId,
+      offset: 0,
       limit: INITIAL_FETCH_LIMIT,
-      offset: 0
+      currentUserId
     }
   )
 
@@ -67,12 +71,14 @@ export function* fetchAndProcessRemixes(trackId: ID) {
  * @param trackId the track for which to fetch remix parents
  */
 export function* fetchAndProcessRemixParents(trackId: ID) {
-  const remixParents: Array<RemixUserTrack> = yield call(
-    AudiusBackend.getRemixTrackParents,
+  const currentUserId = yield select(getUserId)
+  const remixParents: UserTrackMetadata[] = yield call(
+    args => apiClient.getRemixing(args),
     {
       trackId,
       limit: 1,
-      offset: 0
+      offset: 0,
+      currentUserId
     }
   )
 

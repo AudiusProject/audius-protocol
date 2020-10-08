@@ -1,6 +1,6 @@
 import Favorite from 'models/Favorite'
 import Repost from 'models/Repost'
-import { Remix, UserTrackMetadata } from 'models/Track'
+import { Remix, StemTrackMetadata, UserTrackMetadata } from 'models/Track'
 import { UserCollectionMetadata, Variant } from 'models/Collection'
 import { UserMetadata } from 'models/User'
 import { decodeHashId } from 'utils/route/hashIds'
@@ -12,7 +12,8 @@ import {
   APIRepost,
   APITrack,
   APIPlaylist,
-  APIUser
+  APIUser,
+  APIStem
 } from './types'
 
 export const makeUser = (user: APIUser): UserMetadata | undefined => {
@@ -204,5 +205,52 @@ export const makeActivity = (
       return makeTrack(activity.item)
     case 'playlist':
       return makePlaylist(activity.item)
+  }
+}
+
+export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
+  const [id, parentId, ownerId] = [stem.id, stem.parent_id, stem.user_id].map(
+    decodeHashId
+  )
+  if (!(id && parentId && ownerId)) return undefined
+
+  return {
+    is_delete: false,
+    track_id: id,
+    created_at: '',
+    isrc: null,
+    iswc: null,
+    credits_splits: null,
+    description: null,
+    followee_reposts: [],
+    followee_saves: [],
+    genre: '',
+    has_current_user_reposted: false,
+    has_current_user_saved: false,
+    download: {
+      is_downloadable: true,
+      requires_follow: false,
+      cid: stem.cid
+    },
+    license: null,
+    mood: null,
+    play_count: 0,
+    owner_id: ownerId,
+    release_date: null,
+    repost_count: 0,
+    save_count: 0,
+    tags: null,
+    title: '',
+    track_segments: [],
+    cover_art: null,
+    cover_art_sizes: null,
+    is_unlisted: false,
+    stem_of: {
+      parent_track_id: parentId,
+      category: stem.category
+    },
+    remix_of: null,
+    duration: 0,
+    updated_at: ''
   }
 }

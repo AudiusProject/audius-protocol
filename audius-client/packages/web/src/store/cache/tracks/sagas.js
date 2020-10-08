@@ -58,6 +58,7 @@ function* fetchRepostInfo(entries) {
 function* fetchSegment(metadata) {
   const user = yield call(waitForValue, getUser, { id: metadata.owner_id })
   const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+  if (!metadata.track_segments[0]) return
   const cid = metadata.track_segments[0].multihash
   return yield call(fetchCID, cid, gateways, /* cache */ false)
 }

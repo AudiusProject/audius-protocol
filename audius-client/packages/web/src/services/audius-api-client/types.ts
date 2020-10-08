@@ -8,6 +8,7 @@ import {
 } from 'models/common/ImageSizes'
 import { FavoriteType } from 'models/Favorite'
 import { Download, FieldVisibility, TrackSegment } from 'models/Track'
+import { StemCategory } from 'models/Stems'
 
 export type OpaqueID = string
 type PlaylistContents = {
@@ -101,6 +102,14 @@ export type APITrack = {
   cover_art: Nullable<string>
   play_count: number
   is: string
+}
+
+export type APIStem = {
+  id: OpaqueID
+  parent_id: OpaqueID
+  user_id: OpaqueID
+  category: StemCategory
+  cid: CID
 }
 
 export type APIPlaylistAddedTimestamp = {

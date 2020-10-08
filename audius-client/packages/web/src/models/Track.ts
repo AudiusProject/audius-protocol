@@ -130,6 +130,7 @@ export type LineupTrack = UserTrack & {
 }
 
 // Track with known non-optional stem
+export type StemTrackMetadata = TrackMetadata & Required<Pick<Track, 'stem_of'>>
 export type StemTrack = Track & Required<Pick<Track, 'stem_of'>>
 export type StemUserTrack = UserTrack & Required<Pick<Track, 'stem_of'>>
 
