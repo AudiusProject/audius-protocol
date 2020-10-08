@@ -22,6 +22,9 @@ class RehydrateIpfsQueue {
     )
 
     // Most errors in the rehydrate calls will be caught; this try/catch is to catch unexpected errors
+
+    // For the bull queue to run separate processes, you must define each task in a separate file and destruct the job details per task in the separate file.
+    // https://github.com/OptimalBits/bull#separate-processes
     this.queue.process(PROCESS_NAMES.rehydrate_file, MAX_CONCURRENCY, `${__dirname}/rehydrateIpfsTasks.js`)
     this.queue.process(PROCESS_NAMES.rehydrate_dir, MAX_CONCURRENCY, `${__dirname}/rehydrateIpfsTasks.js`)
     this.queue.process(PROCESS_NAMES.rehydrate_uuid, MAX_CONCURRENCY, `${__dirname}/rehydrateIpfsTasks.js`)
