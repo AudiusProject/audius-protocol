@@ -173,10 +173,12 @@ module.exports = function (app) {
   /**
    * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
    */
-  app.get('/users/batch_clock_status', handleResponse(async (req, res) => {
+  app.post('/users/batch_clock_status', handleResponse(async (req, res) => {
+    const { walletPublicKeys } = req.body
+    console.log(walletPublicKeys)
     // TODO: Limit max size
     // TODO: Consider returning -1 for any wallets that are NOT FOUND (handling on consumer side rn)
-    const walletPublicKeys = req.query.wallet_public_key // array
+    // const walletPublicKeys = req.query.wallet_public_key // array
     const cnode_users = await models.CNodeUser.findAll({
       where: {
         walletPublicKey: {

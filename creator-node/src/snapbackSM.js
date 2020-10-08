@@ -143,7 +143,7 @@ class SnapbackSM {
     Main state machine processing function
   */
   async processStateMachineOperation (job) {
-    this.log('------------------Process state machine operation------------------')
+    this.log('------------------Process SnapbackSM Operation------------------')
     // TODO: Translate working branch replica set processing
     // First step here is to implement discovery provider query
     if (this.audiusLibs == null) {
@@ -196,9 +196,10 @@ class SnapbackSM {
           let walletsToQuery = nodeVectorClockQueryList[node]
           let requestParams = {
             baseURL: node,
+            method: 'post',
             url: '/users/batch_clock_status',
-            params: {
-              wallet_public_key: walletsToQuery
+            data: {
+              "walletPublicKeys": walletsToQuery
             }
           }
           let resp = await axios(requestParams)
@@ -224,10 +225,7 @@ class SnapbackSM {
         let secondary2ClockValue = secondaryNodeUserClockStatus[secondary2][userWallet]
         let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue
         let secondary2SyncRequired = secondary2ClockValue === undefined ? true : primaryClockValue > secondary2ClockValue
-        this.log(`processStateMachineOperation | ${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
-        this.log(`processStateMachineOperation | ${userWallet} primaryClock=${primaryClockValue}`)
-        this.log(`processStateMachineOperation | ${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
-        this.log(`processStateMachineOperation | ${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
+        this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1SyncRequired} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2SyncRequired}, syncRequired=${secondary2SyncRequired})`)
         // Enqueue sync for secondary1 if required
         if (secondary1SyncRequired) {
           // Issue sync
@@ -240,6 +238,7 @@ class SnapbackSM {
         }
       }
     ))
+    this.log('------------------END Process SnapbackSM Operation------------------')
   }
 
   // Main sync queue job
@@ -248,11 +247,8 @@ class SnapbackSM {
     const syncWallet = syncRequestParameters.data.wallet[0]
     const primaryClockValue = await this.getUserPrimaryClockValue(syncWallet)
     const secondaryUrl = syncRequestParameters.baseURL
-    this.log(`------------------Process SYNC | User ${syncWallet} ------------------`)
-    this.log(job.data)
-    this.log(syncRequestParameters)
-    this.log(`syncWallet:${syncWallet}`)
-    this.log(`secondaryUrl:${secondaryUrl}`)
+    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} ------------------`)
+    // TODO: Consider a short-circuit here if sync is already in progress? Or is it worth issuing anyway
     // TODO: Expand this and actually check validity of data params
     let isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -260,7 +256,6 @@ class SnapbackSM {
       ('method' in syncRequestParameters) &&
       ('data' in syncRequestParameters)
     )
-    this.log(`isValidSync ${isValidSyncJobData}`)
     if (!isValidSyncJobData) {
       logger.error(`Invalid sync data found`)
       logger.error(job.data)
@@ -279,33 +274,27 @@ class SnapbackSM {
     // sync_status is expected to fail during an ongoing sync operation, monitor until success or timeout
     let syncAttemptCompleted = false
     // 1minute in ms 
-    let maxSyncMonitoringDurationInMs = 60000
+    let maxSyncMonitoringDurationInMs = 10000
     let startTime = Date.now()
     while (!syncAttemptCompleted) {
       try {
         let syncMonitoringResp = await axios(syncMonitoringRequestParameters)
         let respData = syncMonitoringResp.data.data
-        this.log(`processSync secondary response: ${JSON.stringify(respData)}`)
+        this.log(`processSync ${syncWallet} secondary response: ${JSON.stringify(respData)}`)
         if (respData.clockValue === primaryClockValue) {
           syncAttemptCompleted = true
-          this.log(`processSync clockValue from secondary:${respData.clockValue}, primary:${primaryClockValue}`)
+          this.log(`processSync ${syncWallet} clockValue from secondary:${respData.clockValue}, primary:${primaryClockValue}`)
         }
       } catch(e) {
-        this.log(`processSync error querying sync_status: ${e}`)
+        this.log(`processSync ${syncWallet} error querying sync_status: ${e}`)
       }
       if (Date.now() - startTime > maxSyncMonitoringDurationInMs) {
-        this.log(`ERROR: processSync timeout for ${syncWallet}`)
+        this.log(`ERROR: processSync ${syncWallet} timeout for ${syncWallet}`)
         syncAttemptCompleted = true
       }
       // 1s delay between retries
       await utils.timeout(1000)
     }
-    console.log(syncMonitoringRequestParameters)
-    this.log(syncMonitoringRequestParameters)
-    let syncMonitoringResp = await axios(syncMonitoringRequestParameters)
-    let respData = syncMonitoringResp.data.data
-    console.log(respData)
-
     // Exit when sync status is computed
     // Determine how many times to retry this operation
     this.log('------------------END Process SYNC------------------')
@@ -373,6 +362,7 @@ class SnapbackSM {
         }
       }
     )
+    // Entrypoint to the sync queue, as drained will issue syncs
     this.syncQueue.process(
       async (job, done) => {
         try {
