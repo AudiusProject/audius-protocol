@@ -1,7 +1,6 @@
 const axios = require('axios')
 
-const models = require('../src/models')
-const { generateTimestampAndSignature } = require('../src/apiHelpers')
+const { generateTimestampAndSignature } = require('../src/apiSigning')
 
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
@@ -9,7 +8,7 @@ const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 // Available action types
 const ACTION_ARR = ['ADD', 'DELETE']
 const ACTION_SET = new Set(ACTION_ARR)
-const TYPES_ARR = models.ContentBlacklist.Types
+const TYPES_ARR = ['USER', 'TRACK']
 const TYPES_SET = new Set(TYPES_ARR)
 
 // Script usage:

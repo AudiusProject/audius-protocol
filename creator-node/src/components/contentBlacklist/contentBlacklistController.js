@@ -10,9 +10,9 @@ const {
   successResponse,
   errorResponseBadRequest,
   errorResponseUnauthorized,
-  errorResponseServerError,
-  recoverWallet
+  errorResponseServerError
 } = require('../../apiHelpers')
+const { recoverWallet } = require('../../apiSigning')
 const models = require('../../../src/models')
 const config = require('../../config')
 
