@@ -175,6 +175,7 @@ module.exports = function (app) {
    */
   app.get('/users/batch_clock_status', handleResponse(async (req, res) => {
     // TODO: Limit max size
+    // TODO: Consider returning -1 for any wallets that are NOT FOUND (handling on consumer side rn)
     const walletPublicKeys = req.query.wallet_public_key // array
     const cnode_users = await models.CNodeUser.findAll({
       where: {

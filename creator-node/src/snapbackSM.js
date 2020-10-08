@@ -150,11 +150,15 @@ class SnapbackSM {
       logger.error(`Invalid libs instance`)
       return
     }
+    if (!this.initialized) {
+      await this.initializeInternal()
+      return
+    }
 
     // 1.) Retrieve base information for state machine operations
     let spInfo = await this.getSPInfo()
     if (spInfo.spID === 0) {
-      console.error(`Invalid spID, recovering ${spInfo}`)
+      this.log(`Invalid spID, recovering ${spInfo}`)
       await this.recoverSpID()
       return
     }
@@ -169,29 +173,10 @@ class SnapbackSM {
     await Promise.all(
       usersList.map(
         async (user)=>{
+          this.log(`${user.wallet} - p1`)
           let userWallet = user.wallet
           let secondary1 = user.secondary1
           let secondary2 = user.secondary2
-          let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
-          let secondary1ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
-          let secondary2ClockValue = await this.getSecondaryClockValue(userWallet, secondary1)
-          let secondary1SyncRequired = primaryClockValue > secondary1ClockValue
-          let secondary2SyncRequired = primaryClockValue > secondary2ClockValue
-          this.log(`processStateMachineOperation |${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
-          this.log(`processStateMachineOperation |${userWallet} primaryClock=${primaryClockValue}`)
-          this.log(`processStateMachineOperation |${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
-          this.log(`processStateMachineOperation |${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
-          // Enqueue sync for secondary1 if required
-          if (secondary1SyncRequired) {
-            // Issue sync
-            await this.issueSecondarySync(userWallet, secondary1, ownEndpoint)
-          }
-          // Enqueue sync for secondary2 if required
-          if (secondary2SyncRequired) {
-            // Issue sync
-            await this.issueSecondarySync(userWallet, secondary2, ownEndpoint)
-          }
-
           if(!nodeVectorClockQueryList[secondary1]) { nodeVectorClockQueryList[secondary1] = []}
           if(!nodeVectorClockQueryList[secondary2]) { nodeVectorClockQueryList[secondary2] = []}
           nodeVectorClockQueryList[secondary1].push(userWallet)
@@ -200,8 +185,61 @@ class SnapbackSM {
       )
     )
 
-    // TODO: Process nodeVectorClockQueryList and issue in batches
-    console.log(nodeVectorClockQueryList)
+    // Process nodeVectorClockQueryList and cache user clock values on each node
+    let secondaryNodesToProcess = Object.keys(nodeVectorClockQueryList)
+    let secondaryNodeUserClockStatus = {}
+    await Promise.all(
+      secondaryNodesToProcess.map(
+        async (node) => {
+          secondaryNodeUserClockStatus[node] = {}
+          // TODO: Batch this too?
+          let walletsToQuery = nodeVectorClockQueryList[node]
+          let requestParams = {
+            baseURL: node,
+            url: '/users/batch_clock_status',
+            params: {
+              wallet_public_key: walletsToQuery
+            }
+          }
+          let resp = await axios(requestParams)
+          let userClockStatusList = resp.data.users
+          // Process returned clock values from this secondary node
+          userClockStatusList.map((entry) => {
+            secondaryNodeUserClockStatus[node][entry.walletPublicKey] = entry.clock
+          })
+        }
+      )
+    )
+
+    // Issue syncs if necessary
+    // For each user in the initially returned usersList,
+    //  compare local primary clock value to value from secondary retrieved in bulk above
+    await Promise.all(usersList.map(
+      async (user) => {
+        let userWallet = user.wallet
+        let secondary1 = user.secondary1
+        let secondary2 = user.secondary2
+        let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
+        let secondary1ClockValue = secondaryNodeUserClockStatus[secondary1][userWallet]
+        let secondary2ClockValue = secondaryNodeUserClockStatus[secondary2][userWallet]
+        let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue
+        let secondary2SyncRequired = secondary2ClockValue === undefined ? true : primaryClockValue > secondary2ClockValue
+        this.log(`processStateMachineOperation | ${userWallet} secondary1=${secondary1}, secondary2=${secondary2}`)
+        this.log(`processStateMachineOperation | ${userWallet} primaryClock=${primaryClockValue}`)
+        this.log(`processStateMachineOperation | ${userWallet} secondary1ClockValue=${secondary1ClockValue}, secondary1SyncRequired=${secondary1SyncRequired}`)
+        this.log(`processStateMachineOperation | ${userWallet} secondary2ClockValue=${secondary2ClockValue}, secondary2SyncRequired=${secondary2SyncRequired}`)
+        // Enqueue sync for secondary1 if required
+        if (secondary1SyncRequired) {
+          // Issue sync
+          await this.issueSecondarySync(userWallet, secondary1, ownEndpoint)
+        }
+        // Enqueue sync for secondary2 if required
+        if (secondary2SyncRequired) {
+          // Issue sync
+          await this.issueSecondarySync(userWallet, secondary2, ownEndpoint)
+        }
+      }
+    ))
   }
 
   // Main sync queue job
@@ -225,7 +263,31 @@ class SnapbackSM {
     }
     // Issue sync request to secondary
     await axios(syncRequestParameters)
+
+    // Monitor the sync status
+
+
+    // Exit when sync status is computed
+    // Determine how many times to retry this operation
     logger.info('------------------END Process SYNC------------------')
+  }
+
+  async initializeInternal () {
+    const endpoint = config.get('creatorNodeEndpoint')
+    this.log(`Initializing SnapbackSM`)
+    this.log(`Retrieving spID for ${endpoint}`)
+    const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+      endpoint
+    )
+    // A returned spID of 0 means this endpoint is currently not registered on chain
+    // In this case, the stateMachine is considered to be 'uninitialized'
+    if (recoveredSpID === 0) {
+      this.initialized = false
+    }
+    config.set('spID', recoveredSpID)
+    this.log(`Recovered ${config.get('spID')} for ${endpoint}`)
+    this.initialized = true
+    return this.initialized
   }
 
 
@@ -236,26 +298,17 @@ class SnapbackSM {
     await this.stateMachineQueue.empty()
     await this.syncQueue.empty()
 
-    const endpoint = config.get('creatorNodeEndpoint')
     const isUserMetadata = config.get('isUserMetadataNode')
     if (isUserMetadata) {
       this.log(`SnapbackSM disabled for userMetadataNode. ${endpoint}, isUserMetadata=${isUserMetadata}`)
       return
     }
 
+    await this.initializeInternal()
     if (!this.initialized) {
-      this.log(`Initializing SnapbackSM`)
-      this.log(`Retrieving spID for ${endpoint}`)
-      const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-        endpoint
-      )
-      // A returned spID of 0 means this endpoint is currently not registered on chain
-      // In this case, the stateMachine is considered to be 'uninitialized'
-      if (recoveredSpID === 0) return
-      config.set('spID', recoveredSpID)
-      this.initialized = true
+      return
     }
-    this.log(`Recovered ${config.get('spID')} for ${endpoint}`)
+
 
     // TODO: Enable after dev
     // Run the task every x time interval
