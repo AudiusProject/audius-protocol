@@ -11,18 +11,23 @@ import HeroBackgroundMobile from 'assets/img/publicSite/Hero-Background-mobile.j
 import GlyphPattern from 'assets/img/publicSite/glyph-pattern.png'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
 
-import { AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/links'
+import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/links'
 
 const messages = {
   title: 'UNLEASH YOUR MUSIC',
   subtitle1: 'Discover & Stream',
   subtitle2: 'Up-And-Coming Artists',
   subtitle: 'Discover & Stream Up-And-Coming Artists',
-  cta: 'Sign Up Free'
+  cta: 'Sign Up Free',
+  learn: 'Learn About The Token'
 }
 
 const onSignUp = () => {
   pushWindowRoute(AUDIUS_SIGN_UP_LINK)
+}
+
+const onLearnAboutToken = () => {
+  pushWindowRoute(AUDIUS_ORG)
 }
 
 type HeroProps = {
@@ -60,6 +65,9 @@ export const Hero = (props: HeroProps) => {
           <div onClick={onSignUp} className={styles.ctaButton}>
             <span className={styles.ctaMessage}>{messages.cta}</span>
             <IconArrow className={styles.ctaArrow} />
+          </div>
+          <div onClick={onLearnAboutToken} className={styles.tokenButton}>
+            <span className={styles.ctaMessage}>{messages.learn}</span>
           </div>
         </div>
         <img src={GlyphPattern} alt='Pattern' className={styles.glyphPattern} />
@@ -107,6 +115,9 @@ export const Hero = (props: HeroProps) => {
             <div onClick={onSignUp} className={styles.ctaButton}>
               <span className={styles.ctaMessage}>{messages.cta}</span>
               <IconArrow className={styles.ctaArrow} />
+            </div>
+            <div onClick={onLearnAboutToken} className={styles.tokenButton}>
+              <span className={styles.ctaMessage}>{messages.learn}</span>
             </div>
           </div>
         </Parallax>

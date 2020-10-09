@@ -129,10 +129,15 @@ const makeRequest = async (
     headers['X-User-ID'] = user.user_id
   }
 
+  let baseUrl = `${endpoint}/${req.endpoint}`
+  if (req.urlParams) {
+    baseUrl = `${baseUrl}${req.urlParams}`
+  }
+
   let res: any
   if (req?.method?.toLowerCase() === 'post') {
     headers['Content-Type'] = 'application/json'
-    const url = `${endpoint}/${req.endpoint}?${parmsToQS(
+    const url = `${baseUrl}?${parmsToQS(
       req.queryParams,
       endpoint === eagerDiscprov
     )}`
@@ -142,7 +147,7 @@ const makeRequest = async (
       body: JSON.stringify(req.data)
     })
   } else {
-    const url = `${endpoint}/${req.endpoint}?${parmsToQS(
+    const url = `${baseUrl}?${parmsToQS(
       req.queryParams,
       endpoint === eagerDiscprov
     )}`

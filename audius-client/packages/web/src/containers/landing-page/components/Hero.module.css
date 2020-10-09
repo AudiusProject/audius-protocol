@@ -141,6 +141,12 @@
   text-shadow: 0 2px 2px rgba(0,0,0,0.2);
   transform: scale3d(1, 1, 1);
   cursor: pointer;
+  margin-right: 24px;
+}
+
+.mobileContainer .ctaButton {
+  margin-right: 0;
+  margin-bottom: 24px;
 }
 
 .ctaButton:hover {
@@ -163,6 +169,44 @@
 
 .ctaMessage {
   margin-right: 4px;
+}
+
+.tokenButton {
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  height: 58px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(267.49deg, rgba(91, 35, 225, 0.4) 0%, rgba(91, 35, 225, 0.15) 100%);
+  mix-blend-mode: normal;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 5px 20px -1px rgba(25,0,96,0.5);
+  color: #FFFFFF;
+  padding: 16px 40px;
+
+  font-family: Gilroy !important;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  line-height: 26px;
+  text-align: center;
+  text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+  transform: scale3d(1, 1, 1);
+  cursor: pointer;
+}
+
+.tokenButton:hover {
+  transform: scale3d(1.03, 1.03, 1.03);
+	background: linear-gradient(267.49deg, rgba(91, 35, 225, 0.6) 0%, rgba(91, 35, 225, 0.35) 100%);
+	box-shadow: 0 10px 20px -1px rgba(25,0,96,0.5);
+}
+
+.tokenButton:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+  background: linear-gradient(267.49deg, rgba(91, 35, 225, 0.6) 0%, rgba(91, 35, 225, 0.35) 100%);
+  box-shadow: 0 0 2px -1px rgba(25,0,96,0.5);
 }
 
 .glyphPattern {

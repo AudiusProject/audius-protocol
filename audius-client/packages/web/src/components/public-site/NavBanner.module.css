@@ -94,7 +94,7 @@
   justify-content: flex-end;
 }
 
-.devStakers {
+.token {
   cursor: pointer;
   color: var(--static-white);
   font-family: Gilroy !important;;
@@ -108,18 +108,18 @@
   transform: scale3d(1, 1, 1);
 }
 
-.devStakers:hover {
+.token:hover {
   text-decoration: underline;
   opacity: 0.8;
   transform: scale3d(1.03, 1.03, 1.03);
 }
 
-.devStakers:active {
+.token:active {
   opacity: 0.8;
   transform: scale3d(0.99, 0.99, 0.99);
 }
 
-.invertColors .devStakers {
+.invertColors .token {
   display: none;
 }
 

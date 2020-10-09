@@ -959,6 +959,7 @@ class AudiusBackend {
   }
 
   static async getListenHistoryTracks(limit = 100, offset = 0) {
+    await waitForLibsInit()
     try {
       const trackListens = await audiusLibs.Track.getListenHistoryTracks(
         limit,
