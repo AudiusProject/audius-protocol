@@ -24,7 +24,7 @@ def get_time_diff(previous_time):
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
 
 
-def get_track_plays(self, db):
+def get_track_plays(self, db, lock):
     start_time = time.time()
     job_extra_info = {'job': JOB}
     with db.scoped_session() as session:
@@ -186,11 +186,12 @@ def get_track_plays(self, db):
                 build_insert_query_time)
 
         insert_refresh_time = time.time()
-
-        if plays:
+        has_lock = lock.owned()
+        if plays and has_lock:
             session.bulk_save_objects(plays)
             session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
+        job_extra_info['has_lock'] = has_lock
         job_extra_info['number_rows_insert'] = len(plays)
         job_extra_info['insert_refresh_time'] = get_time_diff(
             insert_refresh_time)
@@ -216,7 +217,7 @@ def update_play_count(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            get_track_plays(self, db)
+            get_track_plays(self, db, update_lock)
         else:
             logger.error(
                 f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock",
