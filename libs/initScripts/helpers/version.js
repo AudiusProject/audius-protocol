@@ -11,10 +11,11 @@ async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, pr
   console.log('----version init---')
 
   try {
-    await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
+    const resp = await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
       serviceType,
       serviceVersionStr,
       privateKey)
+      console.log(resp)
   } catch (e) {
     if (!e.toString().includes('Already registered')) {
       console.log(e)
