@@ -1,6 +1,5 @@
 const config = require('./config')
 const Bull = require('bull')
-const utils = require('./utils')
 const { logger } = require('./logging')
 
 const DevDelayInMS = 10000
@@ -98,7 +97,7 @@ class SnapbackSM {
         logger.info(`Error processing ${e}`)
       } finally {
         this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
-        await utils.timeout(DevDelayInMS)
+        await timeout(DevDelayInMS)
         this.stateMachineQueue.add({ startTime: Date.now() })
         done()
       }
@@ -108,3 +107,8 @@ class SnapbackSM {
 }
 
 module.exports = SnapbackSM
+
+async function timeout (ms) {
+  console.log(`starting timeout of ${ms}`)
+  return new Promise(resolve => setTimeout(resolve, ms))
+}

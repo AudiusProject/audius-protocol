@@ -6,11 +6,8 @@ const axios = require('axios')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
-let serviceRegistry
-setTimeout(() => {
-  serviceRegistry = (require('./serviceRegistry')).serviceRegistry
-  console.log("importing serviceRegistry", serviceRegistry)
-}, 0)
+let { serviceRegistry } = require('./serviceRegistry')
+console.log("importing serviceRegistry", serviceRegistry)
 
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
