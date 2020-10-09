@@ -290,8 +290,10 @@ def validate_arguments(req_args, expected_args):
         raise exceptions.ArgumentError("Not all required arguments exist.")
 
 
-# Subclass JSONEncoder to format dates in isoformat
+# Subclass JSONEncoder to format dates in strict isoformat.
+# Otherwise, it can behave differently on diffeent systems.
 class DateTimeEncoder(JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj, (datetime.date, datetime.datetime)):
-                return obj.isoformat()
+    def default(self, o): # pylint: disable=method-hidden
+        if isinstance(o, (datetime.date, datetime.datetime)):
+            return o.isoformat()
+        return super(DateTimeEncoder, self).default(o)
