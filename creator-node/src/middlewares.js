@@ -95,7 +95,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
  * @dev - Is not a middleware so it can be run before responding to client.
  */
 async function triggerSecondarySyncs (req) {
-  if (config.get('isUserMetadataNode')) return
+  if (config.get('isUserMetadataNode') || !config.get('triggerSyncOnWrite')) return
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
