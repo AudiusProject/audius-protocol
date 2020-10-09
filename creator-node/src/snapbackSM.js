@@ -6,13 +6,16 @@ const models = require('./models')
 const { logger } = require('./logging')
 
 // For local dev, configure this to be the interval when SnapbackSM is fired
-const DevDelayInMS = 20000
+const DevDelayInMS = 3000
 
 // Represents the maximum number of syncs that can be issued at once
 const MaxParallelSyncJobs = 10
 
 // Maximum number of time to wait for a sync operation
 const MaxSyncMonitoringDurationInMs = 36000
+
+// Base value used to filter users over a 24 hour period
+const ModuloBase = 24
 
 /*
   SnapbackSM aka Snapback StateMachine
@@ -35,6 +38,8 @@ class SnapbackSM {
     this.stateMachineQueue = this.createBullQueue('creator-node-state-machine')
     // Sync queue handles issuing sync request from primary -> secondary
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
+    // Incremented as users are processed
+    this.currentModuloSlice = 0
   }
 
   // Class level log output
@@ -42,9 +47,7 @@ class SnapbackSM {
     logger.info(`SnapbackSM: ${msg}`)
   }
 
-  /*
-    Initialize queue object with provided name
-  */
+  // Initialize queue object with provided name
   createBullQueue (queueName) {
     return new Bull(
       queueName,
@@ -130,7 +133,7 @@ class SnapbackSM {
 
   // Main state machine processing function
   async processStateMachineOperation (job) {
-    this.log('------------------Process SnapbackSM Operation------------------')
+    this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
     if (this.audiusLibs == null) {
       logger.error(`Invalid libs instance`)
       return
@@ -154,10 +157,25 @@ class SnapbackSM {
     // Generate list of wallets to query clock number
     let nodeVectorClockQueryList = {}
 
+    // Users actually selected to process
+    let usersToProcess = []
+
     // Issue queries to secondaries for each user
     await Promise.all(
       usersList.map(
         async (user) => {
+          let userId = user.user_id
+          let modResult = userId % ModuloBase
+          let shouldProcess = (modResult === this.currentModuloSlice)
+
+          if (!shouldProcess) {
+            return
+          }
+          console.log(`user:${userId}, modResult:${modResult}, shouldProcess=${shouldProcess}`)
+
+          // Add to list of currently processing users
+          usersToProcess.push(user)
+
           let userWallet = user.wallet
           let secondary1 = user.secondary1
           let secondary2 = user.secondary2
@@ -201,7 +219,7 @@ class SnapbackSM {
     //  compare local primary clock value to value from secondary retrieved in bulk above
     let numSyncsIssued = 0
     await Promise.all(
-      usersList.map(
+      usersToProcess.map(
         async (user) => {
           let userWallet = user.wallet
           let secondary1 = user.secondary1
@@ -224,6 +242,15 @@ class SnapbackSM {
           }
         }
     ))
+
+    let previousModuloSlice = this.currentModuloSlice
+
+    // Increment and adjust current slice by ModuloBase
+    this.currentModuloSlice += 1
+    this.currentModuloSlice = this.currentModuloSlice % ModuloBase
+
+    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice}`)
+    this.log(`Issued ${numSyncsIssued} sync ops`)
     this.log('------------------END Process SnapbackSM Operation------------------')
   }
 
@@ -260,7 +287,9 @@ class SnapbackSM {
       await utils.timeout(1000)
     }
     let duration = Date.now() - startTime
-    this.log(`Sync for ${syncWallet} at ${secondaryUrl} completed in ${duration}ms`)
+    if (!syncAttemptCompleted) {
+      this.log(`Sync for ${syncWallet} at ${secondaryUrl} completed in ${duration}ms`)
+    }
   }
 
   // Main sync queue job
