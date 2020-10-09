@@ -51,16 +51,28 @@ export function* pollTrack(
   check = track => track
 ) {
   const userId = yield select(getUserId)
+
   function* fetchTrack() {
-    const track = yield call(args => apiClient.getTrack(args), {
-      id: trackId,
-      currentUserId: userId,
-      unlistedArgs: {
-        urlTitle: trackTitle,
-        handle
+    return yield call(
+      args => {
+        try {
+          return apiClient.getTrack(args)
+        } catch (e) {
+          // TODO: for now we treat all errors from DP
+          // here as cause to retry, we should just
+          // retry for 404s
+          return null
+        }
+      },
+      {
+        id: trackId,
+        currentUserId: userId,
+        unlistedArgs: {
+          urlTitle: trackTitle,
+          handle
+        }
       }
-    })
-    return track
+    )
   }
   let track = yield call(fetchTrack)
   while (!(track && check(track))) {

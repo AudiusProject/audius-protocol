@@ -147,7 +147,8 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
         // If the user is trying to upload artwork, check that an artwork gets set.
         if (formFields.artwork && formFields.artwork.file) {
           check = playlist =>
-            some([playlist], toConfirm) && playlist.cover_art_sizes
+            some([playlist], toConfirm) &&
+            playlist.playlist_image_sizes_multihash
         } else {
           check = playlist => some([playlist], toConfirm)
         }
