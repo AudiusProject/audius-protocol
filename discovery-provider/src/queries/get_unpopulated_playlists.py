@@ -3,7 +3,7 @@ import json
 from flask.json import dumps
 
 from src.utils import redis_connection
-from src.models import DATE_FORMAT, Playlist
+from src.models import Playlist
 from src.utils import helpers
 
 ttl_sec = 60
@@ -22,8 +22,8 @@ def get_cached_playlists(playlist_ids):
     for val in cached_values:
         if val is not None:
             playlist = json.loads(val)
-            playlist["created_at"] = datetime.datetime.strptime(playlist["created_at"], DATE_FORMAT)
-            playlist["updated_at"] = datetime.datetime.strptime(playlist["updated_at"], DATE_FORMAT)
+            playlist["created_at"] = datetime.datetime.fromisoformat(playlist["created_at"])
+            playlist["updated_at"] = datetime.datetime.fromisoformat(playlist["updated_at"])
             playlists.append(playlist)
         else:
             playlists.append(None)
@@ -34,7 +34,7 @@ def set_playlists_in_cache(playlists):
     redis = redis_connection.get_redis()
     for playlist in playlists:
         key = get_playlist_id_cache_key(playlist['playlist_id'])
-        serialized = dumps(playlist)
+        serialized = dumps(playlist, cls=helpers.DateTimeEncoder)
         redis.set(key, serialized, ttl_sec)
 
 

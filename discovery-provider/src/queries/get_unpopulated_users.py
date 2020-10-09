@@ -3,7 +3,7 @@ import json
 from flask.json import dumps
 
 from src.utils import redis_connection
-from src.models import DATE_FORMAT, User
+from src.models import User
 from src.utils import helpers
 
 ttl_sec = 60
@@ -22,8 +22,8 @@ def get_cached_users(user_ids):
     for val in cached_values:
         if val is not None:
             user = json.loads(val)
-            user["created_at"] = datetime.datetime.strptime(user["created_at"], DATE_FORMAT)
-            user["updated_at"] = datetime.datetime.strptime(user["updated_at"], DATE_FORMAT)
+            user["created_at"] = datetime.datetime.fromisoformat(user["created_at"])
+            user["updated_at"] = datetime.datetime.fromisoformat(user["updated_at"])
             users.append(user)
         else:
             users.append(None)
@@ -34,7 +34,7 @@ def set_users_in_cache(users):
     redis = redis_connection.get_redis()
     for user in users:
         key = get_user_id_cache_key(user['user_id'])
-        serialized = dumps(user)
+        serialized = dumps(user, cls=helpers.DateTimeEncoder)
         redis.set(key, serialized, ttl_sec)
 
 

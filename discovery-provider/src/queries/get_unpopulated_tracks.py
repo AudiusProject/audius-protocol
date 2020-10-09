@@ -3,7 +3,7 @@ import json
 from flask.json import dumps
 
 from src.utils import redis_connection
-from src.models import DATE_FORMAT, Track
+from src.models import Track
 from src.utils import helpers
 
 ttl_sec = 60
@@ -22,8 +22,8 @@ def get_cached_tracks(track_ids):
     for val in cached_values:
         if val is not None:
             track = json.loads(val)
-            track["created_at"] = datetime.datetime.strptime(track["created_at"], DATE_FORMAT)
-            track["updated_at"] = datetime.datetime.strptime(track["updated_at"], DATE_FORMAT)
+            track["created_at"] = datetime.datetime.fromisoformat(track["created_at"])
+            track["updated_at"] = datetime.datetime.fromisoformat(track["updated_at"])
             tracks.append(track)
         else:
             tracks.append(None)
@@ -34,7 +34,7 @@ def set_tracks_in_cache(tracks):
     redis = redis_connection.get_redis()
     for track in tracks:
         key = get_track_id_cache_key(track['track_id'])
-        serialized = dumps(track)
+        serialized = dumps(track, cls=helpers.DateTimeEncoder)
         redis.set(key, serialized, ttl_sec)
 
 
