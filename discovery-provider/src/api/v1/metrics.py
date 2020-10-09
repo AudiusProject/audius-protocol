@@ -3,7 +3,7 @@ from datetime import datetime
 from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
 from flask import Flask, Blueprint
-from flask_restx import Resource, Namespace, fields, reqparse
+from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.api.v1.helpers import make_response, success_response, to_dict, \
     parse_bool_param, parse_unix_epoch_param, abort_bad_request_param
 from .models.metrics import route_metric, app_name_metric, app_name, plays_metric, genre_metric
@@ -90,7 +90,7 @@ metrics_app_name_list_parser = reqparse.RequestParser()
 metrics_app_name_list_parser.add_argument('start_time', required=False, type=int)
 metrics_app_name_list_parser.add_argument('limit', required=False, type=int)
 metrics_app_name_list_parser.add_argument('offset', required=False, type=int)
-metrics_app_name_list_parser.add_argument('include_unknown', required=False, type=bool)
+metrics_app_name_list_parser.add_argument('include_unknown', required=False, type=inputs.boolean)
 
 @ns.route("/app_name", doc=False)
 class AppNameListMetrics(Resource):

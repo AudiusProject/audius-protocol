@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
-from flask_restx import Resource, Namespace, fields, reqparse
+from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
@@ -96,7 +96,7 @@ class Track(Resource):
 full_track_parser = reqparse.RequestParser()
 full_track_parser.add_argument('handle')
 full_track_parser.add_argument('url_title')
-full_track_parser.add_argument('show_unlisted', type=bool)
+full_track_parser.add_argument('show_unlisted', type=inputs.boolean)
 full_track_parser.add_argument('user_id')
 
 @full_ns.route(TRACK_ROUTE)
@@ -110,7 +110,6 @@ class FullTrack(Resource):
         current_user_id = args.get("user_id")
         if current_user_id:
             current_user_id = decode_string_id(current_user_id)
-
         if args.get("show_unlisted"):
             url_title, handle = args.get("url_title"), args.get("handle")
             if not (url_title and handle):
