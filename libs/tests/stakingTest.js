@@ -129,11 +129,7 @@ describe('Staking tests', () => {
     })
 
     afterEach(async () => {
-      try {
-        await deregisterSPEndpoint(audius1, sp1, testServiceType)
-      } catch (e) {
-        // no-op -- was already registered
-      }
+      await deregisterSPEndpoint(audius1, sp1, testServiceType)
     })
 
     it('register service provider + stake', async function () {
@@ -224,6 +220,41 @@ describe('Staking tests', () => {
           invalidDecreaseAmount
         ),
         'subtraction overflow'
+      )
+    })
+  })
+
+  describe('Deregistration', () => {
+    beforeEach(async () => {
+
+      // Clear any accounts registered w/the audius1 account
+      initialSPBalance = await token.balanceOf(sp1)
+      testEndpt = getRandomLocalhost()
+
+      let path = '/version'
+      let response = {
+        service: testServiceType,
+        version : '0.0.1'
+      }
+
+      if (testServiceType === 'discovery-provider') {
+        path = '/health_check'
+        response = {data: {...response}}
+      }
+
+      nock(testEndpt)
+        .get(path)
+        .reply(200, response)
+
+      // Cache stake amount prior to register
+      initialStake = await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
+      defaultStake = convertAudsToWeiBN(audius1.ethWeb3Manager.getWeb3(), 210000)
+
+      // Register
+      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
+        testServiceType,
+        testEndpt,
+        defaultStake
       )
     })
 

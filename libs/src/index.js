@@ -79,7 +79,7 @@ class AudiusLibs {
    * @param {string | object | Array<string>} providers web3 provider endpoint(s)
    */
   static configInternalWeb3 (registryAddress, providers) {
-    if (typeof providers === 'string') {
+    if (typeof providers === 'string' || typeof providers === 'object') {
       providers = [providers]
     }
 
@@ -100,7 +100,7 @@ class AudiusLibs {
    * @param {string} ownerWallet
    */
   static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet) {
-    if (typeof providers === 'string') {
+    if (typeof providers === 'string' || typeof providers === 'object') {
       providers = [providers]
     }
 
