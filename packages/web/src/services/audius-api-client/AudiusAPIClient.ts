@@ -8,13 +8,16 @@ import {
   APIPlaylist,
   APIUser,
   OpaqueID,
-  APIStem
+  APIStem,
+  APISearch
 } from './types'
 import * as adapter from './ResponseAdapter'
 import AudiusBackend from 'services/AudiusBackend'
 import { getEagerDiscprov } from 'services/audius-backend/eagerLoadUtils'
 import { encodeHashId } from 'utils/route/hashIds'
 import { StemTrackMetadata } from 'models/Track'
+import { SearchKind } from 'containers/search-page/store/types'
+import { processSearchResults, adaptSearchResponse } from './helper'
 
 const ENDPOINT_MAP = {
   trending: '/tracks/trending',
@@ -36,7 +39,9 @@ const ENDPOINT_MAP = {
   getTrack: (trackId: OpaqueID) => `/tracks/${trackId}`,
   getStems: (trackId: OpaqueID) => `/tracks/${trackId}/stems`,
   getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
-  getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`
+  getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
+  searchFull: `/search/full`,
+  searchAutocomplete: `/search/autocomplete`
 }
 
 const TRENDING_LIMIT = 100
@@ -159,6 +164,14 @@ type GetRemixingArgs = {
   currentUserId: Nullable<ID>
   limit: number
   offset: number
+}
+
+type GetSearchArgs = {
+  currentUserId: ID
+  query: string
+  kind: SearchKind
+  limit?: number
+  offset?: number
 }
 
 type InitializationState =
@@ -584,6 +597,58 @@ class AudiusAPIClient {
     return adapted
   }
 
+  async getSearchFull({
+    currentUserId,
+    query,
+    kind,
+    offset,
+    limit
+  }: GetSearchArgs) {
+    this._assertInitialized()
+    const encodedUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedUserId,
+      query,
+      kind,
+      offset,
+      limit
+    }
+
+    const endpoint = this._constructUrl(ENDPOINT_MAP.searchFull, params)
+
+    const searchResponse: APIResponse<APISearch> = await this._getResponse(
+      endpoint
+    )
+    const adapted = adaptSearchResponse(searchResponse)
+    return processSearchResults({ searchText: query, ...adapted })
+  }
+
+  async getSearchAutocomplete({
+    currentUserId,
+    query,
+    kind,
+    offset,
+    limit
+  }: GetSearchArgs) {
+    this._assertInitialized()
+    const encodedUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedUserId,
+      query,
+      kind,
+      offset,
+      limit
+    }
+
+    const endpoint = this._constructUrl(ENDPOINT_MAP.searchAutocomplete, params)
+
+    const searchResponse: APIResponse<APISearch> = await this._getResponse(
+      endpoint
+    )
+    const adapted = adaptSearchResponse(searchResponse)
+    return processSearchResults({ searchText: query, ...adapted })
+  }
+
   init() {
     if (this.initializationState.state === 'initialized') return
 
@@ -668,6 +733,8 @@ class AudiusAPIClient {
   }
 }
 
-const instance = new AudiusAPIClient()
+const instance = new AudiusAPIClient({
+  overrideEndpoint: 'http://localhost:5000'
+})
 
 export default instance
