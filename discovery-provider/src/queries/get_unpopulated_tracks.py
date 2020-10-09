@@ -58,7 +58,7 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
 
     tracks_query = (
         session.query(Track)
-        .filter(Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None)
+        .filter(Track.is_current == True, Track.stem_of == None)
         .filter(Track.track_id.in_(track_ids_to_fetch))
     )
 
