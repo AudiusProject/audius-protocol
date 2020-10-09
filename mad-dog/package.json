@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js --inspect"
+    "start": "node src/index.js --inspect",
+    "link-deps": "npm link @audius/libs && npm link @audius/service-commands"
   },
   "repository": {
     "type": "git",

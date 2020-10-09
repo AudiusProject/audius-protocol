@@ -61,34 +61,38 @@ const addAndUpgradeUsers = async (
       if (existingUser) {
         existingUserIds.push(existingUser.user_id)
         userId = existingUser.user_id
+        logger.info(`Found existing user: ${userId}`)
       } else {
         const userMetadata = users[i]
         const newUserId = await addUser(libs, userMetadata, USER_PIC_PATH)
         addedUserIds.push(newUserId)
         userId = newUserId
+        logger.info(`Found existing user: ${userId}`)
       }
 
       // add to wallet index to userId mapping
       walletIndexToUserIdMap[i] = userId
     })
-
     // print userIds that exist and were added
-    logger.info(`Adding users, userIds=${addedUserIds}`)
-    logger.info(`Users already exist, userIds=${existingUserIds}`)
+    logger.info(`Added users, userIds=${addedUserIds}`)
+    logger.info(`Existing users, userIds=${existingUserIds}`)
     await waitForIndexing()
   })
 
   // TODO: should check if existing users are already creators. if so, dont upgrade
   await logOps('Upgrade to creator', async () => {
     try {
+      // TODO: Parallelize this, better representation of the system
       for (const i of _.range(userCount)) {
         // Autoselect replica set from valid nodes on-chain
         const selectedCNodes = await executeOne(i, libsWrapper =>
           autoSelectCreatorNodes(libsWrapper, numCreatorNodes)
         )
         const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
+        logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
         // Upgrade to creator with replica set
         await executeOne(i, l => upgradeToCreator(l, endpointString))
+        logger.info(`Finished upgrading creator wallet index ${i}`)
       }
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')

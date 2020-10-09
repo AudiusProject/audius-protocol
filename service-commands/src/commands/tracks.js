@@ -27,6 +27,7 @@ const uploadTrack = async (libs, trackMetadata, trackPath) => {
     )
     console.log(errors)
   }
+  console.log(`Uploaded trackId=${trackId} successfully, `)
 
   return trackId
 }
