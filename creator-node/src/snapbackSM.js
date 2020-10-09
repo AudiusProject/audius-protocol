@@ -39,6 +39,7 @@ class SnapbackSM {
     // Sync queue handles issuing sync request from primary -> secondary
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
     // Incremented as users are processed
+    // TODO: Randomize this starting point
     this.currentModuloSlice = 0
   }
 
