@@ -76,18 +76,18 @@ class AudiusLibs {
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
-   * @param {Array} allProviderUrls web3 provider endpoints
+   * @param {string | object | Array<string>} providers web3 provider endpoints
    */
-  static configInternalWeb3 (registryAddress, allProviderUrls) {
-    if (typeof allProviderUrls === 'string') {
-      allProviderUrls = [allProviderUrls]
+  static configInternalWeb3 (registryAddress, providers) {
+    if (typeof providers === 'string') {
+      providers = [providers]
     }
 
     return {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoints: allProviderUrls
+        web3ProviderEndpoints: providers
       }
     }
   }
@@ -96,11 +96,15 @@ class AudiusLibs {
    * Configures an eth web3
    * @param {string} tokenAddress
    * @param {string} registryAddress
-   * @param {object} url web3 provider endpoint
+   * @param {string | object | Array<string>} providers web3 provider endpoint
    * @param {string} ownerWallet
    */
-  static configEthWeb3 (tokenAddress, registryAddress, url, ownerWallet) {
-    return { tokenAddress, registryAddress, url, ownerWallet }
+  static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet) {
+    if (typeof providers === 'string') {
+      providers = [providers]
+    }
+
+    return { tokenAddress, registryAddress, providers, ownerWallet }
   }
 
   /**
