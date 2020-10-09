@@ -1,8 +1,9 @@
 const Web3 = require('../../web3')
 const EthereumTx = require('ethereumjs-tx')
+const retry = require('async-retry')
 const DEFAULT_GAS_AMOUNT = 200000
-const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
-const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
+const MIN_GAS_PRICE = Math.pow(500, 9) // 1 GWei, POA default gas price
+const HIGH_GAS_PRICE = 50 * MIN_GAS_PRICE // 5 GWei
 const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
 
 /** Singleton state-manager for Audius Eth Contracts */
@@ -25,7 +26,9 @@ class EthWeb3Manager {
     contractMethod,
     gasAmount = DEFAULT_GAS_AMOUNT,
     contractAddress = null,
-    privateKey = null) {
+    privateKey = null,
+    txRetries = 5
+  ) {
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
       if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
@@ -51,7 +54,26 @@ class EthWeb3Manager {
       const tx = new EthereumTx(txParams)
       tx.sign(privateKeyBuffer)
       const signedTx = '0x' + tx.serialize().toString('hex')
-      return this.web3.eth.sendSignedTransaction(signedTx)
+
+      // Send the tx with retries
+      const response = await retry(async () => {
+        return this.web3.eth.sendSignedTransaction(signedTx)
+      }, {
+        // Retry function 5x by default
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: txRetries,
+        onRetry: (err, i) => {
+          if (err) {
+            // eslint-disable-next-line no-console
+            console.log(`Retry error : ${err}`)
+          }
+        }
+      })
+
+      return response
     }
 
     let gasPrice = parseInt(await this.web3.eth.getGasPrice())
