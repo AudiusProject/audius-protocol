@@ -27,7 +27,7 @@ def set_tracks_in_cache(tracks):
         redis.set(key, serialized, ttl_sec)
 
 
-def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
+def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unlisted=True):
     """
     Fetches tracks by checking the redis cache first then
     going to DB and writes to cache if not present
@@ -61,6 +61,9 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
         .filter(Track.is_current == True, Track.stem_of == None)
         .filter(Track.track_id.in_(track_ids_to_fetch))
     )
+
+    if filter_unlisted:
+        tracks_query = tracks_query.filter(Track.is_unlisted == False)
 
     if filter_deleted:
         tracks_query = tracks_query.filter(Track.is_delete == False)
