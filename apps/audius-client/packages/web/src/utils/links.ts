@@ -6,8 +6,9 @@ export const AUDIUS_INSTAMGRAM_LINK = 'https://www.instagram.com/audiusmusic'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/yNUg2e2'
 
 // Org Links
-export const AUDIUS_TEAM_LINK = 'https://audius.org/team.html'
-export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/developers.html'
+export const AUDIUS_ORG = 'https://audius.org'
+export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
+export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/developers'
 
 export const AUDIUS_HOME_LINK = '/'
 export const AUDIUS_LISTENING_LINK = '/trending'
@@ -27,7 +28,7 @@ export const AUDIUS_PODCAST_LINK =
 export const AUDIUS_CYPHER_LINK = 'https://discord.gg/yNUg2e2'
 
 export const AUDIUS_PRESS_KIT_ZIP =
-  'https://s3-us-west-1.amazonaws.com/download.audius.co/Audius+Press+Kit+1.5.zip'
+  'https://s3-us-west-1.amazonaws.com/download.audius.co/Audius+Press+Kit+2.0.zip'
 
 export const pushWindowRoute = (route: string) => {
   if (route === AUDIUS_SIGN_UP_LINK) {

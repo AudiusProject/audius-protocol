@@ -12,10 +12,10 @@ import {
   pushWindowRoute,
   handleClickRoute,
   AUDIUS_HOME_LINK,
-  AUDIUS_DEV_STAKER_LINK,
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,
-  AUDIUS_EXPLORE_LINK
+  AUDIUS_EXPLORE_LINK,
+  AUDIUS_ORG
 } from 'utils/links'
 
 import styles from './NavBanner.module.css'
@@ -24,7 +24,7 @@ const messages = {
   explore: 'Explore',
   trending: 'Trending',
   hotAndNew: 'Hot & New',
-  devStakers: 'Devs & Stakers',
+  token: 'Token',
   startListening: 'Start Listening'
 }
 
@@ -32,7 +32,7 @@ const onClickHome = handleClickRoute(AUDIUS_HOME_LINK)
 const onClickExplore = handleClickRoute(AUDIUS_EXPLORE_LINK)
 const onClickTrending = handleClickRoute(AUDIUS_LISTENING_LINK)
 const onClickHotAndNew = handleClickRoute(AUDIUS_HOT_AND_NEW)
-const onClickDevStakers = handleClickRoute(AUDIUS_DEV_STAKER_LINK)
+const onClickToken = handleClickRoute(AUDIUS_ORG)
 
 type NavBannerProps = {
   isMobile: boolean
@@ -131,8 +131,8 @@ const NavBanner = (props: NavBannerProps) => {
           />
         </div>
         <div className={styles.linkContainer}>
-          <div onClick={onClickDevStakers} className={styles.devStakers}>
-            {messages.devStakers}
+          <div onClick={onClickToken} className={styles.token}>
+            {messages.token}
           </div>
           <div onClick={onStartListening} className={styles.startListening}>
             {messages.startListening}
