@@ -1,8 +1,9 @@
+import datetime
 import json
 from flask.json import dumps
 
 from src.utils import redis_connection
-from src.models import Playlist
+from src.models import DATE_FORMAT, Playlist
 from src.utils import helpers
 
 ttl_sec = 60
@@ -16,7 +17,17 @@ def get_cached_playlists(playlist_ids):
     redis_playlist_id_keys = map(get_playlist_id_cache_key, playlist_ids)
     redis = redis_connection.get_redis()
     cached_values = redis.mget(redis_playlist_id_keys)
-    return [json.loads(val) if val is not None else None for val in cached_values]
+
+    playlists = []
+    for val in cached_values:
+        if val is not None:
+            playlist = json.loads(val)
+            playlist["created_at"] = datetime.datetime.strptime(playlist["created_at"], DATE_FORMAT)
+            playlist["updated_at"] = datetime.datetime.strptime(playlist["updated_at"], DATE_FORMAT)
+            playlists.append(playlist)
+        else:
+            playlists.append(None)
+    return playlists
 
 
 def set_playlists_in_cache(playlists):

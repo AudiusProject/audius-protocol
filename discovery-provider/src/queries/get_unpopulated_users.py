@@ -1,8 +1,9 @@
+import datetime
 import json
 from flask.json import dumps
 
 from src.utils import redis_connection
-from src.models import User
+from src.models import DATE_FORMAT, User
 from src.utils import helpers
 
 ttl_sec = 60
@@ -16,7 +17,17 @@ def get_cached_users(user_ids):
     redis_user_id_keys = map(get_user_id_cache_key, user_ids)
     redis = redis_connection.get_redis()
     cached_values = redis.mget(redis_user_id_keys)
-    return [json.loads(val) if val is not None else None for val in cached_values]
+
+    users = []
+    for val in cached_values:
+        if val is not None:
+            user = json.loads(val)
+            user["created_at"] = datetime.datetime.strptime(user["created_at"], DATE_FORMAT)
+            user["updated_at"] = datetime.datetime.strptime(user["updated_at"], DATE_FORMAT)
+            users.append(user)
+        else:
+            users.append(None)
+    return users
 
 
 def set_users_in_cache(users):
