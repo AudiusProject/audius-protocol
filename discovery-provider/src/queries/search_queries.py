@@ -5,11 +5,13 @@ import sqlalchemy
 
 from src import api_helpers, exceptions
 from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight
-from src.models import User, Track, RepostType, Playlist, Save, SaveType, Follow
+from src.models import User, Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-
+from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
+from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.queries.query_helpers import get_current_user_id, get_users_by_id, get_users_ids, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
     get_track_play_counts
@@ -257,15 +259,7 @@ def search_tags():
                 .all()
             )
             followed_user_ids = [i[0] for i in followed_user_query]
-            followed_users = (
-                session.query(User)
-                .filter(
-                    User.is_current == True,
-                    User.user_id.in_(followed_user_ids)
-                )
-                .all()
-            )
-            followed_users = helpers.query_result_to_list(followed_users)
+            followed_users = get_unpopulated_users(session, followed_user_ids)
             followed_users = \
                 populate_user_metadata(
                     session,
@@ -471,32 +465,12 @@ def track_search_query(
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_ids]
-
-    tracks = (
-        session.query(Track)
-        .filter(
-            Track.is_delete == False,
-            Track.is_current == True,
-            Track.is_unlisted == False,
-            Track.stem_of == None,
-            Track.track_id.in_(track_ids),
-        ).all()
-    )
-
-    tracks = helpers.query_result_to_list(tracks)
+    tracks = get_unpopulated_tracks(session, track_ids, True)
 
     if is_auto_complete == True:
         # fetch users for tracks
         track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
-        users = (
-            session.query(User)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(track_owner_ids)
-            )
-            .all()
-        )
-        users = helpers.query_result_to_list(users)
+        users = get_unpopulated_users(session, track_owner_ids)
         users_dict = {user["user_id"]: user for user in users}
 
         # attach user objects to track objects
@@ -508,7 +482,7 @@ def track_search_query(
             session, track_ids, tracks, current_user_id)
 
     # preserve order from track_ids above
-    tracks = [next(t for t in tracks if t["track_id"] == track_id)
+    tracks = [next((t for t in tracks if t["track_id"] == track_id), None)
               for track_id in track_ids]
     return tracks
 
@@ -559,15 +533,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[0] for i in user_ids]
 
-    users = (
-        session.query(User)
-        .filter(
-            User.is_current == True,
-            User.user_id.in_(user_ids)
-        )
-        .all()
-    )
-    users = helpers.query_result_to_list(users)
+    users = get_unpopulated_users(session, user_ids)
 
     if not is_auto_complete:
         # bundle peripheral info into user results
@@ -637,31 +603,12 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
 
     # playlist_ids is list of tuples - simplify to 1-D list
     playlist_ids = [i[0] for i in playlist_ids]
+    playlists = get_unpopulated_playlists(session, playlist_ids, True)
 
-    playlists = (
-        session.query(Playlist)
-        .filter(
-            Playlist.is_current == True,
-            Playlist.is_album == is_album,
-            Playlist.playlist_id.in_(playlist_ids)
-        )
-        .all()
-    )
-    playlists = helpers.query_result_to_list(playlists)
-
-    if is_auto_complete == True:
+    if is_auto_complete:
         # fetch users for playlists
-        playlist_owner_ids = list(
-            map(lambda playlist: playlist["playlist_owner_id"], playlists))
-        users = (
-            session.query(User)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(playlist_owner_ids)
-            )
-            .all()
-        )
-        users = helpers.query_result_to_list(users)
+        playlist_owner_ids = list(map(lambda playlist: playlist["playlist_owner_id"], playlists))
+        users = get_unpopulated_users(session, playlist_owner_ids)
         users_dict = {user["user_id"]: user for user in users}
 
         # attach user objects to playlist objects
@@ -679,6 +626,6 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         )
 
     # preserve order from playlist_ids above
-    playlists = [next(p for p in playlists if p["playlist_id"]
-                      == playlist_id) for playlist_id in playlist_ids]
+    playlists = [next((p for p in playlists if p["playlist_id"]
+                       == playlist_id), None) for playlist_id in playlist_ids]
     return playlists

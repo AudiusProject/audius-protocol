@@ -2,14 +2,15 @@ from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
 from flask_restx import Resource, Namespace, fields, reqparse
-from flask_restx import resource
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
-    format_offset, format_limit, decode_string_id
-from .models.tracks import track, track_full
+    format_offset, format_limit, decode_string_id, stem_from_track, \
+    get_current_user_id
+
+from .models.tracks import track, track_full, stem_full, remixes_response
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
 from flask.json import dumps
@@ -20,6 +21,9 @@ from src.api.v1.models.users import user_model_full
 from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
+from src.queries.get_stems_of import get_stems_of
+from src.queries.get_remixes_of import get_remixes_of
+from src.queries.get_remix_track_parents import get_remix_track_parents
 
 logger = logging.getLogger(__name__)
 
@@ -360,10 +364,8 @@ class FullTrackReposts(Resource):
         decoded_id = decode_with_abort(track_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
+        current_user_id = get_current_user_id(args)
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
         args = {
             'repost_track_id': decoded_id,
             'current_user_id': current_user_id,
@@ -373,3 +375,68 @@ class FullTrackReposts(Resource):
         users = get_reposters_for_track(args)
         users = list(map(extend_user, users))
         return success_response(users)
+
+track_stems_response = make_response("stems_response", full_ns, fields.List(fields.Nested(stem_full)))
+
+@full_ns.route("/<string:track_id>/stems")
+class FullTrackStems(Resource):
+    @full_ns.marshal_with(track_stems_response)
+    @cache(ttl_sec=10)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, full_ns)
+        stems = get_stems_of(decoded_id)
+        stems = list(map(stem_from_track, stems))
+        return success_response(stems)
+
+
+remixes_response = make_response("remixes_response", full_ns, fields.Nested(remixes_response))
+remixes_parser = reqparse.RequestParser()
+remixes_parser.add_argument('user_id', required=False)
+remixes_parser.add_argument('limit', required=False, default=10)
+remixes_parser.add_argument('offset', required=False, default=0)
+
+@full_ns.route("/<string:track_id>/remixes")
+class FullRemixesRoute(Resource):
+    @full_ns.marshal_with(remixes_response)
+    @cache(ttl_sec=10)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, full_ns)
+        request_args = remixes_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+
+        args = {
+            "with_users": True,
+            "track_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": format_limit(request_args),
+            "offset": format_offset(request_args)
+        }
+        response = get_remixes_of(args)
+        response["tracks"] = list(map(extend_track, response["tracks"]))
+        return success_response(response)
+
+remixing_response = make_response("remixing_response", full_ns, fields.List(fields.Nested(track_full)))
+remixing_parser = reqparse.RequestParser()
+remixing_parser.add_argument('user_id', required=False)
+remixing_parser.add_argument('limit', required=False, default=10)
+remixing_parser.add_argument('offset', required=False, default=0)
+
+@full_ns.route("/<string:track_id>/remixing")
+class FullRemixingRoute(Resource):
+    @full_ns.marshal_with(remixing_response)
+    @cache(ttl_sec=10)
+    def get(self, track_id):
+        decoded_id = decode_with_abort(track_id, full_ns)
+        request_args = remixes_parser.parse_args()
+        current_user_id = get_current_user_id(request_args)
+
+        args = {
+            "with_users": True,
+            "track_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": format_limit(request_args),
+            "offset": format_offset(request_args)
+        }
+        tracks = get_remix_track_parents(args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)

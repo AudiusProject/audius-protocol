@@ -14,7 +14,7 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { sortKeys } = require('../src/apiHelpers')
+const { sortKeys } = require('../src/apiSigning')
 
 describe('test AudiusUsers with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock
@@ -34,7 +34,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
-    await BlacklistManager.blacklist(ipfsMock)
+    await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
@@ -108,7 +108,7 @@ describe('Test AudiusUsers with real IPFS', function () {
     libsMock = getLibsMock()
 
     const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
-    await BlacklistManager.blacklist(ipfs)
+    await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server

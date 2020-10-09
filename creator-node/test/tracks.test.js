@@ -7,7 +7,7 @@ const sinon = require('sinon')
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 const ipfsClient = require('../src/ipfsClient')
-const blacklistManager = require('../src/blacklistManager')
+const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
 
@@ -15,7 +15,7 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { sortKeys } = require('../src/apiHelpers')
+const { sortKeys } = require('../src/apiSigning')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
@@ -28,8 +28,8 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfsMock, libsMock, blacklistManager)
-    await blacklistManager.blacklist(ipfsMock)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
@@ -408,8 +408,8 @@ describe('test Tracks with real IPFS', function () {
     ipfs = ipfsClient.ipfs
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfs, libsMock, blacklistManager)
-    await blacklistManager.blacklist(ipfs)
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
+    await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
@@ -444,6 +444,32 @@ describe('test Tracks with real IPFS', function () {
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(500)
+  })
+
+  // Note: if hashing logic from ipfs ever changes, this test will fail
+  it('sends forbidden error response if track segments are in BlacklistManager', async function () {
+    // Add CIDs from testTrackData.json file to BlacklistManager
+    let testTrackJSON
+    try {
+      const testTrackData = fs.readFileSync(path.join(__dirname, 'testTrackData.json'))
+      testTrackJSON = JSON.parse(testTrackData)
+    } catch (e) {
+      assert.fail(`Could not parse testTrack metadata json: ${e}`)
+    }
+    const testTrackCIDs = testTrackJSON.map(segment => segment.multihash)
+    await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
+
+    // Attempt to associate track content and get forbidden error
+    const file = fs.readFileSync(testAudioFilePath)
+    await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session.sessionToken)
+      .expect(403)
+
+    // Clear redis of segment CIDs
+    await BlacklistManager.removeFromRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
   })
 
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
@@ -499,7 +525,7 @@ describe('test Tracks with real IPFS', function () {
   })
 
   it('should throw an error if segment is blacklisted', async function () {
-    sinon.stub(blacklistManager, 'CIDIsInBlacklist').returns(true)
+    sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],

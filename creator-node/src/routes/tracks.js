@@ -97,7 +97,7 @@ module.exports = function (app) {
     try {
       await Promise.all(trackSegments.map(async segmentObj => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
-          throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+          throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
         }
       }))
     } catch (e) {
@@ -105,7 +105,7 @@ module.exports = function (app) {
       removeTrackFolder(req, req.fileDir)
 
       if (e.message.indexOf('blacklisted') >= 0) {
-        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node.`)
+        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node: ${e}`)
       } else {
         return errorResponseServerError(e.message)
       }
@@ -313,8 +313,7 @@ module.exports = function (app) {
       const existingTrackEntry = await models.Track.findOne({
         where: {
           cnodeUserUUID,
-          blockchainId: blockchainTrackId,
-          coverArtFileUUID
+          blockchainId: blockchainTrackId
         },
         order: [['clock', 'DESC']],
         transaction
@@ -381,7 +380,8 @@ module.exports = function (app) {
           transaction
         })
 
-        if (trackFiles.length !== trackSegmentCIDs.length) {
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          req.logger.error(`Did not find files for every track segment CID for user ${cnodeUserUUID} ${trackFiles} ${trackSegmentCIDs}`)
           throw new Error('Did not find files for every track segment CID.')
         }
         const numAffectedRows = await models.File.update(
@@ -396,7 +396,8 @@ module.exports = function (app) {
             transaction
           }
         )
-        if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
+        if (parseInt(numAffectedRows, 10) < trackSegmentCIDs.length) {
+          req.logger.error(`Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${numAffectedRows} ${trackSegmentCIDs.length}`)
           throw new Error('Failed to associate files for every track segment CID.')
         }
       } else { /** If track updated, ensure files exist with trackBlockchainId. */

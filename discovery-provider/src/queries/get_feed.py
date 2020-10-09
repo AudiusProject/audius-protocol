@@ -6,6 +6,7 @@ from src.models import Track, Repost, RepostType, Follow, Playlist, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import get_current_user_id, populate_track_metadata, \
     populate_playlist_metadata, get_pagination_vars, paginate_query, get_users_by_id, get_users_ids
 
@@ -60,16 +61,9 @@ def get_feed(args):
                         playlist_track_ids.add(track["track"])
 
                 # get all track objects for track ids
-                playlist_tracks = (
-                    session.query(Track)
-                    .filter(
-                        Track.is_current == True,
-                        Track.track_id.in_(playlist_track_ids)
-                    )
-                    .all()
-                )
+                playlist_tracks = get_unpopulated_tracks(session, playlist_track_ids)
                 playlist_tracks_dict = {
-                    track.track_id: track for track in playlist_tracks}
+                    track["track_id"]: track for track in playlist_tracks}
 
                 # get all track ids that have same owner as playlist and created in "same action"
                 # "same action": track created within [x time] before playlist creation
@@ -81,10 +75,10 @@ def get_feed(args):
                             return api_helpers.error_response("Something caused the server to crash.")
                         max_timedelta = datetime.timedelta(
                             minutes=trackDedupeMaxMinutes)
-                        if (track.owner_id == playlist.playlist_owner_id) and \
-                            (track.created_at <= playlist.created_at) and \
-                                (playlist.created_at - track.created_at <= max_timedelta):
-                            tracks_to_dedupe.add(track.track_id)
+                        if (track["owner_id"] == playlist.playlist_owner_id) and \
+                            (track["created_at"] <= playlist.created_at) and \
+                                (playlist.created_at - track["created_at"] <= max_timedelta):
+                            tracks_to_dedupe.add(track["track_id"])
                 tracks_to_dedupe = list(tracks_to_dedupe)
             else:
                 # No playlists to consider
