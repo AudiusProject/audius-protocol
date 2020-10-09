@@ -16,24 +16,24 @@ type PlaylistContents = {
 }
 
 export type APIUser = {
-  album_count: number
+  album_count: Nullable<number>
   bio: Nullable<string>
   cover_photo: CoverPhotoSizes
-  followee_count: number
-  follower_count: number
+  followee_count: Nullable<number>
+  follower_count: Nullable<number>
   handle: string
   id: OpaqueID
   is_verified: boolean
   location: Nullable<string>
   name: string
-  playlist_count: number
+  playlist_count: Nullable<number>
   profile_picture: ProfilePictureSizes
-  repost_count: number
-  track_count: number
+  repost_count: Nullable<number>
+  track_count: Nullable<number>
   created_at: string
   creator_node_endpoint: Nullable<string>
-  current_user_followee_follow_count: number
-  does_current_user_follow: boolean
+  current_user_followee_follow_count: Nullable<number>
+  does_current_user_follow: Nullable<boolean>
   handle_lc: string
   is_creator: boolean
   updated_at: string
@@ -72,8 +72,8 @@ export type APITrack = {
   remix_of: {
     tracks: null | APIRemix[]
   }
-  repost_count: number
-  favorite_count: number
+  repost_count: Nullable<number>
+  favorite_count: Nullable<number>
   tags: Nullable<string>
   title: string
   user: APIUser
@@ -89,10 +89,10 @@ export type APITrack = {
   iswc: Nullable<string>
   field_visibility: FieldVisibility
   followee_reposts: APIRepost[]
-  has_current_user_reposted: boolean
+  has_current_user_reposted: Nullable<boolean>
   is_unlisted: boolean
-  has_current_user_saved: boolean
-  followee_favorites: APIFavorite[]
+  has_current_user_saved: Nullable<boolean>
+  followee_favorites: Nullable<APIFavorite[]>
   route_id: string
   stem_of: any
   track_segments: TrackSegment[]
@@ -100,8 +100,7 @@ export type APITrack = {
   user_id: OpaqueID
   is_delete: boolean
   cover_art: Nullable<string>
-  play_count: number
-  is: string
+  play_count: Nullable<number>
 }
 
 export type APIStem = {
@@ -123,17 +122,17 @@ export type APIPlaylist = {
   id: OpaqueID
   is_album: boolean
   playlist_name: string
-  repost_count: number
-  favorite_count: number
-  total_play_count: number
+  repost_count: Nullable<number>
+  favorite_count: Nullable<number>
+  total_play_count: Nullable<number>
   user_id: OpaqueID
   user: APIUser
   created_at: string
   updated_at: string
   followee_reposts: APIRepost[]
   followee_favorites: APIFavorite[]
-  has_current_user_reposted: boolean
-  has_current_user_saved: boolean
+  has_current_user_reposted: Nullable<boolean>
+  has_current_user_saved: Nullable<boolean>
   is_delete: boolean
   is_private: boolean
   added_timestamps: APIPlaylistAddedTimestamp[]
@@ -148,6 +147,17 @@ export type APIActivity = { timestamp: string } & (
   | { item_type: 'track'; item: APITrack }
   | { item_type: 'playlist'; item: APIPlaylist }
 )
+
+export type APISearch = {
+  users?: APIUser[]
+  followed_users?: APIUser[]
+  tracks?: APITrack[]
+  saved_tracks?: APITrack[]
+  playlists?: any[]
+  saved_playlists?: any[]
+  albums?: any[]
+  saved_albums?: any[]
+}
 
 export type APIResponse<T> = {
   data: T

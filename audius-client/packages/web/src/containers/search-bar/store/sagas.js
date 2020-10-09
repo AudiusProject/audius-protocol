@@ -2,17 +2,22 @@ import { call, cancel, fork, put, race, select, take } from 'redux-saga/effects'
 
 import * as searchActions from 'containers/search-bar/store/actions'
 
-import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { waitForBackendSetup } from 'store/backend/sagas'
+import { getUserId } from 'store/account/selectors'
 import { getSearch } from './selectors'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
 export function* getSearchResults(searchText) {
-  const results = yield call(AudiusBackend.searchAutocomplete, {
-    searchText,
-    limit: 3
+  const userId = yield select(getUserId)
+  const results = yield apiClient.getSearchAutocomplete({
+    currentUserId: userId,
+    query: searchText,
+    limit: 3,
+    offset: 0
   })
+
   const { tracks, albums, playlists, users } = results
   return { users, tracks, albums, playlists }
 }
