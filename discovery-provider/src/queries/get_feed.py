@@ -75,10 +75,10 @@ def get_feed(args):
                             return api_helpers.error_response("Something caused the server to crash.")
                         max_timedelta = datetime.timedelta(
                             minutes=trackDedupeMaxMinutes)
-                        if (track.owner_id == playlist.playlist_owner_id) and \
-                            (track.created_at <= playlist.created_at) and \
-                                (playlist.created_at - track.created_at <= max_timedelta):
-                            tracks_to_dedupe.add(track.track_id)
+                        if (track["owner_id"] == playlist.playlist_owner_id) and \
+                            (track["created_at"] <= playlist.created_at) and \
+                                (playlist.created_at - track["created_at"] <= max_timedelta):
+                            tracks_to_dedupe.add(track["track_id"])
                 tracks_to_dedupe = list(tracks_to_dedupe)
             else:
                 # No playlists to consider
