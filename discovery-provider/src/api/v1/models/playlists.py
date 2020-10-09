@@ -27,7 +27,7 @@ playlist_model = ns.model('playlist', {
 })
 
 full_playlist_model = ns.clone('playlist_full', playlist_model, {
-    "blocknumber": fields.Integer,
+    "blocknumber": fields.Integer(required=True),
     "created_at": fields.String,
     "followee_reposts": fields.List(fields.Nested(repost), required=True),
     "followee_favorites": fields.List(fields.Nested(favorite), required=True),

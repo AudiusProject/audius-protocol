@@ -75,7 +75,7 @@ track = ns.model('Track', {
 })
 
 track_full = ns.clone('track_full', track, {
-    "blocknumber": fields.Integer,
+    "blocknumber": fields.Integer(required=True),
     "create_date": fields.String,
     "cover_art_sizes": fields.String,
     "created_at": fields.String,

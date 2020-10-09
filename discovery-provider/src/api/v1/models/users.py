@@ -31,7 +31,7 @@ user_model = ns.model("user", {
 })
 
 user_model_full = ns.clone("user_full", user_model, {
-    "blocknumber": fields.Integer,
+    "blocknumber": fields.Integer(required=True),
     "created_at": fields.String(required=True),
     "creator_node_endpoint": fields.String,
     "current_user_followee_follow_count": fields.Integer(required=True),
