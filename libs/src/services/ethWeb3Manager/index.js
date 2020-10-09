@@ -3,8 +3,8 @@ const EthereumTx = require('ethereumjs-tx')
 const retry = require('async-retry')
 const { sample } = require('lodash')
 const DEFAULT_GAS_AMOUNT = 200000
-const MIN_GAS_PRICE = Math.pow(500, 9) // 1 GWei, POA default gas price
-const HIGH_GAS_PRICE = 50 * MIN_GAS_PRICE // 5 GWei
+const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
+const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
 const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
 
 /** Singleton state-manager for Audius Eth Contracts */
@@ -16,7 +16,6 @@ class EthWeb3Manager {
 
     // Pick a provider at random to spread the load
     const provider = sample(web3Config.providers)
-    console.log(provider)
 
     this.web3Config = web3Config
     this.web3 = new Web3(provider)
@@ -72,7 +71,6 @@ class EthWeb3Manager {
         retries: txRetries,
         onRetry: (err, i) => {
           if (err) {
-            // eslint-disable-next-line no-console
             console.log(`Retry error : ${err}`)
           }
         }

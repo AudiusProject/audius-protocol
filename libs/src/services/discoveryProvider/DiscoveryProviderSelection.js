@@ -87,8 +87,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
   /** Allows the selection take a shortcut if there's a cached provider */
   shortcircuit () {
-    // return this.getCached()
-    return null
+    return this.getCached()
   }
 
   async select () {
