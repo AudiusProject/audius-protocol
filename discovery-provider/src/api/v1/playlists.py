@@ -38,8 +38,6 @@ def get_playlist(playlist_id, current_user_id):
 def get_tracks_for_playlist(playlist_id, current_user_id=None):
     args = {"playlist_id": playlist_id, "with_users": True, "current_user_id": current_user_id}
     playlist_tracks = get_playlist_tracks(args)
-    if not playlist_tracks:
-        abort_not_found(playlist_id, ns)
     tracks = list(map(extend_track, playlist_tracks))
     return tracks
 
@@ -210,7 +208,7 @@ class FullTrackFavorites(Resource):
         decoded_id = decode_with_abort(playlist_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-        
+
         current_user_id = None
         if args.get("user_id"):
             current_user_id = decode_string_id(args["user_id"])
@@ -253,7 +251,7 @@ class FullPlaylistReposts(Resource):
         decoded_id = decode_with_abort(playlist_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-        
+
         current_user_id = None
         if args.get("user_id"):
             current_user_id = decode_string_id(args["user_id"])
