@@ -27,7 +27,7 @@ def set_tracks_in_cache(tracks):
         redis.set(key, serialized, ttl_sec)
 
 
-def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
+def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unlisted=True):
     """
     Fetches tracks by checking the redis cache first then
     going to DB and writes to cache if not present
@@ -43,9 +43,12 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
     cached_tracks_results = get_cached_tracks(track_ids)
     has_all_tracks_cached = cached_tracks_results.count(None) == 0
     if has_all_tracks_cached:
+        res = cached_tracks_results
         if filter_deleted:
-            return list(filter(lambda track: not track['is_delete'], cached_tracks_results))
-        return cached_tracks_results
+            res = list(filter(lambda track: not track['is_delete'], res))
+        if filter_unlisted:
+            res = list(filter(lambda track: not track['is_unlisted'], res))
+        return res
 
     # Create a dict of cached tracks
     cached_tracks = {}
@@ -58,9 +61,12 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
 
     tracks_query = (
         session.query(Track)
-        .filter(Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None)
+        .filter(Track.is_current == True, Track.stem_of == None)
         .filter(Track.track_id.in_(track_ids_to_fetch))
     )
+
+    if filter_unlisted:
+        tracks_query = tracks_query.filter(Track.is_unlisted == False)
 
     if filter_deleted:
         tracks_query = tracks_query.filter(Track.is_delete == False)
@@ -75,8 +81,11 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False):
     tracks_response = []
     for track_id in track_ids:
         if track_id in cached_tracks:
-            if not filter_deleted or not cached_tracks[track_id]['is_delete']:
-                tracks_response.append(cached_tracks[track_id])
+            if filter_unlisted and cached_tracks[track_id]['is_unlisted']:
+                continue
+            if filter_deleted and cached_tracks[track_id]['is_delete']:
+                continue
+            tracks_response.append(cached_tracks[track_id])
         elif track_id in queried_tracks:
             tracks_response.append(queried_tracks[track_id])
 
