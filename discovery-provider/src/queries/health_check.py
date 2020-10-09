@@ -1,7 +1,9 @@
+from datetime import datetime
 import logging
+from src.queries.get_latest_play import get_latest_play
 from flask import Blueprint, request
 from src.queries.queries import parse_bool_param
-from src.api_helpers import success_response_backwards_compat
+from src.api_helpers import success_response, success_response_backwards_compat
 from src.queries.get_health import get_health
 from src.utils import helpers
 
@@ -50,3 +52,20 @@ def block_check():
         health_results,
         500 if error else 200
     )
+
+# Health check for latest play stored in the db
+@bp.route("/play_check", methods=["GET"])
+def play_check():
+    """
+       max_drift: maximum duration in seconds between `now` and the
+        latest recorded play record to be considered healthy
+    """
+    max_drift = request.args.get("max_drift", type=int)
+
+    latest_play = get_latest_play()
+    drift = (datetime.now() - latest_play).total_seconds()
+
+    # Error if max drift was provided and the drift is greater than max_drift
+    error = max_drift and drift > max_drift
+
+    return success_response(latest_play, 500 if error else 200)
