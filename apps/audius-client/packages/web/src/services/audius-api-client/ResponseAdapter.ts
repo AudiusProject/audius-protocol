@@ -13,7 +13,9 @@ import {
   APITrack,
   APIPlaylist,
   APIUser,
-  APIStem
+  APIStem,
+  APIResponse,
+  APISearch
 } from './types'
 
 export const makeUser = (user: APIUser): UserMetadata | undefined => {
@@ -84,11 +86,11 @@ export const makeTrack = (track: APITrack): UserTrackMetadata | undefined => {
     return undefined
   }
 
-  const saves = track.followee_favorites
-    .map(makeFavorite)
-    .filter(removeNullable)
+  const saves =
+    track.followee_favorites?.map(makeFavorite).filter(removeNullable) ?? []
 
-  const reposts = track.followee_reposts.map(makeRepost).filter(removeNullable)
+  const reposts =
+    track.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
 
   const remixes =
     track.remix_of.tracks?.map(makeRemix).filter(removeNullable) ?? []
@@ -139,13 +141,11 @@ export const makePlaylist = (
     return undefined
   }
 
-  const saves = playlist.followee_favorites
-    .map(makeFavorite)
-    .filter(removeNullable)
+  const saves =
+    playlist.followee_favorites?.map(makeFavorite).filter(removeNullable) ?? []
 
-  const reposts = playlist.followee_reposts
-    .map(makeRepost)
-    .filter(removeNullable)
+  const reposts =
+    playlist.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
 
   const playlistContents = {
     track_ids: playlist.added_timestamps
@@ -162,9 +162,8 @@ export const makePlaylist = (
       .filter(removeNullable)
   }
 
-  const tracks = playlist.tracks
-    .map(track => makeTrack(track))
-    .filter(removeNullable)
+  const tracks =
+    playlist.tracks?.map(track => makeTrack(track)).filter(removeNullable) ?? []
 
   const marshalled = {
     ...playlist,
@@ -252,5 +251,37 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     remix_of: null,
     duration: 0,
     updated_at: ''
+  }
+}
+
+export const adaptSearchResponse = (searchResponse: APIResponse<APISearch>) => {
+  return {
+    tracks:
+      searchResponse.data.tracks?.map(makeTrack).filter(removeNullable) ??
+      undefined,
+    saved_tracks:
+      searchResponse.data.saved_tracks?.map(makeTrack).filter(removeNullable) ??
+      undefined,
+    users:
+      searchResponse.data.users?.map(makeUser).filter(removeNullable) ??
+      undefined,
+    followed_users:
+      searchResponse.data.followed_users
+        ?.map(makeUser)
+        .filter(removeNullable) ?? undefined,
+    playlists:
+      searchResponse.data.playlists?.map(makePlaylist).filter(removeNullable) ??
+      undefined,
+    saved_playlists:
+      searchResponse.data.saved_playlists
+        ?.map(makePlaylist)
+        .filter(removeNullable) ?? undefined,
+    albums:
+      searchResponse.data.albums?.map(makePlaylist).filter(removeNullable) ??
+      undefined,
+    saved_albums:
+      searchResponse.data.saved_albums
+        ?.map(makePlaylist)
+        .filter(removeNullable) ?? undefined
   }
 }

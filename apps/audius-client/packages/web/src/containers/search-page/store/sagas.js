@@ -1,15 +1,18 @@
-import { call, takeLatest, put } from 'redux-saga/effects'
+import { select, call, takeLatest, put } from 'redux-saga/effects'
 
 import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { fetchUsers } from 'store/cache/users/sagas'
 import { trimToAlphaNumeric } from 'utils/formatUtil'
+import { getUserId } from 'store/account/selectors'
 
 import { tracksActions as tracksLineupActions } from 'containers/search-page/store/lineups/tracks/actions'
 import * as searchPageActions from 'containers/search-page/store/actions'
 import tracksSagas from 'containers/search-page/store/lineups/tracks/sagas'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { processAndCacheCollections } from 'store/cache/collections/utils'
+import { processAndCacheUsers } from 'store/cache/users/utils'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
   const results = yield call(AudiusBackend.searchTags, {
@@ -60,32 +63,21 @@ export function* fetchSearchPageTags(action) {
 }
 
 export function* getSearchResults(searchText, kind, limit, offset) {
-  const results = yield call(AudiusBackend.searchFull, {
-    searchText,
+  const userId = yield select(getUserId)
+  const results = yield apiClient.getSearchFull({
+    currentUserId: userId,
+    query: searchText,
     kind,
     limit,
     offset
   })
   const { tracks, albums, playlists, users } = results
-  const creatorIds = tracks
-    .map(t => t.owner_id)
-    .concat(albums.map(a => a.playlist_owner_id))
-    .concat(playlists.map(p => p.playlist_owner_id))
-    .concat(users.map(u => u.user_id))
 
-  const { entries } = yield call(fetchUsers, creatorIds)
+  yield call(processAndCacheUsers, users)
+  yield call(processAndCacheTracks, tracks)
 
-  const tracksWithUsers = tracks.map(track => ({
-    ...track,
-    user: entries[track.owner_id]
-  }))
-  yield call(processAndCacheTracks, tracksWithUsers)
-
-  const collectionsWithUsers = albums.concat(playlists).map(collection => ({
-    ...collection,
-    user: entries[collection.playlist_owner_id]
-  }))
-  yield call(processAndCacheCollections, collectionsWithUsers)
+  const collections = albums.concat(playlists)
+  yield call(processAndCacheCollections, collections)
 
   return { users, tracks, albums, playlists }
 }
