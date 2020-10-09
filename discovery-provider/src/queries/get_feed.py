@@ -63,7 +63,7 @@ def get_feed(args):
                 # get all track objects for track ids
                 playlist_tracks = get_unpopulated_tracks(session, playlist_track_ids)
                 playlist_tracks_dict = {
-                    track.track_id: track for track in playlist_tracks}
+                    track["track_id"]: track for track in playlist_tracks}
 
                 # get all track ids that have same owner as playlist and created in "same action"
                 # "same action": track created within [x time] before playlist creation
