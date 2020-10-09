@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
-from src.queries.get_latest_play import get_latest_play
 from flask import Blueprint, request
+from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.api_helpers import success_response, success_response_backwards_compat
 from src.queries.get_health import get_health
