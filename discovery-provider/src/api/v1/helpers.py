@@ -187,7 +187,8 @@ def stem_from_track(track):
         "parent_id": parent_id,
         "category": category,
         "cid": track["download"]["cid"],
-        "user_id": encode_int_id(track["owner_id"])
+        "user_id": encode_int_id(track["owner_id"]),
+        "blocknumber": track["blocknumber"]
     }
 
 def extend_playlist(playlist):
