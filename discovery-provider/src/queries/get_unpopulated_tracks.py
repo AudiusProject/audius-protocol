@@ -1,3 +1,4 @@
+import datetime
 import json
 from flask.json import dumps
 
@@ -16,14 +17,24 @@ def get_cached_tracks(track_ids):
     redis_track_id_keys = map(get_track_id_cache_key, track_ids)
     redis = redis_connection.get_redis()
     cached_values = redis.mget(redis_track_id_keys)
-    return [json.loads(val) if val is not None else None for val in cached_values]
+
+    tracks = []
+    for val in cached_values:
+        if val is not None:
+            track = json.loads(val)
+            track["created_at"] = datetime.datetime.fromisoformat(track["created_at"])
+            track["updated_at"] = datetime.datetime.fromisoformat(track["updated_at"])
+            tracks.append(track)
+        else:
+            tracks.append(None)
+    return tracks
 
 
 def set_tracks_in_cache(tracks):
     redis = redis_connection.get_redis()
     for track in tracks:
         key = get_track_id_cache_key(track['track_id'])
-        serialized = dumps(track)
+        serialized = dumps(track, cls=helpers.DateTimeEncoder)
         redis.set(key, serialized, ttl_sec)
 
 
