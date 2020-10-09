@@ -313,8 +313,7 @@ module.exports = function (app) {
       const existingTrackEntry = await models.Track.findOne({
         where: {
           cnodeUserUUID,
-          blockchainId: blockchainTrackId,
-          coverArtFileUUID
+          blockchainId: blockchainTrackId
         },
         order: [['clock', 'DESC']],
         transaction
