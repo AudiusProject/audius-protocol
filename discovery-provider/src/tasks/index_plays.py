@@ -210,8 +210,8 @@ def update_play_count(self):
     # Define lock acquired boolean
     have_lock = False
 
-    # Define redis lock object
-    update_lock = redis.lock("update_play_count_lock", blocking_timeout=25)
+    # Define redis lock object with a timeout of 10 minutes
+    update_lock = redis.lock("update_play_count_lock", timeout=10*60)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
