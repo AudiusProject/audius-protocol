@@ -35,7 +35,6 @@ class SnapbackSM {
     this.stateMachineQueue = this.createBullQueue('creator-node-state-machine')
     // Sync queue handles issuing sync request from primary -> secondary
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
-    this.log(`Constructed snapback!`)
   }
 
   // Class level log output
@@ -58,7 +57,7 @@ class SnapbackSM {
     )
   }
 
-  // Helper function to retrieve all config based
+  // Helper function to retrieve all relevant configs
   async getSPInfo () {
     const spID = config.get('spID')
     const endpoint = this.endpoint
@@ -200,32 +199,37 @@ class SnapbackSM {
     // Issue syncs if necessary
     // For each user in the initially returned usersList,
     //  compare local primary clock value to value from secondary retrieved in bulk above
-    await Promise.all(usersList.map(
-      async (user) => {
-        let userWallet = user.wallet
-        let secondary1 = user.secondary1
-        let secondary2 = user.secondary2
-        let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
-        let secondary1ClockValue = secondaryNodeUserClockStatus[secondary1][userWallet]
-        let secondary2ClockValue = secondaryNodeUserClockStatus[secondary2][userWallet]
-        let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue
-        let secondary2SyncRequired = secondary2ClockValue === undefined ? true : primaryClockValue > secondary2ClockValue
-        this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
-        // Enqueue sync for secondary1 if required
-        if (secondary1SyncRequired) {
-          await this.issueSecondarySync(userWallet, secondary1, this.endpoint)
+    let numSyncsIssued = 0
+    await Promise.all(
+      usersList.map(
+        async (user) => {
+          let userWallet = user.wallet
+          let secondary1 = user.secondary1
+          let secondary2 = user.secondary2
+          let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
+          let secondary1ClockValue = secondaryNodeUserClockStatus[secondary1][userWallet]
+          let secondary2ClockValue = secondaryNodeUserClockStatus[secondary2][userWallet]
+          let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue
+          let secondary2SyncRequired = secondary2ClockValue === undefined ? true : primaryClockValue > secondary2ClockValue
+          this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
+          // Enqueue sync for secondary1 if required
+          if (secondary1SyncRequired) {
+            await this.issueSecondarySync(userWallet, secondary1, this.endpoint)
+            numSyncsIssued += 1
+          }
+          // Enqueue sync for secondary2 if required
+          if (secondary2SyncRequired) {
+            await this.issueSecondarySync(userWallet, secondary2, this.endpoint)
+            numSyncsIssued += 1
+          }
         }
-        // Enqueue sync for secondary2 if required
-        if (secondary2SyncRequired) {
-          await this.issueSecondarySync(userWallet, secondary2, this.endpoint)
-        }
-      }
     ))
     this.log('------------------END Process SnapbackSM Operation------------------')
   }
 
   // Track an ongoing sync operation to a secondary
   async monitorSecondarySync (syncWallet, primaryClockValue, secondaryUrl) {
+    let startTime = Date.now()
     // Monitor the sync status
     let syncMonitoringRequestParameters = {
       method: 'get',
@@ -255,6 +259,8 @@ class SnapbackSM {
       // 1s delay between retries
       await utils.timeout(1000)
     }
+    let duration = Date.now() - startTime
+    this.log(`Sync for ${syncWallet} at ${secondaryUrl} completed in ${duration}ms`)
   }
 
   // Main sync queue job
@@ -295,12 +301,14 @@ class SnapbackSM {
     const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
       this.endpoint
     )
+    config.set('spID', recoveredSpID)
     // A returned spID of 0 means this this.endpoint is currently not registered on chain
     // In this case, the stateMachine is considered to be 'uninitialized'
     if (recoveredSpID === 0) {
       this.initialized = false
+      this.log(`Failed to recover spID for ${this.endpoint}, received ${config.get('spID')}`)
+      return
     }
-    config.set('spID', recoveredSpID)
     this.log(`Recovered ${config.get('spID')} for ${this.endpoint}`)
     this.initialized = true
     return this.initialized
