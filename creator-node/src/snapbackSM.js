@@ -114,7 +114,7 @@ class SnapbackSM {
         }
       }
     })
-    return cnodeUsers.reduce((o, k)=>{
+    return cnodeUsers.reduce((o, k) => {
       o[k.walletPublicKey] = k.clock
       return o
     }, {})
@@ -190,7 +190,7 @@ class SnapbackSM {
         if (user.secondary1) secondary1 = user.secondary1
         if (user.secondary2) secondary2 = user.secondary2
 
-        // Create node 
+        // Create node
         if (!nodeVectorClockQueryList[secondary1] && secondary1 != null) { nodeVectorClockQueryList[secondary1] = [] }
         if (!nodeVectorClockQueryList[secondary2] && secondary2 != null) { nodeVectorClockQueryList[secondary2] = [] }
 
@@ -229,7 +229,7 @@ class SnapbackSM {
             (entry) => {
               try {
                 secondaryNodeUserClockStatus[node][entry.walletPublicKey] = entry.clock
-              } catch(e) {
+              } catch (e) {
                 this.log(`ERROR updating secondaryNodeUserClockStatus for ${entry.walletPublicKey} with ${entry.clock}`)
                 this.log(JSON.stringify(secondaryNodeUserClockStatus))
                 throw e
@@ -272,7 +272,7 @@ class SnapbackSM {
               await this.issueSecondarySync(userWallet, secondary2, this.endpoint)
               numSyncsIssued += 1
             }
-          } catch(e) {
+          } catch (e) {
             this.log(`Caught error for user ${user.wallet}, ${JSON.stringify(user)}, ${e.message}`)
           }
         }
@@ -300,7 +300,6 @@ class SnapbackSM {
       url: `/sync_status/${syncWallet}`,
       responseType: 'json'
     }
-    let startTime = Date.now()
     let syncAttemptCompleted = false
     while (!syncAttemptCompleted) {
       try {
