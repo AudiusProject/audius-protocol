@@ -362,6 +362,7 @@ class SnapbackSM {
   async initializeNodeIdentityConfig () {
     this.log(`Initializing SnapbackSM`)
     this.log(`Retrieving spID for ${this.endpoint}`)
+    this.log(`Developer mode: ${config.get('snapbackDevModeEnabled')}`)
     const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
       this.endpoint
     )
@@ -398,7 +399,7 @@ class SnapbackSM {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {
           // TODO: Remove dev mode
-          if (!config.get('triggerSyncOnWrite')) {
+          if (config.get('snapbackDevModeEnabled')) {
             this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
             await utils.timeout(DevDelayInMS)
             this.stateMachineQueue.add({ startTime: Date.now() })
@@ -431,7 +432,7 @@ class SnapbackSM {
     )
 
     // Enqueue first state machine operation if dev mode enabled
-    if (!config.get('triggerSyncOnWrite')) {
+    if (config.get('snapbackDevModeEnabled')) {
       this.stateMachineQueue.add({ startTime: Date.now() })
     }
 

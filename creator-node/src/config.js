@@ -379,11 +379,11 @@ const config = convict({
     env: 'rehydrateMaxConcurrency',
     default: 10
   },
-  triggerSyncOnWrite: {
+  snapbackDevModeEnabled: {
     doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
     format: Boolean,
-    env: 'triggerSyncOnWrite',
-    default: true
+    env: 'snapbackDevModeEnabled',
+    default: false
   }
 
   // unsupported options at the moment
