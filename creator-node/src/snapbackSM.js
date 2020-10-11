@@ -105,16 +105,19 @@ class SnapbackSM {
     return resp.data.data
   }
 
-  /*
-    Retrieve the current clock value on this node for the provided user wallet
-  */
-  async getUserPrimaryClockValue (wallet) {
-    let walletPublicKey = wallet.toLowerCase()
-    const cnodeUser = await models.CNodeUser.findOne({
-      where: { walletPublicKey }
+  // Retrieve the current clock value on this node for the provided user wallet
+  async getUserPrimaryClockValues (wallets) {
+    const cnodeUsers = await models.CNodeUser.findAll({
+      where: {
+        walletPublicKey: {
+          [models.Sequelize.Op.in]: wallets
+        }
+      }
     })
-    const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
-    return clockValue
+    return cnodeUsers.reduce((o, k)=>{
+      o[k.walletPublicKey] = k.clock
+      return o
+    }, {})
   }
 
   // Enqueue a sync request to a particular secondary
@@ -161,32 +164,36 @@ class SnapbackSM {
     // Users actually selected to process
     let usersToProcess = []
 
+    let wallets = []
+
     // Issue queries to secondaries for each user
-    await Promise.all(
-      usersList.map(
-        async (user) => {
-          let userId = user.user_id
-          let modResult = userId % ModuloBase
-          let shouldProcess = (modResult === this.currentModuloSlice)
+    usersList.map(
+      async (user) => {
+        let userId = user.user_id
+        let modResult = userId % ModuloBase
+        let shouldProcess = (modResult === this.currentModuloSlice)
 
-          if (!shouldProcess) {
-            return
-          }
-          console.log(`user:${userId}, modResult:${modResult}, shouldProcess=${shouldProcess}`)
-
-          // Add to list of currently processing users
-          usersToProcess.push(user)
-
-          let userWallet = user.wallet
-          let secondary1 = user.secondary1
-          let secondary2 = user.secondary2
-          if (!nodeVectorClockQueryList[secondary1]) { nodeVectorClockQueryList[secondary1] = [] }
-          if (!nodeVectorClockQueryList[secondary2]) { nodeVectorClockQueryList[secondary2] = [] }
-          nodeVectorClockQueryList[secondary1].push(userWallet)
-          nodeVectorClockQueryList[secondary2].push(userWallet)
+        if (!shouldProcess) {
+          return
         }
-      )
+        console.log(`user:${userId}, modResult:${modResult}, shouldProcess=${shouldProcess}`)
+
+        // Add to list of currently processing users
+        usersToProcess.push(user)
+        let userWallet = user.wallet
+        wallets.push(userWallet)
+        let secondary1 = user.secondary1
+        let secondary2 = user.secondary2
+        if (!nodeVectorClockQueryList[secondary1]) { nodeVectorClockQueryList[secondary1] = [] }
+        if (!nodeVectorClockQueryList[secondary2]) { nodeVectorClockQueryList[secondary2] = [] }
+        nodeVectorClockQueryList[secondary1].push(userWallet)
+        nodeVectorClockQueryList[secondary2].push(userWallet)
+      }
     )
+    this.log(`Processing ${usersToProcess.length} users`)
+
+    // Cached primary clock values for currently processing user set
+    let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
 
     // Process nodeVectorClockQueryList and cache user clock values on each node
     let secondaryNodesToProcess = Object.keys(nodeVectorClockQueryList)
@@ -225,7 +232,7 @@ class SnapbackSM {
           let userWallet = user.wallet
           let secondary1 = user.secondary1
           let secondary2 = user.secondary2
-          let primaryClockValue = await this.getUserPrimaryClockValue(userWallet)
+          let primaryClockValue = primaryClockValues[userWallet]
           let secondary1ClockValue = secondaryNodeUserClockStatus[secondary1][userWallet]
           let secondary2ClockValue = secondaryNodeUserClockStatus[secondary2][userWallet]
           let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue

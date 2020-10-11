@@ -5,6 +5,8 @@ from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
+# Query all users with input endpoint string as primary
+# Only returns values where 1/2 secondaries are non-null
 def get_users_cnode(cnode_endpoint_string):
     users = []
     db = get_db_read_replica()
