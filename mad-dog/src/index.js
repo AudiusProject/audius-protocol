@@ -39,7 +39,6 @@ async function tearDownAllServices() {
 const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
-      console.log(testFn)
       const res = await testFn({
         executeAll,
         executeOne,
