@@ -412,7 +412,9 @@ class SnapbackSM {
     // Run the task every x time interval
     // */5 * * * *, every 5 minutes
     // 0 * * * *, every hour at minute 0
-    this.stateMachineQueue.add({}, { repeat: { cron: '0 * * * *' } })
+    if (!config.get('snapbackDevModeEnabled')) {
+      this.stateMachineQueue.add({}, { repeat: { cron: '0 * * * *' } })
+    }
 
     // Initialize sync queue processor function, as drained will issue syncs
     // A maximum of 10 sync jobs are allowed to be issued at once

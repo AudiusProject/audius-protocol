@@ -2,6 +2,18 @@ const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
 
+// Custom boolean format used to ensure that empty string '' is evaluated as false
+// https://github.com/mozilla/node-convict/issues/380
+convict.addFormat({
+  name: 'BooleanCustom',
+  validate: function (val) {
+    return (typeof val === "boolean") || (typeof val === "string")
+  },
+  coerce: function (val) {
+    return Boolean(val)
+  }
+})
+
 // Define a schema
 const config = convict({
   dbUrl: {
@@ -381,7 +393,7 @@ const config = convict({
   },
   snapbackDevModeEnabled: {
     doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
-    format: Boolean,
+    format: 'BooleanCustom',
     env: 'snapbackDevModeEnabled',
     default: false
   }
