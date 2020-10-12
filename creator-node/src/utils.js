@@ -6,6 +6,7 @@ const axios = require('axios')
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
+const redis = require('./redis')
 let { serviceRegistry } = require('./serviceRegistry')
 
 const config = require('./config')
@@ -241,22 +242,16 @@ async function findCIDInNetwork (filePath, logger) {
 }
 
 /**
- * Get all creator nodes registered on chain. Use a cache to avoid making execessive amounts of chain calls
+ * Get all creator nodes registered on chain from a cached redis value
  */
 async function getAllRegisteredCNodes () {
-  const { libs, redis } = serviceRegistry
   const cacheKey = 'all_registered_cnodes'
 
   try {
-    const cnodesList = await redis.cache.getCache(cacheKey)
+    const cnodesList = await redis.get(cacheKey)
     if (cnodesList) {
       return JSON.parse(cnodesList)
     }
-
-    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
-    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
-    redis.cache.setCache(cacheKey, JSON.stringify(creatorNodes))
-    return creatorNodes
   } catch (e) {
     console.error('Error getting values in getAllRegisteredCNodes', e)
   }
@@ -268,7 +263,6 @@ async function getAllRegisteredCNodes () {
  * @param {String} filePath path of CID on the file system
  */
 async function getIfAttemptedStateFix (filePath) {
-  const { redis } = serviceRegistry
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
   const firstTime = await redis.sadd(key, filePath)
   await redis.expire(key, 60 * 60 * 24) // expire one day after final write
@@ -311,7 +305,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
         let addResp = await ipfs.addFromFs(storagePath, { pin: false })
         logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
-        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}, about to search other creator nodes`)
+        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
         await findCIDInNetwork(storagePath, logger)
       }
     } catch (e) {

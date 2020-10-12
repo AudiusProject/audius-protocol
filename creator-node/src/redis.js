@@ -26,17 +26,6 @@ function getNodeSyncRedisKey (wallet) {
   return `NODESYNC.${wallet}`
 }
 
-class RedisCache {
-  static async setCache (key, value, expiration = EXPIRATION) {
-    return redisClient.set(key, value, 'EX', expiration)
-  }
-
-  static async getCache (key) {
-    return redisClient.get(key)
-  }
-}
-
 module.exports = redisClient
 module.exports.lock = RedisLock
-module.exports.cache = RedisCache
 module.exports.getNodeSyncRedisKey = getNodeSyncRedisKey
