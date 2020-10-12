@@ -78,6 +78,12 @@ class SnapbackSM {
   // Retrieve users with this node as primary
   async getNodePrimaryUsers () {
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    if (!currentlySelectedDiscProv) {
+      // Re-initialize if no discovery provider has been selected
+      this.initialized = false
+      throw new Error('No discovery provider currently selected, exiting')
+    }
+
     let requestParams = {
       method: 'get',
       baseURL: currentlySelectedDiscProv,
