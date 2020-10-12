@@ -391,32 +391,31 @@ module.exports = function (app) {
     delegateWallet = delegateWallet.toLowerCase()
 
     // no filePath passed in
-    if (!filePath) return errorResponseBadRequest(`Invalid request, no path provided`)
+    if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
 
     // check that signature is correct and delegateWallet is registered on chain
     const recoveredWallet = recoverWallet({ filePath, delegateWallet, timestamp }, signature).toLowerCase()
     const creatorNodes = await getAllRegisteredCNodes()
     const foundDelegateWallet = creatorNodes.some(node => node.delegateOwnerWallet.toLowerCase() === recoveredWallet)
     if ((recoveredWallet !== delegateWallet) || !foundDelegateWallet) {
-      return errorResponseUnauthorized(`Invalid wallet signature`)
+      return sendResponse(req, res, errorResponseUnauthorized(`Invalid wallet signature`))
     }
-
     const filePathNormalized = path.normalize(filePath)
 
     // check that the regex works and verify it's not blacklisted
     const match = FILE_SYSTEM_REGEX.exec(filePathNormalized)
-    if (!match) return errorResponseBadRequest(`Invalid filePathNormalized provided`)
+    if (!match) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
     const { outer, inner } = match.groups
     if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
-      return errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`)
+      return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
     }
     res.setHeader('Content-Disposition', contentDisposition(outer))
 
     // if there's an inner CID, check if CID is blacklisted and set content disposition header
     if (inner) {
       if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {
-        return errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`)
+        return sendResponse(req, res, errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`))
       }
       res.setHeader('Content-Disposition', contentDisposition(inner))
     }
@@ -424,7 +423,7 @@ module.exports = function (app) {
     try {
       return await streamFromFileSystem(req, res, filePathNormalized)
     } catch (e) {
-      return errorResponseNotFound(`File with path not found`)
+      return sendResponse(req, res, errorResponseNotFound(`File with path not found`))
     }
   })
 }
