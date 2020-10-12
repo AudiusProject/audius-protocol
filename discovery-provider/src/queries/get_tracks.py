@@ -6,32 +6,27 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import paginate_query, parse_sort_param, \
   populate_track_metadata, get_users_ids, get_users_by_id
-from src.utils.redis_cache import extract_key, use_redis_cache
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 
 logger = logging.getLogger(__name__)
 
-UNPOPULATED_TRACK_CACHE_DURATION_SEC = 10
-
-def make_cache_key(args):
-    cache_keys = {
-        "handle": args.get("handle"),
-        "id": args.get("id"),
-        "user_id": args.get("user_id"),
-        "filter_deleted": args.get("filter_deleted"),
-        "min_block_number": args.get("min_block_number"),
-        "sort": args.get("sort"),
-        "with_users": args.get("with_users")
-    }
-    key = extract_key(f"unpopulated-tracks:{request.path}", cache_keys.items())
-    return key
-
 def get_tracks(args):
+    """
+    Gets tracks.
+    A note on caching strategy:
+        - This method is cached at two layers: at the API via the @cache decorator,
+        and within this method using the shared get_unpopulated_tracks cache.
+
+        The shared cache only works when fetching via ID, so calls to fetch tracks
+        via handle, asc/desc sort, or filtering by block_number won't hit the shared cache.
+        These will hit the API cache unless they have a current_user_id included.
+
+    """
     tracks = []
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        def get_unpopulated_track():
+        def get_tracks_and_ids():
             if "handle" in args:
                 handle = args.get("handle")
                 user_id = session.query(User.user_id).filter(User.handle_lc == handle.lower()).first()
@@ -45,13 +40,10 @@ def get_tracks(args):
             )
 
             if can_use_shared_cache:
-                logger.warning("HITTING SHARED CACHE!")
-                # TODO: make sure this is actually a bool LOL
                 should_filter_deleted = args.get("filter_deleted", False)
                 tracks = get_unpopulated_tracks(session, args["id"], should_filter_deleted)
                 track_ids = list(map(lambda track: track["track_id"], tracks))
                 return (tracks, track_ids)
-
 
             # Create initial query
             base_query = session.query(Track)
@@ -108,8 +100,7 @@ def get_tracks(args):
 
             return (tracks, track_ids)
 
-        key = make_cache_key(args)
-        (tracks, track_ids) = use_redis_cache(key, UNPOPULATED_TRACK_CACHE_DURATION_SEC, get_unpopulated_track)
+        (tracks, track_ids) = get_tracks_and_ids()
 
         # bundle peripheral info into track results
         current_user_id = args.get("current_user_id")
