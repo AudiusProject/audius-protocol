@@ -13,14 +13,16 @@ const {
   errorResponseServerError,
   errorResponseNotFound,
   errorResponseForbidden,
-  errorResponseRangeNotSatisfiable
+  errorResponseRangeNotSatisfiable,
+  errorResponseUnauthorized
 } = require('../apiHelpers')
+const { recoverWallet } = require('../apiSigning')
 
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
@@ -374,19 +376,34 @@ module.exports = function (app) {
 
   /**
    * Serve file from FS without doing a db check
-   * @param req.query.path the fs path for the file. should not have leading /file_storage prefix
+   * @dev No handleResponse around this route because it doesn't play well with our route handling abstractions,
+   * same as the /ipfs route
+   * @param req.query.filePath the fs path for the file. should not have leading /file_storage prefix
+   * @param req.query.delegateWallet the wallet address that signed this request
+   * @param req.query.timestamp the timestamp when the request was made
+   * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
    */
-  // TODO - add auth here
-  app.get('/file_lookup', handleResponse(async (req, res) => {
-    const filePath = path.normalize(req.query.filePath)
-    console.log('filePath', filePath)
+  app.get('/file_lookup', async (req, res) => {
+    const { filePath, timestamp, signature } = req.query
+    let { delegateWallet } = req.query
+    delegateWallet = delegateWallet.toLowerCase()
 
     // no filePath passed in
-    if(!filePath) return errorResponseBadRequest(`Invalid request, no path provided`)
+    if (!filePath) return errorResponseBadRequest(`Invalid request, no path provided`)
+
+    // check that signature is correct and delegateWallet is registered on chain
+    const recoveredWallet = recoverWallet({ filePath, delegateWallet, timestamp }, signature).toLowerCase()
+    const creatorNodes = await getAllRegisteredCNodes()
+    const foundDelegateWallet = creatorNodes.some(node => node.delegateOwnerWallet.toLowerCase() === recoveredWallet)
+    if ((recoveredWallet !== delegateWallet) || !foundDelegateWallet) {
+      return errorResponseUnauthorized(`Invalid wallet signature`)
+    }
+
+    const filePathNormalized = path.normalize(filePath)
 
     // check that the regex works and verify it's not blacklisted
-    const match = FILE_SYSTEM_REGEX.exec(filePath)
-    if(!match) return errorResponseBadRequest(`Invalid filePath provided`)
+    const match = FILE_SYSTEM_REGEX.exec(filePathNormalized)
+    if (!match) return errorResponseBadRequest(`Invalid filePathNormalized provided`)
 
     const { outer, inner } = match.groups
     if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
@@ -403,11 +420,11 @@ module.exports = function (app) {
     }
 
     try {
-      return await streamFromFileSystem(req, res, filePath)
+      return await streamFromFileSystem(req, res, filePathNormalized)
     } catch (e) {
       return errorResponseNotFound(`File with path not found`)
     }
-  }))
+  })
 }
 
 module.exports.getCID = getCID

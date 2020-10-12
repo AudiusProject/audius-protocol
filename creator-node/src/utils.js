@@ -10,6 +10,7 @@ let { serviceRegistry } = require('./serviceRegistry')
 
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
+const { generateTimestampAndSignature } = require('./apiSigning')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -205,20 +206,23 @@ async function findCIDInNetwork (filePath, logger) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
+  // generate signature
+  const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
+  const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
   const creatorNodes = await getAllRegisteredCNodes()
-  console.log("all creatornodes", creatorNodes)
   let node
-  // TODO - add this to redis cache so we don't bombard other cnodes with requests
-  // TODO - remove this cnode from the list
+
   for (let index = 0; index < creatorNodes.length; index++) {
     node = creatorNodes[index]
-    console.log("node", node)
     try {
       const resp = await axios({
         method: 'get',
         url: `${node.endpoint}/file_lookup`,
         params: {
-          filePath
+          filePath,
+          timestamp,
+          delegateWallet,
+          signature
         },
         responseType: 'stream',
         timeout: 1000
@@ -246,13 +250,10 @@ async function getAllRegisteredCNodes () {
   try {
     const cnodesList = await redis.cache.getCache(cacheKey)
     if (cnodesList) {
-      console.log("from cache", cnodesList)
       return JSON.parse(cnodesList)
     }
-    
+
     let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
-    console.log("nodes from chain", creatorNodes)
-    // creatorNodes = [creatorNodes.reverse()[0]]
     creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
     redis.cache.setCache(cacheKey, JSON.stringify(creatorNodes))
     return creatorNodes
@@ -269,11 +270,11 @@ async function getAllRegisteredCNodes () {
 async function getIfAttemptedStateFix (filePath) {
   const { redis } = serviceRegistry
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
-  const resp = await redis.sadd(key, filePath)
-  // new key, set expire
-  if (resp) {
-    await redis.expire(key, 60*60*24) // expire one day after final write
-  }
+  const firstTime = await redis.sadd(key, filePath)
+  await redis.expire(key, 60 * 60 * 24) // expire one day after final write
+
+  // if firstTime is 1, it's a new key. existing key returns 0
+  return !firstTime
 }
 
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
@@ -428,3 +429,4 @@ module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet
 module.exports.ipfsStat = ipfsStat
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
+module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
