@@ -16,18 +16,21 @@ const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
 class TransactionRelay {
+  // Make singleton as wallet usage state should be consistent across identity service
   constructor () {
     if (!TransactionRelay.instance) {
       this.availableWallets = this.getAvailableWallets()
       this.usedWallets = []
+      this.recentlyUsedWallet = null
+
+      TransactionRelay.instance = this
     }
 
-    TransactionRelay.instance = this
     return this
   }
 
   /** Attempt to send transaction to primary web3 provider, if that fails try secondary */
-  async sendTransaction (req, resetNonce = false, txProps, reqBodySHA) {
+  async sendTransaction (req, txProps, reqBodySHA) {
     let resp = null
     try {
       resp = await this.sendTransactionInternal(req, primaryWeb3, txProps, reqBodySHA)
@@ -56,7 +59,7 @@ class TransactionRelay {
 
     const existingTx = await models.Transaction.findOne({
       where: {
-        encodedABI: encodedABI // this should always be unique because of the nonce / sig
+        encodedABI // this should always be unique because of the nonce / sig
       }
     })
 
@@ -68,18 +71,13 @@ class TransactionRelay {
     const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
     const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
-    // will be set later. necessary for code outside scope of try block
     let receipt
     let redisLogParams
-    let wallet = this.selectAvailableWallet()
 
-    while (!wallet) {
-      await new Promise(resolve => setTimeout(resolve, 200))
-      wallet = this.selectAvailableWallet()
-    }
+    const wallet = this.setAndSelectAvailableWallet()
+    logger.info(`TransactionRelay - selected wallet ${wallet.publicKey}`)
 
     try {
-      logger.info('relayTx - selected wallet', wallet.publicKey)
       const privateKeyBuffer = Buffer.from(wallet.privateKey, 'hex')
       const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
       const address = walletAddress.getAddressString()
@@ -87,12 +85,11 @@ class TransactionRelay {
         throw new Error('Invalid relayerPublicKey')
       }
 
-      const gasPrice = await this.getGasPrice(req, web3)
+      const gasPrice = await this.getGasPrice(web3)
       const nonce = await web3.eth.getTransactionCount(address)
-
       const txParams = {
         nonce: web3.utils.toHex(nonce),
-        gasPrice: gasPrice,
+        gasPrice,
         gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
         to: contractAddress,
         data: encodedABI,
@@ -138,21 +135,50 @@ class TransactionRelay {
     return receipt
   }
 
+  setAndSelectAvailableWallet () {
+    // Generate a random wallet index of available wallets
+    const wallets = this.getAvailableWallets()
+    const randomWalletIndex = Math.floor(Math.random() * wallets.length)
+
+    // Filter out the chosen wallet
+    let chosenWallet
+    const availableWallets = wallets.filter((wallet, i) => {
+      // Set this.lastUsedWallet to chosenWallet
+      if (i === randomWalletIndex) {
+        chosenWallet = wallet
+        this.setRecentlyUsedWallet(wallet)
+      }
+      return i !== randomWalletIndex
+    })
+
+    // Update usedWallets and availableWallets
+    this.usedWallets.push(chosenWallet)
+    this.setAvailableWallets(availableWallets)
+
+    // If all wallets have been used, reset the available wallets
+    if (availableWallets.length === 0) {
+      this.setAvailableWallets(this.getAvailableWallets())
+      this.setUsedWallets([])
+    }
+
+    return chosenWallet
+  }
+
   // TODO - this only works locally, make it work on prod as well
   async fundRelayerIfEmpty () {
     const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+    const relayerWallets = this.getAvailableWallets()
 
-    const wallets = this.getAvailableWallets()
-    for (let wallet of wallets) {
+    for (let wallet of relayerWallets) {
       let balance = await primaryWeb3.eth.getBalance(wallet.publicKey)
-      logger.info('Attempting to fund wallet', wallet.publicKey, parseInt(balance))
+      logger.info('TransactionRelay - Attempting to fund wallet', wallet.publicKey, parseInt(balance))
 
       if (parseInt(balance) < minimumBalance) {
-        logger.info(`Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
+        logger.info(`TransactionRelay - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
         const account = (await primaryWeb3.eth.getAccounts())[0]
         await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
         balance = await this.getRelayerFunds(wallet.publicKey)
-        logger.info('Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance, 'ether'), 'eth')
+        logger.info('TransactionRelay - Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance, 'ether'), 'eth')
       }
     }
   }
@@ -161,7 +187,7 @@ class TransactionRelay {
     return primaryWeb3.eth.getBalance(walletPublicKey)
   }
 
-  async getGasPrice (req, web3) {
+  async getGasPrice (web3) {
     let gasPrice = parseInt(await web3.eth.getGasPrice())
     if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
       logger.info('TransactionRelay - gas price was not defined or was greater than HIGH_GAS_PRICE', gasPrice)
@@ -179,37 +205,20 @@ class TransactionRelay {
     return gasPrice
   }
 
-  selectAvailableWallet () {
-    // Generate a random wallet index of available wallets
-    const wallets = this.getAvailableWallets()
-    const randomWalletIndex = Math.floor(Math.random() * wallets.length)
-
-    // Filter out the chosen wallet
-    let chosenWallet
-    const availableWallets = wallets.filter((wallet, i) => {
-      if (i === randomWalletIndex) chosenWallet = wallet
-      return i !== randomWalletIndex
-    })
-
-    // Update usedWallets and availableWallets
-    this.usedWallets.push(chosenWallet)
-    this.setAvailableWallets(availableWallets)
-
-    // If all wallets have been used, reset the available wallets
-    if (availableWallets.length === 0) {
-      this.setAvailableWallets(this.getAvailableWallets())
-      this.setUsedWallets([])
-    }
-
-    return chosenWallet
-  }
-
   getAvailableWallets () {
     if (!this.availableWallets || this.availableWallets.length === 0) {
       return config.get('relayerWallets')
     }
 
     return this.availableWallets
+  }
+
+  getUsedWallets () {
+    return this.usedWallets
+  }
+
+  getRecentlyUsedWallet () {
+    return this.recentlyUsedWallet
   }
 
   setAvailableWallets (wallets) {
@@ -219,6 +228,10 @@ class TransactionRelay {
   setUsedWallets (wallets) {
     this.usedWallets = wallets
   }
+
+  setRecentlyUsedWallet (wallet) {
+    this.recentlyUsedWallet = wallet
+  }
 }
 
-module.exports = TransactionRelay
+module.exports = new TransactionRelay()

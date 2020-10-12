@@ -1,5 +1,5 @@
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const txRelay = require('../txRelay')
+const txRelay = require('../TransactionRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {
@@ -23,7 +23,6 @@ module.exports = function (app) {
         }
         receipt = await txRelay.sendTransaction(
           req,
-          false, // resetNonce
           txProps,
           reqBodySHA)
       } catch (e) {
@@ -33,7 +32,6 @@ module.exports = function (app) {
           // the last parameter is an optional bool that forces a nonce reset
           receipt = await txRelay.sendTransaction(
             req,
-            true, // resetNonce
             txProps,
             reqBodySHA)
           // no need to return success response here, regular code execution will continue after catch()

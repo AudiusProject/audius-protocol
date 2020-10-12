@@ -2,7 +2,7 @@ const config = require('../config.js')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
-const { getRelayerFunds } = require('../txRelay')
+const txRelay = require('../TransactionRelay')
 const Web3 = require('web3')
 
 const axios = require('axios')
@@ -175,7 +175,7 @@ module.exports = function (app) {
     let balances = []
 
     for (let account of RELAY_HEALTH_ACCOUNTS) {
-      let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
+      let balance = parseFloat(Web3.utils.fromWei(await txRelay.getRelayerFunds(account), 'ether'))
       balances.push({ account, balance })
       if (balance < minimumBalance) {
         belowMinimumBalances.push({ account, balance })
