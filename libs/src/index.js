@@ -20,6 +20,7 @@ const Track = require('./api/track')
 const Playlist = require('./api/playlist')
 const File = require('./api/file')
 const ServiceProvider = require('./api/serviceProvider')
+const Web3 = require('./web3')
 
 class AudiusLibs {
   /**
@@ -76,21 +77,25 @@ class AudiusLibs {
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress
-   * @param {string | object | Array<string>} providers web3 provider endpoint(s)
+   * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
   static configInternalWeb3 (registryAddress, providers) {
-    if (typeof providers !== 'string' || !Array.isArray(providers)) {
-      throw new Error('Invalid providers list. Must be string or Array.')
-    }
-    if (typeof providers === "string") {
-      providers = providers.split(',')
+    let providerList
+    if (typeof providers === 'string') {
+      providerList = providers.split(',')
+    } else if (providers instanceof Web3) {
+      providerList = [providers]
+    } else if (Array.isArray(providers)) {
+      providerList = providers
+    } else {
+      throw new Error('Providers must be of type string, Array, or Web3 instance')
     }
 
     return {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoints: providers
+        web3ProviderEndpoints: providerList
       }
     }
   }
@@ -99,18 +104,22 @@ class AudiusLibs {
    * Configures an eth web3
    * @param {string} tokenAddress
    * @param {string} registryAddress
-   * @param {string | object | Array<string>} providers web3 provider endpoint(s)
+   * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    * @param {string} ownerWallet
    */
   static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet) {
-    if (typeof providers !== 'string' || !Array.isArray(providers)) {
-      throw new Error('Invalid providers list. Must be string or Array.')
-    }
-    if (typeof providers === "string") {
-      providers = providers.split(',')
+    let providerList
+    if (typeof providers === 'string') {
+      providerList = providers.split(',')
+    } else if (providers instanceof Web3) {
+      providerList = [providers]
+    } else if (Array.isArray(providers)) {
+      providerList = providers
+    } else {
+      throw new Error('Providers must be of type string, Array, or Web3 instance')
     }
 
-    return { tokenAddress, registryAddress, providers, ownerWallet }
+    return { tokenAddress, registryAddress, providers: providerList, ownerWallet }
   }
 
   /**
