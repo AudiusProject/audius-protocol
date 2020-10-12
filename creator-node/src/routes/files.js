@@ -27,6 +27,9 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 
+// regex to validate storagePath format passed in for /file_lookup route
+// this will either be of the format /file_storage/<cid> for a file or /file_storage/<cid1>/<cid2> for an dir image
+// there are two named match groups, outer and inner. outer is for file or dirname for dir image. inner is only image cid in dir
 const FILE_SYSTEM_REGEX = /\/file_storage\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
@@ -412,6 +415,7 @@ module.exports = function (app) {
     }
     res.setHeader('Content-Disposition', contentDisposition(outer))
 
+    // inner will only be set for image dir CID
     // if there's an inner CID, check if CID is blacklisted and set content disposition header
     if (inner) {
       if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {

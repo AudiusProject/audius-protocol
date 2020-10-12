@@ -268,10 +268,12 @@ async function getAllRegisteredCNodes () {
 }
 
 /**
- * Return if a fix has been attempted in this time interval for this filePath
+ * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
  */
 async function getIfAttemptedStateFix (filePath) {
+  // key is `attempted_fs_fixes:<today's date>`
+  // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
   const firstTime = await redis.sadd(key, filePath)
   await redis.expire(key, 60 * 60 * 24) // expire one day after final write
