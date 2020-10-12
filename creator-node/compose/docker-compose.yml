@@ -26,7 +26,7 @@ services:
       - delegateOwnerWallet=${delegateOwnerWallet}
       - delegatePrivateKey=${delegatePrivateKey}
       - creatorNodeEndpoint=${creatorNodeEndpoint}
-      - triggerSyncOnWrite=${triggerSyncOnWrite}
+      - snapbackDevModeEnabled=${snapbackDevModeEnabled}
     env_file:
       - ./env/base.env
     ports:
