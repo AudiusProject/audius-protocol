@@ -37,7 +37,6 @@ def get_playlists(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         def get_unpopulated_playlists():
-            filter_out_private_playlists = True
             playlist_query = (
                 session.query(Playlist)
                 .filter(Playlist.is_current == True)
@@ -58,13 +57,8 @@ def get_playlists(args):
                     Playlist.playlist_owner_id == user_id
                 )
 
-                # if the current user is the same as the user passed in through the query param then we're trying
-                # to get playlists for, check if the users are the same. if they are the same, the current user is
-                # trying to request their own playlists, so allow them to see private playlists
-                if current_user_id and user_id and (int(current_user_id) == int(user_id)):
-                    filter_out_private_playlists = False
-
-            if filter_out_private_playlists:
+            # If no current_user_id, never show hidden playlists
+            if not current_user_id:
                 playlist_query = playlist_query.filter(
                     Playlist.is_private == False
                 )
@@ -78,6 +72,14 @@ def get_playlists(args):
             playlist_query = playlist_query.order_by(desc(Playlist.created_at))
             playlists = paginate_query(playlist_query).all()
             playlists = helpers.query_result_to_list(playlists)
+
+            # if we passed in a current_user_id, filter out all privte playlists where
+            # the owner_id doesn't match the current_user_id
+            if current_user_id:
+                playlists = list(filter(
+                    lambda playlist: (not playlist["is_private"]) or playlist["playlist_owner_id"] == current_user_id,
+                    playlists)
+                )
 
             # retrieve playlist ids list
             playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))

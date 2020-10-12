@@ -81,9 +81,9 @@ def get_tracks(args):
                     ).order_by(
                         AggregatePlays.count.desc()
                     )
-            else:
-                whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
-                base_query = parse_sort_param(base_query, Track, whitelist_params)
+                else:
+                    whitelist_params = ['created_at', 'create_date', 'release_date', 'blocknumber', 'track_id']
+                    base_query = parse_sort_param(base_query, Track, whitelist_params)
             query_results = paginate_query(base_query).all()
             tracks = helpers.query_result_to_list(query_results)
 

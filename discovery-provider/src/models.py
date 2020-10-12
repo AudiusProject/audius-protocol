@@ -25,6 +25,7 @@ from src.model_validator import ModelValidator
 Base = declarative_base()
 logger = logging.getLogger(__name__)
 
+
 def validate_field_helper(field, value, model):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use

@@ -14,7 +14,7 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { sortKeys } = require('../src/apiHelpers')
+const { sortKeys } = require('../src/apiSigning')
 
 describe('test AudiusUsers with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock

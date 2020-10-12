@@ -8,7 +8,7 @@ const BlacklistManager = require('../src/blacklistManager')
 const models = require('../src/models')
 const ipfsClient = require('../src/ipfsClient')
 const redis = require('../src/redis')
-const { generateTimestampAndSignature } = require('../src/apiHelpers')
+const { generateTimestampAndSignature } = require('../src/apiSigning')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')

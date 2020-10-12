@@ -1,6 +1,8 @@
+import datetime
 import logging
 import os
 import json
+from json.encoder import JSONEncoder
 import re
 import time
 import contextlib
@@ -286,3 +288,12 @@ def validate_arguments(req_args, expected_args):
         (lambda acc, cur: cur in req_args and acc), expected_args, True)
     if not all_exist:
         raise exceptions.ArgumentError("Not all required arguments exist.")
+
+
+# Subclass JSONEncoder to format dates in strict isoformat.
+# Otherwise, it can behave differently on diffeent systems.
+class DateTimeEncoder(JSONEncoder):
+    def default(self, o): # pylint: disable=method-hidden
+        if isinstance(o, (datetime.date, datetime.datetime)):
+            return o.isoformat()
+        return super(DateTimeEncoder, self).default(o)
