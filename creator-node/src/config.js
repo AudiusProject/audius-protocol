@@ -10,7 +10,7 @@ convict.addFormat({
     return (typeof val === "boolean") || (typeof val === "string")
   },
   coerce: function (val) {
-    return Boolean(val)
+    return val === true || val === 'true'
   }
 })
 
