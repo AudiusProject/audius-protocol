@@ -75,20 +75,6 @@ class SnapbackSM {
     }
   }
 
-  // Query eth-contracts chain for endpoint to ID info
-  async recoverSpID () {
-    if (config.get('spID') !== 0) {
-      this.log(`Known spID=${config.get('spID')}`)
-      return
-    }
-
-    const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-      this.endpoint
-    )
-    this.log(`Recovered ${recoveredSpID} for ${this.endpoint}`)
-    config.set('spID', recoveredSpID)
-  }
-
   // Retrieve users with this node as primary
   async getNodePrimaryUsers () {
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
@@ -357,16 +343,28 @@ class SnapbackSM {
     this.log('------------------END Process SYNC------------------')
   }
 
+  // Query eth-contracts chain for endpoint to ID info
+  async recoverSpID () {
+    if (config.get('spID') !== 0) {
+      this.log(`Known spID=${config.get('spID')}`)
+      return config.get('spID')
+    }
+
+    const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
+      this.endpoint
+    )
+    this.log(`Recovered ${recoveredSpID} for ${this.endpoint}`)
+    config.set('spID', recoveredSpID)
+    return config.get('spID')
+  }
+
   // Function which ensures that state machine has been initialized correctly
   // If not available on startup, subsequent state machine will attempt to initialize until success
   async initializeNodeIdentityConfig () {
     this.log(`Initializing SnapbackSM`)
     this.log(`Retrieving spID for ${this.endpoint}`)
     this.log(`Developer mode: ${config.get('snapbackDevModeEnabled')}`)
-    const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-      this.endpoint
-    )
-    config.set('spID', recoveredSpID)
+    const recoveredSpID = await this.recoverSpID()
     // A returned spID of 0 means this this.endpoint is currently not registered on chain
     // In this case, the stateMachine is considered to be 'uninitialized'
     if (recoveredSpID === 0) {
@@ -374,7 +372,6 @@ class SnapbackSM {
       this.log(`Failed to recover spID for ${this.endpoint}, received ${config.get('spID')}`)
       return
     }
-    this.log(`Recovered ${config.get('spID')} for ${this.endpoint}`)
     this.initialized = true
     return this.initialized
   }
