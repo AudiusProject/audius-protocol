@@ -79,8 +79,11 @@ class AudiusLibs {
    * @param {string | object | Array<string>} providers web3 provider endpoint(s)
    */
   static configInternalWeb3 (registryAddress, providers) {
-    if (typeof providers === 'string' || typeof providers === 'object') {
-      providers = [providers]
+    if (typeof providers !== 'string' || !Array.isArray(providers)) {
+      throw new Error('Invalid providers list. Must be string or Array.')
+    }
+    if (typeof providers === "string") {
+      providers = providers.split(',')
     }
 
     return {
@@ -100,8 +103,11 @@ class AudiusLibs {
    * @param {string} ownerWallet
    */
   static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet) {
-    if (typeof providers === 'string' || typeof providers === 'object') {
-      providers = [providers]
+    if (typeof providers !== 'string' || !Array.isArray(providers)) {
+      throw new Error('Invalid providers list. Must be string or Array.')
+    }
+    if (typeof providers === "string") {
+      providers = providers.split(',')
     }
 
     return { tokenAddress, registryAddress, providers, ownerWallet }
