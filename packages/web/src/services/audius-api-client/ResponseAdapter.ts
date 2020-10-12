@@ -12,20 +12,47 @@ import {
   APIRepost,
   APITrack,
   APIPlaylist,
+  APISearchUser,
   APIUser,
   APIStem,
   APIResponse,
-  APISearch
+  APISearch,
+  APISearchTrack,
+  APISearchAutocomplete,
+  APISearchPlaylist
 } from './types'
 
-export const makeUser = (user: APIUser): UserMetadata | undefined => {
+export const makeUser = (
+  user: APISearchUser | APIUser
+): UserMetadata | undefined => {
   const decodedUserId = decodeHashId(user.id)
   if (!decodedUserId) {
     return undefined
   }
 
+  const album_count = 'album_count' in user ? user.album_count : 0
+  const followee_count = 'followee_count' in user ? user.followee_count : 0
+  const follower_count = 'follower_count' in user ? user.follower_count : 0
+  const playlist_count = 'playlist_count' in user ? user.playlist_count : 0
+  const repost_count = 'repost_count' in user ? user.repost_count : 0
+  const track_count = 'track_count' in user ? user.track_count : 0
+  const current_user_followee_follow_count =
+    'current_user_followee_follow_count' in user
+      ? user.current_user_followee_follow_count
+      : 0
+  const does_current_user_follow =
+    'does_current_user_follow' in user ? user.does_current_user_follow : false
+
   const newUser = {
     ...user,
+    album_count,
+    followee_count,
+    follower_count,
+    playlist_count,
+    repost_count,
+    track_count,
+    current_user_followee_follow_count,
+    does_current_user_follow,
     user_id: decodedUserId,
     cover_photo: user.cover_photo_sizes || user.cover_photo_legacy,
     profile_picture: user.profile_picture_sizes || user.profile_picture_legacy,
@@ -78,7 +105,9 @@ const makeRemix = (remix: APIRemix): Remix | undefined => {
   }
 }
 
-export const makeTrack = (track: APITrack): UserTrackMetadata | undefined => {
+export const makeTrack = (
+  track: APITrack | APISearchTrack
+): UserTrackMetadata | undefined => {
   const decodedTrackId = decodeHashId(track.id)
   const decodedOwnerId = decodeHashId(track.user_id)
   const user = makeUser(track.user)
@@ -87,14 +116,26 @@ export const makeTrack = (track: APITrack): UserTrackMetadata | undefined => {
   }
 
   const saves =
-    track.followee_favorites?.map(makeFavorite).filter(removeNullable) ?? []
+    'followee_favorites' in track
+      ? track.followee_favorites?.map(makeFavorite).filter(removeNullable) ?? []
+      : []
 
   const reposts =
-    track.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
+    'followee_reposts' in track
+      ? track.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
+      : []
 
   const remixes =
     track.remix_of.tracks?.map(makeRemix).filter(removeNullable) ?? []
-
+  const play_count = 'play_count' in track ? track.play_count : 0
+  const save_count = 'favorite_count' in track ? track.favorite_count : 0
+  const repost_count = 'repost_count' in track ? track.repost_count : 0
+  const has_current_user_reposted =
+    'has_current_user_reposted' in track
+      ? track.has_current_user_reposted
+      : false
+  const has_current_user_saved =
+    'has_current_user_saved' in track ? track.has_current_user_saved : false
   const marshalled = {
     ...track,
     user,
@@ -102,7 +143,11 @@ export const makeTrack = (track: APITrack): UserTrackMetadata | undefined => {
     owner_id: decodedOwnerId,
     followee_saves: saves,
     followee_reposts: reposts,
-    save_count: track.favorite_count,
+    play_count,
+    save_count,
+    repost_count,
+    has_current_user_reposted,
+    has_current_user_saved,
     remix_of:
       remixes.length > 0
         ? {
@@ -132,7 +177,7 @@ export const makeTrack = (track: APITrack): UserTrackMetadata | undefined => {
 }
 
 export const makePlaylist = (
-  playlist: APIPlaylist
+  playlist: APIPlaylist | APISearchPlaylist
 ): UserCollectionMetadata | undefined => {
   const decodedPlaylistId = decodeHashId(playlist.id)
   const decodedOwnerId = decodeHashId(playlist.user_id)
@@ -142,10 +187,27 @@ export const makePlaylist = (
   }
 
   const saves =
-    playlist.followee_favorites?.map(makeFavorite).filter(removeNullable) ?? []
+    'followee_favorites' in playlist
+      ? playlist.followee_favorites?.map(makeFavorite).filter(removeNullable) ??
+        []
+      : []
 
   const reposts =
-    playlist.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
+    'followee_reposts' in playlist
+      ? playlist.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
+      : []
+  const has_current_user_reposted =
+    'has_current_user_reposted' in playlist
+      ? playlist.has_current_user_reposted
+      : false
+  const has_current_user_saved =
+    'has_current_user_saved' in playlist
+      ? playlist.has_current_user_saved
+      : false
+  const save_count = 'favorite_count' in playlist ? playlist.favorite_count : 0
+  const repost_count = 'repost_count' in playlist ? playlist.repost_count : 0
+  const total_play_count =
+    'total_play_count' in playlist ? playlist.total_play_count : 0
 
   const playlistContents = {
     track_ids: playlist.added_timestamps
@@ -163,7 +225,11 @@ export const makePlaylist = (
   }
 
   const tracks =
-    playlist.tracks?.map(track => makeTrack(track)).filter(removeNullable) ?? []
+    'tracks' in playlist
+      ? playlist.tracks
+          ?.map(track => makeTrack(track))
+          .filter(removeNullable) ?? []
+      : []
 
   const marshalled = {
     ...playlist,
@@ -174,7 +240,11 @@ export const makePlaylist = (
     playlist_owner_id: decodedOwnerId,
     followee_saves: saves,
     followee_reposts: reposts,
-    save_count: playlist.favorite_count,
+    has_current_user_reposted,
+    has_current_user_saved,
+    save_count,
+    repost_count,
+    total_play_count,
     playlist_contents: playlistContents,
 
     // Fields to prune
@@ -255,6 +325,40 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
 }
 
 export const adaptSearchResponse = (searchResponse: APIResponse<APISearch>) => {
+  return {
+    tracks:
+      searchResponse.data.tracks?.map(makeTrack).filter(removeNullable) ??
+      undefined,
+    saved_tracks:
+      searchResponse.data.saved_tracks?.map(makeTrack).filter(removeNullable) ??
+      undefined,
+    users:
+      searchResponse.data.users?.map(makeUser).filter(removeNullable) ??
+      undefined,
+    followed_users:
+      searchResponse.data.followed_users
+        ?.map(makeUser)
+        .filter(removeNullable) ?? undefined,
+    playlists:
+      searchResponse.data.playlists?.map(makePlaylist).filter(removeNullable) ??
+      undefined,
+    saved_playlists:
+      searchResponse.data.saved_playlists
+        ?.map(makePlaylist)
+        .filter(removeNullable) ?? undefined,
+    albums:
+      searchResponse.data.albums?.map(makePlaylist).filter(removeNullable) ??
+      undefined,
+    saved_albums:
+      searchResponse.data.saved_albums
+        ?.map(makePlaylist)
+        .filter(removeNullable) ?? undefined
+  }
+}
+
+export const adaptSearchAutocompleteResponse = (
+  searchResponse: APIResponse<APISearchAutocomplete>
+) => {
   return {
     tracks:
       searchResponse.data.tracks?.map(makeTrack).filter(removeNullable) ??
