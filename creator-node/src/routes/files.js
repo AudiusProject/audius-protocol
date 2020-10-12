@@ -375,10 +375,12 @@ module.exports = function (app) {
   app.get('/ipfs/:dirCID/:filename', getDirCID)
 
   /**
-   * Serve file from FS without doing a db check
+   * Serve file from FS given a storage path
+   * This is a cnode-cnode only route, not to be consumed by clients. It has auth restrictions to only
+   * allow calls from cnodes with delegateWallets registered on chain
    * @dev No handleResponse around this route because it doesn't play well with our route handling abstractions,
    * same as the /ipfs route
-   * @param req.query.filePath the fs path for the file. should not have leading /file_storage prefix
+   * @param req.query.filePath the fs path for the file. should be full path including leading /file_storage
    * @param req.query.delegateWallet the wallet address that signed this request
    * @param req.query.timestamp the timestamp when the request was made
    * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}

@@ -7,7 +7,6 @@ const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
-let { serviceRegistry } = require('./serviceRegistry')
 
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
@@ -203,7 +202,7 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
-async function findCIDInNetwork (filePath, logger) {
+async function findCIDInNetwork (filePath, cid, logger) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -230,6 +229,16 @@ async function findCIDInNetwork (filePath, logger) {
       })
       if (resp.data) {
         await writeStreamToFileSystem(resp.data, filePath)
+
+        // verify that the file written matches the hash expected if added to ipfs
+        const content = fs.createReadStream(filePath)
+        for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 2000 })) {
+          if (cid !== result.cid.toString()) {
+            await fs.unlink(filePath)
+            logger.error(`File contents don't match IPFS hash cid: ${cid} result: ${result.cid.toString()}`)
+          }
+        }
+
         logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
         break
       }
@@ -286,17 +295,17 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
   }
 
   let rehydrateNecessary = false
-  // try {
-  //   await ipfsSingleByteCat(ipfsPath, logContext)
-  // } catch (e) {
-  //   // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
-  //   if (e.message.includes('this dag node is a directory')) {
-  //     throw new Error(e.message)
-  //   }
-  //   rehydrateNecessary = true
-  //   logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
-  // }
-  // if (!rehydrateNecessary) return
+  try {
+    await ipfsSingleByteCat(ipfsPath, logContext)
+  } catch (e) {
+    // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
+    if (e.message.includes('this dag node is a directory')) {
+      throw new Error(e.message)
+    }
+    rehydrateNecessary = true
+    logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+  }
+  if (!rehydrateNecessary) return
   // Timed out, must re-add from FS
   if (!filename) {
     logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
@@ -306,7 +315,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
         logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
         logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
-        await findCIDInNetwork(storagePath, logger)
+        await findCIDInNetwork(storagePath, multihash, logger)
       }
     } catch (e) {
       logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
