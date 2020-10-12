@@ -92,6 +92,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   let redisLogParams
   let wallet = selectWallet()
 
+  // If all wallets are currently in use, keep iterating until a wallet is freed up
   while (!wallet) {
     await delay(200)
     wallet = selectWallet()
@@ -159,9 +160,21 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return receipt
 }
 
+/**
+ * Randomly select a wallet with a random offset using mod
+ *
+ * e.g. If there are 5 wallets available and the offset is at 2, iterate
+ * in the order 2, 3, 4, 0, 1, and use const count to iterate through
+ * all the available number of wallets
+ */
 const selectWallet = () => {
   let selectedWallet
-  for (let wallet of relayerWallets) {
+  let i = Math.floor(Math.random() * relayerWallets.length) // random offset
+  let count = 0 // num wallets to iterate through
+
+  while (count++ < relayerWallets.length) {
+    const wallet = relayerWallets[i++ % relayerWallets.length]
+
     logger.info(`txRelay - trying to select wallet ${wallet.publicKey}`)
     if (!wallet.locked) {
       logger.info(`txRelay - selected wallet ${wallet.publicKey}`)
