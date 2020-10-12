@@ -405,7 +405,6 @@ module.exports = function (app) {
     try {
       return await streamFromFileSystem(req, res, filePath)
     } catch (e) {
-      console.log('Error retrieving file', e)
       return errorResponseNotFound(`File with path not found`)
     }
   }))

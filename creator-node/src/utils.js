@@ -7,7 +7,6 @@ const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 let { serviceRegistry } = require('./serviceRegistry')
-console.log("importing serviceRegistry", serviceRegistry)
 
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
@@ -203,9 +202,11 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
 })
 
 async function findCIDInNetwork (filePath, logger) {
-  const { libs } = serviceRegistry
-  const creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
-  creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
+  const attemptedStateFix = await getIfAttemptedStateFix(filePath)
+  if (attemptedStateFix) return
+
+  const creatorNodes = await getAllRegisteredCNodes()
+  console.log("all creatornodes", creatorNodes)
   let node
   // TODO - add this to redis cache so we don't bombard other cnodes with requests
   // TODO - remove this cnode from the list
@@ -228,9 +229,50 @@ async function findCIDInNetwork (filePath, logger) {
         break
       }
     } catch (e) {
-      // logger.error(`Error fetching file from other cnode ${node.endpoint} ${e.message}`)
+      // since this is a function running in the background intended to fix state, don't error
+      // and stop the flow of execution for functions that call it
       continue
     }
+  }
+}
+
+/**
+ * Get all creator nodes registered on chain. Use a cache to avoid making execessive amounts of chain calls
+ */
+async function getAllRegisteredCNodes () {
+  const { libs, redis } = serviceRegistry
+  const cacheKey = 'all_registered_cnodes'
+
+  try {
+    const cnodesList = await redis.cache.getCache(cacheKey)
+    if (cnodesList) {
+      console.log("from cache", cnodesList)
+      return JSON.parse(cnodesList)
+    }
+    
+    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
+    console.log("nodes from chain", creatorNodes)
+    // creatorNodes = [creatorNodes.reverse()[0]]
+    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
+    redis.cache.setCache(cacheKey, JSON.stringify(creatorNodes))
+    return creatorNodes
+  } catch (e) {
+    console.error('Error getting values in getAllRegisteredCNodes', e)
+  }
+  return []
+}
+
+/**
+ * Return if a fix has been attempted in this time interval for this filePath
+ * @param {String} filePath path of CID on the file system
+ */
+async function getIfAttemptedStateFix (filePath) {
+  const { redis } = serviceRegistry
+  const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
+  const resp = await redis.sadd(key, filePath)
+  // new key, set expire
+  if (resp) {
+    await redis.expire(key, 60*60*24) // expire one day after final write
   }
 }
 
@@ -249,17 +291,17 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
   }
 
   let rehydrateNecessary = false
-  try {
-    await ipfsSingleByteCat(ipfsPath, logContext)
-  } catch (e) {
-    // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
-    if (e.message.includes('this dag node is a directory')) {
-      throw new Error(e.message)
-    }
-    rehydrateNecessary = true
-    logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
-  }
-  if (!rehydrateNecessary) return
+  // try {
+  //   await ipfsSingleByteCat(ipfsPath, logContext)
+  // } catch (e) {
+  //   // Do not attempt to rehydrate as file, if cat() indicates CID is of a dir.
+  //   if (e.message.includes('this dag node is a directory')) {
+  //     throw new Error(e.message)
+  //   }
+  //   rehydrateNecessary = true
+  //   logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
+  // }
+  // if (!rehydrateNecessary) return
   // Timed out, must re-add from FS
   if (!filename) {
     logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
