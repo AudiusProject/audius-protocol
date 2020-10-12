@@ -17,6 +17,7 @@ type PlaylistContents = {
 }
 
 export type CollectionMetadata = {
+  blocknumber: number
   variant: Variant.USER_GENERATED
   description: Nullable<string>
   followee_reposts: Repost[]

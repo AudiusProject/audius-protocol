@@ -96,6 +96,17 @@ const actionsMap = {
     const newIdsToPrune = new Set([...state.idsToPrune])
 
     action.entries.forEach(e => {
+      // Don't add if block number is < existing
+      const existing = unwrapEntry(newEntries[e.id])
+      if (
+        existing &&
+        existing.blocknumber &&
+        e.metadata.blocknumber &&
+        existing.blocknumber > e.metadata.blocknumber
+      ) {
+        return
+      }
+
       if (action.replace) newEntries[e.id] = wrapEntry(e.metadata)
       else {
         newEntries[e.id] = wrapEntry(

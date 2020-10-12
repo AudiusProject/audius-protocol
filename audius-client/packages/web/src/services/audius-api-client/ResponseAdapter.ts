@@ -284,6 +284,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
   if (!(id && parentId && ownerId)) return undefined
 
   return {
+    blocknumber: stem.blocknumber,
     is_delete: false,
     track_id: id,
     created_at: '',

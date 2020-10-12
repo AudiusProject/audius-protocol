@@ -50,6 +50,7 @@ export type RemixOf = {
 }
 
 export type TrackMetadata = {
+  blocknumber: number
   activity_timestamp?: string
   is_delete: boolean
   track_id: number

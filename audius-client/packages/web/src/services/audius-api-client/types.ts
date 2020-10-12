@@ -17,6 +17,7 @@ type PlaylistContents = {
 
 export type APIUser = {
   album_count: number
+  blocknumber: number
   bio: Nullable<string>
   cover_photo: CoverPhotoSizes
   followee_count: number
@@ -75,6 +76,7 @@ export type APIRemix = {
 }
 
 export type APITrack = {
+  blocknumber: number
   artwork: CoverArtSizes
   description: Nullable<string>
   genre: string
@@ -132,6 +134,7 @@ export type APIStem = {
   user_id: OpaqueID
   category: StemCategory
   cid: CID
+  blocknumber: number
 }
 
 export type APIPlaylistAddedTimestamp = {
@@ -140,6 +143,7 @@ export type APIPlaylistAddedTimestamp = {
 }
 
 export type APIPlaylist = {
+  blocknumber: number
   artwork: CoverArtSizes
   description: Nullable<string>
   id: OpaqueID
