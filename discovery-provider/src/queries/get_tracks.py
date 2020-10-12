@@ -7,6 +7,7 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import paginate_query, parse_sort_param, \
   populate_track_metadata, get_users_ids, get_users_by_id
 from src.utils.redis_cache import extract_key, use_redis_cache
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,22 @@ def get_tracks(args):
                 handle = args.get("handle")
                 user_id = session.query(User.user_id).filter(User.handle_lc == handle.lower()).first()
                 args["user_id"] = user_id
+
+            can_use_shared_cache = (
+                "id" in args and
+                not "min_block_number" in args and
+                not "sort" in args and
+                not "user_id" in args
+            )
+
+            if can_use_shared_cache:
+                logger.warning("HITTING SHARED CACHE!")
+                # TODO: make sure this is actually a bool LOL
+                should_filter_deleted = args.get("filter_deleted", False)
+                tracks = get_unpopulated_tracks(session, args["id"], should_filter_deleted)
+                track_ids = list(map(lambda track: track["track_id"], tracks))
+                return (tracks, track_ids)
+
 
             # Create initial query
             base_query = session.query(Track)

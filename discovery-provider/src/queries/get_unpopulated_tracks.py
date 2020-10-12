@@ -1,3 +1,4 @@
+import logging # pylint: disable=C0302
 import datetime
 import json
 from flask.json import dumps
@@ -6,8 +7,9 @@ from src.utils import redis_connection
 from src.models import Track
 from src.utils import helpers
 
-ttl_sec = 60
+logger = logging.getLogger(__name__)
 
+ttl_sec = 60
 
 def get_track_id_cache_key(id):
     return "track:id:{}".format(id)
@@ -66,6 +68,7 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unli
     for cached_track in cached_tracks_results:
         if cached_track:
             cached_tracks[cached_track['track_id']] = cached_track
+            logger.warning(f"Found cached track: {cached_track['track_id']}")
 
     track_ids_to_fetch = filter(
         lambda track_id: track_id not in cached_tracks, track_ids)
