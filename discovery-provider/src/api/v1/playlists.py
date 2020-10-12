@@ -7,7 +7,7 @@ from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
     make_response, success_response, search_parser, abort_bad_request_param, decode_string_id, \
-    extend_user, get_default_max
+    extend_user, get_default_max, get_current_user_id
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
@@ -75,9 +75,7 @@ class FullPlaylist(Resource):
         """Fetch a playlist."""
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = full_playlist_parser.parse_args()
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
 
         playlist = get_playlist(playlist_id, current_user_id)
         if playlist:
@@ -174,7 +172,6 @@ class Top(Resource):
 
         args['with_users'] = True
 
-        logger.warning(args)
         response = get_top_playlists(args.type, args)
 
         playlists = list(map(extend_playlist, response))
@@ -208,10 +205,7 @@ class FullTrackFavorites(Resource):
         decoded_id = decode_with_abort(playlist_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
         args = {
             'save_playlist_id': decoded_id,
             'current_user_id': current_user_id,
@@ -251,10 +245,7 @@ class FullPlaylistReposts(Resource):
         decoded_id = decode_with_abort(playlist_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
         args = {
             'repost_playlist_id': decoded_id,
             'current_user_id': current_user_id,

@@ -33,7 +33,8 @@ ns = Namespace('tracks', description='Track related operations')
 full_ns = Namespace('tracks', description='Full track operations')
 
 track_response = make_response("track_response", ns, fields.Nested(track))
-full_track_response = make_response("full_track_response", full_ns, fields.Nested(track_full))
+full_track_response = make_response(
+    "full_track_response", full_ns, fields.Nested(track_full))
 
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track)))
@@ -59,9 +60,9 @@ def get_single_track(track_id, current_user_id, endpoint_ns):
 def get_unlisted_track(track_id, url_title, handle, current_user_id, endpoint_ns):
     args = {
         "identifiers": [{
-           "handle": handle,
-           "url_title": url_title,
-           "id": track_id
+            "handle": handle,
+            "url_title": url_title,
+            "id": track_id
         }],
         "filter_deleted": False,
         "with_users": True,
@@ -107,21 +108,22 @@ class FullTrack(Resource):
     def get(self, track_id):
         args = full_track_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
-        current_user_id = args.get("user_id")
-        if current_user_id:
-            current_user_id = decode_string_id(current_user_id)
+        current_user_id = get_current_user_id(args)
         if args.get("show_unlisted"):
             url_title, handle = args.get("url_title"), args.get("handle")
             if not (url_title and handle):
-                full_ns.abort(400, "Unlisted tracks require url_title and handle")
+                full_ns.abort(
+                    400, "Unlisted tracks require url_title and handle")
             return get_unlisted_track(decoded_id, url_title, handle, current_user_id, full_ns)
 
         return get_single_track(decoded_id, current_user_id, full_ns)
 
 # Stream
 
+
 def tranform_stream_cache(stream_url):
     return redirect(stream_url)
+
 
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
@@ -288,15 +290,23 @@ class FullTrending(Resource):
         key = self.get_cache_key()
 
         # Attempt to use the cached tracks list
-        full_trending = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending(args))
+        if args['user_id'] is not None:
+            full_trending = get_trending(args)
+        else:
+            full_trending = use_redis_cache(
+                key, TRENDING_TTL_SEC, lambda: get_trending(args))
         trending = full_trending[offset: limit + offset]
         return success_response(trending)
+
 
 track_favorites_route_parser = reqparse.RequestParser()
 track_favorites_route_parser.add_argument('user_id', required=False)
 track_favorites_route_parser.add_argument('limit', required=False, type=int)
 track_favorites_route_parser.add_argument('offset', required=False, type=int)
-track_favorites_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+track_favorites_response = make_response(
+    "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+
+
 @full_ns.route("/<string:track_id>/favorites")
 class FullTrackFavorites(Resource):
     @full_ns.expect(track_favorites_route_parser)
@@ -320,10 +330,8 @@ class FullTrackFavorites(Resource):
         decoded_id = decode_with_abort(track_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
+        current_user_id = get_current_user_id(args)
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
         args = {
             'save_track_id': decoded_id,
             'current_user_id': current_user_id,
@@ -335,11 +343,13 @@ class FullTrackFavorites(Resource):
 
         return success_response(users)
 
+
 track_reposts_route_parser = reqparse.RequestParser()
 track_reposts_route_parser.add_argument('user_id', required=False)
 track_reposts_route_parser.add_argument('limit', required=False, type=int)
 track_reposts_route_parser.add_argument('offset', required=False, type=int)
-track_reposts_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+track_reposts_response = make_response(
+    "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:track_id>/reposts")
 class FullTrackReposts(Resource):
     @full_ns.expect(track_reposts_route_parser)
@@ -375,7 +385,8 @@ class FullTrackReposts(Resource):
         users = list(map(extend_user, users))
         return success_response(users)
 
-track_stems_response = make_response("stems_response", full_ns, fields.List(fields.Nested(stem_full)))
+track_stems_response = make_response(
+    "stems_response", full_ns, fields.List(fields.Nested(stem_full)))
 
 @full_ns.route("/<string:track_id>/stems")
 class FullTrackStems(Resource):
@@ -388,7 +399,8 @@ class FullTrackStems(Resource):
         return success_response(stems)
 
 
-remixes_response = make_response("remixes_response", full_ns, fields.Nested(remixes_response))
+remixes_response = make_response(
+    "remixes_response", full_ns, fields.Nested(remixes_response))
 remixes_parser = reqparse.RequestParser()
 remixes_parser.add_argument('user_id', required=False)
 remixes_parser.add_argument('limit', required=False, default=10)
@@ -414,7 +426,8 @@ class FullRemixesRoute(Resource):
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)
 
-remixing_response = make_response("remixing_response", full_ns, fields.List(fields.Nested(track_full)))
+remixing_response = make_response(
+    "remixing_response", full_ns, fields.List(fields.Nested(track_full)))
 remixing_parser = reqparse.RequestParser()
 remixing_parser.add_argument('user_id', required=False)
 remixing_parser.add_argument('limit', required=False, default=10)
