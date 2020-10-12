@@ -54,7 +54,7 @@ function* getTracks({ offset, limit, payload }) {
     // Pinned tracks *should* be unpinned
     // when deleted, but just in case they're not,
     // defend against that edge case here.
-    if (pinnedTrack[0].is_delete) {
+    if (!pinnedTrack.length || pinnedTrack[0].is_delete) {
       pinnedTrack = []
     }
 
