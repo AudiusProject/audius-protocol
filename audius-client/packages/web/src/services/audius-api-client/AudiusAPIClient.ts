@@ -9,7 +9,8 @@ import {
   APIUser,
   OpaqueID,
   APIStem,
-  APISearch
+  APISearch,
+  APISearchAutocomplete
 } from './types'
 import * as adapter from './ResponseAdapter'
 import AudiusBackend from 'services/AudiusBackend'
@@ -17,7 +18,7 @@ import { getEagerDiscprov } from 'services/audius-backend/eagerLoadUtils'
 import { encodeHashId } from 'utils/route/hashIds'
 import { StemTrackMetadata } from 'models/Track'
 import { SearchKind } from 'containers/search-page/store/types'
-import { processSearchResults, adaptSearchResponse } from './helper'
+import { processSearchResults } from './helper'
 
 const ENDPOINT_MAP = {
   trending: '/tracks/trending',
@@ -619,7 +620,7 @@ class AudiusAPIClient {
     const searchResponse: APIResponse<APISearch> = await this._getResponse(
       endpoint
     )
-    const adapted = adaptSearchResponse(searchResponse)
+    const adapted = adapter.adaptSearchResponse(searchResponse)
     return processSearchResults({ searchText: query, ...adapted })
   }
 
@@ -642,10 +643,10 @@ class AudiusAPIClient {
 
     const endpoint = this._constructUrl(ENDPOINT_MAP.searchAutocomplete, params)
 
-    const searchResponse: APIResponse<APISearch> = await this._getResponse(
+    const searchResponse: APIResponse<APISearchAutocomplete> = await this._getResponse(
       endpoint
     )
-    const adapted = adaptSearchResponse(searchResponse)
+    const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
     return processSearchResults({ searchText: query, ...adapted })
   }
 
@@ -733,8 +734,6 @@ class AudiusAPIClient {
   }
 }
 
-const instance = new AudiusAPIClient({
-  overrideEndpoint: 'http://localhost:5000'
-})
+const instance = new AudiusAPIClient()
 
 export default instance
