@@ -207,4 +207,4 @@ const getRelayerFunds = async (walletPublicKey) => {
   return primaryWeb3.eth.getBalance(walletPublicKey)
 }
 
-module.exports = { sendTransaction, getRelayerFunds, fundRelayerIfEmpty }
+module.exports = { selectWallet, sendTransaction, getRelayerFunds, fundRelayerIfEmpty }
