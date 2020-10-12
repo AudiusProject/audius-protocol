@@ -1,5 +1,7 @@
 const Web3 = require('../../web3')
 const EthereumTx = require('ethereumjs-tx')
+const retry = require('async-retry')
+const { sample } = require('lodash')
 const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
 const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
@@ -9,11 +11,14 @@ const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so
 class EthWeb3Manager {
   constructor (web3Config) {
     if (!web3Config) throw new Error('web3Config object not passed in')
-    if (!web3Config.url) throw new Error('missing web3Config property: url')
+    if (!web3Config.providers) throw new Error('missing web3Config property: providers')
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
 
+    // Pick a provider at random to spread the load
+    const provider = sample(web3Config.providers)
+
     this.web3Config = web3Config
-    this.web3 = new Web3(web3Config.url)
+    this.web3 = new Web3(provider)
     this.ownerWallet = web3Config.ownerWallet
   }
 
@@ -25,7 +30,9 @@ class EthWeb3Manager {
     contractMethod,
     gasAmount = DEFAULT_GAS_AMOUNT,
     contractAddress = null,
-    privateKey = null) {
+    privateKey = null,
+    txRetries = 5
+  ) {
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
       if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
@@ -51,7 +58,25 @@ class EthWeb3Manager {
       const tx = new EthereumTx(txParams)
       tx.sign(privateKeyBuffer)
       const signedTx = '0x' + tx.serialize().toString('hex')
-      return this.web3.eth.sendSignedTransaction(signedTx)
+
+      // Send the tx with retries
+      const response = await retry(async () => {
+        return this.web3.eth.sendSignedTransaction(signedTx)
+      }, {
+        // Retry function 5x by default
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: txRetries,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log(`Retry error : ${err}`)
+          }
+        }
+      })
+
+      return response
     }
 
     let gasPrice = parseInt(await this.web3.eth.getGasPrice())

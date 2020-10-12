@@ -157,15 +157,14 @@ class Web3Manager {
           txGasLimit
         )
       }, {
-      // Retry function 5x by default
-      // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        // Retry function 5x by default
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
         minTimeout: 500,
         maxTimeout: 4000,
         factor: 3,
         retries: txRetries,
         onRetry: (err, i) => {
           if (err) {
-            // eslint-disable-next-line no-console
             console.log(`Retry error : ${err}`)
           }
         }
