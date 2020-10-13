@@ -78,8 +78,7 @@ def get_playlists(args):
             if current_user_id:
                 playlists = list(filter(
                     lambda playlist: (not playlist["is_private"]) or playlist["playlist_owner_id"] == current_user_id,
-                    playlists)
-                )
+                    playlists))
 
             # retrieve playlist ids list
             playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))

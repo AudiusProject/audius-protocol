@@ -6,7 +6,6 @@ from src.models import User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
-from src.utils.redis_cache import extract_key, use_redis_cache
 from src.queries.get_unpopulated_users import get_unpopulated_users
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,5 @@
 import logging # pylint: disable=C0302
 
-from flask.globals import request
 from src.models import AggregatePlays, Track, User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
