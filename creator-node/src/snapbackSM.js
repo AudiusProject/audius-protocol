@@ -18,7 +18,7 @@ const MaxSyncMonitoringDurationInMs = 360000
 const SyncMonitoringRetryDelay = 15000
 
 // Base value used to filter users over a 24 hour period
-const ModuloBase = 24
+const ModuloBase = 1
 
 // 0 */1 * * * every hours at minute 0
 const StateMachineSchedule = '0 */1 * * *'
@@ -125,7 +125,7 @@ class SnapbackSM {
   }
 
   // Enqueue a sync request to a particular secondary
-  async issueSecondarySync (userWallet, secondaryEndpoint, primaryEndpoint) {
+  async issueSecondarySync (userWallet, secondaryEndpoint, primaryEndpoint, primaryClockValue) {
     let syncRequestParameters = {
       baseURL: secondaryEndpoint,
       url: '/sync',
@@ -136,7 +136,7 @@ class SnapbackSM {
         state_machine: true // state machine specific flag
       }
     }
-    await this.syncQueue.add({ syncRequestParameters, startTime: Date.now() })
+    await this.syncQueue.add({ syncRequestParameters, startTime: Date.now(), primaryClockValue })
   }
 
   // Main state machine processing function
@@ -268,12 +268,12 @@ class SnapbackSM {
             this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
             // Enqueue sync for secondary1 if required
             if (secondary1SyncRequired && secondary1 != null) {
-              await this.issueSecondarySync(userWallet, secondary1, this.endpoint)
+              await this.issueSecondarySync(userWallet, secondary1, this.endpoint, primaryClockValue)
               numSyncsIssued += 1
             }
             // Enqueue sync for secondary2 if required
             if (secondary2SyncRequired && secondary2 != null) {
-              await this.issueSecondarySync(userWallet, secondary2, this.endpoint)
+              await this.issueSecondarySync(userWallet, secondary2, this.endpoint, primaryClockValue)
               numSyncsIssued += 1
             }
           } catch (e) {
@@ -345,7 +345,7 @@ class SnapbackSM {
       return
     }
     const syncWallet = syncRequestParameters.data.wallet[0]
-    const primaryClockValue = await this.getUserPrimaryClockValue(syncWallet)
+    const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
     this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} ------------------`)
 
