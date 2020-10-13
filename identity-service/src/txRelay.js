@@ -99,40 +99,18 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   try {
     logger.info('relayTx - selected wallet', wallet.publicKey)
-    const privateKeyBuffer = Buffer.from(wallet.privateKey, 'hex')
-    const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
-    const address = walletAddress.getAddressString()
-    if (address !== wallet.publicKey.toLowerCase()) {
-      throw new Error('Invalid relayerPublicKey')
-    }
-
-    const gasPrice = await getGasPrice(req, web3)
-    const nonce = await web3.eth.getTransactionCount(address)
-
-    const txParams = {
-      nonce: web3.utils.toHex(nonce),
-      gasPrice: gasPrice,
-      gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
-      to: contractAddress,
-      data: encodedABI,
-      value: '0x00'
-    }
-
-    const tx = new EthereumTx(txParams)
-    tx.sign(privateKeyBuffer)
-
-    const signedTx = '0x' + tx.serialize().toString('hex')
+    const resp = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, encodedABI)
+    receipt = resp.receipt
 
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
       reqBodySHA,
-      txParams,
+      txParams: resp.txParams,
       senderAddress,
-      nonce
+      nonce: resp.txParams.nonce
     }
     await redis.zadd('relayTxAttempts', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     logger.info(`txRelay - sending a transaction for wallet ${wallet.publicKey} to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${nonce}`)
-    receipt = await web3.eth.sendSignedTransaction(signedTx)
 
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     await redis.hset('txHashToSenderAddress', receipt.transactionHash, senderAddress)
@@ -184,7 +162,6 @@ const selectWallet = () => {
   }
 }
 
-// TODO - this only works locally, make it work on prod as well
 const fundRelayerIfEmpty = async () => {
   const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
 
@@ -219,7 +196,7 @@ const fundRelayerIfEmpty = async () => {
   }
 }
 
-const createAndSendTransaction = async (sender, receiverAddress, value, web3) => {
+const createAndSendTransaction = async (sender, receiverAddress, value, web3, data = null) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
   const address = walletAddress.getAddressString()
@@ -229,12 +206,16 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3) =>
   }
   const gasPrice = await getGasPrice(web3)
   const nonce = await web3.eth.getTransactionCount(address)
-  const txParams = {
+  let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasPrice,
     gasLimit: DEFAULT_GAS_LIMIT,
     to: receiverAddress,
     value: web3.utils.toHex(value)
+  }
+
+  if (data) {
+    txParams = { ...txParams, data }
   }
 
   const tx = new EthereumTx(txParams)
