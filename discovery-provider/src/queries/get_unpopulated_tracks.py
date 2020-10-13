@@ -1,3 +1,4 @@
+import logging # pylint: disable=C0302
 import datetime
 import json
 from flask.json import dumps
@@ -6,8 +7,9 @@ from src.utils import redis_connection
 from src.models import Track
 from src.utils import helpers
 
-ttl_sec = 60
+logger = logging.getLogger(__name__)
 
+ttl_sec = 60
 
 def get_track_id_cache_key(id):
     return "track:id:{}".format(id)

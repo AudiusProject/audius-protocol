@@ -72,17 +72,19 @@ def cache(**kwargs):
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
+            has_user_id = 'user_id' in request.args and request.args['user_id'] is not None
             key = extract_key(request.path, request.args.items())
-            cached_resp = redis.get(key)
+            if not has_user_id:
+                cached_resp = redis.get(key)
 
-            if cached_resp:
-                logger.info(f"Redis Cache - hit {key}")
-                deserialized = json.loads(cached_resp)
-                if transform is not None:
-                    return transform(deserialized)
-                return deserialized, 200
+                if cached_resp:
+                    logger.info(f"Redis Cache - hit {key}")
+                    deserialized = json.loads(cached_resp)
+                    if transform is not None:
+                        return transform(deserialized)
+                    return deserialized, 200
 
-            logger.info(f"Redis Cache - miss {key}")
+                logger.info(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:
