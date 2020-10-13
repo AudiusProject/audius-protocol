@@ -73,9 +73,7 @@ class FullUser(Resource):
     def get(self, user_id):
         user_id = decode_with_abort(user_id, ns)
         args = full_user_parser.parse_args()
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         return get_single_user(user_id, current_user_id)
 
@@ -88,9 +86,7 @@ class FullUserHandle(Resource):
     @cache(ttl_sec=5)
     def get(self, handle):
         args = full_user_handle_parser.parse_args()
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         args = {
             "handle": handle,
@@ -135,9 +131,7 @@ class TrackList(Resource):
         decoded_id = decode_with_abort(user_id, ns)
         args = user_tracks_route_parser.parse_args()
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         sort = args.get("sort", None)
         offset = format_offset(args)
@@ -181,9 +175,7 @@ class FullTrackList(Resource):
         decoded_id = decode_with_abort(user_id, ns)
         args = user_tracks_route_parser.parse_args()
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         sort = args.get("sort", None)
         offset = format_offset(args)
@@ -226,9 +218,7 @@ class HandleFullTrackList(Resource):
         """Fetch a list of tracks for a user."""
         args = user_tracks_route_parser.parse_args()
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         sort = args.get("sort", None)
         offset = format_offset(args)
@@ -277,9 +267,7 @@ class RepostList(Resource):
         decoded_id = decode_with_abort(user_id, ns)
         args = user_reposts_route_parser.parse_args()
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -320,9 +308,7 @@ class FullRepostList(Resource):
         decoded_id = decode_with_abort(user_id, ns)
         args = user_reposts_route_parser.parse_args()
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
+        current_user_id = get_current_user_id(args)
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -364,10 +350,7 @@ class HandleFullRepostList(Resource):
     def get(self, handle):
         args = user_reposts_route_parser.parse_args()
 
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args.get("user_id"))
-
+        current_user_id = get_current_user_id(args)
         offset = format_offset(args)
         limit = format_limit(args)
 
@@ -434,9 +417,7 @@ class FavoritedTracks(Resource):
         """Fetch favorited tracks for a user."""
         args = favorite_route_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(user_id)
+        current_user_id = get_current_user_id(args)
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -519,10 +500,7 @@ class FollowerUsers(Resource):
         args = followers_route_parser.parse_args()
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-        
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
         args = {
             'followee_user_id': decoded_id,
             'current_user_id': current_user_id,
@@ -563,10 +541,7 @@ class FollowingUsers(Resource):
         args = following_route_parser.parse_args()
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-        
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
         args = {
             'follower_user_id': decoded_id,
             'current_user_id': current_user_id,

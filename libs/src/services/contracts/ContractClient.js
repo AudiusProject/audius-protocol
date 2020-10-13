@@ -1,8 +1,10 @@
 const ProviderSelection = require('./ProviderSelection')
 const Web3Manager = require('../web3Manager/index')
+const retry = require('async-retry')
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
+const METHOD_CALL_MAX_RETRIES = 5
 
 /*
  * Base class for instantiating contracts.
@@ -112,7 +114,29 @@ class ContractClient {
     if (!(methodName in this._contract.methods)) {
       throw new Error(`Contract method ${methodName} not found in ${Object.keys(this._contract.methods)}`)
     }
-    return this._contract.methods[methodName](...args)
+    const method = await this._contract.methods[methodName](...args)
+
+    // Override method.call (chain reads) with built in retry logic
+    const call = method.call
+    method.call = async (...args) => {
+      return retry(async (bail, number) => {
+        return call(...args)
+      }, {
+        // Retry function 5x by default
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: METHOD_CALL_MAX_RETRIES,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log(`Retry error : ${err}`)
+          }
+        }
+      })
+    }
+
+    return method
   }
 
   async getEthNetId () {

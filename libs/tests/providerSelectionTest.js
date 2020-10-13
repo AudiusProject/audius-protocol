@@ -178,7 +178,7 @@ function createContractClientWithExternalWeb3 () {
 
 function createContractClientWithEthWeb3Manager () {
   const web3Config = {
-    url: 'https://audius.eth.network',
+    providers: ['https://audius.eth.network'],
     ownerWallet: '0xwallet'
   }
   const ethWeb3Manager = new EthWeb3Manager(web3Config)

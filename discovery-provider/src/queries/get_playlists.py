@@ -76,7 +76,10 @@ def get_playlists(args):
             # if we passed in a current_user_id, filter out all privte playlists where
             # the owner_id doesn't match the current_user_id
             if current_user_id:
-                playlists = list(filter(lambda playlist: (not playlist["is_private"]) or playlist["playlist_owner_id"] == current_user_id, playlists))
+                playlists = list(filter(
+                    lambda playlist: (not playlist["is_private"]) or playlist["playlist_owner_id"] == current_user_id,
+                    playlists)
+                )
 
             # retrieve playlist ids list
             playlist_ids = list(map(lambda playlist: playlist["playlist_id"], playlists))
