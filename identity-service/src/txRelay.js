@@ -185,7 +185,8 @@ const fundRelayerIfEmpty = async () => {
           },
           wallet.publicKey,
           minimumBalance,
-          primaryWeb3
+          primaryWeb3,
+          logger
         )
         logger.info(`txRelay - the transaction receipt ${JSON.stringify(receipt)}`)
       }
