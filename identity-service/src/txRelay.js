@@ -186,11 +186,11 @@ const fundRelayerIfEmpty = async () => {
           minimumBalance,
           primaryWeb3
         )
-        logger.info(`txRelay - the transaction receipt ${receipt.toString()}`)
+        logger.info(`txRelay - the transaction receipt ${JSON.stringify(receipt)}`)
       }
 
       balance = await getRelayerFunds(wallet.publicKey)
-      logger.info('Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance.toString(), 'ether'), 'eth')
+      logger.info('txRelay - Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance.toString(), 'ether'), 'eth')
     }
   }
 }
