@@ -1,4 +1,5 @@
 import * as _lib from '../utils/lib.js'
+import * as _signatures from '../utils/signatures.js'
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
@@ -228,5 +229,40 @@ contract('AudiusToken', async (accounts) => {
       token.pause({ from: newPauser }),
       "PauserRole: caller does not have the Pauser role"
     )
+  })
+
+  it('Confirm typehashes match for permit function', async () => {
+    const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+    expect(await token.DOMAIN_SEPARATOR()).to.equal(_signatures.getDomainSeparator(await token.name(), token.address, chainId))
+    expect(await token.PERMIT_TYPEHASH()).to.equal(_signatures.PERMIT_TYPEHASH)
+  })
+
+  it('Meta-transaction approve', async () => {
+    const amount = 100
+
+    // throwaway address for the purpose of this test
+    const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+    const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+
+    // fund throwaway address and confirm balances of secondary addresses
+    await token.transfer(approverPubKey, amount, {from: tokenOwnerAddress})
+    assert.equal(await token.balanceOf(approverPubKey), amount)
+    assert.equal(await token.balanceOf(accounts[17]), 0)
+    assert.equal(await token.balanceOf(accounts[14]), 0)
+
+    let nonce = 0
+    const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+    const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+    const digest = _signatures.getPermitDigest("Audius", token.address, chainId, {owner: approverPubKey, spender: accounts[17], value: amount}, nonce, deadline)
+    const result = _signatures.sign(digest, approverPrivKey)
+    await token.permit(approverPubKey, accounts[17], amount, deadline, result.v, result.r, result.s, {from: accounts[6]})
+
+    expect((await token.allowance(approverPubKey, accounts[17])).toNumber()).to.equal(amount)
+
+    token.transferFrom(approverPubKey, accounts[14], amount, {from: accounts[17]})
+    expect((await token.allowance(approverPubKey, accounts[17])).toNumber()).to.equal(0)
+    assert.equal(await token.balanceOf(approverPubKey), 0)
+    assert.equal(await token.balanceOf(accounts[14]), amount)
+    assert.equal(await token.balanceOf(accounts[17]), 0)
   })
 })
