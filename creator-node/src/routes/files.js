@@ -236,7 +236,7 @@ const getDirCID = async (req, res) => {
     return await streamFromFileSystem(req, res, queryResults.storagePath)
   } catch (e) {
     req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
- 
+
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       // notice this is not await-ed
