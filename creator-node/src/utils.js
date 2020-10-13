@@ -1,10 +1,16 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs')
 const { BufferListStream } = require('bl')
+const axios = require('axios')
+
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
+const redis = require('./redis')
+
+const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
+const { generateTimestampAndSignature } = require('./apiSigning')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -196,6 +202,94 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
+async function findCIDInNetwork (filePath, cid, logger, libs) {
+  const attemptedStateFix = await getIfAttemptedStateFix(filePath)
+  if (attemptedStateFix) return
+
+  // get list of creator nodes
+  const creatorNodes = await getAllRegisteredCNodes(libs)
+  if (!creatorNodes.length) return
+
+  // generate signature
+  const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
+  const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
+  let node
+
+  for (let index = 0; index < creatorNodes.length; index++) {
+    node = creatorNodes[index]
+    try {
+      const resp = await axios({
+        method: 'get',
+        url: `${node.endpoint}/file_lookup`,
+        params: {
+          filePath,
+          timestamp,
+          delegateWallet,
+          signature
+        },
+        responseType: 'stream',
+        timeout: 1000
+      })
+      if (resp.data) {
+        await writeStreamToFileSystem(resp.data, filePath)
+
+        // verify that the file written matches the hash expected if added to ipfs
+        const content = fs.createReadStream(filePath)
+        for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 2000 })) {
+          if (cid !== result.cid.toString()) {
+            await fs.unlink(filePath)
+            logger.error(`File contents don't match IPFS hash cid: ${cid} result: ${result.cid.toString()}`)
+          }
+        }
+
+        logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
+        break
+      }
+    } catch (e) {
+      // since this is a function running in the background intended to fix state, don't error
+      // and stop the flow of execution for functions that call it
+      continue
+    }
+  }
+}
+
+/**
+ * Get all creator nodes registered on chain from a cached redis value
+ */
+async function getAllRegisteredCNodes (libs) {
+  const cacheKey = 'all_registered_cnodes'
+
+  try {
+    const cnodesList = await redis.get(cacheKey)
+    if (cnodesList) {
+      return JSON.parse(cnodesList)
+    }
+
+    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
+    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
+    redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30) // cache this for 30 minutes
+    return creatorNodes
+  } catch (e) {
+    console.error('Error getting values in getAllRegisteredCNodes', e)
+  }
+  return []
+}
+
+/**
+ * Return if a fix has already been attempted in today for this filePath
+ * @param {String} filePath path of CID on the file system
+ */
+async function getIfAttemptedStateFix (filePath) {
+  // key is `attempted_fs_fixes:<today's date>`
+  // the date function just generates the ISOString and removes the timestamp component
+  const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
+  const firstTime = await redis.sadd(key, filePath)
+  await redis.expire(key, 60 * 60 * 24) // expire one day after final write
+
+  // if firstTime is 1, it's a new key. existing key returns 0
+  return !firstTime
+}
+
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
 
@@ -325,6 +419,18 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   }
 }
 
+async function writeStreamToFileSystem (stream, expectedStoragePath) {
+  const destinationStream = fs.createWriteStream(expectedStoragePath)
+  stream.pipe(destinationStream)
+  return new Promise((resolve, reject) => {
+    destinationStream.on('finish', () => {
+      resolve()
+    })
+    destinationStream.on('error', err => { reject(err) })
+    stream.on('error', err => { destinationStream.end(); reject(err) })
+  })
+}
+
 module.exports = Utils
 module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
 module.exports.getIPFSPeerId = getIPFSPeerId
@@ -334,3 +440,6 @@ module.exports.ipfsSingleByteCat = ipfsSingleByteCat
 module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet
 module.exports.ipfsStat = ipfsStat
+module.exports.writeStreamToFileSystem = writeStreamToFileSystem
+module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
+module.exports.findCIDInNetwork = findCIDInNetwork

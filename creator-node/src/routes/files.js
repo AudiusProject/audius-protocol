@@ -1,5 +1,6 @@
 const Redis = require('ioredis')
 const fs = require('fs')
+const path = require('path')
 var contentDisposition = require('content-disposition')
 
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
@@ -12,17 +13,24 @@ const {
   errorResponseServerError,
   errorResponseNotFound,
   errorResponseForbidden,
-  errorResponseRangeNotSatisfiable
+  errorResponseRangeNotSatisfiable,
+  errorResponseUnauthorized
 } = require('../apiHelpers')
+const { recoverWallet } = require('../apiSigning')
 
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+
+// regex to validate storagePath format passed in for /file_lookup route
+// this will either be of the format /file_storage/<cid> for a file or /file_storage/<cid1>/<cid2> for an dir image
+// there are two named match groups, outer and inner. outer is for file or dirname for dir image. inner is only image cid in dir
+const FILE_SYSTEM_REGEX = /\/file_storage\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
  * Helper method to stream file from file system on creator node
@@ -127,6 +135,15 @@ const getCID = async (req, res) => {
     return await streamFromFileSystem(req, res, queryResults.storagePath)
   } catch (e) {
     req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+
+    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+    try {
+      const libs = req.app.get('audiusLibs')
+      // notice this is not await-ed
+      findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
+    } catch (e) {
+      req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
+    }
   }
 
   try {
@@ -220,6 +237,17 @@ const getDirCID = async (req, res) => {
     return await streamFromFileSystem(req, res, queryResults.storagePath)
   } catch (e) {
     req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+
+    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+    try {
+      // CID is the file CID, parse it from the storagePath
+      const CID = queryResults.storagePath.split('/').slice(-1).join('')
+      const libs = req.app.get('audiusLibs')
+      // notice this is not await-ed
+      findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
+    } catch (e) {
+      req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
+    }
   }
 
   try {
@@ -368,6 +396,61 @@ module.exports = function (app) {
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
+
+  /**
+   * Serve file from FS given a storage path
+   * This is a cnode-cnode only route, not to be consumed by clients. It has auth restrictions to only
+   * allow calls from cnodes with delegateWallets registered on chain
+   * @dev No handleResponse around this route because it doesn't play well with our route handling abstractions,
+   * same as the /ipfs route
+   * @param req.query.filePath the fs path for the file. should be full path including leading /file_storage
+   * @param req.query.delegateWallet the wallet address that signed this request
+   * @param req.query.timestamp the timestamp when the request was made
+   * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
+   */
+  app.get('/file_lookup', async (req, res) => {
+    const { filePath, timestamp, signature } = req.query
+    let { delegateWallet } = req.query
+    delegateWallet = delegateWallet.toLowerCase()
+
+    // no filePath passed in
+    if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
+
+    // check that signature is correct and delegateWallet is registered on chain
+    const recoveredWallet = recoverWallet({ filePath, delegateWallet, timestamp }, signature).toLowerCase()
+    const libs = req.app.get('audiusLibs')
+    const creatorNodes = await getAllRegisteredCNodes(libs)
+    const foundDelegateWallet = creatorNodes.some(node => node.delegateOwnerWallet.toLowerCase() === recoveredWallet)
+    if ((recoveredWallet !== delegateWallet) || !foundDelegateWallet) {
+      return sendResponse(req, res, errorResponseUnauthorized(`Invalid wallet signature`))
+    }
+    const filePathNormalized = path.normalize(filePath)
+
+    // check that the regex works and verify it's not blacklisted
+    const match = FILE_SYSTEM_REGEX.exec(filePathNormalized)
+    if (!match) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
+
+    const { outer, inner } = match.groups
+    if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
+      return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
+    }
+    res.setHeader('Content-Disposition', contentDisposition(outer))
+
+    // inner will only be set for image dir CID
+    // if there's an inner CID, check if CID is blacklisted and set content disposition header
+    if (inner) {
+      if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {
+        return sendResponse(req, res, errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`))
+      }
+      res.setHeader('Content-Disposition', contentDisposition(inner))
+    }
+
+    try {
+      return await streamFromFileSystem(req, res, filePathNormalized)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseNotFound(`File with path not found`))
+    }
+  })
 }
 
 module.exports.getCID = getCID
