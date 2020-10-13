@@ -335,8 +335,21 @@ class AudiusBackend {
       coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt
     }
 
+    const legacyFieldMapping = {}
+    if (
+      collection.playlist_image_sizes_multihash &&
+      !collection.cover_art_sizes
+    ) {
+      legacyFieldMapping.cover_art_sizes =
+        collection.playlist_image_sizes_multihash
+    }
+    if (collection.playlist_image_multihash && !collection.cover_art) {
+      legacyFieldMapping.cover_art = collection.playlist_image_multihash
+    }
+
     return {
       ...collection,
+      ...legacyFieldMapping,
       _cover_art_sizes: coverArtSizes
     }
   }
@@ -718,7 +731,10 @@ class AudiusBackend {
     } catch (err) {
       console.error(err)
     }
-    return feedItems
+    return feedItems.map(item => {
+      if (item.playlist_id) return AudiusBackend.getCollectionImages(item)
+      return item
+    })
   }
 
   static async getUserFeed({ offset, limit, userId, withUsers = true }) {
@@ -1336,7 +1352,7 @@ class AudiusBackend {
         userId,
         true
       )
-      return playlists || []
+      return (playlists || []).map(AudiusBackend.getCollectionImages)
     } catch (err) {
       console.error(err.message)
       return []

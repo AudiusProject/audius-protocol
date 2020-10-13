@@ -297,7 +297,8 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
           check = playlist => {
             return (
               some([playlist], toConfirm) &&
-              playlist.cover_art_sizes !== formFields.cover_art_sizes
+              playlist.playlist_image_sizes_multihash !==
+                formFields.cover_art_sizes
             )
           }
         } else {
