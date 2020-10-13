@@ -239,6 +239,8 @@ const getDirCID = async (req, res) => {
 
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
+      // CID is the file CID, parse it from the storagePath
+      const CID = queryResults.storagePath.split('/').slice(-1).join('')
       // notice this is not await-ed
       findCIDInNetwork(queryResults.storagePath, CID, req.logger)
     } catch (e) {
