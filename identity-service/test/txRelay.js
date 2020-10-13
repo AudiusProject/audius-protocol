@@ -134,5 +134,5 @@ describe('test txRelay: fundRelayerIfEmpty() [staging/production logic]', () => 
     assert(acc0InitialBalance < acc0BumpedBalance)
     assert(acc1InitialBalance < acc1BumpedBalance)
     assert(relayerInitialBalance > relayerDecreasedBalance)
-  })
+  }).timeout(20000)
 })
