@@ -99,7 +99,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   try {
     logger.info('relayTx - selected wallet', wallet.publicKey)
-    const resp = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, encodedABI)
+    const resp = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, gasLimit, encodedABI)
     receipt = resp.receipt
 
     redisLogParams = {
@@ -196,7 +196,7 @@ const fundRelayerIfEmpty = async () => {
   }
 }
 
-const createAndSendTransaction = async (sender, receiverAddress, value, web3, data = null) => {
+const createAndSendTransaction = async (sender, receiverAddress, value, web3, gasLimit = null, data = null) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
   const address = walletAddress.getAddressString()
@@ -209,7 +209,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, da
   let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasPrice,
-    gasLimit: DEFAULT_GAS_LIMIT,
+    gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
