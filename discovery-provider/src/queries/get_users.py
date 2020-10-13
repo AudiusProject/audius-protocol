@@ -18,7 +18,7 @@ def get_users(args):
     with db.scoped_session() as session:
         def get_users_and_ids():
 
-            can_user_shared_cache = (
+            can_use_shared_cache = (
                 "id" in args and
                 "is_creator" not in args and
                 "wallet" not in args and
@@ -26,7 +26,7 @@ def get_users(args):
                 "handle" not in args
             )
 
-            if can_user_shared_cache:
+            if can_use_shared_cache:
                 users = get_unpopulated_users(session, args.get("id"))
                 ids = list(map(lambda user: user["user_id"], users))
                 return (users, ids)
