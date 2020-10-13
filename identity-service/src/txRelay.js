@@ -110,7 +110,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       nonce: resp.txParams.nonce
     }
     await redis.zadd('relayTxAttempts', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
-    logger.info(`txRelay - sending a transaction for wallet ${wallet.publicKey} to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${nonce}`)
+    logger.info(`txRelay - sending a transaction for wallet ${wallet.publicKey} to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(resp.txParams.gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${resp.txParams.nonce}`)
 
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     await redis.hset('txHashToSenderAddress', receipt.transactionHash, senderAddress)
@@ -167,15 +167,17 @@ const fundRelayerIfEmpty = async () => {
 
   for (let wallet of relayerWallets) {
     let balance = await primaryWeb3.eth.getBalance(wallet.publicKey)
-    logger.info('Attempting to fund wallet', wallet.publicKey, parseInt(balance))
+    logger.info('txRelay - Attempting to fund wallet', wallet.publicKey, parseInt(balance))
 
     if (parseInt(balance) < minimumBalance) {
-      logger.info(`Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
+      logger.info(`txRelay - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
       if (ENVIRONMENT === 'development') {
         const account = (await primaryWeb3.eth.getAccounts())[0]
+        logger.info(`txRelay - transfering funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
         await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
       } else {
-        const { receipt, txParams } = await createAndSendTransaction(
+        logger.info(`txRelay - transfering funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
+        const { receipt } = await createAndSendTransaction(
           {
             publicKey: config.get('relayerPublicKey'),
             privateKey: config.get('relayerPrivateKey')
@@ -184,10 +186,7 @@ const fundRelayerIfEmpty = async () => {
           minimumBalance,
           primaryWeb3
         )
-
-        logger.info('The receipt and tx params!')
-        logger.info(receipt)
-        logger.info(txParams)
+        logger.info(`txRelay - the transaction receipt ${receipt}`)
       }
 
       balance = await getRelayerFunds(wallet.publicKey)

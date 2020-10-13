@@ -23,6 +23,7 @@ describe('test txRelay: selectWallet()', () => {
   afterEach(() => {
     // reload the module each time for fresh state
     delete require.cache[require.resolve('../src/txRelay')]
+    delete require.cache[require.resolve('../src/web3')]
     sinon.restore()
   })
 
