@@ -22,7 +22,7 @@ const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
@@ -135,6 +135,14 @@ const getCID = async (req, res) => {
     return await streamFromFileSystem(req, res, queryResults.storagePath)
   } catch (e) {
     req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+
+    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+    try {
+      // notice this is not await-ed
+      findCIDInNetwork(queryResults.storagePath, CID, req.logger)
+    } catch (e) {
+      req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
+    }
   }
 
   try {
@@ -228,6 +236,14 @@ const getDirCID = async (req, res) => {
     return await streamFromFileSystem(req, res, queryResults.storagePath)
   } catch (e) {
     req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+ 
+    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+    try {
+      // notice this is not await-ed
+      findCIDInNetwork(queryResults.storagePath, CID, req.logger)
+    } catch (e) {
+      req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
+    }
   }
 
   try {

@@ -206,10 +206,13 @@ async function findCIDInNetwork (filePath, cid, logger) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
+  // get list of creator nodes
+  const creatorNodes = await getAllRegisteredCNodes()
+  if (!creatorNodes.length) return
+
   // generate signature
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
   const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
-  const creatorNodes = await getAllRegisteredCNodes()
   let node
 
   for (let index = 0; index < creatorNodes.length; index++) {
@@ -317,7 +320,6 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
         logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
         logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
-        await findCIDInNetwork(storagePath, multihash, logger)
       }
     } catch (e) {
       logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
@@ -435,3 +437,4 @@ module.exports.ipfsGet = ipfsGet
 module.exports.ipfsStat = ipfsStat
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
+module.exports.findCIDInNetwork = findCIDInNetwork
