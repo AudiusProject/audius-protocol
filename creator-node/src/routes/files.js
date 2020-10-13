@@ -138,8 +138,9 @@ const getCID = async (req, res) => {
 
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
+      const libs = req.app.get('audiusLibs')
       // notice this is not await-ed
-      findCIDInNetwork(queryResults.storagePath, CID, req.logger)
+      findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
     }
@@ -241,8 +242,9 @@ const getDirCID = async (req, res) => {
     try {
       // CID is the file CID, parse it from the storagePath
       const CID = queryResults.storagePath.split('/').slice(-1).join('')
+      const libs = req.app.get('audiusLibs')
       // notice this is not await-ed
-      findCIDInNetwork(queryResults.storagePath, CID, req.logger)
+      findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
     }
@@ -416,7 +418,8 @@ module.exports = function (app) {
 
     // check that signature is correct and delegateWallet is registered on chain
     const recoveredWallet = recoverWallet({ filePath, delegateWallet, timestamp }, signature).toLowerCase()
-    const creatorNodes = await getAllRegisteredCNodes()
+    const libs = req.app.get('audiusLibs')
+    const creatorNodes = await getAllRegisteredCNodes(libs)
     const foundDelegateWallet = creatorNodes.some(node => node.delegateOwnerWallet.toLowerCase() === recoveredWallet)
     if ((recoveredWallet !== delegateWallet) || !foundDelegateWallet) {
       return sendResponse(req, res, errorResponseUnauthorized(`Invalid wallet signature`))

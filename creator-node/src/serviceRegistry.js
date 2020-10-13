@@ -48,9 +48,6 @@ class ServiceRegistry {
       this.snapbackSM = new SnapbackSM(this.libs)
       await this.snapbackSM.init()
     }
-
-    // write all cnodes registered on chain here
-    await writeAllRegisteredCNodesToRedis(audiusLibs)
   }
 }
 
@@ -93,22 +90,6 @@ const initAudiusLibs = async () => {
   })
   await audiusLibs.init()
   return audiusLibs
-}
-
-/**
- * Get all creator nodes registered on chain. Use a cache to avoid making execessive amounts of chain calls
- * TODO - make this a job that pulls this data more frequently
- */
-const writeAllRegisteredCNodesToRedis = async (libs) => {
-  const cacheKey = 'all_registered_cnodes'
-
-  try {
-    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
-    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
-    redisClient.set(cacheKey, JSON.stringify(creatorNodes))
-  } catch (e) {
-    console.error('Error getting values in writeAllRegisteredCNodesToRedis', e)
-  }
 }
 
 /* Export a single instance of the ServiceRegistry. */

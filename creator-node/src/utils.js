@@ -202,12 +202,12 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
-async function findCIDInNetwork (filePath, cid, logger) {
+async function findCIDInNetwork (filePath, cid, logger, libs) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
   // get list of creator nodes
-  const creatorNodes = await getAllRegisteredCNodes()
+  const creatorNodes = await getAllRegisteredCNodes(libs)
   if (!creatorNodes.length) return
 
   // generate signature
@@ -256,7 +256,7 @@ async function findCIDInNetwork (filePath, cid, logger) {
 /**
  * Get all creator nodes registered on chain from a cached redis value
  */
-async function getAllRegisteredCNodes () {
+async function getAllRegisteredCNodes (libs) {
   const cacheKey = 'all_registered_cnodes'
 
   try {
@@ -264,6 +264,11 @@ async function getAllRegisteredCNodes () {
     if (cnodesList) {
       return JSON.parse(cnodesList)
     }
+
+    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
+    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
+    redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30) // cache this for 30 minutes
+    return creatorNodes
   } catch (e) {
     console.error('Error getting values in getAllRegisteredCNodes', e)
   }
