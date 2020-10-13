@@ -184,7 +184,6 @@ class SnapbackSM {
         if (!shouldProcess) {
           return
         }
-        console.log(`user:${userId}, modResult:${modResult}, shouldProcess=${shouldProcess}`)
 
         // Add to list of currently processing users
         usersToProcess.push(user)
