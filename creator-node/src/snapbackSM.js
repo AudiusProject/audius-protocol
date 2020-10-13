@@ -150,9 +150,11 @@ class SnapbackSM {
     // then no operations will be performed
     if (!this.initialized) {
       await this.initializeNodeIdentityConfig()
-      return
+      // Exit if failed to initialize
+      if (!this.initialized) return
     }
-    // 1.) Retrieve base information for state machine operations
+
+    // Additional verification that current spID is not 0
     let spInfo = await this.getSPInfo()
     if (spInfo.spID === 0) {
       this.log(`Invalid spID, recovering ${spInfo}`)
