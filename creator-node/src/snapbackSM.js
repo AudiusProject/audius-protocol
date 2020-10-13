@@ -207,10 +207,8 @@ class SnapbackSM {
       }
     )
     this.log(`Processing ${usersToProcess.length} users`)
-
     // Cached primary clock values for currently processing user set
     let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
-
     // Process nodeVectorClockQueryList and cache user clock values on each node
     let secondaryNodesToProcess = Object.keys(nodeVectorClockQueryList)
     let secondaryNodeUserClockStatus = {}
@@ -246,7 +244,7 @@ class SnapbackSM {
       )
     )
 
-    this.log(`Finished node user clock status quering, moving to sync calculation`)
+    this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
 
     // Issue syncs if necessary
     // For each user in the initially returned usersList,
@@ -284,13 +282,10 @@ class SnapbackSM {
         }
       )
     )
-
     let previousModuloSlice = this.currentModuloSlice
-
     // Increment and adjust current slice by ModuloBase
     this.currentModuloSlice += 1
     this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-
     this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice}`)
     this.log(`Issued ${numSyncsIssued} sync ops`)
     this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} ------------------`)
