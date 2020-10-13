@@ -424,6 +424,7 @@ class SnapbackSM {
 
     // Run the task every x time interval
     if (!config.get('snapbackDevModeEnabled')) {
+      this.log(`Enabling cron with following schedule: ${StateMachineSchedule}`)
       this.stateMachineQueue.add({}, { repeat: { cron: StateMachineSchedule } })
     }
 
