@@ -174,7 +174,6 @@ module.exports = function (app) {
    * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
    */
   app.post('/users/batch_clock_status', handleResponse(async (req, res) => {
-    // TODO: Limit max size
     const { walletPublicKeys } = req.body
     const cnodeUsers = await models.CNodeUser.findAll({
       where: {

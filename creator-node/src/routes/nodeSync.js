@@ -168,6 +168,9 @@ module.exports = function (app) {
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
     // option to sync just the db records as opposed to db records and files on disk, defaults to false
     const dbOnlySync = (req.body.db_only_sync === true || req.body.db_only_sync === 'true')
+    // Log if initiated from SnapbackSM
+    const stateMachineInitiatedSync = (req.body.state_machine === true || req.body.state_machine === 'true')
+    if (stateMachineInitiatedSync) req.logger.info(`SnapbackSM sync initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
 
     if (!immediate) {
       req.logger.info('debounce time', config.get('debounceTime'))
@@ -316,14 +319,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           const latestBlockNumber = cnodeUser.latestBlockNumber
           const latestClockValue = cnodeUser.clock
 
-          if (!dbOnlySync) {
-            if ((fetchedLatestBlockNumber === -1 && latestBlockNumber !== -1) ||
-              (latestClockValue >= fetchedLatestClockVal)
-            ) {
-              throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
-                ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}. \
-                fetched latestClockVal: ${fetchedLatestClockVal}, self latestClockVal: ${latestClockValue}`)
-            }
+          if (latestClockValue > fetchedLatestClockVal) {
+            throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
+              ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}. \
+              fetched latestClockVal: ${fetchedLatestClockVal}, self latestClockVal: ${latestClockValue}`)
+          } else if (latestClockValue === fetchedLatestClockVal) {
+            // Already to update, no sync necessary
+            req.logger.info(`User ${fetchedWalletPublicKey} already up to date! fetchedLatestClockVal=${fetchedLatestClockVal}, latestClockValue=${latestClockValue}`)
+            continue
           }
 
           const cnodeUserUUID = cnodeUser.cnodeUserUUID
