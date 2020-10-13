@@ -4,6 +4,7 @@ const { _ } = require('lodash')
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
 const consistency1 = require('./tests/test_1.js')
+const { snapbackSMParallelSyncTest } = require('./tests/test_snapbackSM.js')
 const ipldBlacklistTests = require('./tests/test_ipldBlacklist')
 
 // Configuration.
@@ -135,6 +136,18 @@ async function main() {
         numCreatorNodes: NUM_CREATOR_NODES,
         numUsers: NUM_USERS
       })
+      await testRunner([test])
+      break
+    }
+    case 'test-snapback': {
+      let snapbackNumUsers = 40
+      const test = makeTest(
+        'snapback',
+        snapbackSMParallelSyncTest,
+        {
+          numUsers: snapbackNumUsers
+        }
+      )
       await testRunner([test])
       break
     }

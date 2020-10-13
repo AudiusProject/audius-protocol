@@ -32,6 +32,7 @@ from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
+from src.queries.get_users_cnode import get_users_cnode
 
 from src.utils.redis_metrics import record_metrics
 
@@ -535,5 +536,17 @@ def get_previously_private_playlists_route():
     try:
         playlists = get_previously_private_playlists(to_dict(request.args))
         return api_helpers.success_response(playlists)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+# Get the users for a given creator node url
+@bp.route("/users/creator_node", methods=("GET",))
+def get_creator_node_users():
+    try:
+        if "creator_node_endpoint" not in request.args:
+            raise exceptions.ArgumentError("Missing creator_node_endpoint")
+        cnode_url = request.args.get("creator_node_endpoint")
+        users = get_users_cnode(cnode_url)
+        return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
