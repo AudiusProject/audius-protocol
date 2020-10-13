@@ -20,6 +20,9 @@ const SyncMonitoringRetryDelay = 15000
 // Base value used to filter users over a 24 hour period
 const ModuloBase = 24
 
+// 0 */1 * * * every hours at minute 0
+const StateMachineSchedule = '0 */1 * * *'
+
 /*
   SnapbackSM aka Snapback StateMachine
   Ensures file availability through recurring sync operations
@@ -423,10 +426,8 @@ class SnapbackSM {
     )
 
     // Run the task every x time interval
-    // */5 * * * *, every 5 minutes
-    // 0 * * * *, every hour at minute 0
     if (!config.get('snapbackDevModeEnabled')) {
-      this.stateMachineQueue.add({}, { repeat: { cron: '0 * * * *' } })
+      this.stateMachineQueue.add({}, { repeat: { cron: StateMachineSchedule } })
     }
 
     // Initialize sync queue processor function, as drained will issue syncs
