@@ -1,37 +1,15 @@
 import logging # pylint: disable=C0302
 from sqlalchemy import asc
 
-from flask.globals import request
 from src import exceptions
 from src.models import User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata, paginate_query
 from src.utils.redis_cache import extract_key, use_redis_cache
+from src.queries.get_unpopulated_users import get_unpopulated_users
 
 logger = logging.getLogger(__name__)
-
-UNPOPULATED_USER_CACHE_DURATION_SEC = 10
-
-def make_cache_key(args):
-    cache_keys = {}
-
-    if args.get("id"):
-        ids = args.get("id")
-        ids = map(str, ids)
-        ids = ",".join(ids)
-        cache_keys["user_id"] = ids
-
-    if args.get("handle"):
-        handle = args.get("handle")
-        cache_keys["handle"] = handle
-
-    if args.get("wallet"):
-        wallet = args.get("wallet")
-        cache_keys["wallet"] = wallet
-
-    key = extract_key(f"unpopulated-user:{request.path}", cache_keys.items())
-    return key
 
 def get_users(args):
     users = []
@@ -39,7 +17,21 @@ def get_users(args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        def get_unpopulated_users():
+        def get_users_and_ids():
+
+            can_user_shared_cache = (
+                "id" in args and
+                "is_creator" not in args and
+                "wallet" not in args and
+                "min_block_number" not in args and
+                "handle" not in args
+            )
+
+            if can_user_shared_cache:
+                users = get_unpopulated_users(session, args.get("id"))
+                ids = list(map(lambda user: user["user_id"], users))
+                return (users, ids)
+
             # Create initial query
             base_query = session.query(User)
             # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
@@ -80,11 +72,7 @@ def get_users(args):
 
             return (users, user_ids)
 
-        key = make_cache_key(args)
-        (users, user_ids) = use_redis_cache(
-            key,
-            UNPOPULATED_USER_CACHE_DURATION_SEC,
-            get_unpopulated_users)
+        (users, user_ids) = get_users_and_ids()
 
         # bundle peripheral info into user results
         users = populate_user_metadata(
