@@ -34,7 +34,7 @@ const WEB3_PROVIDER_URLS = process.env.REACT_APP_WEB3_PROVIDER_URL.split(',')
 const WEB3_NETWORK_ID = process.env.REACT_APP_WEB3_NETWORK_ID
 
 const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
-const ETH_PROVIDER_URL = process.env.REACT_APP_ETH_PROVIDER_URL
+const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
 const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS
 const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
 
@@ -482,7 +482,7 @@ class AudiusBackend {
       ethWeb3Config: AudiusLibs.configEthWeb3(
         ETH_TOKEN_ADDRESS,
         ETH_REGISTRY_ADDRESS,
-        ETH_PROVIDER_URL,
+        ETH_PROVIDER_URLS,
         ETH_OWNER_WALLET
       )
     }
