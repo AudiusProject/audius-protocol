@@ -1,4 +1,5 @@
 import * as _lib from '../utils/lib.js'
+import * as _signatures from '../utils/signatures.js'
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
@@ -228,5 +229,24 @@ contract('AudiusToken', async (accounts) => {
       token.pause({ from: newPauser }),
       "PauserRole: caller does not have the Pauser role"
     )
+  })
+
+  it.only('Meta-transaction approve', async () => {
+    const amount = 1000
+    // generated in advance
+    const approverPrivKey = '76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e'
+    const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+    // transfer
+    await token.transfer(accounts[11], amount, {from: tokenOwnerAddress})
+    assert.equal(await token.balanceOf(accounts[11]), amount)
+
+    let nonce = 0
+    let chainId = token.constructor.network_id
+    let deadline = 9999999999999999
+    const digest = _signatures.getPermitDigest("Audius", token.address, chainId, {owner: approverPubKey, spender: accounts[12], value: amount}, nonce, deadline)
+    const result = _signatures.sign(digest, approverPrivKey)
+    await token.permit(approverPubKey, accounts[12], amount, deadline, result.v, result.r, result.s, {from: accounts[6]})
+
+    expect(await token.allowance(approverPubKey, accounts[12])).to.equal(amount)
   })
 })
