@@ -18,7 +18,7 @@ const MaxSyncMonitoringDurationInMs = 360000
 const SyncMonitoringRetryDelay = 15000
 
 // Base value used to filter users over a 24 hour period
-const ModuloBase = 1
+const ModuloBase = 24
 
 // 0 */1 * * * every hours at minute 0
 const StateMachineSchedule = '0 */1 * * *'
