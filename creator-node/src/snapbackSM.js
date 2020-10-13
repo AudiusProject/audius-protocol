@@ -11,8 +11,11 @@ const DevDelayInMS = 3000
 // Represents the maximum number of syncs that can be issued at once
 const MaxParallelSyncJobs = 10
 
-// Maximum number of time to wait for a sync operation
-const MaxSyncMonitoringDurationInMs = 36000
+// Maximum number of time to wait for a sync operation, 6 minutes by default
+const MaxSyncMonitoringDurationInMs = 360000
+
+// Retry delay between requests during monitoring
+const SyncMonitoringRetryDelay = 15000
 
 // Base value used to filter users over a 24 hour period
 const ModuloBase = 24
@@ -39,8 +42,7 @@ class SnapbackSM {
     // Sync queue handles issuing sync request from primary -> secondary
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
     // Incremented as users are processed
-    // TODO: Randomize this starting point
-    this.currentModuloSlice = 0
+    this.currentModuloSlice = this.randomStartingSlice()
   }
 
   // Class level log output
@@ -59,6 +61,13 @@ class SnapbackSM {
         }
       }
     )
+  }
+
+  // Randomly select an initial slice
+  randomStartingSlice () {
+    let slice = Math.floor(Math.random() * Math.floor(ModuloBase))
+    this.log(`Starting at data slice ${slice}/${ModuloBase}`)
+    return slice
   }
 
   // Helper function to retrieve all relevant configs
@@ -157,10 +166,11 @@ class SnapbackSM {
     // Users actually selected to process
     let usersToProcess = []
 
+    // Wallets being processed in this state machine operation
     let wallets = []
 
     // Issue queries to secondaries for each user
-    usersList.map(
+    usersList.forEach(
       (user) => {
         let userId = user.user_id
         let modResult = userId % ModuloBase
@@ -203,7 +213,6 @@ class SnapbackSM {
       secondaryNodesToProcess.map(
         async (node) => {
           secondaryNodeUserClockStatus[node] = {}
-          // TODO: Batch this too?
           let walletsToQuery = nodeVectorClockQueryList[node]
           let requestParams = {
             baseURL: node,
@@ -299,7 +308,9 @@ class SnapbackSM {
         let respData = syncMonitoringResp.data.data
         this.log(`processSync ${syncWallet} secondary response: ${JSON.stringify(respData)}`)
         // A success response does not necessarily guarantee completion, validate response data to confirm
-        if (respData.clockValue === primaryClockValue) {
+        // Returned secondaryClockValue can be greater than the cached primaryClockValue if a client write was initiated
+        //    after primaryClockValue cached and resulting sync is monitored
+        if (respData.clockValue >= primaryClockValue) {
           syncAttemptCompleted = true
           this.log(`processSync ${syncWallet} clockValue from secondary:${respData.clockValue}, primary:${primaryClockValue}`)
         }
@@ -310,8 +321,8 @@ class SnapbackSM {
         this.log(`ERROR: processSync ${syncWallet} timeout for ${syncWallet}`)
         syncAttemptCompleted = true
       }
-      // 1s delay between retries
-      await utils.timeout(1000)
+      // Delay between retries
+      await utils.timeout(SyncMonitoringRetryDelay)
     }
     let duration = Date.now() - startTime
     if (!syncAttemptCompleted) {
@@ -401,7 +412,6 @@ class SnapbackSM {
         } catch (e) {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {
-          // TODO: Remove dev mode
           if (config.get('snapbackDevModeEnabled')) {
             this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
             await utils.timeout(DevDelayInMS)

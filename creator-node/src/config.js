@@ -7,7 +7,7 @@ const fs = require('fs')
 convict.addFormat({
   name: 'BooleanCustom',
   validate: function (val) {
-    return (typeof val === "boolean") || (typeof val === "string")
+    return (typeof val === 'boolean') || (typeof val === 'string')
   },
   coerce: function (val) {
     return val === true || val === 'true'
