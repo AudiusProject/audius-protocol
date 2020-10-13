@@ -81,14 +81,14 @@ const config = convict({
     default: null
   },
   relayerPrivateKey: {
-    doc: 'Relayer(used to make relay transactions) private key',
+    doc: 'Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
     env: 'relayerPrivateKey',
     default: null,
     sensitive: true
   },
   relayerPublicKey: {
-    doc: 'Relayer(used to make relay transactions) public key',
+    doc: 'Relayer(used to make relay transactions) public key. The source of the funds when funding wallet.',
     format: String,
     env: 'relayerPublicKey',
     default: null
