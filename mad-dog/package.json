@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js --inspect"
+    "start": "node src/index.js --inspect",
+    "link-deps": "npm link @audius/libs && npm link @audius/service-commands"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   },
   "engineStrict": true,
   "dependencies": {
+    "axios": "^0.20.0",
     "convict": "^6.0.0",
     "fs-extra": "^9.0.1",
     "ipfs-http-client": "^33.1.1",
