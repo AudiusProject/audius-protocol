@@ -250,10 +250,11 @@ contract('AudiusToken', async (accounts) => {
     assert.equal(await token.balanceOf(accounts[17]), 0)
     assert.equal(await token.balanceOf(accounts[14]), 0)
 
-    let nonce = 0
+    const name = await token.name()
+    const nonce = await token.nonces(approverPubKey)
     const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
     const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
-    const digest = _signatures.getPermitDigest("Audius", token.address, chainId, {owner: approverPubKey, spender: accounts[17], value: amount}, nonce, deadline)
+    const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[17], value: amount}, nonce, deadline)
     const result = _signatures.sign(digest, approverPrivKey)
     await token.permit(approverPubKey, accounts[17], amount, deadline, result.v, result.r, result.s, {from: accounts[6]})
 
@@ -264,5 +265,37 @@ contract('AudiusToken', async (accounts) => {
     assert.equal(await token.balanceOf(approverPubKey), 0)
     assert.equal(await token.balanceOf(accounts[14]), amount)
     assert.equal(await token.balanceOf(accounts[17]), 0)
+  })
+
+  it('Meta-transaction nonce incorrect', async() => {
+    const amount = 100
+
+    // throwaway address for the purpose of this test
+    const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+    const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+
+    const name = await token.name()
+    const nonce = await token.nonces(approverPubKey) + 5  // this is wrong
+    const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+    const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+    const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[18], value: amount}, nonce, deadline)
+    const result = _signatures.sign(digest, approverPrivKey)
+    await _lib.assertRevert(token.permit(approverPubKey, accounts[18], amount, deadline, result.v, result.r, result.s, {from: accounts[6]}), "Invalid signature")
+  })
+
+  it('Meta-transaction deadline has passed', async() => {
+    const amount = 100
+
+    // throwaway address for the purpose of this test
+    const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+    const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+
+    const name = await token.name()
+    const nonce = await token.nonces(approverPubKey)
+    const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+    const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp - 25  // now in the past and should fail
+    const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[18], value: amount}, nonce, deadline)
+    const result = _signatures.sign(digest, approverPrivKey)
+    await _lib.assertRevert(token.permit(approverPubKey, accounts[18], amount, deadline, result.v, result.r, result.s, {from: accounts[6]}), "Deadline has expired")
   })
 })
