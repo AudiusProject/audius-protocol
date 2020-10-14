@@ -4,12 +4,12 @@ const sinon = require('sinon')
 const { getApp } = require('./lib/app')
 
 describe('test /health_check and /balance_check', function () {
-  let app, server, req
+  let app, server
+  let req = { app: {} }
   beforeEach(async () => {
     const appInfo = await getApp(null, null)
     app = appInfo.app
     server = appInfo.server
-    sinon.stub(req).returns({ app: {} })
     sinon.stub(req.app, 'get').withArgs('audiusLibs').returns(getLibsMock())
   })
   afterEach(async () => {
