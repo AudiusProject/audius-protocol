@@ -1,7 +1,6 @@
 import logging  # pylint: disable=C0302
 import functools
-import json
-from flask.json import dumps
+import pickle
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
@@ -27,11 +26,15 @@ def use_redis_cache(key, ttl_sec, work_func):
 
     if cached_value:
         logger.info(f"Redis Cache - hit {key}")
-        return json.loads(cached_value)
+        try:
+            deserialized = pickle.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize cached response: {e}")
 
     logger.info(f"Redis Cache - miss {key}")
     to_cache = work_func()
-    serialized = dumps(to_cache)
+    serialized = pickle.dumps(to_cache)
     redis.set(key, serialized, ttl_sec)
     return to_cache
 
@@ -79,10 +82,13 @@ def cache(**kwargs):
 
                 if cached_resp:
                     logger.info(f"Redis Cache - hit {key}")
-                    deserialized = json.loads(cached_resp)
-                    if transform is not None:
-                        return transform(deserialized)
-                    return deserialized, 200
+                    try:
+                        deserialized = pickle.loads(cached_resp)
+                        if transform is not None:
+                            return transform(deserialized)
+                        return deserialized, 200
+                    except Exception as e:
+                        logger.warning(f"Unable to deserialize cached response: {e}")
 
                 logger.info(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
@@ -90,10 +96,10 @@ def cache(**kwargs):
             if len(response) == 2:
                 resp, status_code = response
                 if status_code < 400:
-                    serialized = dumps(resp)
+                    serialized = pickle.dumps(resp)
                     redis.set(key, serialized, ttl_sec)
                 return resp, status_code
-            serialized = dumps(response)
+            serialized = pickle.dumps(response)
             redis.set(key, serialized, ttl_sec)
             return transform(response)
         return inner_wrap
