@@ -5,6 +5,7 @@ const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
 const AudiusContracts = require('./services/dataContracts/index')
 const IdentityService = require('./services/identity/index')
+const ComStock = require('./services/comStock/index')
 const Hedgehog = require('./services/hedgehog/index')
 const CreatorNode = require('./services/creatorNode/index')
 const DiscoveryProvider = require('./services/discoveryProvider/index')
@@ -38,6 +39,14 @@ class AudiusLibs {
    * @param {string} url
    */
   static configIdentityService (url) {
+    return { url }
+  }
+
+  /**
+   * Configures an identity service wrapper
+   * @param {string} url
+   */
+  static configComStock (url) {
     return { url }
   }
 
@@ -138,6 +147,7 @@ class AudiusLibs {
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
+    comStockConfig,
     isServer,
     isDebug = false
   }) {
@@ -149,6 +159,7 @@ class AudiusLibs {
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
+    this.comStockConfig = comStockConfig
     this.isServer = isServer
     this.isDebug = isDebug
 
@@ -259,6 +270,11 @@ class AudiusLibs {
       await this.creatorNode.init()
     }
 
+    /** ComStock */
+    if (this.comStockConfig) {
+      this.comStock = new ComStock(this.comStockConfig.url)
+    }
+
     // Initialize apis
     const services = [
       this.userStateManager,
@@ -270,6 +286,7 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.creatorNode,
+      this.comStock,
       this.isServer
     ]
     this.User = new User(...services)

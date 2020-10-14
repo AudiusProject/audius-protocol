@@ -328,6 +328,37 @@ class Account extends Base {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return this.discoveryProvider.searchTags(text, user_tag_count, kind, limit, offset)
   }
+
+  /**
+   * Check if the user has a distribution claim
+   */
+  async getHasClaimDistribution () {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.ethContracts.ClaimDistributionClient.hasClaimDistribution()
+  }
+
+  /**
+   * Get the distribution claim amount
+   */
+  async getClaimDistribution () {
+    this.REQUIRES(Services.COM_STOCK)
+    const userWallet = this.web3Manager.getWalletAddress()
+    const claimDistribution = await this.comStock.getComStock(userWallet)
+    return claimDistribution
+  }
+
+  /**
+   * Make the claim
+   */
+  async makeDistributionClaim () {
+    this.REQUIRES(Services.COM_STOCK)
+    const userWallet = this.web3Manager.getWalletAddress()
+    const claimDistribution = await this.comStock.getComStock(userWallet)
+    const { index, amount, merkleProof } = claimDistribution
+    return this.ethContracts.ClaimDistributionClient.claim(index, userWallet, amount, merkleProof)
+  }
+
+
 }
 
 module.exports = Account
