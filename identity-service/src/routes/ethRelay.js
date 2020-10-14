@@ -1,0 +1,39 @@
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const txRelay = require('../txRelay')
+const crypto = require('crypto')
+
+module.exports = function (app) {
+  app.post('/eth_relay', handleResponse(async (req, res, next) => {
+    let body = req.body
+    const redis = req.app.get('redis')
+
+    if (body && body.contractAddress && body.senderAddress && body.encodedABI) {
+      // send tx
+      let receipt
+      const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify(req.body)).digest('hex')
+      try {
+        var txProps = {
+          contractAddress: body.contractAddress,
+          encodedABI: body.encodedABI,
+          senderAddress: body.senderAddress,
+          gasLimit: body.gasLimit || null
+        }
+        console.log(`got here`)
+        /*
+        receipt = await txRelay.sendTransaction(
+          req,
+          false, // resetNonce
+          txProps,
+          reqBodySHA
+          )
+          */
+         receipt = await txRelay.sendEthTransaction(req, txProps, reqBodySHA)
+         return successResponse({ receipt })
+      } catch (e) {
+        req.logger.error('Error in transaction:', e.message, reqBodySHA)
+        return errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`)
+      }
+      // return successResponse({ receipt: receipt })
+    } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
+  }))
+}

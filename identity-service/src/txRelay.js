@@ -7,7 +7,7 @@ const { logger } = require('./logging')
 
 const { AudiusABIDecoder } = require('@audius/libs')
 
-const { primaryWeb3, secondaryWeb3 } = require('./web3')
+const { primaryWeb3, secondaryWeb3, ethWeb3 } = require('./web3')
 
 const relayerConfigs = config.get('relayerWallets')
 
@@ -137,6 +137,33 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
+const sendEthTransaction = async (req, txProps, reqBodySHA) => {
+  const {
+    contractAddress,
+    encodedABI,
+    senderAddress,
+    gasLimit
+  } = txProps
+
+  // Hardcode a single wallet
+  let ethRelayerWallet = {
+    publicKey: config.get('relayerPublicKey'),
+    privateKey: config.get('relayerPrivateKey')
+  }
+  req.logger.info(ethRelayerWallet)
+  req.logger.info(txProps)
+  req.logger.info(reqBodySHA)
+  return await createAndSendTransaction(
+    ethRelayerWallet,
+    contractAddress,
+    '0x00',
+    ethWeb3,
+    req.logger,
+    gasLimit,
+    encodedABI
+  )
+}
+
 /**
  * Randomly select a wallet with a random offset. Circularly iterate through all
  * the available wallets using mod
@@ -164,6 +191,7 @@ const selectWallet = () => {
 }
 
 const fundRelayerIfEmpty = async () => {
+  logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
   const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
 
   for (let wallet of relayerWallets) {
@@ -177,6 +205,7 @@ const fundRelayerIfEmpty = async () => {
         logger.info(`txRelay - transfering funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
         await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
       } else {
+        logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
         logger.info(`txRelay - transfering funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
         const { receipt } = await createAndSendTransaction(
           {
@@ -214,6 +243,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
+  logger.info(`Final params: ${JSON.stringify(txParams)}`)
 
   if (data) {
     txParams = { ...txParams, data }
@@ -234,4 +264,4 @@ const getRelayerFunds = async (walletPublicKey) => {
   return primaryWeb3.eth.getBalance(walletPublicKey)
 }
 
-module.exports = { selectWallet, sendTransaction, getRelayerFunds, fundRelayerIfEmpty }
+module.exports = { selectWallet, sendTransaction, getRelayerFunds, fundRelayerIfEmpty, sendEthTransaction }
