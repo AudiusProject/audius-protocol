@@ -53,10 +53,10 @@ class SnapbackSM {
     logger.info(`SnapbackSM: ${msg}`)
   }
 
-  // Initialize queue object with provided name
+  // Initialize queue object with provided name and unix timestamp
   createBullQueue (queueName) {
     return new Bull(
-      queueName,
+      `${queueName}-${Date.now()}`,
       {
         redis: {
           port: config.get('redisPort'),
