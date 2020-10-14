@@ -20,6 +20,12 @@ import { StemTrackMetadata } from 'models/Track'
 import { SearchKind } from 'containers/search-page/store/types'
 import { processSearchResults } from './helper'
 
+declare global {
+  interface Window {
+    audiusLibs: any
+  }
+}
+
 const ENDPOINT_MAP = {
   trending: '/tracks/trending',
   following: (userId: OpaqueID) => `/users/${userId}/following`,
@@ -46,6 +52,10 @@ const ENDPOINT_MAP = {
 }
 
 const TRENDING_LIMIT = 100
+
+type QueryParams = {
+  [key: string]: string | number | undefined | boolean | Array<string> | null
+}
 
 export type GetTrackArgs = {
   id: ID
@@ -176,10 +186,18 @@ type GetSearchArgs = {
 }
 
 type InitializationState =
-  | { state: 'uninitialized ' }
+  | { state: 'uninitialized' }
   | {
       state: 'initialized'
       endpoint: string
+      // Requests are dispatched via APIClient rather than libs
+      type: 'manual'
+    }
+  | {
+      state: 'initialized'
+      endpoint: string
+      // Requests are dispatched and handled via libs
+      type: 'libs'
     }
 
 const emptySearchResponse: APIResponse<APISearch> = {
@@ -196,7 +214,10 @@ const emptySearchResponse: APIResponse<APISearch> = {
 }
 
 class AudiusAPIClient {
-  initializationState: InitializationState = { state: 'uninitialized ' }
+  initializationState: InitializationState = {
+    state: 'uninitialized'
+  }
+
   overrideEndpoint?: string
 
   constructor({ overrideEndpoint }: { overrideEndpoint?: string } = {}) {
@@ -220,10 +241,9 @@ class AudiusAPIClient {
       genre
     }
 
-    const endpoint = this._constructUrl(ENDPOINT_MAP.trending, params)
     const trendingResponse: Nullable<APIResponse<
       APITrack[]
-    >> = await this._getResponse(endpoint)
+    >> = await this._getResponse(ENDPOINT_MAP.trending, params)
 
     if (!trendingResponse) return []
 
@@ -247,13 +267,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const followingResponse: Nullable<APIResponse<
+      APIUser[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.following(encodedProfileUserId),
       params
     )
-    const followingResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(endpoint)
     if (!followingResponse) return []
     const adapted = followingResponse.data
       .map(adapter.makeUser)
@@ -275,13 +295,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const followersResponse: Nullable<APIResponse<
+      APIUser[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.followers(encodedProfileUserId),
       params
     )
-    const followersResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(endpoint)
 
     if (!followersResponse) return []
 
@@ -305,13 +325,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const repostUsers: Nullable<APIResponse<
+      APIUser[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.trackRepostUsers(encodedTrackId),
       params
     )
-    const repostUsers: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(endpoint)
 
     if (!repostUsers) return []
 
@@ -335,13 +355,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const followingResponse: Nullable<APIResponse<
+      APIUser[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.trackFavoriteUsers(encodedTrackId),
       params
     )
-    const followingResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(endpoint)
 
     if (!followingResponse) return []
 
@@ -365,13 +385,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const repostUsers: Nullable<APIResponse<
+      APIUser[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.playlistRepostUsers(encodedPlaylistId),
       params
     )
-    const repostUsers: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(endpoint)
 
     if (!repostUsers) return []
 
@@ -395,13 +415,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const followingResponse: Nullable<APIResponse<
+      APIUser[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.playlistFavoriteUsers(encodedPlaylistId),
       params
     )
-    const followingResponse: Nullable<APIResponse<
-      APIUser[]
-    >> = await this._getResponse(endpoint)
 
     if (!followingResponse) return []
 
@@ -424,13 +444,9 @@ class AudiusAPIClient {
       show_unlisted: !!unlistedArgs
     }
 
-    const endpoint = this._constructUrl(
-      ENDPOINT_MAP.getTrack(encodedTrackId),
-      args
-    )
     const trackResponse: Nullable<APIResponse<
       APITrack
-    >> = await this._getResponse(endpoint)
+    >> = await this._getResponse(ENDPOINT_MAP.getTrack(encodedTrackId), args)
 
     if (!trackResponse) return null
 
@@ -441,9 +457,8 @@ class AudiusAPIClient {
   async getStems({ trackId }: GetStemsArgs): Promise<StemTrackMetadata[]> {
     this._assertInitialized()
     const encodedTrackId = this._encodeOrThrow(trackId)
-    const endpoint = this._constructUrl(ENDPOINT_MAP.getStems(encodedTrackId))
     const response: Nullable<APIResponse<APIStem[]>> = await this._getResponse(
-      endpoint
+      ENDPOINT_MAP.getStems(encodedTrackId)
     )
 
     if (!response) return []
@@ -463,13 +478,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const remixesResponse: Nullable<APIResponse<
+      RemixesResponse
+    >> = await this._getResponse(
       ENDPOINT_MAP.getRemixes(encodedTrackId),
       params
     )
-    const remixesResponse: Nullable<APIResponse<
-      RemixesResponse
-    >> = await this._getResponse(endpoint)
 
     if (!remixesResponse) return []
 
@@ -491,13 +506,13 @@ class AudiusAPIClient {
       limit,
       offset
     }
-    const endpoint = this._constructUrl(
+
+    const remixingResponse: Nullable<APIResponse<
+      APITrack[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.getRemixing(encodedTrackId),
       params
     )
-    const remixingResponse: Nullable<APIResponse<
-      APITrack[]
-    >> = await this._getResponse(endpoint)
 
     if (!remixingResponse) return []
 
@@ -512,12 +527,9 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const endpoint = this._constructUrl(
+    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
       ENDPOINT_MAP.userByHandle(handle),
       params
-    )
-    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
-      endpoint
     )
 
     if (!response) return []
@@ -542,12 +554,9 @@ class AudiusAPIClient {
       offset
     }
 
-    const endpoint = this._constructUrl(
+    const response: Nullable<APIResponse<APITrack[]>> = await this._getResponse(
       ENDPOINT_MAP.userTracksByHandle(handle),
       params
-    )
-    const response: Nullable<APIResponse<APITrack[]>> = await this._getResponse(
-      endpoint
     )
 
     if (!response) return []
@@ -571,14 +580,12 @@ class AudiusAPIClient {
       offset
     }
 
-    const endpoint = this._constructUrl(
+    const response: Nullable<APIResponse<
+      APIActivity[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
       params
     )
-
-    const response: Nullable<APIResponse<
-      APIActivity[]
-    >> = await this._getResponse(endpoint)
 
     if (!response) return []
 
@@ -603,13 +610,12 @@ class AudiusAPIClient {
       offset
     }
 
-    const endpoint = this._constructUrl(
+    const response: Nullable<APIResponse<
+      APIActivity[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.userRepostsByHandle(handle),
       params
     )
-    const response: Nullable<APIResponse<
-      APIActivity[]
-    >> = await this._getResponse(endpoint)
 
     if (!response) return []
 
@@ -628,10 +634,9 @@ class AudiusAPIClient {
       offset
     }
 
-    const endpoint = this._constructUrl(ENDPOINT_MAP.topGenreUsers, params)
     const favoritedTrackResponse: Nullable<APIResponse<
       APIUser[]
-    >> = await this._getResponse(endpoint)
+    >> = await this._getResponse(ENDPOINT_MAP.topGenreUsers, params)
 
     if (!favoritedTrackResponse) return []
 
@@ -649,13 +654,12 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const endpoint = this._constructUrl(
+    const response: Nullable<APIResponse<
+      APIPlaylist[]
+    >> = await this._getResponse(
       ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
       params
     )
-    const response: Nullable<APIResponse<
-      APIPlaylist[]
-    >> = await this._getResponse(endpoint)
 
     if (!response) return []
 
@@ -682,10 +686,9 @@ class AudiusAPIClient {
       limit
     }
 
-    const endpoint = this._constructUrl(ENDPOINT_MAP.searchFull, params)
-
     const searchResponse: Nullable<APIResponse<APISearch>> =
-      (await this._getResponse(endpoint)) ?? emptySearchResponse
+      (await this._getResponse(ENDPOINT_MAP.searchFull, params)) ??
+      emptySearchResponse
 
     const adapted = adapter.adaptSearchResponse(searchResponse)
     return processSearchResults({ searchText: query, ...adapted })
@@ -708,10 +711,9 @@ class AudiusAPIClient {
       limit
     }
 
-    const endpoint = this._constructUrl(ENDPOINT_MAP.searchAutocomplete, params)
-
     const searchResponse: Nullable<APIResponse<APISearchAutocomplete>> =
-      (await this._getResponse(endpoint)) ?? emptySearchResponse
+      (await this._getResponse(ENDPOINT_MAP.searchAutocomplete, params)) ??
+      emptySearchResponse
     const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
     return processSearchResults({ searchText: query, ...adapted })
   }
@@ -723,7 +725,11 @@ class AudiusAPIClient {
     if (this.overrideEndpoint) {
       const endpoint = this._formatEndpoint(this.overrideEndpoint)
       console.debug(`APIClient: Using override endpoint: ${endpoint}`)
-      this.initializationState = { state: 'initialized', endpoint: endpoint }
+      this.initializationState = {
+        state: 'initialized',
+        endpoint: endpoint,
+        type: 'manual'
+      }
       return
     }
 
@@ -733,7 +739,8 @@ class AudiusAPIClient {
     console.debug(`APIClient: setting to eager discprov: ${fullDiscprov}`)
     this.initializationState = {
       state: 'initialized',
-      endpoint: fullDiscprov
+      endpoint: fullDiscprov,
+      type: 'manual'
     }
 
     // Listen for libs on chain selection
@@ -742,7 +749,8 @@ class AudiusAPIClient {
       console.debug(`APIClient: Setting to libs discprov: ${fullEndpoint}`)
       this.initializationState = {
         state: 'initialized',
-        endpoint: fullEndpoint
+        endpoint: fullEndpoint,
+        type: 'libs'
       }
     })
     console.debug('APIClient: Initialized')
@@ -755,13 +763,33 @@ class AudiusAPIClient {
       throw new Error('AudiusAPIClient must be initialized before use')
   }
 
-  async _getResponse<T>(resource: string): Promise<Nullable<T>> {
+  async _getResponse<T>(
+    path: string,
+    params: QueryParams = {}
+  ): Promise<Nullable<T>> {
+    if (this.initializationState.state !== 'initialized')
+      throw new Error('_constructURL called uninitialized')
+
+    if (this.initializationState.type === 'libs' && window.audiusLibs) {
+      const data = await window.audiusLibs.discoveryProvider._makeRequest({
+        endpoint: this._formatPath(path),
+        queryParams: params
+      })
+      // TODO: Type boundaries of API
+      return { data } as any
+    }
+
+    const resource = this._constructUrl(path, params)
     const response = await fetch(resource)
     if (!response.ok) {
       if (response.status === 404) return null
       throw new Error(response.statusText)
     }
     return response.json()
+  }
+
+  _formatPath(path: string) {
+    return `/v1/full/${path}`
   }
 
   _formatEndpoint(endpoint: string) {
@@ -776,18 +804,7 @@ class AudiusAPIClient {
     return encoded
   }
 
-  _constructUrl(
-    path: string,
-    queryParams: {
-      [key: string]:
-        | string
-        | number
-        | undefined
-        | boolean
-        | Array<string>
-        | null
-    } = {}
-  ) {
+  _constructUrl(path: string, queryParams: QueryParams = {}) {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
     const params = Object.entries(queryParams)

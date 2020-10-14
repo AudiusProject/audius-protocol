@@ -19,3 +19,7 @@
   border-radius: 4px;
   opacity: 0.5;
 }
+
+.scrollable :global(.simplebar-scrollbar:before) {
+  width: 6px;
+}
