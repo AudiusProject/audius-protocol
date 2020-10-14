@@ -37,6 +37,7 @@
 }
 
 .scrollable :global(.simplebar-scrollbar:before) {
+  width: 6px;
   margin-bottom: 20px;
 }
 

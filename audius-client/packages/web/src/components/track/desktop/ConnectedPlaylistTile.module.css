@@ -13,6 +13,10 @@
   opacity: 0.5;
 }
 
+.tracksContainer :global(.simplebar-scrollbar:before) {
+  width: 6px;
+}
+
 .tracksContainer :global(.simplebar-offset) {
   right: 0px !important;
 }

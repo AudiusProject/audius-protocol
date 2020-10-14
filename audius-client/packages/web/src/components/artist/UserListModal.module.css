@@ -13,6 +13,10 @@
   opacity: 0.5;
 }
 
+.scrollable :global(.simplebar-scrollbar:before) {
+  width: 6px;
+}
+
 .user {
   width: 292px;
   padding: 11px 0px;
