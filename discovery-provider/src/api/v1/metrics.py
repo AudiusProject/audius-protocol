@@ -54,7 +54,7 @@ class RouteMetrics(Resource):
         }
     )
     @ns.marshal_with(route_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         """Get the route metrics"""
         args = metrics_route_parser.parse_args()
@@ -110,7 +110,7 @@ class AppNameListMetrics(Resource):
     )
     @ns.expect(metrics_app_name_list_parser)
     @ns.marshal_with(app_name_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         """List all the app names"""
         args = metrics_app_name_list_parser.parse_args()
@@ -152,7 +152,7 @@ class AppNameMetrics(Resource):
     )
     @ns.expect(metrics_app_name_parser)
     @ns.marshal_with(app_name_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self, app_name):
         """Get the app name metrics"""
         args = metrics_app_name_parser.parse_args()
@@ -199,7 +199,7 @@ class PlaysMetrics(Resource):
     )
     @ns.expect(metrics_plays_parser)
     @ns.marshal_with(plays_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         args = metrics_plays_parser.parse_args()
 
@@ -245,7 +245,7 @@ class GenreMetrics(Resource):
     )
     @ns.expect(metrics_genres_parser)
     @ns.marshal_with(genre_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         args = metrics_genres_parser.parse_args()
 
