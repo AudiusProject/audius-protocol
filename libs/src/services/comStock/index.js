@@ -8,7 +8,7 @@ class ComStock {
 
   async getComStock (obj) {
     const result = await this._makeRequest({
-      url: '/comstock',
+      url: '/wallet_lookup',
       method: 'get',
       params: obj
     })
@@ -21,8 +21,8 @@ class ComStock {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
-    axiosRequestObj.baseURL = this.identityServiceEndpoint
-
+    axiosRequestObj.baseURL = this.comstockEndpoint
+    console.log(axiosRequestObj)
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)

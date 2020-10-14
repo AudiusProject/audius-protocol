@@ -10,7 +10,7 @@ const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
 const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
-const ClaimDistributionClient = require('./ClaimDistributionClient')
+const ClaimDistributionClient = require('./claimDistributionClient')
 const Utils = require('../../utils')
 
 let localStorage

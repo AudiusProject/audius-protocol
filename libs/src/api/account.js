@@ -339,8 +339,8 @@ class Account extends Base {
       return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(index)
     }
     const userWallet = this.web3Manager.getWalletAddress()
-    const { index } = await this.comStock.getComStock(userWallet)
-    return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(index)
+    const claim = await this.comStock.getComStock({ wallet: userWallet })
+    return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(claim.index)
   }
 
   /**
@@ -349,7 +349,7 @@ class Account extends Base {
   async getClaimDistribution () {
     this.REQUIRES(Services.COM_STOCK)
     const userWallet = this.web3Manager.getWalletAddress()
-    const claimDistribution = await this.comStock.getComStock(userWallet)
+    const claimDistribution = await this.comStock.getComStock({ wallet: userWallet })
     return claimDistribution
   }
 
@@ -370,7 +370,7 @@ class Account extends Base {
         merkleProof
       )
     }
-    const claim = await this.comStock.getComStock(userWallet)
+    const claim = await this.comStock.getComStock({ wallet: userWallet })
     return this.ethContracts.ClaimDistributionClient.claim(
       claim.index,
       userWallet,
