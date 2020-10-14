@@ -265,8 +265,7 @@ const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ow
     } else if (line.includes('spOwnerWallet')) {
       output.push(spOwnerWalletLine)
       spOwnerWalletFound = true
-    }
-    else {
+    } else {
       output.push(line)
     }
   }
