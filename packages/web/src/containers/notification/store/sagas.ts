@@ -433,6 +433,14 @@ function* getNotifications(isFirstFetch: boolean) {
             )
           )
         }
+      } else if (status !== Status.SUCCESS) {
+        yield put(
+          notificationActions.fetchNotificationSucceeded(
+            [], // notifications
+            0, // totalUnread
+            false // hasMore
+          )
+        )
       }
     }
   } catch (e) {
