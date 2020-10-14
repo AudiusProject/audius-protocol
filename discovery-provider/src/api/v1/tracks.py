@@ -13,7 +13,6 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
 from .models.tracks import track, track_full, stem_full, remixes_response
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
-from flask.json import dumps
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics

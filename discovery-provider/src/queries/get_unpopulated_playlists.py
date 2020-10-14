@@ -1,11 +1,12 @@
-import datetime
-import json
-from flask.json import dumps
+import logging # pylint: disable=C0302
+import pickle
 
 from src.utils import redis_connection
 from src.models import Playlist
 from src.utils import helpers
 from src.utils.redis_cache import get_playlist_id_cache_key
+
+logger = logging.getLogger(__name__)
 
 # Cache unpopulated playlists for 5 min
 ttl_sec = 5*60
@@ -18,10 +19,12 @@ def get_cached_playlists(playlist_ids):
     playlists = []
     for val in cached_values:
         if val is not None:
-            playlist = json.loads(val)
-            playlist["created_at"] = datetime.datetime.fromisoformat(playlist["created_at"])
-            playlist["updated_at"] = datetime.datetime.fromisoformat(playlist["updated_at"])
-            playlists.append(playlist)
+            try:
+                playlist = pickle.loads(val)
+                playlists.append(playlist)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize cached playlist: {e}")
+                playlists.append(None)
         else:
             playlists.append(None)
     return playlists
@@ -31,7 +34,7 @@ def set_playlists_in_cache(playlists):
     redis = redis_connection.get_redis()
     for playlist in playlists:
         key = get_playlist_id_cache_key(playlist['playlist_id'])
-        serialized = dumps(playlist, cls=helpers.DateTimeEncoder)
+        serialized = pickle.dumps(playlist)
         redis.set(key, serialized, ttl_sec)
 
 
