@@ -1,12 +1,12 @@
-import datetime
-import json
-from flask.json import dumps
+import logging # pylint: disable=C0302
+import pickle
 
 from src.utils import redis_connection
 from src.models import User
 from src.utils import helpers
 from src.utils.redis_cache import get_user_id_cache_key
 
+logger = logging.getLogger(__name__)
 
 # Cache unpopulated users for 5 min
 ttl_sec = 5*60
@@ -19,10 +19,12 @@ def get_cached_users(user_ids):
     users = []
     for val in cached_values:
         if val is not None:
-            user = json.loads(val)
-            user["created_at"] = datetime.datetime.fromisoformat(user["created_at"])
-            user["updated_at"] = datetime.datetime.fromisoformat(user["updated_at"])
-            users.append(user)
+            try:
+                user = pickle.loads(val)
+                users.append(user)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize cached user: {e}")
+                users.append(None)
         else:
             users.append(None)
     return users
@@ -32,7 +34,7 @@ def set_users_in_cache(users):
     redis = redis_connection.get_redis()
     for user in users:
         key = get_user_id_cache_key(user['user_id'])
-        serialized = dumps(user, cls=helpers.DateTimeEncoder)
+        serialized = pickle.dumps(user)
         redis.set(key, serialized, ttl_sec)
 
 

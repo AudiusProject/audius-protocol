@@ -14,7 +14,7 @@ from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
-    extend_user, format_limit, format_offset, get_current_user_id, make_response, search_parser, success_response, abort_bad_request_param, \
+    extend_user, format_limit, format_offset, get_current_user_id, make_full_response, make_response, search_parser, success_response, abort_bad_request_param, \
     get_default_max
 from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
@@ -28,7 +28,7 @@ ns = Namespace('users', description='User related operations')
 full_ns = Namespace('users', description='Full user operations')
 
 user_response = make_response("user_response", ns, fields.Nested(user_model))
-full_user_response = make_response(
+full_user_response = make_full_response(
     "full_user_response", full_ns, fields.List(fields.Nested(user_model_full)))
 
 def get_single_user(user_id, current_user_id):
@@ -150,7 +150,7 @@ class TrackList(Resource):
         tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
-full_tracks_response = make_response("full_tracks", full_ns, fields.List(fields.Nested(track_full)))
+full_tracks_response = make_full_response("full_tracks", full_ns, fields.List(fields.Nested(track_full)))
 @full_ns.route(USER_TRACKS_ROUTE)
 class FullTrackList(Resource):
     @record_metrics
@@ -244,7 +244,7 @@ user_reposts_route_parser.add_argument('user_id', required=False)
 user_reposts_route_parser.add_argument('limit', required=False, type=int)
 user_reposts_route_parser.add_argument('offset', required=False, type=int)
 
-reposts_response = make_response("reposts", full_ns, fields.List(fields.Nested(activity_model)))
+reposts_response = make_full_response("reposts", full_ns, fields.List(fields.Nested(activity_model)))
 @ns.route(USER_REPOSTS_ROUTE)
 class RepostList(Resource):
     @record_metrics
@@ -285,7 +285,7 @@ class RepostList(Resource):
 
         return success_response(activities)
 
-full_reposts_response = make_response("full_reposts", full_ns, fields.List(fields.Nested(activity_model_full)))
+full_reposts_response = make_full_response("full_reposts", full_ns, fields.List(fields.Nested(activity_model_full)))
 @full_ns.route(USER_REPOSTS_ROUTE)
 class FullRepostList(Resource):
     @record_metrics
@@ -397,7 +397,7 @@ favorite_route_parser = reqparse.RequestParser()
 favorite_route_parser.add_argument('user_id', required=False, type=str)
 favorite_route_parser.add_argument('limit', required=False, type=int)
 favorite_route_parser.add_argument('offset', required=False, type=int)
-favorites_response = make_response("favorites_response", ns, fields.List(fields.Nested(activity_model_full)))
+favorites_response = make_full_response("favorites_response", full_ns, fields.List(fields.Nested(activity_model_full)))
 @full_ns.route("/<string:user_id>/favorites/tracks")
 class FavoritedTracks(Resource):
     @record_metrics
@@ -475,7 +475,7 @@ followers_route_parser.add_argument('user_id', required=False)
 followers_route_parser.add_argument('limit', required=False, type=int)
 followers_route_parser.add_argument('offset', required=False, type=int)
 
-followers_response = make_response("followers_response", full_ns, fields.List(fields.Nested(user_model_full)))
+followers_response = make_full_response("followers_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:user_id>/followers")
 class FollowerUsers(Resource):
     @record_metrics
@@ -516,7 +516,7 @@ following_route_parser = reqparse.RequestParser()
 following_route_parser.add_argument('user_id', required=False)
 following_route_parser.add_argument('limit', required=False, type=int)
 following_route_parser.add_argument('offset', required=False, type=int)
-following_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+following_response = make_full_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:user_id>/following")
 class FollowingUsers(Resource):
     @record_metrics
@@ -556,7 +556,7 @@ top_genre_users_route_parser = reqparse.RequestParser()
 top_genre_users_route_parser.add_argument('genre', required=False, action='append')
 top_genre_users_route_parser.add_argument('limit', required=False, type=int)
 top_genre_users_route_parser.add_argument('offset', required=False, type=int)
-top_genre_users_response = make_response("top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full)))
+top_genre_users_response = make_full_response("top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/genre/top")
 class FullTopGenreUsers(Resource):
     @full_ns.expect(top_genre_users_route_parser)

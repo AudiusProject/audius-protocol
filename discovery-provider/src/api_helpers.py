@@ -32,21 +32,21 @@ def error_response(error, error_code=500):
 
 # Create a response dict with just data, signature, and timestamp
 # This response will contain a duplicate of response_entity
-def success_response_backwards_compat(response_entity=None, status=200):
+def success_response_backwards_compat(response_entity=None, status=200, sign_response=True):
     starting_response_dictionary = {'data': response_entity, **response_entity}
-    response_dictionary = response_dict_with_metadata(starting_response_dictionary)
+    response_dictionary = response_dict_with_metadata(starting_response_dictionary, sign_response)
     return jsonify(response_dictionary), status
 
 # Create a response dict with metadata, data, signature, and timestamp
-def success_response(response_entity=None, status=200, to_json=True):
+def success_response(response_entity=None, status=200, to_json=True, sign_response=True):
     starting_response_dictionary = {'data': response_entity}
-    response_dictionary = response_dict_with_metadata(starting_response_dictionary)
+    response_dictionary = response_dict_with_metadata(starting_response_dictionary, sign_response)
     response = jsonify(response_dictionary) if to_json else response_dictionary
     return response, status
 
 # Create a response dict with metadata fields of success, latest_indexed_block, latest_chain_block,
 # version, and owner_wallet
-def response_dict_with_metadata(response_dictionary):
+def response_dict_with_metadata(response_dictionary, sign_response):
     response_dictionary['success'] = True
 
     latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
@@ -57,12 +57,13 @@ def response_dict_with_metadata(response_dictionary):
     response_dictionary['version'] = disc_prov_version
     response_dictionary['signer'] = shared_config['delegate']['owner_wallet']
 
-    # generate timestamp with format HH:MM:SS.sssZ
-    timestamp = datetime.datetime.now().isoformat(timespec='milliseconds') + 'Z'
-    response_dictionary['timestamp'] = timestamp
+    if sign_response:
+        # generate timestamp with format HH:MM:SS.sssZ
+        timestamp = datetime.datetime.now().isoformat(timespec='milliseconds') + 'Z'
+        response_dictionary['timestamp'] = timestamp
 
-    signature = generate_signature(response_dictionary)
-    response_dictionary['signature'] = signature
+        signature = generate_signature(response_dictionary)
+        response_dictionary['signature'] = signature
 
     return response_dictionary
 

@@ -20,8 +20,8 @@ const SyncMonitoringRetryDelay = 15000
 // Base value used to filter users over a 24 hour period
 const ModuloBase = 24
 
-// 0 */1 * * * every hours at minute 0
-const StateMachineSchedule = '0 */1 * * *'
+// Delay 1 hour between production state machine jobs
+const ProductionJobDelayInMs = 3600000
 
 /*
   SnapbackSM aka Snapback StateMachine
@@ -53,10 +53,10 @@ class SnapbackSM {
     logger.info(`SnapbackSM: ${msg}`)
   }
 
-  // Initialize queue object with provided name
+  // Initialize queue object with provided name and unix timestamp
   createBullQueue (queueName) {
     return new Bull(
-      queueName,
+      `${queueName}-${Date.now()}`,
       {
         redis: {
           port: config.get('redisPort'),
@@ -414,18 +414,15 @@ class SnapbackSM {
           if (config.get('snapbackDevModeEnabled')) {
             this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
             await utils.timeout(DevDelayInMS)
-            this.stateMachineQueue.add({ startTime: Date.now() })
+          } else {
+            this.log(`Next job in ${ProductionJobDelayInMs}ms at ${new Date(Date.now() + ProductionJobDelayInMs)}`)
+            await utils.timeout(ProductionJobDelayInMs)
           }
+          await this.stateMachineQueue.add({ startTime: Date.now() })
           done()
         }
       }
     )
-
-    // Run the task every x time interval
-    if (!config.get('snapbackDevModeEnabled')) {
-      this.log(`Enabling cron with following schedule: ${StateMachineSchedule}`)
-      this.stateMachineQueue.add({}, { repeat: { cron: StateMachineSchedule } })
-    }
 
     // Initialize sync queue processor function, as drained will issue syncs
     // A maximum of 10 sync jobs are allowed to be issued at once
@@ -443,13 +440,10 @@ class SnapbackSM {
         }
       }
     )
-
-    // Enqueue first state machine operation if dev mode enabled
-    if (config.get('snapbackDevModeEnabled')) {
-      this.stateMachineQueue.add({ startTime: Date.now() })
-    }
-
     await this.initializeNodeIdentityConfig()
+
+    // Enqueue first state machine operation
+    await this.stateMachineQueue.add({ startTime: Date.now() })
   }
 }
 

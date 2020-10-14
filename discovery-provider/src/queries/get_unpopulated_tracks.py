@@ -1,7 +1,5 @@
 import logging # pylint: disable=C0302
-import datetime
-import json
-from flask.json import dumps
+import pickle
 
 from src.utils import redis_connection
 from src.models import Track
@@ -21,10 +19,12 @@ def get_cached_tracks(track_ids):
     tracks = []
     for val in cached_values:
         if val is not None:
-            track = json.loads(val)
-            track["created_at"] = datetime.datetime.fromisoformat(track["created_at"])
-            track["updated_at"] = datetime.datetime.fromisoformat(track["updated_at"])
-            tracks.append(track)
+            try:
+                track = pickle.loads(val)
+                tracks.append(track)
+            except Exception as e:
+                logger.warning(f"Unable to deserialize cached track: {e} {val}")
+                tracks.append(None)
         else:
             tracks.append(None)
     return tracks
@@ -34,7 +34,7 @@ def set_tracks_in_cache(tracks):
     redis = redis_connection.get_redis()
     for track in tracks:
         key = get_track_id_cache_key(track['track_id'])
-        serialized = dumps(track, cls=helpers.DateTimeEncoder)
+        serialized = pickle.dumps(track)
         redis.set(key, serialized, ttl_sec)
 
 
