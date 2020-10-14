@@ -26,7 +26,13 @@ function* getTracks({ offset, limit, payload }) {
 
   // Add the hero track into the lineup so that the queue can pull directly from the lineup
   // TODO: Create better ad-hoc add to queue methods and use that instead of this
-  const track = yield call(waitForValue, getTrack, { id: trackId })
+  const track = yield call(
+    waitForValue,
+    getTrack,
+    { id: trackId },
+    // Wait for the track to have a track_id (e.g. remix children could get fetched first)
+    track => track.track_id
+  )
   const lineup = [track]
 
   const remixParentTrackId = track._remix_parents?.[0]?.track_id
