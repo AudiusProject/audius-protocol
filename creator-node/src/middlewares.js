@@ -135,10 +135,10 @@ async function getOwnEndpoint (req) {
   // confirm on-chain endpoint exists and is valid FQDN
   if (!spInfo ||
       !spInfo.hasOwnProperty('endpoint') ||
-      !(spInfo.owner !== config.get('spOwnerWallet')) ||
-      !(spInfo.delegateOwnerWallet !== config.get('delegateOwnerWallet')) ||
+      (spInfo.owner !== config.get('spOwnerWallet')) ||
+      (spInfo.delegateOwnerWallet !== config.get('delegateOwnerWallet')) ||
       (spInfo['endpoint'] && !_isFQDN(spInfo['endpoint']))) {
-    throw new Error(`Cannot getOwnEndpoint for node ${spInfo}`)
+    throw new Error(`Cannot getOwnEndpoint for node ${JSON.stringify(spInfo)}`)
   }
   return spInfo['endpoint']
 }
