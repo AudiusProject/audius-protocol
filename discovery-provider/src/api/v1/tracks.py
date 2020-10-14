@@ -5,7 +5,7 @@ from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
-    extend_track, make_response, search_parser, extend_user, get_default_max, \
+    extend_track, make_full_response, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
     format_offset, format_limit, decode_string_id, stem_from_track, \
     get_current_user_id
@@ -33,12 +33,12 @@ ns = Namespace('tracks', description='Track related operations')
 full_ns = Namespace('tracks', description='Full track operations')
 
 track_response = make_response("track_response", ns, fields.Nested(track))
-full_track_response = make_response(
+full_track_response = make_full_response(
     "full_track_response", full_ns, fields.Nested(track_full))
 
 tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track)))
-full_tracks_response = make_response(
+full_tracks_response = make_full_response(
     "full_tracks_response", full_ns, fields.List(fields.Nested(track_full))
 )
 
@@ -303,7 +303,7 @@ track_favorites_route_parser = reqparse.RequestParser()
 track_favorites_route_parser.add_argument('user_id', required=False)
 track_favorites_route_parser.add_argument('limit', required=False, type=int)
 track_favorites_route_parser.add_argument('offset', required=False, type=int)
-track_favorites_response = make_response(
+track_favorites_response = make_full_response(
     "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 
 
@@ -348,7 +348,7 @@ track_reposts_route_parser = reqparse.RequestParser()
 track_reposts_route_parser.add_argument('user_id', required=False)
 track_reposts_route_parser.add_argument('limit', required=False, type=int)
 track_reposts_route_parser.add_argument('offset', required=False, type=int)
-track_reposts_response = make_response(
+track_reposts_response = make_full_response(
     "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:track_id>/reposts")
 class FullTrackReposts(Resource):
@@ -385,7 +385,7 @@ class FullTrackReposts(Resource):
         users = list(map(extend_user, users))
         return success_response(users)
 
-track_stems_response = make_response(
+track_stems_response = make_full_response(
     "stems_response", full_ns, fields.List(fields.Nested(stem_full)))
 
 @full_ns.route("/<string:track_id>/stems")
@@ -399,7 +399,7 @@ class FullTrackStems(Resource):
         return success_response(stems)
 
 
-remixes_response = make_response(
+remixes_response = make_full_response(
     "remixes_response", full_ns, fields.Nested(remixes_response))
 remixes_parser = reqparse.RequestParser()
 remixes_parser.add_argument('user_id', required=False)
@@ -426,7 +426,7 @@ class FullRemixesRoute(Resource):
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)
 
-remixing_response = make_response(
+remixing_response = make_full_response(
     "remixing_response", full_ns, fields.List(fields.Nested(track_full)))
 remixing_parser = reqparse.RequestParser()
 remixing_parser.add_argument('user_id', required=False)

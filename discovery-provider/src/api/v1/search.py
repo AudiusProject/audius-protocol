@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 from flask_restx import Resource, Namespace, fields, reqparse
-from src.api.v1.helpers import extend_track, make_response, \
+from src.api.v1.helpers import extend_track, make_full_response, \
     success_response, format_offset, format_limit, decode_string_id, \
     extend_user, extend_track, extend_playlist, get_current_user_id
 from src.queries.search_queries import SearchKind, search
@@ -41,7 +41,7 @@ search_route_parser.add_argument(
 search_route_parser.add_argument('query', required=True, type=str)
 search_route_parser.add_argument('limit', required=False, type=int)
 search_route_parser.add_argument('offset', required=False, type=int)
-search_full_response = make_response("search_full_response", full_ns, fields.Nested(search_model))
+search_full_response = make_full_response("search_full_response", full_ns, fields.Nested(search_model))
 @full_ns.route("/full")
 class FullSearch(Resource):
     @full_ns.expect(search_route_parser)
@@ -83,7 +83,7 @@ class FullSearch(Resource):
 
         return success_response(resp)
 
-search_autocomplete_response = make_response("search_autocomplete_response", full_ns, fields.Nested(search_model))
+search_autocomplete_response = make_full_response("search_autocomplete_response", full_ns, fields.Nested(search_model))
 @full_ns.route("/autocomplete")
 class FullSearch(Resource):
     @full_ns.expect(search_route_parser)
