@@ -48,24 +48,28 @@ const fadeIn = (
 ) => {
   if (ref.current) {
     ref.current.style.zIndex = '2'
+
     if (image === placeholder) {
       ref.current.style.backgroundColor = 'unset'
       // Apply an empty url here so we can use the background image prop to set a gradient
       ref.current.style.backgroundImage = `${image}, url('')`
-    } else {
-      // Set default background color for static images (transparent background defaults)
-      if (image.includes('/static')) {
-        ref.current.style.backgroundColor = 'var(--neutral-light-5)'
-      } else {
-        ref.current.style.backgroundColor = 'unset'
-      }
-      // Allow gradient values for 'image' in addition to URIs
-      ref.current.style.backgroundImage = image.includes('linear-gradient(')
-        ? `${image}, url('')`
-        : isUrl
-        ? `url(${image})`
-        : image
+      ref.current.style.transition = 'unset'
+      ref.current.style.opacity = '1'
+      return
     }
+
+    // Set default background color for static images (transparent background defaults)
+    if (image.includes('/static')) {
+      ref.current.style.backgroundColor = 'var(--neutral-light-5)'
+    } else {
+      ref.current.style.backgroundColor = 'unset'
+    }
+    // Allow gradient values for 'image' in addition to URIs
+    ref.current.style.backgroundImage = image.includes('linear-gradient(')
+      ? `${image}, url('')`
+      : isUrl
+      ? `url(${image})`
+      : image
     ref.current.style.transition = `opacity ${
       immediate ? '0.1s' : '0.5s'
     } ease-in-out`
@@ -79,12 +83,10 @@ const fadeIn = (
 const DynamicImage = ({
   image,
   isUrl,
-  initialOpacity,
   wrapperClassName,
   className,
   imageStyle,
   immediate,
-  immediatelyLeave,
   children,
   onClick,
   usePlaceholder = true
