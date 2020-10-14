@@ -25,8 +25,12 @@ track_event_types_arr = [
 def track_state_update(self, update_task, session, track_factory_txs, block_number, block_timestamp):
     """Return int representing number of Track model state changes found in transaction."""
     num_total_changes = 0
+
+    # This stores the track_ids created or updated in the set of transactions
+    track_ids = set()
+
     if not track_factory_txs:
-        return num_total_changes
+        return num_total_changes, track_ids
 
     track_abi = update_task.abi_values["TrackFactory"]["abi"]
     track_contract = update_task.web3.eth.contract(
@@ -40,6 +44,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
             for entry in track_events_tx:
                 event_args = entry["args"]
                 track_id = event_args._trackId if '_trackId' in event_args else event_args._id
+                track_ids.add(track_id)
                 blockhash = update_task.web3.toHex(entry.blockHash)
 
                 if track_id not in track_events:
@@ -77,7 +82,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
             invalidate_old_track(session, track_id)
             session.add(value_obj["track"])
 
-    return num_total_changes
+    return num_total_changes, track_ids
 
 
 def lookup_track_record(update_task, session, entry, event_track_id, block_number, block_hash):

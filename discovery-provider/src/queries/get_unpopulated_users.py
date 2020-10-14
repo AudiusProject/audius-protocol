@@ -5,13 +5,11 @@ from flask.json import dumps
 from src.utils import redis_connection
 from src.models import User
 from src.utils import helpers
+from src.utils.redis_cache import get_user_id_cache_key
 
-ttl_sec = 60
 
-
-def get_user_id_cache_key(id):
-    return "user:id:{}".format(id)
-
+# Cache unpopulated users for 5 min
+ttl_sec = 5*60
 
 def get_cached_users(user_ids):
     redis_user_id_keys = map(get_user_id_cache_key, user_ids)

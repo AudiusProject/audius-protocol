@@ -15,8 +15,9 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
+    user_ids = set()
     if not user_factory_txs:
-        return num_total_changes
+        return num_total_changes, user_ids
 
     user_abi = update_task.abi_values["UserFactory"]["abi"]
     user_contract = update_task.web3.eth.contract(
@@ -38,6 +39,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
+                user_ids.add(user_id)
 
                 # if the user id is not in the lookup object, it hasn't been initialized yet
                 # first, get the user object from the db(if exists or create a new one)
@@ -78,7 +80,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
             invalidate_old_user(session, user_id)
             session.add(value_obj["user"])
 
-    return num_total_changes
+    return num_total_changes, user_ids
 
 
 def lookup_user_record(update_task, session, entry, block_number, block_timestamp):
