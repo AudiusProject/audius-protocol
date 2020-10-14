@@ -9,6 +9,7 @@ describe('test /health_check and /balance_check', function () {
     const appInfo = await getApp(null, null)
     app = appInfo.app
     server = appInfo.server
+    sinon.stub(req, 'app').returns({app: {}})
     sinon.stub(req.app, 'get').withArgs('audiusLibs').returns(getLibsMock())
   })
   afterEach(async () => {
