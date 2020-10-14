@@ -10,7 +10,10 @@ from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.utils.redis_constants import latest_block_redis_key, \
-    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key
+    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
+    most_recent_indexed_block_redis_key
+from src.utils.redis_cache import remove_cached_user_ids, \
+    remove_cached_track_ids, remove_cached_playlist_ids
 
 logger = logging.getLogger(__name__)
 
@@ -194,19 +197,14 @@ def index_blocks(self, db, blocks_list):
                     user_library_factory_txs.append(tx_receipt)
 
             # bulk process operations once all tx's for block have been parsed
-            user_state_changed = (
-                user_state_update(
-                    self, update_task, session, user_factory_txs, block_number, block_timestamp
-                )
-                > 0
-            )
+            total_user_changes, user_ids = user_state_update(
+                self, update_task, session, user_factory_txs, block_number, block_timestamp)
+            user_state_changed = total_user_changes > 0
 
-            track_state_changed = (
-                track_state_update(
-                    self, update_task, session, track_factory_txs, block_number, block_timestamp
-                )
-                > 0
+            total_track_changes, track_ids = track_state_update(
+                self, update_task, session, track_factory_txs, block_number, block_timestamp
             )
+            track_state_changed = total_track_changes > 0
 
             social_feature_state_changed = ( # pylint: disable=W0612
                 social_feature_state_update(
@@ -216,9 +214,10 @@ def index_blocks(self, db, blocks_list):
             )
 
             # Playlist state operations processed in bulk
-            playlist_state_changed = playlist_state_update(
+            total_playlist_changes, playlist_ids = playlist_state_update(
                 self, update_task, session, playlist_factory_txs, block_number, block_timestamp
             )
+            playlist_state_changed = total_playlist_changes > 0
 
             user_library_state_changed = user_library_state_update( # pylint: disable=W0612
                 self, update_task, session, user_library_factory_txs, block_number, block_timestamp
@@ -232,11 +231,17 @@ def index_blocks(self, db, blocks_list):
             session.flush()
             if user_state_changed:
                 session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
+                if user_ids:
+                    remove_cached_user_ids(redis, user_ids)
             if track_lexeme_state_changed:
+                if track_ids:
+                    remove_cached_track_ids(redis, track_ids)
                 session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
             if playlist_state_changed:
                 session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
                 session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
+                if playlist_ids:
+                    remove_cached_playlist_ids(redis, playlist_ids)
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)

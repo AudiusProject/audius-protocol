@@ -15,8 +15,11 @@ def playlist_state_update(
 ):
     """Return int representing number of Playlist model state changes found in transaction."""
     num_total_changes = 0
+    # This stores the playlist_ids created or updated in the set of transactions
+    playlist_ids = set()
+
     if not playlist_factory_txs:
-        return num_total_changes
+        return num_total_changes, playlist_ids
 
     playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
     playlist_contract = update_task.web3.eth.contract(
@@ -32,6 +35,7 @@ def playlist_state_update(
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in playlist_events_tx:
                 playlist_id = entry["args"]._playlistId
+                playlist_ids.add(playlist_id)
 
                 if playlist_id not in playlist_events_lookup:
                     existing_playlist_entry = lookup_playlist_record(
@@ -67,7 +71,7 @@ def playlist_state_update(
             invalidate_old_playlist(session, playlist_id)
             session.add(value_obj["playlist"])
 
-    return num_total_changes
+    return num_total_changes, playlist_ids
 
 
 def lookup_playlist_record(update_task, session, entry, block_number):

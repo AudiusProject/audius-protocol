@@ -5,13 +5,10 @@ from flask.json import dumps
 from src.utils import redis_connection
 from src.models import Playlist
 from src.utils import helpers
+from src.utils.redis_cache import get_playlist_id_cache_key
 
-ttl_sec = 60
-
-
-def get_playlist_id_cache_key(id):
-    return "playlist:id:{}".format(id)
-
+# Cache unpopulated playlists for 5 min
+ttl_sec = 5*60
 
 def get_cached_playlists(playlist_ids):
     redis_playlist_id_keys = map(get_playlist_id_cache_key, playlist_ids)

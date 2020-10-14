@@ -6,14 +6,12 @@ from flask.json import dumps
 from src.utils import redis_connection
 from src.models import Track
 from src.utils import helpers
+from src.utils.redis_cache import get_track_id_cache_key
 
 logger = logging.getLogger(__name__)
 
-ttl_sec = 60
-
-def get_track_id_cache_key(id):
-    return "track:id:{}".format(id)
-
+# Cache unpopulated tracks for 5 min
+ttl_sec = 5*60
 
 def get_cached_tracks(track_ids):
     redis_track_id_keys = map(get_track_id_cache_key, track_ids)
