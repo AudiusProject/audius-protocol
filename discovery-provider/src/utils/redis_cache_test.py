@@ -1,4 +1,4 @@
-import json
+import pickle
 from time import sleep
 from unittest.mock import patch
 import flask
@@ -27,7 +27,7 @@ def test_cache(redis_mock):
             assert res[1] == 200
 
             cached_resp = redis_mock.get(mock_key_1)
-            deserialized = json.loads(cached_resp)
+            deserialized = pickle.loads(cached_resp)
             assert deserialized == {'name': 'joe'}
 
             # This should call the function and return the cached response
@@ -53,7 +53,7 @@ def test_cache(redis_mock):
             assert res == {'music': 'audius'}
 
             cached_resp = redis_mock.get(mock_key_1)
-            deserialized = json.loads(cached_resp)
+            deserialized = pickle.loads(cached_resp)
             assert deserialized == 'audius'
 
             # This should call the function and return the cached response
