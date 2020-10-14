@@ -1,4 +1,3 @@
-from src.api.v1.helpers import make_response
 from flask_restx import fields
 from .common import ns
 
@@ -32,6 +31,7 @@ user_model = ns.model("user", {
 
 user_model_full = ns.clone("user_full", user_model, {
     "blocknumber": fields.Integer(required=True),
+    "wallet": fields.String(required=True),
     "created_at": fields.String(required=True),
     "creator_node_endpoint": fields.String,
     "current_user_followee_follow_count": fields.Integer(required=True),

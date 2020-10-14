@@ -1,5 +1,3 @@
-from flask_restx.fields import Boolean, Integer
-from src.api.v1.helpers import make_response
 from flask_restx import fields
 from .users import user_model, user_model_full
 from .common import favorite, ns, repost

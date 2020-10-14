@@ -3,8 +3,8 @@ from src import api_helpers
 from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
-from src.queries.search_queries import SearchKind
 from datetime import datetime
+from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
@@ -243,6 +243,12 @@ def make_response(name, namespace, modelType):
     return namespace.model(name, {
         "data": modelType,
     })
+
+def make_full_response(name, namespace, modelType):
+    return namespace.clone(name, full_response, {
+        "data": modelType
+    })
+
 
 def to_dict(multi_dict):
     """Converts a multi dict into a dict where only list entries are not flat"""
