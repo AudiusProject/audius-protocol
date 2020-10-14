@@ -418,7 +418,7 @@ class SnapbackSM {
             this.log(`Next job in ${ProductionJobDelayInMs}ms at ${new Date(Date.now() + ProductionJobDelayInMs)}`)
             await utils.timeout(ProductionJobDelayInMs)
           }
-          this.stateMachineQueue.add({ startTime: Date.now() })
+          await this.stateMachineQueue.add({ startTime: Date.now() })
           done()
         }
       }
@@ -440,11 +440,10 @@ class SnapbackSM {
         }
       }
     )
+    await this.initializeNodeIdentityConfig()
 
     // Enqueue first state machine operation
-    this.stateMachineQueue.add({ startTime: Date.now() })
-
-    await this.initializeNodeIdentityConfig()
+    await this.stateMachineQueue.add({ startTime: Date.now() })
   }
 }
 
