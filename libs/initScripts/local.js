@@ -230,38 +230,49 @@ const _initAllVersions = async (audiusLibs) => {
 }
 
 // Write an update to either the common .sh file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, endpoint, isShell) => {
+const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ownerWalletPkey, endpoint, isShell) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity
   })
   let output = []
-  let walletFound = false
+  let delegateOwnerWalletFound = false
+  let spOwnerWalletFound = false
   let pkeyFound = false
   let endpointFound = false
-  const ownerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`
+
+  // Local dev, delegate and owner wallet are equal
+  let delegateOwnerWallet = ownerWallet
+  let delegateWalletPkey = ownerWalletPkey
+
+  const spOwnerWalletLine = `${isShell ? 'export ' : ''}spOwnerWallet=${ownerWallet}`
+  const delegateOwnerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`
   const pkeyLine = `${isShell ? 'export ' : ''}delegatePrivateKey=0x${delegateWalletPkey}`
   const endpointLine = `${isShell ? 'export ' : ''}creatorNodeEndpoint=${endpoint}`
 
   for await (const line of rl) {
     // Each line in input.txt will be successively available here as `line`.
     if (line.includes('delegateOwnerWallet')) {
-      output.push(ownerWalletLine)
-      walletFound = true
+      output.push(delegateOwnerWalletLine)
+      delegateOwnerWalletFound = true
     } else if (line.includes('delegatePrivateKey')) {
       output.push(pkeyLine)
       pkeyFound = true
     } else if (line.includes('creatorNodeEndpoint')) {
       output.push(endpointLine)
       endpointFound = true
-    } else {
+    } else if (line.includes('spOwnerWallet')) {
+      output.push(spOwnerWalletLine)
+      spOwnerWalletFound = true
+    }
+    else {
       output.push(line)
     }
   }
 
-  if (!walletFound) {
-    output.push(ownerWalletLine)
+  if (!delegateOwnerWalletFound) {
+    output.push(delegateOwnerWalletLine)
   }
   if (!pkeyFound) {
     output.push(pkeyLine)
@@ -269,7 +280,10 @@ const _updateCreatorNodeConfigFile = async (readPath, writePath, delegateOwnerWa
   if (!endpointFound) {
     output.push(endpointLine)
   }
+  if (!spOwnerWalletFound) {
+    output.push(spOwnerWalletLine)
+  }
 
   fs.writeFileSync(writePath, output.join('\n'))
-  console.log(`Updated ${writePath} with ${delegateOwnerWallet}:${delegateWalletPkey}, endpoint=${endpoint}`)
+  console.log(`Updated ${writePath} with spOwnerWallet=${ownerWallet}\ndelegateOwnerWallet=${delegateOwnerWallet}\ndelegateWalletPkey=${delegateWalletPkey}\nendpoint=${endpoint}`)
 }

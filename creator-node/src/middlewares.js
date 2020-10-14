@@ -132,13 +132,22 @@ async function getOwnEndpoint (req) {
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
   if (!spId) throw new Error('Cannot get spId for node')
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('creator-node', spId)
-  // confirm on-chain endpoint exists and is valid FQDN
+
+  // Confirm on-chain endpoint exists and is valid FQDN
+  // Error condition is met if any of the following are true
+  // - No spInfo returned from chain
+  // - Configured spOwnerWallet does not match on chain spOwnerWallet
+  // - Configured delegateOwnerWallet does not match on chain delegateOwnerWallet
+  // - Endpoint returned from chain but is an invalid FQDN, preventing successful operations
+  // - Endpoint returned from chain does not match configured endpoint
   if (!spInfo ||
       !spInfo.hasOwnProperty('endpoint') ||
-      (spInfo.owner !== config.get('spOwnerWallet')) ||
-      (spInfo.delegateOwnerWallet !== config.get('delegateOwnerWallet')) ||
-      (spInfo['endpoint'] && !_isFQDN(spInfo['endpoint']))) {
-    throw new Error(`Cannot getOwnEndpoint for node ${JSON.stringify(spInfo)}`)
+      (spInfo.owner.toLowerCase() !== config.get('spOwnerWallet').toLowerCase()) ||
+      (spInfo.delegateOwnerWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) ||
+      (spInfo['endpoint'] && !_isFQDN(spInfo['endpoint'])) ||
+      (spInfo['endpoint'] !== creatorNodeEndpoint)
+  ) {
+    throw new Error(`Cannot getOwnEndpoint for node. Returned from chain=${JSON.stringify(spInfo)}, configs=(creatorNodeEndpoint=${config.get('creatorNodeEndpoint')}, spOwnerWallet=${config.get('spOwnerWallet')}, delegateOwnerWallet=${config.get('delegateOwnerWallet')})`)
   }
   return spInfo['endpoint']
 }
