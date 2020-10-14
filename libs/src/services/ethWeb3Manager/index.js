@@ -82,6 +82,64 @@ class EthWeb3Manager {
     let gasPrice = parseInt(await this.web3.eth.getGasPrice())
     return contractMethod.send({ from: this.ownerWallet, gas: gasAmount, gasPrice: gasPrice })
   }
+
+  async relayTransaction (
+    contractMethod,
+    contractRegistryKey,
+    contractAddress,
+    txGasLimit = DEFAULT_GAS_AMOUNT,
+    txRetries = 5
+  ) {
+    const encodedABI = contractMethod.encodeABI()
+
+    const response = await retry(async () => {
+      return this.identityService.ethRelay(
+        contractRegistryKey,
+        contractAddress,
+        this.ownerWallet.getAddressString(),
+        encodedABI,
+        txGasLimit
+      )
+    }, {
+      // Retry function 5x by default
+      // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: txRetries,
+      onRetry: (err, i) => {
+        if (err) {
+          console.log(`Retry error : ${err}`)
+        }
+      }
+    })
+
+    const receipt = response['receipt']
+
+    // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
+    // above) parses the event log into an 'events' key on the transaction receipt and
+    // blows away the 'logs' key. However, using sendRawTransaction as our
+    // relayer does, returns only the logs. Here, we replicate the part of the 'events'
+    // key that our code consumes, but we may want to change our functions to consume
+    // this data in a different way in future (this parsing is messy).
+    // More on Metamask's / Web3.js' behavior here:
+    // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
+    if (receipt.logs) {
+      const events = {}
+      const decoded = this.AudiusABIDecoder.decodeLogs(contractRegistryKey, receipt.logs)
+      decoded.forEach((evt) => {
+        const returnValues = {}
+        evt.events.forEach((arg) => {
+          returnValues[arg['name']] = arg['value']
+        })
+        events[evt['name']] = { returnValues }
+      })
+      receipt['events'] = events
+    }
+    return response['receipt']
+  }
+
+
 }
 
 module.exports = EthWeb3Manager

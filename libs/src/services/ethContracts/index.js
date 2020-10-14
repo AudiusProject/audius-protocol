@@ -10,6 +10,7 @@ const ServiceProviderFactoryClient = require('./serviceProviderFactoryClient')
 const StakingProxyClient = require('./stakingProxyClient')
 const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
+const ClaimDistributionClient = require('./ClaimDistributionClient')
 const Utils = require('../../utils')
 
 let localStorage
@@ -29,12 +30,20 @@ const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 
+// TODO: Get update abi
+const ClaimDistributionABI = Utils.importEthContractABI('ClaimsManager.json').abi
+
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
 const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const StakingProxyKey = 'StakingProxy'
 const DelegateManagerRegistryKey = 'DelegateManager'
 const ClaimsManagerProxyKey = 'ClaimsManagerProxy'
+// TODO: Verify key
+const ClaimDistributionRegistryKey = 'ClaimDistribution'
+
+// TODO: figure out if const or a constructor arg
+const ClaimDistributionContractAddress = ''
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -124,6 +133,14 @@ class EthContracts {
       this.AudiusTokenClient,
       this.StakingProxyClient,
       this.GovernanceClient
+    )
+
+    this.ClaimDistributionClient = new ClaimDistributionClient(
+      this.ethWeb3Manager,
+      ClaimDistributionABI,
+      ClaimDistributionRegistryKey,
+      this.getRegistryAddressForContract,
+      ClaimDistributionContractAddress
     )
 
     this.contractClients = [

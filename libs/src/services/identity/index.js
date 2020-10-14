@@ -229,6 +229,21 @@ class IdentityService {
       }
     })
   }
+
+  async ethRelay (contractRegistryKey, contractAddress, senderAddress, encodedABI, gasLimit) {
+    return this._makeRequest({
+      url: '/ethRelay',
+      method: 'post',
+      data: {
+        contractRegistryKey,
+        contractAddress,
+        senderAddress,
+        encodedABI,
+        gasLimit
+      }
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
