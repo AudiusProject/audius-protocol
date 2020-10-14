@@ -331,10 +331,16 @@ class Account extends Base {
 
   /**
    * Check if the user has a distribution claim
+   * @param {number?} index The index of the claim to check (if known)
    */
-  async getHasClaimDistribution () {
+  async getHasClaimDistribution (index) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return this.ethContracts.ClaimDistributionClient.hasClaimDistribution()
+    if (index) {
+      return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(index)
+    }
+    const userWallet = this.web3Manager.getWalletAddress()
+    const { index } = await this.comStock.getComStock(userWallet)
+    return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(index)
   }
 
   /**
@@ -349,15 +355,29 @@ class Account extends Base {
 
   /**
    * Make the claim
+   * @param {number?} index The index of the claim to check
+   * @param {BN?} amount The amount to be claimed
+   * @param {Array<string>?} merkleProof The merkle proof for the claim
    */
-  async makeDistributionClaim () {
+  async makeDistributionClaim (index, amount, merkleProof) {
     this.REQUIRES(Services.COM_STOCK)
     const userWallet = this.web3Manager.getWalletAddress()
-    const claimDistribution = await this.comStock.getComStock(userWallet)
-    const { index, amount, merkleProof } = claimDistribution
-    return this.ethContracts.ClaimDistributionClient.claim(index, userWallet, amount, merkleProof)
+    if (index && amount && merkleProof) {
+      return this.ethContracts.ClaimDistributionClient.claim(
+        index,
+        userWallet,
+        amount,
+        merkleProof
+      )
+    }
+    const claim = await this.comStock.getComStock(userWallet)
+    return this.ethContracts.ClaimDistributionClient.claim(
+      claim.index,
+      userWallet,
+      claim.amount,
+      claim.merkleProof
+    )
   }
-
 
 }
 

@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { Utils } = require('../..')
 
 class ComStock {
   constructor (comstockEndpoint) {
@@ -6,11 +7,15 @@ class ComStock {
   }
 
   async getComStock (obj) {
-    return this._makeRequest({
+    const result = await this._makeRequest({
       url: '/comstock',
       method: 'get',
       params: obj
     })
+    const index = result.index
+    const amount = Utils.toBN(result.amount)
+    const merkleProof = result.proof.map(part => Utils.utf8ToHex(part))
+    return { index, amount, merkleProof }
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
