@@ -16,7 +16,10 @@ disc_prov_version = helpers.get_discovery_provider_version()
 
 @bp.route("/version", methods=["GET"])
 def version():
-    return success_response_backwards_compat(disc_prov_version)
+    return success_response_backwards_compat(
+        disc_prov_version,
+        sign_response=False
+    )
 
 # Health check for server, db, and redis. Consumes latest block data from redis instead of chain.
 # Optional boolean "verbose" flag to output db connection info.
