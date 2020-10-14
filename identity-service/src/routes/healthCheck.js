@@ -166,7 +166,10 @@ module.exports = function (app) {
   app.get('/health_check', handleResponse(async (req, res) => {
     // for now we just check db connectivity
     await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })
-    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA })
+
+    // get connected discprov via libs
+    const audiusLibsInstance = req.app.get('audiusLibs')
+    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA, selectedDiscoveryProvider: audiusLibsInstance.discoveryProvider.discoveryProviderEndpoint })
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
