@@ -1,4 +1,0 @@
-export delegateOwnerWallet=0x63f7f69c3c83fec14c57a1fe0b1efc0cd6044125
-export delegatePrivateKey=0x1ca2efc75f895acd6a099651c46e199a78cae22c684ef6614f9b832e96c46fb2
-export creatorNodeEndpoint=http://cn3_creator-node_1:4002
-export spOwnerWallet=0x63f7f69c3c83fec14c57a1fe0b1efc0cd6044125
