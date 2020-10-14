@@ -26,7 +26,11 @@ def use_redis_cache(key, ttl_sec, work_func):
 
     if cached_value:
         logger.info(f"Redis Cache - hit {key}")
-        return pickle.loads(cached_value)
+        try:
+            deserialized = pickle.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize cached response: {e}")
 
     logger.info(f"Redis Cache - miss {key}")
     to_cache = work_func()
@@ -78,10 +82,13 @@ def cache(**kwargs):
 
                 if cached_resp:
                     logger.info(f"Redis Cache - hit {key}")
-                    deserialized = pickle.loads(cached_resp)
-                    if transform is not None:
-                        return transform(deserialized)
-                    return deserialized, 200
+                    try:
+                        deserialized = pickle.loads(cached_resp)
+                        if transform is not None:
+                            return transform(deserialized)
+                        return deserialized, 200
+                    except Exception as e:
+                        logger.warning(f"Unable to deserialize cached response: {e}")
 
                 logger.info(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
