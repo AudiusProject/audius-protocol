@@ -1,4 +1,5 @@
 const request = require('supertest')
+const sinon = require('sinon')
 
 const { getApp } = require('./lib/app')
 
@@ -8,6 +9,7 @@ describe('test /health_check and /balance_check', function () {
     const appInfo = await getApp(null, null)
     app = appInfo.app
     server = appInfo.server
+    sinon.stub(req.app, 'get').withArgs('audiusLibs').returns(getLibsMock())
   })
   afterEach(async () => {
     await server.close()
@@ -41,3 +43,34 @@ describe('test /health_check and /balance_check', function () {
       .expect(404, done)
   })
 })
+
+
+function getLibsMock () {
+  const libsMock = {
+    ethContracts: {
+      ServiceProviderFactoryClient: {
+        getServiceProviderIdFromEndpoint: sinon.mock().atLeast(1),
+        getServiceEndpointInfo: sinon.mock().atLeast(1)
+      }
+    },
+    User: {
+      getUsers: sinon.mock()
+    },
+    discoveryProvider: {
+      discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
+    }
+  }
+  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint.returns('1')
+  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo.returns({
+    'endpoint': 'http://localhost:5000',
+    owner: "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25",
+    spID: '1',
+    type: 'creator-node',
+    blockNumber: 1234,
+    delegateOwnerWallet: "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
+  })
+  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://localhost:5000', 'blocknumber': 10, 'track_blocknumber': 10 }])
+  libsMock.User.getUsers.atMost(10)
+
+  return libsMock
+}
