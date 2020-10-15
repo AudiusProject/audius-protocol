@@ -191,22 +191,21 @@ const selectWallet = () => {
  * Fund L2 wallets as necessary to facilitate multiple relayers
  */
 const fundRelayerIfEmpty = async () => {
-  logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
   const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
 
   for (let wallet of relayerWallets) {
     let balance = await primaryWeb3.eth.getBalance(wallet.publicKey)
-    logger.info('txRelay - Attempting to fund wallet', wallet.publicKey, parseInt(balance))
+    logger.info('L2 - Attempting to fund wallet', wallet.publicKey, parseInt(balance))
 
     if (parseInt(balance) < minimumBalance) {
-      logger.info(`txRelay - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
+      logger.info(`L2 - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
       if (ENVIRONMENT === 'development') {
         const account = (await primaryWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
-        logger.info(`txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
+        logger.info(`L2 - transferring funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
         await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
       } else {
         logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
-        logger.info(`txRelay - transferring funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
+        logger.info(`L2 - transferring funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
         const { receipt } = await createAndSendTransaction(
           {
             publicKey: config.get('relayerPublicKey'),
@@ -217,11 +216,11 @@ const fundRelayerIfEmpty = async () => {
           primaryWeb3,
           logger
         )
-        logger.info(`txRelay - the transaction receipt ${JSON.stringify(receipt)}`)
+        logger.info(`L2 - the transaction receipt ${JSON.stringify(receipt)}`)
       }
 
       balance = await getRelayerFunds(wallet.publicKey)
-      logger.info('txRelay - Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance.toString(), 'ether'), 'eth')
+      logger.info('L2 - Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance.toString(), 'ether'), 'eth')
     }
   }
 }

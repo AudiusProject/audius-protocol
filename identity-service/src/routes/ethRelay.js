@@ -5,8 +5,6 @@ const crypto = require('crypto')
 module.exports = function (app) {
   app.post('/eth_relay', handleResponse(async (req, res, next) => {
     let body = req.body
-    const redis = req.app.get('redis')
-
     if (body && body.contractAddress && body.senderAddress && body.encodedABI) {
       // send tx
       let receipt
@@ -18,17 +16,8 @@ module.exports = function (app) {
           senderAddress: body.senderAddress,
           gasLimit: body.gasLimit || null
         }
-        console.log(`got here`)
-        /*
-        receipt = await txRelay.sendTransaction(
-          req,
-          false, // resetNonce
-          txProps,
-          reqBodySHA
-          )
-          */
-         receipt = await txRelay.sendEthTransaction(req, txProps, reqBodySHA)
-         return successResponse({ receipt })
+        receipt = await txRelay.sendEthTransaction(req, txProps, reqBodySHA)
+        return successResponse({ receipt })
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
         return errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`)
