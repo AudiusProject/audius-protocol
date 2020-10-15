@@ -236,9 +236,9 @@ const fundEthRelayerIfEmpty = async () => {
   logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
   let validBalance = parseInt(balance) >= minimumBalance
   if (!validBalance && ENVIRONMENT === 'development') {
-    const account = (await primaryWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
+    const account = (await ethWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
     logger.info(`L1 txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${ethPublicKey}`)
-    await primaryWeb3.eth.sendTransaction({ from: account, to: ethPublicKey, value: minimumBalance })
+    await ethWeb3.eth.sendTransaction({ from: account, to: ethPublicKey, value: minimumBalance })
     logger.info(`L1 txRelay - transferred funds [${minimumBalance}] from ${account} to wallet ${ethPublicKey}`)
   } else if (!validBalance) {
     throw new Error('Invalid balance for ethRelayer')
