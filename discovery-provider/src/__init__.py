@@ -6,6 +6,7 @@ import datetime
 import time
 
 from web3 import HTTPProvider, Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
 from celery import Task
@@ -159,6 +160,14 @@ def create(test_config=None, mode="app"):
     assert mode in ("app", "celery"), f"Expected app/celery, provided {mode}"
 
     app = Flask(__name__)
+
+    # Tell Flask that it should respect the X-Forwarded-For and X-Forwarded-Proto
+    # headers coming from a proxy (if any).
+    # On its own Flask's `url_for` is not very smart and if you're serving
+    # traffic through an HTTPS proxy, `url_for` will create URLs with the HTTP
+    # protocol. This is the cannonical solution.
+    # https://werkzeug.palletsprojects.com/en/1.0.x/middleware/proxy_fix/
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     if shared_config["cors"]["allow_all"]:
         CORS(app, resources={r"/*": {"origins": "*"}})
