@@ -35,6 +35,7 @@ import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import watchTrackErrors from './errorSagas'
 import { retrieveCollections } from './utils/retrieveCollections'
+import { reformat } from './utils'
 
 /** Counts instances of trackId in a playlist. */
 const countTrackIds = (playlistContents, trackId) => {
@@ -171,7 +172,7 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
               uid: subscribedUid,
               metadata: {
                 ...movedCollection,
-                ...confirmedPlaylist,
+                ...reformat(confirmedPlaylist),
                 _temp: false
               }
             }
@@ -311,7 +312,7 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
           cacheActions.update(Kind.COLLECTIONS, [
             {
               id: confirmedPlaylist.playlist_id,
-              metadata: confirmedPlaylist
+              metadata: reformat(confirmedPlaylist)
             }
           ])
         )
