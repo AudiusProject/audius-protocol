@@ -9,6 +9,8 @@ fi
 echo $PG_PORT
 
 export ethTokenAddress=''
+export ethRelayerPrivateKey=''
+export ethRelayerPublicKey=''
 export ethRegistryAddress=''
 export registryAddress=''
 export ethOwnerWallet=''

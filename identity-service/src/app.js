@@ -71,6 +71,12 @@ class App {
       logger.error(`Failed to fund relayer - ${e}`)
     }
 
+    try {
+      await txRelay.fundEthRelayerIfEmpty()
+    } catch (e) {
+      logger.error(`Failed to fund L1 relayer - ${e}`)
+    }
+
     logger.info(`Listening on port ${this.port}...`)
     return { app: this.express, server }
   }
