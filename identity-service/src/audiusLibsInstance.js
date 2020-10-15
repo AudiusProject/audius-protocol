@@ -10,8 +10,7 @@ async function initAudiusLibs () {
 
   let audiusInstance = new AudiusLibs({
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-      /** autoSelect */ false,
-      /** whiteist */ new Set([config.get('notificationDiscoveryProvider')])
+      /** whitelist */ new Set([config.get('notificationDiscoveryProvider')])
     ),
     ethWeb3Config: AudiusLibs.configEthWeb3(
       config.get('ethTokenAddress'),
