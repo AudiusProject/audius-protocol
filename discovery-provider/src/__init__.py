@@ -6,6 +6,7 @@ import datetime
 import time
 
 from web3 import HTTPProvider, Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
 from celery import Task
@@ -159,6 +160,7 @@ def create(test_config=None, mode="app"):
     assert mode in ("app", "celery"), f"Expected app/celery, provided {mode}"
 
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     if shared_config["cors"]["allow_all"]:
         CORS(app, resources={r"/*": {"origins": "*"}})
