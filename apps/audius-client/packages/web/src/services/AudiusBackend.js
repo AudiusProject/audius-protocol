@@ -331,25 +331,22 @@ class AudiusBackend {
   static getCollectionImages(collection) {
     const coverArtSizes = {}
 
-    if (!collection.cover_art_sizes && !collection.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt
-    }
-
-    const legacyFieldMapping = {}
     if (
       collection.playlist_image_sizes_multihash &&
       !collection.cover_art_sizes
     ) {
-      legacyFieldMapping.cover_art_sizes =
-        collection.playlist_image_sizes_multihash
+      collection.cover_art_sizes = collection.playlist_image_sizes_multihash
     }
     if (collection.playlist_image_multihash && !collection.cover_art) {
-      legacyFieldMapping.cover_art = collection.playlist_image_multihash
+      collection.cover_art = collection.playlist_image_multihash
+    }
+
+    if (!collection.cover_art_sizes && !collection.cover_art) {
+      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt
     }
 
     return {
       ...collection,
-      ...legacyFieldMapping,
       _cover_art_sizes: coverArtSizes
     }
   }
