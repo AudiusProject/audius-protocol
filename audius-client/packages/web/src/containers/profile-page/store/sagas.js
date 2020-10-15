@@ -42,6 +42,7 @@ import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { processAndCacheUsers } from 'store/cache/users/utils'
 import { getUser } from 'store/cache/users/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
+import { setAudiusAccountUser } from 'services/LocalStorage'
 
 function* watchFetchProfile() {
   yield takeLatest(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -315,7 +316,10 @@ function* confirmUpdateProfile(userId, metadata) {
           profilePictureCheck(user)
         return yield call(pollUser, userId, checks)
       },
-      function* () {},
+      function* (confirmedUser) {
+        // Store the update in local storage so it is correct upon reload
+        yield setAudiusAccountUser(confirmedUser)
+      },
       function* () {
         yield put(profileActions.updateProfileFailed())
       }
