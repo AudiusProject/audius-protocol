@@ -81,22 +81,35 @@ const config = convict({
     default: null
   },
   relayerPrivateKey: {
-    doc: 'Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
+    doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
     env: 'relayerPrivateKey',
     default: null,
     sensitive: true
   },
   relayerPublicKey: {
-    doc: 'Relayer(used to make relay transactions) public key. The source of the funds when funding wallet.',
+    doc: 'L2 Relayer(used to make relay transactions) public key. The source of the funds when funding wallet.',
     format: String,
     env: 'relayerPublicKey',
     default: null
   },
   relayerWallets: {
-    doc: 'Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
+    doc: 'L2 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
     format: 'string-array',
     env: 'relayerWallets',
+    default: null
+  },
+  ethRelayerPrivateKey: {
+    doc: 'L1 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
+    format: String,
+    env: 'ethRelayerPrivateKey',
+    default: null,
+    sensitive: true
+  },
+  ethRelayerPublicKey: {
+    doc: 'L1 Relayer(used to make relay transactions) public key. The source of the funds when funding wallet.',
+    format: String,
+    env: 'ethRelayerPublicKey',
     default: null
   },
   userVerifierPrivateKey: {

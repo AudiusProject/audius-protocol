@@ -47,11 +47,13 @@ class App {
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
       const audiusInstance = await this.configureAudiusInstance()
+      /*
       await this.notificationProcessor.init(
         audiusInstance,
         this.express,
         this.redisClient
       )
+      */
     }
 
     let server
@@ -69,6 +71,12 @@ class App {
       await txRelay.fundRelayerIfEmpty()
     } catch (e) {
       logger.error(`Failed to fund relayer - ${e}`)
+    }
+
+    try {
+      await txRelay.fundEthRelayerIfEmpty()
+    } catch (e) {
+      logger.error(`Failed to fund L1 relayer - ${e}`)
     }
 
     logger.info(`Listening on port ${this.port}...`)

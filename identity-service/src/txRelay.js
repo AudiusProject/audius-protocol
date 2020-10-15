@@ -137,6 +137,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
+// Relay a transaction to the ethereum network
 const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   const {
     contractAddress,
@@ -144,17 +145,11 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     senderAddress,
     gasLimit
   } = txProps
-
-  // Hardcode a single wallet
-  let ethRelayerWallet = {
-    publicKey: config.get('relayerPublicKey'),
-    privateKey: config.get('relayerPrivateKey')
-  }
-  req.logger.info(ethRelayerWallet)
-  req.logger.info(txProps)
-  req.logger.info(reqBodySHA)
-  return await createAndSendTransaction(
-    ethRelayerWallet,
+  let txReceipt = await createAndSendTransaction(
+    {
+      publicKey: config.get('ethRelayerPublicKey'),
+      privateKey: config.get('ethRelayerPrivateKey')
+    },
     contractAddress,
     '0x00',
     ethWeb3,
@@ -162,6 +157,8 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     gasLimit,
     encodedABI
   )
+  req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
+  return txReceipt
 }
 
 /**
@@ -190,6 +187,9 @@ const selectWallet = () => {
   }
 }
 
+/**
+ * Fund L2 wallets as necessary to facilitate multiple relayers
+ */
 const fundRelayerIfEmpty = async () => {
   logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
   const minimumBalance = primaryWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
@@ -202,11 +202,11 @@ const fundRelayerIfEmpty = async () => {
       logger.info(`txRelay - Relay account below minimum expected. Attempting to fund ${wallet.publicKey}`)
       if (ENVIRONMENT === 'development') {
         const account = (await primaryWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
-        logger.info(`txRelay - transfering funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
+        logger.info(`txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${wallet.publicKey}`)
         await primaryWeb3.eth.sendTransaction({ from: account, to: wallet.publicKey, value: minimumBalance })
       } else {
         logger.info(`relayerPublicKey: ${config.get('relayerPublicKey')}`)
-        logger.info(`txRelay - transfering funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
+        logger.info(`txRelay - transferring funds [${minimumBalance}] from ${config.get('relayerPublicKey')} to wallet ${wallet.publicKey}`)
         const { receipt } = await createAndSendTransaction(
           {
             publicKey: config.get('relayerPublicKey'),
@@ -223,6 +223,26 @@ const fundRelayerIfEmpty = async () => {
       balance = await getRelayerFunds(wallet.publicKey)
       logger.info('txRelay - Balance of relay account:', wallet.publicKey, primaryWeb3.utils.fromWei(balance.toString(), 'ether'), 'eth')
     }
+  }
+}
+
+/**
+ * Fund L1 wallets as necessary to facilitate multiple relayers
+ */
+const fundEthRelayerIfEmpty = async () => {
+  let ethPublicKey = config.get('ethRelayerPublicKey')
+  logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethPublicKey}`)
+  const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+  let balance = await ethWeb3.eth.getBalance(ethPublicKey)
+  logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
+  let validBalance = parseInt(balance) >= minimumBalance
+  if (!validBalance && ENVIRONMENT === 'development') {
+    const account = (await primaryWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
+    logger.info(`L1 txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${ethPublicKey}`)
+    await primaryWeb3.eth.sendTransaction({ from: account, to: ethPublicKey, value: minimumBalance })
+    logger.info(`L1 txRelay - transferred funds [${minimumBalance}] from ${account} to wallet ${ethPublicKey}`)
+  } else if (!validBalance) {
+    throw new Error('Invalid balance for ethRelayer')
   }
 }
 
@@ -264,4 +284,11 @@ const getRelayerFunds = async (walletPublicKey) => {
   return primaryWeb3.eth.getBalance(walletPublicKey)
 }
 
-module.exports = { selectWallet, sendTransaction, getRelayerFunds, fundRelayerIfEmpty, sendEthTransaction }
+module.exports = {
+  selectWallet,
+  sendTransaction,
+  getRelayerFunds,
+  fundRelayerIfEmpty,
+  fundEthRelayerIfEmpty,
+  sendEthTransaction
+}
