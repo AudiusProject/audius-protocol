@@ -73,7 +73,6 @@
 
 .guideButton {
   height: 48px;
-  border: 1px solid #DAD9E0;
   border-radius: 4px;
   background-color: #FFFFFF;
 }
@@ -81,7 +80,7 @@
 .guideButton .guideButtonText {
   height: 10px;
   width: 313px;
-  color: var(--neutral);
+  color: var(--static-white);
   font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.5px;
