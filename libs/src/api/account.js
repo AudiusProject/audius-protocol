@@ -1,5 +1,6 @@
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
+const Utils = require('../utils')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -333,24 +334,25 @@ class Account extends Base {
    * Check if the user has a distribution claim
    * @param {number?} index The index of the claim to check (if known)
    */
-  async getHasClaimDistribution (index) {
+  async getHasClaimed (index) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     if (index) {
-      return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(index)
+      return this.ethContracts.ClaimDistributionClient.isClaimed(index)
     }
     const userWallet = this.web3Manager.getWalletAddress()
     const claim = await this.comStock.getComStock({ wallet: userWallet })
-    return this.ethContracts.ClaimDistributionClient.hasClaimDistribution(claim.index)
+    return this.ethContracts.ClaimDistributionClient.isClaimed(claim.index)
   }
 
   /**
    * Get the distribution claim amount
    */
-  async getClaimDistribution () {
+  async getClaimDistributionAmount () {
     this.REQUIRES(Services.COM_STOCK)
     const userWallet = this.web3Manager.getWalletAddress()
     const claimDistribution = await this.comStock.getComStock({ wallet: userWallet })
-    return claimDistribution
+    const amount = Utils.toBN(claimDistribution.amount) 
+    return amount
   }
 
   /**
@@ -375,7 +377,7 @@ class Account extends Base {
       claim.index,
       userWallet,
       claim.amount,
-      claim.merkleProof
+      claim.proof
     )
   }
 

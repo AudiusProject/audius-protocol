@@ -12,17 +12,13 @@ class ComStock {
       method: 'get',
       params: obj
     })
-    const index = result.index
-    const amount = Utils.toBN(result.amount)
-    const merkleProof = result.proof.map(part => Utils.utf8ToHex(part))
-    return { index, amount, merkleProof }
+    return result
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
     axiosRequestObj.baseURL = this.comstockEndpoint
-    console.log(axiosRequestObj)
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)

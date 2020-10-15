@@ -9,7 +9,7 @@ const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so
 
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
-  constructor (web3Config) {
+  constructor (web3Config, identityService) {
     if (!web3Config) throw new Error('web3Config object not passed in')
     if (!web3Config.providers) throw new Error('missing web3Config property: providers')
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
@@ -18,6 +18,7 @@ class EthWeb3Manager {
     const provider = sample(web3Config.providers)
 
     this.web3Config = web3Config
+    this.identityService = identityService
     this.web3 = new Web3(provider)
     this.ownerWallet = web3Config.ownerWallet
   }
@@ -85,18 +86,15 @@ class EthWeb3Manager {
 
   async relayTransaction (
     contractMethod,
-    contractRegistryKey,
     contractAddress,
     txGasLimit = DEFAULT_GAS_AMOUNT,
     txRetries = 5
   ) {
     const encodedABI = contractMethod.encodeABI()
-
     const response = await retry(async () => {
       return this.identityService.ethRelay(
-        contractRegistryKey,
         contractAddress,
-        this.ownerWallet.getAddressString(),
+        this.getWalletAddress(),
         encodedABI,
         txGasLimit
       )

@@ -12,7 +12,6 @@ const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
 const ClaimDistributionClient = require('./claimDistributionClient')
 const Utils = require('../../utils')
-
 let localStorage
 if (typeof window === 'undefined' || window === null) {
   const LocalStorage = require('node-localstorage').LocalStorage
@@ -29,9 +28,7 @@ const ServiceProviderFactoryABI = Utils.importEthContractABI('ServiceProviderFac
 const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
-
-// TODO: Get update abi
-const ClaimDistributionABI = Utils.importEthContractABI('ClaimsManager.json').abi
+const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -39,11 +36,7 @@ const ServiceProviderFactoryRegistryKey = 'ServiceProviderFactory'
 const StakingProxyKey = 'StakingProxy'
 const DelegateManagerRegistryKey = 'DelegateManager'
 const ClaimsManagerProxyKey = 'ClaimsManagerProxy'
-// TODO: Verify key
 const ClaimDistributionRegistryKey = 'ClaimDistribution'
-
-// TODO: figure out if const or a constructor arg
-const ClaimDistributionContractAddress = ''
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -63,9 +56,10 @@ const serviceTypeList = Object.values(serviceType)
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class EthContracts {
-  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, isServer, isDebug = false) {
+  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, claimDistributionContractAddress, isServer, isDebug = false) {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
+    this.claimDistributionContractAddress = claimDistributionContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
     this.isDebug = isDebug
@@ -135,13 +129,15 @@ class EthContracts {
       this.GovernanceClient
     )
 
-    this.ClaimDistributionClient = new ClaimDistributionClient(
-      this.ethWeb3Manager,
-      ClaimDistributionABI,
-      ClaimDistributionRegistryKey,
-      this.getRegistryAddressForContract,
-      ClaimDistributionContractAddress
-    )
+    if (this.claimDistributionContractAddress) {
+      this.ClaimDistributionClient = new ClaimDistributionClient(
+        this.ethWeb3Manager,
+        ClaimDistributionABI,
+        ClaimDistributionRegistryKey,
+        this.getRegistryAddressForContract,
+        this.claimDistributionContractAddress
+      )
+    }
 
     this.contractClients = [
       this.ServiceTypeManagerClient,
