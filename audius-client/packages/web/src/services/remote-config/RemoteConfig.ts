@@ -16,7 +16,13 @@ export enum IntKeys {
    */
   DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS = 'DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS'
 }
-export enum BooleanKeys {}
+
+export enum BooleanKeys {
+  /**
+   * Notice that displays a "degraded functionality" banner across the app
+   */
+  NOTICE_DEGRADED_FUNCTIONALITY = 'NOTICE_DEGRADED_FUNCTIONALITY'
+}
 
 export enum DoubleKeys {}
 

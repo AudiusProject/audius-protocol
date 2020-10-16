@@ -20,10 +20,9 @@ import { Name } from 'services/analytics'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const messages = {
-  title: 'Whoops... 😱',
-  subtitle: 'Something has gone wrong',
-  body: 'Please try refreshing, or check back later.',
-  cta: 'Take Me Back'
+  body1: 'We’re experiencing heavy load!',
+  body2: 'Please try again later.',
+  cta: 'Try Again'
 }
 
 type OwnProps = {
@@ -70,9 +69,13 @@ export const SomethingWrong = ({
           backgroundBlendMode: shouldShowDark(theme) ? 'color-burn' : 'none'
         }}
       >
-        <div className={styles.title}>{messages.title}</div>
-        <div className={styles.subtitle}>{messages.subtitle}</div>
         <div className={styles.body}>
+          <div>{messages.body1}</div>
+          <div>
+            {messages.body2} <i className='emoji xl heavy-black-heart' />
+          </div>
+        </div>
+        <div className={styles.cta}>
           <Button
             className={styles.buttonFormatting}
             textClassName={styles.buttonText}

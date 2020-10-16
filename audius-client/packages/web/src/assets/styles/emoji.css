@@ -167,8 +167,11 @@
 	background-image: url('/fonts/emojis/waning-crescent-moon.png');
 }
 .emoji.bell {
-	background-image: url('/fonts/emojis/bell.png')
+	background-image: url('/fonts/emojis/bell.png');
 }
 .emoji.speaker-with-three-sound-waves {
-	background-image: url('/fonts/emojis/speaker-with-three-sound-waves.png')
+	background-image: url('/fonts/emojis/speaker-with-three-sound-waves.png');
+}
+.emoji.heavy-black-heart {
+	background-image: url('/fonts/emojis/heavy-black-heart.png');
 }

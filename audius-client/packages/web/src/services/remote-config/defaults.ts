@@ -17,4 +17,6 @@ export const remoteConfigDoubleDefaults: {
 } = {}
 export const remoteConfigBooleanDefaults: {
   [key in BooleanKeys]: boolean | null
-} = {}
+} = {
+  [BooleanKeys.NOTICE_DEGRADED_FUNCTIONALITY]: false
+}
