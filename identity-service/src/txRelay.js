@@ -334,10 +334,15 @@ const getProdGasInfo = async (req) => {
     })
     let { fast, fastest, safeLow, average } = prodGasInfo.data
     gasInfo = { fast, fastest, safeLow, average }
+    // Convert returned values into gwei to be used during relay and cache
+    gasInfo.fastGwei = (parseInt(gasInfo.fast) * Math.pow(10, 9))
+    gasInfo.fastestGwei = (parseInt(gasInfo.fastest) * Math.pow(10, 9))
+    gasInfo.averageGwei = (parseInt(gasInfo.average) * Math.pow(10, 9))
     redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
   } else {
     gasInfo = JSON.parse(gasInfo)
   }
+
   return gasInfo
 }
 
