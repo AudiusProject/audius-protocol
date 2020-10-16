@@ -335,12 +335,14 @@ class Account extends Base {
    * @param {number?} index The index of the claim to check (if known)
    */
   async getHasClaimed (index) {
-    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    this.REQUIRES(Services.COM_STOCK)
     if (index) {
       return this.ethContracts.ClaimDistributionClient.isClaimed(index)
     }
     const userWallet = this.web3Manager.getWalletAddress()
-    const claim = await this.comStock.getComStock({ wallet: userWallet })
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    const claim = await this.comstock.getComstock({ wallet })
     return this.ethContracts.ClaimDistributionClient.isClaimed(claim.index)
   }
 
@@ -350,7 +352,9 @@ class Account extends Base {
   async getClaimDistributionAmount () {
     this.REQUIRES(Services.COM_STOCK)
     const userWallet = this.web3Manager.getWalletAddress()
-    const claimDistribution = await this.comStock.getComStock({ wallet: userWallet })
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    const claimDistribution = await this.comstock.getComstock({ wallet })
     const amount = Utils.toBN(claimDistribution.amount) 
     return amount
   }
@@ -362,8 +366,10 @@ class Account extends Base {
    * @param {Array<string>?} merkleProof The merkle proof for the claim
    */
   async makeDistributionClaim (index, amount, merkleProof) {
-    this.REQUIRES(Services.COM_STOCK)
+    this.REQUIRES(Services.COM_STOCK, Services.IDENTITY_SERVICE)
     const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
     if (index && amount && merkleProof) {
       return this.ethContracts.ClaimDistributionClient.claim(
         index,
@@ -372,7 +378,7 @@ class Account extends Base {
         merkleProof
       )
     }
-    const claim = await this.comStock.getComStock({ wallet: userWallet })
+    const claim = await this.comstock.getComstock({ wallet })
     return this.ethContracts.ClaimDistributionClient.claim(
       claim.index,
       userWallet,

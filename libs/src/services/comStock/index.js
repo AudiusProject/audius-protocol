@@ -1,12 +1,11 @@
 const axios = require('axios')
-const { Utils } = require('../..')
 
-class ComStock {
+class Comstock {
   constructor (comstockEndpoint) {
     this.comstockEndpoint = comstockEndpoint
   }
 
-  async getComStock (obj) {
+  async getComstock (obj) {
     const result = await this._makeRequest({
       url: '/wallet_lookup',
       method: 'get',
@@ -32,4 +31,4 @@ class ComStock {
   }
 }
 
-module.exports = ComStock
+module.exports = Comstock
