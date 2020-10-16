@@ -197,15 +197,12 @@ class App {
     )
 
     // Eth relay rate limits
-    // 50 per ip per day and one of like 10 per wallet per day
-    const MAX_ETH_RELAYS_PER_IP_DAILY = config.get('rateLimitingEthRelaysPerIPPerDay')
-    const MAX_ETH_RELAYS_PER_WALLET_DAILY = config.get('rateLimitingEthRelaysPerWalletPerDay')
-
+    // Default to 50 per ip per day and one of 10 per wallet per day
     const isIPWhitelisted = this._isIPWhitelisted
     const ethRelayIPRateLimiter = this._getRateLimiter({
       prefix: 'ethRelayIPRateLimiter',
       expiry: ONE_HOUR_IN_SECONDS * 24,
-      max: MAX_ETH_RELAYS_PER_IP_DAILY,
+      max: config.get('rateLimitingEthRelaysPerIPPerDay'),
       skip: function (req) {
         return isIPWhitelisted(req.ip)
       }
@@ -213,7 +210,7 @@ class App {
     const ethRelayWalletRateLimiter = this._getRateLimiter({
       prefix: `ethRelayWalletRateLimiter`,
       expiry: ONE_HOUR_IN_SECONDS * 24,
-      max: MAX_ETH_RELAYS_PER_WALLET_DAILY,
+      max: config.get('rateLimitingEthRelaysPerWalletPerDay'),
       skip: function (req) {
         return isIPWhitelisted(req.ip)
       },

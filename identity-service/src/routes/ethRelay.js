@@ -3,6 +3,7 @@ const txRelay = require('../txRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {
+  // Relay operations to main ethereum chain
   app.post('/eth_relay', handleResponse(async (req, res, next) => {
     let body = req.body
     if (body && body.contractAddress && body.senderAddress && body.encodedABI) {
@@ -26,6 +27,7 @@ module.exports = function (app) {
     } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
   }))
 
+  // Query which returns public key of associated relayer wallet for a given address
   app.get('/eth_relayer', handleResponse(async (req, res, next) => {
     const { wallet } = req.query
     if (!wallet) return errorResponseBadRequest('Please provide a wallet')
