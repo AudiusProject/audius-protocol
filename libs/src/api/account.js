@@ -355,7 +355,7 @@ class Account extends Base {
     const web3 = this.web3Manager.getWeb3()
     const wallet = web3.utils.toChecksumAddress(userWallet)
     const claimDistribution = await this.comstock.getComstock({ wallet })
-    const amount = Utils.toBN(claimDistribution.amount) 
+    const amount = Utils.toBN(claimDistribution.amount)
     return amount
   }
 
@@ -386,7 +386,6 @@ class Account extends Base {
       claim.proof
     )
   }
-
 }
 
 module.exports = Account

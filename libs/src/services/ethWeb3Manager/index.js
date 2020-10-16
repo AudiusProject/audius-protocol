@@ -112,32 +112,8 @@ class EthWeb3Manager {
       }
     })
 
-    const receipt = response['receipt']
-
-    // interestingly, using contractMethod.send from Metamask's web3 (eg. like in the if
-    // above) parses the event log into an 'events' key on the transaction receipt and
-    // blows away the 'logs' key. However, using sendRawTransaction as our
-    // relayer does, returns only the logs. Here, we replicate the part of the 'events'
-    // key that our code consumes, but we may want to change our functions to consume
-    // this data in a different way in future (this parsing is messy).
-    // More on Metamask's / Web3.js' behavior here:
-    // https://web3js.readthedocs.io/en/1.0/web3-eth-contract.html#methods-mymethod-send
-    if (receipt.logs) {
-      const events = {}
-      const decoded = this.AudiusABIDecoder.decodeLogs(contractRegistryKey, receipt.logs)
-      decoded.forEach((evt) => {
-        const returnValues = {}
-        evt.events.forEach((arg) => {
-          returnValues[arg['name']] = arg['value']
-        })
-        events[evt['name']] = { returnValues }
-      })
-      receipt['events'] = events
-    }
     return response['receipt']
   }
-
-
 }
 
 module.exports = EthWeb3Manager
