@@ -1,5 +1,6 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const axios = require('axios')
 
 const models = require('./models')
 const config = require('./config')
@@ -319,6 +320,27 @@ const getEthRelayerFunds = async (walletPublicKey) => {
   return ethWeb3.eth.getBalance(walletPublicKey)
 }
 
+// Query production gas prices
+const getProdGasInfo = async (req) => {
+  const redis = req.app.get('redis')
+  const prodGasPriceKey = 'eth-gas-prod-price-info'
+  let gasInfo = await redis.get(prodGasPriceKey)
+  console.log(`Found gasInfo: ${gasInfo}`)
+  if (!gasInfo) {
+    req.logger.info(`Redis cache miss, querying remote`)
+    let prodGasInfo = await axios({
+      method: 'get',
+      url: 'https://ethgasstation.info/api/ethgasAPI.json'
+    })
+    let { fast, fastest, safeLow, average } = prodGasInfo.data
+    gasInfo = { fast, fastest, safeLow, average }
+    redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
+  } else {
+    gasInfo = JSON.parse(gasInfo)
+  }
+  return gasInfo
+}
+
 module.exports = {
   selectWallet,
   sendTransaction,
@@ -327,5 +349,6 @@ module.exports = {
   fundEthRelayerIfEmpty,
   sendEthTransaction,
   selectEthRelayerWallet,
-  getEthRelayerFunds
+  getEthRelayerFunds,
+  getProdGasInfo
 }

@@ -34,4 +34,10 @@ module.exports = function (app) {
     let selectedEthWallet = await txRelay.selectEthRelayerWallet(wallet)
     return successResponse({ selectedEthWallet })
   }))
+
+  // Serves latest state of production gas tracking on identity service
+  app.get('/eth_gas_price', handleResponse(async (req, res, next) => {
+    let gasInfo = await txRelay.getProdGasInfo(req)
+    return successResponse(gasInfo)
+  }))
 }
