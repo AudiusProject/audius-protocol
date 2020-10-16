@@ -47,13 +47,11 @@ class App {
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
       const audiusInstance = await this.configureAudiusInstance()
-      /*
       await this.notificationProcessor.init(
         audiusInstance,
         this.express,
         this.redisClient
       )
-      */
     }
 
     let server
