@@ -463,8 +463,6 @@ if (fs.existsSync('eth-contract-config.json')) {
 const contractConfigExists = fs.existsSync('contract-config.json')
 if (contractConfigExists) config.loadFile('contract-config.json')
 
-console.log(config)
-
 // Perform validation and error any properties are not present on schema
 config.validate()
 
