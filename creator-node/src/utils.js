@@ -1,5 +1,8 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
+const { promisify } = require('util')
 const fs = require('fs')
+const path = require('path')
+const mkdir = promisify(fs.mkdir)
 const { BufferListStream } = require('bl')
 const axios = require('axios')
 
@@ -231,7 +234,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
         timeout: 1000
       })
       if (resp.data) {
-        await writeStreamToFileSystem(resp.data, filePath)
+        await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
         // verify that the file written matches the hash expected if added to ipfs
         const content = fs.createReadStream(filePath)
@@ -419,7 +422,16 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   }
 }
 
-async function writeStreamToFileSystem (stream, expectedStoragePath) {
+async function createDirForFile (fileStoragePath) {
+  const dir = path.dirname(fileStoragePath)
+  await mkdir(dir, { recursive: true })
+}
+
+async function writeStreamToFileSystem (stream, expectedStoragePath, createDir = false) {
+  if (createDir) {
+    await createDirForFile(expectedStoragePath)
+  }
+
   const destinationStream = fs.createWriteStream(expectedStoragePath)
   stream.pipe(destinationStream)
   return new Promise((resolve, reject) => {
