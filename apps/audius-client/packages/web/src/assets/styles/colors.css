@@ -80,6 +80,8 @@
   --nav-column-link: var(--neutral-dark-2);
   --nav-column-link-hover: var(--neutral-dark-3);
 
+  --scrubber-hover: var(--primary-gradient-alt-1);
+
   --table-shadow: rgba(133, 129, 153, 0.15);
 
   --mask: rgba(243, 240, 247, .5);
