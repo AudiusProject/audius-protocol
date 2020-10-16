@@ -168,8 +168,8 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   let relayerInfo = ethRelayerConfigs[relayerIndex]
   let txReceipt = await createAndSendTransaction(
     {
-      publicKey: config.get('ethRelayerPublicKey'),
-      privateKey: config.get('ethRelayerPrivateKey')
+      publicKey: relayerInfo.publicKey,
+      privateKey: relayerInfo.privateKey
     },
     contractAddress,
     '0x00',
