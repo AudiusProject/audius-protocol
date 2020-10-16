@@ -335,7 +335,7 @@ class Account extends Base {
    * @param {number?} index The index of the claim to check (if known)
    */
   async getHasClaimed (index) {
-    this.REQUIRES(Services.COM_STOCK)
+    this.REQUIRES(Services.COMSTOCK)
     if (index) {
       return this.ethContracts.ClaimDistributionClient.isClaimed(index)
     }
@@ -350,7 +350,7 @@ class Account extends Base {
    * Get the distribution claim amount
    */
   async getClaimDistributionAmount () {
-    this.REQUIRES(Services.COM_STOCK)
+    this.REQUIRES(Services.COMSTOCK)
     const userWallet = this.web3Manager.getWalletAddress()
     const web3 = this.web3Manager.getWeb3()
     const wallet = web3.utils.toChecksumAddress(userWallet)
@@ -366,7 +366,7 @@ class Account extends Base {
    * @param {Array<string>?} merkleProof The merkle proof for the claim
    */
   async makeDistributionClaim (index, amount, merkleProof) {
-    this.REQUIRES(Services.COM_STOCK, Services.IDENTITY_SERVICE)
+    this.REQUIRES(Services.COMSTOCK, Services.IDENTITY_SERVICE)
     const userWallet = this.web3Manager.getWalletAddress()
     const web3 = this.web3Manager.getWeb3()
     const wallet = web3.utils.toChecksumAddress(userWallet)
