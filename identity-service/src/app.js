@@ -198,8 +198,8 @@ class App {
 
     // Eth relay rate limits
     // 50 per ip per day and one of like 10 per wallet per day
-    const MAX_ETH_RELAYS_PER_IP_DAILY = 50
-    const MAX_ETH_RELAYS_PER_WALLET_DAILY = 10
+    const MAX_ETH_RELAYS_PER_IP_DAILY = config.get('rateLimitingEthRelaysPerIPPerDay')
+    const MAX_ETH_RELAYS_PER_WALLET_DAILY = config.get('rateLimitingEthRelaysPerWalletPerDay')
 
     const isIPWhitelisted = this._isIPWhitelisted
     const ethRelayIPRateLimiter = this._getRateLimiter({
