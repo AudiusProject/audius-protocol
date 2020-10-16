@@ -2,7 +2,7 @@ const config = require('../config.js')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
-const { getRelayerFunds } = require('../txRelay')
+const { getRelayerFunds, getEthRelayerFunds } = require('../txRelay')
 const Web3 = require('web3')
 
 const axios = require('axios')
@@ -19,6 +19,7 @@ const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query p
 // eg. 10 transactions on chain but 120 attempts should error
 const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
 const RELAY_HEALTH_ACCOUNTS = new Set(config.get('relayerWallets').map(wallet => wallet.publicKey))
+const ETH_RELAY_HEALTH_ACCOUNTS = new Set(config.get('ethRelayerWallets').map(wallet => wallet.publicKey))
 
 // flatten one level of nexted arrays
 const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
@@ -198,6 +199,36 @@ module.exports = function (app) {
         'minimum_balance': minimumBalance,
         'balances': balances,
         'below_minimum_balance': belowMinimumBalances
+      })
+    }
+  }))
+
+  app.get('/eth_balance_check', handleResponse(async (req, res) => {
+    let minimumBalance = parseFloat(config.get('minimumBalance'))
+    let belowMinimumBalances = []
+    let balances = []
+    for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
+      let balance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(account), 'ether'))
+      balances.push({ account, balance })
+      if (balance < minimumBalance) {
+        belowMinimumBalances.push({ account, balance })
+      }
+    }
+    let balanceResponse = {
+      'minimum_balance': minimumBalance,
+      'balances': balances
+    }
+    // no accounts below minimum balance
+    if (!belowMinimumBalances.length) {
+      return successResponse({
+        'above_balance_minimum': true,
+        ...balanceResponse
+      })
+    } else {
+      return errorResponseServerError({
+        'above_balance_minimum': false,
+        'below_minimum_balance': belowMinimumBalances,
+        ...balanceResponse
       })
     }
   }))

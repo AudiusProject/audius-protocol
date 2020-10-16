@@ -47,11 +47,13 @@ class App {
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
       const audiusInstance = await this.configureAudiusInstance()
+      /*
       await this.notificationProcessor.init(
         audiusInstance,
         this.express,
         this.redisClient
       )
+      */
     }
 
     let server
@@ -194,6 +196,37 @@ class App {
       listenCountDailyLimiter,
       listenCountHourlyIPLimiter,
       listenCountHourlyLimiter
+    )
+
+    // Eth relay rate limits
+    // 50 per ip per day and one of like 10 per wallet per day
+    const MAX_ETH_RELAYS_PER_IP_DAILY = 50
+    const MAX_ETH_RELAYS_PER_WALLET_DAILY = 10
+
+    const isIPWhitelisted = this._isIPWhitelisted
+    const ethRelayIPRateLimiter = this._getRateLimiter({
+      prefix: 'ethRelayIPRateLimiter',
+      expiry: ONE_HOUR_IN_SECONDS * 24,
+      max: MAX_ETH_RELAYS_PER_IP_DAILY,
+      skip: function (req) {
+        return isIPWhitelisted(req.ip)
+      }
+    })
+    const ethRelayWalletRateLimiter = this._getRateLimiter({
+      prefix: `ethRelayWalletRateLimiter`,
+      expiry: ONE_HOUR_IN_SECONDS * 24,
+      max: MAX_ETH_RELAYS_PER_WALLET_DAILY,
+      skip: function (req) {
+        return isIPWhitelisted(req.ip)
+      },
+      keyGenerator: function (req) {
+        return req.body.senderAddress
+      }
+    })
+    this.express.use(
+      '/eth_relay',
+      ethRelayWalletRateLimiter,
+      ethRelayIPRateLimiter
     )
   }
 

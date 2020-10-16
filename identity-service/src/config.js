@@ -112,6 +112,12 @@ const config = convict({
     env: 'ethRelayerPublicKey',
     default: null
   },
+  ethRelayerWallets: {
+    doc: 'L1 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
+    format: 'string-array',
+    env: 'ethRelayerWallets',
+    default: null
+  },
   userVerifierPrivateKey: {
     doc: 'User verifier(used to write users to chain as isVerified) private key',
     format: String,

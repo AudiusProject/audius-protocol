@@ -25,4 +25,11 @@ module.exports = function (app) {
       // return successResponse({ receipt: receipt })
     } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
   }))
+
+  app.get('/eth_relayer', handleResponse(async (req, res, next) => {
+    const { wallet } = req.query
+    if (!wallet) return errorResponseBadRequest('Please provide a wallet')
+    let selectedEthWallet = await txRelay.selectEthRelayerWallet(wallet)
+    return successResponse({ selectedEthWallet })
+  }))
 }
