@@ -238,7 +238,49 @@ contract('AudiusToken', async (accounts) => {
       expect(await token.PERMIT_TYPEHASH()).to.equal(_signatures.PERMIT_TYPEHASH)
     })
   
-    it('Meta-transaction approve', async () => {
+    it('Successfully permit & transfer', async function () {
+      const amount = 100
+  
+      // throwaway address for the purpose of this test
+      const approverAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+
+      const relayerAcct = accounts[6] // account that calls permit
+      const spenderAcct = accounts[17] // account that submits tx and pays gas on approver's behalf
+      const receiverAcct = accounts[14] // account that receives approver's tokens
+
+      const name = await token.name()
+      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+  
+      // fund throwaway address and confirm balances of secondary addresses, and confirm allowances
+      await token.transfer(approverAcct, amount, {from: tokenOwnerAddress})
+      assert.equal(await token.balanceOf(approverAcct), amount)
+      assert.equal(await token.balanceOf(receiverAcct), 0)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+  
+      // Submit permit request to give address approval, via relayer
+      let nonce = (await token.nonces(approverAcct)).toNumber()
+      let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+      let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+      let result = _signatures.sign(digest, approverAcctPrivKey)
+      await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+  
+      // Confirm allowance updated, but token balances have not changed
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), amount)
+      assert.equal(await token.balanceOf(approverAcct), amount)
+      assert.equal(await token.balanceOf(receiverAcct), 0)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+
+      // Transfer tokens from approved sender + confirm balances & allowances
+      await token.transferFrom(approverAcct, receiverAcct, amount, {from: spenderAcct})
+      assert.equal(await token.balanceOf(approverAcct), 0)
+      assert.equal(await token.balanceOf(receiverAcct), amount)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+    })
+
+    it('Meta-transaction approve extended test', async () => {
       const amount = 100
   
       // throwaway address for the purpose of this test
