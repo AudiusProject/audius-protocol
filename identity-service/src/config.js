@@ -189,13 +189,13 @@ const config = convict({
   rateLimitingEthRelaysPerIPPerDay: {
     doc: 'Eth relay operations per IP per day',
     format: 'nat',
-    env: 'rateLimitingListensPerTrackPerDay',
+    env: 'rateLimitingEthRelaysPerIPPerDay',
     default: 50
   },
   rateLimitingEthRelaysPerWalletPerDay: {
     doc: 'Listens per track per IP per Day',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerDay',
+    env: 'rateLimitingEthRelaysPerWalletPerDay',
     default: 10
   },
   rateLimitingListensPerTrackPerWeek: {
