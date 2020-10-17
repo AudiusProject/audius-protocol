@@ -5,20 +5,40 @@ const config = require('../config')
 const ethRelayerConfigs = config.get('ethRelayerWallets')
 const { ethWeb3 } = require('../web3')
 
+let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
+ethRelayerWallets.forEach(wallet => {
+    wallet.locked = false
+})
+
+async function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 // Calculates index into eth relayer addresses
 const getEthRelayerWalletIndex = (walletAddress) => {
     let walletParsedInteger = parseInt(walletAddress, 16)
-    return walletParsedInteger % ethRelayerConfigs.length
-  }
+    return walletParsedInteger % ethRelayerWallets.length
+}
 
 // Select from the list of eth relay wallet addresses
 // Return the public key that will be used to relay this address
-const selectEthRelayerWallet = (walletAddress) => {
-    return ethRelayerConfigs[getEthRelayerWalletIndex(walletAddress)].publicKey
+const queryEthRelayerWallet = (walletAddress) => {
+    return ethRelayerWallets[getEthRelayerWalletIndex(walletAddress)].publicKey
 }
 
 const getEthRelayerFunds = async (walletPublicKey) => {
     return ethWeb3.eth.getBalance(walletPublicKey)
+}
+
+const selectEthWallet = async (walletPublicKey) => {
+  // TIMEOUT
+  let resolvedIndex = getEthRelayerWalletIndex(walletPublicKey)
+  while (ethRelayerWallets[index].locked) {
+    await delay(200)
+  }
+  // RIPE FOR MULTIPLE ENTRANCY ISSUES AND IS THREAD UNSAFE
+  ethRelayerWallets.locked = true
+  return ethRelayerWallets[resolvedIndex]
 }
 
 // Relay a transaction to the ethereum network
@@ -31,17 +51,16 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     } = txProps
 
     // Calculate relayer from  senderAddressjo
-    let relayerIndex = getEthRelayerWalletIndex(senderAddress)
-    let relayerInfo = ethRelayerConfigs[relayerIndex]
-    req.logger.info(`L1 txRelay - selected relayerIndex=${relayerIndex}, relayerPublicWallet=${relayerInfo.publicKey}`)
+    let selectedEthRelayerWallet = await selectEthWallet(senderAddress)
+    req.logger.info(`L1 txRelay - selected relayerIndex=${relayerIndex}, relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
     let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
     // Select the 'fast' gas price
     let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
     let txReceipt = await createAndSendTransaction(
       {
-        publicKey: relayerInfo.publicKey,
-        privateKey: relayerInfo.privateKey
+        publicKey: selectedEthRelayerWallet.publicKey,
+        privateKey: selectedEthRelayerWallet.privateKey
       },
       contractAddress,
       '0x00',
@@ -53,7 +72,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     )
 
     txReceipt.selectedRelayIndex = relayerIndex
-    txReceipt.selectedRelay = relayerInfo
+    txReceipt.selectedRelay = selectedEthRelayerWallet
     req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
     return txReceipt
 }
@@ -133,7 +152,7 @@ const getProdGasInfo = async (redis, logger) => {
  */
 const fundEthRelayerIfEmpty = async () => {
     const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
-    for (let ethWallet of ethRelayerConfigs) {
+    for (let ethWallet of ethRelayerWallets) {
       let ethWalletPublicKey = ethWallet.publicKey
       logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethWalletPublicKey}`)
       let balance = await ethWeb3.eth.getBalance(ethWalletPublicKey)
@@ -160,7 +179,7 @@ const fundEthRelayerIfEmpty = async () => {
 module.exports = {
     fundEthRelayerIfEmpty,
     sendEthTransaction,
-    selectEthRelayerWallet,
+    queryEthRelayerWallet,
     getEthRelayerFunds,
     getProdGasInfo
 }

@@ -31,7 +31,7 @@ module.exports = function (app) {
   app.get('/eth_relayer', handleResponse(async (req, res, next) => {
     const { wallet } = req.query
     if (!wallet) return errorResponseBadRequest('Please provide a wallet')
-    let selectedEthWallet = await ethTxRelay.selectEthRelayerWallet(wallet)
+    let selectedEthWallet = await ethTxRelay.queryEthRelayerWallet(wallet)
     return successResponse({ selectedEthWallet })
   }))
 
