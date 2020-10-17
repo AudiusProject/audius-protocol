@@ -8,6 +8,7 @@ convict.addFormat({
     return Array.isArray(val)
   },
   coerce: function (val) {
+    if (!val || val === '') return {}
     return JSON.parse(val)
   }
 })

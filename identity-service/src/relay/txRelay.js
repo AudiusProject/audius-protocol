@@ -1,5 +1,6 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const axios = require('axios')
 
 const models = require('../models')
 const config = require('../config')
@@ -220,10 +221,11 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
   }
 
   const nonce = await web3.eth.getTransactionCount(address)
+  gasLimit = gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT
   let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasPrice,
-    gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
+    gasLimit,
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }

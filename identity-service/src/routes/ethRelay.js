@@ -1,5 +1,5 @@
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const txRelay = require('../relay/txRelay')
+const ethTxRelay = require('../relay/ethTxRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {
@@ -17,7 +17,7 @@ module.exports = function (app) {
           senderAddress: body.senderAddress,
           gasLimit: body.gasLimit || null
         }
-        receipt = await txRelay.sendEthTransaction(req, txProps, reqBodySHA)
+        receipt = await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA)
         return successResponse({ receipt })
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
@@ -31,13 +31,13 @@ module.exports = function (app) {
   app.get('/eth_relayer', handleResponse(async (req, res, next) => {
     const { wallet } = req.query
     if (!wallet) return errorResponseBadRequest('Please provide a wallet')
-    let selectedEthWallet = await txRelay.selectEthRelayerWallet(wallet)
+    let selectedEthWallet = await ethTxRelay.selectEthRelayerWallet(wallet)
     return successResponse({ selectedEthWallet })
   }))
 
   // Serves latest state of production gas tracking on identity service
   app.get('/eth_gas_price', handleResponse(async (req, res, next) => {
-    let gasInfo = await txRelay.getProdGasInfo(req.app.get('redis'), req.logger)
+    let gasInfo = await ethTxRelay.getProdGasInfo(req.app.get('redis'), req.logger)
     return successResponse(gasInfo)
   }))
 }

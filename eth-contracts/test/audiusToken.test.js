@@ -1,4 +1,5 @@
 import * as _lib from '../utils/lib.js'
+import * as _signatures from '../utils/signatures.js'
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
@@ -229,4 +230,145 @@ contract('AudiusToken', async (accounts) => {
       "PauserRole: caller does not have the Pauser role"
     )
   })
+
+  describe('EIP-2612', async function () {
+    it('Confirm typehashes match for permit function', async () => {
+      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+      expect(await token.DOMAIN_SEPARATOR()).to.equal(_signatures.getDomainSeparator(await token.name(), token.address, chainId))
+      expect(await token.PERMIT_TYPEHASH()).to.equal(_signatures.PERMIT_TYPEHASH)
+    })
+  
+    it('Successfully permit & transfer', async function () {
+      const amount = 100
+  
+      // throwaway address for the purpose of this test
+      const approverAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+
+      const relayerAcct = accounts[6] // account that calls permit
+      const spenderAcct = accounts[17] // account that submits tx and pays gas on approver's behalf
+      const receiverAcct = accounts[14] // account that receives approver's tokens
+
+      const name = await token.name()
+      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+  
+      // fund throwaway address and confirm balances of secondary addresses, and confirm allowances
+      await token.transfer(approverAcct, amount, {from: tokenOwnerAddress})
+      assert.equal(await token.balanceOf(approverAcct), amount)
+      assert.equal(await token.balanceOf(receiverAcct), 0)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+  
+      // Submit permit request to give address approval, via relayer
+      let nonce = (await token.nonces(approverAcct)).toNumber()
+      let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+      let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+      let result = _signatures.sign(digest, approverAcctPrivKey)
+      await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+  
+      // Confirm allowance updated, but token balances have not changed
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), amount)
+      assert.equal(await token.balanceOf(approverAcct), amount)
+      assert.equal(await token.balanceOf(receiverAcct), 0)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+
+      // Transfer tokens from approved sender + confirm balances & allowances
+      await token.transferFrom(approverAcct, receiverAcct, amount, {from: spenderAcct})
+      assert.equal(await token.balanceOf(approverAcct), 0)
+      assert.equal(await token.balanceOf(receiverAcct), amount)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+    })
+
+    it('Meta-transaction approve extended test', async () => {
+      const amount = 100
+  
+      // throwaway address for the purpose of this test
+      const approverAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+
+      const relayerAcct = accounts[6] // account that calls permit
+      const spenderAcct = accounts[17] // account that submits tx and pays gas on approver's behalf
+      const receiverAcct = accounts[14] // account that receives approver's tokens
+
+      const name = await token.name()
+      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+  
+      // fund throwaway address and confirm balances of secondary addresses, and confirm allowances
+      await token.transfer(approverAcct, amount, {from: tokenOwnerAddress})
+      assert.equal(await token.balanceOf(approverAcct), amount)
+      assert.equal(await token.balanceOf(receiverAcct), 0)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+  
+      // Submit permit request to give address approval, via relayer
+      let nonce = (await token.nonces(approverAcct)).toNumber()
+      let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+      let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+      let result = _signatures.sign(digest, approverAcctPrivKey)
+      await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+  
+      // Confirm allowance updated, but token balances have not changed
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), amount)
+      assert.equal(await token.balanceOf(approverAcct), amount)
+      assert.equal(await token.balanceOf(receiverAcct), 0)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+
+      // Confirm double-spend of same permit will fail
+      await _lib.assertRevert(
+        token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct}),
+        'AudiusToken: Invalid signature'
+      )
+
+      // Submit updated permit request, with different amount - confirm success
+      const permitAmount = amount / 2
+      nonce = (await token.nonces(approverAcct)).toNumber()
+      deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+      digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: permitAmount}, nonce, deadline)
+      result = _signatures.sign(digest, approverAcctPrivKey)
+      await token.permit(approverAcct, spenderAcct, permitAmount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+
+      // Confirm allowance updated to new permit amount
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), permitAmount)
+  
+      // Transfer tokens from approved sender + confirm balances & allowances
+      await token.transferFrom(approverAcct, receiverAcct, permitAmount, {from: spenderAcct})
+      assert.equal(await token.balanceOf(approverAcct), amount - permitAmount)
+      assert.equal(await token.balanceOf(receiverAcct), permitAmount)
+      assert.equal(await token.balanceOf(spenderAcct), 0)
+      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+    })
+  
+    it('Meta-transaction nonce incorrect', async() => {
+      const amount = 100
+  
+      // throwaway address for the purpose of this test
+      const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+  
+      const name = await token.name()
+      const nonce = await token.nonces(approverPubKey) + 5  // this is wrong
+      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+      const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+      const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[18], value: amount}, nonce, deadline)
+      const result = _signatures.sign(digest, approverPrivKey)
+      await _lib.assertRevert(token.permit(approverPubKey, accounts[18], amount, deadline, result.v, result.r, result.s, {from: accounts[6]}), "Invalid signature")
+    })
+  
+    it('Meta-transaction deadline has passed', async() => {
+      const amount = 100
+  
+      // throwaway address for the purpose of this test
+      const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
+  
+      const name = await token.name()
+      const nonce = await token.nonces(approverPubKey)
+      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+      const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp - 25  // now in the past and should fail
+      const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[18], value: amount}, nonce, deadline)
+      const result = _signatures.sign(digest, approverPrivKey)
+      await _lib.assertRevert(token.permit(approverPubKey, accounts[18], amount, deadline, result.v, result.r, result.s, {from: accounts[6]}), "Deadline has expired")
+    })
+  })  
 })
