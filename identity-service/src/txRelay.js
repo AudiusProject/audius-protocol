@@ -255,10 +255,11 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
   }
   const gasPrice = await getGasPrice(logger, web3)
   const nonce = await web3.eth.getTransactionCount(address)
+  gasLimit = gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT
   let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasPrice,
-    gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
+    gasLimit,
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
@@ -273,7 +274,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
 
   const signedTx = '0x' + tx.serialize().toString('hex')
 
-  logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
+  logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${nonce}`)
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
 
   return { receipt, txParams }
