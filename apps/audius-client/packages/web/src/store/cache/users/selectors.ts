@@ -13,8 +13,8 @@ export const getUser = (
   state: AppState,
   props: { handle?: string | null; id?: ID | null; uid?: UID | null }
 ) => {
-  if (props.handle && state.users.handles[props.handle]) {
-    props.id = state.users.handles[props.handle].id
+  if (props.handle && state.users.handles[props.handle.toLowerCase()]) {
+    props.id = state.users.handles[props.handle.toLowerCase()].id
   }
   return getEntry(state, {
     ...props,
