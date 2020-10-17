@@ -33,6 +33,36 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
+  // Get the name of the contract
+  async name () {
+    const name = await this.AudiusTokenContract.methods.name().call()
+    return name
+  }
+
+  // Permit meta transaction of balance transfer
+  async permit (
+    owner, // address
+    spender, // address
+    value, // uint
+    deadline, // uint
+    v, // uint8
+    r, // bytes32
+    s //bytes32
+  ) {
+    const contractMethod = this.AudiusTokenContract.methods.permit(
+      owner,
+      spender,
+      value,
+      deadline,
+      v,
+      r,
+      s
+    )
+    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
+    return tx
+  }
+
+
   // Allow spender to withdraw from calling account up to value amount
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
   async approve (spender, value, privateKey = null) {
