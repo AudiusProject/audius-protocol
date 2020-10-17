@@ -8,6 +8,7 @@ convict.addFormat({
     return Array.isArray(val)
   },
   coerce: function (val) {
+    if (!val || val === '') return {}
     return JSON.parse(val)
   }
 })
@@ -112,6 +113,12 @@ const config = convict({
     env: 'ethRelayerPublicKey',
     default: null
   },
+  ethRelayerWallets: {
+    doc: 'L1 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
+    format: 'string-array',
+    env: 'ethRelayerWallets',
+    default: null
+  },
   userVerifierPrivateKey: {
     doc: 'User verifier(used to write users to chain as isVerified) private key',
     format: String,
@@ -179,6 +186,18 @@ const config = convict({
     format: 'nat',
     env: 'rateLimitingListensPerIPPerDay',
     default: null
+  },
+  rateLimitingEthRelaysPerIPPerDay: {
+    doc: 'Eth relay operations per IP per day',
+    format: 'nat',
+    env: 'rateLimitingEthRelaysPerIPPerDay',
+    default: 50
+  },
+  rateLimitingEthRelaysPerWalletPerDay: {
+    doc: 'Listens per track per IP per Day',
+    format: 'nat',
+    env: 'rateLimitingEthRelaysPerWalletPerDay',
+    default: 10
   },
   rateLimitingListensPerTrackPerWeek: {
     doc: 'Listens per track per user per Week',

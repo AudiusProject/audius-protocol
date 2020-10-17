@@ -3,6 +3,7 @@ const txRelay = require('../txRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {
+  // Relay operations to main ethereum chain
   app.post('/eth_relay', handleResponse(async (req, res, next) => {
     let body = req.body
     if (body && body.contractAddress && body.senderAddress && body.encodedABI) {
@@ -24,5 +25,19 @@ module.exports = function (app) {
       }
       // return successResponse({ receipt: receipt })
     } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
+  }))
+
+  // Query which returns public key of associated relayer wallet for a given address
+  app.get('/eth_relayer', handleResponse(async (req, res, next) => {
+    const { wallet } = req.query
+    if (!wallet) return errorResponseBadRequest('Please provide a wallet')
+    let selectedEthWallet = await txRelay.selectEthRelayerWallet(wallet)
+    return successResponse({ selectedEthWallet })
+  }))
+
+  // Serves latest state of production gas tracking on identity service
+  app.get('/eth_gas_price', handleResponse(async (req, res, next) => {
+    let gasInfo = await txRelay.getProdGasInfo(req)
+    return successResponse(gasInfo)
   }))
 }

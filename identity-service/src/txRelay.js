@@ -1,5 +1,6 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const axios = require('axios')
 
 const models = require('./models')
 const config = require('./config')
@@ -9,7 +10,11 @@ const { AudiusABIDecoder } = require('@audius/libs')
 
 const { primaryWeb3, secondaryWeb3, ethWeb3 } = require('./web3')
 
+// L2 relayerWallets
 const relayerConfigs = config.get('relayerWallets')
+
+// L1 relayerWallets
+const ethRelayerConfigs = config.get('ethRelayerWallets')
 
 const ENVIRONMENT = config.get('environment')
 const MIN_GAS_PRICE = config.get('minGasPrice')
@@ -137,6 +142,18 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
+// Calculates index into eth relayer addresses
+const getEthRelayerWalletIndex = (walletAddress) => {
+  let walletParsedInteger = parseInt(walletAddress, 16)
+  return walletParsedInteger % ethRelayerConfigs.length
+}
+
+// Select from the list of eth relay wallet addresses
+// Return the public key that will be used to relay this address
+const selectEthRelayerWallet = (walletAddress) => {
+  return ethRelayerConfigs[getEthRelayerWalletIndex(walletAddress)].publicKey
+}
+
 // Relay a transaction to the ethereum network
 const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   const {
@@ -145,10 +162,14 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     senderAddress,
     gasLimit
   } = txProps
+
+  // Calculate relayer from  senderAddressjo
+  let relayerIndex = getEthRelayerWalletIndex(senderAddress)
+  let relayerInfo = ethRelayerConfigs[relayerIndex]
   let txReceipt = await createAndSendTransaction(
     {
-      publicKey: config.get('ethRelayerPublicKey'),
-      privateKey: config.get('ethRelayerPrivateKey')
+      publicKey: relayerInfo.publicKey,
+      privateKey: relayerInfo.privateKey
     },
     contractAddress,
     '0x00',
@@ -157,6 +178,8 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     gasLimit,
     encodedABI
   )
+  txReceipt.selectedRelayIndex = relayerIndex
+  txReceipt.selectedRelay = relayerInfo
   req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
   return txReceipt
 }
@@ -229,19 +252,29 @@ const fundRelayerIfEmpty = async () => {
  * Fund L1 wallets as necessary to facilitate multiple relayers
  */
 const fundEthRelayerIfEmpty = async () => {
-  let ethPublicKey = config.get('ethRelayerPublicKey')
-  logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethPublicKey}`)
   const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
-  let balance = await ethWeb3.eth.getBalance(ethPublicKey)
-  logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
-  let validBalance = parseInt(balance) >= minimumBalance
-  if (!validBalance && ENVIRONMENT === 'development') {
-    const account = (await ethWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
-    logger.info(`L1 txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${ethPublicKey}`)
-    await ethWeb3.eth.sendTransaction({ from: account, to: ethPublicKey, value: minimumBalance })
-    logger.info(`L1 txRelay - transferred funds [${minimumBalance}] from ${account} to wallet ${ethPublicKey}`)
-  } else if (!validBalance) {
-    throw new Error('Invalid balance for ethRelayer')
+
+  for (let ethWallet of ethRelayerConfigs) {
+    let ethWalletPublicKey = ethWallet.publicKey
+    logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethWalletPublicKey}`)
+    let balance = await ethWeb3.eth.getBalance(ethWalletPublicKey)
+    logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
+    let validBalance = parseInt(balance) >= minimumBalance
+    if (ENVIRONMENT === 'development') {
+      if (!validBalance) {
+        const account = (await ethWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
+        logger.info(`L1 txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${ethWalletPublicKey}`)
+        await ethWeb3.eth.sendTransaction({ from: account, to: ethWalletPublicKey, value: minimumBalance })
+        logger.info(`L1 txRelay - transferred funds [${minimumBalance}] from ${account} to wallet ${ethWalletPublicKey}`)
+      } else {
+        logger.info(`L1 txRelay - ${ethWalletPublicKey} has valid balance ${balance}, minimum:${minimumBalance}`)
+      }
+    } else {
+      // In non-development environments, ethRelay wallets must be funded prior to deployment of this service
+      // Automatic funding in L1 environment is TBD
+      logger.info(`L1 txRelay -  ${ethWalletPublicKey} below minimum balance`)
+      throw new Error(`Invalid balance for ethRelayer account ${ethWalletPublicKey}. Found ${balance}, required minimumBalance ${minimumBalance}`)
+    }
   }
 }
 
@@ -284,11 +317,44 @@ const getRelayerFunds = async (walletPublicKey) => {
   return primaryWeb3.eth.getBalance(walletPublicKey)
 }
 
+const getEthRelayerFunds = async (walletPublicKey) => {
+  return ethWeb3.eth.getBalance(walletPublicKey)
+}
+
+// Query production gas prices
+const getProdGasInfo = async (req) => {
+  const redis = req.app.get('redis')
+  const prodGasPriceKey = 'eth-gas-prod-price-info'
+  let gasInfo = await redis.get(prodGasPriceKey)
+  console.log(`Found gasInfo: ${gasInfo}`)
+  if (!gasInfo) {
+    req.logger.info(`Redis cache miss, querying remote`)
+    let prodGasInfo = await axios({
+      method: 'get',
+      url: 'https://ethgasstation.info/api/ethgasAPI.json'
+    })
+    let { fast, fastest, safeLow, average } = prodGasInfo.data
+    gasInfo = { fast, fastest, safeLow, average }
+    // Convert returned values into gwei to be used during relay and cache
+    gasInfo.fastGwei = (parseInt(gasInfo.fast) * Math.pow(10, 9))
+    gasInfo.fastestGwei = (parseInt(gasInfo.fastest) * Math.pow(10, 9))
+    gasInfo.averageGwei = (parseInt(gasInfo.average) * Math.pow(10, 9))
+    redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
+  } else {
+    gasInfo = JSON.parse(gasInfo)
+  }
+
+  return gasInfo
+}
+
 module.exports = {
   selectWallet,
   sendTransaction,
   getRelayerFunds,
   fundRelayerIfEmpty,
   fundEthRelayerIfEmpty,
-  sendEthTransaction
+  sendEthTransaction,
+  selectEthRelayerWallet,
+  getEthRelayerFunds,
+  getProdGasInfo
 }

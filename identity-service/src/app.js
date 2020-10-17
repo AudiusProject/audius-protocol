@@ -195,6 +195,34 @@ class App {
       listenCountHourlyIPLimiter,
       listenCountHourlyLimiter
     )
+
+    // Eth relay rate limits
+    // Default to 50 per ip per day and one of 10 per wallet per day
+    const isIPWhitelisted = this._isIPWhitelisted
+    const ethRelayIPRateLimiter = this._getRateLimiter({
+      prefix: 'ethRelayIPRateLimiter',
+      expiry: ONE_HOUR_IN_SECONDS * 24,
+      max: config.get('rateLimitingEthRelaysPerIPPerDay'),
+      skip: function (req) {
+        return isIPWhitelisted(req.ip)
+      }
+    })
+    const ethRelayWalletRateLimiter = this._getRateLimiter({
+      prefix: `ethRelayWalletRateLimiter`,
+      expiry: ONE_HOUR_IN_SECONDS * 24,
+      max: config.get('rateLimitingEthRelaysPerWalletPerDay'),
+      skip: function (req) {
+        return isIPWhitelisted(req.ip)
+      },
+      keyGenerator: function (req) {
+        return req.body.senderAddress
+      }
+    })
+    this.express.use(
+      '/eth_relay',
+      ethRelayWalletRateLimiter,
+      ethRelayIPRateLimiter
+    )
   }
 
   setRoutes () {
