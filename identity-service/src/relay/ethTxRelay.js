@@ -1,7 +1,7 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
 const axios = require('axios')
-
+const config = require('../config')
 const ethRelayerConfigs = config.get('ethRelayerWallets')
 const { ethWeb3 } = require('../web3')
 

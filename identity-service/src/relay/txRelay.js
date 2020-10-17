@@ -1,6 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
-const axios = require('axios')
 
 const models = require('../models')
 const config = require('../config')
