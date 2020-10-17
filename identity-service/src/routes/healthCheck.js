@@ -2,7 +2,7 @@ const config = require('../config.js')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
-const { getRelayerFunds, getEthRelayerFunds } = require('../txRelay')
+const { getRelayerFunds, getEthRelayerFunds } = require('../relay/txRelay')
 const Web3 = require('web3')
 
 const axios = require('axios')

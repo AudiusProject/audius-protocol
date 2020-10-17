@@ -1,5 +1,5 @@
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const txRelay = require('../txRelay')
+const txRelay = require('../relay/txRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {
@@ -37,7 +37,7 @@ module.exports = function (app) {
 
   // Serves latest state of production gas tracking on identity service
   app.get('/eth_gas_price', handleResponse(async (req, res, next) => {
-    let gasInfo = await txRelay.getProdGasInfo(req)
+    let gasInfo = await txRelay.getProdGasInfo(req.app.get('redis'), req.logger)
     return successResponse(gasInfo)
   }))
 }
