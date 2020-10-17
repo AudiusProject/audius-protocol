@@ -16,6 +16,7 @@ import { retrieve } from 'store/cache/sagas'
 import { DefaultSizes } from 'models/common/ImageSizes'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getUserId } from 'store/account/selectors'
+import { reformat } from './utils'
 
 /**
  * @param {Array<number>} userIds array of user ids to fetch
@@ -69,6 +70,9 @@ export function* fetchUserByHandle(
       return yield select(getUserTimestamps, { handles })
     },
     retrieveFromSource: retrieveUserByHandle,
+    onBeforeAddToCache: function (users) {
+      return users.map(reformat)
+    },
     kind: Kind.USERS,
     idField: 'user_id',
     requiredFields,
