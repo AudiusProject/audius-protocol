@@ -105,7 +105,8 @@
     "up": [
       "cd identity-service/; docker-compose -f compose/docker-compose.full.yml up --build -d",
       "echo 'Waiting 15 seconds...'",
-      "sleep 15"
+      "sleep 15",
+      "docker logs -f audius-identity-service_identity-service_1"
     ],
     "down": [
       "cd identity-service/; docker-compose -f compose/docker-compose.full.yml down"
