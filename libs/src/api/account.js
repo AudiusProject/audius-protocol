@@ -415,7 +415,7 @@ class Account extends Base {
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     let deadline = currentBlock.timestamp + 25  // sufficiently far in future
 
-    let digest = getPermitDigest(name, tokenAddress, chainId, {owner: myWalletAddress, spender: relayer, value: amount}, nonce, deadline)
+    let digest = getPermitDigest(web3, name, tokenAddress, chainId, {owner: myWalletAddress, spender: relayer, value: amount}, nonce, deadline)
     let result = sign(digest, myPrivateKey)
     return this.ethContracts.AudiusTokenClient.permit(myWalletAddress, relayer, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
   }

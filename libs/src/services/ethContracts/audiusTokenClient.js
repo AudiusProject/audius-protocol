@@ -15,6 +15,19 @@ class AudiusTokenClient {
     return this.web3.utils.toBN(balance)
   }
 
+  // Get the name of the contract
+  async name () {
+    const name = await this.AudiusTokenContract.methods.name().call()
+    return name
+  }
+  
+
+  // Get the name of the contract
+  async nonces (wallet) {
+    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call()
+    return nonce
+  }
+  
   /* ------- SETTERS ------- */
 
   async transfer (recipient, amount) {
@@ -33,11 +46,6 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
-  // Get the name of the contract
-  async name () {
-    const name = await this.AudiusTokenContract.methods.name().call()
-    return name
-  }
 
   // Permit meta transaction of balance transfer
   async permit (
