@@ -393,7 +393,9 @@ class Account extends Base {
   async permitAndSendTokens (relayer, address, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     await this.permitProxySendTokens(relayer, amount)
+    console.log('is Permitted')
     await this.sendTokens(address, amount)
+    console.log('DONE BB')
   }
 
   /**
@@ -406,18 +408,18 @@ class Account extends Base {
     const myWalletAddress = web3.utils.toChecksumAddress(userWallet)
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
     const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
-    const name = this.ethContracts.AudiusTokenClient.name()
+    const name = await this.ethContracts.AudiusTokenClient.name()
     const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
 
     // Submit permit request to give address approval, via relayer
-    let nonce = (await token.nonces(approverAcct)).toNumber()
+    let nonce = parseInt(await this.ethContracts.AudiusTokenClient.nonces(myWalletAddress))
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     let deadline = currentBlock.timestamp + 25  // sufficiently far in future
 
     let digest = getPermitDigest(web3, name, tokenAddress, chainId, {owner: myWalletAddress, spender: relayer, value: amount}, nonce, deadline)
     let result = sign(digest, myPrivateKey)
-    return this.ethContracts.AudiusTokenClient.permit(myWalletAddress, relayer, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+    return this.ethContracts.AudiusTokenClient.permit(myWalletAddress, relayer, amount, deadline, result.v, result.r, result.s, {from: myWalletAddress })
   }
 
   /**

@@ -66,7 +66,7 @@ class AudiusTokenClient {
       r,
       s
     )
-    let tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
+    let tx = await contractMethod.call()
     return tx
   }
 
