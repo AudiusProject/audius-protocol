@@ -7,6 +7,7 @@ const RedisStore = require('rate-limit-redis')
 const Redis = require('ioredis')
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
+const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
 const initAudiusLibs = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
@@ -72,7 +73,7 @@ class App {
     }
 
     try {
-      await txRelay.fundEthRelayerIfEmpty()
+      await ethTxRelay.fundEthRelayerIfEmpty()
     } catch (e) {
       logger.error(`Failed to fund L1 relayer - ${e}`)
     }
