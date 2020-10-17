@@ -1,14 +1,11 @@
-import { ecsign, toBuffer } from 'ethereumjs-util'
 const Utils = require('../utils')
-window.Utils = Utils
-window.ecsign = ecsign
-window.toBuffer = toBuffer
+
+const { ecsign, toBuffer } = require('ethereumjs-util')
+const { pack } = require('@ethersproject/solidity')
+
 export const sign = (digest, privateKey) => {
-  console.log('siging')
-  console.log({ digest, privateKey })
-  // let signature = ecsign(toBuffer(digest.slice(2)), privateKey)
-  let signature = ecsign(toBuffer(digest), privateKey)
-  console.log('done signeding')
+  const buffer = toBuffer(digest)
+  let signature = ecsign(buffer, privateKey)
   return signature
 }
 
@@ -27,15 +24,13 @@ export function getPermitDigest(
   nonce,
   deadline
 ) {
-  console.log('staring')
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
 
   let innerEncoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
     [PERMIT_TYPEHASH, approve.owner, approve.spender, approve.value, nonce, deadline]
   )
-  console.log({ innerEncoded })
-  let encoded = web3.eth.abi.encodeParameters(
+  let encoded = pack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
     [
       '0x19',
@@ -44,14 +39,11 @@ export function getPermitDigest(
       Utils.keccak256(innerEncoded),
     ]
   )
-  console.log({ encoded })
-
   return Utils.keccak256(encoded)
 }
 
 // Gets the EIP712 domain separator
 export function getDomainSeparator(web3, name, contractAddress, chainId) {
-  console.log({ web3, name, contractAddress, chainId })
   const encoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
     [
@@ -62,6 +54,5 @@ export function getDomainSeparator(web3, name, contractAddress, chainId) {
       contractAddress,
     ]
   )
-    console.log({ domainEncoede: encoded })
   return Utils.keccak256(encoded)
 }

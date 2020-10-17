@@ -25,7 +25,8 @@ class AudiusTokenClient {
   // Get the name of the contract
   async nonces (wallet) {
     const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call()
-    return nonce
+    const number = this.web3.utils.toBN(nonce).toNumber()
+    return number
   }
   
   /* ------- SETTERS ------- */
@@ -36,9 +37,8 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
-  async relayTransfer (recipient, amount) {
-    // TODO: This does not work as is. We need to "permit" via this contract as well.
-    const method = this.AudiusTokenContract.methods.transfer(recipient, amount)
+  async transferFrom (owner, recipient, amount) {
+    const method = this.AudiusTokenContract.methods.transferFrom(owner, recipient, amount)
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress
@@ -66,7 +66,9 @@ class AudiusTokenClient {
       r,
       s
     )
-    let tx = await contractMethod.call()
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      contractMethod, this.contractAddress
+    )
     return tx
   }
 
