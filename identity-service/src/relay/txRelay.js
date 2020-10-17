@@ -205,7 +205,7 @@ const fundRelayerIfEmpty = async () => {
 
 
 // Send transaction using provided web3 object
-const createAndSendTransaction = async (sender, receiverAddress, value, web3, logger, gasLimit = null, data = null, inputGasPrice = null) => {
+const createAndSendTransaction = async (sender, receiverAddress, value, web3, logger, gasLimit = null, data = null) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
   const address = walletAddress.getAddressString()
@@ -213,13 +213,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
   if (address !== sender.publicKey.toLowerCase()) {
     throw new Error('Invalid relayerPublicKey')
   }
-  let gasPrice
-  if (inputGasPrice) {
-    gasPrice = inputGasPrice
-  } else {
-    gasPrice = await getGasPrice(logger, web3)
-  }
-
+  const gasPrice = await getGasPrice(logger, web3)
   const nonce = await web3.eth.getTransactionCount(address)
   gasLimit = gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT
   let txParams = {
