@@ -386,6 +386,14 @@ class Account extends Base {
       claim.proof
     )
   }
+
+  /**
+   * Sends `amount` tokens to `address`
+   */
+  async sendTokens (address, amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return this.ethContracts.AudiusTokenClient.relayTransfer(address, amount)
+  }
 }
 
 module.exports = Account

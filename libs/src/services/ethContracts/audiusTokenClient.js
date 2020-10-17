@@ -23,6 +23,16 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
+  async relayTransfer (recipient, amount) {
+    // TODO: This does not work as is. We need to "permit" via this contract as well.
+    const method = this.AudiusTokenContract.methods.transfer(recipient, amount)
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      method,
+      this.contractAddress
+    )
+    return { txReceipt: tx }
+  }
+
   // Allow spender to withdraw from calling account up to value amount
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
   async approve (spender, value, privateKey = null) {
