@@ -210,6 +210,12 @@ const config = convict({
     env: 'minimumBalance',
     default: null
   },
+  ethMinimumBalance: {
+    doc: 'Minimum ETH balance below which /eth_balance_check fails',
+    format: Number,
+    env: 'ethMinimumBalance',
+    default: 0.5
+  },
   mailgunApiKey: {
     doc: 'Mailgun API key used to send emails',
     format: String,
