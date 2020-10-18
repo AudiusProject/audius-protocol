@@ -8,7 +8,6 @@ module.exports = function (app) {
     let body = req.body
     if (body && body.contractAddress && body.senderAddress && body.encodedABI) {
       // send tx
-      let receipt
       const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify(req.body)).digest('hex')
       try {
         var txProps = {
@@ -17,7 +16,7 @@ module.exports = function (app) {
           senderAddress: body.senderAddress,
           gasLimit: body.gasLimit || null
         }
-        receipt = await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA, function (txHash) {
+        await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA, function (txHash) {
           sendResponse(req, res, successResponse({ txHash }))
         })
       } catch (e) {
