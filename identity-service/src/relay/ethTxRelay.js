@@ -107,11 +107,33 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
 
     const signedTx = '0x' + tx.serialize().toString('hex')
 
-    console.log(`rawGasPrice: ${gasPrice}`)
-    console.log(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
-    const receipt = await web3.eth.sendSignedTransaction(signedTx)
+    logger.info(`rawGasPrice: ${gasPrice}`)
+    logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
+    // const receipt = await web3.eth.sendSignedTransaction(signedTx)
+    const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger)
 
-    return { receipt, txParams }
+    return { txHash, txParams }
+}
+
+const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger) => {
+  return new Promise((resolve, reject) => {
+    try {
+      web3.eth.sendSignedTransaction(signedTx)
+        .once('transactionHash', function(hash){
+          // Resolve this promise with a tx hash has been returned
+          resolve(hash);
+        })
+        .once('receipt', function(receipt){ logger.info(`Receipt returned ${JSON.stringify(receipt)}`)  })
+        .on('confirmation', function(confNumber, receipt){ logger.info(`${JSON.stringify(confNumber)}, ${JSON.stringify(receipt)}`)   })
+        .on('error', function(error){ logger.error(JSON.stringify(error))  })
+        .then(function(receipt){
+          logger.info(`Success! Processed ${JSON.stringify(receipt)}`)
+            // will be fired once the receipt is mined
+        });
+    } catch (err) {
+        reject(err);
+    }
+  })
 }
 
 // Query mainnet ethereum gas prices
