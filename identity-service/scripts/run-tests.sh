@@ -12,7 +12,6 @@ export ethTokenAddress=''
 export ethRelayerPrivateKey=''
 export ethRelayerPublicKey=''
 export ethRegistryAddress=''
-export ethRelayerWallets=''
 export registryAddress=''
 export ethOwnerWallet=''
 export isTestRun=true

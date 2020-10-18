@@ -119,7 +119,6 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
-  // const receipt = await web3.eth.sendSignedTransaction(signedTx)
   const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger, onTxHash)
   return { txHash, txParams }
 }
