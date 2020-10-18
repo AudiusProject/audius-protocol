@@ -205,7 +205,7 @@ module.exports = function (app) {
   }))
 
   app.get('/eth_balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('minimumBalance'))
+    let minimumBalance = parseFloat(config.get('ethMinimumBalance'))
     let belowMinimumBalances = []
     let balances = []
     for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
