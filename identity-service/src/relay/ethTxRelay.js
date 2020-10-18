@@ -176,7 +176,7 @@ const getProdGasInfo = async (redis, logger) => {
  * Fund L1 wallets as necessary to facilitate multiple relayers
  */
 const fundEthRelayerIfEmpty = async () => {
-  const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+  const minimumBalance = ethWeb3.utils.toWei(config.get('ethMinimumBalance').toString(), 'ether')
   for (let ethWallet of ethRelayerWallets) {
     let ethWalletPublicKey = ethWallet.publicKey
     let balance = await ethWeb3.eth.getBalance(ethWalletPublicKey)
