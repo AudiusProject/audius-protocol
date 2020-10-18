@@ -17,12 +17,12 @@ describe('test txRelay: selectWallet()', () => {
       }
     ]
     sinon.stub(config, 'get').withArgs('relayerWallets').returns(relayerWallets)
-    selectWallet = require('../src/txRelay').selectWallet
+    selectWallet = require('../src/relay/txRelay').selectWallet
   })
 
   afterEach(() => {
     // reload the module each time for fresh state
-    delete require.cache[require.resolve('../src/txRelay')]
+    delete require.cache[require.resolve('../src/relay/txRelay')]
     delete require.cache[require.resolve('../src/web3')]
     sinon.restore()
   })
