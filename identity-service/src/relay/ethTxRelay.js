@@ -7,6 +7,7 @@ const { ethWeb3 } = require('../web3')
 const { logger } = require('../logging')
 
 const ENVIRONMENT = config.get('environment')
+const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
 // L1 relayer wallets
 let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
@@ -36,12 +37,12 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 
 const selectEthWallet = async (walletPublicKey) => {
   // TIMEOUT
-  let resolvedIndex = getEthRelayerWalletIndex(walletPublicKey)
-  while (ethRelayerWallets[index].locked) {
+  let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
+  while (ethRelayerWallets[ethWalletIndex].locked) {
     await delay(200)
   }
   ethRelayerWallets.locked = true
-  return ethRelayerWallets[resolvedIndex]
+  return ethRelayerWallets[ethWalletIndex]
 }
 
 // Relay a transaction to the ethereum network
@@ -55,12 +56,12 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
 
     // Calculate relayer from  senderAddressjo
     let selectedEthRelayerWallet = await selectEthWallet(senderAddress)
-    req.logger.info(`L1 txRelay - selected relayerIndex=${relayerIndex}, relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
+    req.logger.info(`L1 txRelay - selected relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
     let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
     // Select the 'fast' gas price
     let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
-    let txReceipt = await createAndSendTransaction(
+    let txReceipt = await createAndSendEthTransaction(
       {
         publicKey: selectedEthRelayerWallet.publicKey,
         privateKey: selectedEthRelayerWallet.privateKey
@@ -69,30 +70,22 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
       '0x00',
       ethWeb3,
       req.logger,
+      ethRelayGasPrice,
       gasLimit,
-      encodedABI,
-      ethRelayGasPrice
+      encodedABI
     )
 
-    txReceipt.selectedRelayIndex = relayerIndex
-    txReceipt.selectedRelay = selectedEthRelayerWallet
+    selectedEthRelayerWallet.selectedRelay = selectedEthRelayerWallet
     req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
     return txReceipt
 }
 
-const createAndSendTransaction = async (sender, receiverAddress, value, web3, logger, gasLimit = null, data = null, inputGasPrice = null) => {
+const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
     const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
     const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
     const address = walletAddress.getAddressString()
-
     if (address !== sender.publicKey.toLowerCase()) {
-        throw new Error('Invalid relayerPublicKey')
-    }
-    let gasPrice
-    if (inputGasPrice) {
-        gasPrice = inputGasPrice
-    } else {
-        gasPrice = await getGasPrice(logger, web3)
+        throw new Error(`Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`)
     }
 
     const nonce = await web3.eth.getTransactionCount(address)
@@ -125,7 +118,6 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
 const getProdGasInfo = async (redis, logger) => {
     const prodGasPriceKey = 'eth-gas-prod-price-info'
     let gasInfo = await redis.get(prodGasPriceKey)
-    console.log(`Found gasInfo: ${gasInfo}`)
     if (!gasInfo) {
       logger.info(`Redis cache miss, querying remote`)
       let prodGasInfo = await axios({
@@ -143,6 +135,7 @@ const getProdGasInfo = async (redis, logger) => {
       gasInfo.averageGweiHex = ethWeb3.utils.numberToHex(gasInfo.averageGwei)
       gasInfo.cachedResponse = false
       redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
+      logger.info(`Updated gasInfo: ${JSON.stringify(gasInfo)}`)
     } else {
       gasInfo = JSON.parse(gasInfo)
       gasInfo.cachedResponse = true
