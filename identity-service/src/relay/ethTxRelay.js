@@ -130,7 +130,7 @@ const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxH
           // Resolve this promise with a tx hash has been returned
           onTxHash(hash)
         })
-        .on('error', function (error) { throw error })
+        .on('error', function (error) { reject(error) })
         .then(async function (receipt) {
           logger.info(`L1 txRelay - ${receipt}`)
           resolve(receipt)
