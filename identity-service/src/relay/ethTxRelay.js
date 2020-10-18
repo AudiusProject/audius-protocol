@@ -35,14 +35,19 @@ const getEthRelayerFunds = async (walletPublicKey) => {
     return ethWeb3.eth.getBalance(walletPublicKey)
 }
 
-const selectEthWallet = async (walletPublicKey) => {
+const selectEthWallet = async (walletPublicKey, reqLogger) => {
   // TIMEOUT
   let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
   while (ethRelayerWallets[ethWalletIndex].locked) {
     await delay(200)
   }
-  ethRelayerWallets.locked = true
-  return ethRelayerWallets[ethWalletIndex]
+  ethRelayerWallets[ethWalletIndex].locked = true
+  reqLogger.info(`Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+
+  return {
+    selectedEthRelayerWallet: ethRelayerWallets[ethWalletIndex],
+    ethWalletIndex
+  }
 }
 
 // Relay a transaction to the ethereum network
@@ -55,29 +60,38 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     } = txProps
 
     // Calculate relayer from  senderAddressjo
-    let selectedEthRelayerWallet = await selectEthWallet(senderAddress)
+    let { selectedEthRelayerWallet, ethWalletIndex } = await selectEthWallet(senderAddress, logger)
     req.logger.info(`L1 txRelay - selected relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
     let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
     // Select the 'fast' gas price
     let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
-    let txReceipt = await createAndSendEthTransaction(
-      {
-        publicKey: selectedEthRelayerWallet.publicKey,
-        privateKey: selectedEthRelayerWallet.privateKey
-      },
-      contractAddress,
-      '0x00',
-      ethWeb3,
-      req.logger,
-      ethRelayGasPrice,
-      gasLimit,
-      encodedABI
-    )
+    let txHash
+    try {
+      txHash = await createAndSendEthTransaction(
+        {
+          publicKey: selectedEthRelayerWallet.publicKey,
+          privateKey: selectedEthRelayerWallet.privateKey
+        },
+        contractAddress,
+        '0x00',
+        ethWeb3,
+        req.logger,
+        ethRelayGasPrice,
+        gasLimit,
+        encodedABI
+      )
+    } catch(e) {
+      req.logger.error('L1 txRelay - Error in relay', e)
+    } finally {
+      req.logger.info(`Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+      // Unlock wallet
+      ethRelayerWallets[ethWalletIndex].locked = false
+    }
 
     selectedEthRelayerWallet.selectedRelay = selectedEthRelayerWallet
     req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
-    return txReceipt
+    return txHash
 }
 
 const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
