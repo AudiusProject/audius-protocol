@@ -59,7 +59,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
       gasLimit
     } = txProps
 
-    // Calculate relayer from  senderAddressjo
+    // Calculate relayer from senderAddress
     let { selectedEthRelayerWallet, ethWalletIndex } = await selectEthWallet(senderAddress, logger)
     req.logger.info(`L1 txRelay - selected relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
     let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
@@ -85,7 +85,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
     } catch(e) {
       req.logger.error('L1 txRelay - Error in relay', e)
     } finally {
-      req.logger.info(`Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+      req.logger.info(`L1 txRelay - Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
       // Unlock wallet
       ethRelayerWallets[ethWalletIndex].locked = false
     }
@@ -100,7 +100,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
     const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
     const address = walletAddress.getAddressString()
     if (address !== sender.publicKey.toLowerCase()) {
-        throw new Error(`Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`)
+        throw new Error(`L1 txRelay - Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`)
     }
     const nonce = await web3.eth.getTransactionCount(address)
     let txParams = {
