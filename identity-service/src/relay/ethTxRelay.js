@@ -91,7 +91,6 @@ const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
     ethRelayerWallets[ethWalletIndex].locked = false
   }
 
-  selectedEthRelayerWallet.selectedRelay = selectedEthRelayerWallet
   req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
   return txHash
 }
