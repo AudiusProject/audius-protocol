@@ -4,7 +4,11 @@ const axios = require('axios')
 const config = require('../config')
 const ethRelayerConfigs = config.get('ethRelayerWallets')
 const { ethWeb3 } = require('../web3')
+const { logger } = require('../logging')
 
+const ENVIRONMENT = config.get('environment')
+
+// L1 relayer wallets
 let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
 ethRelayerWallets.forEach(wallet => {
     wallet.locked = false
@@ -36,7 +40,6 @@ const selectEthWallet = async (walletPublicKey) => {
   while (ethRelayerWallets[index].locked) {
     await delay(200)
   }
-  // RIPE FOR MULTIPLE ENTRANCY ISSUES AND IS THREAD UNSAFE
   ethRelayerWallets.locked = true
   return ethRelayerWallets[resolvedIndex]
 }
