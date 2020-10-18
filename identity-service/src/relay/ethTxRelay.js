@@ -32,7 +32,7 @@ const queryEthRelayerWallet = (walletAddress) => {
 }
 
 const getEthRelayerFunds = async (walletPublicKey) => {
-    return ethWeb3.eth.getBalance(walletPublicKey)
+    return ethWeb3.eth.getBalance(walletPublicKey)``
 }
 
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
@@ -51,7 +51,7 @@ const selectEthWallet = async (walletPublicKey, reqLogger) => {
 }
 
 // Relay a transaction to the ethereum network
-const sendEthTransaction = async (req, txProps, reqBodySHA) => {
+const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
     const {
       contractAddress,
       encodedABI,
@@ -78,6 +78,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
         ethWeb3,
         req.logger,
         ethRelayGasPrice,
+        onTxHash,
         gasLimit,
         encodedABI
       )
@@ -94,7 +95,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     return txHash
 }
 
-const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
+const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, onTxHash, gasLimit = null, data = null) => {
     const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
     const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
     const address = walletAddress.getAddressString()
@@ -124,23 +125,24 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
     logger.info(`rawGasPrice: ${gasPrice}`)
     logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
     // const receipt = await web3.eth.sendSignedTransaction(signedTx)
-    const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger)
+    const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger, onTxHash)
 
     return { txHash, txParams }
 }
 
-const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger) => {
+const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxHash) => {
   return new Promise((resolve, reject) => {
     try {
       web3.eth.sendSignedTransaction(signedTx)
         .once('transactionHash', function(hash){
           // Resolve this promise with a tx hash has been returned
-          resolve(hash);
+          onTxHash(hash);
         })
         .once('receipt', function(receipt){ logger.info(`Receipt returned ${JSON.stringify(receipt)}`)  })
         .on('confirmation', function(confNumber, receipt){ logger.info(`${JSON.stringify(confNumber)}, ${JSON.stringify(receipt)}`)   })
         .on('error', function(error){ logger.error(JSON.stringify(error))  })
         .then(function(receipt){
+          resolve(receipt)
           logger.info(`Success! Processed ${JSON.stringify(receipt)}`)
             // will be fired once the receipt is mined
         });

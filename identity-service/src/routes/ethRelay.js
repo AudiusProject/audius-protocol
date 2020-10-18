@@ -17,8 +17,10 @@ module.exports = function (app) {
           senderAddress: body.senderAddress,
           gasLimit: body.gasLimit || null
         }
-        receipt = await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA)
-        return successResponse({ receipt })
+        receipt = await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA, function(txHash){
+          return successResponse({ txHash })
+        })
+        console.log("receipt", receipt)
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
         return errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`)
