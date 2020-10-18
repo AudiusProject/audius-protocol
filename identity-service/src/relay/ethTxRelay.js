@@ -179,9 +179,8 @@ const fundEthRelayerIfEmpty = async () => {
   const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
   for (let ethWallet of ethRelayerWallets) {
     let ethWalletPublicKey = ethWallet.publicKey
-    logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethWalletPublicKey}`)
     let balance = await ethWeb3.eth.getBalance(ethWalletPublicKey)
-    logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
+    logger.info(`L1 txRelay - balance for ethWalletPublicKey ${ethWalletPublicKey}: ${balance}, minimumBalance: ${minimumBalance}`)
     let validBalance = parseInt(balance) >= minimumBalance
     if (ENVIRONMENT === 'development') {
       if (!validBalance) {
