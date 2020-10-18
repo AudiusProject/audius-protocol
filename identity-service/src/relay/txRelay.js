@@ -208,7 +208,6 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
   const address = walletAddress.getAddressString()
-
   if (address !== sender.publicKey.toLowerCase()) {
     throw new Error('Invalid relayerPublicKey')
   }
@@ -230,13 +229,9 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
 
   const tx = new EthereumTx(txParams)
   tx.sign(privateKeyBuffer)
-
   const signedTx = '0x' + tx.serialize().toString('hex')
-
-  console.log(`rawGasPrice: ${gasPrice}`)
   console.log(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
-
   return { receipt, txParams }
 }
 
