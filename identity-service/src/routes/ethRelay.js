@@ -1,10 +1,10 @@
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, sendResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const ethTxRelay = require('../relay/ethTxRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {
   // Relay operations to main ethereum chain
-  app.post('/eth_relay', handleResponse(async (req, res, next) => {
+  app.post('/eth_relay', (async (req, res, next) => {
     let body = req.body
     if (body && body.contractAddress && body.senderAddress && body.encodedABI) {
       // send tx
@@ -18,15 +18,20 @@ module.exports = function (app) {
           gasLimit: body.gasLimit || null
         }
         receipt = await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA, function(txHash){
-          return successResponse({ txHash })
+          sendResponse(req, res, successResponse({ txHash }))
         })
-        console.log("receipt", receipt)
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
-        return errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`)
+
+        sendResponse(req, res, errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`))
       }
-      // return successResponse({ receipt: receipt })
-    } else return errorResponseBadRequest('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
+    } else {
+      sendResponse(
+        req,
+        res,
+        errorResponseServerError('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')
+      )
+    }
   }))
 
   // Query which returns public key of associated relayer wallet for a given address

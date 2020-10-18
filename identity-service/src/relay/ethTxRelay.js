@@ -8,6 +8,7 @@ const { logger } = require('../logging')
 
 const ENVIRONMENT = config.get('environment')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
+const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 
 // L1 relayer wallets
 let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
@@ -36,14 +37,13 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 }
 
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
-  // TIMEOUT
+  reqLogger.info(`Acquiring lock for ${walletPublicKey}`)
   let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
   while (ethRelayerWallets[ethWalletIndex].locked) {
     await delay(200)
   }
   ethRelayerWallets[ethWalletIndex].locked = true
   reqLogger.info(`Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
-
   return {
     selectedEthRelayerWallet: ethRelayerWallets[ethWalletIndex],
     ethWalletIndex
@@ -138,12 +138,12 @@ const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxH
           // Resolve this promise with a tx hash has been returned
           onTxHash(hash);
         })
-        .once('receipt', function(receipt){ logger.info(`Receipt returned ${JSON.stringify(receipt)}`)  })
-        .on('confirmation', function(confNumber, receipt){ logger.info(`${JSON.stringify(confNumber)}, ${JSON.stringify(receipt)}`)   })
-        .on('error', function(error){ logger.error(JSON.stringify(error))  })
-        .then(function(receipt){
+        .on('error', function(error){ throw error })
+        .then(async function(receipt){
+          // DEV ONLY RM BEFORE MERGE
+          await delay(10000)
+          logger.info(receipt)
           resolve(receipt)
-          logger.info(`Success! Processed ${JSON.stringify(receipt)}`)
             // will be fired once the receipt is mined
         });
     } catch (err) {
@@ -154,31 +154,32 @@ const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxH
 
 // Query mainnet ethereum gas prices
 const getProdGasInfo = async (redis, logger) => {
-    const prodGasPriceKey = 'eth-gas-prod-price-info'
-    let gasInfo = await redis.get(prodGasPriceKey)
-    if (!gasInfo) {
-      logger.info(`Redis cache miss, querying remote`)
-      let prodGasInfo = await axios({
-        method: 'get',
-        url: 'https://ethgasstation.info/api/ethgasAPI.json'
-      })
-      let { fast, fastest, safeLow, average } = prodGasInfo.data
-      gasInfo = { fast, fastest, safeLow, average }
-      // Convert returned values into gwei to be used during relay and cache
-      gasInfo.fastGwei = (parseInt(gasInfo.fast) * Math.pow(10, 9))
-      gasInfo.fastestGwei = (parseInt(gasInfo.fastest) * Math.pow(10, 9))
-      gasInfo.averageGwei = (parseInt(gasInfo.average) * Math.pow(10, 9))
-      gasInfo.fastGweiHex = ethWeb3.utils.numberToHex(gasInfo.fastGwei)
-      gasInfo.fastestGweiHex = ethWeb3.utils.numberToHex(gasInfo.fastestGwei)
-      gasInfo.averageGweiHex = ethWeb3.utils.numberToHex(gasInfo.averageGwei)
-      gasInfo.cachedResponse = false
-      redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
-      logger.info(`Updated gasInfo: ${JSON.stringify(gasInfo)}`)
-    } else {
-      gasInfo = JSON.parse(gasInfo)
-      gasInfo.cachedResponse = true
-    }
-    return gasInfo
+  if (ENVIRONMENT === 'development') { return { fastGweiHex: GANACHE_GAS_PRICE } }
+  const prodGasPriceKey = 'eth-gas-prod-price-info'
+  let gasInfo = await redis.get(prodGasPriceKey)
+  if (!gasInfo) {
+    logger.info(`Redis cache miss, querying remote`)
+    let prodGasInfo = await axios({
+      method: 'get',
+      url: 'https://ethgasstation.info/api/ethgasAPI.json'
+    })
+    let { fast, fastest, safeLow, average } = prodGasInfo.data
+    gasInfo = { fast, fastest, safeLow, average }
+    // Convert returned values into gwei to be used during relay and cache
+    gasInfo.fastGwei = (parseInt(gasInfo.fast) * Math.pow(10, 9))
+    gasInfo.fastestGwei = (parseInt(gasInfo.fastest) * Math.pow(10, 9))
+    gasInfo.averageGwei = (parseInt(gasInfo.average) * Math.pow(10, 9))
+    gasInfo.fastGweiHex = ethWeb3.utils.numberToHex(gasInfo.fastGwei)
+    gasInfo.fastestGweiHex = ethWeb3.utils.numberToHex(gasInfo.fastestGwei)
+    gasInfo.averageGweiHex = ethWeb3.utils.numberToHex(gasInfo.averageGwei)
+    gasInfo.cachedResponse = false
+    redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
+    logger.info(`Updated gasInfo: ${JSON.stringify(gasInfo)}`)
+  } else {
+    gasInfo = JSON.parse(gasInfo)
+    gasInfo.cachedResponse = true
+  }
+  return gasInfo
 }
 
 /**
