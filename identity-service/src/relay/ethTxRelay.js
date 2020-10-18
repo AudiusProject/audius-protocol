@@ -13,7 +13,7 @@ const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 // L1 relayer wallets
 let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
 ethRelayerWallets.forEach(wallet => {
-    wallet.locked = false
+  wallet.locked = false
 })
 
 async function delay (ms) {
@@ -22,18 +22,19 @@ async function delay (ms) {
 
 // Calculates index into eth relayer addresses
 const getEthRelayerWalletIndex = (walletAddress) => {
-    let walletParsedInteger = parseInt(walletAddress, 16)
-    return walletParsedInteger % ethRelayerWallets.length
+  let walletParsedInteger = parseInt(walletAddress, 16)
+  return walletParsedInteger % ethRelayerWallets.length
 }
 
 // Select from the list of eth relay wallet addresses
 // Return the public key that will be used to relay this address
 const queryEthRelayerWallet = (walletAddress) => {
-    return ethRelayerWallets[getEthRelayerWalletIndex(walletAddress)].publicKey
+  return ethRelayerWallets[getEthRelayerWalletIndex(walletAddress)].publicKey
 }
 
+// Query current balance for a given relayer public key
 const getEthRelayerFunds = async (walletPublicKey) => {
-    return ethWeb3.eth.getBalance(walletPublicKey)``
+  return ethWeb3.eth.getBalance(walletPublicKey)
 }
 
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
@@ -52,95 +53,95 @@ const selectEthWallet = async (walletPublicKey, reqLogger) => {
 
 // Relay a transaction to the ethereum network
 const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
-    const {
+  const {
+    contractAddress,
+    encodedABI,
+    senderAddress,
+    gasLimit
+  } = txProps
+
+  // Calculate relayer from senderAddress
+  let { selectedEthRelayerWallet, ethWalletIndex } = await selectEthWallet(senderAddress, logger)
+  req.logger.info(`L1 txRelay - selected relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
+  let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
+
+  // Select the 'fast' gas price
+  let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
+  let txHash
+  try {
+    txHash = await createAndSendEthTransaction(
+      {
+        publicKey: selectedEthRelayerWallet.publicKey,
+        privateKey: selectedEthRelayerWallet.privateKey
+      },
       contractAddress,
-      encodedABI,
-      senderAddress,
-      gasLimit
-    } = txProps
+      '0x00',
+      ethWeb3,
+      req.logger,
+      ethRelayGasPrice,
+      onTxHash,
+      gasLimit,
+      encodedABI
+    )
+  } catch (e) {
+    req.logger.error('L1 txRelay - Error in relay', e)
+  } finally {
+    req.logger.info(`L1 txRelay - Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+    // Unlock wallet
+    ethRelayerWallets[ethWalletIndex].locked = false
+  }
 
-    // Calculate relayer from senderAddress
-    let { selectedEthRelayerWallet, ethWalletIndex } = await selectEthWallet(senderAddress, logger)
-    req.logger.info(`L1 txRelay - selected relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`)
-    let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
-
-    // Select the 'fast' gas price
-    let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
-    let txHash
-    try {
-      txHash = await createAndSendEthTransaction(
-        {
-          publicKey: selectedEthRelayerWallet.publicKey,
-          privateKey: selectedEthRelayerWallet.privateKey
-        },
-        contractAddress,
-        '0x00',
-        ethWeb3,
-        req.logger,
-        ethRelayGasPrice,
-        onTxHash,
-        gasLimit,
-        encodedABI
-      )
-    } catch(e) {
-      req.logger.error('L1 txRelay - Error in relay', e)
-    } finally {
-      req.logger.info(`L1 txRelay - Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
-      // Unlock wallet
-      ethRelayerWallets[ethWalletIndex].locked = false
-    }
-
-    selectedEthRelayerWallet.selectedRelay = selectedEthRelayerWallet
-    req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
-    return txHash
+  selectedEthRelayerWallet.selectedRelay = selectedEthRelayerWallet
+  req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
+  return txHash
 }
 
 const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, onTxHash, gasLimit = null, data = null) => {
-    const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
-    const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
-    const address = walletAddress.getAddressString()
-    if (address !== sender.publicKey.toLowerCase()) {
-        throw new Error(`L1 txRelay - Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`)
-    }
-    const nonce = await web3.eth.getTransactionCount(address)
-    let txParams = {
-        nonce: web3.utils.toHex(nonce),
-        gasPrice,
-        gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
-        to: receiverAddress,
-        value: web3.utils.toHex(value)
-    }
-    logger.info(`Final params: ${JSON.stringify(txParams)}`)
-    if (data) {
-        txParams = { ...txParams, data }
-    }
-    const tx = new EthereumTx(txParams)
-    tx.sign(privateKeyBuffer)
-    const signedTx = '0x' + tx.serialize().toString('hex')
-    logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
-    // const receipt = await web3.eth.sendSignedTransaction(signedTx)
-    const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger, onTxHash)
-    return { txHash, txParams }
+  const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
+  const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
+  const address = walletAddress.getAddressString()
+  if (address !== sender.publicKey.toLowerCase()) {
+    throw new Error(`L1 txRelay - Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`)
+  }
+  const nonce = await web3.eth.getTransactionCount(address)
+  let txParams = {
+    nonce: web3.utils.toHex(nonce),
+    gasPrice,
+    gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
+    to: receiverAddress,
+    value: web3.utils.toHex(value)
+  }
+  logger.info(`Final params: ${JSON.stringify(txParams)}`)
+  if (data) {
+    txParams = { ...txParams, data }
+  }
+  const tx = new EthereumTx(txParams)
+  tx.sign(privateKeyBuffer)
+  const signedTx = '0x' + tx.serialize().toString('hex')
+  logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
+  // const receipt = await web3.eth.sendSignedTransaction(signedTx)
+  const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger, onTxHash)
+  return { txHash, txParams }
 }
 
 const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxHash) => {
   return new Promise((resolve, reject) => {
     try {
       web3.eth.sendSignedTransaction(signedTx)
-        .once('transactionHash', function(hash){
+        .once('transactionHash', function (hash) {
           // Resolve this promise with a tx hash has been returned
-          onTxHash(hash);
+          onTxHash(hash)
         })
-        .on('error', function(error){ throw error })
-        .then(async function(receipt){
+        .on('error', function (error) { throw error })
+        .then(async function (receipt) {
           // DEV ONLY RM BEFORE MERGE
           await delay(10000)
           logger.info(receipt)
           resolve(receipt)
-            // will be fired once the receipt is mined
-        });
+          // will be fired once the receipt is mined
+        })
     } catch (err) {
-        reject(err);
+      reject(err)
     }
   })
 }
@@ -179,35 +180,35 @@ const getProdGasInfo = async (redis, logger) => {
  * Fund L1 wallets as necessary to facilitate multiple relayers
  */
 const fundEthRelayerIfEmpty = async () => {
-    const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
-    for (let ethWallet of ethRelayerWallets) {
-      let ethWalletPublicKey = ethWallet.publicKey
-      logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethWalletPublicKey}`)
-      let balance = await ethWeb3.eth.getBalance(ethWalletPublicKey)
-      logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
-      let validBalance = parseInt(balance) >= minimumBalance
-      if (ENVIRONMENT === 'development') {
-        if (!validBalance) {
-          const account = (await ethWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
-          logger.info(`L1 txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${ethWalletPublicKey}`)
-          await ethWeb3.eth.sendTransaction({ from: account, to: ethWalletPublicKey, value: minimumBalance })
-          logger.info(`L1 txRelay - transferred funds [${minimumBalance}] from ${account} to wallet ${ethWalletPublicKey}`)
-        } else {
-          logger.info(`L1 txRelay - ${ethWalletPublicKey} has valid balance ${balance}, minimum:${minimumBalance}`)
-        }
+  const minimumBalance = ethWeb3.utils.toWei(config.get('minimumBalance').toString(), 'ether')
+  for (let ethWallet of ethRelayerWallets) {
+    let ethWalletPublicKey = ethWallet.publicKey
+    logger.info(`L1 Querying balance for ethRelayerPublicKey: ${ethWalletPublicKey}`)
+    let balance = await ethWeb3.eth.getBalance(ethWalletPublicKey)
+    logger.info(`L1 balance for ethRelayerPublicKey: ${balance}, minimumBalance: ${minimumBalance}`)
+    let validBalance = parseInt(balance) >= minimumBalance
+    if (ENVIRONMENT === 'development') {
+      if (!validBalance) {
+        const account = (await ethWeb3.eth.getAccounts())[0] // local acc is unlocked and does not need private key
+        logger.info(`L1 txRelay - transferring funds [${minimumBalance}] from ${account} to wallet ${ethWalletPublicKey}`)
+        await ethWeb3.eth.sendTransaction({ from: account, to: ethWalletPublicKey, value: minimumBalance })
+        logger.info(`L1 txRelay - transferred funds [${minimumBalance}] from ${account} to wallet ${ethWalletPublicKey}`)
       } else {
-        // In non-development environments, ethRelay wallets must be funded prior to deployment of this service
-        // Automatic funding in L1 environment is TBD
-        logger.info(`L1 txRelay -  ${ethWalletPublicKey} below minimum balance`)
-        throw new Error(`Invalid balance for ethRelayer account ${ethWalletPublicKey}. Found ${balance}, required minimumBalance ${minimumBalance}`)
+        logger.info(`L1 txRelay - ${ethWalletPublicKey} has valid balance ${balance}, minimum:${minimumBalance}`)
       }
+    } else {
+      // In non-development environments, ethRelay wallets must be funded prior to deployment of this service
+      // Automatic funding in L1 environment is TBD
+      logger.info(`L1 txRelay -  ${ethWalletPublicKey} below minimum balance`)
+      throw new Error(`Invalid balance for ethRelayer account ${ethWalletPublicKey}. Found ${balance}, required minimumBalance ${minimumBalance}`)
     }
+  }
 }
 
 module.exports = {
-    fundEthRelayerIfEmpty,
-    sendEthTransaction,
-    queryEthRelayerWallet,
-    getEthRelayerFunds,
-    getProdGasInfo
+  fundEthRelayerIfEmpty,
+  sendEthTransaction,
+  queryEthRelayerWallet,
+  getEthRelayerFunds,
+  getProdGasInfo
 }

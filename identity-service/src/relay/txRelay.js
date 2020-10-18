@@ -202,7 +202,6 @@ const fundRelayerIfEmpty = async () => {
   }
 }
 
-
 // Send transaction using provided web3 object
 const createAndSendTransaction = async (sender, receiverAddress, value, web3, logger, gasLimit = null, data = null) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
