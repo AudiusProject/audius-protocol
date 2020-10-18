@@ -118,7 +118,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
   const tx = new EthereumTx(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
-  logger.info(`txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
+  logger.info(`L1 txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
   const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger, onTxHash)
   return { txHash, txParams }
 }
@@ -133,9 +133,7 @@ const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxH
         })
         .on('error', function (error) { throw error })
         .then(async function (receipt) {
-          // DEV ONLY RM BEFORE MERGE
-          await delay(10000)
-          logger.info(receipt)
+          logger.info(`L1 txRelay - ${receipt}`)
           resolve(receipt)
           // will be fired once the receipt is mined
         })
@@ -167,7 +165,7 @@ const getProdGasInfo = async (redis, logger) => {
     gasInfo.averageGweiHex = ethWeb3.utils.numberToHex(gasInfo.averageGwei)
     gasInfo.cachedResponse = false
     redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
-    logger.info(`Updated gasInfo: ${JSON.stringify(gasInfo)}`)
+    logger.info(`L1 txRelay - Updated gasInfo: ${JSON.stringify(gasInfo)}`)
   } else {
     gasInfo = JSON.parse(gasInfo)
     gasInfo.cachedResponse = true
