@@ -52,7 +52,7 @@ const selectEthWallet = async (walletPublicKey, reqLogger) => {
 }
 
 // Relay a transaction to the ethereum network
-const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
+const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   const {
     contractAddress,
     encodedABI,
@@ -67,9 +67,9 @@ const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
 
   // Select the 'fast' gas price
   let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
-  let txHash
+  let resp
   try {
-    txHash = await createAndSendEthTransaction(
+    resp = await createAndSendEthTransaction(
       {
         publicKey: selectedEthRelayerWallet.publicKey,
         privateKey: selectedEthRelayerWallet.privateKey
@@ -79,7 +79,6 @@ const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
       ethWeb3,
       req.logger,
       ethRelayGasPrice,
-      onTxHash,
       gasLimit,
       encodedABI
     )
@@ -92,10 +91,10 @@ const sendEthTransaction = async (req, txProps, reqBodySHA, onTxHash) => {
   }
 
   req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
-  return txHash
+  return resp
 }
 
-const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, onTxHash, gasLimit = null, data = null) => {
+const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
   const address = walletAddress.getAddressString()
@@ -118,28 +117,9 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   logger.info(`L1 txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasPrice ${parseInt(gasPrice, 16)}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`)
-  const txHash = await sendSignedTransactionReturnOnTxHash(web3, signedTx, logger, onTxHash)
-  return { txHash, txParams }
-}
+  const receipt = await web3.eth.sendSignedTransaction(signedTx)
 
-const sendSignedTransactionReturnOnTxHash = async (web3, signedTx, logger, onTxHash) => {
-  return new Promise((resolve, reject) => {
-    try {
-      web3.eth.sendSignedTransaction(signedTx)
-        .once('transactionHash', function (hash) {
-          // Resolve this promise with a tx hash has been returned
-          onTxHash(hash)
-        })
-        .on('error', function (error) { reject(error) })
-        .then(async function (receipt) {
-          logger.info(`L1 txRelay - ${receipt}`)
-          resolve(receipt)
-          // will be fired once the receipt is mined
-        })
-    } catch (err) {
-      reject(err)
-    }
-  })
+  return { txHash: receipt.transactionHash, txParams }
 }
 
 // Query mainnet ethereum gas prices
