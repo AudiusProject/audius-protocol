@@ -430,6 +430,12 @@ const config = convict({
     format: 'nat',
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
+  },
+  defiPulseApiKey: {
+    doc: 'API Key used to query eth gas station info',
+    format: String,
+    env: 'defiPulseApiKey',
+    default: ''
   }
 })
 

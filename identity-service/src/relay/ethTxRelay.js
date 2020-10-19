@@ -123,16 +123,32 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
 }
 
 // Query mainnet ethereum gas prices
+/*
+Sample call:https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=53be2a60f8bc0bb818ad161f034286d709a9c4ccb1362054b0543df78e27
+https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=XXAPI_Key_HereXXX
+3370b8f860bcda00e60c2045b0465647b4bba60ce872768733a8e0e2adaf
+https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=3370b8f860bcda00e60c2045b0465647b4bba60ce872768733a8e0e2adaf
+*/
 const getProdGasInfo = async (redis, logger) => {
   if (ENVIRONMENT === 'development') { return { fastGweiHex: GANACHE_GAS_PRICE } }
   const prodGasPriceKey = 'eth-gas-prod-price-info'
   let gasInfo = await redis.get(prodGasPriceKey)
   if (!gasInfo) {
     logger.info(`Redis cache miss, querying remote`)
-    let prodGasInfo = await axios({
-      method: 'get',
-      url: 'https://ethgasstation.info/api/ethgasAPI.json'
-    })
+    let prodGasInfo
+    let defiPulseKey = config.get('defiPulseApiKey')
+    if (defiPulseKey !== '') {
+      logger.info(`L1 txRelay querying ethGas with apiKey`)
+      prodGasInfo = await axios({
+        method: 'get',
+        url: `https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=${defiPulseKey}`
+      })
+    } else {
+      prodGasInfo = await axios({
+        method: 'get',
+        url: 'https://ethgasstation.info/api/ethgasAPI.json'
+      })
+    }
     let { fast, fastest, safeLow, average } = prodGasInfo.data
     gasInfo = { fast, fastest, safeLow, average }
     // Convert returned values into gwei to be used during relay and cache
