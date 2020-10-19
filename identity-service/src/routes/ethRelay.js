@@ -16,16 +16,15 @@ module.exports = function (app) {
           senderAddress: body.senderAddress,
           gasLimit: body.gasLimit || null
         }
-        await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA, function (txHash) {
-          sendResponse(req, res, successResponse({ txHash }))
-        })
+        const resp = await ethTxRelay.sendEthTransaction(req, txProps, reqBodySHA)
+        return sendResponse(req, res, successResponse({ resp }))
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
 
-        sendResponse(req, res, errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`))
+        return sendResponse(req, res, errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`))
       }
     } else {
-      sendResponse(
+      return sendResponse(
         req,
         res,
         errorResponseServerError('Missing one of the required fields: contractRegistryKey, contractAddress, senderAddress, encodedABI')

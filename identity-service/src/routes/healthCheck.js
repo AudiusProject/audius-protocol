@@ -2,7 +2,7 @@ const config = require('../config.js')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
-const { getRelayerFunds } = require('../relay/txRelay')
+const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
 
@@ -178,6 +178,9 @@ module.exports = function (app) {
     let minimumBalance = parseFloat(config.get('minimumBalance'))
     let belowMinimumBalances = []
     let balances = []
+
+    // run fundRelayerIfEmpty so it'll auto top off any accounts below the threshold
+    await fundRelayerIfEmpty()
 
     for (let account of RELAY_HEALTH_ACCOUNTS) {
       let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
