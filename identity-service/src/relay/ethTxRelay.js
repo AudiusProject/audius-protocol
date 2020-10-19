@@ -154,6 +154,7 @@ const getProdGasInfo = async (redis, logger) => {
     gasInfo = { fast, fastest, safeLow, average }
     // Convert returned values into gwei to be used during relay and cache
     // Must divide by 10 to get gwei price (Math.pow(10, 9) -> Math.pow(10, 8))
+    // https://docs.ethgasstation.info/gas-price
     gasInfo.fastGwei = (parseInt(gasInfo.fast) * Math.pow(10, 8))
     gasInfo.fastestGwei = (parseInt(gasInfo.fastest) * Math.pow(10, 8))
     gasInfo.averageGwei = (parseInt(gasInfo.average) * Math.pow(10, 8))
