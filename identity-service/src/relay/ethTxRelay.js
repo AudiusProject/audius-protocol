@@ -84,6 +84,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
     )
   } catch (e) {
     req.logger.error('L1 txRelay - Error in relay', e)
+    throw e
   } finally {
     req.logger.info(`L1 txRelay - Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
     // Unlock wallet
