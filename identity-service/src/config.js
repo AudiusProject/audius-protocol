@@ -436,7 +436,7 @@ const config = convict({
     format: String,
     env: 'defiPulseApiKey',
     default: ''
-  },
+  }
 })
 
 // if you wanted to load a file
