@@ -394,7 +394,6 @@ class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
-    console.log('selected', selectedEthWallet)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
     await this.sendTokens(myWalletAddress, recipientAddress, amount)
   }
