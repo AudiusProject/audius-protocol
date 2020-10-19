@@ -390,10 +390,12 @@ class Account extends Base {
   /**
    * Sends `amount` tokens to `recipientAddress` by way of `relayerAddress`
    */
-  async permitAndSendTokens (relayerAddress, recipientAddress, amount) {
+  async permitAndSendTokens (recipientAddress, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
-    await this.permitProxySendTokens(myWalletAddress, relayerAddress, amount)
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    console.log('selected', selectedEthWallet)
+    await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
     await this.sendTokens(myWalletAddress, recipientAddress, amount)
   }
 
@@ -411,7 +413,8 @@ class Account extends Base {
     let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-    let deadline = currentBlock.timestamp + (60 * 60 * 10)  // sufficiently far in future
+     // 1 hour, sufficiently far in future
+    let deadline = currentBlock.timestamp + (60 * 60 * 1)
 
     let digest = getPermitDigest(
       web3,

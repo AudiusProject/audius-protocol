@@ -243,6 +243,20 @@ class IdentityService {
     })
   }
 
+  /**
+   * Gets the correct wallet that will relay a txn for `senderAddress`
+   * @param {string} senderAddress wallet
+   */
+  async getEthRelayer (senderAddress) {
+    return this._makeRequest({
+      url: '/eth_relayer',
+      method: 'get',
+      params: {
+        wallet: senderAddress
+      }
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {

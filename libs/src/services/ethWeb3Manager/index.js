@@ -87,6 +87,7 @@ class EthWeb3Manager {
   async relayTransaction (
     contractMethod,
     contractAddress,
+    ownerWallet,
     txGasLimit = DEFAULT_GAS_AMOUNT,
     txRetries = 5
   ) {
@@ -94,7 +95,7 @@ class EthWeb3Manager {
     const response = await retry(async () => {
       return this.identityService.ethRelay(
         contractAddress,
-        this.getWalletAddress(),
+        ownerWallet,
         encodedABI,
         txGasLimit
       )

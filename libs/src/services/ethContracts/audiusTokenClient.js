@@ -41,7 +41,8 @@ class AudiusTokenClient {
     const method = this.AudiusTokenContract.methods.transferFrom(owner, recipient, amount)
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
-      this.contractAddress
+      this.contractAddress,
+      owner
     )
     return { txReceipt: tx }
   }
@@ -67,7 +68,7 @@ class AudiusTokenClient {
       s
     )
     const tx = await this.ethWeb3Manager.relayTransaction(
-      contractMethod, this.contractAddress
+      contractMethod, this.contractAddress, owner
     )
     return tx
   }
