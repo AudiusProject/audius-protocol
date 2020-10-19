@@ -8,7 +8,7 @@ const config = require('../../config')
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = ({ libs } = {}, logger) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize) => {
   let response = {
     ...versionInfo,
     'healthy': true,
@@ -23,6 +23,11 @@ const healthCheck = ({ libs } = {}, logger) => {
   } else {
     logger.warn('Health check with no libs')
   }
+
+  // we have a /db_check route for more granular detail, but the service health check should
+  // also check that the db connection is good. having this in the health_check
+  // allows us to get auto restarts from liveness probes etc if the db connection is down
+  await sequelize.query('SELECT 1')
 
   return response
 }
