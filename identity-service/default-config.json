@@ -37,6 +37,7 @@
   "ethRegistryAddress":"",
   "ethOwnerWallet":"",
   "mailgunApiKey": "",
+  "defiPulseApiKey": "",
   "registryAddress": "",
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",
