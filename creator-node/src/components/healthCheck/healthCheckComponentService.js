@@ -8,7 +8,7 @@ const config = require('../../config')
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = ({ libs } = {}, logger) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize) => {
   let response = {
     ...versionInfo,
     'healthy': true,
@@ -23,6 +23,8 @@ const healthCheck = ({ libs } = {}, logger) => {
   } else {
     logger.warn('Health check with no libs')
   }
+
+  await sequelize.query('SELECT 1')
 
   return response
 }

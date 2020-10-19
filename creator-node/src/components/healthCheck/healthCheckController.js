@@ -2,6 +2,7 @@ const express = require('express')
 const { handleResponse, successResponse } = require('../../apiHelpers')
 const { healthCheck } = require('./healthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
+const { sequelize } = require('../../models')
 
 const router = express.Router()
 
@@ -13,7 +14,7 @@ const router = express.Router()
  */
 const healthCheckController = async (req) => {
   const logger = req.logger
-  const response = healthCheck(serviceRegistry, logger)
+  const response = await healthCheck(serviceRegistry, logger, sequelize)
   return successResponse(response)
 }
 

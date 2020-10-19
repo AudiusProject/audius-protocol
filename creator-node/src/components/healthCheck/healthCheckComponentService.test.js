@@ -11,6 +11,10 @@ const libsMock = {
   }
 }
 
+const sequelizeMock = {
+  'query': async () => Promise.resolve()
+}
+
 const mockLogger = {
   warn: () => {}
 }
@@ -21,7 +25,7 @@ describe('Test Health Check', function () {
     config.set('spID', 10)
     let expectedEndpoint = config.get('creatorNodeEndpoint')
     let expectedSpID = config.get('spID')
-    const res = healthCheck({ libs: libsMock }, mockLogger)
+    const res = healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
@@ -34,7 +38,7 @@ describe('Test Health Check', function () {
   })
 
   it('Should handle no libs', function () {
-    const res = healthCheck({}, mockLogger)
+    const res = healthCheck({}, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
