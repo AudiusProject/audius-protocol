@@ -92,13 +92,24 @@ class EthWeb3Manager {
     txRetries = 5
   ) {
     const encodedABI = contractMethod.encodeABI()
-    const response = await retry(async () => {
-      return this.identityService.ethRelay(
-        contractAddress,
-        ownerWallet,
-        encodedABI,
-        txGasLimit
-      )
+    const response = await retry(async bail => {
+      try {
+        const attempt = await this.identityService.ethRelay(
+          contractAddress,
+          ownerWallet,
+          encodedABI,
+          txGasLimit
+        )
+        return attempt
+      } catch (e) {
+        if (e.response && e.response.status && e.response.status === 429) {
+          // Don't retry in the case we are getting rate limited
+          bail(new Error('Please wait before trying again'))
+          return
+        }
+        // Trigger a retry
+        throw e
+      }
     }, {
       // Retry function 5x by default
       // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
