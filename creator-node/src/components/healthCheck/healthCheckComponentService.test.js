@@ -20,12 +20,12 @@ const mockLogger = {
 }
 
 describe('Test Health Check', function () {
-  it('Should pass', function () {
+  it('Should pass', async function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
     let expectedEndpoint = config.get('creatorNodeEndpoint')
     let expectedSpID = config.get('spID')
-    const res = healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
+    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
@@ -37,8 +37,8 @@ describe('Test Health Check', function () {
     })
   })
 
-  it('Should handle no libs', function () {
-    const res = healthCheck({}, mockLogger, sequelizeMock)
+  it('Should handle no libs', async function () {
+    const res = await healthCheck({}, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'creator-node',
