@@ -3,19 +3,19 @@ const Utils = require('../utils')
 const { ecsign, toBuffer } = require('ethereumjs-util')
 const { pack } = require('@ethersproject/solidity')
 
-export const sign = (digest, privateKey) => {
+const sign = (digest, privateKey) => {
   const buffer = toBuffer(digest)
   let signature = ecsign(buffer, privateKey)
   return signature
 }
 
-export const PERMIT_TYPEHASH = Utils.keccak256(
+const PERMIT_TYPEHASH = Utils.keccak256(
   'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
 )
 
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
-export function getPermitDigest(
+function getPermitDigest(
   web3,
   name,
   address,
@@ -43,7 +43,7 @@ export function getPermitDigest(
 }
 
 // Gets the EIP712 domain separator
-export function getDomainSeparator(web3, name, contractAddress, chainId) {
+function getDomainSeparator(web3, name, contractAddress, chainId) {
   const encoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
     [
@@ -55,4 +55,9 @@ export function getDomainSeparator(web3, name, contractAddress, chainId) {
     ]
   )
   return Utils.keccak256(encoded)
+}
+
+module.expots = {
+  sign,
+  getPermitDigest
 }
