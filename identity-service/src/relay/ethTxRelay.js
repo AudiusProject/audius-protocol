@@ -125,10 +125,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
 
 // Query mainnet ethereum gas prices
 /*
-Sample call:https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=53be2a60f8bc0bb818ad161f034286d709a9c4ccb1362054b0543df78e27
-https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=XXAPI_Key_HereXXX
-3370b8f860bcda00e60c2045b0465647b4bba60ce872768733a8e0e2adaf
-https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=3370b8f860bcda00e60c2045b0465647b4bba60ce872768733a8e0e2adaf
+  Sample call:https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=some_key
 */
 const getProdGasInfo = async (redis, logger) => {
   if (ENVIRONMENT === 'development') {
