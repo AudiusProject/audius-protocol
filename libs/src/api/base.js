@@ -3,7 +3,8 @@ const Services = Object.freeze({
   HEDGEHOG: 'Hedgehog',
   DISCOVERY_PROVIDER: 'Discovery Provider',
   CREATOR_NODE: 'Creator Node',
-  IPFS_GATEWAY: 'IPFS Gateway'
+  IPFS_GATEWAY: 'IPFS Gateway',
+  COMSTOCK: 'Comstock'
 })
 
 class Base {
@@ -17,6 +18,7 @@ class Base {
     ethWeb3Manager,
     ethContracts,
     creatorNode,
+    comstock,
     isServer
   ) {
     this.userStateManager = userStateManager
@@ -28,13 +30,15 @@ class Base {
     this.ethWeb3Manager = ethWeb3Manager
     this.ethContracts = ethContracts
     this.creatorNode = creatorNode
+    this.comstock = comstock
     this.isServer = isServer
 
     this._serviceMapping = {
       [Services.IDENTITY_SERVICE]: this.identityService,
       [Services.HEDGEHOG]: this.hedgehog,
       [Services.DISCOVERY_PROVIDER]: this.discoveryProvider,
-      [Services.CREATOR_NODE]: this.creatorNode
+      [Services.CREATOR_NODE]: this.creatorNode,
+      [Services.COMSTOCK]: this.comstock
     }
   }
 

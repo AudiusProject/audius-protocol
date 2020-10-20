@@ -9,7 +9,7 @@ const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so
 
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
-  constructor (web3Config) {
+  constructor (web3Config, identityService) {
     if (!web3Config) throw new Error('web3Config object not passed in')
     if (!web3Config.providers) throw new Error('missing web3Config property: providers')
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
@@ -18,6 +18,7 @@ class EthWeb3Manager {
     const provider = sample(web3Config.providers)
 
     this.web3Config = web3Config
+    this.identityService = identityService
     this.web3 = new Web3(provider)
     this.ownerWallet = web3Config.ownerWallet
   }
@@ -81,6 +82,49 @@ class EthWeb3Manager {
 
     let gasPrice = parseInt(await this.web3.eth.getGasPrice())
     return contractMethod.send({ from: this.ownerWallet, gas: gasAmount, gasPrice: gasPrice })
+  }
+
+  async relayTransaction (
+    contractMethod,
+    contractAddress,
+    ownerWallet,
+    txGasLimit = DEFAULT_GAS_AMOUNT,
+    txRetries = 5
+  ) {
+    const encodedABI = contractMethod.encodeABI()
+    const response = await retry(async bail => {
+      try {
+        const attempt = await this.identityService.ethRelay(
+          contractAddress,
+          ownerWallet,
+          encodedABI,
+          txGasLimit
+        )
+        return attempt
+      } catch (e) {
+        if (e.response && e.response.status && e.response.status === 429) {
+          // Don't retry in the case we are getting rate limited
+          bail(new Error('Please wait before trying again'))
+          return
+        }
+        // Trigger a retry
+        throw e
+      }
+    }, {
+      // Retry function 5x by default
+      // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: txRetries,
+      onRetry: (err, i) => {
+        if (err) {
+          console.log(`Retry error : ${err}`)
+        }
+      }
+    })
+
+    return response['receipt']
   }
 }
 

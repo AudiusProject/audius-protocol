@@ -5,6 +5,7 @@ const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
 const AudiusContracts = require('./services/dataContracts/index')
 const IdentityService = require('./services/identity/index')
+const Comstock = require('./services/comstock/index')
 const Hedgehog = require('./services/hedgehog/index')
 const CreatorNode = require('./services/creatorNode/index')
 const DiscoveryProvider = require('./services/discoveryProvider/index')
@@ -38,6 +39,14 @@ class AudiusLibs {
    * @param {string} url
    */
   static configIdentityService (url) {
+    return { url }
+  }
+
+  /**
+   * Configures an identity service wrapper
+   * @param {string} url
+   */
+  static configComstock (url) {
     return { url }
   }
 
@@ -106,8 +115,9 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    * @param {string} ownerWallet
+   * @param {string?} claimDistributionContractAddress
    */
-  static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet) {
+  static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet, claimDistributionContractAddress) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -119,7 +129,7 @@ class AudiusLibs {
       throw new Error('Providers must be of type string, Array, or Web3 instance')
     }
 
-    return { tokenAddress, registryAddress, providers: providerList, ownerWallet }
+    return { tokenAddress, registryAddress, providers: providerList, ownerWallet, claimDistributionContractAddress }
   }
 
   /**
@@ -138,6 +148,7 @@ class AudiusLibs {
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
+    comstockConfig,
     isServer,
     isDebug = false
   }) {
@@ -149,6 +160,7 @@ class AudiusLibs {
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
+    this.comstockConfig = comstockConfig
     this.isServer = isServer
     this.isDebug = isDebug
 
@@ -195,7 +207,8 @@ class AudiusLibs {
     /** Web3 Managers */
     if (this.ethWeb3Config) {
       this.ethWeb3Manager = new EthWeb3Manager(
-        this.ethWeb3Config
+        this.ethWeb3Config,
+        this.identityService
       )
     }
     if (this.web3Config) {
@@ -215,6 +228,7 @@ class AudiusLibs {
         this.ethWeb3Manager,
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
+        (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
         this.isServer,
         this.isDebug
       )
@@ -259,6 +273,11 @@ class AudiusLibs {
       await this.creatorNode.init()
     }
 
+    /** Comstock */
+    if (this.comstockConfig) {
+      this.comstock = new Comstock(this.comstockConfig.url)
+    }
+
     // Initialize apis
     const services = [
       this.userStateManager,
@@ -270,6 +289,7 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.creatorNode,
+      this.comstock,
       this.isServer
     ]
     this.User = new User(...services)

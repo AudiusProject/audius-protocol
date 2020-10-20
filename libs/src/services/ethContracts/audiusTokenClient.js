@@ -15,12 +15,60 @@ class AudiusTokenClient {
     return this.web3.utils.toBN(balance)
   }
 
+  // Get the name of the contract
+  async name () {
+    const name = await this.AudiusTokenContract.methods.name().call()
+    return name
+  }
+
+  // Get the name of the contract
+  async nonces (wallet) {
+    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call()
+    const number = this.web3.utils.toBN(nonce).toNumber()
+    return number
+  }
+
   /* ------- SETTERS ------- */
 
   async transfer (recipient, amount) {
     const contractMethod = this.AudiusTokenContract.methods.transfer(recipient, amount)
     const tx = await this.ethWeb3Manager.sendTransaction(contractMethod)
     return { txReceipt: tx }
+  }
+
+  async transferFrom (owner, recipient, amount) {
+    const method = this.AudiusTokenContract.methods.transferFrom(owner, recipient, amount)
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      method,
+      this.contractAddress,
+      owner
+    )
+    return { txReceipt: tx }
+  }
+
+  // Permit meta transaction of balance transfer
+  async permit (
+    owner, // address
+    spender, // address
+    value, // uint
+    deadline, // uint
+    v, // uint8
+    r, // bytes32
+    s // bytes32
+  ) {
+    const contractMethod = this.AudiusTokenContract.methods.permit(
+      owner,
+      spender,
+      value,
+      deadline,
+      v,
+      r,
+      s
+    )
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      contractMethod, this.contractAddress, owner
+    )
+    return tx
   }
 
   // Allow spender to withdraw from calling account up to value amount
