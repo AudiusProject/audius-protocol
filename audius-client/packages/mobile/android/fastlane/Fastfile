@@ -21,7 +21,7 @@ platform :android do
     upload_to_play_store(
       track: "alpha",
       package_name: "co.audius.app.bounce",
-      aab: "./app/build/outputs/bundle/bounceRelease/app.aab",
+      aab: "./app/build/outputs/bundle/bounceRelease/app-bounce-release.aab",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
@@ -32,7 +32,7 @@ platform :android do
   lane :alpha do
     upload_to_play_store(
       track: "alpha",
-      aab: "./app/build/outputs/bundle/prodRelease/app.aab",
+      aab: "./app/build/outputs/bundle/prodRelease/app-prod-release.aab",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
@@ -43,7 +43,7 @@ platform :android do
   lane :beta do
     upload_to_play_store(
       track: "beta",
-      aab: "./app/build/outputs/bundle/prodRelease/app.aab",
+      aab: "./app/build/outputs/bundle/prodRelease/app-prod-release.aab",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
@@ -54,7 +54,7 @@ platform :android do
   lane :deploy do
     upload_to_play_store(
       track: "production",
-      aab: "./app/build/outputs/bundle/prodRelease/app.aab",
+      aab: "./app/build/outputs/bundle/prodRelease/app-prod-release.aab",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
