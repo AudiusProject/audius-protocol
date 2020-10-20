@@ -142,6 +142,7 @@ import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import ConfirmerPreview from 'containers/confirmer-preview/ConfirmerPreview'
 import Notice from './notice/Notice'
+import ConnectedMusicConfetti from './music-confetti/ConnectedMusicConfetti'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -803,6 +804,7 @@ class App extends Component {
         {!isMobileClient && <ConfirmerPreview />}
         {!isMobileClient && <Visualizer />}
         {!isMobileClient && <PinnedTrackConfirmation />}
+        {!isMobileClient && <ConnectedMusicConfetti />}
 
         {/* Mobile-only */}
         {isMobileClient && <ConnectedReachabilityBar />}

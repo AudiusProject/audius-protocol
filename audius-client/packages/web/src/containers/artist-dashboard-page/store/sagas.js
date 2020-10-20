@@ -1,13 +1,15 @@
-import { call, put, takeEvery } from 'redux-saga/effects'
+import { call, put, take, takeEvery } from 'redux-saga/effects'
 import { each } from 'lodash'
 import moment from 'moment'
 
 import * as dashboardActions from './actions'
 import { getAccountUser } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { waitForValue } from 'utils/sagaHelpers'
+import { doEvery, waitForValue } from 'utils/sagaHelpers'
 import AudiusBackend from 'services/AudiusBackend'
 import { formatUrlName } from 'utils/formatUtil'
+import { getBalance } from 'store/wallet/slice'
+import { getRemoteVar, IntKeys } from 'services/remote-config'
 
 function* fetchDashboardAsync(action) {
   yield call(waitForBackendSetup)
@@ -62,6 +64,7 @@ function* fetchDashboardAsync(action) {
         fullUnlistedTracks
       )
     )
+    yield call(pollForBalance)
   } else {
     yield put(dashboardActions.fetchDashboardFailed())
   }
@@ -118,6 +121,17 @@ function* fetchDashboardListenDataAsync(action) {
   } else {
     yield put(dashboardActions.fetchDashboardListenDataFailed())
   }
+}
+
+function* pollForBalance() {
+  const pollingFreq = getRemoteVar(
+    IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS
+  )
+  const chan = yield call(doEvery, pollingFreq, function* () {
+    yield put(getBalance())
+  })
+  yield take(dashboardActions.RESET_DASHBOARD)
+  chan.close()
 }
 
 function* watchFetchDashboard() {

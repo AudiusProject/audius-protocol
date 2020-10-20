@@ -28,7 +28,8 @@ const NavHeader = ({
   notificationPanelIsOpen,
   toggleNotificationPanel,
   goToRoute,
-  isElectron
+  isElectron,
+  pendingClaim
 }) => {
   const logoVariant = useRemoteVar(StringKeys.AUDIUS_LOGO_VARIANT)
   const logoVariantClickTarget = useRemoteVar(
@@ -66,15 +67,15 @@ const NavHeader = ({
           >
             <IconSettings />
           </NavLink>
-          {account.is_creator ? (
-            <NavLink
-              to={DASHBOARD_PAGE}
-              activeClassName='active'
-              className={styles.headerIconWrapper}
-            >
-              <IconDashboard />
-            </NavLink>
-          ) : null}
+          <NavLink
+            to={DASHBOARD_PAGE}
+            activeClassName='active'
+            className={cn(styles.headerIconWrapper, {
+              [styles.dashboardIcon]: pendingClaim
+            })}
+          >
+            <IconDashboard />
+          </NavLink>
           <div
             onClick={toggleNotificationPanel}
             className={cn(styles.headerIconWrapper, styles.iconNotification, {
@@ -105,7 +106,8 @@ NavButton.propTypes = {
   notificationPanelIsOpen: PropTypes.bool,
   toggleNotificationPanel: PropTypes.func,
   isElectron: PropTypes.bool,
-  goToRoute: PropTypes.func
+  goToRoute: PropTypes.func,
+  pendingClaim: PropTypes.bool
 }
 
 export default NavHeader

@@ -45,12 +45,15 @@ import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
 
 import queueSagas from 'store/queue/sagas'
 import playerSagas from 'store/player/sagas'
+import walletSagas from 'store/wallet/sagas'
 
 import scrollLockSagas from 'store/application/ui/scrollLock/sagas'
 import themeSagas from 'store/application/ui/theme/sagas'
 import reachabilitySagas from 'store/reachability/sagas'
 import userListModalSagas from 'store/application/ui/userListModal/sagas'
 import stemUploadSagas from 'store/application/ui/stemsUpload/sagas'
+
+import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
 import errorSagas from 'store/errors/sagas'
 
@@ -100,6 +103,9 @@ export default function* rootSaga() {
     playerSagas(),
     queueSagas(),
 
+    // Wallet
+    walletSagas(),
+
     // Application
     scrollLockSagas(),
     themeSagas(),
@@ -116,6 +122,7 @@ export default function* rootSaga() {
     stemUploadSagas(),
     remixesSagas(),
     deletedSagas(),
+    tokenDashboardSagas(),
 
     // Remote config
     remoteConfigSagas(),

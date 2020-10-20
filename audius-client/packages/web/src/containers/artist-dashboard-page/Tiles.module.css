@@ -1,0 +1,285 @@
+.tileContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 6px;
+  box-shadow: 0px 16px 20px rgba(133, 129, 153, 0.15);
+  min-height: 210px;
+}
+
+
+/* Wallet Tile */
+.walletTile {
+  background-color: var(--white);
+  padding-top: 36px;
+}
+
+.balanceAmount {
+  font-weight: 800;
+  font-size: 64px;
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+}
+
+.balanceLabel {
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  margin-bottom: 20px;
+}
+
+.receiveBtn {
+  margin-right: 24px;
+}
+
+.balanceBtn {
+  background: transparent !important;
+  border: 1px solid var(--neutral-light-6);
+  width: 144px;
+}
+
+.balanceBtn .textClassName {
+  color: var(--neutral);
+  font-size: var(--font-s);
+}
+
+.balanceBtn .iconStyle path {
+  fill: var(--neutral);
+}
+
+.balanceBtn.balanceDisabled {
+  opacity: 0.5;
+  background-color: hsla(0,0%,100%,.1);
+}
+
+/* Claim Tile */
+.claimTile {
+  background: var(--page-header-gradient);
+  display: inline-flex;
+  flex-direction: column;
+  padding: 36px 16px 16px;
+  transition: flex-grow 0.7s ease-in-out;
+}
+
+.claimCollapsed {
+  flex: 0.55;
+}
+
+.claimAmount {
+  font-weight: 800;
+  font-size: 64px;
+  text-align: center;
+  color: var(--static-white);
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 6px;
+}
+
+.unclaimed {
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #C675FF;
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.noClaim {
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  text-align: center;
+  color: var(--static-white);
+  max-width: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.claimTile .claimBtn {
+  background: linear-gradient(262.12deg, #FFC700 5.49%, rgba(255, 148, 0, 0) 97.25%), #FF9400;
+  box-shadow: 0px 5px 15px -2px rgba(0, 0, 0, 0.25);
+  border: 0px !important;
+}
+
+.claimBtn > * {
+  color: var(--white) !important;
+}
+
+.claimTile .claimBtn:hover {
+  background: linear-gradient(262.12deg, #FFC700 5.49%, rgba(255, 148, 0, 0) 97.25%), #FF9400;
+  box-shadow: 0px 5px 15px -2px rgba(0, 0, 0, 0.25);
+}
+
+.claimTile .claimBtn:active {
+  background: linear-gradient(262.12deg, #FFC700 5.49%, rgba(255, 148, 0, 0) 97.25%), #FF9400;
+  box-shadow: 0px 5px 15px -2px rgba(0, 0, 0, 0.25);
+}
+
+/* Explainer Tile */
+.explainerTile {
+  min-height: 520px;
+  background-color: var(--white);
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow: hidden;
+  text-align: left;
+}
+
+.platformToken {
+  height: 393px;
+  flex: 0 0 362px;
+  width: 362px;
+  position: relative;
+  margin-right: 29px;
+}
+
+.platformTokenImage {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 448px;
+  height: 448px;
+}
+
+.whatIsAudioContainer {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 32px 72px 0px 0px;
+  margin-bottom: 74px;
+}
+
+.whatIsAudio {
+  font-weight: 800;
+  font-size: 40px;
+  line-height: 49px;
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0px 0px 2px 0px;
+}
+
+.whyCare {
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.description {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  line-height: 24px;
+  color: var(--neutral);
+  margin-bottom: 16px;
+}
+
+.learnMore {
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  text-align: right;
+  letter-spacing: 0.5px;
+  color: var(--neutral);
+  margin-bottom: 28px;
+}
+
+.levels {
+  display: inline-flex;
+  flex-direction: column;
+  padding-left: 24px;
+  position: relative;
+}
+
+.levelContainer {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.levelImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+}
+
+.level {
+  margin: 0px 0px 4px 0px;
+}
+
+.levelText {
+  font-weight: 800;
+  font-size: var(--font-m);
+  line-height: 20px;
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.levelMore {
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--neutral-light-6);
+}
+
+.vip {
+  font-weight: 500;
+  font-size: var(--font-m);
+  line-height: 24px;
+  color: var(--neutral);
+  margin-bottom: 16px;
+}
+
+.explainerTile .vipButton {
+  background: transparent !important;
+  border: 1px solid var(--neutral-light-6);
+  height: 48px;
+  margin-bottom: 32px;
+}
+
+.explainerTile .vipDiscordDisabled {
+  background-color: hsla(0,0%,100%,.1);
+}
+
+.explainerTile .vipTextClassName {
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--neutral);
+}
+
+.explainerTile .iconDiscord {
+  height: 24px;
+  width: 24px;
+}
+
+.explainerTile .iconDiscord path {
+  fill: var(--neutral);
+}
+
+.tba {
+  font-weight: 500;
+  font-size: var(--font-m);
+  line-height: 24px;
+
+  color: var(--neutral);
+}
+
+.disabled {
+  opacity: 0.5;
+}

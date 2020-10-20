@@ -1,4 +1,5 @@
 import numeral from 'numeral'
+import BN from 'bn.js'
 
 /**
  * The format for counting numbers should be 4 characters if possible (3 numbers and 1 Letter) without trailing 0
@@ -100,3 +101,79 @@ export const pluralize = (
   suffix = 's',
   pluralizeAnyway = false
 ) => `${message}${count > 1 || pluralizeAnyway ? suffix : ''}`
+
+/**
+ * Format a BN to the shortened $AUDIO currency without decimals
+ * @param {BN} amount The wei amount
+ * @returns {string} $AUDIO The $AUDIO amount
+ */
+export const formatAudio = amount => {
+  if (!BN.isBN(amount)) return ''
+  let aud = amount.div(WEI).toString()
+  aud = numeral(aud).format('0,0')
+  return aud
+}
+
+// Wei -> Audio
+
+export const formatWeiToAudioString = wei => {
+  const aud = wei.div(WEI)
+  return aud.toString()
+}
+
+/**
+ * Format a number to have commas
+ * @param {number|string} num
+ */
+export const formatNumberCommas = num => {
+  const parts = num.toString().split('.')
+  return (
+    parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') +
+    (parts[1] ? '.' + parts[1] : '')
+  )
+}
+
+export const trimRightZeros = number => {
+  return number.replace(/(\d)0+$/gm, '$1')
+}
+
+export const WEI = new BN('1000000000000000000')
+
+export const checkOnlyNumeric = number => {
+  const reg = /^\d+$/
+  return reg.test(number)
+}
+
+export const checkOnlyWeiFloat = number => {
+  const reg = /^[+-]?\d+(\.\d+)?$/
+  const isFloat = reg.test(number)
+  if (!isFloat) return false
+  const nums = number.split('.')
+  if (nums.length !== 2) return false
+  if (!checkOnlyNumeric(nums[0]) || !checkOnlyNumeric(nums[1])) return false
+  if (nums[1].length > 18) return false
+  return true
+}
+
+export const convertFloatToWei = number => {
+  const nums = number.split('.')
+  if (nums.length !== 2) return null
+  if (!checkOnlyNumeric(nums[0]) || !checkOnlyNumeric(nums[1])) return null
+  const aud = new BN(nums[0]).mul(WEI)
+  const weiMultiplier = 18 - nums[1].length
+  const wei = new BN(nums[1]).mul(new BN('1'.padEnd(weiMultiplier + 1, '0')))
+  return aud.add(wei)
+}
+
+export const checkWeiNumber = number => {
+  return checkOnlyNumeric(number) || checkOnlyWeiFloat(number)
+}
+
+// Audio -> Wei
+export const parseWeiNumber = number => {
+  if (checkOnlyNumeric(number)) {
+    return new BN(number).mul(WEI)
+  } else if (checkOnlyWeiFloat(number)) {
+    return convertFloatToWei(number)
+  }
+}

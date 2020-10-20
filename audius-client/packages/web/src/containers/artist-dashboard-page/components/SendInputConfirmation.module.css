@@ -1,0 +1,27 @@
+.titleWrapper {
+  margin: 24px 0px;
+}
+
+.addressWrapper {
+  display: flex;
+  flex-direction: column;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  align-items: center;
+}
+
+.arrow {
+  margin: 10px auto;
+  transform: rotateZ(90deg);
+  height: 18px;
+  width: 18px;
+}
+
+.arrow path {
+  fill: var(--neutral-light-4);
+}
+
+.buttonWrapper {
+  margin: 24px 0px;
+}

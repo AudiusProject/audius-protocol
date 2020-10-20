@@ -1,0 +1,26 @@
+.displayAudio {
+  margin: 24px;
+}
+
+.spinner {
+  height: 24px;
+  width: 24px;
+  margin-bottom: 24px;
+}
+
+.msgSpacing {
+  margin-bottom: 24px;
+}
+
+.msgWidth {
+  max-width: 450px;
+}
+
+.message {
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  line-height: 24px;
+  text-align: center;
+  color: var(--neutral);
+  text-align: center;
+}

@@ -11,3 +11,17 @@ export type NestedNonNullable<T> = {
 
 export type Nullable<T> = T | null
 export type Overwrite<T, U extends keyof T, V> = Omit<T, U> & V
+
+/**
+ *
+ * `Brand` allows you to 'specialize' a type to introduce
+ * nominal typing to TS.
+ *
+ * Example:
+ * ```
+ * type USD = Brand<number, 'USD'>
+ * const balance = 3 as USD
+ * ```
+ *
+ */
+export type Brand<T, U extends string> = T & { _brand: U }

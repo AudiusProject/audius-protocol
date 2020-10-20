@@ -75,6 +75,7 @@ export function* setupBackend() {
     console.info('Reconnected')
   }
 
+  // Init APICLient
   yield call(() => apiClient.init())
 
   if (getIsReadOnlyClient()) {

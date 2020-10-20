@@ -179,7 +179,8 @@ MusicConfetti.propTypes = {
   rotate: PropTypes.number,
   swing: PropTypes.number,
   particleRate: PropTypes.number,
-  zIndex: PropTypes.number
+  zIndex: PropTypes.number,
+  onCompletion: PropTypes.func
 }
 
 MusicConfetti.defaultProps = {

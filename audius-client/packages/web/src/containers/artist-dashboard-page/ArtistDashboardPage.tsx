@@ -11,7 +11,11 @@ import { profilePage, trackPage } from 'utils/route'
 import Header from 'components/general/header/desktop/Header'
 import Page from 'components/general/Page'
 import TracksTable, { alphaSortFn } from 'components/tracks-table/TracksTable'
-import { fetchDashboard, fetchDashboardListenData } from './store/actions'
+import {
+  fetchDashboard,
+  fetchDashboardListenData,
+  resetDashboard
+} from './store/actions'
 import {
   getDashboardListenData,
   getDashboardStatus,
@@ -28,6 +32,8 @@ import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import User from 'models/User'
 import { withClassNullGuard } from 'utils/withNullGuard'
 import lazyWithPreload from 'utils/lazyWithPreload'
+import { ClaimTile, ExplainerTile, WalletTile } from './Tiles'
+import WalletModal from './WalletModal'
 
 const TotalPlaysChart = lazyWithPreload(() =>
   import('./components/TotalPlaysChart')
@@ -240,6 +246,10 @@ export class ArtistDashboardPage extends Component<
     TotalPlaysChart.preload()
   }
 
+  componentWillUnmount() {
+    this.props.resetDashboard()
+  }
+
   formatMetadata(trackMetadatas: Track[]): DataSourceTrack[] {
     return trackMetadatas
       .map((metadata, i) => ({
@@ -282,16 +292,10 @@ export class ArtistDashboardPage extends Component<
     )
   }
 
-  render() {
-    const {
-      account,
-      status,
-      stats,
-      tracks,
-      unlistedTracks,
-      listenData,
-      goToRoute
-    } = this.props
+  renderCreatorContent() {
+    const { account, listenData, tracks, unlistedTracks, stats } = this.props
+    if (!account.is_creator) return null
+
     const { selectedTrack } = this.state
 
     const statTiles: React.ReactNode[] = []
@@ -299,17 +303,75 @@ export class ArtistDashboardPage extends Component<
       statTiles.push(<StatTile key={title} title={title} value={stat} />)
     )
 
-    const listedDataSource = this.formatMetadata(tracks)
-    const unlistedDataSource = this.formatMetadata(unlistedTracks)
+    const chartData =
+      selectedTrack === -1 ? listenData.all : listenData[selectedTrack]
 
     const chartTracks = tracks.map((track: any) => ({
       id: track.track_id,
       name: track.title
     }))
-    const chartData =
-      selectedTrack === -1 ? listenData.all : listenData[selectedTrack]
 
-    const header = <Header primary='Your Artist Dashboard' />
+    const listedDataSource = this.formatMetadata(tracks)
+    const unlistedDataSource = this.formatMetadata(unlistedTracks)
+    return (
+      <>
+        <div className={styles.sectionContainer}>
+          <Suspense fallback={<div className={styles.chartFallback} />}>
+            <TotalPlaysChart
+              data={chartData}
+              tracks={chartTracks}
+              selectedTrack={selectedTrack}
+              onSetYearOption={this.onSetYearOption}
+              onSetTrackOption={this.onSetTrackOption}
+              accountCreatedAt={account.created_at}
+            />
+          </Suspense>
+        </div>
+        <div className={cn(styles.sectionContainer, styles.statsContainer)}>
+          {statTiles}
+        </div>
+        <div className={styles.tracksTableWrapper}>
+          <TracksTableContainer
+            onClickRow={this.onClickRow}
+            listedDataSource={listedDataSource}
+            unlistedDataSource={unlistedDataSource}
+            account={account}
+          />
+        </div>
+      </>
+    )
+  }
+
+  renderCryptoContent() {
+    return (
+      <div className={styles.cryptoContentContainer}>
+        <ClaimTile />
+        <WalletTile />
+        <ExplainerTile className={styles.explainerTile} />
+      </div>
+    )
+  }
+
+  renderProfileSection() {
+    const { account, goToRoute } = this.props
+
+    return (
+      <div className={styles.profileContainer}>
+        <ArtistProfile
+          userId={account.user_id}
+          profilePictureSizes={account._profile_picture_sizes}
+          isVerified={account.is_verified}
+          name={account.name}
+          handle={account.handle}
+          onViewProfile={() => goToRoute(profilePage(account.handle))}
+        />
+      </div>
+    )
+  }
+
+  render() {
+    const { account, status } = this.props
+    const header = <Header primary='Dashboard' />
 
     return (
       <Page
@@ -318,44 +380,14 @@ export class ArtistDashboardPage extends Component<
         contentClassName={styles.pageContainer}
         header={header}
       >
+        <WalletModal />
         {!account || status === Status.LOADING ? (
           <Spin size='large' className={styles.spin} />
         ) : (
           <>
-            <div className={styles.sectionContainer}>
-              <ArtistProfile
-                userId={account.user_id}
-                profilePictureSizes={account._profile_picture_sizes}
-                isVerified={account.is_verified}
-                name={account.name}
-                handle={account.handle}
-                onViewProfile={() => goToRoute(profilePage(account.handle))}
-              />
-              {/* <AchievementTile /> */}
-            </div>
-            <div className={styles.sectionContainer}>
-              <Suspense fallback={<div className={styles.chartFallback} />}>
-                <TotalPlaysChart
-                  data={chartData}
-                  tracks={chartTracks}
-                  selectedTrack={selectedTrack}
-                  onSetYearOption={this.onSetYearOption}
-                  onSetTrackOption={this.onSetTrackOption}
-                  accountCreatedAt={account.created_at}
-                />
-              </Suspense>
-            </div>
-            <div className={cn(styles.sectionContainer, styles.statsContainer)}>
-              {statTiles}
-            </div>
-            <div className={styles.tracksTableWrapper}>
-              <TracksTableContainer
-                onClickRow={this.onClickRow}
-                listedDataSource={listedDataSource}
-                unlistedDataSource={unlistedDataSource}
-                account={account}
-              />
-            </div>
+            {this.renderProfileSection()}
+            {this.renderCryptoContent()}
+            {this.renderCreatorContent()}
           </>
         )}
       </Page>
@@ -376,6 +408,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   fetchDashboard: () => dispatch(fetchDashboard()),
   fetchDashboardListenData: (trackIds: ID[], start: string, end: string) =>
     dispatch(fetchDashboardListenData(trackIds, start, end, 'month')),
+  resetDashboard: () => dispatch(resetDashboard()),
   goToRoute: (route: string) => dispatch(pushRoute(route))
 })
 

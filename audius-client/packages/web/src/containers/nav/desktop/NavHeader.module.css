@@ -47,6 +47,18 @@ svg.logo path {
   transition: all ease-in-out .07s;
 }
 
+.dashboardIcon {
+  background-color: var(--accent-orange-light-1);
+}
+
+.dashboardIcon svg path {
+  fill: var(--static-white) !important;
+}
+
+.dashboardIcon:hover:not(:global(.active)) {
+  background-color: var(--accent-orange) !important;
+}
+
 .headerIconWrapper:global(.active),
 .headerIconWrapper:hover {
   background-color: var(--secondary-light-2);
@@ -83,7 +95,7 @@ svg.logo path {
   fill: var(--static-neutral-light-10);
 }
 
-.headerIconWrapper:hover svg path, 
+.headerIconWrapper:hover svg path,
 .headerIconWrapper:active svg path {
   fill: var(--static-neutral-light-10);
 }

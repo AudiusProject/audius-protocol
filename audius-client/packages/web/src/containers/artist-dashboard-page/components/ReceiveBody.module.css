@@ -1,0 +1,24 @@
+.container {
+  display: inline-flex;
+  flex-direction: column;
+  padding-top: 24px;
+  justify-content: center;
+}
+
+.warning {
+  font-size: var(--font-m);
+  font-weight: 800;
+  line-height: 24px;
+  text-align: center;
+  color: #9147CC;
+  margin-bottom: 4px;
+}
+
+.description {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  line-height: 24px;
+  text-align: center;
+  color: var(--neutral);
+  margin-bottom: 24px;
+}

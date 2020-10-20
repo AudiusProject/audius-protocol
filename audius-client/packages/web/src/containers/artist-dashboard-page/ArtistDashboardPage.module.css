@@ -18,8 +18,8 @@
   width: 176px;
   max-width: 176px;
   height: 72px;
-  border-radius: 6px;	
-  background: linear-gradient(332.27deg, #6B0FB3 0%, #7E1BCC 100%);	
+  border-radius: 6px;
+  background: linear-gradient(332.27deg, #6B0FB3 0%, #7E1BCC 100%);
   box-shadow: var(--table-shadow) 0px 16px 20px 0px, rgba(126, 27, 204, .5) 0px 4px 20px 0px;
   display: flex;
   flex-direction: column;
@@ -123,4 +123,27 @@
 
 .chartFallback {
   height: 368px;
+}
+
+.cryptoContentContainer {
+  display: flex;
+  width: calc(100% + 24px);
+  flex-wrap: wrap;
+  margin: -18px -12px 16px -12px;
+}
+
+.cryptoContentContainer > div {
+  margin: 9px 12px;
+}
+
+.explainerTile {
+  flex: 1 1 100% !important;
+}
+
+.profileContainer {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: stretch;
+  margin: 12px 0px 36px;
 }
