@@ -15,7 +15,7 @@ const PERMIT_TYPEHASH = Utils.keccak256(
 
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
-function getPermitDigest(
+function getPermitDigest (
   web3,
   name,
   address,
@@ -36,14 +36,14 @@ function getPermitDigest(
       '0x19',
       '0x01',
       DOMAIN_SEPARATOR,
-      Utils.keccak256(innerEncoded),
+      Utils.keccak256(innerEncoded)
     ]
   )
   return Utils.keccak256(encoded)
 }
 
 // Gets the EIP712 domain separator
-function getDomainSeparator(web3, name, contractAddress, chainId) {
+function getDomainSeparator (web3, name, contractAddress, chainId) {
   const encoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
     [
@@ -51,7 +51,7 @@ function getDomainSeparator(web3, name, contractAddress, chainId) {
       Utils.keccak256(name),
       Utils.keccak256('1'),
       chainId,
-      contractAddress,
+      contractAddress
     ]
   )
   return Utils.keccak256(encoded)

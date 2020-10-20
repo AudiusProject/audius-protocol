@@ -412,7 +412,7 @@ class Account extends Base {
     let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-     // 1 hour, sufficiently far in future
+    // 1 hour, sufficiently far in future
     let deadline = currentBlock.timestamp + (60 * 60 * 1)
 
     let digest = getPermitDigest(
@@ -420,7 +420,7 @@ class Account extends Base {
       name,
       tokenAddress,
       chainId,
-      {owner: owner, spender: relayerAddress, value: amount},
+      { owner: owner, spender: relayerAddress, value: amount },
       nonce,
       deadline
     )
@@ -433,7 +433,7 @@ class Account extends Base {
       result.v,
       result.r,
       result.s,
-      {from: owner }
+      { from: owner }
     )
     return tx
   }

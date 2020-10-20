@@ -269,7 +269,7 @@ class IdentityService {
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(
-          `Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`,
+          `Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`
         )
       }
       throw e

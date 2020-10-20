@@ -20,7 +20,6 @@ class AudiusTokenClient {
     const name = await this.AudiusTokenContract.methods.name().call()
     return name
   }
-  
 
   // Get the name of the contract
   async nonces (wallet) {
@@ -28,7 +27,7 @@ class AudiusTokenClient {
     const number = this.web3.utils.toBN(nonce).toNumber()
     return number
   }
-  
+
   /* ------- SETTERS ------- */
 
   async transfer (recipient, amount) {
@@ -47,7 +46,6 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
-
   // Permit meta transaction of balance transfer
   async permit (
     owner, // address
@@ -56,7 +54,7 @@ class AudiusTokenClient {
     deadline, // uint
     v, // uint8
     r, // bytes32
-    s //bytes32
+    s // bytes32
   ) {
     const contractMethod = this.AudiusTokenContract.methods.permit(
       owner,
@@ -72,7 +70,6 @@ class AudiusTokenClient {
     )
     return tx
   }
-
 
   // Allow spender to withdraw from calling account up to value amount
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
