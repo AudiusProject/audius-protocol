@@ -9,6 +9,8 @@ export const FETCH_DASHBOARD_LISTEN_DATA_SUCCEEDED =
 export const FETCH_DASHBOARD_LISTEN_DATA_FAILED =
   'DASHBOARD/FETCH_DASHBOARD_LISTEN_DATA_FAILED'
 
+export const RESET_DASHBOARD = 'DASHBOARD/RESET_DASHBOARD'
+
 export function fetchDashboard() {
   return { type: FETCH_DASHBOARD }
 }
@@ -41,4 +43,8 @@ export function fetchDashboardListenDataSucceeded(listenData) {
 
 export function fetchDashboardListenDataFailed() {
   return { type: FETCH_DASHBOARD_LISTEN_DATA_FAILED }
+}
+
+export function resetDashboard() {
+  return { type: RESET_DASHBOARD }
 }

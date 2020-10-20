@@ -1,0 +1,19 @@
+.amount {
+  font-weight: 800;
+  font-size: var(--font-3xl);
+  line-height: 39px;
+
+  background: var(--page-header-gradient);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.label {
+  font-weight: var(--font-bold);
+  font-size: var(--font-3xl);
+  line-height: 39px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  margin-left: 8px;
+}

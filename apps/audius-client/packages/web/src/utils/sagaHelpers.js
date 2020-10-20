@@ -1,7 +1,15 @@
 /** Helper Sagas */
 
 import { delay, eventChannel, END } from 'redux-saga'
-import { all, call, put, select, take, takeEvery } from 'redux-saga/effects'
+import {
+  all,
+  call,
+  put,
+  select,
+  spawn,
+  take,
+  takeEvery
+} from 'redux-saga/effects'
 import { push as pushRoute } from 'connected-react-router'
 import { SIGN_UP_PAGE } from './route'
 import { getAccountUser } from 'store/account/selectors'
@@ -59,10 +67,16 @@ export function* waitForValue(selector, args = {}, customCheck = () => true) {
 
 function doEveryImpl(millis, times) {
   return eventChannel(emitter => {
+    // Emit once at the start
+    emitter(times || true)
+
+    // Emit once every millis
     const iv = setInterval(() => {
-      times -= 1
-      if (times > 0) {
-        emitter(times)
+      if (times !== null) {
+        times -= 1
+      }
+      if (times === null || times > 0) {
+        emitter(times || true)
       } else {
         emitter(END)
       }
@@ -74,14 +88,17 @@ function doEveryImpl(millis, times) {
 }
 
 /**
- * Repeatedly calls a saga/async function on an interval for a set number of times.
+ * Repeatedly calls a saga/async function on an interval for up to a set number of times.
  * @param {number} millis
- * @param {number} times
  * @param {function *} fn
+ * @param {number?} times
  */
-export function* doEvery(millis, times, fn) {
+export function* doEvery(millis, fn, times = null) {
   const chan = yield call(doEveryImpl, millis, times)
-  yield takeEvery(chan, fn)
+  yield spawn(function* () {
+    yield takeEvery(chan, fn)
+  })
+  return chan
 }
 
 /**
