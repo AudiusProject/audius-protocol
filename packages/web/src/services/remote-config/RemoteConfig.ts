@@ -14,7 +14,12 @@ export enum IntKeys {
    * Duration (in ms) before we timeout a discovery provider that is
    * cached in the user's local storage
    */
-  DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS = 'DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS'
+  DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS = 'DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS',
+
+  /**
+   * Frequency (in ms) to poll for user wallet balance on the client dashboard page
+   */
+  DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS = 'DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS'
 }
 
 export enum BooleanKeys {

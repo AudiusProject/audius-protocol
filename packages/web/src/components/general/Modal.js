@@ -37,6 +37,7 @@ const Modal = props => {
       centered
       onCancel={onClose}
       destroyOnClose
+      zIndex={11000}
     >
       <div className={cn(styles.modal, className)}>
         <div className={cn(styles.header, headerClassName)}>

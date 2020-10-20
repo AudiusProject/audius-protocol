@@ -44,6 +44,7 @@ import nowPlaying from 'containers/now-playing/store/reducers'
 import firstUploadModal from 'containers/first-upload-modal/store/slice'
 import remixSettingsModal from 'containers/remix-settings-modal/store/slice'
 import remoteConfig from 'containers/remote-config/slice'
+import musicConfetti from 'containers/music-confetti/store/slice'
 
 import account from 'store/account/reducer'
 import tracksReducer from 'store/cache/tracks/reducer'
@@ -52,6 +53,7 @@ import usersReducer from 'store/cache/users/reducer'
 
 import queue from 'store/queue/slice'
 import player from 'store/player/slice'
+import tokenDashboard from 'store/token-dashboard/slice'
 
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import browserPushPermissionConfirmation from 'store/application/ui/browserPushPermissionConfirmation/reducer'
@@ -65,6 +67,8 @@ import mobileKeyboard from 'store/application/ui/mobileKeyboard/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import stemsUpload from 'store/application/ui/stemsUpload/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
+
+import wallet from 'store/wallet/slice'
 
 const createRootReducer = routeHistory =>
   combineReducers({
@@ -107,6 +111,9 @@ const createRootReducer = routeHistory =>
     // Remote config/flags
     remoteConfig,
 
+    // Wallet
+    wallet,
+
     application: combineReducers({
       ui: combineReducers({
         createPlaylistModal,
@@ -124,7 +131,8 @@ const createRootReducer = routeHistory =>
         visualizer,
         remixSettingsModal,
         stemsUpload,
-        appCTAModal
+        appCTAModal,
+        musicConfetti
       }),
       pages: combineReducers({
         explore,
@@ -141,7 +149,8 @@ const createRootReducer = routeHistory =>
         addToPlaylist,
         remixes,
         deleted,
-        nowPlaying
+        nowPlaying,
+        tokenDashboard
       })
     })
   })
