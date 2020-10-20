@@ -6,7 +6,14 @@ const config = require('../config.js')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
+const {
+  handleResponse,
+  sendResponse,
+  successResponse,
+  errorResponseBadRequest,
+  errorResponseServerError,
+  errorResponseForbidden
+} = require('../apiHelpers')
 const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
@@ -508,18 +515,18 @@ module.exports = function (app) {
    * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
    * @dev - Wrapper around getCID, which retrieves track given its CID.
    **/
-  app.get('/tracks/stream/:encodedId', handleResponse(async (req, res) => {
+  app.get('/tracks/stream/:encodedId', async (req, res, next) => {
     const libs = req.app.get('audiusLibs')
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
     const encodedId = req.params.encodedId
     if (!encodedId) {
-      return errorResponseBadRequest('Please provide a track ID')
+      return sendResponse(req, res, errorResponseBadRequest('Please provide a track ID'))
     }
 
     const blockchainId = decode(encodedId)
     if (!blockchainId) {
-      return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
+      return sendResponse(req, res, errorResponseBadRequest(`Invalid ID: ${encodedId}`))
     }
 
     const { blockchainId: blockchainIdFromTrack } = await models.Track.findOne({
@@ -529,7 +536,7 @@ module.exports = function (app) {
     })
 
     if (!blockchainIdFromTrack) {
-      return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
+      return sendResponse(req, res, errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`))
     }
 
     const { multihash } = await models.File.findOne({
@@ -542,7 +549,7 @@ module.exports = function (app) {
     })
 
     if (!multihash) {
-      return errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`)
+      return sendResponse(req, res, errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`))
     }
 
     if (libs.identityService) {
@@ -554,9 +561,8 @@ module.exports = function (app) {
 
     req.params.CID = multihash
     req.params.streamable = true
-
-    return getCID(req, res)
-  }))
+    next()
+  }, getCID)
 
   /**
    * List all unlisted tracks for a user
