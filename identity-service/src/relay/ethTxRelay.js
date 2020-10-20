@@ -66,7 +66,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
   // Select the 'fast' gas price
-  let ethRelayGasPrice = ethGasPriceInfo.fastGweiHex
+  let ethRelayGasPrice = ethGasPriceInfo.averageGweiHex
   let resp
   try {
     resp = await createAndSendEthTransaction(
@@ -131,7 +131,12 @@ https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=XXAPI_Key_H
 https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=3370b8f860bcda00e60c2045b0465647b4bba60ce872768733a8e0e2adaf
 */
 const getProdGasInfo = async (redis, logger) => {
-  if (ENVIRONMENT === 'development') { return { fastGweiHex: GANACHE_GAS_PRICE } }
+  if (ENVIRONMENT === 'development') {
+    return {
+      fastGweiHex: GANACHE_GAS_PRICE,
+      averageGweiHex: GANACHE_GAS_PRICE
+    }
+  }
   const prodGasPriceKey = 'eth-gas-prod-price-info'
   let gasInfo = await redis.get(prodGasPriceKey)
   if (!gasInfo) {
