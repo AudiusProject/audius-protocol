@@ -127,6 +127,9 @@ const getCID = async (req, res) => {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
   }
 
+  // Set the CID cache-control so that client cache the response for 30 days
+  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+
   try {
     // Add a rehydration task to the queue to be processed in the background
     RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
@@ -187,6 +190,9 @@ const getCID = async (req, res) => {
         .on('error', e => { reject(e) })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
+
     // If the file cannot be retrieved through IPFS, return 500 without attempting to stream file.
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
@@ -229,6 +235,9 @@ const getDirCID = async (req, res) => {
   req.logger.info(`IPFS Standalone Request - ${ipfsPath}`)
   req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
+  // Set the CID cache-control so that client cache the response for 30 days
+  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+
   try {
     // Add rehydrate task to queue to be processed in background
     RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
@@ -264,6 +273,8 @@ const getDirCID = async (req, res) => {
         .on('error', e => { reject(e) })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
