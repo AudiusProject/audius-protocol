@@ -1228,7 +1228,12 @@ class AudiusBackend {
         newMetadata.cover_photo_sizes = resp.dirCID
       }
 
-      if (newMetadata.twitter_handle || newMetadata.instagram_handle) {
+      if (
+        newMetadata.twitter_handle ||
+        newMetadata.instagram_handle ||
+        newMetadata.website ||
+        newMetadata.donation
+      ) {
         await fetch(`${IDENTITY_SERVICE}/social_handles`, {
           method: 'POST',
           headers: {
@@ -1237,7 +1242,9 @@ class AudiusBackend {
           body: JSON.stringify({
             handle: newMetadata.handle,
             twitterHandle: newMetadata.twitter_handle,
-            instagramHandle: newMetadata.instagram_handle
+            instagramHandle: newMetadata.instagram_handle,
+            website: newMetadata.website,
+            donation: newMetadata.donation
           })
         })
       }
