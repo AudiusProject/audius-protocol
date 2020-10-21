@@ -1,6 +1,7 @@
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
-
+const Utils = require('../utils')
+const { getPermitDigest, sign } = require('../utils/signatures')
 class Account extends Base {
   constructor (userApi, ...services) {
     super(...services)
@@ -327,6 +328,122 @@ class Account extends Base {
   async searchTags (text, user_tag_count = 2, kind, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return this.discoveryProvider.searchTags(text, user_tag_count, kind, limit, offset)
+  }
+
+  /**
+   * Check if the user has a distribution claim
+   * @param {number?} index The index of the claim to check (if known)
+   */
+  async getHasClaimed (index) {
+    this.REQUIRES(Services.COMSTOCK)
+    if (index) {
+      return this.ethContracts.ClaimDistributionClient.isClaimed(index)
+    }
+    const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    const claim = await this.comstock.getComstock({ wallet })
+    return this.ethContracts.ClaimDistributionClient.isClaimed(claim.index)
+  }
+
+  /**
+   * Get the distribution claim amount
+   */
+  async getClaimDistributionAmount () {
+    this.REQUIRES(Services.COMSTOCK)
+    const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    const claimDistribution = await this.comstock.getComstock({ wallet })
+    const amount = Utils.toBN(claimDistribution.amount.replace('0x', ''), 16)
+    return amount
+  }
+
+  /**
+   * Make the claim
+   * @param {number?} index The index of the claim to check
+   * @param {BN?} amount The amount to be claimed
+   * @param {Array<string>?} merkleProof The merkle proof for the claim
+   */
+  async makeDistributionClaim (index, amount, merkleProof) {
+    this.REQUIRES(Services.COMSTOCK, Services.IDENTITY_SERVICE)
+    const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    if (index && amount && merkleProof) {
+      return this.ethContracts.ClaimDistributionClient.claim(
+        index,
+        userWallet,
+        amount,
+        merkleProof
+      )
+    }
+    const claim = await this.comstock.getComstock({ wallet })
+    return this.ethContracts.ClaimDistributionClient.claim(
+      claim.index,
+      userWallet,
+      claim.amount,
+      claim.proof
+    )
+  }
+
+  /**
+   * Sends `amount` tokens to `recipientAddress` by way of `relayerAddress`
+   */
+  async permitAndSendTokens (recipientAddress, amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
+    await this.sendTokens(myWalletAddress, recipientAddress, amount)
+  }
+
+  /**
+   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async permitProxySendTokens (owner, relayerAddress, amount) {
+    const web3 = this.ethWeb3Manager.getWeb3()
+    const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
+    const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
+    const name = await this.ethContracts.AudiusTokenClient.name()
+    const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
+
+    // Submit permit request to give address approval, via relayer
+    let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
+    const currentBlockNumber = await web3.eth.getBlockNumber()
+    const currentBlock = await web3.eth.getBlock(currentBlockNumber)
+    // 1 hour, sufficiently far in future
+    let deadline = currentBlock.timestamp + (60 * 60 * 1)
+
+    let digest = getPermitDigest(
+      web3,
+      name,
+      tokenAddress,
+      chainId,
+      { owner: owner, spender: relayerAddress, value: amount },
+      nonce,
+      deadline
+    )
+    let result = sign(digest, myPrivateKey)
+    const tx = await this.ethContracts.AudiusTokenClient.permit(
+      owner,
+      relayerAddress,
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s,
+      { from: owner }
+    )
+    return tx
+  }
+
+  /**
+   * Sends `amount` tokens to `address` from `owner`
+   */
+  async sendTokens (owner, address, amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, amount)
   }
 }
 

@@ -12,14 +12,14 @@ const METHOD_CALL_MAX_RETRIES = 5
  * time a method on the contract is invoked.
  */
 class ContractClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
+  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress, contractAddress = null) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
 
     // Once initialized, contract address and contract are set up
-    this._contractAddress = null
+    this._contractAddress = contractAddress
     this._contract = null
 
     // Initialization setup
@@ -57,7 +57,9 @@ class ContractClient {
 
     this._isInitializing = true
     try {
-      this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+      if (!this._contractAddress) {
+        this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+      }
       const web3 = this.web3Manager.getWeb3()
       this._contract = new web3.eth.Contract(
         this.contractABI,

@@ -39,8 +39,8 @@ class Utils {
     return Web3.utils.isBN(number)
   }
 
-  static toBN (number) {
-    return new Web3.utils.BN(number)
+  static toBN (number, base) {
+    return new Web3.utils.BN(number, base)
   }
 
   static BN () {
