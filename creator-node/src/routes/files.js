@@ -166,8 +166,6 @@ const getCID = async (req, res) => {
       if (req.params.streamable && range) {
         const { start, end } = range
         if (end >= stat.size) {
-          // Unset the cache-control header so that a bad response is not cached
-          res.removeHeader('cache-control')
           // Set "Requested Range Not Satisfiable" header and exit
           res.status(416)
           return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
@@ -257,8 +255,6 @@ const getDirCID = async (req, res) => {
       await findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
       return await streamFromFileSystem(req, res, queryResults.storagePath)
     } catch (e) {
-      // Unset the cache-control header so that a bad response is not cached
-      res.removeHeader('cache-control')
       req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
     }
   }
@@ -277,6 +273,8 @@ const getDirCID = async (req, res) => {
         .on('error', e => { reject(e) })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
