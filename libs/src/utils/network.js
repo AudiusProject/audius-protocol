@@ -56,7 +56,7 @@ async function raceRequests (
     sources.push(source)
 
     // Slightly offset requests by their order, so:
-    // 1. We try public gateways first
+    // 1. We try creator node gateways first
     // 2. We give requests the opportunity to get canceled if other's are very fast
     await Utils.wait(timeBetweenRequests * i)
     if (hasFinished) return
