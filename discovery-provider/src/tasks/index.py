@@ -459,6 +459,7 @@ def refresh_peer_connections(task_context):
         cnode_endpoints[user_node_url] = True
 
         # fetch all creator nodes registered on chain
+        # TODO cache locally and refresh intermittently
         try:
           identity_url = task_context.shared_config['discprov']['identity_service_url']
           identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
