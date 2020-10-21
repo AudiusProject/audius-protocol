@@ -1,5 +1,5 @@
 import { select } from 'redux-saga-test-plan/matchers'
-import { all, put, race, take, takeEvery } from 'redux-saga/effects'
+import { all, call, put, race, take, takeEvery } from 'redux-saga/effects'
 import {
   pressClaim,
   pressSend,
@@ -8,7 +8,8 @@ import {
   ModalState,
   inputSendData,
   confirmSend,
-  getSendData
+  getSendData,
+  setDiscordCode
 } from './slice'
 import {
   claim as walletClaim,
@@ -20,7 +21,9 @@ import {
   sendSucceeded,
   sendFailed
 } from 'store/wallet/slice'
+import { FETCH_DASHBOARD } from 'containers/artist-dashboard-page/store/actions'
 import { addConfirmationCall, clear } from 'store/confirmer/actions'
+import AudiusBackend from 'services/AudiusBackend'
 
 const CLAIM_UID = 'CLAIM_UID'
 
@@ -128,6 +131,19 @@ function* claim() {
   yield put(setModalState({ modalState: claimedState }))
 }
 
+const getSignableData = () => {
+  const vals = 'abcdefghijklmnopqrstuvwxyz123456789'
+  return vals.charAt(Math.floor(Math.random() * vals.length))
+}
+
+function* watchForDiscordCode() {
+  yield take(FETCH_DASHBOARD)
+  const data = getSignableData()
+  const signature = yield call(AudiusBackend.getSignature, data)
+  const appended = `${signature}:${data}`
+  yield put(setDiscordCode({ code: appended }))
+}
+
 function* watchPressSend() {
   yield takeEvery(pressSend.type, send)
 }
@@ -136,7 +152,7 @@ function* watchPressClaim() {
   yield takeEvery(pressClaim.type, claim)
 }
 const sagas = () => {
-  return [watchPressClaim, watchPressSend]
+  return [watchPressClaim, watchPressSend, watchForDiscordCode]
 }
 
 export default sagas

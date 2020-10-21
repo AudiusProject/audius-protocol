@@ -37,16 +37,19 @@ export type ModalState = Nullable<
   | { stage: 'CLAIM'; flowState: ClaimState }
   | { stage: 'RECEIVE'; flowState: ReceiveState }
   | { stage: 'SEND'; flowState: SendingState }
+  | { stage: 'DISCORD_CODE' }
 >
 
 type TokenDashboardState = {
   modalState: Nullable<ModalState>
   modalVisible: boolean
+  discordCode: Nullable<string>
 }
 
 const initialState: TokenDashboardState = {
   modalState: null,
-  modalVisible: false
+  modalVisible: false,
+  discordCode: null
 }
 
 const slice = createSlice({
@@ -103,6 +106,16 @@ const slice = createSlice({
       }
       state.modalVisible = true
     },
+    pressDiscord: state => {
+      state.modalState = { stage: 'DISCORD_CODE' }
+      state.modalVisible = true
+    },
+    setDiscordCode: (
+      state,
+      { payload: { code } }: PayloadAction<{ code: Nullable<string> }>
+    ) => {
+      state.discordCode = code
+    },
 
     // Saga Actions
 
@@ -134,6 +147,8 @@ export const getModalState = (state: AppState) =>
   state.application.pages.tokenDashboard.modalState
 export const getModalVisible = (state: AppState) =>
   state.application.pages.tokenDashboard.modalVisible
+export const getDiscordCode = (state: AppState) =>
+  state.application.pages.tokenDashboard.discordCode ?? ''
 
 export const {
   setModalState,
@@ -142,7 +157,9 @@ export const {
   pressReceive,
   pressSend,
   inputSendData,
-  confirmSend
+  confirmSend,
+  pressDiscord,
+  setDiscordCode
 } = slice.actions
 
 export default slice.reducer

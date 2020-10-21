@@ -66,9 +66,13 @@ function* getWalletBalanceAndClaim() {
 }
 
 function* fetchBalanceAsync() {
+  const oldBalance: ReturnType<typeof getAccountBalance> = yield select(
+    getAccountBalance
+  )
   const currentBalance: BNWei = yield call(() =>
     walletClient.getCurrentBalance()
   )
+  if (oldBalance?.eq(currentBalance)) return
   yield put(setBalance({ balance: weiToString(currentBalance) }))
 }
 

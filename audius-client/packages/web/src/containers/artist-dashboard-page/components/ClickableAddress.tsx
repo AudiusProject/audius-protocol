@@ -11,6 +11,8 @@ import PurpleBox from './PurpleBox'
 type DisplayAddressProps = {
   address: string
   className?: string
+  isCompact?: boolean
+  label?: string
 }
 
 const messages = {
@@ -19,7 +21,12 @@ const messages = {
   yourAddr: 'YOUR ADDRESS'
 }
 
-const ClickableAddress = ({ address, className }: DisplayAddressProps) => {
+const ClickableAddress = ({
+  address,
+  className,
+  label,
+  isCompact = false
+}: DisplayAddressProps) => {
   const onClickAddress = useCallback(() => {
     copyToClipboard(address)
   }, [address])
@@ -35,9 +42,10 @@ const ClickableAddress = ({ address, className }: DisplayAddressProps) => {
           mount={MountPlacement.PARENT}
         >
           <PurpleBox
-            label={messages.yourAddr}
+            label={label ?? messages.yourAddr}
             className={styles.container}
             onClick={onClickAddress}
+            isCompact={isCompact}
             text={
               <div className={styles.addressContainer}>
                 <div className={styles.address}>{address}</div>
