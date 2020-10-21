@@ -609,7 +609,7 @@ workflows:
             - deploy-production
           filters:
             branches:
-              only: /^master$/
+              only: /(^master)|(^hotfix.*)$/
 
       - publish-github-release:
           context: Audius Client
