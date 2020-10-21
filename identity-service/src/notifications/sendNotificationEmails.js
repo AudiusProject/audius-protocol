@@ -68,14 +68,14 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
       let announcementEntityId = announcement['entityId']
       let id = announcement['id']
-      let usersCreatedAfterAnnouncement = await models.User.findAll({
+      let usersCreatedBeforeAnnouncement = await models.User.findAll({
         attributes: ['blockchainUserId'],
         where: {
           createdAt: { [models.Sequelize.Op.lt]: moment(announcementDate) }
         }
       }).map(x => x.blockchainUserId)
 
-      for (var user of usersCreatedAfterAnnouncement) {
+      for (var user of usersCreatedBeforeAnnouncement) {
         let userNotificationQuery = await models.Notification.findOne({
           where: {
             isViewed: true,
@@ -356,7 +356,7 @@ async function renderAndSendEmail (
     const emailParams = {
       from: 'Audius <notify@audius.co>',
       to: `${userEmail}`,
-      bcc: 'audius-email-test@audius.co',
+      bcc: 'forrest@audius.co',
       html: notifHtml,
       subject: emailSubject
     }

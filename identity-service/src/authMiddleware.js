@@ -38,6 +38,18 @@ const queryDiscprovForUserId = async (walletAddress, handle) => {
 }
 
 /**
+ * Completes the identity association of a user
+ * @param {models.User} user
+ * @param {number} blockchainUserId
+ */
+const onCompleteUser = async (user, blockchainUserId) => {
+  // Update blockchainUserId on the Users table
+  await user.update({ blockchainUserId })
+  // Upsert a record in the UserNotificationSettings table so we can start triggering email notifications
+  await models.UserNotificationSettings.findOrCreate({ where: { userId: blockchainUserId } })
+}
+
+/**
  * Authentication Middleware
  * 1) Using the `Encoded-Data-Message` & `Encoded-Data-Signature` header recover the wallet address
  * 2) If a user in the `Users` table with the `walletAddress` value, attach that user to the request
@@ -64,7 +76,7 @@ async function authMiddleware (req, res, next) {
       next()
     } else {
       const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
-      await user.update({ blockchainUserId: discprovUser.user_id })
+      await onCompleteUser(user, discprovUser.user_id)
       req.user = user
       next()
     }
