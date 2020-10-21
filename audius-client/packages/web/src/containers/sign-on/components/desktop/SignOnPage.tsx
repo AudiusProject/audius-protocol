@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { Suspense, useEffect } from 'react'
 import cn from 'classnames'
 import { animated } from 'react-spring'
 import { Transition } from 'react-spring/renderprops'
@@ -17,7 +17,6 @@ import FollowPage from 'containers/sign-on/components/desktop/FollowPage'
 import LoadingPage from 'containers/sign-on/components/LoadingPage'
 import StartPlatformPage from 'containers/sign-on/components/desktop/StartPlatformPage'
 import styles from './SignOn.module.css'
-import MetaMaskModal from 'containers/sign-on/components/desktop/MetaMaskModal'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 
@@ -31,6 +30,12 @@ import User from 'models/User'
 import { ID } from 'models/common/Identifiers'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 import AppCTA from './AppCTA'
+import lazyWithPreload from 'utils/lazyWithPreload'
+
+const MetaMaskModal = lazyWithPreload(
+  () => import('containers/sign-on/components/desktop/MetaMaskModal'),
+  0
+)
 
 export type ValidDesktopPages =
   | Pages.SIGNIN
@@ -430,12 +435,14 @@ const SignOnProvider = ({
         </form>
       </SignOnModal>
       {showMetaMaskOption ? (
-        <MetaMaskModal
-          open={metaMaskModalOpen}
-          onClickReadConfig={onClickReadMetaMaskConfig}
-          onClickBack={onToggleMetaMaskModal}
-          onClickContinue={onConfigureWithMetaMask}
-        />
+        <Suspense fallback={null}>
+          <MetaMaskModal
+            open={metaMaskModalOpen}
+            onClickReadConfig={onClickReadMetaMaskConfig}
+            onClickBack={onToggleMetaMaskModal}
+            onClickContinue={onConfigureWithMetaMask}
+          />
+        </Suspense>
       ) : null}
       <Toast
         useCaret={false}

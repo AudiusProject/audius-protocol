@@ -142,11 +142,9 @@ import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import ConfirmerPreview from 'containers/confirmer-preview/ConfirmerPreview'
 import Notice from './notice/Notice'
-import ConnectedMusicConfetti from './music-confetti/ConnectedMusicConfetti'
+import SignOn from 'containers/sign-on/SignOn'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
-
-const SignOn = lazyWithPreload(() => import('containers/sign-on/SignOn'), 0)
 
 const SettingsPage = lazyWithPreload(
   () => import('containers/settings-page/SettingsPage'),
@@ -157,6 +155,10 @@ const UploadPage = lazyWithPreload(
   0
 )
 const Modals = lazyWithPreload(() => import('./Modals'), 0)
+const ConnectedMusicConfetti = lazyWithPreload(
+  () => import('containers/music-confetti/ConnectedMusicConfetti'),
+  0
+)
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 export const MAIN_CONTENT_ID = 'mainContent'
@@ -804,7 +806,11 @@ class App extends Component {
         {!isMobileClient && <ConfirmerPreview />}
         {!isMobileClient && <Visualizer />}
         {!isMobileClient && <PinnedTrackConfirmation />}
-        {!isMobileClient && <ConnectedMusicConfetti />}
+        {!isMobileClient && (
+          <Suspense fallback={null}>
+            <ConnectedMusicConfetti />
+          </Suspense>
+        )}
 
         {/* Mobile-only */}
         {isMobileClient && <ConnectedReachabilityBar />}
