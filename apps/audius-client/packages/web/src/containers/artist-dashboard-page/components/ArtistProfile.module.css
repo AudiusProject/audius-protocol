@@ -1,12 +1,19 @@
 .artistProfileContainer {
-  flex: 1 0 704px;
+  flex: 1 0 auto;
   height: 88px;
   border-radius: 6px;
   background-color: var(--white);
   box-shadow: var(--table-shadow) 0px 16px 20px 0px;
   display: inline-flex;
   justify-content: space-between;
-  align-items: center
+  align-items: center;
+}
+
+/** The profile chip extends past page padding on smaller widths */
+@media screen and (max-width: 1024px) {
+  .artistProfileContainer {
+    margin-left: 12px;
+  }
 }
 
 .artistLeftContainer {

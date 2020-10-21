@@ -5,7 +5,7 @@ import {
   IconValidationX,
   ButtonType
 } from '@audius/stems'
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   audioToWei,
   BNAudio,
@@ -137,6 +137,23 @@ const SendInputBody = ({
 
   const [balanceError, setBalanceError] = useState<Nullable<BalanceError>>(null)
   const [addressError, setAddressError] = useState<Nullable<AddressError>>(null)
+  const hasError = balanceError || addressError
+
+  const onChangeAmount = useCallback(
+    (value: string) => {
+      setAmountToSend(value as StringAudio)
+      if (balanceError) setBalanceError(null)
+    },
+    [balanceError, setBalanceError, setAmountToSend]
+  )
+
+  const onChangeAddress = useCallback(
+    (value: string) => {
+      setDestinationAddress(value)
+      if (addressError) setAddressError(null)
+    },
+    [addressError, setAddressError, setDestinationAddress]
+  )
 
   const onClickSend = () => {
     const balanceError = validateSendAmount(amountToSend, currentBalance)
@@ -179,7 +196,7 @@ const SendInputBody = ({
         rightLabel={'$AUDIO'}
         value={amountToSend}
         isNumeric={true}
-        onChange={v => setAmountToSend(v as StringAudio)}
+        onChange={onChangeAmount}
       />
       {renderBalanceError()}
       <TokenValueInput
@@ -192,14 +209,15 @@ const SendInputBody = ({
         placeholder={messages.addressPlaceholder}
         value={destinationAddress}
         isNumeric={false}
-        onChange={setDestinationAddress}
+        onChange={onChangeAddress}
       />
       {renderAddressError()}
       <Button
         className={styles.sendBtn}
         text={messages.sendAudio}
+        textClassName={styles.sendBtnText}
         onClick={onClickSend}
-        type={ButtonType.PRIMARY_ALT}
+        type={hasError ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
       />
     </ModalBodyWrapper>
   )

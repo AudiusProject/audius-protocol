@@ -10,6 +10,7 @@ import Input from 'components/data-entry/Input'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import StatusMessage from 'components/general/StatusMessage'
+import PreloadImage from 'components/preload-image/PreloadImage'
 
 const messages = {
   title: 'Sign Up For Audius',
@@ -82,10 +83,10 @@ export class EmailPage extends Component {
           [styles.isMobile]: isMobile
         })}
       >
-        <img
+        <PreloadImage
           src={audiusLogoColored}
-          className={styles.logo}
           alt='Audius Colored Logo'
+          className={styles.logo}
         />
         <div className={cn(styles.title)}>{messages.title}</div>
         <div className={cn(styles.header)}>

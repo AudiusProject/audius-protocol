@@ -13,7 +13,7 @@
 /* Wallet Tile */
 .walletTile {
   background-color: var(--white);
-  padding-top: 36px;
+  padding: 36px 12px 0;
 }
 
 .balanceAmount {
@@ -33,8 +33,14 @@
   margin-bottom: 20px;
 }
 
-.receiveBtn {
-  margin-right: 24px;
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.buttons > * {
+  margin: 2px 12px;
 }
 
 .balanceBtn {
@@ -126,6 +132,7 @@
   min-height: 520px;
   background-color: var(--white);
   display: inline-flex;
+  flex-wrap: wrap;
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
@@ -138,7 +145,6 @@
   flex: 0 0 362px;
   width: 362px;
   position: relative;
-  margin-right: 29px;
 }
 
 .platformTokenImage {
@@ -154,8 +160,14 @@
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 32px 72px 0px 0px;
+  padding: 32px 72px 0px 32px;
   margin-bottom: 74px;
+}
+
+@media screen and (max-width: 1024px) {
+  .whatIsAudioContainer {
+    padding-right: 32px;
+  }
 }
 
 .whatIsAudio {

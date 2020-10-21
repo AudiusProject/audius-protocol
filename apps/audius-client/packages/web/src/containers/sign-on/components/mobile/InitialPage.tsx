@@ -17,6 +17,7 @@ import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
 import signupCtaImage from 'assets/img/signUpCTA.png'
 import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
 import styles from './InitialPage.module.css'
+import PreloadImage from 'components/preload-image/PreloadImage'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -119,7 +120,7 @@ const SignUpEmail = ({
 
   return (
     <div className={styles.topContainer}>
-      <img
+      <PreloadImage
         src={audiusLogoHorizontal}
         className={styles.logo}
         alt='Audius Colored Logo'
@@ -210,7 +211,7 @@ const SignIn = ({
 
   return (
     <div className={styles.topContainer}>
-      <img
+      <PreloadImage
         src={audiusLogoHorizontal}
         className={styles.logo}
         alt='Audius Colored Logo'

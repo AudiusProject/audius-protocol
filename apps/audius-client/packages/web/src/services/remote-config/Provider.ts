@@ -27,10 +27,8 @@ const state = {
   userId: ANONYMOUS_USER_ID
 }
 
-// Don't spam with logs on prod
-if (process.env.NODE_ENV === 'production') {
-  optimizely.setLogLevel('warn')
-}
+// Don't spam logs. Comment out this line for info logs.
+optimizely.setLogLevel('warn')
 
 // Optimizely provider, set in `init`
 let provider: optimizely.Client | undefined

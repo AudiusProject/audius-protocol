@@ -11,6 +11,7 @@ import { Spring } from 'react-spring/renderprops'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 
 import StatusMessage from 'components/general/StatusMessage'
+import PreloadImage from 'components/preload-image/PreloadImage'
 
 const messages = {
   title: 'Sign Into Your Audius Account',
@@ -72,7 +73,7 @@ export class SignIn extends PureComponent {
           [styles.metaMask]: hasMetaMask
         })}
       >
-        <img
+        <PreloadImage
           src={audiusLogoColored}
           className={styles.logo}
           alt='Audius Colored Logo'
