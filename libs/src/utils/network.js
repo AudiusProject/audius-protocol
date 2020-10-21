@@ -50,15 +50,16 @@ async function raceRequests (
   const CancelToken = axios.CancelToken
 
   const sources = []
+  let hasFinished = false
   const requests = urls.map(async (url, i) => {
     const source = CancelToken.source()
     sources.push(source)
 
     // Slightly offset requests by their order, so:
-    // 1. We try public gateways first
+    // 1. We try creator node gateways first
     // 2. We give requests the opportunity to get canceled if other's are very fast
     await Utils.wait(timeBetweenRequests * i)
-
+    if (hasFinished) return
     return new Promise((resolve, reject) => {
       axios({
         method: 'get',
@@ -69,6 +70,7 @@ async function raceRequests (
         .then(response => {
           const isValid = validationCheck(response)
           if (isValid) {
+            hasFinished = true
             resolve({
               blob: response,
               url
