@@ -26,14 +26,16 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   }
 
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
-    if (!this.isDebug && !Utils.isFQDN(endpoint)) {
+    const sanitizedEndpoint = endpoint.replace(/\/$/, '')
+
+    if (!this.isDebug && !Utils.isFQDN(sanitizedEndpoint)) {
       throw new Error('Not a fully qualified domain name!')
     }
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }
 
-    const requestUrl = urlJoin(endpoint, 'health_check')
+    const requestUrl = urlJoin(sanitizedEndpoint, 'health_check')
     const axiosRequestObj = {
       url: requestUrl,
       method: 'get',
@@ -61,7 +63,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     // Register and stake
     const method = await this.getMethod('register',
       Utils.utf8ToHex(serviceType),
-      endpoint,
+      sanitizedEndpoint,
       amount,
       delegateOwnerWallet)
     const tx = await this.web3Manager.sendTransaction(method, 1000000)
@@ -278,7 +280,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     const info = await method.call()
     return {
       owner: info.owner,
-      endpoint: info.endpoint,
+      endpoint: info.endpoint.replace(/\/$/, ''),
       spID: parseInt(serviceId),
       type: serviceType,
       blockNumber: parseInt(info.blockNumber),
