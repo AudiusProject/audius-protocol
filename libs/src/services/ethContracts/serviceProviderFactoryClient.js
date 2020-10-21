@@ -278,7 +278,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     const info = await method.call()
     return {
       owner: info.owner,
-      endpoint: info.endpoint,
+      endpoint: info.endpoint.replace(/\/$/, ''),
       spID: parseInt(serviceId),
       type: serviceType,
       blockNumber: parseInt(info.blockNumber),
