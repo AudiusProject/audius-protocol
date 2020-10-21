@@ -7,6 +7,7 @@ import cn from 'classnames'
 import { getAccountUser } from 'store/account/selectors'
 import {
   confirmSend,
+  getDiscordCode,
   getModalState,
   getModalVisible,
   getSendData,
@@ -34,6 +35,10 @@ import SendInputSuccess from './components/SendInputSuccess'
 import ErrorBody from './components/ErrorBody'
 import styles from './WalletModal.module.css'
 import SendingModalBody from './components/SendingModalBody'
+import DiscordModalBody from './components/DiscordModalBody'
+import { IconDiscord } from '@audius/stems'
+
+const DISCORD_URL = 'https://discord.com/invite/kZkT9ZK'
 
 const messages = {
   claimingTitle: "Hold Tight, We're Claiming Your $AUDIO!",
@@ -44,7 +49,8 @@ const messages = {
   confirmSend: 'Send $AUDIO',
   sending: 'Your $AUDIO is Sending',
   sent: 'Your $AUDIO Has Been Sent',
-  sendError: 'Uh oh! Something went wrong sending your $AUDIO.'
+  sendError: 'Uh oh! Something went wrong sending your $AUDIO.',
+  discord: 'Launch the VIP Discord'
 }
 
 const TitleWrapper = ({
@@ -93,7 +99,12 @@ const titlesMap = {
       </TitleWrapper>
     ),
     ERROR: messages.sendError
-  }
+  },
+  DISCORD: (
+    <TitleWrapper label={messages.discord}>
+      <IconDiscord />
+    </TitleWrapper>
+  )
 }
 
 const getTitle = (state: ModalState) => {
@@ -105,6 +116,8 @@ const getTitle = (state: ModalState) => {
       return titlesMap.RECEIVE[state.flowState.stage]
     case 'SEND':
       return titlesMap.SEND[state.flowState.stage]
+    case 'DISCORD_CODE':
+      return titlesMap.DISCORD
   }
 }
 
@@ -134,13 +147,15 @@ type ModalContentProps = {
   onInputSendData: (amount: BNWei, wallet: WalletAddress) => void
   onConfirmSend: () => void
   onClose: () => void
+  onLaunchDiscord: () => void
 }
 
 const ModalContent = ({
   modalState,
   onInputSendData,
   onConfirmSend,
-  onClose
+  onClose,
+  onLaunchDiscord
 }: ModalContentProps) => {
   const balance: BNWei =
     useSelector(getAccountBalance) ?? stringWeiToBN('0' as StringWei)
@@ -148,6 +163,7 @@ const ModalContent = ({
   const claimableBalance: BNWei =
     useSelector(getClaimableBalance) ?? stringWeiToBN('0' as StringWei)
   const amountPendingTransfer = useSelector(getSendData)
+  const discordCode = useSelector(getDiscordCode)
 
   if (!modalState || !account) return null
 
@@ -226,6 +242,16 @@ const ModalContent = ({
           ret = <ErrorBody error={sendStage.error} onClose={onClose} />
           break
       }
+      break
+    }
+    case 'DISCORD_CODE': {
+      ret = (
+        <DiscordModalBody
+          discordCode={discordCode}
+          onClickLaunch={onLaunchDiscord}
+        />
+      )
+      break
     }
   }
   return ret
@@ -256,6 +282,11 @@ const WalletModal = () => {
   const onConfirmSend = () => {
     dispatch(confirmSend())
   }
+
+  const onLaunchDiscord = () => {
+    window.open(DISCORD_URL, '_blank')
+  }
+
   const allowDismiss = shouldAllowDismiss(modalState)
 
   return (
@@ -275,6 +306,7 @@ const WalletModal = () => {
           onInputSendData={onInputSendData}
           onConfirmSend={onConfirmSend}
           onClose={onClose}
+          onLaunchDiscord={onLaunchDiscord}
         />
       </div>
     </AudiusModal>

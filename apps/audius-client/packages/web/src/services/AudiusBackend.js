@@ -2448,6 +2448,11 @@ class AudiusBackend {
     )
     return receipt
   }
+
+  static async getSignature(data) {
+    await waitForLibsInit()
+    return audiusLibs.web3Manager.sign(data)
+  }
 }
 
 export default AudiusBackend

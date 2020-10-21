@@ -7,16 +7,25 @@ type PurpleBoxProps = {
   text: ReactNode
   className?: string
   onClick?: () => void
+  isCompact?: boolean
 }
 
-const PurpleBox = ({ label, text, className, onClick }: PurpleBoxProps) => {
+const PurpleBox = ({
+  label,
+  text,
+  className,
+  onClick,
+  isCompact = false
+}: PurpleBoxProps) => {
   return (
     <div
       className={cn(styles.container, { [className!]: !!className })}
       onClick={onClick}
     >
       <div className={styles.label}>{label}</div>
-      <div className={styles.text}>{text}</div>
+      <div className={cn(styles.text, { [styles.compact]: isCompact })}>
+        {text}
+      </div>
     </div>
   )
 }

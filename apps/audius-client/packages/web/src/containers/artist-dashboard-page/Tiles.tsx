@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import styles from './Tiles.module.css'
 import cn from 'classnames'
 import { useSelector } from 'utils/reducer'
@@ -21,12 +21,11 @@ import featureChartLevel0 from 'assets/img/featureChartLevel0@2x.png'
 import featureChartLevel1 from 'assets/img/featureChartLevel1@2x.png'
 import {
   pressClaim,
+  pressDiscord,
   pressReceive,
   pressSend
 } from 'store/token-dashboard/slice'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
-
-const DISCORD_URL = 'https://discord.com/invite/kZkT9ZK'
 
 const messages = {
   claimCTA: 'CLAIM $AUDIO',
@@ -147,9 +146,9 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
   const hasAudio = balance && !balance.isZero()
   const featureChart = hasAudio ? featureChartLevel1 : featureChartLevel0
   const disabled = { [styles.disabled]: !hasAudio }
-  const onClickVipDiscord = useCallback(() => {
-    window.open(DISCORD_URL, '_blank')
-  }, [])
+  const dispatch = useDispatch()
+  const onClickDiscord = () => dispatch(pressDiscord())
+
   return (
     <Tile className={cn([styles.explainerTile, className])}>
       <>
@@ -185,7 +184,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
                 isDisabled={!hasAudio}
                 includeHoverAnimations={hasAudio}
                 textClassName={styles.vipTextClassName}
-                onClick={onClickVipDiscord}
+                onClick={onClickDiscord}
                 leftIcon={<IconDiscord className={styles.iconDiscord} />}
                 type={ButtonType.GLASS}
               />
