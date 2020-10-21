@@ -114,7 +114,7 @@ export const WalletTile = ({ className }: { className?: string }) => {
           <div className={styles.balanceAmount}>{formatWei(balance, true)}</div>
         </TokenHoverTooltip>
         <div className={styles.balanceLabel}>{messages.balance}</div>
-        <div>
+        <div className={styles.buttons}>
           <Button
             className={cn(styles.balanceBtn, styles.receiveBtn)}
             text={messages.receiveLabel}

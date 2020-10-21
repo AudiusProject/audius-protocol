@@ -31,7 +31,6 @@
 
 .input {
   background: var(--neutral-light-9);
-  font-family: Avenir Next LT Pro;
   font-style: normal;
   font-weight: 500;
   font-size: 16px;
@@ -44,6 +43,10 @@
 /* Button */
 .sendBtn {
   margin: 24px;
+}
+
+.sendBtnText {
+  font-size: var(--font-s) !important;
 }
 
 .errorLabel {
