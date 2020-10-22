@@ -1,0 +1,66 @@
+.title {
+  font-family: Avenir Next LT Pro;
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  line-height: 25px;
+  color: #BEC5E0;
+  padding: 28px 32px;
+  border-bottom: 1px solid #3F415B;
+}
+
+.content {
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  align-items: center;
+  padding: 16px 32px;
+}
+
+.delgationContainer {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.delegationValue {
+  font-family: Avenir Next LT Pro;
+  font-weight: 800;
+  font-size: 48px;
+  background: -webkit-linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline;
+}
+
+.delegationLabel {
+  margin-top: 8px;
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #BEC5E0;
+}
+
+.btnContainer {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* increase and decrease btns */
+.increaseBtn {
+  margin-right: 16px;
+}
+
+.increaseIcon {
+  transform: rotate(270deg);
+  margin: 0px;
+}
+
+.decreaseIcon {
+  transform: rotate(90deg);
+  margin: 0px;
+}

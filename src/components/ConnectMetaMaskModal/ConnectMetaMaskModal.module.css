@@ -1,0 +1,21 @@
+.description {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: #BEC5E0;
+  margin: 27px auto;
+}
+
+.btnContainer {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.okayBtn {
+  margin-right: 8px
+}
+
+.openMetaMaskBtn {
+  margin-left: 8px
+}

@@ -1,0 +1,58 @@
+.rowContainer {
+  display: inline-flex;
+  height: 80px;
+  align-items: center;
+  width: 100%;
+}
+
+.colAddresses {
+  flex: 1;
+}
+
+.rowCol {
+  font-family: var(--font-family);
+  
+  font-weight: var(--font-regular);
+  font-size: var(--font-m);
+  
+  color: #BEC5E0;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+}
+
+.user .image {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-right: 25px;
+  overflow: hidden;
+}
+
+.user .image img {
+  width: 100%;
+  height: 100%;
+}
+
+.modalTable {
+  width: 100%;
+  box-shadow: none;
+}
+
+.modalWrapper .modal {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.modalTitleWrapper {
+  width: 100%;
+}
+
+.modalTitle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

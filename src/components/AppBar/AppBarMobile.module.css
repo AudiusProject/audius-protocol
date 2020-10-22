@@ -1,0 +1,28 @@
+.left {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.logo {
+  width: 145px;
+  height: 38px;
+  margin-bottom: 16px;
+}
+
+.logo path {
+  fill: var(--static-white);
+}
+
+.name {
+  flex-wrap: wrap;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: var(--font-s);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--static-white);
+  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>iconAllServices</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Guide" transform="translate(-380.000000, -759.000000)">
+            <g id="iconAllServices" transform="translate(380.000000, 759.000000)">
+                <g>
+                    <rect id="bound" x="0" y="0" width="32" height="32"></rect>
+                    <g id="paths" transform="translate(2.000000, 3.000000)">
+                        <rect id="Rectangle" fill="#C9D3FB" transform="translate(9.000000, 13.000000) rotate(24.000000) translate(-9.000000, -13.000000) " x="8" y="10" width="2" height="6" rx="1"></rect>
+                        <rect id="Rectangle" fill="#C9D3FB" transform="translate(14.000000, 23.000000) rotate(90.000000) translate(-14.000000, -23.000000) " x="13" y="20" width="2" height="6" rx="1"></rect>
+                        <rect id="Rectangle" fill="#C9D3FB" transform="translate(19.000000, 13.000000) scale(-1, 1) rotate(24.000000) translate(-19.000000, -13.000000) " x="18" y="10" width="2" height="6" rx="1"></rect>
+                        <path d="M5,24 C6.1045695,24 7,23.1045695 7,22 C7,20.8954305 6.1045695,20 5,20 C3.8954305,20 3,20.8954305 3,22 C3,23.1045695 3.8954305,24 5,24 Z M5,27 C2.23857625,27 0,24.7614237 0,22 C0,19.2385763 2.23857625,17 5,17 C7.76142375,17 10,19.2385763 10,22 C10,24.7614237 7.76142375,27 5,27 Z" id="Oval-7-Copy" fill="#A9B6F2"></path>
+                        <path d="M23,24 C24.1045695,24 25,23.1045695 25,22 C25,20.8954305 24.1045695,20 23,20 C21.8954305,20 21,20.8954305 21,22 C21,23.1045695 21.8954305,24 23,24 Z M23,27 C20.2385763,27 18,24.7614237 18,22 C18,19.2385763 20.2385763,17 23,17 C25.7614237,17 28,19.2385763 28,22 C28,24.7614237 25.7614237,27 23,27 Z" id="Oval-7-Copy" fill="#A9B6F2"></path>
+                        <path d="M14,7 C15.1045695,7 16,6.1045695 16,5 C16,3.8954305 15.1045695,3 14,3 C12.8954305,3 12,3.8954305 12,5 C12,6.1045695 12.8954305,7 14,7 Z M14,10 C11.2385763,10 9,7.76142375 9,5 C9,2.23857625 11.2385763,0 14,0 C16.7614237,0 19,2.23857625 19,5 C19,7.76142375 16.7614237,10 14,10 Z" id="Oval-7-Copy" fill="#A9B6F2"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

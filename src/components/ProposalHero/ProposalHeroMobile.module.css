@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.user {
+  padding: 16px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid var(--neutral-light-8);
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.user .image {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-right: 25px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.user .image img {
+  width: 100%;
+  height: 100%;
+}
+
+.description {
+  margin: 16px 0 0;
+  font-weight: 500;
+  font-size: var(--font-xl);
+  line-height: 26px;
+}
+
+.info {
+  display: flex;
+  margin: 16px 0;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+}
+
+.voteCTA {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--neutral-light-8);
+}

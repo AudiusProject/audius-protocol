@@ -1,0 +1,38 @@
+.container {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.btnContainer {
+  margin: 0px 12px;
+}
+
+.btnContainer .navButton {
+  padding: 8px 24px;
+  border: 2px solid var(--static-white);
+  border-radius: 82px;
+}
+
+.btnContainer .navButton:not(.active):hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2) !important;
+}
+
+.btnContainer .navButton:not(.active):hover .navButtonText{
+  color: #6516A3 !important;
+}
+
+.navButton .navButtonText {
+  color: var(--static-white) !important;
+}
+
+.btnContainer .navButton.active:hover,
+.btnContainer .navButton.active {
+  background-color: var(--static-white);
+}
+
+.btnContainer  .navButton.active .navButtonText {
+  color: #6516A3 !important;
+}

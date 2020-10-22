@@ -1,0 +1,70 @@
+.container {}
+
+.wrapperClassName {
+  background-color: rgba(0,0,0,0.4);
+}
+
+.content {
+  padding-top: 24px;
+  max-width: 576px;
+  width: 576px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.slider {
+  margin-bottom: 24px;
+}
+
+.stakingFieldsContainer {
+  width: 100%;
+  display: inline-flex;
+}
+
+.input {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.invalid input {
+  color: #F15064;
+}
+
+.stakingChange {
+  margin-left: 16px;
+  margin-bottom: 24px;
+  flex: 1;
+  padding-top: 26px;
+}
+
+.stakingRow {
+  display: inline-flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.stakingLabel,
+.stakingValue {
+  font-family: var(--font-family);
+  font-weight: 500;
+  font-size: var(--font-m);
+  line-height: 24px;
+  text-align: right;
+  color: #BEC5E0;
+}
+
+.stakingLabel {
+  text-align: left;
+  min-width: 120px;
+}
+
+.stakingValue {
+  overflow-wrap: anywhere;
+  white-space: normal;
+  padding-left: 8px
+}
+
+.changeValue {
+  font-weight: var(--font-bold);
+}

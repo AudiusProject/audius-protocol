@@ -1,0 +1,78 @@
+.content {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.description {
+  margin: 24px auto;
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  text-align: center;
+  color: #F15064;
+}
+
+.warning {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #BEC5E0;
+  margin-bottom: 24px;
+}
+
+.btnContainer {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input {
+  width: 480px;
+}
+
+.deregister {
+  margin-right: 8px;
+}
+
+.cancel {
+  margin-left: 8px;
+}
+
+.deregisterConfirm {
+  margin: 24px auto;
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  /* identical to box height */
+
+  text-align: center;
+
+  /* Neutral [night] */
+
+  color: #BEC5E0;
+}
+
+.confirmTitle {
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  text-align: center;
+  color: #BEC5E0;
+  margin-bottom: 4px;
+}
+
+.confirmEndpoint {
+  font-family: Avenir Next LT Pro;
+  font-weight: 500;
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-align: center;
+  color: #BEC5E0;
+}

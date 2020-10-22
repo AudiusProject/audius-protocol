@@ -1,0 +1,11 @@
+.votes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 16px;
+}
+
+.votes > * {
+  margin-bottom: 16px;
+  width: 100%;
+}

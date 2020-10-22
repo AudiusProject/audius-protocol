@@ -1,0 +1,56 @@
+import React from 'react'
+import clsx from 'clsx'
+import SimpleBar from 'simplebar-react'
+
+import styles from './TimelineModal.module.css'
+import Modal from 'components/Modal'
+import TimelineEvent from './TimelineEvent'
+import { ProposalEvent, VoteEvent, Event } from 'types'
+
+type TimelineEvent = ProposalEvent | VoteEvent | Event
+
+const messages = {
+  title: 'Timeline'
+}
+
+type OwnProps = {
+  className?: string
+  isOpen: boolean
+  onClose: () => void
+  events: Array<TimelineEvent>
+}
+
+type TimelineModalProps = OwnProps
+
+const TimelineModal: React.FC<TimelineModalProps> = ({
+  className,
+  isOpen,
+  onClose,
+  events
+}: TimelineModalProps) => {
+  return (
+    <Modal
+      isCloseable
+      dismissOnClickOutside
+      wrapperClassName={styles.timelineWrapper}
+      headerClassName={styles.headerClassName}
+      className={clsx(styles.timelineContainer, { [className!]: !!className })}
+      isOpen={isOpen}
+      onClose={onClose}
+      title={messages.title}
+    >
+      <SimpleBar className={styles.scrollable}>
+        {events.map((event, i) => (
+          <TimelineEvent
+            onClick={onClose}
+            className={styles.modalEvent}
+            key={i}
+            event={event}
+          />
+        ))}
+      </SimpleBar>
+    </Modal>
+  )
+}
+
+export default TimelineModal

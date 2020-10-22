@@ -1,0 +1,240 @@
+import React, { useState, useCallback, useEffect } from 'react'
+import { Utils } from '@audius/libs'
+import clsx from 'clsx'
+import { ButtonType } from '@audius/stems'
+
+import { useUpdateStake } from 'store/actions/updateStake'
+import { useAccountUser } from 'store/account/hooks'
+import AudiusClient from 'services/Audius'
+import Modal from 'components/Modal'
+import Button from 'components/Button'
+import ValueSlider from 'components/ValueSlider'
+import TextField from 'components/TextField'
+import styles from './UpdateStakeModal.module.css'
+import { Status, Operator } from 'types'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import ConfirmTransactionModal, {
+  OldStake,
+  NewStake
+} from 'components/ConfirmTransactionModal'
+import { TICKER } from 'utils/consts'
+import Tooltip, { Position } from 'components/Tooltip'
+import { formatWei } from 'utils/format'
+
+const messages = {
+  increaseTitle: 'Increase Stake',
+  increaseBtn: 'Increase Stake',
+  decreaseTitle: 'Decrease Stake',
+  decreaseBtn: 'Decrease Stake',
+  currentStake: 'Current Stake',
+  change: 'Change',
+  newStakingAmount: 'New Staking Amount',
+  stakingLabel: TICKER,
+  oldStakeTitle: `Old Stake ${TICKER}`,
+  newStakeTitle: `New Stake ${TICKER}`
+}
+
+type OwnProps = {
+  isOpen: boolean
+  isIncrease: boolean
+  onClose: () => void
+}
+
+type IncreaseStakeModalProps = OwnProps
+
+const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
+  isOpen,
+  isIncrease,
+  onClose
+}: IncreaseStakeModalProps) => {
+  const { status: userStatus, user: accountUser } = useAccountUser()
+  if (userStatus === Status.Success && !('serviceProvider' in accountUser)) {
+    // This should have never been opened b/c the user is not a service provider
+    onClose()
+  }
+
+  const [stakingBN, setStakingBN] = useState(Utils.toBN('0'))
+  const [stakingAmount, setStakingAmount] = useState('0')
+  const [hasRun, setHasRun] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) {
+      setHasRun(false)
+    }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (
+      userStatus === Status.Success &&
+      'serviceProvider' in accountUser &&
+      !hasRun
+    ) {
+      setHasRun(true)
+      const deployerStake = (accountUser as Operator).serviceProvider
+        .deployerStake
+      setStakingBN(deployerStake)
+      setStakingAmount(AudiusClient.getAud(deployerStake).toString())
+    }
+  }, [
+    userStatus,
+    accountUser,
+    setStakingAmount,
+    setStakingBN,
+    hasRun,
+    setHasRun
+  ])
+
+  const onUpdateStaking = useCallback(
+    (value: string) => {
+      setStakingAmount(value)
+      if (checkWeiNumber(value)) {
+        setStakingBN(parseWeiNumber(value))
+      }
+    },
+    [setStakingAmount, setStakingBN]
+  )
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const onCloseConfirm = useCallback(() => setIsConfirmModalOpen(false), [])
+
+  const onSubmit = useCallback(() => {
+    // TODO: validate each field
+    setIsConfirmModalOpen(true)
+  }, [setIsConfirmModalOpen])
+
+  const { status, updateStake, error } = useUpdateStake(
+    isIncrease,
+    !isConfirmModalOpen
+  )
+
+  const onConfirm = useCallback(() => {
+    const deployerStake = (accountUser as Operator).serviceProvider
+      .deployerStake
+
+    if (isIncrease) {
+      updateStake(stakingBN.sub(deployerStake))
+    } else {
+      updateStake(deployerStake.sub(stakingBN))
+    }
+  }, [isIncrease, updateStake, accountUser, stakingBN])
+
+  // Close All modals on success status
+  useEffect(() => {
+    if (status === Status.Success) {
+      onCloseConfirm()
+      onClose()
+    }
+  }, [status, onClose, onCloseConfirm])
+
+  const oldStakeAmount =
+    (accountUser as Operator)?.serviceProvider?.deployerStake ?? null
+  const stakeDiff = oldStakeAmount
+    ? isIncrease
+      ? stakingBN.sub(oldStakeAmount)
+      : oldStakeAmount.sub(stakingBN)
+    : null
+
+  const topBox = (
+    <OldStake
+      title={messages.oldStakeTitle}
+      stakeDiff={stakeDiff}
+      isIncrease={isIncrease}
+      oldStakeAmount={oldStakeAmount}
+    />
+  )
+  const bottomBox = (
+    <NewStake title={messages.newStakeTitle} stakeAmount={stakingBN} />
+  )
+  const deployerStake =
+    (accountUser as Operator)?.serviceProvider?.deployerStake ?? Utils.toBN('0')
+  const totalStakedFor =
+    (accountUser as Operator)?.totalStakedFor ?? Utils.toBN('0')
+
+  const stakeChange = stakingBN.sub(deployerStake)
+  const min = isIncrease
+    ? deployerStake
+    : (accountUser as Operator)?.serviceProvider?.minAccountStake
+  const max = isIncrease
+    ? (accountUser as Operator)?.serviceProvider?.maxAccountStake
+        .sub(totalStakedFor)
+        .add(deployerStake)
+    : deployerStake
+
+  return (
+    <Modal
+      title={isIncrease ? messages.increaseTitle : messages.decreaseTitle}
+      className={styles.container}
+      wrapperClassName={styles.wrapperClassName}
+      isOpen={isOpen}
+      onClose={onClose}
+      isCloseable={true}
+      dismissOnClickOutside={!isConfirmModalOpen}
+    >
+      <div className={styles.content}>
+        <ValueSlider
+          isIncrease={isIncrease}
+          min={min}
+          max={max}
+          value={stakingBN}
+          initialValue={deployerStake}
+          className={styles.slider}
+        />
+        <div className={styles.stakingFieldsContainer}>
+          <TextField
+            value={stakingAmount}
+            isNumeric
+            label={messages.newStakingAmount}
+            onChange={onUpdateStaking}
+            className={clsx(styles.input, {
+              [styles.invalid]:
+                min && max && (stakingBN.gt(max) || stakingBN.lt(min))
+            })}
+            rightLabel={messages.stakingLabel}
+          />
+          <div className={styles.stakingChange}>
+            <div className={styles.stakingRow}>
+              <div className={styles.stakingLabel}>Current Staking:</div>
+              <Tooltip
+                position={Position.TOP}
+                text={formatWei(deployerStake)}
+                className={styles.stakingValue}
+              >
+                {`${AudiusClient.displayShortAud(
+                  deployerStake
+                ).toString()} ${TICKER}`}
+              </Tooltip>
+            </div>
+            <div className={styles.stakingRow}>
+              <div className={styles.stakingLabel}>Change:</div>
+              <Tooltip
+                position={Position.BOTTOM}
+                text={formatWei(stakeChange)}
+                className={clsx(styles.stakingValue, styles.changeValue)}
+              >
+                {`${AudiusClient.displayShortAud(
+                  stakeChange
+                ).toString()} ${TICKER}`}
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+        <Button
+          text={isIncrease ? messages.increaseBtn : messages.decreaseBtn}
+          type={ButtonType.PRIMARY}
+          onClick={onSubmit}
+        />
+      </div>
+      <ConfirmTransactionModal
+        isOpen={isConfirmModalOpen}
+        onClose={onCloseConfirm}
+        onConfirm={onConfirm}
+        topBox={topBox}
+        bottomBox={bottomBox}
+        status={status}
+        error={error}
+      />
+    </Modal>
+  )
+}
+
+export default IncreaseStakeModal

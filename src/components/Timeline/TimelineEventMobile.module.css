@@ -1,0 +1,12 @@
+.container {
+  width: 100%;
+  border-top: 1px solid #3F415B;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  color: var(--neutral);
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+}

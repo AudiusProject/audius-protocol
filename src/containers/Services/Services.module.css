@@ -1,0 +1,23 @@
+.topAddressesTable {
+  margin-top: 16px;
+}
+
+.serviceContainer {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.serviceTable {
+  width: 100%;
+  flex: 1;
+}
+
+.rightSpacing {
+  margin-right: 8px;
+}
+
+.leftSpacing {
+  margin-left: 8px;
+}

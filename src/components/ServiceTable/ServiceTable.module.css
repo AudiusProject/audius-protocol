@@ -1,0 +1,24 @@
+.rowContainer {
+  display: inline-flex;
+  height: 48px;
+  align-items: center;
+  width: 100%;
+}
+
+.colEndpoint {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.rowCol {
+  font-family: var(--font-family);
+  
+  font-weight: var(--font-regular);
+  font-size: var(--font-m);
+  
+  color: #BEC5E0;
+}
