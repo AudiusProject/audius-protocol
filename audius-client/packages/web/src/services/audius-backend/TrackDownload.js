@@ -44,6 +44,7 @@ class TrackDownload {
   }
 
   static async checkIfDownloadAvailable(trackId, creatorNodeEndpoints) {
+    await waitForLibsInit()
     let cid
     while (!cid) {
       try {
