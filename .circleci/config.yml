@@ -100,7 +100,9 @@ jobs:
           at: ./
       - run:
           name: Deploy to S3
-          command: aws s3 sync build s3://dashboard.audius.org --delete --cache-control max-age=0
+          command: |
+            aws s3 sync build s3://dashboard.audius.org --delete --cache-control max-age=604800
+            aws s3 cp s3://dashboard.audius.org/index.html s3://dashboard.audius.org/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
 
 workflows:
   version: 2
@@ -116,7 +118,7 @@ workflows:
             - build-staging
           filters:
             branches:
-              only: /^master$/
+              only: /^main$/
       - build-prod:
           requires:
             - init
@@ -126,12 +128,12 @@ workflows:
             - build-prod
           filters:
             branches:
-              only: /^master$/
+              only: /^main$/
       - deploy-prod:
           context: Audius Client
           requires:
             - hold-deploy-prod
           filters:
             branches:
-              only: /^master$/
+              only: /^main$/
 
