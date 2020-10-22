@@ -49,19 +49,6 @@ const DISCOVERY_PROVIDER_FALLBACKS = process.env
   .REACT_APP_DISCOVERY_PROVIDER_FALLBACKS
   ? new Set(process.env.REACT_APP_DISCOVERY_PROVIDER_FALLBACKS.split(','))
   : null
-let CREATOR_NODE_FALLBACKS = process.env.REACT_APP_CREATOR_NODE_FALLBACKS
-  ? new Set(process.env.REACT_APP_CREATOR_NODE_FALLBACKS.split(','))
-  : null
-let CREATOR_NODE_GATEWAY_WHITELIST = process.env
-  .REACT_APP_CREATOR_NODE_FALLBACKS
-  ? new Set(
-      process.env.REACT_APP_CREATOR_NODE_FALLBACKS.split(',').map(
-        node => `${node}/ipfs/`
-      )
-    )
-  : null
-const S3_SERVICE_PROVIDER_OVERRIDE_URL =
-  process.env.REACT_APP_S3_SERVICE_PROVIDER_OVERRIDE_URL
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const AUDIUS_ORIGIN = `${process.env.REACT_APP_PUBLIC_PROTOCOL}//${process.env.REACT_APP_PUBLIC_HOSTNAME}`
@@ -186,22 +173,12 @@ const processSearchResults = async ({
 
 export const fetchCID = async (cid, creatorNodeGateways = [], cache = true) => {
   await waitForLibsInit()
-  let allGateways
-  if (creatorNodeGateways.length === 0) {
-    allGateways = [...CREATOR_NODE_GATEWAY_WHITELIST]
-  } else {
-    allGateways = creatorNodeGateways
-  }
-  if (CREATOR_NODE_GATEWAY_WHITELIST) {
-    allGateways = allGateways.filter(gateway =>
-      CREATOR_NODE_GATEWAY_WHITELIST.has(gateway)
-    )
-  }
-  if (CIDCache.has(cid)) {
-    return CIDCache.get(cid)
-  }
   try {
-    const image = await audiusLibs.File.fetchCID(cid, allGateways, () => {})
+    const image = await audiusLibs.File.fetchCID(
+      cid,
+      creatorNodeGateways,
+      () => {}
+    )
     const url = URL.createObjectURL(image.data)
     if (cache) CIDCache.add(cid, url)
     return url
@@ -257,32 +234,29 @@ const preloadImage = async url => {
 }
 
 const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
-  let allGateways = []
-  const primary = creatorNodeGateways[0]
-  if (primary) {
-    const rest = new Set(CREATOR_NODE_GATEWAY_WHITELIST)
-    rest.delete(primary)
-    allGateways = [primary, ...rest]
-  } else {
-    allGateways = [...CREATOR_NODE_GATEWAY_WHITELIST]
-  }
-
   if (CIDCache.has(cid)) {
     return CIDCache.get(cid)
   }
 
-  // Attempt to fetch/load the image using the first creator node gateway
-  const firstImageUrl = `${allGateways[0]}${cid}`
-  const preloadedImageUrl = await preloadImage(firstImageUrl)
+  const primary = creatorNodeGateways[0]
+  if (primary) {
+    // Attempt to fetch/load the image using the first creator node gateway
+    const firstImageUrl = `${primary}${cid}`
+    const preloadedImageUrl = await preloadImage(firstImageUrl)
 
-  // If the image is loaded, add to cache and return
-  if (preloadedImageUrl && cache) CIDCache.add(cid, preloadedImageUrl)
-  if (preloadedImageUrl) return preloadedImageUrl
+    // If the image is loaded, add to cache and return
+    if (preloadedImageUrl && cache) CIDCache.add(cid, preloadedImageUrl)
+    if (preloadedImageUrl) return preloadedImageUrl
+  }
 
   await waitForLibsInit()
   // Else, race fetching of the image from all gateways & return the image url blob
   try {
-    const image = await audiusLibs.File.fetchCID(cid, allGateways, () => {})
+    const image = await audiusLibs.File.fetchCID(
+      cid,
+      creatorNodeGateways,
+      () => {}
+    )
     const url = URL.createObjectURL(image.data)
     if (cache) CIDCache.add(cid, url)
     return url
@@ -411,33 +385,6 @@ class AudiusBackend {
     Utils = libsUtils
     SanityChecks = libsSanityChecks
 
-    // get SP overrides from S3
-    let resp
-    if (S3_SERVICE_PROVIDER_OVERRIDE_URL) {
-      try {
-        resp = await Promise.race([
-          // this fetch returns a promise
-          (await fetch(S3_SERVICE_PROVIDER_OVERRIDE_URL)).json(),
-          Utils.wait(1000)
-        ])
-      } catch (e) {
-        // do nothing here
-      }
-    }
-
-    // apply overrides to default whitelist values
-    if (resp && resp.data) {
-      const { creatorNodeWhitelist } = resp.data
-
-      // these whitelists are already defined, just override with values from s3
-      CREATOR_NODE_FALLBACKS = creatorNodeWhitelist
-        ? new Set(creatorNodeWhitelist.split(','))
-        : null
-      CREATOR_NODE_GATEWAY_WHITELIST = creatorNodeWhitelist
-        ? new Set(creatorNodeWhitelist.split(',').map(node => `${node}/ipfs/`))
-        : null
-    }
-
     // initialize libs
     let libsError = null
     const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
@@ -465,7 +412,7 @@ class AudiusBackend {
       window.dispatchEvent(event)
 
       const sanityChecks = new SanityChecks(audiusLibs)
-      sanityChecks.run(CREATOR_NODE_FALLBACKS)
+      sanityChecks.run()
     } catch (err) {
       libsError = err.message
     }
@@ -564,15 +511,12 @@ class AudiusBackend {
 
   static async autoSelectCreatorNodes() {
     return audiusLibs.ServiceProvider.autoSelectCreatorNodes(
-      /* numberOfNodes */ 3,
-      CREATOR_NODE_FALLBACKS
+      /* numberOfNodes */ 3
     )
   }
 
   static async getSelectableCreatorNodes() {
-    return audiusLibs.ServiceProvider.getSelectableCreatorNodes(
-      CREATOR_NODE_FALLBACKS
-    )
+    return audiusLibs.ServiceProvider.getSelectableCreatorNodes()
   }
 
   static async getAccount(fromSource = false) {
