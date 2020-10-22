@@ -4,7 +4,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS]: 5000,
   [IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE]: 20,
   [IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS]: null,
-  [IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS]: 5000
+  [IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS]: 5000,
+  [IntKeys.NOTIFICATION_POLLING_FREQ_MS]: 60 * 1000
 }
 
 export const remoteConfigStringDefaults: {

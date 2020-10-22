@@ -19,7 +19,12 @@ export enum IntKeys {
   /**
    * Frequency (in ms) to poll for user wallet balance on the client dashboard page
    */
-  DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS = 'DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS'
+  DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS = 'DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS',
+
+  /**
+   * Frequency (in ms) to poll for notifications from identity service.
+   */
+  NOTIFICATION_POLLING_FREQ_MS = 'NOTIFICATION_POLLING_FREQ_MS'
 }
 
 export enum BooleanKeys {
