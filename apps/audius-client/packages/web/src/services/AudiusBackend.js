@@ -388,9 +388,13 @@ class AudiusBackend {
 
   static async setup() {
     // Wait for web3 to load if necessary
-    if (!window.Web3) {
+    if (!window.web3Loaded) {
       await new Promise(resolve => {
-        window.addEventListener('WEB3_LOADED', resolve)
+        const onLoad = () => {
+          window.removeEventListener('WEB3_LOADED', onLoad)
+          resolve()
+        }
+        window.addEventListener('WEB3_LOADED', onLoad)
       })
     }
 
