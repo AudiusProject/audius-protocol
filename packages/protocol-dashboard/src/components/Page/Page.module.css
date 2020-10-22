@@ -1,0 +1,60 @@
+.container {
+  padding-top: 68px;
+  margin: auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.titleContainer {
+  max-width: 960px;
+  margin: 0px auto 32px;
+  user-select: none;
+}
+
+.title {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);;
+  font-size: var(--font-3xl);
+  color: var(--static-white);
+  text-transform: uppercase;
+  margin: 0px;
+  cursor: default;
+}
+
+.previousPageContainer {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.arrow {
+  height: 15px;
+  width: 15px;
+  margin-right: 12px;
+  transform: rotate(180deg);
+}
+
+.arrow path {
+  fill: var(--static-white);
+  transition: fill 0.17s ease-in-out;
+}
+
+.prevPageText {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);;
+  font-size: var(--font-xl);
+  line-height: 25px;
+  color: var(--static-white);
+  text-transform: uppercase;
+  transition: color 0.17s ease-in-out;
+}
+
+.previousPageContainer:hover path {
+  fill: var(--neutral);
+}
+
+.previousPageContainer:hover .prevPageText {
+  color: var(--neutral);
+}

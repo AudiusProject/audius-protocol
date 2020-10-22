@@ -1,0 +1,137 @@
+version: 2.1
+
+jobs:
+  init:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/node:10.13
+
+    steps:
+      - checkout
+
+      - run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc
+
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dependency-cache-
+
+      - run: npm install
+
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+
+      # Lint
+      - run:
+          name: lint
+          command: npm run lint
+
+      # Persist node modules
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - node_modules
+
+  build-staging:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build
+          command: npm run build:staging
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build
+
+
+  deploy-staging:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync build s3://dashboard.staging.audius.org --delete --cache-control max-age=0
+
+  build-prod:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build
+          command: npm run build:prod
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build
+
+
+  deploy-prod:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 sync build s3://dashboard.audius.org --delete --cache-control max-age=0
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - init
+      - build-staging:
+          requires:
+            - init
+      - deploy-staging:
+          context: Audius Client
+          requires:
+            - build-staging
+          filters:
+            branches:
+              only: /^master$/
+      - build-prod:
+          requires:
+            - init
+      - hold-deploy-prod:
+          type: approval
+          requires:
+            - build-prod
+          filters:
+            branches:
+              only: /^master$/
+      - deploy-prod:
+          context: Audius Client
+          requires:
+            - hold-deploy-prod
+          filters:
+            branches:
+              only: /^master$/
+

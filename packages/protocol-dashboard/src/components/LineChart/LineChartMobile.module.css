@@ -1,0 +1,16 @@
+.header {
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 1;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 25px;
+  color: var(--neutral);
+  margin-bottom: 24px;
+}

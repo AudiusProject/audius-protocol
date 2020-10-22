@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>iconValidationCheck</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Guide" transform="translate(-340.000000, -767.000000)">
+            <g id="iconValidationCheck" transform="translate(340.000000, 767.000000)">
+                <g>
+                    <circle id="Oval" fill="#7ED321" cx="8" cy="8" r="8"></circle>
+                    <g id="icon/check">
+                        <rect id="bound" x="0" y="0" width="16" height="16"></rect>
+                        <path d="M10.6101793,11.7625741 C10.6145671,11.838629 10.610274,11.916392 10.5964701,11.9946778 C10.5005668,12.5385721 9.98190844,12.9017407 9.43801413,12.8058374 L6.15532162,12.2270102 C5.61142732,12.1311069 5.24825881,11.6124485 5.34416205,11.0685542 C5.44006529,10.5246599 5.95872368,10.1614914 6.50261798,10.2573947 L8.63698272,10.6337407 L8.63698272,2.86494937 C8.63698272,2.31266462 9.08469797,1.86494937 9.63698272,1.86494937 C10.1892675,1.86494937 10.6369827,2.31266462 10.6369827,2.86494937 L10.6369827,11.531616 C10.6369827,11.6111096 10.6277072,11.6884367 10.6101793,11.7625741 Z" id="Combined-Shape" fill="#FCFCFC" fill-rule="evenodd" transform="translate(7.982893, 7.343073) rotate(35.000000) translate(-7.982893, -7.343073) "></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

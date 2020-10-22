@@ -1,0 +1,50 @@
+.content {
+  margin-top: 24px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btnContainer {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.input {
+  width: 480px;
+}
+
+.deregisterBtn {
+  margin-right: 8px;
+}
+
+.saveBtn {
+  margin-left: 8px;
+}
+
+.confirm {
+
+}
+
+.doubleMetaMask {
+  margin-top: 24px;
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  text-align: center;
+  color: #E8AB57;
+}
+
+.boxSpacing {
+  margin-top: 12px;
+}
+
+.subtext {
+  margin-top: 4px;
+  font-family: Avenir Next LT Pro;
+  font-weight: 500;
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-align: center;
+  color: #BEC5E0;
+}

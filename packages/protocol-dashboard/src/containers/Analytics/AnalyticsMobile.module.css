@@ -1,0 +1,23 @@
+.statBar {
+  display: flex;
+  flex-direction: column;
+}
+
+.statBar > * {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.big {
+  margin-bottom: 16px;
+}
+
+.section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.section > * {
+  margin-bottom: 16px;
+}

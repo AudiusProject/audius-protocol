@@ -1,0 +1,25 @@
+.container {
+  min-width: 720px;
+  width: 720px;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.input, .textarea {
+  width: 600px;
+}
+
+.textarea {
+  height: 144px;
+  margin-bottom: 64px;
+}
+
+.confirmation div {
+  font-weight: 500;
+}
+
+.confirmation .title {
+  font-weight: var(--font-bold);
+}

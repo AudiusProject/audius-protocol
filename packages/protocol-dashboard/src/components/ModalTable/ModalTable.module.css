@@ -1,0 +1,21 @@
+.container {
+  padding-bottom: 8px !important;
+}
+
+.modalHeader {
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  text-align: left;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #777C96;
+  margin: 20px 0px;
+  width: 100%;
+}
+
+.divider {
+  width: 130%;
+  border-top: 1px solid #3F415B;
+}

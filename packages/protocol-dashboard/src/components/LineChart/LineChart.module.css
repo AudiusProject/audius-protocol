@@ -1,0 +1,92 @@
+.chartContainer {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.chart {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading {
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 25px;
+  color: var(--neutral);
+}
+
+.tooltipContainer {	
+  z-index: 200;
+  display: inline-flex;	
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 4px;
+  background-color: var(--neutral-light-7);
+  border-radius: 3px;	
+  border: 1px solid var(--neutral-light-6);
+  position: relative;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.08);
+}
+
+.tooltipBody {	
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.tooltipDate {
+  color: var(--neutral-light-4);
+}
+
+.tooltipValue {
+  color: var(--neutral);
+}
+
+.tooltipCaret {
+  position: absolute;	
+  bottom: -6px;	
+  left: calc(50% - 6px);	
+  width: 0px;	
+  height: 0px;	
+  border-left: 6px solid transparent;	
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--neutral-light-6);
+}
+
+.tooltipCaret:before {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: calc(50% - 4px);
+  width: 0px;
+  height: 0px;
+  border-left: 4px solid transparent;	
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--neutral-light-7);
+}
+
+.tooltipLine {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 0px;
+  height: 31px;
+  border-left: 1px solid var(--neutral-light-7);	
+}

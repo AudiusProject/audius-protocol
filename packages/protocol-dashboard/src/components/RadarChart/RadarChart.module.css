@@ -1,0 +1,32 @@
+.chartContainer {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.chart {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading {
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 25px;
+  color: var(--neutral);
+}

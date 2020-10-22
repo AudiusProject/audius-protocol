@@ -1,0 +1,30 @@
+.vote {
+  display: flex;
+  align-items: center;
+}
+
+.circle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #F15064;
+  border-radius: 50%;
+}
+
+.isFor {
+  background-color: #6BCF63;
+}
+
+.icon path {
+  fill: var(--static-white);
+}
+
+.text {
+  font-weight: 500;
+  font-size: var(--font-l);
+  line-height: 22px;
+  color: var(--neutral);
+  padding-left: 8px;
+}

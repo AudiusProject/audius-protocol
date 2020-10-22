@@ -1,0 +1,73 @@
+.dropdown {
+  width: 144px;
+  height: 32px;
+  background: var(--neutral-light-9);
+  color: var(--neutral);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  border: 1px solid var(--neutral-light-4);
+  box-sizing: border-box;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+  transition: all 0.13s ease-in-out;
+  user-select: none;
+  text-transform: capitalize;
+}
+
+.dropdown:hover {
+  border: 1px solid var(--neutral-light-2);
+}
+
+.dropdown:active, .dropdown.isOpen {
+  border: 1px solid var(--neutral-light-2);
+}
+
+.selection {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 0 16px;
+  height: 100%;
+}
+
+.caret {
+  padding-top: 2px;
+  height: 18px;
+  width: 18px
+}
+
+.list {
+  background: var(--neutral-light-9);
+  margin-top: 4px;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.13s ease-in-out;
+}
+
+.isOpen .list {
+  opacity: 1;
+  visibility: visible;
+  border-color: var(--neutral-light-2);
+}
+
+.option {
+  padding: 0 16px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--neutral-light-9);
+  transition: all 0.07s ease-in-out;
+  cursor: pointer;
+}
+
+.option:hover {
+  background: var(--neutral-light-8);
+}
