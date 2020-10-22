@@ -1,6 +1,6 @@
+from urllib.parse import urljoin
 import logging
 import requests
-from urllib.parse import urljoin
 
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
@@ -431,20 +431,20 @@ def revert_blocks(self, db, revert_blocks_list):
 
 # calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
 def fetch_cnode_endpoints_from_chain(task_context):
-  try:
-    identity_url = task_context.shared_config['discprov']['identity_service_url']
-    identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
+    try:
+        identity_url = task_context.shared_config['discprov']['identity_service_url']
+        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
 
-    r = requests.get(identity_endpoint, timeout=3)
-    if r.status_code != 200:
-      raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
+        r = requests.get(identity_endpoint, timeout=3)
+        if r.status_code != 200:
+            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
 
-    registered_cnodes = r.json()
-    logger.info(f"Fetched registered creator nodes from chain via {identity_endpoint}")
-    return registered_cnodes
-  except Exception as e:
-    logger.error(f"Identity fetch failed {e}")
-    return []
+        registered_cnodes = r.json()
+        logger.info(f"Fetched registered creator nodes from chain via {identity_endpoint}")
+        return registered_cnodes
+    except Exception as e:
+        logger.error(f"Identity fetch failed {e}")
+        return []
 
 ######## IPFS PEER REFRESH ########
 def refresh_peer_connections(task_context):
@@ -473,13 +473,13 @@ def refresh_peer_connections(task_context):
         # Add user metadata URL to peer connection list
         user_node_url = task_context.shared_config["discprov"]["user_metadata_service_url"]
         cnode_endpoints[user_node_url] = True
-        
+
         # update cnode_endpoints with list of creator nodes registered on chain, on 30s refresh interval
         registered_cnodes = use_redis_cache(
-          'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_chain(task_context)
+            'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_chain(task_context)
         )
         for node_info in registered_cnodes:
-          cnode_endpoints[node_info['endpoint']] = True
+            cnode_endpoints[node_info['endpoint']] = True
 
         # Update creator node list
         ipfs_client.update_cnode_urls(list(cnode_endpoints.keys()))
