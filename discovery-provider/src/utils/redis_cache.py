@@ -20,7 +20,7 @@ def extract_key(path, arg_items):
     return key
 
 def use_redis_cache(key, ttl_sec, work_func):
-    """Attemps to return value by key, otherwise cahces and returns `work_func`"""
+    """Attemps to return value by key, otherwise caches and returns `work_func`"""
     redis = redis_connection.get_redis()
     cached_value = redis.get(key)
 
