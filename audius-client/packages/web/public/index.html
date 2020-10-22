@@ -34,7 +34,7 @@
 
     <script
       defer
-      onLoad="window.dispatchEvent(new CustomEvent('WEB3_LOADED'))"
+      onLoad="window.web3Loaded = true; window.dispatchEvent(new CustomEvent('WEB3_LOADED'))"
       src="%PUBLIC_URL%/scripts/web3.min.js"
     ></script>
 
