@@ -35,6 +35,9 @@ web3endpoint = None
 web3 = None
 abi_values = None
 
+eth_web3 = None
+eth_abi_values = None
+
 registry = None
 user_factory = None
 track_factory = None
@@ -61,6 +64,8 @@ def initContracts():
         address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
     )
 
+    logger.warning("trackfac functioning query")
+    logger.warning(bytes("TrackFactory", "utf-8"))
     track_factory_address = registry_instance.functions.getContract(
         bytes("TrackFactory", "utf-8")
     ).call()
@@ -96,6 +101,8 @@ def initContracts():
         address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
     )
 
+    logger.info('loading sp factory address')
+
     contract_address_dict = {
         "registry": registry_address,
         "user_factory": user_factory_address,
@@ -117,6 +124,43 @@ def initContracts():
         contract_address_dict,
     )
 
+def initEthContracts():
+    eth_registry_address = eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    logger.warning('eth_registry_address')
+    logger.warning(eth_registry_address)
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    sp_factory_arg = bytes("ServiceProviderFactory", "utf-8")
+    logger.warning('bytes sp arg')
+    logger.warning(sp_factory_arg)
+
+    sp_factory_address = eth_registry_instance.functions.getContract(
+        bytes("ServiceProviderFactory", "utf-8")
+    ).call()
+
+    logger.warning("RECOVERED SP FAC ADDR")
+    logger.warning(sp_factory_address)
+    sp_factory_inst = eth_web3.eth.contract(
+        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+    )
+
+    logger.warning("Initialized sp factory contract")
+
+    cn_bytes_arg = bytes("creator-node", "utf-8")
+    total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(cn_bytes_arg).call()
+
+    logger.warning("totalServiceTypeProviders")
+    logger.warning(total_cn_type_providers)
+    eth_cn_endpoints = {}
+    for i in range(1, total_cn_type_providers + 1):
+        logger.warning(f"querying creator-node {i}")
+        cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(cn_bytes_arg, i).call()
+        logger.warning(cn_endpoint_info)
+        eth_cn_endpoints[cn_endpoint_info[1]] = True
+    logger.warning(eth_cn_endpoints)
 
 def create_app(test_config=None):
     return create(test_config)
@@ -124,11 +168,17 @@ def create_app(test_config=None):
 
 def create_celery(test_config=None):
     # pylint: disable=W0603
-    global web3endpoint, web3, abi_values
+    global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.loadAbiValues()
+    logger.warning('loading abi values')
+    eth_abi_values = helpers.loadEthAbiValues()
+    # Initialize eth web3
+    eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
+    logger.warning('loaded ETH ABI VALUES')
+    logger.warning(eth_abi_values)
 
     global registry
     global user_factory
@@ -150,6 +200,8 @@ def create_celery(test_config=None):
         ipld_blacklist_factory,
         contract_addresses
     ) = initContracts()
+
+    initEthContracts()
 
     return create(test_config, mode="celery")
 
@@ -334,6 +386,8 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("disc_prov_lock")
     logger.info('Redis instance initialized!')
 
+    logger.warning("INIT-ING TASK")
+
     # Initialize custom task context with database object
     class DatabaseTask(Task):
         def __init__(self, *args, **kwargs):
@@ -343,6 +397,7 @@ def configure_celery(flask_app, celery, test_config=None):
             self._shared_config = shared_config
             self._ipfs_client = ipfs_client
             self._redis = redis_inst
+            self._eth_web3_provider = eth_web3
 
         @property
         def abi_values(self):
@@ -367,6 +422,10 @@ def configure_celery(flask_app, celery, test_config=None):
         @property
         def redis(self):
             return self._redis
+
+        @property
+        def eth_web3(self):
+            return self._eth_web3_provider
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 

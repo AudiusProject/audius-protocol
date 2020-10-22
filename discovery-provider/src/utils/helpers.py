@@ -169,6 +169,17 @@ def loadAbiValues():
             loaded_abi_values[data["contractName"]] = data
     return loaded_abi_values
 
+# Load Ethereum ABI values
+def loadEthAbiValues():
+    abiDir = os.path.join(os.getcwd(), "build", "eth-contracts")
+    jsonFiles = os.listdir(abiDir)
+    loaded_abi_values = {}
+    for contractJsonFile in jsonFiles:
+        fullPath = os.path.join(abiDir, contractJsonFile)
+        with open(fullPath) as f:
+            data = json.load(f)
+            loaded_abi_values[data["contractName"]] = data
+    return loaded_abi_values
 
 def remove_test_file(filepath):
     """ Try and remove a file, no-op if not present """
