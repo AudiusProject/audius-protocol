@@ -35,6 +35,8 @@ import { retrieveCollections } from 'store/cache/collections/utils'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import Track from 'models/Track'
 import { MessageType } from 'services/native-mobile-interface/types'
+import { getRemoteVar, IntKeys } from 'services/remote-config'
+import { remoteConfigIntDefaults } from 'services/remote-config/defaults'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -42,8 +44,14 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 // NOTE: the rest are loading in in the user list modal
 export const USER_INITIAL_LOAD_COUNT = 9
 
-// The interval in ms to poll for new notifications
-export const NOTIFICATION_POLLING_INTERVAL = 10000
+// Gets the polling interval from remoteconfig
+const getPollingIntervalMs = () => {
+  const pollingInterval = getRemoteVar(IntKeys.NOTIFICATION_POLLING_FREQ_MS)
+  return (
+    pollingInterval ??
+    (remoteConfigIntDefaults[IntKeys.NOTIFICATION_POLLING_FREQ_MS] as number)
+  )
+}
 
 const getTimeAgo = (now: moment.Moment, date: string) => {
   const notifDate = moment(date)
@@ -402,7 +410,7 @@ function* getNotifications(isFirstFetch: boolean) {
             )
           )
         }
-        yield delay(NOTIFICATION_POLLING_INTERVAL)
+        yield delay(getPollingIntervalMs())
         return
       }
       const {
@@ -509,7 +517,7 @@ function* notificationPollingDaemon() {
     if (!isBrowserInBackground || isElectron()) {
       yield call(getNotifications, isFirstFetch)
     }
-    yield delay(NOTIFICATION_POLLING_INTERVAL)
+    yield delay(getPollingIntervalMs())
   }
 }
 
