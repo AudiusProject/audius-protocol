@@ -1,0 +1,85 @@
+.proposal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-top: 1px solid var(--neutral-light-8);
+  cursor: pointer;
+  user-select: none;
+}
+
+.proposal:hover {
+  background: #393A54;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: 24px;
+}
+
+.name {
+  font-weight: 500;
+  font-size: var(--font-xl);
+  line-height: 26px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--neutral);
+  transition: all 0.07s ease-in-out;
+}
+
+.info {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.id {
+  margin-left: 28px;
+  font-weight: 500;
+  font-size: var(--font-xs);
+  line-height: 12px;  
+}
+
+.executed {
+  margin-left: 28px;
+  font-weight: 500;
+  font-size: var(--font-xs);
+  line-height: 12px;
+}
+
+.timeRemaining {
+  margin-left: 28px;
+  font-weight: 500;
+  font-size: var(--font-xs);
+  line-height: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.timeRemaining.show {
+  opacity: 1;
+}
+
+.right {
+  min-width: 120px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.header {
+  text-transform: uppercase;
+  font-family: Avenir Next LT Pro;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 15px;
+  letter-spacing: 1px;
+  color: #777C96;
+  margin-bottom: 8px;
+}
+
+.infoHeader {
+  margin-top: 8px;
+}

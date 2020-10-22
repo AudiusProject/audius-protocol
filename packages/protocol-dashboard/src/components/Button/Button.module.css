@@ -1,0 +1,143 @@
+/* Primary */
+.btnContainer .primary {
+  padding: 12px 16px;
+  background-image: linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%) !important;
+  border-radius: 8px;
+  background-size: 150% 100%;
+  background-position: 100% 100%;
+  box-shadow: 0px 5px 5px rgba(36, 36, 56, 0.15);
+  transition: all 0.13s ease-in, background-position 0.25s ease-in;
+}
+
+.btnContainer .primary:hover {
+  box-shadow: 0px 10px 10px rgba(36, 36, 56, 0.2) !important;
+  transform: scale3d(1.04, 1.04, 1.04) !important;
+  background-position: 0% 100%;
+}
+
+.btnContainer .primary:active {
+  transform: scale3d(1, 1, 1) !important;
+  background: linear-gradient(180deg, rgba(58, 0, 116, 0.3) 0%, rgba(58, 0, 116, 0) 100%), linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%) !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+}
+
+.btnContainer .primaryText {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-transform: uppercase;
+  color: var(--static-white);
+}
+
+
+/* Primary Alt */
+.btnContainer .primaryAlt {
+  padding: 12px 16px;
+  background: #696D88;
+  box-shadow: 0px 5px 5px rgba(36, 36, 56, 0.15);
+  border-radius: 8px;
+}
+
+.btnContainer .primaryAlt:hover {
+  background: #777C96 !important;
+  box-shadow: 0px 10px 10px rgba(36, 36, 56, 0.2) !important;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .primaryAlt:active {
+  background: #5A5E78 !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .primaryAltText {
+}
+
+
+/* RED */
+.btnContainer .red {
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #F15064 0%, #C03A4B 100%);;
+  box-shadow: 0px 5px 5px rgba(36, 36, 56, 0.15);
+  border-radius: 8px;
+}
+
+.btnContainer .red svg {
+  height: 32px !important;
+  width: 32px !important;
+}
+
+.btnContainer .red svg path {
+  fill: var(--static-white) !important;
+}
+
+.btnContainer .red:hover {
+  background: linear-gradient(181.01deg, #F15064 0.87%, #C03A4B 156.23%) !important;
+  box-shadow: 0px 10px 10px rgba(36, 36, 56, 0.2) !important;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .red:active {
+  background: linear-gradient(180deg, #C03A4B 0%, #F15064 100%) !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .red.isDepressed {
+  background: linear-gradient(180deg, #C03A4B 0%, #F15064 100%) !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+  transform: scale3d(1, 1, 1) !important;
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btnContainer .redText {
+}
+
+/* GREEN */
+.btnContainer .green {
+  padding: 12px 16px;
+  background: linear-gradient(0deg, #4CA446 0%, #6BCF63 100%);
+  box-shadow: 0px 5px 5px rgba(36, 36, 56, 0.15);
+  border-radius: 8px;
+}
+
+.btnContainer .green svg {
+  height: 32px !important;
+  width: 32px !important;
+}
+
+.btnContainer .green svg path {
+  fill: var(--static-white) !important;
+}
+
+.btnContainer .green:hover {
+  background: linear-gradient(0deg, #4CA446 -108.93%, #6BCF63 100%) !important;
+  box-shadow: 0px 10px 10px rgba(36, 36, 56, 0.2) !important;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .green:active {
+  background: linear-gradient(0deg, #6BCF63 0%, #4CA446 100%) !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .green.isDepressed {
+  background: linear-gradient(0deg, #6BCF63 0%, #4CA446 100%) !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+  transform: scale3d(1, 1, 1) !important;
+  opacity: 0.6;
+  cursor: default;
+}
+
+
+/* Disabled */
+.btnContainer .isDisabled {
+  cursor: default;
+}
+
+.btnContainer .isTextDisabled,
+.btnContainer .isDisabled svg {
+  opacity: .5;
+}

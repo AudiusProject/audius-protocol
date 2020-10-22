@@ -1,0 +1,95 @@
+{
+  "name": "audius-protocol-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@audius/libs": "1.0.4",
+    "@audius/stems": "^0.2.5",
+    "@reduxjs/toolkit": "^1.4.0",
+    "chart.js": "^2.9.3",
+    "clsx": "^1.1.1",
+    "connected-react-router": "^6.8.0",
+    "dayjs": "^1.8.36",
+    "identicon.js": "^2.3.3",
+    "lodash": "^4.17.20",
+    "numeral": "^2.0.6",
+    "react": "^16.13.1",
+    "react-chartjs-2": "^2.10.0",
+    "react-custom-scrollbars": "^4.2.1",
+    "react-dom": "^16.13.1",
+    "react-helmet": "^6.1.0",
+    "react-lottie": "^1.2.3",
+    "react-redux": "^7.2.1",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "3.4.3",
+    "react-spinners": "^0.5.12",
+    "react-spring": "^8.0.25",
+    "react-tooltip": "^3.11.6",
+    "react-virtualized": "^9.22.2",
+    "redux-thunk": "^2.3.0",
+    "semver": "^6.3.0",
+    "simplebar-react": "^3.0.0-beta.5",
+    "url-join": "^4.0.1"
+  },
+  "scripts": {
+    "publish-scripts": "./scripts/publishScripts.sh",
+    "configure-local-env": "node ./configureLocalEnv.js",
+    "start": "react-scripts start",
+    "start:development": "npm run configure-local-env && npm start",
+    "start:staging": "env-cmd -f .env.staging npm start",
+    "start:prod": "env-cmd -f .env.prod npm start",
+    "build": "react-scripts build",
+    "build:staging": "env-cmd -f .env.staging npm run build",
+    "build:prod": "env-cmd -f .env.prod npm run build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "npm run prettier:check",
+    "lint:fix": "npm run prettier:write",
+    "prettier:base": "prettier --parser typescript --single-quote --no-semi",
+    "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{ts,tsx}\"",
+    "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
+    "pull-dev-accounts": "node ./scripts/pullDevAccounts.js",
+    "advance-blocks": "node ./scripts/advanceBlocks.js"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.10.4",
+    "@openzeppelin/test-helpers": "^0.5.6",
+    "@types/classnames": "^2.2.10",
+    "@types/jest": "^24.9.1",
+    "@types/lodash": "^4.14.160",
+    "@types/node": "^12.0.10",
+    "@types/numeral": "0.0.28",
+    "@types/react": "^16.8.22",
+    "@types/react-dom": "^16.8.4",
+    "@types/react-helmet": "^5.0.16",
+    "@types/react-lottie": "^1.2.5",
+    "@types/react-redux": "^7.1.9",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/react-tooltip": "^3.11.0",
+    "@types/react-virtualized": "^9.21.10",
+    "@types/semver": "^6.2.1",
+    "@types/url-join": "^4.0.0",
+    "env-cmd": "^9.0.3",
+    "prettier": "^1.19.1",
+    "redux-devtools-extension": "^2.13.8",
+    "typescript": "^4.0.2"
+  },
+  "resolutions": {
+    "bn.js": "5.0.0"
+  }
+}

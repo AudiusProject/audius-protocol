@@ -1,0 +1,182 @@
+.appBar {
+  height: 48px;
+  width: 100%;
+  max-width: 1440px;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.left {
+  display: inline-flex;
+  align-items: center;
+}
+
+.currentBlock {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 24px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.currentBlock.show {
+  opacity: 1;
+}
+
+.currentBlock .title {
+  font-weight: 800;
+  font-size: var(--font-xs);
+  line-height: 15px;
+
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--static-white);
+  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+  opacity: 0.8;
+}
+
+.currentBlock .block {
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  line-height: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--static-white);
+  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+}
+
+.right {
+  display: inline-flex;
+  align-items: center;
+}
+
+.logo {
+  width: 120px;
+  margin-right: 20px;
+}
+
+.logo path {
+  fill: var(--static-white);
+}
+
+.name {
+  flex-wrap: wrap;
+  width: 110px;
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: var(--font-s);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--static-white);
+  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+}
+
+
+/* Right Nav */
+
+.userAccountSnippetContainer {
+  cursor: pointer;
+  margin-right: 24px;
+}
+
+/* User Account Snippet */
+.snippetContainer {
+  display: inline-flex;
+}
+
+.snippetImg {
+  margin-right: 8px;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+}
+
+.snippetText {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 160px;
+
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  color: var(--static-white);
+  text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+}
+
+.walletText {
+  font-size: 12px;
+}
+
+.tokenText {
+  font-size: 16px;
+}
+
+
+.appBar .launchAppBtn {
+  height: 41px !important;
+  width: 167px !important;
+  padding: 0px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background: var(--static-white) !important;
+  box-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+  border-radius: 8px;
+  transform: perspective(1px) scale3d(1, 1, 1) !important;
+}
+
+.appBar .launchAppBtn:hover {
+  box-shadow: 0px 10px 10px rgba(36, 36, 56, 0.2) !important;
+  background: var(--static-white) !important;
+  transform: perspective(1px) scale3d(1.04, 1.04, 1.04) !important;
+}
+
+.appBar .launchAppBtn:active {
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0px 3px 3px rgba(36, 36, 56, 0.1) !important;
+  transform: perspective(1px) scale3d(1, 1, 1) !important;
+}
+
+.appBar .launchAppBtnText {
+  font-weight: var(--font-bold) !important;
+  font-size: var(--font-s) !important;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  color: #9147CC !important;
+}
+
+
+/* MetaMask */
+.connectMetaMaskContainer {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 0px;
+  cursor: pointer;
+}
+
+.connectMetaMaskDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background: #F15064;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.connectMetaMask {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  line-height: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #FFFFFF;
+}

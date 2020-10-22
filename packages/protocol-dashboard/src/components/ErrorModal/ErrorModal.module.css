@@ -1,0 +1,37 @@
+.container {
+  min-width: 720px;
+  width: 720px;
+}
+
+.wrapperClassName {
+  background-color: rgba(0,0,0,0.4);
+}
+
+.header {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: #BEC5E0;
+  margin: 24px auto;
+}
+
+.scrollableMessage {
+  min-height: 0;
+  height: 100%;
+  max-height: 248px;
+
+  width: 480px;
+  margin: 0px auto 24px; 
+  padding: 24px 20px;
+  background: #393A54;
+  border: 1px solid #3F415B;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.scrollableMessage :global(.simplebar-scrollbar) {
+  width: 6px;
+  border-radius: 4px;
+  opacity: 0.5;
+}

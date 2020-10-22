@@ -1,0 +1,188 @@
+.wrapperClassName {
+  background-color: rgba(0,0,0,0.4);
+}
+
+.container {
+  width: 720px;
+}
+
+.arrowDown {
+  height: 56px;
+  width: 56px;
+  transform: rotate(90deg);
+}
+
+.arrowDown path {
+  fill: #5A5E78;
+}
+
+
+.topBox {
+  margin: 24px auto 18px;
+}
+
+.bottomBox {
+  margin: 18px auto 24px;
+}
+
+/* ---------- Box variation Props ---------- */
+/* operator staking  */
+.operatorStakingImage {
+  margin-bottom: 4px;
+}
+
+.operatorStakingName {
+  margin-bottom: 16px;
+}
+
+.operatorStakingAmountLabel {
+  margin-bottom: 4px;
+}
+
+/* new service  */
+.newServiceTitle {
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.newServiceType {
+  margin-bottom: 16px
+}
+
+
+/* Stake */
+.stakeHeader {
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  text-align: center;
+  text-transform: uppercase;
+  color: #BEC5E0;
+  margin-bottom: 8px;
+}
+
+.stakeValue {
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  text-align: center;
+  color: #BEC5E0;
+}
+
+.stakeSpacing {
+  margin-bottom: 8px;
+}
+
+.increase {
+  color: #6BCF63;
+}
+
+.decrease {
+  color: #F15064;
+}
+
+.newServiceDelegateWallet {
+  margin-bottom: 4px
+}
+
+/* Delegating */
+.delegatingAmount {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  text-align: center;
+  color: #BEC5E0;
+  margin-top: 8px;
+}
+
+/* To Operator */
+.toOperatorImg {
+  margin: 16px auto 4px;
+}
+
+.toOperatorName {
+  margin-bottom: 4px;
+}
+
+.toOperatorWallet {
+  font-size: var(--font-s);
+}
+
+/* Shared Box props */
+.boxImage {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.boxValue {
+  font-size: var(--font-s);
+}
+
+/* standalone */
+.standalone {
+  margin: 24px auto;
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: #BEC5E0;
+}
+
+/* ---------- Box Props ---------- */
+.box {
+  width: 480px;
+  background: #393A54;
+  border: 1px solid #3F415B;
+  box-sizing: border-box;
+  border-radius: 8px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: #BEC5E0;
+
+}
+
+
+/* Error Modal */
+.errorHeader {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: #BEC5E0;
+  margin: 24px auto;
+}
+
+.scrollableMessage {
+  min-height: 0;
+  height: 100%;
+  max-height: 248px;
+
+  width: 480px;
+  margin: 0px auto 24px; 
+  padding: 24px 20px;
+  background: #393A54;
+  border: 1px solid #3F415B;
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.scrollableMessage :global(.simplebar-scrollbar) {
+  width: 6px;
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+
+/* Loading */
+
+.loading {
+
+}
