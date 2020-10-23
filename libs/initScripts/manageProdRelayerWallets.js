@@ -2,6 +2,7 @@ const Web3 = require('web3')
 const crypto = require("crypto");
 const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
+const axios = require('axios')
 
 // Switch to mainnet eth
 // const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
@@ -76,7 +77,16 @@ const loadProdRelayerWallets = async () => {
     return { funder, relayerWallets }
 }
 
-const createAndSendTransaction = async (sender, receiverAddress, value, web3) => {
+const getGasPrice = async () => {
+    const { data } = await axios({
+        url: 'https://identityservice.staging.audius.co/eth_gas_price',
+        method: 'get',
+        timeout: 3000
+    })
+    return data
+}
+
+const createAndSendTransaction = async (sender, receiverAddress, value, web3, gasPrice) => {
     const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
     const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
     const address = walletAddress.getAddressString()
@@ -85,7 +95,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3) =>
     // fast price = 0x8d8f9fc00
     // new fast price = 0x2e90edd000
     // const gasPrice = "0x2e90edd000"
-    const gasPrice = "0x1e80355e00"
+    // const gasPrice = "0x1e80355e00"
     // from identity - 0xf7100
     const gasLimit = "0xf7100"
     const nonce = await web3.eth.getTransactionCount(address)
@@ -120,6 +130,8 @@ const fundEthRelayerIfEmpty = async () => {
 
     // 0.1 eth =           100000000000000000 wei
     const minimumBalance = 100000000000000000
+    let gasInfo = await getGasPrice()
+    let gasPrice = gasInfo.fastGweiHex
 
     for (let i = 0; i < relayerWallets.length; i++) {
         let relayerPublicKey = relayerWallets[i].publicKey
@@ -134,7 +146,8 @@ const fundEthRelayerIfEmpty = async () => {
                 walletInfo.funder, // Always send from the designated FUNDER
                 relayerPublicKey,             // Public key of receiving account
                 missingBalance,     // Min
-                ethWeb3
+                ethWeb3,
+                gasPrice
             )
            console.log(`${i + 1} - Finished Funding ${relayerPublicKey} with ${minimumBalance}`)
            balance = await ethWeb3.eth.getBalance(relayerPublicKey)
