@@ -436,6 +436,12 @@ const config = convict({
     format: String,
     env: 'defiPulseApiKey',
     default: ''
+  },
+  ethRelayerProdGasTier: {
+    doc: 'One of averageGweiHex/fastGweiHex/fastestGweiHex',
+    format: String,
+    env: 'ethRelayerProdGasTier',
+    default: 'fastGweiHex'
   }
 })
 
