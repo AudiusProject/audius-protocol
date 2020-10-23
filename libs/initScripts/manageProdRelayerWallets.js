@@ -122,10 +122,12 @@ const fundEthRelayerIfEmpty = async () => {
         console.log(`${i + 1} - Found balance ${balance} for ${relayerPublicKey}, validBal=${validBalance}`)
         if (!validBalance) {
             console.log(`${i + 1} - Funding ${relayerPublicKey} with ${minimumBalance}`)
+            let missingBalance = minimumBalance - balance
+            console.log(`${i + 1 } Missing ${missingBalance}`)
             await createAndSendTransaction(
                 walletInfo.funder, // Always send from the designated FUNDER
                 relayerPublicKey,             // Public key of receiving account
-                minimumBalance,     // Min
+                missingBalance,     // Min
                 ethWeb3
             )
            console.log(`${i + 1} - Finished Funding ${relayerPublicKey} with ${minimumBalance}`)
@@ -133,7 +135,6 @@ const fundEthRelayerIfEmpty = async () => {
            console.log(`${i + 1} - Updated balance ${balance} for ${relayerPublicKey}`)
         }
     }
-
     await queryAccountBalances(relayerWallets)
 }
 
