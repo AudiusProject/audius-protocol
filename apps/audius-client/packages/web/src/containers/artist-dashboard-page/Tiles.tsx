@@ -39,6 +39,7 @@ const messages = {
   whyCare: 'And why should YOU care?',
   audioDescription:
     '$AUDIO gives you partial ownership of the Audius platform. Yep, that’s right, Audius is owned by people like you, not major corporations. Holding $AUDIO will also give you access to special features as they are released.',
+  confused: 'Still confused? Don’t worry, more details coming soon!',
   learnMore: 'Learn More',
   level1: 'LEVEL 1',
   level1More: '(1 or more $AUDIO)',
@@ -47,6 +48,9 @@ const messages = {
   level2: 'LEVEL 2',
   tba: 'To Be Announced!'
 }
+
+const LEARN_MORE_URL =
+  'https://audiusproject.medium.com/community-meet-audio-cf1e1d052fd6'
 
 type TileProps = {
   className?: string
@@ -148,6 +152,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
   const disabled = { [styles.disabled]: !hasAudio }
   const dispatch = useDispatch()
   const onClickDiscord = () => dispatch(pressDiscord())
+  const onClickLearnMore = () => window.open(LEARN_MORE_URL, '_blank')
 
   return (
     <Tile className={cn([styles.explainerTile, className])}>
@@ -163,7 +168,10 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
           <h4 className={styles.whatIsAudio}>{messages.whatIsAudio}</h4>
           <div className={styles.whyCare}>{messages.whyCare}</div>
           <p className={styles.description}>{messages.audioDescription}</p>
-          <div className={styles.learnMore}>{messages.learnMore}</div>
+          <div className={styles.learnMore} onClick={onClickLearnMore}>
+            {messages.learnMore}
+          </div>
+          <div className={styles.confused}>{messages.confused}</div>
           <div className={styles.levels}>
             <img
               alt={'Feature Chart'}

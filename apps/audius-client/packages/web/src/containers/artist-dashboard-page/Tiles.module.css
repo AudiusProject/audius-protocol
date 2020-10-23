@@ -200,10 +200,23 @@
 
 .learnMore {
   font-weight: var(--font-bold);
-  font-size: var(--font-s);
+  font-size: var(--font-m);
   line-height: 17px;
   text-align: right;
   letter-spacing: 0.5px;
+  color: var(--secondary);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.learnMore:hover {
+  text-decoration: underline;
+}
+
+.confused {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  line-height: 24px;
   color: var(--neutral);
   margin-bottom: 28px;
 }
