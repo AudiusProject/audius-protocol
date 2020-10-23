@@ -1097,7 +1097,7 @@ function* watchFetchCoverArt() {
     inProgress.add(key)
 
     try {
-      const collection = yield select(getCollection, { id: collectionId })
+      let collection = yield select(getCollection, { id: collectionId })
       const user = yield select(getUser, { id: collection.playlist_owner_id })
       if (
         !collection ||
@@ -1116,6 +1116,7 @@ function* watchFetchCoverArt() {
         coverArtSize,
         gateways
       )
+      collection = yield select(getCollection, { id: collectionId })
       collection._cover_art_sizes = {
         ...collection._cover_art_sizes,
         [coverArtSize || DefaultSizes.OVERRIDE]: url

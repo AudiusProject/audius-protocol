@@ -148,7 +148,7 @@ function* watchFetchProfilePicture() {
     inProgress.add(key)
 
     try {
-      const user = yield select(getUser, { id: userId })
+      let user = yield select(getUser, { id: userId })
       if (!user || (!user.profile_picture_sizes && !user.profile_picture))
         return
       const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
@@ -160,6 +160,7 @@ function* watchFetchProfilePicture() {
           gateways
         )
         if (url) {
+          user = yield select(getUser, { id: userId })
           user._profile_picture_sizes = {
             ...user._profile_picture_sizes,
             [size]: url
@@ -183,6 +184,7 @@ function* watchFetchProfilePicture() {
           gateways
         )
         if (url) {
+          user = yield select(getUser, { id: userId })
           user._profile_picture_sizes = {
             ...user._profile_picture_sizes,
             [DefaultSizes.OVERRIDE]: url
@@ -214,7 +216,7 @@ function* watchFetchCoverPhoto() {
     if (inProgress.has(key)) return
     inProgress.add(key)
     try {
-      const user = yield select(getUser, { id: userId })
+      let user = yield select(getUser, { id: userId })
       if (!user || (!user.cover_photo_sizes && !user.cover_photo)) {
         inProgress.delete(key)
         return
@@ -230,6 +232,7 @@ function* watchFetchCoverPhoto() {
         )
 
         if (url) {
+          user = yield select(getUser, { id: userId })
           user._cover_photo_sizes = {
             ...user._cover_photo_sizes,
             [size]: url
@@ -246,6 +249,7 @@ function* watchFetchCoverPhoto() {
           gateways
         )
         if (url) {
+          user = yield select(getUser, { id: userId })
           user._cover_photo_sizes = {
             ...user._cover_photo_sizes,
             [DefaultSizes.OVERRIDE]: url
