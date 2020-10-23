@@ -12,9 +12,9 @@ const authRateLimiter = rateLimit({
   store: new RedisStore({
     client: redisClient,
     prefix: 'authRateLimiter',
-    expiry: 60 //* 60 * 24, // one hour in seconds
+    expiry: 60 * 60 * 24, // one day in seconds
   }),
-  max: 5, // max requests per hour
+  max: 5, // max requests per day
   keyGenerator
 })
 
