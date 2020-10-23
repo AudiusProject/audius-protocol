@@ -14,7 +14,7 @@ const authRateLimiter = rateLimit({
     prefix: 'authRateLimiter:',
     expiry: 60 * 60 * 24 // one day in seconds
   }),
-  max: 20, // max requests per day
+  max: 40, // max requests per day
   keyGenerator: authKeyGenerator
 })
 
