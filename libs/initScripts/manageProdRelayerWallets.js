@@ -5,8 +5,8 @@ const EthereumTx = require('ethereumjs-tx')
 
 // Switch to mainnet eth
 // const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
-// const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
-const ethWeb3ProviderEndpoint = 'https://eth-mainnet.alchemyapi.io/v2/iSnek4T02BFCUEkcPGKo0eEY1aWLJgxF'
+const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
+// const ethWeb3ProviderEndpoint = 'https://eth-mainnet.alchemyapi.io/v2/iSnek4T02BFCUEkcPGKo0eEY1aWLJgxF'
 
 const fs = require('fs')
 const readline = require('readline')
