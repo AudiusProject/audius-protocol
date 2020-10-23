@@ -5,7 +5,8 @@ const EthereumTx = require('ethereumjs-tx')
 
 // Switch to mainnet eth
 // const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
-const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
+// const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
+const ethWeb3ProviderEndpoint = 'https://eth-mainnet.alchemyapi.io/v2/iSnek4T02BFCUEkcPGKo0eEY1aWLJgxF'
 
 const fs = require('fs')
 const readline = require('readline')
@@ -53,6 +54,7 @@ const queryAccountBalances = async (wallets) => {
         let balance = await ethWeb3.eth.getBalance(pubKey)
         console.log(`Found balance ${balance} for ${pubKey}`)
     }
+    console.log(`Queried ${wallets.length} wallets`)
 }
 
 const queryRelayerBalances = async () => {
@@ -79,10 +81,13 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3) =>
     const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
     const address = walletAddress.getAddressString()
     //  "averageGweiHex": "0x1e08ffca00",
-    const gasPrice = "0x1e08ffca00"
+    // const gasPrice = "0x1e08ffca00"
+    // fast price = 0x8d8f9fc00
+    const gasPrice = "0x8d8f9fc00"
     // from identity - 0xf7100
     const gasLimit = "0xf7100"
     const nonce = await web3.eth.getTransactionCount(address)
+    console.log(`Sending tx from ${sender} to ${receiverAddress} with nonce=${nonce}, gasPrice=${gasPrice}, gasLimit=${gasLimit}`)
     let txParams = {
         nonce: web3.utils.toHex(nonce),
         gasPrice: gasPrice,
@@ -101,9 +106,15 @@ const fundEthRelayerIfEmpty = async () => {
     let funderbalance = await ethWeb3.eth.getBalance(walletInfo.funder.publicKey)
     console.log(`Funder balance: ${funderbalance.toString()}`)
     let relayerWallets = walletInfo.relayerWallets
+
     // 0.0001 ETH, 100000000000000 wei
+
     // TBD: Actual target minimum for each relayer
-    const minimumBalance = 100000000000000
+    // const minimumBalance = 100000000000000
+
+    // 0.1 eth =           100000000000000000 wei
+    const minimumBalance = 100000000000000000
+
     for (let i = 0; i < relayerWallets.length; i++) {
         let relayerPublicKey = relayerWallets[i].publicKey
         let balance = await ethWeb3.eth.getBalance(relayerPublicKey)
