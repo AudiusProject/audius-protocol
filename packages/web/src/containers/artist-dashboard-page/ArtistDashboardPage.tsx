@@ -231,7 +231,7 @@ type ArtistDashboardPageProps = ReturnType<typeof mapDispatchToProps> &
 
 const mapper = (props: ArtistDashboardPageProps) => {
   const { account } = props
-  if (account) return { ...props, account }
+  return { ...props, account }
 }
 
 export class ArtistDashboardPage extends Component<
@@ -267,6 +267,7 @@ export class ArtistDashboardPage extends Component<
 
   onClickRow = (record: any) => {
     const { account, goToRoute } = this.props
+    if (!account) return
     goToRoute(trackPage(account.handle, record.name, record.track_id))
   }
 
@@ -294,7 +295,7 @@ export class ArtistDashboardPage extends Component<
 
   renderCreatorContent() {
     const { account, listenData, tracks, unlistedTracks, stats } = this.props
-    if (!account.is_creator) return null
+    if (!account || !account.is_creator) return null
 
     const { selectedTrack } = this.state
 
@@ -354,6 +355,7 @@ export class ArtistDashboardPage extends Component<
 
   renderProfileSection() {
     const { account, goToRoute } = this.props
+    if (!account) return null
 
     return (
       <div className={styles.profileContainer}>
