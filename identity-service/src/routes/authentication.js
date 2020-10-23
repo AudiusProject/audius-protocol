@@ -6,16 +6,16 @@ const Redis = require('ioredis')
 const config = require('../config.js')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const keyGenerator = (req) => req.ip
+const authKeyGenerator = (req) => `${req.query.username}`
 
 const authRateLimiter = rateLimit({
   store: new RedisStore({
     client: redisClient,
-    prefix: 'authRateLimiter',
+    prefix: 'authRateLimiter:',
     expiry: 60 * 60 * 24, // one day in seconds
   }),
-  max: 5, // max requests per day
-  keyGenerator
+  max: 20, // max requests per day
+  keyGenerator: authKeyGenerator
 })
 
 module.exports = function (app) {
