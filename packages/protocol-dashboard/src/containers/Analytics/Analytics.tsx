@@ -3,13 +3,13 @@ import React from 'react'
 import desktopStyles from './Analytics.module.css'
 import mobileStyles from './AnalyticsMobile.module.css'
 import Page from 'components/Page'
-// import TotalStakedStat from 'components/TotalStakedStat'
+import TotalStakedStat from 'components/TotalStakedStat'
 import ApiCallsStat from 'components/ApiCallsStat'
 import UniqueUsersStat from 'components/UniqueUsersStat'
 import TotalApiCallsChart from 'components/TotalApiCallsChart'
 import PlaysChart from 'components/PlaysChart'
 import UniqueUsersChart from 'components/UniqueUsersChart'
-// import TotalStakedChart from 'components/TotalStakedChart'
+import TotalStakedChart from 'components/TotalStakedChart'
 import TopAppsChart from 'components/TopAppsChart'
 import TopGenresChart from 'components/TopGenresChart'
 import TopTracks from 'components/TopTracks'
@@ -30,16 +30,16 @@ const Analytics: React.FC<AnalyticsProps> = () => {
   return (
     <Page title={messages.title} className={styles.container} hidePreviousPage>
       <div className={styles.statBar}>
-        {/* <TotalStakedStat /> */}
+        <TotalStakedStat />
         <ApiCallsStat />
         <UniqueUsersStat />
       </div>
       <div className={styles.big}>
         <TotalApiCallsChart />
       </div>
-      {/* <div className={styles.big}>
+      <div className={styles.big}>
         <TotalStakedChart />
-      </div> */}
+      </div>
       <div className={styles.section}>
         <PlaysChart />
         <UniqueUsersChart />
