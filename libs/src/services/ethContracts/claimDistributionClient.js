@@ -1,5 +1,4 @@
 const ContractClient = require('../contracts/ContractClient')
-const DEFAULT_GAS_AMOUNT = 1000000
 
 class ClaimDistributionClient extends ContractClient {
   // ===================== Contract Methods =====================
