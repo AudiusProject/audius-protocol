@@ -83,7 +83,9 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3) =>
     //  "averageGweiHex": "0x1e08ffca00",
     // const gasPrice = "0x1e08ffca00"
     // fast price = 0x8d8f9fc00
-    const gasPrice = "0x8d8f9fc00"
+    // new fast price = 0x2e90edd000
+    // const gasPrice = "0x2e90edd000"
+    const gasPrice = "0x1e80355e00"
     // from identity - 0xf7100
     const gasLimit = "0xf7100"
     const nonce = await web3.eth.getTransactionCount(address)
@@ -98,7 +100,11 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3) =>
     const tx = new EthereumTx(txParams)
     tx.sign(privateKeyBuffer)
     const signedTx = '0x' + tx.serialize().toString('hex')
-    const receipt = await web3.eth.sendSignedTransaction(signedTx)
+    try {
+        const receipt = await web3.eth.sendSignedTransaction(signedTx)
+    } catch(e) {
+        console.log(`Failed with ${e}`)
+    }
 }
 
 const fundEthRelayerIfEmpty = async () => {
