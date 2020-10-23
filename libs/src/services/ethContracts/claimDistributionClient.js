@@ -37,6 +37,7 @@ class ClaimDistributionClient extends ContractClient {
     const tx = await this.web3Manager.relayTransaction(
       method,
       contractAddress,
+      account,
       DEFAULT_GAS_AMOUNT
     )
     return tx
