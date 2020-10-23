@@ -230,7 +230,7 @@ def index_blocks(self, db, blocks_list):
             # social state changes are not factored in since they don't affect track_lexeme_dict
             # write out all pending transactions to db before refreshing view
             track_lexeme_state_changed = (user_state_changed or track_state_changed)
-            session.flush()
+            session.commit()
             if user_state_changed:
                 session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
                 if user_ids:
