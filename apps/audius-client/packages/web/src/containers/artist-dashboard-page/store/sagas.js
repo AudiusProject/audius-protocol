@@ -5,11 +5,12 @@ import moment from 'moment'
 import * as dashboardActions from './actions'
 import { getAccountUser } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { doEvery, waitForValue } from 'utils/sagaHelpers'
+import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
 import AudiusBackend from 'services/AudiusBackend'
 import { formatUrlName } from 'utils/formatUtil'
 import { getBalance } from 'store/wallet/slice'
 import { getRemoteVar, IntKeys } from 'services/remote-config'
+import { DASHBOARD_PAGE } from 'utils/route'
 
 function* fetchDashboardAsync(action) {
   yield call(waitForBackendSetup)
@@ -135,7 +136,10 @@ function* pollForBalance() {
 }
 
 function* watchFetchDashboard() {
-  yield takeEvery(dashboardActions.FETCH_DASHBOARD, fetchDashboardAsync)
+  yield takeEvery(
+    dashboardActions.FETCH_DASHBOARD,
+    requiresAccount(fetchDashboardAsync, DASHBOARD_PAGE)
+  )
 }
 
 function* watchFetchDashboardListenData() {

@@ -351,7 +351,7 @@ function* watchFetchCoverArt() {
     inProgress.add(key)
 
     try {
-      const track = yield call(waitForValue, getTrack, { id: trackId })
+      let track = yield call(waitForValue, getTrack, { id: trackId })
       const user = yield call(waitForValue, getUser, { id: track.owner_id })
       if (!track || !user || (!track.cover_art_sizes && !track.cover_art))
         return
@@ -364,6 +364,7 @@ function* watchFetchCoverArt() {
         coverArtSize,
         gateways
       )
+      track = yield select(getTrack, { id: trackId })
       track._cover_art_sizes = {
         ...track._cover_art_sizes,
         [coverArtSize || DefaultSizes.OVERRIDE]: url
