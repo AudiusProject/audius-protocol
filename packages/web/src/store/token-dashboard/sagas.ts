@@ -1,5 +1,5 @@
 import { select } from 'redux-saga-test-plan/matchers'
-import { all, call, put, race, take, takeEvery } from 'redux-saga/effects'
+import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import {
   pressClaim,
   pressSend,
@@ -145,11 +145,11 @@ function* watchForDiscordCode() {
 }
 
 function* watchPressSend() {
-  yield takeEvery(pressSend.type, send)
+  yield takeLatest(pressSend.type, send)
 }
 
 function* watchPressClaim() {
-  yield takeEvery(pressClaim.type, claim)
+  yield takeLatest(pressClaim.type, claim)
 }
 const sagas = () => {
   return [watchPressClaim, watchPressSend, watchForDiscordCode]

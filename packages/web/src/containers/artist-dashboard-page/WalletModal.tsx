@@ -261,7 +261,9 @@ const shouldAllowDismiss = (modalState: Nullable<ModalState>) => {
   // Allow dismiss on every stage except claiming
   if (!modalState) return true
   return !(
-    modalState.stage === 'CLAIM' && modalState.flowState.stage === 'CLAIMING'
+    (modalState.stage === 'CLAIM' &&
+      modalState.flowState.stage === 'CLAIMING') ||
+    (modalState.stage === 'SEND' && modalState.flowState.stage === 'SENDING')
   )
 }
 
