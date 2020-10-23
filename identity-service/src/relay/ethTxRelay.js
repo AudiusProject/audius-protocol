@@ -66,7 +66,8 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
   // Select the 'fast' gas price
-  let ethRelayGasPrice = ethGasPriceInfo.averageGweiHex
+  let ethRelayGasPrice = ethGasPriceInfo[config.get('ethRelayerProdGasTier')]
+
   let resp
   try {
     resp = await createAndSendEthTransaction(
@@ -131,7 +132,8 @@ const getProdGasInfo = async (redis, logger) => {
   if (ENVIRONMENT === 'development') {
     return {
       fastGweiHex: GANACHE_GAS_PRICE,
-      averageGweiHex: GANACHE_GAS_PRICE
+      averageGweiHex: GANACHE_GAS_PRICE,
+      fastestGweiHex: GANACHE_GAS_PRICE
     }
   }
   const prodGasPriceKey = 'eth-gas-prod-price-info'
