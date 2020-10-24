@@ -286,7 +286,8 @@ def configure_celery(flask_app, celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
-                 "src.tasks.index_cache", "src.tasks.index_plays", "src.tasks.index_metrics"],
+                 "src.tasks.index_cache", "src.tasks.index_plays",
+                 "src.tasks.index_metrics", "src.tasks.index_materialized_views"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -307,6 +308,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_metrics": {
                 "task": "update_metrics",
                 "schedule": crontab(minute=0, hour="*")
+            },
+            "update_materialized_views": {
+                "task": "update_materialized_views",
+                "schedule": timedelta(seconds=60)
             }
         },
         task_serializer="json",
