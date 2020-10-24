@@ -175,15 +175,15 @@ class IPFSClient:
         if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
 
-        # First, attempt to cat multihash locally via IPFS.
-        try:
-            # If cat successful, multihash is not directory.
-            self._api.cat(multihash, 0, 1, timeout=3)
-            return False
-        except Exception as e:  # pylint: disable=W0703
-            if "this dag node is a directory" in str(e):
-                logger.warning(f"IPFSCLIENT | Found directory {multihash}")
-                return True
+        # # First, attempt to cat multihash locally via IPFS.
+        # try:
+        #     # If cat successful, multihash is not directory.
+        #     self._api.cat(multihash, 0, 1, timeout=3)
+        #     return False
+        # except Exception as e:  # pylint: disable=W0703
+        #     if "this dag node is a directory" in str(e):
+        #         logger.warning(f"IPFSCLIENT | Found directory {multihash}")
+        #         return True
 
         # If not found via IPFS, attempt to retrieve from cnode gateway endpoints.
         gateway_endpoints = self._cnode_endpoints
