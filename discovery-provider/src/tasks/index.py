@@ -433,8 +433,8 @@ def fetch_cnode_endpoints_from_chain(task_context):
 def refresh_peer_connections(task_context):
     db = task_context.db
     ipfs_client = task_context.ipfs_client
-    redis = task_context.redis
-    interval = int(task_context.shared_config["discprov"]["peer_refresh_interval"])
+    # redis = task_context.redis
+    # interval = int(task_context.shared_config["discprov"]["peer_refresh_interval"])
     with db.scoped_session() as session:
         db_cnode_endpts = (
             session.query(
@@ -495,7 +495,6 @@ def refresh_peer_connections(task_context):
         #             ipfs_client.connect_peer(multiaddr_info[key])
         #             redis.set(key, multiaddr_info[key], ex=interval)
         #         except Exception as e: #pylint: disable=broad-except
-        #             logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
 
 
 ######## CELERY TASKS ########
