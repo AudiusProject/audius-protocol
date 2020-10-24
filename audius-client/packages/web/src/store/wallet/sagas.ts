@@ -37,7 +37,16 @@ function* sendAsync({
   if (!weiBNBalance || !weiBNBalance.gte(weiBNAmount)) return
   try {
     yield call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
-    yield all([put(decreaseBalance({ amount })), put(sendSucceeded())])
+
+    // Only decrease store balance if we haven't already changed
+    const newBalance: ReturnType<typeof getAccountBalance> = yield select(
+      getAccountBalance
+    )
+    if (newBalance?.eq(weiBNBalance)) {
+      yield put(decreaseBalance({ amount }))
+    }
+
+    yield put(sendSucceeded())
   } catch (e) {
     yield put(sendFailed({ error: e.message }))
   }
