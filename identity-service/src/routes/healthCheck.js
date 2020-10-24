@@ -278,13 +278,13 @@ module.exports = function (app) {
     let idleConnections = null
 
     // Get number of open DB connections
-    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_identity_service'")
+    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_centralized_service'")
     if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
       numConnections = numConnectionsQuery[0][0].numbackends
     }
 
     // Get detailed connection info
-    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_identity_service'"))
+    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_centralized_service'"))
     if (connectionInfoQuery && connectionInfoQuery[0]) {
       connectionInfo = connectionInfoQuery[0]
       activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length
