@@ -169,8 +169,6 @@ class NotificationProcessor {
       params,
       timeout: 10000
     }
-    // Use a single transaction
-    const tx = await models.sequelize.transaction()
 
     let body = (await axios(reqObj)).data
     let metadata = body.data.info
@@ -178,6 +176,8 @@ class NotificationProcessor {
     let milestones = body.data.milestones
     let owners = body.data.owners
 
+    // Use a single transaction
+    const tx = await models.sequelize.transaction()
     try {
       // Populate owners, used to index in milestone generation
       const listenCountWithOwners = listenCounts.map((x) => {
