@@ -225,23 +225,15 @@ def index_blocks(self, db, blocks_list):
                 self, update_task, session, user_library_factory_txs, block_number, block_timestamp
             )
 
-            # keep search materialized view in sync with db
-            # only refresh track_lexeme_dict when necessary
-            # social state changes are not factored in since they don't affect track_lexeme_dict
-            # write out all pending transactions to db before refreshing view
             track_lexeme_state_changed = (user_state_changed or track_state_changed)
             session.commit()
             if user_state_changed:
-                session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
                 if user_ids:
                     remove_cached_user_ids(redis, user_ids)
             if track_lexeme_state_changed:
                 if track_ids:
                     remove_cached_track_ids(redis, track_ids)
-                session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
             if playlist_state_changed:
-                session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
-                session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
                 if playlist_ids:
                     remove_cached_playlist_ids(redis, playlist_ids)
 
@@ -418,15 +410,6 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_playlist_index = rebuild_playlist_index or bool(revert_playlist_entries)
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
-
-        if rebuild_playlist_index:
-            session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
-            session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
-        if rebuild_user_index or rebuild_track_index:
-            session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
-        if rebuild_user_index:
-            session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
-
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
 
 # calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
