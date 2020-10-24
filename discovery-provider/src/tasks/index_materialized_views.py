@@ -6,12 +6,12 @@ logger = logging.getLogger(__name__)
 
 def update_views(self, db):
     with db.scoped_session() as session:
-        logger.info('Updating materialized views')
+        logger.info('index_materialized_views.py | Updating materialized views')
         session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
-        logger.info('Finished updating materialized views')
+        logger.info('index_materialized_views.py | Finished updating materialized views')
 
 ######## CELERY TASKS ########
 @celery.task(name="update_materialized_views", bind=True)
