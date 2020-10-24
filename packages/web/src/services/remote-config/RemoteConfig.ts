@@ -27,12 +27,7 @@ export enum IntKeys {
   NOTIFICATION_POLLING_FREQ_MS = 'NOTIFICATION_POLLING_FREQ_MS'
 }
 
-export enum BooleanKeys {
-  /**
-   * Notice that displays a "degraded functionality" banner across the app
-   */
-  NOTICE_DEGRADED_FUNCTIONALITY = 'NOTICE_DEGRADED_FUNCTIONALITY'
-}
+export enum BooleanKeys {}
 
 export enum DoubleKeys {}
 
@@ -47,7 +42,12 @@ export enum StringKeys {
   /**
    * Click target for the top left Audius logo in the app.
    */
-  AUDIUS_LOGO_VARIANT_CLICK_TARGET = 'AUDIUS_LOGO_VARIANT_CLICK_TARGET'
+  AUDIUS_LOGO_VARIANT_CLICK_TARGET = 'AUDIUS_LOGO_VARIANT_CLICK_TARGET',
+
+  /**
+   * Custom text for a top of page notice.
+   */
+  APP_WIDE_NOTICE_TEXT = 'APP_WIDE_NOTICE_TEXT'
 }
 
 export type AllRemoteConfigKeys =
