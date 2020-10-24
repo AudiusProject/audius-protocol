@@ -468,34 +468,34 @@ def refresh_peer_connections(task_context):
         ipfs_client.update_cnode_urls(list(cnode_endpoints.keys()))
 
         # Query ipfs information for each cnode endpoint
-        multiaddr_info = {}
-        for cnode_url in cnode_endpoints:
-            stored_in_redis = redis.get(cnode_url)
-            if stored_in_redis is not None:
-                continue
-            if cnode_url == "''":
-                continue
+        # multiaddr_info = {}
+        # for cnode_url in cnode_endpoints:
+        #     stored_in_redis = redis.get(cnode_url)
+        #     if stored_in_redis is not None:
+        #         continue
+        #     if cnode_url == "''":
+        #         continue
 
-            try:
-                logger.warning('index.py | Retrieving connection info for %s', cnode_url)
-                multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(
-                    cnode_url,
-                    None
-                )
-            except Exception as e:  # pylint: disable=broad-except
-                # Handle error in retrieval by not peering this node
-                logger.warning('index.py | Error retrieving info for %s, %s', cnode_url, str(e))
-                multiaddr_info[cnode_url] = None
+        #     try:
+        #         logger.warning('index.py | Retrieving connection info for %s', cnode_url)
+        #         multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(
+        #             cnode_url,
+        #             None
+        #         )
+        #     except Exception as e:  # pylint: disable=broad-except
+        #         # Handle error in retrieval by not peering this node
+        #         logger.warning('index.py | Error retrieving info for %s, %s', cnode_url, str(e))
+        #         multiaddr_info[cnode_url] = None
 
-        for key in multiaddr_info:
-            if multiaddr_info[key] is not None:
-                try:
-                # Peer nodes
-                    logger.warning('index.py | Connecting to %s', multiaddr_info[key])
-                    ipfs_client.connect_peer(multiaddr_info[key])
-                    redis.set(key, multiaddr_info[key], ex=interval)
-                except Exception as e: #pylint: disable=broad-except
-                    logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
+        # for key in multiaddr_info:
+        #     if multiaddr_info[key] is not None:
+        #         try:
+        #         # Peer nodes
+        #             logger.warning('index.py | Connecting to %s', multiaddr_info[key])
+        #             ipfs_client.connect_peer(multiaddr_info[key])
+        #             redis.set(key, multiaddr_info[key], ex=interval)
+        #         except Exception as e: #pylint: disable=broad-except
+        #             logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
 
 
 ######## CELERY TASKS ########
