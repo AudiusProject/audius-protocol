@@ -14,6 +14,7 @@
 .notice.show {
   opacity: 1;
   top: 24px;
+  top: calc(24px + env(safe-area-inset-top, 0px));
   /* Delay coming in since this triggers on page load */
   transition-delay: 3s;
 }
@@ -21,6 +22,7 @@
 .notice.show.shouldPadTop {
   opacity: 1;
   top: 48px;
+  top: calc(48px + env(safe-area-inset-top, 0px));
   /* Delay coming in since this triggers on page load */
   transition-delay: 3s;
 }
