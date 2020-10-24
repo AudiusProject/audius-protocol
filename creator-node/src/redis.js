@@ -3,7 +3,7 @@ const Redis = require('ioredis')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
-const EXPIRATION = 60 * 60 * 8 // 8 hours in seconds
+const EXPIRATION = 60 * 60 * 2 // 2 hours in seconds
 class RedisLock {
   static async setLock (key, expiration = EXPIRATION) {
     console.log(`SETTING LOCK ${key}`)
