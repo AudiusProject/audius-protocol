@@ -59,8 +59,10 @@ const queryAccountBalances = async (wallets) => {
 }
 
 const queryRelayerBalances = async () => {
+    let gasInfo = await getGasPrice() 
     let walletInfo = await loadProdRelayerWallets()
     await queryAccountBalances(walletInfo.relayerWallets)
+    console.log(gasInfo)
 }
 
 const loadProdRelayerWallets = async () => {
@@ -72,7 +74,7 @@ const loadProdRelayerWallets = async () => {
     let relayerWallets = prodRelayerInfo.relayerWallets
     // console.log(relayerWallets)
     let funderbalance = await ethWeb3.eth.getBalance(funder.publicKey)
-    console.log(`Funder balance: ${funderbalance.toString()}`)
+    console.log(`Funder ${funder.publicKey} balance: ${funderbalance.toString()}`)
 
     return { funder, relayerWallets }
 }
@@ -99,7 +101,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, ga
     // from identity - 0xf7100
     const gasLimit = "0xf7100"
     const nonce = await web3.eth.getTransactionCount(address)
-    console.log(`Sending tx from ${sender} to ${receiverAddress} with nonce=${nonce}, gasPrice=${gasPrice}, gasLimit=${gasLimit}`)
+    console.log(`Sending tx from ${sender.publicKey} to ${receiverAddress} with nonce=${nonce}, gasPrice=${gasPrice}, gasLimit=${gasLimit}`)
     let txParams = {
         nonce: web3.utils.toHex(nonce),
         gasPrice: gasPrice,
@@ -129,7 +131,10 @@ const fundEthRelayerIfEmpty = async () => {
     // const minimumBalance = 100000000000000
 
     // 0.1 eth =           100000000000000000 wei
-    const minimumBalance = 100000000000000000
+
+    // 0.25 eth =          250000000000000000
+    const minimumBalance = 250000000000000000
+
     let gasInfo = await getGasPrice()
     let gasPrice = gasInfo.fastGweiHex
 
@@ -139,9 +144,8 @@ const fundEthRelayerIfEmpty = async () => {
         let validBalance = parseInt(balance) >= minimumBalance
         console.log(`${i + 1} - Found balance ${balance} for ${relayerPublicKey}, validBal=${validBalance}`)
         if (!validBalance) {
-            console.log(`${i + 1} - Funding ${relayerPublicKey} with ${minimumBalance}`)
             let missingBalance = minimumBalance - balance
-            console.log(`${i + 1 } Missing ${missingBalance}`)
+            console.log(`${i + 1} - Funding ${relayerPublicKey} with ${missingBalance}, currently ${balance}/${minimumBalance}`)
             await createAndSendTransaction(
                 walletInfo.funder, // Always send from the designated FUNDER
                 relayerPublicKey,             // Public key of receiving account
