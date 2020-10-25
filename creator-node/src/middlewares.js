@@ -47,6 +47,7 @@ async function syncLockMiddleware (req, res, next) {
       ))
     }
   }
+  req.logger.info(`syncLockMiddleware succeeded`)
   next()
 }
 
@@ -86,7 +87,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   req.session.nodeIsPrimary = true
   req.session.creatorNodeEndpoints = creatorNodeEndpoints
 
-  console.log(`ensurePrimaryMiddleware route time ${Date.now() - start}`)
+  req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
   next()
 }
 
