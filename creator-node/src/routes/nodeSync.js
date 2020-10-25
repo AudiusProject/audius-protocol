@@ -326,6 +326,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           } else if (latestClockValue === fetchedLatestClockVal) {
             // Already to update, no sync necessary
             req.logger.info(`User ${fetchedWalletPublicKey} already up to date! fetchedLatestClockVal=${fetchedLatestClockVal}, latestClockValue=${latestClockValue}`)
+            tx.rollback()
             continue
           }
 
