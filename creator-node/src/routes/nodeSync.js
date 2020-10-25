@@ -326,6 +326,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           } else if (latestClockValue === fetchedLatestClockVal) {
             // Already to update, no sync necessary
             req.logger.info(`User ${fetchedWalletPublicKey} already up to date! fetchedLatestClockVal=${fetchedLatestClockVal}, latestClockValue=${latestClockValue}`)
+            // the transaction declared outside the try/catch needs to be closed. if we call the continue
+            // and do not end the tx, it will never be closed
             transaction.rollback()
             continue
           }
