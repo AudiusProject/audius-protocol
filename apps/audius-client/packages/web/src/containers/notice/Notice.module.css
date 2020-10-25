@@ -28,7 +28,7 @@
 }
 
 .content {
-  pointer-events: all;
+  pointer-events: none;
   margin: 0 20px;
   position: relative;
   background: var(--page-header-gradient);
@@ -40,6 +40,10 @@
   line-height: 22px;
   text-align: center;
   font-weight: var(--font-bold);
+}
+
+.contentShow {
+  pointer-events: all;
 }
 
 .iconRemove {
