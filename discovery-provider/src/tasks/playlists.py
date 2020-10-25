@@ -247,7 +247,7 @@ def parse_playlist_event(
             logger.info(f"[playlist_cover_photo_updated] | Processing playlist image \
             {playlist_record.playlist_image_multihash}")
             try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
+                is_directory = True # update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
                 if is_directory:
                     playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
                     playlist_record.playlist_image_multihash = None
