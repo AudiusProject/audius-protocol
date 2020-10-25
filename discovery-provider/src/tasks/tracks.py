@@ -196,7 +196,7 @@ def parse_track_event(
 
 
         # Reconnect to creator nodes for this user
-        refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
+        # refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
 
         track_record.is_delete = False
 
@@ -261,7 +261,7 @@ def parse_track_event(
         track_record.is_delete = False
 
         # Reconnect to creator nodes for this user
-        refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
+        # refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
 
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
@@ -358,17 +358,17 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.route_id = helpers.create_track_route_id(track_metadata["title"], handle)
     return track_record
 
-def refresh_track_owner_ipfs_conn(owner_id, session, update_task):
-    owner_record = (
-        session.query(User.creator_node_endpoint)
-        .filter(
-            User.is_current == True,
-            User.user_id == owner_id)
-        .all()
-    )
-    if len(owner_record) >= 1:
-        parsed_endpoint_list = owner_record[0][0]
-        helpers.update_ipfs_peers_from_user_endpoint(
-            update_task,
-            parsed_endpoint_list
-        )
+# def refresh_track_owner_ipfs_conn(owner_id, session, update_task):
+#     owner_record = (
+#         session.query(User.creator_node_endpoint)
+#         .filter(
+#             User.is_current == True,
+#             User.user_id == owner_id)
+#         .all()
+#     )
+#     if len(owner_record) >= 1:
+#         parsed_endpoint_list = owner_record[0][0]
+#         helpers.update_ipfs_peers_from_user_endpoint(
+#             update_task,
+#             parsed_endpoint_list
+#         )

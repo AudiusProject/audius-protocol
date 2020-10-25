@@ -205,7 +205,7 @@ def parse_user_event(
             user_record.location = metadata_overrides["location"]
 
     # Refresh connection for non-creators
-    refresh_user_connection(user_record, update_task)
+    # refresh_user_connection(user_record, update_task)
 
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
@@ -241,25 +241,25 @@ def parse_user_event(
 
     return user_record
 
-def refresh_user_connection(user_record, update_task):
-    if not user_record.is_creator and user_record.profile_picture or user_record.cover_photo:
-        user_node_url = update_task.shared_config["discprov"]["user_metadata_service_url"]
-        logger.warning(f'users.py | user_metadata_service_url - {user_node_url}')
-        # Manually peer with user creator nodes
-        helpers.update_ipfs_peers_from_user_endpoint(
-            update_task,
-            user_node_url
-        )
+# def refresh_user_connection(user_record, update_task):
+#     if not user_record.is_creator and user_record.profile_picture or user_record.cover_photo:
+#         user_node_url = update_task.shared_config["discprov"]["user_metadata_service_url"]
+#         logger.warning(f'users.py | user_metadata_service_url - {user_node_url}')
+#         # Manually peer with user creator nodes
+#         helpers.update_ipfs_peers_from_user_endpoint(
+#             update_task,
+#             user_node_url
+#         )
 
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
     user_metadata = user_metadata_format
 
     if user_record.metadata_multihash and user_record.is_creator and user_record.handle:
         # Manually peer with user creator nodes
-        helpers.update_ipfs_peers_from_user_endpoint(
-            update_task,
-            user_record.creator_node_endpoint
-        )
+        # helpers.update_ipfs_peers_from_user_endpoint(
+        #     update_task,
+        #     user_record.creator_node_endpoint
+        # )
 
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
