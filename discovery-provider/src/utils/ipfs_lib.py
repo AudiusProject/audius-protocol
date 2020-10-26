@@ -78,6 +78,10 @@ class IPFSClient:
 
     # Retrieve a single page and report the URL and contents
     def load_url(self, url, max_timeout):
+        # Skip URL if invalid
+        validate_url = urlparse(url)
+        if not validate_url.scheme:
+            raise Exception(f"IPFSCLIENT | Invalid URL from provided gateway addr - {url}")
         r = requests.get(url, timeout=max_timeout)
         return r
 
@@ -85,7 +89,7 @@ class IPFSClient:
         formatted_json = None
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start the load operations and mark each future with its URL
-            future_to_url = {executor.submit(self.load_url, url, 60): url for url in gateway_ipfs_urls}
+            future_to_url = {executor.submit(self.load_url, url, 5): url for url in gateway_ipfs_urls}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
@@ -122,56 +126,6 @@ class IPFSClient:
             )
         gateway_metadata_json = data
         return gateway_metadata_json
-        '''
-        raise Exception('Expected failure')
-
-        for address in gateway_endpoints:
-            gateway_query_address = "%s/ipfs/%s" % (address, multihash)
-
-            # Skip URL if invalid
-            validate_url = urlparse(gateway_query_address)
-            if not validate_url.scheme:
-                logger.info(
-                    f"IPFSCLIENT | Invalid URL from provided gateway addr - "
-                    f"provided host: {address} CID address:{gateway_query_address}"
-                )
-                continue
-
-            try:
-                logger.warning(f"IPFSCLIENT | Querying {gateway_query_address}")
-                r = requests.get(gateway_query_address, timeout=3)
-
-                # Do not retrieve metadata for error code
-                if r.status_code != 200:
-                    logger.warning(f"IPFSCLIENT | {gateway_query_address} - {r.status_code}")
-                    continue
-
-                # Override with retrieved JSON value
-                gateway_metadata_json = self.get_metadata_from_json(
-                    metadata_format, r.json()
-                )
-                # Exit loop if dict is successfully retrieved
-                logger.warning(
-                    f"IPFSCLIENT | Retrieved {multihash} from {gateway_query_address}"
-                )
-                return gateway_metadata_json
-            except ReadTimeout:
-                logger.error(
-                    f"IPFSCLIENT | Failed to retrieve CID from {gateway_query_address}"
-                )
-                continue
-            except Exception as e:
-                logger.error(
-                    f"IPFSCLIENT | Unknown exception retrieving from {gateway_query_address}",
-                    exc_info=True,
-                )
-                if "No file found" not in str(e):
-                    raise e
-
-        raise Exception(
-            f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
-        )
-        '''
 
     def get_metadata_from_ipfs_node(self, multihash, metadata_format):
         try:
