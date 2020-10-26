@@ -247,7 +247,7 @@ const getDirCID = async (req, res) => {
     storagePath = queryResults.storagePath
     redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   }
-  
+
   // Lop off the last bit of the storage path (the child CID)
   // to get the parent storage path for IPFS rehydration
   const parentStoragePath = storagePath.split('/').slice(0, -1).join('/')
