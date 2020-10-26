@@ -12,7 +12,7 @@ let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
-const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
+const RELAY_HEALTH_MAX_TRANSACTIONS = 200 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
 const RELAY_HEALTH_MIN_NUM_USERS = 3 // min number of users affected to qualify for error
 const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
