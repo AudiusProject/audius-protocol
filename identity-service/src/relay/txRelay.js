@@ -90,13 +90,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   // will be set later. necessary for code outside scope of try block
   let txReceipt
   let redisLogParams
-  let wallet = selectWallet()
-
-  // If all wallets are currently in use, keep iterating until a wallet is freed up
-  while (!wallet) {
-    await delay(200)
-    wallet = selectWallet()
-  }
+  let wallet = await selectWallet(senderAddress)
 
   try {
     req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`)
@@ -138,28 +132,24 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
-/**
- * Randomly select a wallet with a random offset. Circularly iterate through all
- * the available wallets using mod
- *
- * e.g. If there are 5 wallets available and the offset is at 2, iterate
- * in the order 2, 3, 4, 0, 1, and use const count to iterate through
- * all the available number of wallets
- */
-const selectWallet = () => {
+// Calculates index into eth relayer addresses
+const getRelayerWalletIndex = (walletAddress) => {
+  let walletParsedInteger = parseInt(walletAddress, 16)
+  return walletParsedInteger % relayerWallets.length
+}
+
+const selectWallet = async (senderAddress) => {
+  logger.info('L2 - Acquiring lock for user', senderAddress)
   let selectedWallet
-  let i = Math.floor(Math.random() * relayerWallets.length) // random offset
-  let count = 0 // num wallets to iterate through
+  let idx = getRelayerWalletIndex(senderAddress)
 
-  while (count++ < relayerWallets.length) {
-    const wallet = relayerWallets[i++ % relayerWallets.length]
-
-    if (!wallet.locked) {
-      wallet.locked = true
-      selectedWallet = wallet
-      return selectedWallet
-    }
+  while (relayerWallets[idx].locked) {
+    await delay(200)
   }
+  relayerWallets[idx].locked = true
+  selectedWallet = relayerWallets[idx]
+  logger.info(`L2 - Locking relayer ${selectedWallet.publicKey} for user ${senderAddress}, index=${idx}`)
+  return selectedWallet
 }
 
 /**

@@ -3,17 +3,21 @@ const sinon = require('sinon')
 
 const config = require('../src/config')
 
-describe('test txRelay: selectWallet()', () => {
+describe.only('test txRelay: selectWallet(walletAddress)', () => {
   let relayerWallets, selectWallet
   beforeEach(() => {
     relayerWallets = [
       {
-        publicKey: 'publicKey1',
+        publicKey: '0x9d5f71e3F6B454DE13A293A7280B4252D4C1C66E',
         privateKey: 'privateKey1'
       },
       {
-        publicKey: 'publicKey2',
+        publicKey: '0x999e70F3e1B1D9cba35554d0b048136d3855ce18',
         privateKey: 'privateKey2'
+      },
+      {
+        publicKey: '0xBE02c92D20E068930A3EB641862A3Eb68F2d1210',
+        privateKey: 'privateKey3'
       }
     ]
     sinon.stub(config, 'get').withArgs('relayerWallets').returns(relayerWallets)
@@ -27,32 +31,25 @@ describe('test txRelay: selectWallet()', () => {
     sinon.restore()
   })
 
-  it('should select a random wallet', () => {
-    const firstWallet = selectWallet()
-    const secondWallet = selectWallet()
+  it('should select a random wallet', async () => {
+    const firstWallet = await selectWallet('0xc22AA517bd6c0897428Cc4E93Ed5069c548f4Dc7') // index 0 when calling mod
+    const secondWallet = await selectWallet('0x724000024990A67a648D4229fCD5Dd618c62D7D9') // index 1 when calling mod
 
     assert(firstWallet.publicKey !== secondWallet.publicKey)
     assert(firstWallet.privateKey !== secondWallet.privateKey)
   })
 
-  it('should return null when attempting to select a wallet when all are in use', () => {
-    let i = 0
-    let nullWallet
-    while (i++ < 3) {
-      nullWallet = selectWallet()
-    }
+  it('should return an unlocked wallet when all wallets are reset to unlocked', async () => {
+    const firstWallet = await selectWallet('0xc22AA517bd6c0897428Cc4E93Ed5069c548f4Dc7') // index 0 when calling mod
+    const secondWallet = await selectWallet('0x724000024990A67a648D4229fCD5Dd618c62D7D9') // index 1 when calling mod
 
-    assert(nullWallet === undefined)
-  })
-
-  it('should return an unlocked wallet when all wallets are reset to unlocked', () => {
-    const firstWallet = selectWallet()
-    const secondWallet = selectWallet()
+    assert(firstWallet.publicKey !== secondWallet.publicKey)
+    assert(firstWallet.privateKey !== secondWallet.privateKey)
 
     firstWallet.locked = false
     secondWallet.locked = false
 
-    const thirdWallet = selectWallet()
+    const thirdWallet = await selectWallet('0x724000024990A67a648D4229fCD5Dd618c62D7D9') // index 0 when calling mod
     assert(thirdWallet !== undefined)
   })
 })
