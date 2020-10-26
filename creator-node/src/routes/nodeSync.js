@@ -271,6 +271,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
     if (!resp.data.hasOwnProperty('cnodeUsers') || !resp.data.hasOwnProperty('ipfsIDObj') || !resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
+    req.logger.info(`Successful export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
 
     if (!dbOnlySync) {
       // Attempt to connect directly to target CNode's IPFS node.
