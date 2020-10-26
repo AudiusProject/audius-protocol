@@ -29,6 +29,7 @@ module.exports = function (app) {
     // TODO - allow for offsets in the /export
     const walletPublicKeys = req.query.wallet_public_key // array
     const dbOnlySync = (req.query.db_only_sync === true || req.query.db_only_sync === 'true')
+    const sourceEndpoint = req.query.source_endpoint || '' // string
 
     const MaxClock = 25000
 
@@ -152,10 +153,10 @@ module.exports = function (app) {
         }
       }
 
-      req.logger.info('Successful export for wallets', walletPublicKeys, `|| route duration ${Date.now() - start} ||`)
+      req.logger.info('Successful export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start}`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      req.logger.error('Error in /export for wallets', walletPublicKeys, `|| route duration ${Date.now() - start} ||`, e)
+      req.logger.error('Error in /export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ||`, e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
@@ -248,12 +249,18 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
   }
 
   try {
-    // Fetch data export from creatorNodeEndpoint for given walletPublicKeys.
+    // Fetch data export from creatorNodeEndpoint for given walletPublicKeys
+    const exportQueryParams = {
+      wallet_public_key: walletPublicKeys,
+      db_only_sync: dbOnlySync
+    }
+    if (config.get('creatorNodeEndpoint')) exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
+
     const resp = await axios({
       method: 'get',
       baseURL: creatorNodeEndpoint,
       url: '/export',
-      params: { wallet_public_key: walletPublicKeys, db_only_sync: dbOnlySync },
+      params: exportQueryParams,
       responseType: 'json',
       // TODO - adjust value before taking to prod
       timeout: 10000 /* 10s - higher timeout  */
