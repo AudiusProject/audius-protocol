@@ -1,6 +1,7 @@
 from urllib.parse import urljoin
 import logging
 import requests
+import concurrent.futures
 
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
@@ -26,6 +27,43 @@ default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
 default_config_start_hash = "0x0"
+
+# SANDBOXING PARALLEL REQ CODE
+URLS = ['https://www.foxnews.com/',
+        'https://www.cnn.com/',
+        'https://europe.wsj.com/',
+        'https://www.bbc.co.uk/',
+        'https://some-made-up-domain.com/']
+
+
+# Retrieve a single page and report the URL and contents
+def load_url(url, max_timeout):
+    logger.error(f'Requesting ${url}, ${max_timeout}')
+    r = requests.get(url, timeout=max_timeout)
+    return r
+
+def sandbox(self):
+    logger.error("IN SANDBOX")
+    # We can use a with statement to ensure threads are cleaned up promptly
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        # Start the load operations and mark each future with its URL
+        future_to_url = {executor.submit(load_url, url, 60): url for url in URLS}
+        for future in concurrent.futures.as_completed(future_to_url):
+            url = future_to_url[future]
+            data = None
+            try:
+                data = future.result()
+                logger.error(data)
+                logger.error("RETURNED RESULT EXITING LOOP")
+                break
+            except Exception as exc:
+                print('%r generated an exception: %s' % (url, exc))
+            else:
+                print(data)
+    logger.error("exiting SANDBOX")
+    return
+
+# END OF SANDBOXING PARALLEL REQ CODE
 
 def get_contract_info_if_exists(self, address):
     for contract_name, contract_address in contract_addresses.items():

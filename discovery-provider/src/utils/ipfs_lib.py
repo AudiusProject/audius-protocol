@@ -1,6 +1,7 @@
 import logging
 import json
 import time
+import concurrent.futures
 from urllib.parse import urlparse, urljoin
 import requests
 from requests.exceptions import ReadTimeout
@@ -9,6 +10,7 @@ from cid import make_cid
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
+
 
 
 class IPFSClient:
@@ -38,12 +40,14 @@ class IPFSClient:
         retrieved_from_gateway = False
         start_time = time.time()
 
+        '''
         # First try to retrieve from local ipfs node.
         try:
             api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
             retrieved_from_local_node = (api_metadata != metadata_format)
         except Exception:
             logger.error(f"Failed to retrieve CID from local node, {multihash}", exc_info=True)
+        '''
 
         # Else, try to retrieve from gateways.
         if not retrieved_from_local_node:
@@ -72,6 +76,35 @@ class IPFSClient:
 
         return api_metadata
 
+    # Retrieve a single page and report the URL and contents
+    def load_url(self, url, max_timeout):
+        r = requests.get(url, timeout=max_timeout)
+        return r
+
+    def query_ipfs_metadata_json(self, gateway_ipfs_urls, metadata_format):
+        formatted_json = None
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            # Start the load operations and mark each future with its URL
+            future_to_url = {executor.submit(self.load_url, url, 60): url for url in gateway_ipfs_urls}
+            for future in concurrent.futures.as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    r = future.result()
+                    if r.status_code != 200:
+                        logger.warning(f"IPFSCLIENT | {url} - {r.status_code}")
+                        raise Exception("Invalid status_code")
+                    # Override with retrieved JSON value
+                    formatted_json = self.get_metadata_from_json(
+                        metadata_format, r.json()
+                    )
+                    # Exit loop if dict is successfully retrieved
+                    logger.warning(f"IPFSCLIENT | Retrieved from {url}")
+                    logger.error("RETURNED RESULT")
+                    break
+                except Exception as exc:
+                    logger.error('IPFSClient | %r generated an exception: %s' % (url, exc))
+        return formatted_json
+
     def get_metadata_from_gateway(self, multihash, metadata_format):
         # Default return initial metadata format
         gateway_metadata_json = metadata_format
@@ -81,6 +114,19 @@ class IPFSClient:
                 \ncombined addresses: {gateway_endpoints}, \
                 \ncnode_endpoints: {self._cnode_endpoints}, \
                 \naddresses: {self._gateway_addresses}")
+
+        query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in gateway_endpoints]
+        data = self.query_ipfs_metadata_json(query_urls, metadata_format)
+        logger.error("RETURNED DATA")
+        logger.error(data)
+        if data is None:
+            raise Exception(
+                f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
+            )
+        gateway_metadata_json = data
+        return gateway_metadata_json
+        '''
+        raise Exception('Expected failure')
 
         for address in gateway_endpoints:
             gateway_query_address = "%s/ipfs/%s" % (address, multihash)
@@ -128,6 +174,7 @@ class IPFSClient:
         raise Exception(
             f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
         )
+        '''
 
     def get_metadata_from_ipfs_node(self, multihash, metadata_format):
         try:
