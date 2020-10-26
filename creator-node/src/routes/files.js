@@ -27,6 +27,8 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 
+const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
+
 // regex to validate storagePath format passed in for /file_lookup route
 // this will either be of the format /file_storage/<cid> for a file or /file_storage/<cid1>/<cid2> for an dir image
 // there are two named match groups, outer and inner. outer is for file or dirname for dir image. inner is only image cid in dir
@@ -90,6 +92,8 @@ const streamFromFileSystem = async (req, res, path) => {
   }
 }
 
+const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
+
 // Gets a CID, streaming from the filesystem if available and falling back to IPFS if not
 const getCID = async (req, res) => {
   if (!(req.params && req.params.CID)) {
@@ -104,18 +108,28 @@ const getCID = async (req, res) => {
     return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
   }
 
-  // Don't serve if not found in DB.
-  const queryResults = await models.File.findOne({
-    where: {
-      multihash: CID
-    },
-    order: [['clock', 'DESC']]
-  })
-  if (!queryResults) {
-    return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
-  }
+  const cacheKey = getStoragePathQueryCacheKey(CID)
 
-  if (queryResults.type === 'dir') return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+  let storagePath = await redisClient.get(cacheKey)
+  if (!storagePath) {
+    // Don't serve if not found in DB.
+    const queryResults = await models.File.findOne({
+      where: {
+        multihash: CID
+      },
+      order: [['clock', 'DESC']]
+    })
+    if (!queryResults) {
+      return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
+    }
+
+    if (queryResults.type === 'dir') {
+      return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+    }
+
+    storagePath = queryResults.storagePath
+    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+  }
 
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
@@ -132,20 +146,20 @@ const getCID = async (req, res) => {
 
   try {
     // Add a rehydration task to the queue to be processed in the background
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, { logContext: req.logContext })
     // Attempt to stream file to client.
-    req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
-    return await streamFromFileSystem(req, res, queryResults.storagePath)
+    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
 
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
-      return await streamFromFileSystem(req, res, queryResults.storagePath)
+      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
-      req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
+      req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
     }
   }
 
@@ -210,25 +224,33 @@ const getDirCID = async (req, res) => {
   const filename = req.params.filename
   const ipfsPath = `${dirCID}/${filename}`
 
-  // Don't serve if not found in DB.
-  // Query for the file based on the dirCID and filename
-  const queryResults = await models.File.findOne({
-    where: {
-      dirMultihash: dirCID,
-      fileName: filename
-    },
-    order: [['clock', 'DESC']]
-  })
-  if (!queryResults) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
-    )
+  const cacheKey = getStoragePathQueryCacheKey(ipfsPath)
+
+  let storagePath = await redisClient.get(cacheKey)
+  if (!storagePath) {
+    // Don't serve if not found in DB.
+    // Query for the file based on the dirCID and filename
+    const queryResults = await models.File.findOne({
+      where: {
+        dirMultihash: dirCID,
+        fileName: filename
+      },
+      order: [['clock', 'DESC']]
+    })
+    if (!queryResults) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
+      )
+    }
+    storagePath = queryResults.storagePath
+    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   }
+
   // Lop off the last bit of the storage path (the child CID)
   // to get the parent storage path for IPFS rehydration
-  const parentStoragePath = queryResults.storagePath.split('/').slice(0, -1).join('/')
+  const parentStoragePath = storagePath.split('/').slice(0, -1).join('/')
 
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
@@ -242,20 +264,20 @@ const getDirCID = async (req, res) => {
     // Add rehydrate task to queue to be processed in background
     RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
     // Attempt to stream file to client.
-    req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
-    return await streamFromFileSystem(req, res, queryResults.storagePath)
+    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
 
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       // CID is the file CID, parse it from the storagePath
-      const CID = queryResults.storagePath.split('/').slice(-1).join('')
+      const CID = storagePath.split('/').slice(-1).join('')
       const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(queryResults.storagePath, CID, req.logger, libs)
-      return await streamFromFileSystem(req, res, queryResults.storagePath)
+      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
-      req.logger.error(`Error calling findCIDInNetwork for path ${queryResults.storagePath}`, e)
+      req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
     }
   }
 
