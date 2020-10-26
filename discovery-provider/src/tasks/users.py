@@ -204,9 +204,6 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
-    # Refresh connection for non-creators
-    # refresh_user_connection(user_record, update_task)
-
     # if profile_picture CID is of a dir, store under _sizes field instead
     if user_record.profile_picture:
         logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
