@@ -3,7 +3,7 @@ const sinon = require('sinon')
 
 const config = require('../src/config')
 
-describe('test txRelay: selectWallet(walletAddress)', () => {
+describe.only('test txRelay: selectWallet(walletAddress)', () => {
   let relayerWallets, selectWallet
   beforeEach(() => {
     relayerWallets = [
@@ -49,7 +49,7 @@ describe('test txRelay: selectWallet(walletAddress)', () => {
     firstWallet.locked = false
     secondWallet.locked = false
 
-    const thirdWallet = await selectWallet('0x724000024990A67a648D4229fCD5Dd618c62D7D9') // index 0 when calling mod
+    const thirdWallet = await selectWallet('0x8CbFFddd5c9f625b4e18992a641cC88Ea4cD7032') // index 0 when calling mod
     assert(thirdWallet !== undefined)
   })
 })
