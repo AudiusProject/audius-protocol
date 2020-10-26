@@ -3,7 +3,7 @@ const sinon = require('sinon')
 
 const config = require('../src/config')
 
-describe.only('test txRelay: selectWallet(walletAddress)', () => {
+describe('test txRelay: selectWallet(walletAddress)', () => {
   let relayerWallets, selectWallet
   beforeEach(() => {
     relayerWallets = [
