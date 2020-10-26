@@ -136,7 +136,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 // to find the index for relayer addresses
 const getRelayerWalletIndex = (walletAddress) => {
   let walletParsedInteger = parseInt(walletAddress, 16)
-  logger.info('number of wallets', relayerWallets.length, relayerWallets)
   return walletParsedInteger % relayerWallets.length
 }
 
