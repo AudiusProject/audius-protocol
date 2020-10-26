@@ -22,6 +22,12 @@ const config = convict({
     env: 'dbUrl',
     default: null
   },
+  dbConnectionPoolMax: {
+    doc: 'Max connections in database pool',
+    format: 'nat',
+    env: 'dbConnectionPoolMax',
+    default: 100
+  },
   ipfsHost: {
     doc: 'IPFS host address',
     format: String,
