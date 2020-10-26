@@ -140,9 +140,9 @@ const getRelayerWalletIndex = (walletAddress) => {
 }
 
 const selectWallet = async (senderAddress) => {
-  logger.info('L2 - Acquiring lock for user', senderAddress)
   let selectedWallet
   let idx = getRelayerWalletIndex(senderAddress)
+  logger.info(`L2 - Acquiring lock for user ${senderAddress}, index ${idx}`)
 
   while (relayerWallets[idx].locked) {
     await delay(200)
