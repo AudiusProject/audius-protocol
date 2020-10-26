@@ -195,9 +195,6 @@ def parse_track_event(
         track_record.owner_id = owner_id
 
 
-        # Reconnect to creator nodes for this user
-        # refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
-
         track_record.is_delete = False
 
         track_metadata = update_task.ipfs_client.get_metadata(
@@ -259,9 +256,6 @@ def parse_track_event(
         )[0]
         track_record.owner_id = owner_id
         track_record.is_delete = False
-
-        # Reconnect to creator nodes for this user
-        # refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
 
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
