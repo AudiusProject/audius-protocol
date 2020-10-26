@@ -135,8 +135,8 @@ const fundEthRelayerIfEmpty = async () => {
     // 0.25 eth =          250000000000000000
     const minimumBalance = 250000000000000000
 
-    let gasInfo = await getGasPrice()
-    let gasPrice = gasInfo.fastGweiHex
+    let gasInfo
+    let gasPrice
 
     for (let i = 0; i < relayerWallets.length; i++) {
         let relayerPublicKey = relayerWallets[i].publicKey
@@ -146,6 +146,8 @@ const fundEthRelayerIfEmpty = async () => {
         if (!validBalance) {
             let missingBalance = minimumBalance - balance
             console.log(`${i + 1} - Funding ${relayerPublicKey} with ${missingBalance}, currently ${balance}/${minimumBalance}`)
+            gasInfo = await getGasPrice()
+            gasPrice = gasInfo.fastestGweiHex
             await createAndSendTransaction(
                 walletInfo.funder, // Always send from the designated FUNDER
                 relayerPublicKey,             // Public key of receiving account
