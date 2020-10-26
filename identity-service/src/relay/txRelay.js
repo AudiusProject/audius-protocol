@@ -132,7 +132,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   return txReceipt
 }
 
-// Calculates index into eth relayer addresses
+// Given a wallet address, converts it to base 10 and calculates the modulo
+// to find the index for relayer addresses
 const getRelayerWalletIndex = (walletAddress) => {
   let walletParsedInteger = parseInt(walletAddress, 16)
   return walletParsedInteger % relayerWallets.length
