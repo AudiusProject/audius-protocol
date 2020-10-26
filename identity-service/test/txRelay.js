@@ -6,6 +6,11 @@ const config = require('../src/config')
 describe('test txRelay: selectWallet(walletAddress)', () => {
   let relayerWallets, selectWallet
   beforeEach(() => {
+    // reload the module each time for fresh state
+    delete require.cache[require.resolve('../src/relay/txRelay')]
+    delete require.cache[require.resolve('../src/web3')]
+    sinon.restore()
+
     relayerWallets = [
       {
         publicKey: '0x9d5f71e3F6B454DE13A293A7280B4252D4C1C66E',
@@ -22,13 +27,6 @@ describe('test txRelay: selectWallet(walletAddress)', () => {
     ]
     sinon.stub(config, 'get').withArgs('relayerWallets').returns(relayerWallets)
     selectWallet = require('../src/relay/txRelay').selectWallet
-  })
-
-  afterEach(() => {
-    // reload the module each time for fresh state
-    delete require.cache[require.resolve('../src/relay/txRelay')]
-    delete require.cache[require.resolve('../src/web3')]
-    sinon.restore()
   })
 
   it('should select a random wallet', async () => {
