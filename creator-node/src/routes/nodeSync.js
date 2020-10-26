@@ -503,7 +503,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       }
     }
   } catch (e) {
-    req.logger.error('Sync Error', e)
+    req.logger.error('Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e)
     errorObj = e
   } finally {
     // Release all redis locks
