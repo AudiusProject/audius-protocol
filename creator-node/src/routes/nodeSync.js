@@ -153,10 +153,10 @@ module.exports = function (app) {
         }
       }
 
-      req.logger.info('Successful export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start}`)
+      req.logger.info('Successful export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ms`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      req.logger.error('Error in /export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ||`, e)
+      req.logger.error('Error in /export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ms ||`, e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
