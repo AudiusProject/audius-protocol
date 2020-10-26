@@ -24,6 +24,8 @@ module.exports = function (app) {
    * }
    */
   app.get('/export', handleResponse(async (req, res) => {
+    const start = Date.now()
+
     // TODO - allow for offsets in the /export
     const walletPublicKeys = req.query.wallet_public_key // array
     const dbOnlySync = (req.query.db_only_sync === true || req.query.db_only_sync === 'true')
@@ -104,7 +106,7 @@ module.exports = function (app) {
         // there's more data to pull
         if (cnodeUser.clock > MaxClock) {
           // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
-          console.log('nodeSync.js#export - cnode user clock value is higher than MaxClock, resetting', clockRecords[clockRecords.length - 1].clock)
+          req.logger.info('nodeSync.js#export - cnode user clock value is higher than MaxClock, resetting', clockRecords[clockRecords.length - 1].clock)
           cnodeUser.clock = clockRecords[clockRecords.length - 1].clock
         }
       })
@@ -150,9 +152,10 @@ module.exports = function (app) {
         }
       }
 
+      req.logger.info('Successful export for wallets', walletPublicKeys, `|| route duration ${Date.now() - start} ||`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      console.error('Error in /export', e)
+      req.logger.error('Error in /export for wallets', walletPublicKeys, `|| route duration ${Date.now() - start} ||`, e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
@@ -251,9 +254,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       baseURL: creatorNodeEndpoint,
       url: '/export',
       params: { wallet_public_key: walletPublicKeys, db_only_sync: dbOnlySync },
-      responseType: 'json'
+      responseType: 'json',
+      // TODO - adjust value before taking to prod
+      timeout: 10000 /* 10s - higher timeout  */
     })
-    if (resp.status !== 200) throw new Error(resp.data['error'])
+    if (resp.status !== 200) {
+      req.logger.error(`Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
+      throw new Error(resp.data['error'])
+    }
     // TODO - explain patch
     if (!resp.data) {
       if (resp.request && resp.request.responseText) {
