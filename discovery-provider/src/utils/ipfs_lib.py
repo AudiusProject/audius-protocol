@@ -99,7 +99,6 @@ class IPFSClient:
                     )
                     # Exit loop if dict is successfully retrieved
                     logger.warning(f"IPFSCLIENT | Retrieved from {url}")
-                    logger.error("RETURNED RESULT")
                     break
                 except Exception as exc:
                     logger.error('IPFSClient | %r generated an exception: %s' % (url, exc))
@@ -117,8 +116,6 @@ class IPFSClient:
 
         query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in gateway_endpoints]
         data = self.query_ipfs_metadata_json(query_urls, metadata_format)
-        logger.error("RETURNED DATA")
-        logger.error(data)
         if data is None:
             raise Exception(
                 f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
