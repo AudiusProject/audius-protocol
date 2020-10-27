@@ -63,26 +63,26 @@ workflows:
   test:
     jobs:
       - init
-      - test-staging:
-          requires:
-            - init
+      # - test-staging:
+      #     requires:
+      #       - init
       - test-production:
           requires:
             - init
 
-  staging:
-    triggers:
-      - schedule:
-          cron: "0,10,20,30,40,50 * * * * "
-          filters:
-            branches:
-              only:
-                - master
-    jobs:
-      - init
-      - test-staging:
-          requires:
-            - init
+  # staging:
+  #   triggers:
+  #     - schedule:
+  #         cron: "0,10,20,30,40,50 * * * * "
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #   jobs:
+  #     - init
+  #     - test-staging:
+  #         requires:
+  #           - init
 
   production:
     triggers:
