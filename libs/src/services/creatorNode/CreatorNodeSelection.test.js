@@ -62,7 +62,7 @@ describe('test CreatorNodeSelection', () => {
     const cns = new CreatorNodeSelection({
       creatorNode: null,
       numberOfNodes: 3,
-      ethContracts: mockEthContracts,
+      ethContracts: mockEthContracts([], '1.2.3'),
       whitelist: null,
       blacklist: null
     })
@@ -90,7 +90,7 @@ describe('test CreatorNodeSelection', () => {
     assert(services[2].responseTime === 300)
   })
 
-  it('selects the fastest healthy service as primary and rest secondaries', async () => {
+  it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
       .get('/health_check')
