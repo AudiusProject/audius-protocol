@@ -44,7 +44,7 @@ module.exports = function (app) {
     let blockDiff = parseInt(req.query.blockDiff, 10) || RELAY_HEALTH_TEN_MINS_AGO_BLOCKS
     let maxTransactions = parseInt(req.query.maxTransactions, 10) || RELAY_HEALTH_MAX_TRANSACTIONS
     let maxErrors = parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
-    let minTransactions = parseFloat(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
+    let minTransactions = parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
     let isVerbose = req.query.verbose || false
 
     // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
