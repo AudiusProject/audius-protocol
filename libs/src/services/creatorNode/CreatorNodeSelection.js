@@ -10,7 +10,7 @@ class CreatorNodeSelection extends ServiceSelection {
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
-        return services.map(e => e.endpoint) // ? might need to map like services.map(e => e.endpoint)
+        return services.map(e => e.endpoint)
       },
       whitelist
     })
@@ -30,7 +30,7 @@ class CreatorNodeSelection extends ServiceSelection {
    * 2. Filter from/out creator nodes based off of the whitelist and blacklist
    * 3. Init a map of default stats of each service
    * 4. Perform a health check and sync status check to determine health and update stats
-   * 5. Sort by healthiest (highest version -> lowest version; secondary check if equal version based off of responseTime)
+   * 5. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime)
    * 6. Select a primary and numberOfNodes-1 number of secondaries
    */
   async select () {
@@ -128,7 +128,7 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 
   /**
-   * Sort by highest version number. If the compared services are of the same, sort by
+   * Sort by highest version number. If the compared services are of the same version, sort by
    * its response time.
    * @param {[{endpoint, version, responseTime}]} services
    */
@@ -139,7 +139,6 @@ class CreatorNodeSelection extends ServiceSelection {
 
       return a.responseTime - b.responseTime
     })
-    return services
   }
 
   /**
