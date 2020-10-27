@@ -40,18 +40,6 @@ const config = convict({
     env: 'ipfsPort',
     default: null
   },
-  ipfsClusterIP: {
-    doc: 'The IP address of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'ipaddress',
-    env: 'ipfsClusterIP',
-    default: '127.0.0.1' // somewhat of a hack because convict requires non-null values, will check for this value when used
-  },
-  ipfsClusterPort: {
-    doc: 'The port of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'port',
-    env: 'ipfsClusterPort',
-    default: 0
-  },
   storagePath: {
     doc: 'File system path to store raw files that are uploaded',
     format: String,
