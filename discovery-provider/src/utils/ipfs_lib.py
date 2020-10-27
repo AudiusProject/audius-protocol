@@ -19,7 +19,7 @@ class IPFSClient:
     def __init__(self, ipfs_peer_host, ipfs_peer_port, gateway_addresses):
         self._api = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
         self._gateway_addresses = gateway_addresses
-        self._cnode_endpoints = None
+        self._cnode_endpoints = []
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
 
@@ -171,16 +171,6 @@ class IPFSClient:
         if not self.cid_is_valid(multihash):
             raise Exception(f'invalid multihash {multihash}')
 
-        # First, attempt to cat multihash locally via IPFS.
-        try:
-            # If cat successful, multihash is not directory.
-            self._api.cat(multihash, 0, 1, timeout=3)
-            return False
-        except Exception as e:  # pylint: disable=W0703
-            if "this dag node is a directory" in str(e):
-                logger.warning(f"IPFSCLIENT | Found directory {multihash}")
-                return True
-
         # If not found via IPFS, attempt to retrieve from cnode gateway endpoints.
         gateway_endpoints = self._cnode_endpoints
         for address in gateway_endpoints:
@@ -226,7 +216,16 @@ class IPFSClient:
             if r is not None and r.status_code == 200:
                 logger.warning(f"IPFSCLIENT | Returned image at {gateway_query_address}")
                 return False
+                # Attempt to cat multihash locally via IPFS.
 
+        try:
+            # If cat successful, multihash is not directory.
+            self._api.cat(multihash, 0, 1, timeout=3)
+            return False
+        except Exception as e:  # pylint: disable=W0703
+            if "this dag node is a directory" in str(e):
+                logger.warning(f"IPFSCLIENT | Found directory {multihash}")
+                return True
         raise Exception(f"Failed to determine multihash status, {multihash}")
 
     def connect_peer(self, peer):
