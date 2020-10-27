@@ -168,9 +168,10 @@ module.exports = function (app) {
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
     // option to sync just the db records as opposed to db records and files on disk, defaults to false
     const dbOnlySync = (req.body.db_only_sync === true || req.body.db_only_sync === 'true')
-    // Log if initiated from SnapbackSM
-    const stateMachineInitiatedSync = (req.body.state_machine === true || req.body.state_machine === 'true')
-    if (stateMachineInitiatedSync) req.logger.info(`SnapbackSM sync initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
+
+    // Log syncType
+    const syncType = req.body.sync_type
+    if (syncType) req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
 
     if (!immediate) {
       req.logger.info('debounce time', config.get('debounceTime'))

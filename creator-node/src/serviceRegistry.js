@@ -1,7 +1,7 @@
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
-const SnapbackSM = require('./snapbackSM')
+const { SnapbackSM } = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 
