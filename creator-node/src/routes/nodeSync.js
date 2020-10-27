@@ -126,6 +126,7 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       const ipfsIDObj = await getIPFSPeerId(ipfs, config)
 
+      /*
       if (!dbOnlySync) {
         // Rehydrate files if necessary
         for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
@@ -149,6 +150,7 @@ module.exports = function (app) {
           }))
         }
       }
+      */
 
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
