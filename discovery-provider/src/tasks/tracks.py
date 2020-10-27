@@ -217,18 +217,8 @@ def parse_track_event(
                 return None
 
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
-            try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
-                if is_directory:
-                    track_record.cover_art_sizes = track_record.cover_art
-                    track_record.cover_art = None
-            except Exception as e:
-                # we are unable to get the cover art
-                if 'invalid multihash' in str(e):
-                    track_record.cover_art_sizes = None
-                    track_record.cover_art = None
-                else:
-                    raise e
+            track_record.cover_art_sizes = track_record.cover_art
+            track_record.cover_art = None
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
@@ -269,26 +259,16 @@ def parse_track_event(
         )
         track_record.metadata_multihash = upd_track_metadata_multihash
 
-        # if cover_art CID is of a dir, store under _sizes field instead
-        if track_record.cover_art:
+        # All incoming cover art is intended to be a directory, any write to cover_art field is replaced by cover_art_sizes
+        if track_record.cover_art and track_record.cover_art_sizes is None:
             # If CID is in IPLD blacklist table, do not continue with indexing
             if is_blacklisted_ipld(session, track_record.cover_art):
                 logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing update track")
                 return None
 
             logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
-            try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
-                if is_directory:
-                    track_record.cover_art_sizes = track_record.cover_art
-                    track_record.cover_art = None
-            except Exception as e:
-                # we are unable to get the cover art
-                if 'invalid multihash' in str(e):
-                    track_record.cover_art_sizes = None
-                    track_record.cover_art = None
-                else:
-                    raise e
+            track_record.cover_art_sizes = track_record.cover_art
+            track_record.cover_art = None
 
         update_remixes_table(session, track_record, track_metadata)
 
