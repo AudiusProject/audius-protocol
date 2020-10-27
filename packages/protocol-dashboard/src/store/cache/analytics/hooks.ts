@@ -113,12 +113,15 @@ const joinTimeSeriesDatasets = (datasets: TimeSeriesRecord[][]) => {
   if (!datasets.length) return []
   const joined: TimeSeriesRecord[] = []
 
-  const minLength = Math.min(...datasets.map(d => d.length))
+  const minLength = Math.min(
+    ...datasets.filter(d => d.length > 0).map(d => d.length)
+  )
   for (let i = 0; i < minLength; ++i) {
     const { timestamp } = datasets[0][i]
     let count: number = 0
     let unique_count: number = 0
     datasets.forEach(dataset => {
+      if (!dataset[i]) return
       count += dataset[i].count
       if (dataset[i].unique_count) {
         unique_count += dataset[i].unique_count!
@@ -314,6 +317,7 @@ export function fetchTopApps(
           try {
             const url = `${node.endpoint}/v1/metrics/app_name?start_time=${startTime}&limit=${limit}&include_unknown=true`
             const res = await (await fetch(url)).json()
+            if (!res.data) return {}
             let apps: CountRecord = {}
             res.data.forEach((app: { name: string; count: number }) => {
               const name =
