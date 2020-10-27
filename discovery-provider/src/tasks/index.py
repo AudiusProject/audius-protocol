@@ -1,5 +1,4 @@
 from urllib.parse import urljoin
-import copy
 import logging
 import requests
 import concurrent.futures
