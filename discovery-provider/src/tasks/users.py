@@ -208,7 +208,8 @@ def parse_user_event(
     if user_record.profile_picture:
         logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
         try:
-            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
+            # is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
+            is_directory = True
             if is_directory:
                 user_record.profile_picture_sizes = user_record.profile_picture
                 user_record.profile_picture = None
@@ -224,7 +225,8 @@ def parse_user_event(
     if user_record.cover_photo:
         logger.info(f"users.py | Processing user cover photo {user_record.cover_photo}")
         try:
-            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
+            # is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
+            is_directory = True
             if is_directory:
                 user_record.cover_photo_sizes = user_record.cover_photo
                 user_record.cover_photo = None

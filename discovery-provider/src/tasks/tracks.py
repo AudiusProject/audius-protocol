@@ -218,7 +218,8 @@ def parse_track_event(
 
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+                # is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+                is_directory = True
                 if is_directory:
                     track_record.cover_art_sizes = track_record.cover_art
                     track_record.cover_art = None
@@ -278,7 +279,8 @@ def parse_track_event(
 
             logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
             try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+                # is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
+                is_directory = True
                 if is_directory:
                     track_record.cover_art_sizes = track_record.cover_art
                     track_record.cover_art = None
