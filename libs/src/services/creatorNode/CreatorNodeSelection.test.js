@@ -51,11 +51,11 @@ describe('test CreatorNodeSelection', () => {
       responseTime: 100 // ms
     }]
 
-    const sortedServices = cns.sortBySemver(services)
+    cns.sortBySemver(services)
 
-    assert(sortedServices[0].version === '10.23.20')
-    assert(sortedServices[1].version === '10.13.95')
-    assert(sortedServices[2].version === '4.30.95')
+    assert(services[0].version === '10.23.20')
+    assert(services[1].version === '10.13.95')
+    assert(services[2].version === '4.30.95')
   })
 
   it('sorts by ascending time,', () => {
@@ -83,11 +83,11 @@ describe('test CreatorNodeSelection', () => {
       responseTime: 300 // ms
     }]
 
-    const sortedServices = cns.sortBySemver(services)
+    cns.sortBySemver(services)
 
-    assert(sortedServices[0].responseTime === 100)
-    assert(sortedServices[1].responseTime === 200)
-    assert(sortedServices[2].responseTime === 300)
+    assert(services[0].responseTime === 100)
+    assert(services[1].responseTime === 200)
+    assert(services[2].responseTime === 300)
   })
 
   it('selects the fastest healthy service as primary and rest secondaries', async () => {
