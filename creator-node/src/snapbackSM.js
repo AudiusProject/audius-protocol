@@ -23,11 +23,15 @@ const ModuloBase = 24
 // Delay 1 hour between production state machine jobs
 const ProductionJobDelayInMs = 3600000
 
+// Describes the priority of a sync operation in the sync queue.
+// High priority syncs will be processed before low priority ones.
 const SyncPriority = Object.freeze({
   Low: 2,
   High: 1
 })
 
+// Describes the sync type - Recurring (scheduled) or Manual (triggered
+// by a user action). Currently only used for logging purposes.
 const SyncType = Object.freeze({
   Recurring: 'RECURRING',
   Manual: 'MANUAL'
@@ -136,7 +140,11 @@ class SnapbackSM {
 
   // Enqueues a manual (high priority) sync.
   // Returns the added job.
-  async enqueueManualSync ({ userWallet, secondaryEndpoint, primaryEndpoint }) {
+  async enqueueManualSync ({
+    primaryEndpoint,
+    secondaryEndpoint,
+    userWallet
+  }) {
     try {
       const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
       return this.issueSecondarySync({
@@ -154,7 +162,14 @@ class SnapbackSM {
 
   // Enqueue a sync request to a particular secondary.
   // Returns the added job
-  async issueSecondarySync ({ userWallet, secondaryEndpoint, primaryEndpoint, primaryClockValue, priority, syncType = SyncType.Recurring }) {
+  async issueSecondarySync ({
+    primaryEndpoint,
+    secondaryEndpoint,
+    userWallet,
+    primaryClockValue,
+    priority,
+    syncType = SyncType.Recurring
+  }) {
     let syncRequestParameters = {
       baseURL: secondaryEndpoint,
       url: '/sync',
