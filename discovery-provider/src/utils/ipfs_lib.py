@@ -74,8 +74,8 @@ class IPFSClient:
 
         return api_metadata
 
-    # Retrieve a single page and report the URL and contents
-    def load_url(self, url, max_timeout):
+    # Retrieve a metadata object
+    def load_metadata_url(self, url, max_timeout):
         # Skip URL if invalid
         validate_url = urlparse(url)
         if not validate_url.scheme:
@@ -87,7 +87,7 @@ class IPFSClient:
         formatted_json = None
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start the load operations and mark each future with its URL
-            future_to_url = {executor.submit(self.load_url, url, 5): url for url in gateway_ipfs_urls}
+            future_to_url = {executor.submit(self.load_metadata_url, url, 5): url for url in gateway_ipfs_urls}
             for future in concurrent.futures.as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
