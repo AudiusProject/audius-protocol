@@ -204,63 +204,25 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
-    # Refresh connection for non-creators
-    refresh_user_connection(user_record, update_task)
-
-    # if profile_picture CID is of a dir, store under _sizes field instead
+    # All incoming profile photos intended to be a directory
+    # Any write to profile_picture field is replaced by profile_picture_sizes
     if user_record.profile_picture:
         logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
-        try:
-            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
-            if is_directory:
-                user_record.profile_picture_sizes = user_record.profile_picture
-                user_record.profile_picture = None
-        except Exception as e:
-            # we are unable to get the profile picture
-            if 'invalid multihash' in str(e):
-                user_record.profile_picture_sizes = None
-                user_record.profile_picture = None
-            else:
-                raise e
+        user_record.profile_picture_sizes = user_record.profile_picture
+        user_record.profile_picture = None
 
-    # if cover_photo CID is of a dir, store under _sizes field instead
+    # All incoming cover photos intended to be a directory
+    # Any write to cover_photo field is replaced by cover_photo_sizes
     if user_record.cover_photo:
         logger.info(f"users.py | Processing user cover photo {user_record.cover_photo}")
-        try:
-            is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
-            if is_directory:
-                user_record.cover_photo_sizes = user_record.cover_photo
-                user_record.cover_photo = None
-        except Exception as e:
-            # we are unable to get the profile picture
-            if 'invalid multihash' in str(e):
-                user_record.cover_photo_sizes = None
-                user_record.cover_photo = None
-            else:
-                raise e
-
+        user_record.cover_photo_sizes = user_record.cover_photo
+        user_record.cover_photo = None
     return user_record
-
-def refresh_user_connection(user_record, update_task):
-    if not user_record.is_creator and user_record.profile_picture or user_record.cover_photo:
-        user_node_url = update_task.shared_config["discprov"]["user_metadata_service_url"]
-        logger.warning(f'users.py | user_metadata_service_url - {user_node_url}')
-        # Manually peer with user creator nodes
-        helpers.update_ipfs_peers_from_user_endpoint(
-            update_task,
-            user_node_url
-        )
 
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
     user_metadata = user_metadata_format
 
     if user_record.metadata_multihash and user_record.is_creator and user_record.handle:
-        # Manually peer with user creator nodes
-        helpers.update_ipfs_peers_from_user_endpoint(
-            update_task,
-            user_record.creator_node_endpoint
-        )
-
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
             user_metadata_format

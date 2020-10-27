@@ -1,5 +1,6 @@
 from urllib.parse import urljoin
 import logging
+import concurrent.futures
 import requests
 
 from src import contract_addresses
@@ -106,6 +107,33 @@ def update_latest_block_redis():
     redis.set(latest_block_redis_key, latest_block_from_chain.number)
     redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
 
+def fetch_tx_receipt(transaction):
+    web3 = update_task.web3
+    tx_hash = web3.toHex(transaction["hash"])
+    receipt = web3.eth.getTransactionReceipt(tx_hash)
+    response = {}
+    response["tx_receipt"] = receipt
+    response["tx_hash"] = tx_hash
+    return response
+
+def fetch_tx_receipts(self, block_transactions):
+    block_tx_with_receipts = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_tx_receipt = {executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions}
+        for future in concurrent.futures.as_completed(future_to_tx_receipt):
+            tx = future_to_tx_receipt[future]
+            try:
+                tx_receipt_info = future.result()
+                tx_hash = tx_receipt_info["tx_hash"]
+                block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
+            except Exception as exc:
+                logger.error(f"index.py | fetch_tx_receipts {tx} generated {exc}")
+    num_processed_txs = len(block_tx_with_receipts.keys())
+    num_submitted_txs = len(block_transactions)
+    if num_processed_txs != num_submitted_txs:
+        raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
+    return block_tx_with_receipts
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -148,6 +176,8 @@ def index_blocks(self, db, blocks_list):
             playlist_factory_txs = []
             user_library_factory_txs = []
 
+            tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
+
             # Sort transactions by hash
             sorted_txs = sorted(block.transactions, key=lambda entry: entry['hash'])
 
@@ -155,7 +185,7 @@ def index_blocks(self, db, blocks_list):
             for tx in sorted_txs:
                 tx_hash = web3.toHex(tx["hash"])
                 tx_target_contract_address = tx["to"]
-                tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
+                tx_receipt = tx_receipt_dict[tx_hash]
 
                 # Handle user operations
                 if tx_target_contract_address == contract_addresses["user_factory"]:
