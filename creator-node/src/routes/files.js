@@ -391,7 +391,7 @@ module.exports = function (app) {
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')
-    const ipfsIDObj = await getIPFSPeerId(ipfs, config)
+    const ipfsIDObj = await getIPFSPeerId(ipfs)
     if (req.query.caller_ipfs_id) {
       try {
         req.logger.info(`Connection to ${req.query.caller_ipfs_id}`)

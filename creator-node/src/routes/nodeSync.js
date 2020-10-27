@@ -127,7 +127,7 @@ module.exports = function (app) {
 
       // Expose ipfs node's peer ID.
       const ipfs = req.app.get('ipfsAPI')
-      const ipfsIDObj = await getIPFSPeerId(ipfs, config)
+      const ipfsIDObj = await getIPFSPeerId(ipfs)
 
       if (!dbOnlySync) {
         // Rehydrate files if necessary
