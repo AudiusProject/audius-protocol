@@ -225,7 +225,7 @@ class ServiceSelection {
 
   /**
    * What the criteria is for a healthy service
-   * @param {Response} response axios response
+   * @param {response} response axios response
    * @param {{ [key: string]: string}} urlMap health check urls mapped to their cannonical url
    * e.g. https://discoveryprovider.audius.co/health_check => https://discoveryprovider.audius.co
    */
@@ -233,7 +233,7 @@ class ServiceSelection {
     return response.status === 200
   }
 
-  /** Races requests against eachother with provided timeouts and health checks */
+  /** Races requests against each other with provided timeouts and health checks */
   async race (services) {
     // Key the services by their health check endpoint
     const map = services.reduce((acc, s) => {
