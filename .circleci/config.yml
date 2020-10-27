@@ -655,8 +655,6 @@ workflows:
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
-          requires:
-            - test-discovery-provider
           filters:
             tags:
               only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
