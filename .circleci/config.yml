@@ -34,17 +34,17 @@ jobs:
           paths:
             - node_modules
 
-  test-staging:
-    working_directory: ~/general-admission
-    docker:
-      - image: circleci/node:10.13
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: run test
-          command: npm run test:staging
+  # test-staging:
+  #   working_directory: ~/general-admission
+  #   docker:
+  #     - image: circleci/node:10.13
+  #   steps:
+  #     - checkout
+  #     - attach_workspace:
+  #         at: ./
+  #     - run:
+  #         name: run test
+  #         command: npm run test:staging
 
   test-production:
     working_directory: ~/general-admission
