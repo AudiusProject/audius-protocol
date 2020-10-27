@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 import logging
-import requests
 import concurrent.futures
+import requests
 
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save

@@ -194,7 +194,6 @@ def parse_track_event(
         )[0]
         track_record.owner_id = owner_id
 
-
         track_record.is_delete = False
 
         track_metadata = update_task.ipfs_client.get_metadata(
@@ -259,8 +258,9 @@ def parse_track_event(
         )
         track_record.metadata_multihash = upd_track_metadata_multihash
 
-        # All incoming cover art is intended to be a directory, any write to cover_art field is replaced by cover_art_sizes
-        if track_record.cover_art and track_record.cover_art_sizes is None:
+        # All incoming cover art is intended to be a directory
+        # Any write to cover_art field is replaced by cover_art_sizes
+        if track_record.cover_art:
             # If CID is in IPLD blacklist table, do not continue with indexing
             if is_blacklisted_ipld(session, track_record.cover_art):
                 logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing update track")

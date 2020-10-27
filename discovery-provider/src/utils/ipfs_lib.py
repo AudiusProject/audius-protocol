@@ -4,7 +4,6 @@ import time
 import concurrent.futures
 from urllib.parse import urlparse, urljoin
 import requests
-from requests.exceptions import ReadTimeout
 import ipfshttpclient
 from cid import make_cid
 from src.utils.helpers import get_valid_multiaddr_from_id_json
@@ -70,7 +69,10 @@ class IPFSClient:
             raise Exception(f"IPFSCLIENT | Failed to retrieve metadata. Using default values for {multihash}")
 
         duration = time.time() - start_time
-        logger.info(f"IPFSCLIENT | get_metadata ${multihash} | duration={duration} seconds | retrieved from ipfs:{retrieved_from_local_node}, retrieved from gateway:{retrieved_from_gateway}")
+        logger.info(
+            f"IPFSCLIENT | get_metadata ${multihash} {duration} seconds \
+                | from ipfs:{retrieved_from_local_node} |from gateway:{retrieved_from_gateway}"
+        )
 
         return api_metadata
 
@@ -103,7 +105,7 @@ class IPFSClient:
                     logger.warning(f"IPFSCLIENT | Retrieved from {url}")
                     break
                 except Exception as exc:
-                    logger.error('IPFSClient | %r generated an exception: %s' % (url, exc))
+                    logger.error(f"IPFSClient | {url} generated an exception: {exc}")
         return formatted_json
 
     def get_metadata_from_gateway(self, multihash, metadata_format):
