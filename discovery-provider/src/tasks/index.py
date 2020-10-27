@@ -127,8 +127,11 @@ def fetch_tx_receipts(self, block_transactions):
                 tx_hash = tx_receipt_info["tx_hash"]
                 block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
             except Exception as exc:
-                logger.error('index.py | fetch_tx_receipts %r generated an exception: %s' % (tx, exc))
-    # TODO: Throw if num keys is not equal to block-transactions length - if a fetch failed for whatever reason
+                logger.error(f"index.py | fetch_tx_receipts {tx} generated {exc}")
+    num_processed_txs = len(block_tx_with_receipts.keys())
+    num_submitted_txs = len(block_transactions)
+    if num_processed_txs != num_submitted_txs:
+        raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
     return block_tx_with_receipts
 
 def index_blocks(self, db, blocks_list):
