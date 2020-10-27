@@ -70,7 +70,7 @@ class IPFSClient:
             raise Exception(f"IPFSCLIENT | Failed to retrieve metadata. Using default values for {multihash}")
 
         duration = time.time() - start_time
-        logger.info(f"IPFSCLIENT | get_metadata --- {duration} seconds ---")
+        logger.info(f"IPFSCLIENT | get_metadata ${multihash} | duration={duration} seconds | retrieved from ipfs:{retrieved_from_local_node}, retrieved from gateway:{retrieved_from_gateway}")
 
         return api_metadata
 
