@@ -204,18 +204,19 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
-    # All incoming profile photos intended to be a directory, any write to profile_picture field is replaced by profile_picture_sizes
-    if user_record.profile_picture and user_record.profile_picture_sizes is None:
+    # All incoming profile photos intended to be a directory
+    # Any write to profile_picture field is replaced by profile_picture_sizes
+    if user_record.profile_picture:
         logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
         user_record.profile_picture_sizes = user_record.profile_picture
         user_record.profile_picture = None
 
-    # All incoming cover photos intended to be a directory, any write to cover_photo field is replaced by cover_photo_sizes
-    if user_record.cover_photo and user_record.cover_photo_sizes is None:
+    # All incoming cover photos intended to be a directory
+    # Any write to cover_photo field is replaced by cover_photo_sizes
+    if user_record.cover_photo:
         logger.info(f"users.py | Processing user cover photo {user_record.cover_photo}")
         user_record.cover_photo_sizes = user_record.cover_photo
         user_record.cover_photo = None
-
     return user_record
 
 def get_metadata_overrides_from_ipfs(session, update_task, user_record):
