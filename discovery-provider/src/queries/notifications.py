@@ -11,7 +11,7 @@ from src.utils.db_session import get_db_read_replica
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
-max_block_diff = 50000
+max_block_diff = 50
 
 
 # pylint: disable=R0911
