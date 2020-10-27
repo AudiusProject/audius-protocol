@@ -1,10 +1,9 @@
-const axios = require('axios')
-
 const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
+const { serviceRegistry } = require('./serviceRegistry')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -100,19 +99,11 @@ async function triggerSecondarySyncs (req) {
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
+    const { snapbackSM } = serviceRegistry
     await Promise.all(secondaries.map(async secondary => {
       if (!secondary || !_isFQDN(secondary)) return
-      const axiosReq = {
-        baseURL: secondary,
-        url: '/sync',
-        method: 'post',
-        data: {
-          wallet: [req.session.wallet],
-          creator_node_endpoint: primary,
-          immediate: false
-        }
-      }
-      return axios(axiosReq)
+      const userWallet = req.session.wallet
+      await snapbackSM.enqueueManualSync({ userWallet, secondaryEndpoint: secondary, primaryEndpoint: primary })
     }))
   } catch (e) {
     req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)
