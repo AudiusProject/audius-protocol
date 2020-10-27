@@ -113,10 +113,9 @@ const joinTimeSeriesDatasets = (datasets: TimeSeriesRecord[][]) => {
   if (!datasets.length) return []
   const joined: TimeSeriesRecord[] = []
 
-  const minLength = Math.min(
-    ...datasets.filter(d => d.length > 0).map(d => d.length)
-  )
-  for (let i = 0; i < minLength; ++i) {
+  // Joined dataset should be of length "max" of each child dataset
+  const maxLength = Math.max(...datasets.map(d => d.length))
+  for (let i = 0; i < maxLength; ++i) {
     const { timestamp } = datasets[0][i]
     let count: number = 0
     let unique_count: number = 0
