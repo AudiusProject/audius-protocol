@@ -209,7 +209,7 @@ def parse_track_event(
         track_record.metadata_multihash = track_metadata_multihash
 
         # if cover_art CID is of a dir, store under _sizes field instead
-        if track_record.cover_art and track_record.cover_art_sizes is None:
+        if track_record.cover_art:
             # If CID is in IPLD blacklist table, do not continue with indexing
             if is_blacklisted_ipld(session, track_record.cover_art):
                 logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing new track")

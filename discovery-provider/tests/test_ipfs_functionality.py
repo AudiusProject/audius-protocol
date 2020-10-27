@@ -2,7 +2,7 @@ import json
 import ipfshttpclient
 import pytest  # pylint: disable=unused-import
 from chance import chance
-from src.utils.ipfs_lib import IPFSClient, construct_image_dir_gateway_url
+from src.utils.ipfs_lib import IPFSClient
 from src.utils.helpers import remove_test_file
 from src.tasks.metadata import track_metadata_format
 
