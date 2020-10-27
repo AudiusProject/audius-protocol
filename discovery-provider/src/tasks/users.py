@@ -204,39 +204,17 @@ def parse_user_event(
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
 
-    # if profile_picture CID is of a dir, store under _sizes field instead
-    if user_record.profile_picture:
+    # All incoming profile photos intended to be a directory, any write to profile_picture field is replaced by profile_picture_sizes
+    if user_record.profile_picture and user_record.profile_picture_sizes is None:
         logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
-        try:
-            # is_directory = update_task.ipfs_client.multihash_is_directory(user_record.profile_picture)
-            is_directory = True
-            if is_directory:
-                user_record.profile_picture_sizes = user_record.profile_picture
-                user_record.profile_picture = None
-        except Exception as e:
-            # we are unable to get the profile picture
-            if 'invalid multihash' in str(e):
-                user_record.profile_picture_sizes = None
-                user_record.profile_picture = None
-            else:
-                raise e
+        user_record.profile_picture_sizes = user_record.profile_picture
+        user_record.profile_picture = None
 
-    # if cover_photo CID is of a dir, store under _sizes field instead
-    if user_record.cover_photo:
+    # All incoming cover photos intended to be a directory, any write to cover_photo field is replaced by cover_photo_sizes
+    if user_record.cover_photo and user_record.cover_photo_sizes is None:
         logger.info(f"users.py | Processing user cover photo {user_record.cover_photo}")
-        try:
-            # is_directory = update_task.ipfs_client.multihash_is_directory(user_record.cover_photo)
-            is_directory = True
-            if is_directory:
-                user_record.cover_photo_sizes = user_record.cover_photo
-                user_record.cover_photo = None
-        except Exception as e:
-            # we are unable to get the profile picture
-            if 'invalid multihash' in str(e):
-                user_record.cover_photo_sizes = None
-                user_record.cover_photo = None
-            else:
-                raise e
+        user_record.cover_photo_sizes = user_record.cover_photo
+        user_record.cover_photo = None
 
     return user_record
 
