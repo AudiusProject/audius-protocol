@@ -44,12 +44,12 @@ describe('test Tracks with mocked IPFS', function () {
   it('fails to upload when format is not accepted', async function () {
     const file = fs.readFileSync(testAudioFileWrongFormatPath)
 
-    await request(app)
+    const res = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.jpg' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(400)
+    assert.notStrictEqual(res.error, undefined)
   })
 
   it('fails to upload when maxAudioFileSizeBytes exceeded', async function () {
@@ -426,24 +426,24 @@ describe('test Tracks with real IPFS', function () {
     const file = fs.readFileSync(testAudioFilePath)
     sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment'))
 
-    await request(app)
+    const res = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(500)
+    assert.notStrictEqual(res.error, undefined)
   })
 
   it('sends server error response if transcoding fails', async function () {
     const file = fs.readFileSync(testAudioFilePath)
     sinon.stub(TranscodingQueue, 'transcode320').rejects(new Error('failed to transcode'))
 
-    await request(app)
+    const res = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(500)
+    assert.notStrictEqual(res.error, undefined)
   })
 
   // Note: if hashing logic from ipfs ever changes, this test will fail
@@ -461,12 +461,12 @@ describe('test Tracks with real IPFS', function () {
 
     // Attempt to associate track content and get forbidden error
     const file = fs.readFileSync(testAudioFilePath)
-    await request(app)
+    const res = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(403)
+    assert.notStrictEqual(res.error, undefined)
 
     // Clear redis of segment CIDs
     await BlacklistManager.removeFromRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
@@ -489,7 +489,7 @@ describe('test Tracks with real IPFS', function () {
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
-    const transcodedTrackPath = path.join(storagePath, resp.body.data.transcodedTrackCID)
+    const transcodedTrackPath = path.join(storagePath, resp.body.transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
