@@ -154,8 +154,10 @@ def update_remixes_table(session, track_record, track_metadata):
         tracks = track_metadata["remix_of"].get("tracks")
         if tracks and isinstance(tracks, list):
             for track in tracks:
+                if not isinstance(track, dict):
+                    continue
                 parent_track_id = track.get("parent_track_id")
-                if parent_track_id and isinstance(parent_track_id, int):
+                if isinstance(parent_track_id, int):
                     remix = Remix(
                         parent_track_id=parent_track_id,
                         child_track_id=child_track_id
