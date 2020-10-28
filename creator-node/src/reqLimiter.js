@@ -89,7 +89,7 @@ const getRateLimiter = ({
   return rateLimit({
     store: new RedisStore({
       client,
-      prefix,
+      prefix: `rate:${prefix}`,
       expiry
     }),
     max, // max requests per hour
