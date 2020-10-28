@@ -1,21 +1,17 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
-const rateLimit = require('express-rate-limit')
-const RedisStore = require('rate-limit-redis')
-const Redis = require('ioredis')
-const config = require('../config.js')
+const { getRateLimiter } = require('../rateLimiter.js')
 
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const authKeyGenerator = (req) => `${req.query.username}`
+const getAuthRateLimiter = getRateLimiter({
+  prefix: 'getAuthRateLimiter:',
+  expiry: 60 * 60 * 24, // one day in seconds
+  max: 40,
+  keyGenerator: (req) => `${req.query.username}`
+})
 
-const authRateLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'authRateLimiter:',
-    expiry: 60 * 60 * 24 // one day in seconds
-  }),
-  max: 40, // max requests per day
-  keyGenerator: authKeyGenerator
+const authRateLimiter = getRateLimiter({
+  prefix: 'authRateLimiter:',
+  max: 10
 })
 
 module.exports = function (app) {
@@ -24,43 +20,51 @@ module.exports = function (app) {
    * into the Authentications table and the email to the Users table. This is the first step in the
    * authentication process
    */
-  app.post('/authentication', handleResponse(async (req, res, next) => {
-    // body should contain {iv, cipherText, lookupKey}
-    let body = req.body
-    if (body && body.iv && body.cipherText && body.lookupKey) {
-      try {
-        await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })
-        return successResponse()
-      } catch (err) {
-        req.logger.error('Error signing up a user', err)
-        return errorResponseBadRequest('Error signing up a user')
-      }
-    } else return errorResponseBadRequest('Missing one of the required fields: iv, cipherText, lookupKey')
-  }))
-
-  app.get('/authentication', authRateLimiter, handleResponse(async (req, res, next) => {
-    let queryParams = req.query
-
-    if (queryParams && queryParams.lookupKey) {
-      const lookupKey = queryParams.lookupKey
-      const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
-
-      // If username (email) provided, log if not found for future reference.
-      if (queryParams.username) {
-        const email = queryParams.username.toLowerCase()
-        const userObj = await models.User.findOne({ where: { email } })
-        if (existingUser && !userObj) {
-          req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
+  app.post(
+    '/authentication',
+    authRateLimiter,
+    handleResponse(async (req, res, next) => {
+      // body should contain {iv, cipherText, lookupKey}
+      let body = req.body
+      if (body && body.iv && body.cipherText && body.lookupKey) {
+        try {
+          await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })
+          return successResponse()
+        } catch (err) {
+          req.logger.error('Error signing up a user', err)
+          return errorResponseBadRequest('Error signing up a user')
         }
-      }
+      } else return errorResponseBadRequest('Missing one of the required fields: iv, cipherText, lookupKey')
+    })
+  )
 
-      if (existingUser) {
-        return successResponse(existingUser)
+  app.get(
+    '/authentication',
+    getAuthRateLimiter,
+    handleResponse(async (req, res, next) => {
+      let queryParams = req.query
+
+      if (queryParams && queryParams.lookupKey) {
+        const lookupKey = queryParams.lookupKey
+        const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
+
+        // If username (email) provided, log if not found for future reference.
+        if (queryParams.username) {
+          const email = queryParams.username.toLowerCase()
+          const userObj = await models.User.findOne({ where: { email } })
+          if (existingUser && !userObj) {
+            req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
+          }
+        }
+
+        if (existingUser) {
+          return successResponse(existingUser)
+        } else {
+          return errorResponseBadRequest('No auth record found for provided lookupKey.')
+        }
       } else {
-        return errorResponseBadRequest('No auth record found for provided lookupKey.')
+        return errorResponseBadRequest('Missing queryParam lookupKey.')
       }
-    } else {
-      return errorResponseBadRequest('Missing queryParam lookupKey.')
-    }
-  }))
+    })
+  )
 }

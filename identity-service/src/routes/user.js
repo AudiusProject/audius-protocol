@@ -1,6 +1,11 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const authMiddleware = require('../authMiddleware')
+const { getRateLimiter } = require('../rateLimiter')
+
+const userRateLimiter = getRateLimiter({
+  prefix: 'userRateLimiter:'
+})
 
 module.exports = function (app) {
   /**
@@ -8,39 +13,43 @@ module.exports = function (app) {
    * This is one part of a two part route along with POST /authentication
    * The user handle is not written here. that's added in /user/associate
    */
-  app.post('/user', handleResponse(async (req, res, next) => {
-    // body should contain {username, walletAddress}
-    // username is actually email, but hedgehog sends username
-    let body = req.body
-    if (body.username && body.walletAddress) {
-      const email = body.username.toLowerCase()
-      const existingUser = await models.User.findOne({
-        where: {
-          email: email
-        }
-      })
-
-      if (existingUser) {
-        return errorResponseBadRequest('Account already exists for user, try logging in')
-      }
-      const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-
-      try {
-        await models.User.create({
-          email,
-          // Store non checksummed wallet address
-          walletAddress: body.walletAddress.toLowerCase(),
-          lastSeenDate: Date.now(),
-          IP
+  app.post(
+    '/user',
+    userRateLimiter,
+    handleResponse(async (req, res, next) => {
+      // body should contain {username, walletAddress}
+      // username is actually email, but hedgehog sends username
+      let body = req.body
+      if (body.username && body.walletAddress) {
+        const email = body.username.toLowerCase()
+        const existingUser = await models.User.findOne({
+          where: {
+            email: email
+          }
         })
 
-        return successResponse()
-      } catch (err) {
-        req.logger.error('Error signing up a user', err)
-        return errorResponseBadRequest('Error signing up a user')
-      }
-    } else return errorResponseBadRequest('Missing one of the required fields: email, walletAddress')
-  }))
+        if (existingUser) {
+          return errorResponseBadRequest('Account already exists for user, try logging in')
+        }
+        const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+
+        try {
+          await models.User.create({
+            email,
+            // Store non checksummed wallet address
+            walletAddress: body.walletAddress.toLowerCase(),
+            lastSeenDate: Date.now(),
+            IP
+          })
+
+          return successResponse()
+        } catch (err) {
+          req.logger.error('Error signing up a user', err)
+          return errorResponseBadRequest('Error signing up a user')
+        }
+      } else return errorResponseBadRequest('Missing one of the required fields: email, walletAddress')
+    })
+  )
 
   /**
    * Check if a email address is taken. email is passed in via query param
@@ -64,24 +73,28 @@ module.exports = function (app) {
   /**
    * Update User Timezone / IP
    */
-  app.post('/users/update', authMiddleware, handleResponse(async (req, res, next) => {
-    const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-    const { timezone } = req.body
-    const { blockchainUserId } = req.user
-    if (timezone) {
-      try {
-        await models.User.update(
-          { IP, timezone },
-          { where: { blockchainUserId } }
-        )
-        return successResponse()
-      } catch (err) {
-        req.logger.error('Error signing up a user', err)
-        return errorResponseBadRequest('Error signing up a user')
+  app.post(
+    '/users/update',
+    userRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const IP = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+      const { timezone } = req.body
+      const { blockchainUserId } = req.user
+      if (timezone) {
+        try {
+          await models.User.update(
+            { IP, timezone },
+            { where: { blockchainUserId } }
+          )
+          return successResponse()
+        } catch (err) {
+          req.logger.error('Error signing up a user', err)
+          return errorResponseBadRequest('Error signing up a user')
+        }
       }
-    }
-    return errorResponseBadRequest('Invalid route parameters')
-  }))
+      return errorResponseBadRequest('Invalid route parameters')
+    }))
 
   /** DEPRECATED */
 

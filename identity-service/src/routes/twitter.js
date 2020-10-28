@@ -6,6 +6,11 @@ const uuidv4 = require('uuid/v4')
 const txRelay = require('../relay/txRelay')
 
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const { getRateLimiter } = require('../rateLimiter.js')
+
+const twitterRateLimiter = getRateLimiter({
+  prefix: 'twitterRateLimiter:'
+})
 
 /**
  * This file contains the twitter endpoints for oauth
@@ -17,25 +22,29 @@ module.exports = function (app) {
    * The first leg of the Twitter Oauth. It asks twitter for a request token, and this
    * token gets sent to the client which will redirect to twitter for the user's authorization
    */
-  app.post('/twitter', handleResponse(async (req, res, next) => {
-    let reqObj = {
-      method: 'post',
-      url: 'https://api.twitter.com/oauth/request_token',
-      oauth: {
-        oauth_callback: req.headers.origin,
-        consumer_key: config.get('twitterAPIKey'),
-        consumer_secret: config.get('twitterAPISecret')
+  app.post(
+    '/twitter',
+    twitterRateLimiter,
+    handleResponse(async (req, res, next) => {
+      let reqObj = {
+        method: 'post',
+        url: 'https://api.twitter.com/oauth/request_token',
+        oauth: {
+          oauth_callback: req.headers.origin,
+          consumer_key: config.get('twitterAPIKey'),
+          consumer_secret: config.get('twitterAPISecret')
+        }
       }
-    }
 
-    try {
-      let body = await doRequest(reqObj)
-      let responseData = qs.parse(body)
-      return successResponse(responseData)
-    } catch (err) {
-      return errorResponseBadRequest(err)
-    }
-  }))
+      try {
+        let body = await doRequest(reqObj)
+        let responseData = qs.parse(body)
+        return successResponse(responseData)
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
+    })
+  )
 
   /**
    * When the user clicks authorize and twitter calls back to the client, the client calls this route and
@@ -43,50 +52,54 @@ module.exports = function (app) {
    * calls Twitter for the oauth token and secret and then make a request to get the user profile
    * and returns it to the client
    */
-  app.post('/twitter/callback', handleResponse(async (req, res, next) => {
-    let reqObj = {
-      method: 'post',
-      url: `https://api.twitter.com/oauth/access_token?oauth_verifier`,
-      oauth: {
-        consumer_key: config.get('twitterAPIKey'),
-        consumer_secret: config.get('twitterAPISecret'),
-        token: req.query.oauth_token
-      },
-      form: { oauth_verifier: req.query.oauth_verifier }
-    }
-
-    try {
-      let body = await doRequest(reqObj)
-      let responseData = qs.parse(body)
-
-      let userRequest = {
-        method: 'get',
-        url: 'https://api.twitter.com/1.1/account/verify_credentials.json',
+  app.post(
+    '/twitter/callback',
+    twitterRateLimiter,
+    handleResponse(async (req, res, next) => {
+      let reqObj = {
+        method: 'post',
+        url: `https://api.twitter.com/oauth/access_token?oauth_verifier`,
         oauth: {
           consumer_key: config.get('twitterAPIKey'),
           consumer_secret: config.get('twitterAPISecret'),
-          token: responseData.oauth_token,
-          token_secret: responseData.oauth_token_secret
+          token: req.query.oauth_token
         },
-        json: true
+        form: { oauth_verifier: req.query.oauth_verifier }
       }
-      let userProfile = await doRequest(userRequest)
-      try {
-        let uuid = uuidv4()
-        models.TwitterUser.create({
-          twitterProfile: userProfile,
-          verified: userProfile.verified,
-          uuid: uuid
-        })
 
-        return successResponse({ profile: userProfile, uuid: uuid })
+      try {
+        let body = await doRequest(reqObj)
+        let responseData = qs.parse(body)
+
+        let userRequest = {
+          method: 'get',
+          url: 'https://api.twitter.com/1.1/account/verify_credentials.json',
+          oauth: {
+            consumer_key: config.get('twitterAPIKey'),
+            consumer_secret: config.get('twitterAPISecret'),
+            token: responseData.oauth_token,
+            token_secret: responseData.oauth_token_secret
+          },
+          json: true
+        }
+        let userProfile = await doRequest(userRequest)
+        try {
+          let uuid = uuidv4()
+          models.TwitterUser.create({
+            twitterProfile: userProfile,
+            verified: userProfile.verified,
+            uuid: uuid
+          })
+
+          return successResponse({ profile: userProfile, uuid: uuid })
+        } catch (err) {
+          return errorResponseBadRequest(err)
+        }
       } catch (err) {
         return errorResponseBadRequest(err)
       }
-    } catch (err) {
-      return errorResponseBadRequest(err)
-    }
-  }))
+    })
+  )
 
   app.get('/twitter/handle_lookup', handleResponse(async (req, res, next) => {
     const handle = req.query.handle
@@ -110,65 +123,69 @@ module.exports = function (app) {
    * After the user finishes onboarding in the client app and has a blockchain userId, we need to associate
    * the blockchainUserId with the twitter profile so we can write the verified flag on chain
    */
-  app.post('/twitter/associate', handleResponse(async (req, res, next) => {
-    let { uuid, userId, handle } = req.body
-    const audiusLibsInstance = req.app.get('audiusLibs')
+  app.post(
+    '/twitter/associate',
+    twitterRateLimiter,
+    handleResponse(async (req, res, next) => {
+      let { uuid, userId, handle } = req.body
+      const audiusLibsInstance = req.app.get('audiusLibs')
 
-    try {
-      let twitterObj = await models.TwitterUser.findOne({ where: { uuid: uuid } })
+      try {
+        let twitterObj = await models.TwitterUser.findOne({ where: { uuid: uuid } })
 
-      // only set blockchainUserId if not already set
-      if (twitterObj && !twitterObj.blockchainUserId) {
-        twitterObj.blockchainUserId = userId
+        // only set blockchainUserId if not already set
+        if (twitterObj && !twitterObj.blockchainUserId) {
+          twitterObj.blockchainUserId = userId
 
-        // if the user is verified, write to chain, otherwise skip to next step
-        if (twitterObj.verified) {
-          const [encodedABI, contractAddress] = await audiusLibsInstance.User.updateIsVerified(
-            userId, true, config.get('userVerifierPrivateKey')
-          )
-          const contractRegKey = await audiusLibsInstance.contracts.getRegistryContractForAddress(contractAddress)
-          const senderAddress = config.get('userVerifierPublicKey')
+          // if the user is verified, write to chain, otherwise skip to next step
+          if (twitterObj.verified) {
+            const [encodedABI, contractAddress] = await audiusLibsInstance.User.updateIsVerified(
+              userId, true, config.get('userVerifierPrivateKey')
+            )
+            const contractRegKey = await audiusLibsInstance.contracts.getRegistryContractForAddress(contractAddress)
+            const senderAddress = config.get('userVerifierPublicKey')
 
-          try {
-            var txProps = {
-              contractRegistryKey: contractRegKey,
-              contractAddress: contractAddress,
-              encodedABI: encodedABI,
-              senderAddress: senderAddress,
-              gasLimit: null
+            try {
+              var txProps = {
+                contractRegistryKey: contractRegKey,
+                contractAddress: contractAddress,
+                encodedABI: encodedABI,
+                senderAddress: senderAddress,
+                gasLimit: null
+              }
+              await txRelay.sendTransaction(req, false, txProps, 'twitterVerified')
+            } catch (e) {
+              return errorResponseBadRequest(e)
             }
-            await txRelay.sendTransaction(req, false, txProps, 'twitterVerified')
+          }
+
+          const socialHandle = await models.SocialHandles.findOne({ where: { handle } })
+          if (socialHandle) {
+            socialHandle.twitterHandle = twitterObj.twitterProfile.screen_name
+            await socialHandle.save()
+          } else if (twitterObj.twitterProfile && twitterObj.twitterProfile.screen_name) {
+            await models.SocialHandles.create({
+              handle,
+              twitterHandle: twitterObj.twitterProfile.screen_name
+            })
+          }
+
+          // the final step is to save userId to db and respond to request
+          try {
+            await twitterObj.save()
+            return successResponse()
           } catch (e) {
             return errorResponseBadRequest(e)
           }
+        } else {
+          req.logger.error('Twitter profile does not exist or userId has already been set', twitterObj)
+          return errorResponseBadRequest('Twitter profile does not exist or userId has already been set')
         }
-
-        const socialHandle = await models.SocialHandles.findOne({ where: { handle } })
-        if (socialHandle) {
-          socialHandle.twitterHandle = twitterObj.twitterProfile.screen_name
-          await socialHandle.save()
-        } else if (twitterObj.twitterProfile && twitterObj.twitterProfile.screen_name) {
-          await models.SocialHandles.create({
-            handle,
-            twitterHandle: twitterObj.twitterProfile.screen_name
-          })
-        }
-
-        // the final step is to save userId to db and respond to request
-        try {
-          await twitterObj.save()
-          return successResponse()
-        } catch (e) {
-          return errorResponseBadRequest(e)
-        }
-      } else {
-        req.logger.error('Twitter profile does not exist or userId has already been set', twitterObj)
-        return errorResponseBadRequest('Twitter profile does not exist or userId has already been set')
+      } catch (err) {
+        return errorResponseBadRequest(err)
       }
-    } catch (err) {
-      return errorResponseBadRequest(err)
-    }
-  }))
+    })
+  )
 }
 
 /**

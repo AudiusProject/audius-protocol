@@ -10,6 +10,7 @@ const config = require('../config')
 const { createPlatformEndpoint, deleteEndpoint } = require('../awsSNS')
 const path = require('path')
 const fs = require('fs')
+const { getRateLimiter } = require('../rateLimiter')
 
 const iOSSNSParams = {
   PlatformApplicationArn: config.get('awsSNSiOSARN')
@@ -48,6 +49,12 @@ const isValidBrowserSubscription = (subscription) => {
     subscription['keys']['auth']
 }
 
+const pushNotificationsRateLimiter = getRateLimiter({
+  prefix: 'pushNotificationsRateLimiter:',
+  max: 10,
+  expiry: 60
+})
+
 module.exports = function (app) {
   /**
    * Get the settings for mobile push notifications for a user
@@ -71,121 +78,136 @@ module.exports = function (app) {
    * Create or update mobile push notification settings
    * POST body contains {userId, settings: {favorites, milestonesAndAchievements, reposts, announcements, followers}}
    */
-  app.post('/push_notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
-    const userId = req.user.blockchainUserId
-    const { settings } = req.body
+  app.post(
+    '/push_notifications/settings',
+    pushNotificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const userId = req.user.blockchainUserId
+      const { settings } = req.body
 
-    if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
+      if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
 
-    try {
-      await models.UserNotificationMobileSettings.upsert({
-        userId,
-        ...settings
-      })
+      try {
+        await models.UserNotificationMobileSettings.upsert({
+          userId,
+          ...settings
+        })
 
-      return successResponse()
-    } catch (e) {
-      req.logger.error(`Unable to create or update push notification settings for userId: ${userId}`, e)
-      return errorResponseServerError(`Unable to create or update push notification settings for userId: ${userId}, Error: ${e.message}`)
-    }
-  }))
+        return successResponse()
+      } catch (e) {
+        req.logger.error(`Unable to create or update push notification settings for userId: ${userId}`, e)
+        return errorResponseServerError(`Unable to create or update push notification settings for userId: ${userId}, Error: ${e.message}`)
+      }
+    })
+  )
 
   /**
    * Register a device token
    * POST body contains {deviceToken: <string>, deviceType: ios/android/safari }
    */
-  app.post('/push_notifications/device_token', authMiddleware, handleResponse(async (req, res, next) => {
-    const userId = req.user.blockchainUserId
-    const { deviceToken, deviceType } = req.body
+  app.post(
+    '/push_notifications/device_token',
+    pushNotificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const userId = req.user.blockchainUserId
+      const { deviceToken, deviceType } = req.body
 
-    if (!DEVICE_TYPES.has(deviceType)) {
-      return errorResponseBadRequest('Attempting to register an invalid deviceType')
-    }
-    if (!deviceToken || !userId) {
-      return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
-    }
-
-    try {
-      // Build the aws sns platform params based on device type
-      let params = { Token: deviceToken }
-      if (deviceType === IOS) params = { ...iOSSNSParams, ...params }
-      else if (deviceType === ANDROID) params = { ...androidSNSParams, ...params }
-
-      // If native moblie (ios/android), register the device with aws sns
-      if (deviceType !== SAFARI) {
-        const awsARN = (await createPlatformEndpoint(params))['EndpointArn']
-        await models.NotificationDeviceToken.upsert({
-          deviceToken,
-          deviceType,
-          userId,
-          awsARN
-        })
-      } else {
-        await models.NotificationDeviceToken.upsert({
-          deviceToken,
-          deviceType,
-          userId
-        })
+      if (!DEVICE_TYPES.has(deviceType)) {
+        return errorResponseBadRequest('Attempting to register an invalid deviceType')
+      }
+      if (!deviceToken || !userId) {
+        return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
       }
 
-      return successResponse()
-    } catch (e) {
-      req.logger.error(`Unable to register device token for userId: ${userId} on ${deviceType}`, e)
-      return errorResponseServerError(`Unable to register device token for userId: ${userId} on ${deviceType}, Error: ${e.message}`)
-    }
-  }))
+      try {
+        // Build the aws sns platform params based on device type
+        let params = { Token: deviceToken }
+        if (deviceType === IOS) params = { ...iOSSNSParams, ...params }
+        else if (deviceType === ANDROID) params = { ...androidSNSParams, ...params }
+
+        // If native moblie (ios/android), register the device with aws sns
+        if (deviceType !== SAFARI) {
+          const awsARN = (await createPlatformEndpoint(params))['EndpointArn']
+          await models.NotificationDeviceToken.upsert({
+            deviceToken,
+            deviceType,
+            userId,
+            awsARN
+          })
+        } else {
+          await models.NotificationDeviceToken.upsert({
+            deviceToken,
+            deviceType,
+            userId
+          })
+        }
+
+        return successResponse()
+      } catch (e) {
+        req.logger.error(`Unable to register device token for userId: ${userId} on ${deviceType}`, e)
+        return errorResponseServerError(`Unable to register device token for userId: ${userId} on ${deviceType}, Error: ${e.message}`)
+      }
+    })
+  )
 
   /**
    * Remove a device token from the device token table
    * POST body contains {deviceToken}
    */
-  app.post('/push_notifications/device_token/deregister', authMiddleware, handleResponse(async (req, res, next) => {
-    const userId = req.user.blockchainUserId
-    const { deviceToken } = req.body
+  app.post(
+    '/push_notifications/device_token/deregister',
+    pushNotificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const userId = req.user.blockchainUserId
+      const { deviceToken } = req.body
 
-    if (!deviceToken) {
-      return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
-    }
-
-    let tokenDeleted = false
-    let settingsDeleted = false
-    try {
-      // delete device token
-      const tokenObj = await models.NotificationDeviceToken.findOne({
-        where: {
-          deviceToken,
-          userId
-        }
-      })
-
-      let deleteUserNotificationSettings = tokenObj.deviceType !== DEVICE_TYPES.SAFARI
-
-      if (tokenObj) {
-        // delete the endpoint from AWS SNS
-        if (tokenObj.awsARN) await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
-        await tokenObj.destroy()
-        tokenDeleted = true
+      if (!deviceToken) {
+        return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
       }
 
-      // Delete user mobile notification settings if device type is mobile (android or ios)
-      if (deleteUserNotificationSettings) {
-        const settingsObj = await models.UserNotificationMobileSettings.findOne({
+      let tokenDeleted = false
+      let settingsDeleted = false
+      try {
+        // delete device token
+        const tokenObj = await models.NotificationDeviceToken.findOne({
           where: {
+            deviceToken,
             userId
           }
         })
-        if (settingsObj) {
-          await settingsObj.destroy()
-          settingsDeleted = true
-        }
-      }
 
-      return successResponse({ tokenDeleted, settingsDeleted })
-    } catch (e) {
-      req.logger.error(`Unable to deregister device token for deviceToken: ${deviceToken}`, e)
-      return errorResponseServerError(`Unable to deregister device token for deviceToken: ${deviceToken}`, e.message)
-    }
-  }))
+        let deleteUserNotificationSettings = tokenObj.deviceType !== DEVICE_TYPES.SAFARI
+
+        if (tokenObj) {
+          // delete the endpoint from AWS SNS
+          if (tokenObj.awsARN) await deleteEndpoint({ EndpointArn: tokenObj.awsARN })
+          await tokenObj.destroy()
+          tokenDeleted = true
+        }
+
+        // Delete user mobile notification settings if device type is mobile (android or ios)
+        if (deleteUserNotificationSettings) {
+          const settingsObj = await models.UserNotificationMobileSettings.findOne({
+            where: {
+              userId
+            }
+          })
+          if (settingsObj) {
+            await settingsObj.destroy()
+            settingsDeleted = true
+          }
+        }
+
+        return successResponse({ tokenDeleted, settingsDeleted })
+      } catch (e) {
+        req.logger.error(`Unable to deregister device token for deviceToken: ${deviceToken}`, e)
+        return errorResponseServerError(`Unable to deregister device token for deviceToken: ${deviceToken}`, e.message)
+      }
+    })
+  )
 
   /**
    * Checks if a device token/type exists for a userId
@@ -238,24 +260,29 @@ module.exports = function (app) {
    * Create or update browser push notification settings
    * POST body contains {userId, settings: {favorites, milestonesAndAchievements, reposts, followers}}
    */
-  app.post('/push_notifications/browser/settings', authMiddleware, handleResponse(async (req, res, next) => {
-    const userId = req.user.blockchainUserId
-    const { settings } = req.body
+  app.post(
+    '/push_notifications/browser/settings',
+    pushNotificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const userId = req.user.blockchainUserId
+      const { settings } = req.body
 
-    if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
+      if (!userId) return errorResponseBadRequest(`Did not pass in a valid userId`)
 
-    try {
-      const browserSettings = await models.UserNotificationBrowserSettings.upsert({
-        ...settings,
-        userId
-      })
+      try {
+        const browserSettings = await models.UserNotificationBrowserSettings.upsert({
+          ...settings,
+          userId
+        })
 
-      return successResponse({ settings: browserSettings })
-    } catch (e) {
-      req.logger.error(`Unable to create or update browser push notification settings for userId: ${userId}`, e)
-      return errorResponseServerError(`Unable to create or update browser push notification settings for userId: ${userId}, Error: ${e.message}`)
-    }
-  }))
+        return successResponse({ settings: browserSettings })
+      } catch (e) {
+        req.logger.error(`Unable to create or update browser push notification settings for userId: ${userId}`, e)
+        return errorResponseServerError(`Unable to create or update browser push notification settings for userId: ${userId}, Error: ${e.message}`)
+      }
+    })
+  )
 
   /*
   * Returns if a user browser subscription exists and is enabled
@@ -283,48 +310,57 @@ module.exports = function (app) {
   /*
   * Creates/Updates a user browser notification bscription exists
   */
-  app.post('/push_notifications/browser/register', authMiddleware, handleResponse(async (req, res, next) => {
-    const { subscription, enabled = true } = req.body
-    if (!isValidBrowserSubscription(subscription)) {
-      return errorResponseBadRequest('Invalid request parameters')
-    }
+  app.post(
+    '/push_notifications/browser/register',
+    pushNotificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const { subscription, enabled = true } = req.body
+      if (!isValidBrowserSubscription(subscription)) {
+        return errorResponseBadRequest('Invalid request parameters')
+      }
 
-    try {
-      await models.NotificationBrowserSubscription.upsert({
-        userId: req.user.blockchainUserId,
-        endpoint: subscription.endpoint,
-        p256dhKey: subscription.keys.p256dh,
-        authKey: subscription.keys.auth,
-        enabled
-      })
-      return successResponse()
-    } catch (e) {
-      return errorResponseServerError(`Unable to save browser push notificaiton subscription`, e.message)
-    }
-  }))
+      try {
+        await models.NotificationBrowserSubscription.upsert({
+          userId: req.user.blockchainUserId,
+          endpoint: subscription.endpoint,
+          p256dhKey: subscription.keys.p256dh,
+          authKey: subscription.keys.auth,
+          enabled
+        })
+        return successResponse()
+      } catch (e) {
+        return errorResponseServerError(`Unable to save browser push notificaiton subscription`, e.message)
+      }
+    })
+  )
 
   /*
   * Deletes the browser notification subscription.
   */
-  app.post('/push_notifications/browser/deregister', handleResponse(async (req, res, next) => {
-    const { subscription } = req.body
-    if (!isValidBrowserSubscription(subscription)) {
-      return errorResponseBadRequest('Invalid request parameters')
-    }
+  app.post(
+    '/push_notifications/browser/deregister',
+    pushNotificationsRateLimiter,
+    handleResponse(async (req, res, next) => {
+      const { subscription } = req.body
+      if (!isValidBrowserSubscription(subscription)) {
+        return errorResponseBadRequest('Invalid request parameters')
+      }
 
-    try {
-      await models.NotificationBrowserSubscription.destroy({
-        where: {
-          endpoint: subscription.endpoint,
-          p256dhKey: subscription.keys.p256dh,
-          authKey: subscription.keys.auth
-        }
-      })
-      return successResponse()
-    } catch (e) {
-      return errorResponseServerError(`Unable to deregister push browser subscription`, e.message)
-    }
-  }))
+      try {
+        await models.NotificationBrowserSubscription.destroy({
+          where: {
+            endpoint: subscription.endpoint,
+            p256dhKey: subscription.keys.p256dh,
+            authKey: subscription.keys.auth
+          }
+        })
+        return successResponse()
+      } catch (e) {
+        return errorResponseServerError(`Unable to deregister push browser subscription`, e.message)
+      }
+    })
+  )
 
   /*
   * Downloads the signed safari web push package for authentication.
@@ -360,23 +396,27 @@ module.exports = function (app) {
   * If a user removes permission of a website in Safari preferences, a DELETE request is sent to the following URL:
   * This is done by the safari browser, but the client redundently send a request to device_token/deregister
   */
-  app.delete('/push_notifications/safari/:version/devices/:deviceToken/registrations/:websitePushID', handleResponse(async (req, res, next) => {
-    const { deviceToken } = req.body
+  app.delete(
+    '/push_notifications/safari/:version/devices/:deviceToken/registrations/:websitePushID',
+    pushNotificationsRateLimiter,
+    handleResponse(async (req, res, next) => {
+      const { deviceToken } = req.body
 
-    if (!deviceToken) {
-      return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
-    }
+      if (!deviceToken) {
+        return errorResponseBadRequest('Did not pass in a valid deviceToken or userId for device token registration')
+      }
 
-    try {
-      // delete device token
-      await models.NotificationDeviceToken.destroy({
-        where: { deviceToken }
-      })
-      return successResponse()
-    } catch (e) {
-      return errorResponseServerError(`Unable to delete browser push notificaiton devicetoken`, e.message)
-    }
-  }))
+      try {
+        // delete device token
+        await models.NotificationDeviceToken.destroy({
+          where: { deviceToken }
+        })
+        return successResponse()
+      } catch (e) {
+        return errorResponseServerError(`Unable to delete browser push notificaiton devicetoken`, e.message)
+      }
+    })
+  )
 
   /*
   * Logging Errors

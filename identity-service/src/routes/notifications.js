@@ -7,6 +7,7 @@ const {
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const { fetchAnnouncements } = require('../announcements.js')
+const { getRateLimiter } = require('../rateLimiter')
 
 const NotificationType = Object.freeze({
   Follow: 'Follow',
@@ -269,6 +270,12 @@ async function clearBadgeCounts (userId, logger) {
   }
 }
 
+const notificationsRateLimiter = getRateLimiter({
+  prefix: 'notificationsRateLimiter:',
+  max: 10,
+  expiry: 60
+})
+
 module.exports = function (app) {
   /*
    * Fetches the notifications for the specified userId
@@ -375,136 +382,151 @@ module.exports = function (app) {
    *
    * TODO: Validate userId
   */
-  app.post('/notifications', authMiddleware, handleResponse(async (req, res, next) => {
-    let { notificationId, notificationType, isRead, isHidden } = req.body
-    const userId = req.user.blockchainUserId
+  app.post(
+    '/notifications',
+    notificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      let { notificationId, notificationType, isRead, isHidden } = req.body
+      const userId = req.user.blockchainUserId
 
-    if (typeof notificationType !== 'string' ||
-      !ClientNotificationTypes.has(notificationType) ||
-      (typeof isRead !== 'boolean' && typeof isHidden !== 'boolean')) {
-      return errorResponseBadRequest('Invalid request body')
-    }
-    try {
-      if (notificationType === NotificationType.Announcement) {
-        const announcementMap = app.get('announcementMap')
-        const announcement = announcementMap[notificationId]
-        if (!announcement) return errorResponseBadRequest('[Error] Invalid notification id')
-        const [notification, isCreated] = await models.Notification.findOrCreate({
-          where: {
-            type: notificationType,
-            userId,
-            entityId: announcement.entityId
-          },
-          defaults: {
-            isViewed: true,
-            isRead: true,
-            isHidden,
-            blocknumber: 0,
-            timestamp: announcement.datePublished
-          }
-        })
-        if (!isCreated && (notification.isRead !== isRead || notification.isHidden !== isHidden)) {
-          await notification.update({
-            isViewed: true,
-            ...(typeof isRead === 'boolean' ? { isRead } : {}),
-            ...(typeof isHidden === 'boolean' ? { isHidden } : {})
-          })
-        }
-        return successResponse({ message: 'success' })
-      } else {
-        const update = { isViewed: true, isRead: true }
-        if (isHidden !== undefined) update['isHidden'] = isHidden
-        await models.Notification.update(
-          update,
-          { where: { id: notificationId } }
-        )
-        return successResponse({ message: 'success' })
+      if (typeof notificationType !== 'string' ||
+        !ClientNotificationTypes.has(notificationType) ||
+        (typeof isRead !== 'boolean' && typeof isHidden !== 'boolean')) {
+        return errorResponseBadRequest('Invalid request body')
       }
-    } catch (err) {
-      return errorResponseBadRequest({
-        message: `[Error] Unable to mark notification as read/hidden`
-      })
-    }
-  }))
+      try {
+        if (notificationType === NotificationType.Announcement) {
+          const announcementMap = app.get('announcementMap')
+          const announcement = announcementMap[notificationId]
+          if (!announcement) return errorResponseBadRequest('[Error] Invalid notification id')
+          const [notification, isCreated] = await models.Notification.findOrCreate({
+            where: {
+              type: notificationType,
+              userId,
+              entityId: announcement.entityId
+            },
+            defaults: {
+              isViewed: true,
+              isRead: true,
+              isHidden,
+              blocknumber: 0,
+              timestamp: announcement.datePublished
+            }
+          })
+          if (!isCreated && (notification.isRead !== isRead || notification.isHidden !== isHidden)) {
+            await notification.update({
+              isViewed: true,
+              ...(typeof isRead === 'boolean' ? { isRead } : {}),
+              ...(typeof isHidden === 'boolean' ? { isHidden } : {})
+            })
+          }
+          return successResponse({ message: 'success' })
+        } else {
+          const update = { isViewed: true, isRead: true }
+          if (isHidden !== undefined) update['isHidden'] = isHidden
+          await models.Notification.update(
+            update,
+            { where: { id: notificationId } }
+          )
+          return successResponse({ message: 'success' })
+        }
+      } catch (err) {
+        return errorResponseBadRequest({
+          message: `[Error] Unable to mark notification as read/hidden`
+        })
+      }
+    })
+  )
 
   /*
    * Marks all of a user's notifications as viewed & optionally is read & inserts rows for announcements
    * postBody: {bool?} isRead          Identitifies if the notification is to be marked as read
    *
   */
-  app.post('/notifications/all', authMiddleware, handleResponse(async (req, res, next) => {
-    let { isRead, isViewed, clearBadges } = req.body
-    const { createdAt, blockchainUserId: userId } = req.user
+  app.post(
+    '/notifications/all',
+    notificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      let { isRead, isViewed, clearBadges } = req.body
+      const { createdAt, blockchainUserId: userId } = req.user
 
-    const createdDate = moment(createdAt)
-    if (!createdDate.isValid() || (typeof isRead !== 'boolean' && typeof isViewed !== 'boolean')) {
-      return errorResponseBadRequest('Invalid request body')
-    }
-    try {
-      const update = {
-        isViewed: true,
-        ...(typeof isRead !== 'undefined' ? { isRead } : {})
+      const createdDate = moment(createdAt)
+      if (!createdDate.isValid() || (typeof isRead !== 'boolean' && typeof isViewed !== 'boolean')) {
+        return errorResponseBadRequest('Invalid request body')
       }
+      try {
+        const update = {
+          isViewed: true,
+          ...(typeof isRead !== 'undefined' ? { isRead } : {})
+        }
 
-      await models.Notification.update(
-        update,
-        { where: { userId } }
-      )
+        await models.Notification.update(
+          update,
+          { where: { userId } }
+        )
 
-      const announcementMap = app.get('announcementMap')
-      const unreadAnnouncementIds = Object.keys(announcementMap).reduce((acc, id) => {
-        if (moment(announcementMap[id].datePublished).isAfter(createdDate)) acc[id] = false
-        return acc
-      }, {})
-      const readAnnouncementIds = await models.Notification.findAll({
-        where: {
-          type: NotificationType.Announcement,
-          userId
-        },
-        attributes: ['entityId']
-      })
-      for (let announcementId of readAnnouncementIds) {
-        delete unreadAnnouncementIds[announcementId.entityId]
+        const announcementMap = app.get('announcementMap')
+        const unreadAnnouncementIds = Object.keys(announcementMap).reduce((acc, id) => {
+          if (moment(announcementMap[id].datePublished).isAfter(createdDate)) acc[id] = false
+          return acc
+        }, {})
+        const readAnnouncementIds = await models.Notification.findAll({
+          where: {
+            type: NotificationType.Announcement,
+            userId
+          },
+          attributes: ['entityId']
+        })
+        for (let announcementId of readAnnouncementIds) {
+          delete unreadAnnouncementIds[announcementId.entityId]
+        }
+        const unreadAnnouncements = Object.keys(unreadAnnouncementIds).map(id => announcementMap[id])
+        await models.Notification.bulkCreate(
+          unreadAnnouncements.map(announcement => ({
+            type: NotificationType.Announcement,
+            entityId: announcement.entityId,
+            ...update,
+            isHidden: false,
+            userId,
+            blocknumber: 0,
+            timestamp: announcement.datePublished
+          }))
+        )
+
+        if (clearBadges) {
+          await clearBadgeCounts(userId, req.logger)
+        }
+        return successResponse({ message: 'success' })
+      } catch (err) {
+        return errorResponseBadRequest({
+          message: `[Error] Unable to mark notification as read/hidden`
+        })
       }
-      const unreadAnnouncements = Object.keys(unreadAnnouncementIds).map(id => announcementMap[id])
-      await models.Notification.bulkCreate(
-        unreadAnnouncements.map(announcement => ({
-          type: NotificationType.Announcement,
-          entityId: announcement.entityId,
-          ...update,
-          isHidden: false,
-          userId,
-          blocknumber: 0,
-          timestamp: announcement.datePublished
-        }))
-      )
-
-      if (clearBadges) {
-        await clearBadgeCounts(userId, req.logger)
-      }
-      return successResponse({ message: 'success' })
-    } catch (err) {
-      return errorResponseBadRequest({
-        message: `[Error] Unable to mark notification as read/hidden`
-      })
-    }
-  }))
+    })
+  )
 
   /*
    * Clears a user's notification badge count to 0
   */
-  app.post('/notifications/clear_badges', authMiddleware, handleResponse(async (req, res, next) => {
-    const { blockchainUserId: userId } = req.user
+  app.post(
+    '/notifications/clear_badges',
+    notificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const { blockchainUserId: userId } = req.user
 
-    try {
-      await clearBadgeCounts(userId, req.logger)
-      return successResponse({ message: 'success' })
-    } catch (err) {
-      return errorResponseBadRequest({
-        message: `[Error] Unable to clear user badges for userID: ${userId}`
-      })
-    }
-  }))
+      try {
+        await clearBadgeCounts(userId, req.logger)
+        return successResponse({ message: 'success' })
+      } catch (err) {
+        return errorResponseBadRequest({
+          message: `[Error] Unable to clear user badges for userID: ${userId}`
+        })
+      }
+    })
+  )
 
   /**
    * @deprecated
@@ -512,24 +534,29 @@ module.exports = function (app) {
    * postBody: {object} settings      Identitifies if the notification is to be marked as read
    *
   */
-  app.post('/notifications/settings', authMiddleware, handleResponse(async (req, res, next) => {
-    const { settings } = req.body
-    if (typeof settings === 'undefined') {
-      return errorResponseBadRequest('Invalid request body')
-    }
+  app.post(
+    '/notifications/settings',
+    notificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      const { settings } = req.body
+      if (typeof settings === 'undefined') {
+        return errorResponseBadRequest('Invalid request body')
+      }
 
-    try {
-      await models.UserNotificationSettings.upsert({
-        userId: req.user.blockchainUserId,
-        ...settings
-      })
-      return successResponse({ message: 'success' })
-    } catch (err) {
-      return errorResponseBadRequest({
-        message: `[Error] Unable to create/update notification settings for user: ${req.user.blockchainUserId}`
-      })
-    }
-  }))
+      try {
+        await models.UserNotificationSettings.upsert({
+          userId: req.user.blockchainUserId,
+          ...settings
+        })
+        return successResponse({ message: 'success' })
+      } catch (err) {
+        return errorResponseBadRequest({
+          message: `[Error] Unable to create/update notification settings for user: ${req.user.blockchainUserId}`
+        })
+      }
+    })
+  )
 
   /**
    * @deprecated
@@ -561,18 +588,22 @@ module.exports = function (app) {
   /*
    * Refreshes the announcements stored in the application
   */
-  app.post('/announcements', handleResponse(async (req, res, next) => {
-    try {
-      let { announcements, announcementMap } = await fetchAnnouncements()
-      app.set('announcements', announcements)
-      app.set('announcementMap', announcementMap)
-      return successResponse({ msg: 'Updated announcements' })
-    } catch (err) {
-      return errorResponseBadRequest({
-        message: `Failed to update announcements - ${err}`
-      })
-    }
-  }))
+  app.post(
+    '/announcements',
+    notificationsRateLimiter,
+    handleResponse(async (req, res, next) => {
+      try {
+        let { announcements, announcementMap } = await fetchAnnouncements()
+        app.set('announcements', announcements)
+        app.set('announcementMap', announcementMap)
+        return successResponse({ msg: 'Updated announcements' })
+      } catch (err) {
+        return errorResponseBadRequest({
+          message: `Failed to update announcements - ${err}`
+        })
+      }
+    })
+  )
 
   /*
    * Sets or removes a user subscription
@@ -581,27 +612,32 @@ module.exports = function (app) {
    *
    * TODO: Validate that the userId is a valid userID
   */
-  app.post('/notifications/subscription', authMiddleware, handleResponse(async (req, res, next) => {
-    let { userId, isSubscribed } = req.body
-    const subscriberId = req.user.blockchainUserId
+  app.post(
+    '/notifications/subscription',
+    notificationsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res, next) => {
+      let { userId, isSubscribed } = req.body
+      const subscriberId = req.user.blockchainUserId
 
-    if (typeof userId !== 'number' ||
-      typeof subscriberId !== 'number' ||
-      userId === subscriberId
-    ) {
-      return errorResponseBadRequest('Invalid request body')
-    }
-    if (isSubscribed) {
-      await models.Subscription.findOrCreate({
-        where: { subscriberId, userId }
-      })
-    } else {
-      await models.Subscription.destroy({
-        where: { subscriberId, userId }
-      })
-    }
-    return successResponse({ message: 'success' })
-  }))
+      if (typeof userId !== 'number' ||
+        typeof subscriberId !== 'number' ||
+        userId === subscriberId
+      ) {
+        return errorResponseBadRequest('Invalid request body')
+      }
+      if (isSubscribed) {
+        await models.Subscription.findOrCreate({
+          where: { subscriberId, userId }
+        })
+      } else {
+        await models.Subscription.destroy({
+          where: { subscriberId, userId }
+        })
+      }
+      return successResponse({ message: 'success' })
+    })
+  )
 
   /*
    * Returns if a user subscription exists

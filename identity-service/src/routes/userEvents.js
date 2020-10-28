@@ -1,6 +1,11 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
+const { getRateLimiter } = require('../rateLimiter')
+
+const userEventsRateLimiter = getRateLimiter({
+  prefix: 'userEventsRateLimiter:'
+})
 
 module.exports = function (app) {
   app.get('/userEvents', handleResponse(async (req, res) => {
@@ -27,29 +32,34 @@ module.exports = function (app) {
   *
   * @param {boolean} hasSignedInNativeMobile   If the user has signed in w/ native mobile
   */
-  app.post('/userEvents', authMiddleware, handleResponse(async (req, res) => {
-    const user = await models.User.findOne({
-      where: { id: req.user.id },
-      attributes: ['walletAddress']
-    })
-    const walletAddress = user.walletAddress
-    const hasSignedInNativeMobile = !!req.body.hasSignedInNativeMobile
-    try {
-      if (hasSignedInNativeMobile) {
-        await models.UserEvents.upsert({
-          walletAddress,
-          hasSignedInNativeMobile
-        })
-      } else {
-        // Note: The field `hasSignedInNativeMobile` defaults to false on create, but if already
-        // true, do not convert to false.
-        await models.UserEvents.findOrCreate({ where: { walletAddress } })
+  app.post(
+    '/userEvents',
+    userEventsRateLimiter,
+    authMiddleware,
+    handleResponse(async (req, res) => {
+      const user = await models.User.findOne({
+        where: { id: req.user.id },
+        attributes: ['walletAddress']
+      })
+      const walletAddress = user.walletAddress
+      const hasSignedInNativeMobile = !!req.body.hasSignedInNativeMobile
+      try {
+        if (hasSignedInNativeMobile) {
+          await models.UserEvents.upsert({
+            walletAddress,
+            hasSignedInNativeMobile
+          })
+        } else {
+          // Note: The field `hasSignedInNativeMobile` defaults to false on create, but if already
+          // true, do not convert to false.
+          await models.UserEvents.findOrCreate({ where: { walletAddress } })
+        }
+        return successResponse({})
+      } catch (e) {
+        req.logger.error(e)
+        console.log(e)
+        return errorResponseBadRequest('Unable to create user event')
       }
-      return successResponse({})
-    } catch (e) {
-      req.logger.error(e)
-      console.log(e)
-      return errorResponseBadRequest('Unable to create user event')
-    }
-  }))
+    })
+  )
 }

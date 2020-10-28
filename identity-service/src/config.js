@@ -132,6 +132,12 @@ const config = convict({
     env: 'blacklisterPublicKey',
     default: null
   },
+  rateLimiterDefaultMax: {
+    dec: 'Default rate limiter total requests per hour',
+    format: 'nat',
+    env: 'rateLimiterDefaultMax',
+    default: null
+  },
   rateLimitingReqLimit: {
     doc: 'Total request per hour rate limit',
     format: 'nat',

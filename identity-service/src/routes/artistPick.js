@@ -1,19 +1,28 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const Sequelize = require('sequelize')
 const models = require('../models')
+const { getRateLimiter } = require('../rateLimiter')
+
+const artistPickRateLimiter = getRateLimiter({
+  prefix: 'artistPickRateLimiter:'
+})
 
 module.exports = function (app) {
-  app.post('/artist_pick', handleResponse(async (req, res, next) => {
-    const { trackId, handle } = req.body
+  app.post(
+    '/artist_pick',
+    artistPickRateLimiter,
+    handleResponse(async (req, res, next) => {
+      const { trackId, handle } = req.body
 
-    if (!handle) return errorResponseBadRequest('Please provide handle')
+      if (!handle) return errorResponseBadRequest('Please provide handle')
 
-    await models.SocialHandles.upsert({
-      handle,
-      pinnedTrackId: trackId || null
+      await models.SocialHandles.upsert({
+        handle,
+        pinnedTrackId: trackId || null
+      })
+      return successResponse()
     })
-    return successResponse()
-  }))
+  )
 
   app.get('/artist_pick', handleResponse(async (req, res, next) => {
     const { handles } = req.query
