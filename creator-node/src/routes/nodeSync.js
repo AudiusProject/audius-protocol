@@ -7,12 +7,19 @@ const config = require('../config')
 const middlewares = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { getRateLimiter } = require('../reqLimiter')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
 const TrackSaveConcurrencyLimit = 10
 const NonTrackFileSaveConcurrencyLimit = 10
 const RehydrateIPFSConcurrencyLimit = 10
+
+const syncRateLimiter = getRateLimiter({
+  prefix: 'syncRateLimiter:',
+  max: 20,
+  expiry: 60
+})
 
 module.exports = function (app) {
   /**
@@ -162,7 +169,7 @@ module.exports = function (app) {
    * Given walletPublicKeys array and target creatorNodeEndpoint, will request export
    * of all user data, update DB state accordingly, fetch all files and make them available.
    */
-  app.post('/sync', handleResponse(async (req, res) => {
+  app.post('/sync', syncRateLimiter, handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
@@ -194,7 +201,7 @@ module.exports = function (app) {
 
   // copy the code as the regular sync, just to make sure it's isolated and not called by any other cnode code
   // force immediate and dbOnlySync to be true
-  app.post('/vector_clock_sync', handleResponse(async (req, res) => {
+  app.post('/vector_clock_sync', syncRateLimiter, handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     // option to sync just the db records as opposed to db records and files on disk, defaults to false

@@ -9,71 +9,84 @@ const { authMiddleware, syncLockMiddleware } = require('../middlewares')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
+const { getRateLimiter } = require('../reqLimiter')
 
 const CHALLENGE_VALUE_LENGTH = 20
 const CHALLENGE_TTL_SECONDS = 120
 const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
+const usersRateLimiter = getRateLimiter({
+  prefix: 'usersRateLimiter:'
+})
+
 module.exports = function (app) {
   /**
    * Creates CNodeUser table entry if one doesn't already exist
    */
-  app.post('/users', handleResponse(async (req, res, next) => {
-    let walletAddress = req.body.walletAddress
-    if (!ethereumUtils.isValidAddress(walletAddress)) {
-      return errorResponseBadRequest('Ethereum address is invalid')
-    }
-
-    walletAddress = walletAddress.toLowerCase()
-
-    const existingUser = await models.CNodeUser.findOne({
-      where: {
-        walletPublicKey: walletAddress
+  app.post(
+    '/users',
+    usersRateLimiter,
+    handleResponse(async (req, res, next) => {
+      let walletAddress = req.body.walletAddress
+      if (!ethereumUtils.isValidAddress(walletAddress)) {
+        return errorResponseBadRequest('Ethereum address is invalid')
       }
-    })
-    if (existingUser) {
-      return successResponse() // do nothing if user already exists
-    }
 
-    // Create CNodeUser entry for wallet with clock = 0
-    await models.CNodeUser.create({
-      walletPublicKey: walletAddress,
-      clock: 0
-    })
+      walletAddress = walletAddress.toLowerCase()
 
-    return successResponse()
-  }))
+      const existingUser = await models.CNodeUser.findOne({
+        where: {
+          walletPublicKey: walletAddress
+        }
+      })
+      if (existingUser) {
+        return successResponse() // do nothing if user already exists
+      }
+
+      // Create CNodeUser entry for wallet with clock = 0
+      await models.CNodeUser.create({
+        walletPublicKey: walletAddress,
+        clock: 0
+      })
+
+      return successResponse()
+    })
+  )
 
   // TODO: to deprecate; leaving here for backwards compatibility
-  app.post('/users/login', handleResponse(async (req, res, next) => {
-    const { signature, data } = req.body
+  app.post(
+    '/users/login',
+    usersRateLimiter,
+    handleResponse(async (req, res, next) => {
+      const { signature, data } = req.body
 
-    if (!signature || !data) {
-      return errorResponseBadRequest('Missing request body values.')
-    }
-
-    let address = utils.verifySignature(data, signature)
-    address = address.toLowerCase()
-
-    const user = await models.CNodeUser.findOne({
-      where: {
-        walletPublicKey: address
+      if (!signature || !data) {
+        return errorResponseBadRequest('Missing request body values.')
       }
+
+      let address = utils.verifySignature(data, signature)
+      address = address.toLowerCase()
+
+      const user = await models.CNodeUser.findOne({
+        where: {
+          walletPublicKey: address
+        }
+      })
+      if (!user) {
+        return errorResponseBadRequest('Invalid data or signature')
+      }
+
+      const theirTimestamp = parseInt(data.split(':')[1])
+      const ourTimestamp = Math.round((new Date()).getTime() / 1000)
+
+      if (Math.abs(theirTimestamp - ourTimestamp) > 3600) {
+        console.error(`Timestamp too old. User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
+      }
+
+      const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
+      return successResponse({ sessionToken })
     })
-    if (!user) {
-      return errorResponseBadRequest('Invalid data or signature')
-    }
-
-    const theirTimestamp = parseInt(data.split(':')[1])
-    const ourTimestamp = Math.round((new Date()).getTime() / 1000)
-
-    if (Math.abs(theirTimestamp - ourTimestamp) > 3600) {
-      console.error(`Timestamp too old. User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
-    }
-
-    const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
-    return successResponse({ sessionToken })
-  }))
+  )
 
   /**
    * Return a challenge used for validating user login. Challenge value
@@ -106,48 +119,51 @@ module.exports = function (app) {
    * If request challenge matches what we have, remove instance from redis to
    * prevent replay attacks. Return sessionToken upon success.
    */
-  app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
-    const { signature, data: theirChallenge } = req.body
+  app.post(
+    '/users/login/challenge',
+    handleResponse(async (req, res, next) => {
+      const { signature, data: theirChallenge } = req.body
 
-    if (!signature || !theirChallenge) {
-      return errorResponseBadRequest('Missing request body values.')
-    }
-
-    let address
-    try {
-      address = utils.verifySignature(theirChallenge, signature)
-      address = address.toLowerCase()
-    } catch (e) {
-      return errorResponseBadRequest(`Unable to verify signature: ${e}`)
-    }
-
-    const user = await models.CNodeUser.findOne({
-      where: {
-        walletPublicKey: address
+      if (!signature || !theirChallenge) {
+        return errorResponseBadRequest('Missing request body values.')
       }
+
+      let address
+      try {
+        address = utils.verifySignature(theirChallenge, signature)
+        address = address.toLowerCase()
+      } catch (e) {
+        return errorResponseBadRequest(`Unable to verify signature: ${e}`)
+      }
+
+      const user = await models.CNodeUser.findOne({
+        where: {
+          walletPublicKey: address
+        }
+      })
+      if (!user) {
+        return errorResponseBadRequest('Invalid data or signature')
+      }
+
+      const redisClient = req.app.get('redisClient')
+      const userLoginChallengeKey = `${CHALLENGE_PREFIX}${address}`
+      const ourChallenge = await redisClient.get(userLoginChallengeKey)
+
+      if (!ourChallenge) {
+        return errorResponseBadRequest('Missing challenge key')
+      }
+
+      if (theirChallenge !== ourChallenge) {
+        return errorResponseBadRequest(`Invalid response.`)
+      }
+
+      await redisClient.del(userLoginChallengeKey)
+
+      // All checks have passed! generate a new session token for the user
+      const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
+      return successResponse({ sessionToken })
     })
-    if (!user) {
-      return errorResponseBadRequest('Invalid data or signature')
-    }
-
-    const redisClient = req.app.get('redisClient')
-    const userLoginChallengeKey = `${CHALLENGE_PREFIX}${address}`
-    const ourChallenge = await redisClient.get(userLoginChallengeKey)
-
-    if (!ourChallenge) {
-      return errorResponseBadRequest('Missing challenge key')
-    }
-
-    if (theirChallenge !== ourChallenge) {
-      return errorResponseBadRequest(`Invalid response.`)
-    }
-
-    await redisClient.del(userLoginChallengeKey)
-
-    // All checks have passed! generate a new session token for the user
-    const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
-    return successResponse({ sessionToken })
-  }))
+  )
 
   app.post('/users/logout', authMiddleware, syncLockMiddleware, handleResponse(async (req, res, next) => {
     await sessionManager.deleteSession(req.get(sessionManager.sessionTokenHeader))
@@ -173,20 +189,24 @@ module.exports = function (app) {
   /**
    * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
    */
-  app.post('/users/batch_clock_status', handleResponse(async (req, res) => {
-    const { walletPublicKeys } = req.body
-    const cnodeUsers = await models.CNodeUser.findAll({
-      where: {
-        walletPublicKey: {
-          [models.Sequelize.Op.in]: walletPublicKeys
+  app.post(
+    '/users/batch_clock_status',
+    usersRateLimiter,
+    handleResponse(async (req, res) => {
+      const { walletPublicKeys } = req.body
+      const cnodeUsers = await models.CNodeUser.findAll({
+        where: {
+          walletPublicKey: {
+            [models.Sequelize.Op.in]: walletPublicKeys
+          }
         }
-      }
+      })
+      return successResponse({
+        users: cnodeUsers.map(cnodeUser => ({
+          walletPublicKey: cnodeUser.walletPublicKey,
+          clock: cnodeUser.clock
+        }))
+      })
     })
-    return successResponse({
-      users: cnodeUsers.map(cnodeUser => ({
-        walletPublicKey: cnodeUser.walletPublicKey,
-        clock: cnodeUser.clock
-      }))
-    })
-  }))
+  )
 }

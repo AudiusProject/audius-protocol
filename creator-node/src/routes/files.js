@@ -26,6 +26,7 @@ const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, find
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+const { getRateLimiter } = require('../reqLimiter')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 
@@ -301,93 +302,113 @@ const getDirCID = async (req, res) => {
   }
 }
 
+const imageUploadMinuteRateLimiter = getRateLimiter({
+  prefix: 'imageUploadRateLimiter:',
+  max: 20,
+  expiry: 60
+})
+
+const imageUploadHourRateLimiter = getRateLimiter({
+  prefix: 'imageUploadRateLimiter:',
+  max: 1000,
+  expiry: 60 * 60
+})
+
 module.exports = function (app) {
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */
-  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponse(async (req, res) => {
-    if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
-      return errorResponseBadRequest('Must provide square boolean param in request body')
-    }
-    if (!req.file) {
-      return errorResponseBadRequest('Must provide image file in request body.')
-    }
-
-    const routestart = Date.now()
-    const imageBufferOriginal = req.file.path
-    const originalFileName = req.file.originalname
-    const cnodeUserUUID = req.session.cnodeUserUUID
-
-    // Resize the images and add them to IPFS and filestorage
-    let resizeResp
-    try {
-      if (req.body.square === 'true') {
-        resizeResp = await ImageProcessingQueue.resizeImage({
-          file: imageBufferOriginal,
-          fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
-          sizes: {
-            '150x150.jpg': 150,
-            '480x480.jpg': 480,
-            '1000x1000.jpg': 1000
-          },
-          square: true,
-          logContext: req.logContext
-        })
-      } else /** req.body.square == 'false' */ {
-        resizeResp = await ImageProcessingQueue.resizeImage({
-          file: imageBufferOriginal,
-          fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
-          sizes: {
-            '640x.jpg': 640,
-            '2000x.jpg': 2000
-          },
-          square: false,
-          logContext: req.logContext
-        })
+  app.post(
+    '/image_upload',
+    imageUploadMinuteRateLimiter,
+    imageUploadHourRateLimiter,
+    authMiddleware,
+    syncLockMiddleware,
+    uploadTempDiskStorage.single('file'),
+    handleResponse(async (req, res) => {
+      if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
+        return errorResponseBadRequest('Must provide square boolean param in request body')
+      }
+      if (!req.file) {
+        return errorResponseBadRequest('Must provide image file in request body.')
       }
 
-      req.logger.debug('ipfs add resp', resizeResp)
-    } catch (e) {
-      return errorResponseServerError(e)
-    }
+      const routestart = Date.now()
+      const imageBufferOriginal = req.file.path
+      const originalFileName = req.file.originalname
+      const cnodeUserUUID = req.session.cnodeUserUUID
 
-    // Record image file entries in DB
-    const transaction = await models.sequelize.transaction()
-    try {
-      // Record dir file entry in DB
-      const createDirFileQueryObj = {
-        multihash: resizeResp.dir.dirCID,
-        sourceFile: null,
-        storagePath: resizeResp.dir.dirDestPath,
-        type: 'dir' // TODO - replace with models enum
-      }
-      await DBManager.createNewDataRecord(createDirFileQueryObj, cnodeUserUUID, models.File, transaction)
-
-      // Record all image res file entries in DB
-      // Must be written sequentially to ensure clock values are correctly incremented and populated
-      for (const file of resizeResp.files) {
-        const createImageFileQueryObj = {
-          multihash: file.multihash,
-          sourceFile: file.sourceFile,
-          storagePath: file.storagePath,
-          type: 'image', // TODO - replace with models enum
-          dirMultihash: resizeResp.dir.dirCID,
-          fileName: file.sourceFile.split('/').slice(-1)[0]
+      // Resize the images and add them to IPFS and filestorage
+      let resizeResp
+      try {
+        if (req.body.square === 'true') {
+          resizeResp = await ImageProcessingQueue.resizeImage({
+            file: imageBufferOriginal,
+            fileName: originalFileName,
+            storagePath: req.app.get('storagePath'),
+            sizes: {
+              '150x150.jpg': 150,
+              '480x480.jpg': 480,
+              '1000x1000.jpg': 1000
+            },
+            square: true,
+            logContext: req.logContext
+          })
+        } else /** req.body.square == 'false' */ {
+          resizeResp = await ImageProcessingQueue.resizeImage({
+            file: imageBufferOriginal,
+            fileName: originalFileName,
+            storagePath: req.app.get('storagePath'),
+            sizes: {
+              '640x.jpg': 640,
+              '2000x.jpg': 2000
+            },
+            square: false,
+            logContext: req.logContext
+          })
         }
-        await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
+
+        req.logger.debug('ipfs add resp', resizeResp)
+      } catch (e) {
+        return errorResponseServerError(e)
       }
 
-      req.logger.info(`route time = ${Date.now() - routestart}`)
-      await transaction.commit()
-      triggerSecondarySyncs(req)
-      return successResponse({ dirCID: resizeResp.dir.dirCID })
-    } catch (e) {
-      await transaction.rollback()
-      return errorResponseServerError(e)
-    }
-  }))
+      // Record image file entries in DB
+      const transaction = await models.sequelize.transaction()
+      try {
+        // Record dir file entry in DB
+        const createDirFileQueryObj = {
+          multihash: resizeResp.dir.dirCID,
+          sourceFile: null,
+          storagePath: resizeResp.dir.dirDestPath,
+          type: 'dir' // TODO - replace with models enum
+        }
+        await DBManager.createNewDataRecord(createDirFileQueryObj, cnodeUserUUID, models.File, transaction)
+
+        // Record all image res file entries in DB
+        // Must be written sequentially to ensure clock values are correctly incremented and populated
+        for (const file of resizeResp.files) {
+          const createImageFileQueryObj = {
+            multihash: file.multihash,
+            sourceFile: file.sourceFile,
+            storagePath: file.storagePath,
+            type: 'image', // TODO - replace with models enum
+            dirMultihash: resizeResp.dir.dirCID,
+            fileName: file.sourceFile.split('/').slice(-1)[0]
+          }
+          await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
+        }
+
+        req.logger.info(`route time = ${Date.now() - routestart}`)
+        await transaction.commit()
+        triggerSecondarySyncs(req)
+        return successResponse({ dirCID: resizeResp.dir.dirCID })
+      } catch (e) {
+        await transaction.rollback()
+        return errorResponseServerError(e)
+      }
+    })
+  )
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')

@@ -1,9 +1,16 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const axios = require('axios')
+const { getRateLimiter } = require('../reqLimiter')
+
+const vectorClockRateLimiter = getRateLimiter({
+  prefix: 'syncRateLimiter:',
+  max: 20,
+  expiry: 60
+})
 
 module.exports = function (app) {
-  app.post('/vector_clock_backfill/:wallet', handleResponse(async (req, res, next) => {
+  app.post('/vector_clock_backfill/:wallet', vectorClockRateLimiter, handleResponse(async (req, res, next) => {
     const walletPublicKey = req.params.wallet
     const { primary, secondaries } = req.body
     let clock = 0

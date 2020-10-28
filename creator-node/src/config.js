@@ -137,6 +137,12 @@ const config = convict({
     env: 'logLevel',
     default: null
   },
+  rateLimiterDefaultMax: {
+    dec: 'Default rate limiter total requests per hour',
+    format: 'nat',
+    env: 'rateLimiterDefaultMax',
+    default: null
+  },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
     format: 'nat',
