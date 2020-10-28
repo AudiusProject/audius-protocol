@@ -10,7 +10,7 @@
   "logLevel": "debug",
   "redisHost": "localhost",
   "redisPort": 4379,
-  "rateLimiterDefaultMax": 20,
+  "rateLimiterDefaultMax": 30,
   "rateLimitingAudiusUserReqLimit": 3000,
   "rateLimitingUserReqLimit": 3000,
   "rateLimitingMetadataReqLimit": 3000,

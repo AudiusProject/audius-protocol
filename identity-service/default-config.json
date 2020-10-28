@@ -19,7 +19,7 @@
   "userVerifierPublicKey": "0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0",
   "blacklisterPrivateKey": "87e08695a0c368b9fcbf7420183d266514a1b70791fd0b4254b3cbb8373803c7",
   "blacklisterPublicKey": "0xcccc36bE44D106C6aC14199A2Ed6a29fDa25d5Ae",
-  "rateLimiterDefaultMax": 20,
+  "rateLimiterDefaultMax": 30,
   "rateLimitingReqLimit": 50000,
   "rateLimitingAuthLimit": 5000,
   "rateLimitingTwitterLimit": 5000,
