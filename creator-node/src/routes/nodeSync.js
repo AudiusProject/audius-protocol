@@ -192,7 +192,8 @@ module.exports = function (app) {
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
     } else {
-      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+      if (errorObj) return errorResponseServerError(errorObj)
     }
     return successResponse()
   }))
