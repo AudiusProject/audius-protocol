@@ -40,8 +40,7 @@
   font-size: var(--font-xl);
 }
 
-.input.disabled,
-.input.disabled .placeholder {
+.input.disabled {
   cursor: default !important;
   background-color: var(--neutral-light-9);
 }
@@ -87,6 +86,7 @@
 }
 
 :global(.placeholder.focus).placeholder {
+  /* Z-index of 2 here to be on top of password managers */
   z-index: 2;
   pointer-events: none;
   color: var(--neutral-light-4);
