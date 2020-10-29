@@ -30,6 +30,12 @@ const SyncPriority = Object.freeze({
   High: 1
 })
 
+// Helpful strings for printing priorities
+const priorityMap = {
+  [SyncPriority.High]: 'HIGH',
+  [SyncPriority.Low]: 'LOW'
+}
+
 // Describes the sync type - Recurring (scheduled) or Manual (triggered
 // by a user action). Currently only used for logging purposes.
 const SyncType = Object.freeze({
@@ -389,6 +395,7 @@ class SnapbackSM {
 
   // Main sync queue job
   async processSyncOperation (job) {
+    const {name: jobType, opts: { priority }, id} = job
     const syncRequestParameters = job.data.syncRequestParameters
     let isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -404,7 +411,8 @@ class SnapbackSM {
     const syncWallet = syncRequestParameters.data.wallet[0]
     const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
-    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} ------------------`)
+    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${jobType} | priority: ${priorityMap[priority]} | jobID: ${id} ------------------`)
+
 
     // Issue sync request to secondary
     await axios(syncRequestParameters)
@@ -414,7 +422,7 @@ class SnapbackSM {
 
     // Exit when sync status is computed
     // Determine how many times to retry this operation
-    this.log('------------------END Process SYNC------------------')
+    this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
   }
 
   // Query eth-contracts chain for endpoint to ID info
@@ -515,4 +523,4 @@ class SnapbackSM {
   }
 }
 
-module.exports = { SnapbackSM, SyncPriority, SyncType }
+module.exports = { SnapbackSM, SyncPriority, SyncType, priorityMap }

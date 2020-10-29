@@ -1,9 +1,4 @@
-const { SyncPriority } = require('../../snapbackSM')
-
-const priorityMap = {
-  [SyncPriority.High]: 'HIGH',
-  [SyncPriority.Low]: 'LOW'
-}
+const { priorityMap } = require('../../snapbackSM')
 
 const getJobInfo = job => {
   return {
