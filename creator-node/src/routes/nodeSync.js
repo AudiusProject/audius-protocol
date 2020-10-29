@@ -6,13 +6,11 @@ const { handleResponse, successResponse, errorResponse, errorResponseServerError
 const config = require('../config')
 const middlewares = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
 const TrackSaveConcurrencyLimit = 10
 const NonTrackFileSaveConcurrencyLimit = 10
-const RehydrateIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
   /**
@@ -28,7 +26,6 @@ module.exports = function (app) {
 
     // TODO - allow for offsets in the /export
     const walletPublicKeys = req.query.wallet_public_key // array
-    const dbOnlySync = (req.query.db_only_sync === true || req.query.db_only_sync === 'true')
     const sourceEndpoint = req.query.source_endpoint || '' // string
 
     const MaxClock = 25000
