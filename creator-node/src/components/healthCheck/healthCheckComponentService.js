@@ -39,7 +39,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheckDuration = async ({ libs = {}, logger, sequelize}) => {
+const healthCheckDuration = async ({ libs = {}, logger}) => {
   // Validate delegateOwnerWallet identity and short circuit if unpermissioned
 
   // Wait 5 minutes, intentionally holding this route open

@@ -29,14 +29,18 @@ const syncHealthCheckController = async () => {
 }
 
 /**
- * Controllr for health_check/duration route
+ * Controller for health_check/duration route
  * Calls healthCheckCOmponentService
  */
-
- const healthCheckDurationController = async () => {
-  let { timestamp, randomBytes, signature } = queryParams
-  return { timestamp, randomBytes, signature}
+ const healthCheckDurationController = async (req) => {
+  let { timestamp, randomBytes, signature } = req.query
+  console.log(`\n`)
+  console.log(`Received timestamp: ${timestamp}`)
+  console.log(`Received randomBytes: ${randomBytes}`)
+  console.log(`Received signature: ${signature}`)
+  console.log(`\n`)
   // TODO: Time limit signature
+  return successResponse({ timestamp, randomBytes, signature })
 }
 
 // Routes
@@ -44,6 +48,6 @@ const syncHealthCheckController = async () => {
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 
-router.post('/health_check/duration', handleResponse(healthCheckDurationController))
+router.get('/health_check/duration', handleResponse(healthCheckDurationController))
 
 module.exports = router
