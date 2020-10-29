@@ -1,6 +1,6 @@
 const { sampleSize } = require('lodash')
 const { Base } = require('./base')
-const { timeRequestsAndSortByVersion } = require('../utils/network')
+const { timeRequests, timeRequestsAndSortByVersion } = require('../utils/network')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
