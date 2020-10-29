@@ -99,6 +99,7 @@ export enum Name {
   WEB_VITALS = 'Web Vitals',
   PERFORMANCE = 'Performance',
   DISCOVERY_PROVIDER_SELECTION = 'Discovery Provider Selection',
+  CREATOR_NODE_SELECTION = 'Creator Node Selection',
   STEM_COMPLETE_UPLOAD = 'Stem: Complete Upload',
   STEM_DELETE = 'Stem: Delete',
   REMIX_NEW_REMIX = 'Remix: New Remix',
@@ -594,6 +595,13 @@ type DiscoveryProviderSelection = {
   reason: string
 }
 
+type CreatorNodeSelection = {
+  eventName: Name.CREATOR_NODE_SELECTION
+  selectedAs: 'primary' | 'secondary'
+  endpoint: string
+  reason: string
+}
+
 type StemCompleteUpload = {
   eventName: Name.STEM_COMPLETE_UPLOAD
   id: number
@@ -726,6 +734,7 @@ export type AllTrackingEvents =
   | BrowserNotificationSetting
   | TweetFirstUpload
   | DiscoveryProviderSelection
+  | CreatorNodeSelection
   | WebVitals
   | Performance
   | StemCompleteUpload
