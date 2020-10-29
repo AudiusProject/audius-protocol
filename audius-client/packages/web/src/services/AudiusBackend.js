@@ -360,6 +360,21 @@ class AudiusBackend {
     )
   }
 
+  static creatorNodeSelectionCallback(primary, secondaries, reason) {
+    track(Name.CREATOR_NODE_SELECTION, {
+      endpoint: primary,
+      selectedAs: 'primary',
+      reason
+    })
+    secondaries.forEach(secondary => {
+      track(Name.CREATOR_NODE_SELECTION, {
+        endpoint: secondary,
+        selectedAs: 'secondary',
+        reason
+      })
+    })
+  }
+
   static async sanityChecks(audiusLibs) {
     try {
       const sanityChecks = new SanityChecks(audiusLibs)

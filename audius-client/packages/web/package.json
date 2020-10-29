@@ -6,7 +6,7 @@
   "version": "0.21.28",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.0.7",
+    "@audius/libs": "1.0.8",
     "@audius/stems": "0.2.11",
     "@optimizely/optimizely-sdk": "^4.0.0",
     "@reduxjs/toolkit": "^1.3.2",
