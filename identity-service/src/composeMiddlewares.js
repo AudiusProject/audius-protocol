@@ -1,21 +1,21 @@
 /**
  * Combines and applies middlewares in an array
- * @param {Array} middleware
+ * @param {Array} middlewares
  */
-const compose = (middleware) => {
-  if (!middleware.length) {
+const composeMiddleware = (middlewares) => {
+  if (!middlewares.length) {
     return function (_req, _res, next) { next() }
   }
 
-  var head = middleware[0]
-  var tail = middleware.slice(1)
+  var head = middlewares[0]
+  var tail = middlewares.slice(1)
 
   return function (req, res, next) {
     head(req, res, function (err) {
       if (err) return next(err)
-      compose(tail)(req, res, next)
+      composeMiddleware(tail)(req, res, next)
     })
   }
 }
 
-module.exports = compose
+module.exports = composeMiddleware
