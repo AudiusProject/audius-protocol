@@ -3,7 +3,9 @@ const { priorityMap } = require('../../snapbackSM')
 const getJobInfo = job => ({
   type: job.name,
   priority: priorityMap[job.opts.priority],
-  id: job.id
+  id: job.id,
+  wallet: job.data.syncRequestParameters.data.wallet[0],
+  secondary: job.data.syncRequestParameters.baseURL
 })
 
 const makeResponse = (pendingJobs, activeJobs) => ({
