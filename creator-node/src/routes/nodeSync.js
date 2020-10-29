@@ -129,30 +129,6 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       const ipfsIDObj = await getIPFSPeerId(ipfs)
 
-      if (!dbOnlySync) {
-        // Rehydrate files if necessary
-        for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
-          const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
-          req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
-          // Ensure all relevant files are available through IPFS at export time
-          await Promise.all(exportFilesSlice.map(async (file) => {
-            try {
-              if (
-                (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
-                // to address legacy single-res image rehydration where images are stored directly under its file CID
-                (file.type === 'image' && file.sourceFile === null)
-              ) {
-                await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
-              } else if (file.type === 'dir') {
-                await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
-              }
-            } catch (e) {
-              req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
-            }
-          }))
-        }
-      }
-
       req.logger.info('Successful export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ms`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
