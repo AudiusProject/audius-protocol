@@ -1,5 +1,7 @@
-const Utils = require('../utils')
 const axios = require('axios')
+const semver = require('semver')
+
+const Utils = require('../utils')
 const promiseFight = require('./promiseFight')
 
 /**
@@ -27,7 +29,21 @@ async function timeRequests (requests) {
     timeRequest(request)
   ))
 
-  return timings.sort((a, b) => a.millis - b.millis)
+  timings.sort((a, b) => {
+    try {
+      if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
+      if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
+    } catch (e) {
+      // Unable to sort by version -- probably failed health check. Send to the back
+      if (!a.response) return 1
+      if (!b.response) return -1
+    }
+
+    // If same version, do a tie breaker on the response time
+    return a.millis - b.millis
+  })
+
+  return timings
 }
 
 // Races requests for file content
