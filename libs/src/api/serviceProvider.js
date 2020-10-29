@@ -113,6 +113,7 @@ class ServiceProvider extends Base {
     // Secondaries: select randomly
     // TODO: Implement geolocation-based selection
     const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
+      .filter(timing => timing.response)
       .map(timing => timing.request.id)
 
     return { primary, secondaries, services }
