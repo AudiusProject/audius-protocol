@@ -103,17 +103,17 @@ class ServiceProvider extends Base {
       }))
     )
 
+    // Store all the healthy services in a map. Used in UI to select other available services
     let services = {}
+    const available = []
     timings.forEach(timing => {
+      // Filter out unhealthy nodes (nodes with no response)
       if (timing.response) {
         services[timing.request.id] = timing.response.data
-      } else {
-        services[timing.request.id] = undefined
+        available.push(timing)
       }
     })
-
-    // Filter out unhealthy nodes (nodes with no response)
-    timings = timings.filter(timing => timing.response)
+    timings = available
 
     // Primary: select the lowest-latency
     const primary = timings[0] ? timings[0].request.id : null
