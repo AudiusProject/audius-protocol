@@ -1,12 +1,10 @@
 const { priorityMap } = require('../../snapbackSM')
 
-const getJobInfo = job => {
-  return {
-    type: job.name,
-    priority: priorityMap[job.opts.priority],
-    id: job.id
-  }
-}
+const getJobInfo = job => ({
+  type: job.name,
+  priority: priorityMap[job.opts.priority],
+  id: job.id
+})
 
 const makeResponse = (pendingJobs, activeJobs) => ({
   pending: pendingJobs.map(getJobInfo),
@@ -19,7 +17,7 @@ const makeResponse = (pendingJobs, activeJobs) => ({
  * Response: {
  *  pending: Array<{ type, priority, id }>,
  *  active: Array<{ type, priority, id }>,
- *  pendingCount: numberI
+ *  pendingCount: number
  * }
  */
 const syncHealthCheck = async ({ snapbackSM }) => {

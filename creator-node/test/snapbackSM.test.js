@@ -28,7 +28,7 @@ describe('test sync queue', function () {
     await server.close()
   })
 
-  it.only('prioritizes manual syncs', async function () {
+  it('prioritizes manual syncs', async function () {
     // Mock out the initial call to sync
     nock(constants.secondaryEndpoint)
       .persist()
@@ -42,7 +42,7 @@ describe('test sync queue', function () {
       .delayBody(500)
       .reply(200, { data: { clockValue: constants.primaryClockVal } })
 
-    // Mock out getUserPrimaryClockValues{ id }
+    // Mock out getUserPrimaryClockValues
     await models.CNodeUser.create({
       walletPublicKey: constants.userWallet,
       clock: constants.primaryClockVal
@@ -54,7 +54,7 @@ describe('test sync queue', function () {
     // Setup the recurring syncs
     const recurringSyncIds = new Set()
     for (let i = 0; i < 5; i++) {
-      const job = await snapback.issueSecondarySync({
+      const { id } = await snapback.issueSecondarySync({
         userWallet: constants.userWallet,
         secondaryEndpoint: constants.secondaryEndpoint,
         primaryEndpoint: constants.primaryEndpoint,
@@ -62,8 +62,7 @@ describe('test sync queue', function () {
         syncType: SyncType.Recurring,
         primaryClockValue: constants.primaryClockVal
       })
-      console.log({ job })
-      recurringSyncIds.add(job.id)
+      recurringSyncIds.add(id)
     }
 
     // setup manual syncs

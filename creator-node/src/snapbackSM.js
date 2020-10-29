@@ -395,7 +395,7 @@ class SnapbackSM {
 
   // Main sync queue job
   async processSyncOperation (job) {
-    const {name: jobType, opts: { priority }, id} = job
+    const { name: jobType, opts: { priority }, id } = job
     const syncRequestParameters = job.data.syncRequestParameters
     let isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -412,7 +412,6 @@ class SnapbackSM {
     const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
     this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${jobType} | priority: ${priorityMap[priority]} | jobID: ${id} ------------------`)
-
 
     // Issue sync request to secondary
     await axios(syncRequestParameters)
