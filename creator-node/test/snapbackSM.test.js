@@ -79,7 +79,7 @@ describe('test sync queue', function () {
     }
 
     // Verify we complete manual jobs first
-    let jobIds = (await snapback.getPendingSyncJobs()).map(job => job.id)
+    let jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
     let lastRemainingRecurringCount = 0
 
     while (jobIds.length) {
@@ -98,7 +98,7 @@ describe('test sync queue', function () {
       lastRemainingRecurringCount = remainingRecurringCount
 
       await utils.timeout(500)
-      jobIds = (await snapback.getPendingSyncJobs()).map(job => job.id)
+      jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
     }
   })
 })
