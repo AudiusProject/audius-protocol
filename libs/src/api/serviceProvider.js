@@ -96,7 +96,7 @@ class ServiceProvider extends Base {
       .filter(Boolean)
 
     // Time requests and autoselect nodes
-    const timings = await timeRequestsAndSortByVersion(
+    let timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node,
         url: `${node}/health_check`
@@ -105,15 +105,22 @@ class ServiceProvider extends Base {
 
     let services = {}
     timings.forEach(timing => {
-      services[timing.request.id] = timing.response.data
+      if (timing.response) {
+        services[timing.request.id] = timing.response.data
+      } else {
+        services[timing.request.id] = undefined
+      }
     })
+
+    // Filter out unhealthy nodes (nodes with no response)
+    timings = timings.filter(timing => timing.response)
+
     // Primary: select the lowest-latency
     const primary = timings[0] ? timings[0].request.id : null
 
     // Secondaries: select randomly
     // TODO: Implement geolocation-based selection
     const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
-      .filter(timing => timing.response)
       .map(timing => timing.request.id)
 
     return { primary, secondaries, services }
