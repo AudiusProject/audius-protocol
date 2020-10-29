@@ -180,7 +180,8 @@ class SnapbackSM {
         sync_type: syncType
       }
     }
-    return this.syncQueue.add({ syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
+    // Note: we pass in syncType as job name for observability
+    return this.syncQueue.add(syncType, { syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
   }
 
   // Main state machine processing function
@@ -485,7 +486,8 @@ class SnapbackSM {
     // Initialize sync queue processor function, as drained will issue syncs
     // A maximum of 10 sync jobs are allowed to be issued at once
     this.syncQueue.process(
-      maxSyncJobs || MaxParallelSyncJobs,
+      '*', // process all job types (manual + recurring)
+      maxSyncJobs || MaxParallelSyncJobs, // set max concurrency
       async (job, done) => {
         try {
           await this.processSyncOperation(job)
@@ -504,8 +506,12 @@ class SnapbackSM {
     await this.stateMachineQueue.add({ startTime: Date.now() })
   }
 
-  async getPendingSyncJobs () {
-    return this.syncQueue.getJobs(['waiting'])
+  async getSyncQueueJobs () {
+    const [pending, active] = await Promise.all([
+      this.syncQueue.getJobs(['waiting']),
+      this.syncQueue.getJobs(['active'])
+    ])
+    return { pending, active }
   }
 }
 

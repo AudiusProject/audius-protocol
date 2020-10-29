@@ -28,7 +28,7 @@ describe('test sync queue', function () {
     await server.close()
   })
 
-  it('prioritizes manual syncs', async function () {
+  it.only('prioritizes manual syncs', async function () {
     // Mock out the initial call to sync
     nock(constants.secondaryEndpoint)
       .persist()
@@ -42,7 +42,7 @@ describe('test sync queue', function () {
       .delayBody(500)
       .reply(200, { data: { clockValue: constants.primaryClockVal } })
 
-    // Mock out getUserPrimaryClockValues
+    // Mock out getUserPrimaryClockValues{ id }
     await models.CNodeUser.create({
       walletPublicKey: constants.userWallet,
       clock: constants.primaryClockVal
@@ -54,7 +54,7 @@ describe('test sync queue', function () {
     // Setup the recurring syncs
     const recurringSyncIds = new Set()
     for (let i = 0; i < 5; i++) {
-      const { id } = await snapback.issueSecondarySync({
+      const job = await snapback.issueSecondarySync({
         userWallet: constants.userWallet,
         secondaryEndpoint: constants.secondaryEndpoint,
         primaryEndpoint: constants.primaryEndpoint,
@@ -62,7 +62,8 @@ describe('test sync queue', function () {
         syncType: SyncType.Recurring,
         primaryClockValue: constants.primaryClockVal
       })
-      recurringSyncIds.add(id)
+      console.log({ job })
+      recurringSyncIds.add(job.id)
     }
 
     // setup manual syncs
@@ -79,7 +80,7 @@ describe('test sync queue', function () {
     }
 
     // Verify we complete manual jobs first
-    let jobIds = (await snapback.getPendingSyncJobs()).map(job => job.id)
+    let jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
     let lastRemainingRecurringCount = 0
 
     while (jobIds.length) {
@@ -98,7 +99,7 @@ describe('test sync queue', function () {
       lastRemainingRecurringCount = remainingRecurringCount
 
       await utils.timeout(500)
-      jobIds = (await snapback.getPendingSyncJobs()).map(job => job.id)
+      jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
     }
   })
 })
