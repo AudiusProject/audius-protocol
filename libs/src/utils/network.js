@@ -11,7 +11,12 @@ async function timeRequest (request) {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
-  const response = await axios.get(request.url)
+  let response
+  try {
+    response = await axios.get(request.url, { timeout: 10000 })
+  } catch (e) {
+    console.debug(`Error with request for ${request.url}: ${e}`)
+  }
   const millis = new Date().getTime() - startTime
   return { request, response, millis }
 }

@@ -43,6 +43,7 @@ class ServiceSelection {
    * tried again (re-requested)
    */
   constructor ({
+    blacklist,
     whitelist,
     getServices,
     maxConcurrentRequests = 6,
@@ -50,6 +51,8 @@ class ServiceSelection {
     unhealthyTTL = 60 * 60 * 1000, // 1 hour
     backupsTTL = 2 * 60 * 1000 // 2 min
   }) {
+    // For Creator Node selection
+    this.blacklist = blacklist
     this.whitelist = whitelist
     this.getServices = getServices
     this.maxConcurrentRequests = maxConcurrentRequests
@@ -198,6 +201,14 @@ class ServiceSelection {
     return null
   }
 
+  /**
+   * Filter out services that are in the blacklist
+   * @param {[string]} services endpoints
+   */
+  filterFromBlacklist (services) {
+    return services.filter(s => !this.blacklist.has(s))
+  }
+
   /** Filter down services to those in the whitelist */
   filterToWhitelist (services) {
     return services.filter(s => this.whitelist.has(s))
@@ -269,6 +280,14 @@ class ServiceSelection {
   }
 
   /**
+   * Removes from unhealthy set
+   * @param {string} key service endpoint
+   */
+  removeFromUnhealthy (key) {
+    if (this.unhealthy.has(key)) this.unhealthy.delete(key)
+  }
+
+  /**
    * Adds a service to the list of backups
    * @param {string} service the service to add
    * @param {Response} response the services response. This can be used to weigh various
@@ -282,8 +301,16 @@ class ServiceSelection {
    * Controls how a backup is picked. Overriding methods may choose to use the backup's response.
    * e.g. pick a backup that's the fewest versions behind
    */
-  async selectFromBackups () {
+  selectFromBackups () {
     return Object.keys(this.backups)[0]
+  }
+
+  /**
+   * Removes from backups
+   * @param {string} key service endpoint
+   */
+  removeFromBackups (key) {
+    if (this.backups.hasOwnProperty(key)) delete this.backups[key]
   }
 
   /**

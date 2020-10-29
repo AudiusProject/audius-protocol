@@ -26,70 +26,7 @@ const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   }
 })
 
-describe('test CreatorNodeSelection', () => {
-  it('sorts by descending semver', () => {
-    const cns = new CreatorNodeSelection({
-      creatorNode: null,
-      numberOfNodes: 3,
-      ethContracts: mockEthContracts([], '1.2.3'),
-      whitelist: null,
-      blacklist: null
-    })
-    const services = [{
-      endpoint: 'creator_node_1.com',
-      version: '4.30.95',
-      responseTime: 100 // ms
-    },
-    {
-      endpoint: 'creator_node_2.com',
-      version: '10.13.95',
-      responseTime: 100 // ms
-    },
-    {
-      endpoint: 'creator_node_3.com',
-      version: '10.23.20',
-      responseTime: 100 // ms
-    }]
-
-    cns.sortBySemver(services)
-
-    assert(services[0].version === '10.23.20')
-    assert(services[1].version === '10.13.95')
-    assert(services[2].version === '4.30.95')
-  })
-
-  it('sorts by ascending time,', () => {
-    const cns = new CreatorNodeSelection({
-      creatorNode: null,
-      numberOfNodes: 3,
-      ethContracts: mockEthContracts([], '1.2.3'),
-      whitelist: null,
-      blacklist: null
-    })
-
-    const services = [{
-      endpoint: 'creator_node_1.com',
-      version: '4.30.95',
-      responseTime: 100 // ms
-    },
-    {
-      endpoint: 'creator_node_2.com',
-      version: '4.30.95',
-      responseTime: 200 // ms
-    },
-    {
-      endpoint: 'creator_node_3.com',
-      version: '4.30.95',
-      responseTime: 300 // ms
-    }]
-
-    cns.sortBySemver(services)
-
-    assert(services[0].responseTime === 100)
-    assert(services[1].responseTime === 200)
-    assert(services[2].responseTime === 300)
-  })
-
+describe.only('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
@@ -206,7 +143,7 @@ describe('test CreatorNodeSelection', () => {
           }
         }
       },
-      numberOfNodes: 2,
+      numberOfNodes: 3,
       ethContracts: mockEthContracts([upToDate, behindMajor, behindMinor, behindPatch], '1.2.3'),
       whitelist: null,
       blacklist: null
@@ -215,8 +152,135 @@ describe('test CreatorNodeSelection', () => {
     const { primary, secondaries } = await cns.select()
 
     assert(primary === upToDate)
-    assert(secondaries.length === 1)
+    assert(secondaries.length === 2)
     assert(!secondaries.includes(primary))
     assert(secondaries.includes(behindPatch))
+    assert(secondaries.includes(behindMinor))
+  })
+
+  it('select from unhealthy if all are unhealthy', async () => {
+    const unhealthy1 = 'https://unhealthy1.audius.co'
+    nock(unhealthy1)
+      .get('/health_check')
+      .reply(500, { })
+
+    const unhealthy2 = 'https://unhealthy2.audius.co'
+    nock(unhealthy2)
+      .get('/health_check')
+      .delay(100)
+      .reply(500, { })
+
+    const unhealthy3 = 'https://unhealthy3.audius.co'
+    nock(unhealthy3)
+      .get('/health_check')
+      .delay(200)
+      .reply(500, { })
+
+    const unhealthy4 = 'https://unhealthy4.audius.co'
+    nock(unhealthy4)
+      .get('/health_check')
+      .delay(300)
+      .reply(500, { })
+
+    const unhealthy5 = 'https://unhealthy5.audius.co'
+    nock(unhealthy5)
+      .get('/health_check')
+      .delay(400)
+      .reply(500, { })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts([unhealthy1, unhealthy2, unhealthy3, unhealthy4, unhealthy5], '1.2.3'),
+      whitelist: null,
+      blacklist: null
+    })
+
+    const { primary, secondaries } = await cns.select()
+
+    // All unhealthy are bad candidates so just pick whatever if all are unhealthy
+    assert(primary !== undefined && primary !== null)
+    assert(secondaries.length === 2)
+    assert(secondaries[0] !== null && secondaries[0] !== undefined)
+    assert(secondaries[1] !== null && secondaries[1] !== undefined)
+  })
+
+  it('selects the healthiest among the services of different statuses', async () => {
+    // the cream of the crop -- up to date version, fast. you want this
+    const shouldBePrimary = 'https://shouldBePrimary.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: CREATOR_NODE_SERVICE_NAME,
+        version: '1.2.3',
+        country: 'US',
+        latitude: '37.7058',
+        longitude: '-122.4619'
+      } })
+
+    // cold, overnight pizza -- behind by minor version, fast. you kind of want this
+    const shouldBeSecondary1 = 'https://shouldBeSecondary1.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: CREATOR_NODE_SERVICE_NAME,
+        version: '1.0.3',
+        country: 'US',
+        latitude: '37.7058',
+        longitude: '-122.4619'
+      } })
+
+    // stale chips from 2 weeks ago -- behind by major version, kinda fast.
+    // you kind of don't want this but only if there is nothing better
+    const shouldBeSecondary2 = 'https://shouldBeSecondary2.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check')
+      .delay(100)
+      .reply(200, { data: {
+        service: CREATOR_NODE_SERVICE_NAME,
+        version: '0.2.3',
+        country: 'US',
+        latitude: '37.7058',
+        longitude: '-122.4619'
+      } })
+
+    // moldy canned beans -- not available/up at all
+    // you should never pick this unless you are SOL
+    const unhealthy1 = 'https://unhealthy1.audius.co'
+    nock(unhealthy1)
+      .get('/health_check')
+      .reply(500, { })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts([unhealthy1, shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2], '1.2.3'),
+      whitelist: null,
+      blacklist: null
+    })
+
+    const { primary, secondaries } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(!secondaries.includes(primary))
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
   })
 })
