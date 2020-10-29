@@ -39,12 +39,9 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheckDuration = async ({ libs = {}, logger}) => {
-  // Validate delegateOwnerWallet identity and short circuit if unpermissioned
-
+const healthCheckDuration = async () => {
   // Wait 5 minutes, intentionally holding this route open
   await utils.timeout(3000)
-
   return { success: true }
 }
 

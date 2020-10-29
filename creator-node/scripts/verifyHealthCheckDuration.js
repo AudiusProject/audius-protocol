@@ -1,8 +1,5 @@
 const axios = require('axios')
-// const { generateTimestampAndSignature } = require('../src/apiSigning')
-const Web3 = require('web3')
-const web3 = new Web3()
-const { sortKeys } = require('../src/apiSigning')
+const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
 
 const crypto = require('crypto')
@@ -12,10 +9,9 @@ const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 const randomBytes = promisify(crypto.randomBytes)
 
 /**
- * Process command line args and either add or delete an entry in/to ContentBlacklist table
+ * Process command line args and issue duration health check
  */
 async function run () {
-  let args
   try {
     parseEnvVarsAndArgs()
   } catch (e) {
@@ -23,40 +19,24 @@ async function run () {
     console.error(`Script usage: node verifyHealthcheckDuration.js`)
     return
   }
-  // const { action, type, id } = args
-  // Add or remove type and id entry to ContentBlacklist
+
   try {
-    console.log(`Generating request parameters`)
-    console.log(`Generating timestamp...`)
-    const timestamp = new Date().toISOString()
-    console.log(`${timestamp}`)
-    console.log(`Generating random bytes...`)
-    const randomBytesToSign = await randomBytes(18)
-    console.log(`Generated: ${randomBytesToSign}`)
-    const toSignObj = {
-     timestamp, randomBytesToSign
-    }
+    // Generate signature using local key
+    const randomBytesToSign = (await randomBytes(18)).toString()
+    const signedLocalData = generateTimestampAndSignature({ randomBytesToSign }, PRIVATE_KEY)
+    // Add randomBytes to outgoing request parameters
+    const reqParam = signedLocalData
+    reqParam.randomBytes = randomBytesToSign
 
-    console.log(toSignObj)
-    const toSignStr = JSON.stringify(sortKeys(toSignObj))
-    const toSignHash = web3.utils.keccak256(toSignStr)
-    const privateKey = PRIVATE_KEY
-
-    const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
-    console.log(signedResponse)
-
-    const signedResponseSignature = signedResponse.signature
-    console.log(signedResponseSignature)
-
-    let requestParams = {
+    let requestConfig = {
       url: `${CREATOR_NODE_ENDPOINT}/health_check/duration`,
       method: 'get',
-      params: { timestamp, randomBytes: randomBytesToSign, signedResponseSignature },
+      params: reqParam,
       responseType: 'json'
     }
-
-    let resp = await axios(requestParams)
-    console.dir(resp, { depth: 5 })
+    let resp = await axios(requestConfig)
+    let data = resp.data
+    console.dir(data, { depth: 5 })
   } catch (e) {
     console.error(e)
   }

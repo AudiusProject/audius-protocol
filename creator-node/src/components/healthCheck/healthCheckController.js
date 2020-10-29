@@ -5,7 +5,14 @@ const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 
+const { recoverWallet } = require('../../apiSigning')
+
+const config = require('../../config')
+
 const router = express.Router()
+
+// 5 minutes in ms is the maximum age of a timestamp sent to /health_check/duration
+const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 
 // Controllers
 
@@ -30,24 +37,30 @@ const syncHealthCheckController = async () => {
 
 /**
  * Controller for health_check/duration route
- * Calls healthCheckCOmponentService
+ * Calls healthCheckComponentService
  */
  const healthCheckDurationController = async (req) => {
   let { timestamp, randomBytes, signature } = req.query
-  console.log(`\n`)
-  console.log(`Received timestamp: ${timestamp}`)
-  console.log(`Received randomBytes: ${randomBytes}`)
-  console.log(`Received signature: ${signature}`)
-  console.log(`\n`)
-  // TODO: Time limit signature
-  return successResponse({ timestamp, randomBytes, signature })
+  const recoveryObject = { randomBytesToSign:randomBytes, timestamp }
+  const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
+  const recoveredTimestampDate = new Date(timestamp)
+  const currentTimestampDate = new Date()
+  const requestAge = currentTimestampDate - recoveredTimestampDate
+  if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
+      throw new Error(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`)
+  }
+  const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
+  if (recoveredPublicWallet !== delegateOwnerWallet) {
+    throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
+  }
+  let response = await healthCheckDuration()
+  return successResponse(response)
 }
 
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
-
 router.get('/health_check/duration', handleResponse(healthCheckDurationController))
 
 module.exports = router
