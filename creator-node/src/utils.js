@@ -161,7 +161,7 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
     req.logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
-    req.logger.error(`ipfsCat - Error: ${e}`)
+    req.logger.debug(`ipfsCat - Error: ${e}`)
     reject(e)
   }
 })
@@ -195,7 +195,7 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
     req.logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
-    req.logger.error(`ipfsGet - Error: ${e}`)
+    req.logger.debug(`ipfsGet - Error: ${e}`)
     reject(e)
   }
 })
@@ -413,7 +413,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
     let addResp = await ipfs.add(ipfsAddArray, { pin: false })
     logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
   } catch (e) {
-    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}`)
   }
 }
 
