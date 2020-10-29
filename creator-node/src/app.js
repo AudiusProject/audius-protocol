@@ -59,6 +59,9 @@ const initializeApp = (port, storageDir, serviceRegistry) => {
   // add a newer version of ipfs as app property
   app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
 
+  // https://expressjs.com/en/guide/behind-proxies.html
+  app.set('trust proxy', true)
+
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
   // Increase from 2min default to accommodate long-lived requests.
