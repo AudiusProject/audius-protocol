@@ -1,6 +1,6 @@
 const { sampleSize } = require('lodash')
 const { Base } = require('./base')
-const { timeRequests } = require('../utils/network')
+const { timeRequestsAndSortByVersion } = require('../utils/network')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
@@ -96,7 +96,7 @@ class ServiceProvider extends Base {
       .filter(Boolean)
 
     // Time requests and autoselect nodes
-    const timings = await timeRequests(
+    const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node,
         url: `${node}/health_check`
@@ -110,9 +110,10 @@ class ServiceProvider extends Base {
     // Primary: select the lowest-latency
     const primary = timings[0] ? timings[0].request.id : null
 
+    // Secondaries: select randomly
     // TODO: Implement geolocation-based selection
-    // Secondaries: Timings will be sorted according to highest version.
-    const secondaries = [timings[1] ? timings[1].request.id : null, timings[2] ? timings[2].request.id : null]
+    const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
+      .map(timing => timing.request.id)
 
     return { primary, secondaries, services }
   }

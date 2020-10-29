@@ -29,7 +29,21 @@ async function timeRequests (requests) {
     timeRequest(request)
   ))
 
-  timings.sort((a, b) => {
+  return timings.sort((a, b) => a.millis - b.millis)
+}
+
+/**
+ * Fetches multiple urls and times each request and returns the results sorted
+ * first by version and then by lowest-latency.
+ * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @returns { Array<{url, response, millis}> }
+ */
+async function timeRequestsAndSortByVersion (requests) {
+  let timings = await Promise.all(requests.map(async request =>
+    timeRequest(request)
+  ))
+
+  return timings.sort((a, b) => {
     try {
       if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
       if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
@@ -42,8 +56,6 @@ async function timeRequests (requests) {
     // If same version, do a tie breaker on the response time
     return a.millis - b.millis
   })
-
-  return timings
 }
 
 // Races requests for file content
@@ -172,5 +184,6 @@ module.exports = {
   timeRequest,
   timeRequests,
   raceRequests,
-  allRequests
+  allRequests,
+  timeRequestsAndSortByVersion
 }
