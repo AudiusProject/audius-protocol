@@ -26,7 +26,7 @@ const excludedRoutes = [
   '/sync_status'
 ]
 function requestNotExcludedFromLogging (url) {
-  return ( excludedRoutes.filter(excludedRoute => url.includes(excludedRoute)) ).length === 0
+  return (excludedRoutes.filter(excludedRoute => url.includes(excludedRoute))).length === 0
 }
 
 function getRequestLoggingContext (req, requestID) {
