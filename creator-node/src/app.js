@@ -6,7 +6,14 @@ const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
-const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
+const {
+  userReqLimiter,
+  trackReqLimiter,
+  audiusUserReqLimiter,
+  metadataReqLimiter,
+  imageReqLimiter,
+  rateLimiterMiddleware
+} = require('./reqLimiter')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
@@ -26,6 +33,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
+app.use('/', rateLimiterMiddleware)
 
 // import routes
 require('./routes')(app)

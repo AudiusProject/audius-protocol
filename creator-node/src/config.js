@@ -125,6 +125,25 @@ const config = convict({
     env: 'logLevel',
     default: null
   },
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
+  },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
     format: 'nat',
