@@ -41,7 +41,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
  */
 const healthCheckDuration = async () => {
   // Wait 5 minutes, intentionally holding this route open
-  await utils.timeout(3000)
+  await utils.timeout(300000)
   return { success: true }
 }
 
