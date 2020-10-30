@@ -1,5 +1,5 @@
 const express = require('express')
-const { handleResponse, successResponse } = require('../../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest } = require('../../apiHelpers')
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
@@ -41,6 +41,8 @@ const syncHealthCheckController = async () => {
  */
 const healthCheckDurationController = async (req) => {
   let { timestamp, randomBytes, signature } = req.query
+  if (!timestamp || !randomBytes || !signature) return errorResponseBadRequest('Missing required query parameters')
+
   const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
   const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
   const recoveredTimestampDate = new Date(timestamp)
