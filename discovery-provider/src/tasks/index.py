@@ -1,4 +1,7 @@
+from urllib.parse import urljoin
 import logging
+import concurrent.futures
+import requests
 
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
@@ -13,7 +16,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
     most_recent_indexed_block_redis_key
 from src.utils.redis_cache import remove_cached_user_ids, \
-    remove_cached_track_ids, remove_cached_playlist_ids
+    remove_cached_track_ids, remove_cached_playlist_ids, use_redis_cache
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +107,33 @@ def update_latest_block_redis():
     redis.set(latest_block_redis_key, latest_block_from_chain.number)
     redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
 
+def fetch_tx_receipt(transaction):
+    web3 = update_task.web3
+    tx_hash = web3.toHex(transaction["hash"])
+    receipt = web3.eth.getTransactionReceipt(tx_hash)
+    response = {}
+    response["tx_receipt"] = receipt
+    response["tx_hash"] = tx_hash
+    return response
+
+def fetch_tx_receipts(self, block_transactions):
+    block_tx_with_receipts = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_tx_receipt = {executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions}
+        for future in concurrent.futures.as_completed(future_to_tx_receipt):
+            tx = future_to_tx_receipt[future]
+            try:
+                tx_receipt_info = future.result()
+                tx_hash = tx_receipt_info["tx_hash"]
+                block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
+            except Exception as exc:
+                logger.error(f"index.py | fetch_tx_receipts {tx} generated {exc}")
+    num_processed_txs = len(block_tx_with_receipts.keys())
+    num_submitted_txs = len(block_transactions)
+    if num_processed_txs != num_submitted_txs:
+        raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
+    return block_tx_with_receipts
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -146,6 +176,8 @@ def index_blocks(self, db, blocks_list):
             playlist_factory_txs = []
             user_library_factory_txs = []
 
+            tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
+
             # Sort transactions by hash
             sorted_txs = sorted(block.transactions, key=lambda entry: entry['hash'])
 
@@ -153,7 +185,7 @@ def index_blocks(self, db, blocks_list):
             for tx in sorted_txs:
                 tx_hash = web3.toHex(tx["hash"])
                 tx_target_contract_address = tx["to"]
-                tx_receipt = web3.eth.getTransactionReceipt(tx_hash)
+                tx_receipt = tx_receipt_dict[tx_hash]
 
                 # Handle user operations
                 if tx_target_contract_address == contract_addresses["user_factory"]:
@@ -223,23 +255,15 @@ def index_blocks(self, db, blocks_list):
                 self, update_task, session, user_library_factory_txs, block_number, block_timestamp
             )
 
-            # keep search materialized view in sync with db
-            # only refresh track_lexeme_dict when necessary
-            # social state changes are not factored in since they don't affect track_lexeme_dict
-            # write out all pending transactions to db before refreshing view
             track_lexeme_state_changed = (user_state_changed or track_state_changed)
-            session.flush()
+            session.commit()
             if user_state_changed:
-                session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
                 if user_ids:
                     remove_cached_user_ids(redis, user_ids)
             if track_lexeme_state_changed:
                 if track_ids:
                     remove_cached_track_ids(redis, track_ids)
-                session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
             if playlist_state_changed:
-                session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
-                session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
                 if playlist_ids:
                     remove_cached_playlist_ids(redis, playlist_ids)
 
@@ -416,17 +440,24 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_playlist_index = rebuild_playlist_index or bool(revert_playlist_entries)
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
-
-        if rebuild_playlist_index:
-            session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
-            session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
-        if rebuild_user_index or rebuild_track_index:
-            session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
-        if rebuild_user_index:
-            session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict")
-
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
 
+# calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
+def fetch_cnode_endpoints_from_chain(task_context):
+    try:
+        identity_url = task_context.shared_config['discprov']['identity_service_url']
+        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
+
+        r = requests.get(identity_endpoint, timeout=3)
+        if r.status_code != 200:
+            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
+
+        registered_cnodes = r.json()
+        logger.info(f"Fetched registered creator nodes from chain via {identity_endpoint}")
+        return registered_cnodes
+    except Exception as e:
+        logger.error(f"Identity fetch failed {e}")
+        return []
 
 ######## IPFS PEER REFRESH ########
 def refresh_peer_connections(task_context):
@@ -455,6 +486,13 @@ def refresh_peer_connections(task_context):
         # Add user metadata URL to peer connection list
         user_node_url = task_context.shared_config["discprov"]["user_metadata_service_url"]
         cnode_endpoints[user_node_url] = True
+
+        # update cnode_endpoints with list of creator nodes registered on chain, on 30s refresh interval
+        registered_cnodes = use_redis_cache(
+            'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_chain(task_context)
+        )
+        for node_info in registered_cnodes:
+            cnode_endpoints[node_info['endpoint']] = True
 
         # Update creator node list
         ipfs_client.update_cnode_urls(list(cnode_endpoints.keys()))

@@ -204,6 +204,25 @@ const config = convict({
     env: 'rateLimitingListensIPWhitelist',
     default: null
   },
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
+  },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,
@@ -436,6 +455,12 @@ const config = convict({
     format: String,
     env: 'defiPulseApiKey',
     default: ''
+  },
+  ethRelayerProdGasTier: {
+    doc: 'One of averageGweiHex/fastGweiHex/fastestGweiHex',
+    format: String,
+    env: 'ethRelayerProdGasTier',
+    default: 'fastGweiHex'
   }
 })
 

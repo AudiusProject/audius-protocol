@@ -132,6 +132,7 @@ def configure_flask_app_logging(app, loglevel_str):
         now = time.time()
         duration = int((now - g.start) * 1000)
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        ip = ip.split(',')[0].strip()
         host = request.host.split(':', 1)[0]
         args = request.query_string.decode("utf-8")
 

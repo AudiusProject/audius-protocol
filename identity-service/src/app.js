@@ -1,9 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const rateLimit = require('express-rate-limit')
 const mailgun = require('mailgun-js')
-const RedisStore = require('rate-limit-redis')
 const Redis = require('ioredis')
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
@@ -15,9 +13,9 @@ const NotificationProcessor = require('./notifications/index.js')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
+const { getRateLimiter, rateLimiterMiddleware } = require('./rateLimiter.js')
+
 const DOMAIN = 'mail.audius.co'
-const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
-const DEFAULT_KEY_GENERATOR = (req) => req.ip
 
 class App {
   constructor (port) {
@@ -123,24 +121,11 @@ class App {
     return whitelistRegex && !!ip.match(whitelistRegex)
   }
 
-  _getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR, skip }) {
-    return rateLimit({
-      store: new RedisStore({
-        client: this.redisClient,
-        prefix,
-        expiry
-      }),
-      max, // max requests per hour
-      skip,
-      keyGenerator
-    })
-  }
-
   // Create rate limits for listens on a per track per user basis and per track per ip basis
   _createRateLimitsForListenCounts (interval, timeInSeconds) {
     const isIPWhitelisted = this._isIPWhitelisted
 
-    const listenCountLimiter = this._getRateLimiter({
+    const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
@@ -154,7 +139,7 @@ class App {
       }
     })
 
-    const listenCountIPLimiter = this._getRateLimiter({
+    const listenCountIPLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-ip:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
@@ -170,14 +155,14 @@ class App {
   }
 
   setRateLimiters () {
-    const requestRateLimiter = this._getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
+    const requestRateLimiter = getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
     this.express.use(requestRateLimiter)
 
-    const authRequestRateLimiter = this._getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
+    const authRequestRateLimiter = getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/authentication/', authRequestRateLimiter)
 
-    const twitterRequestRateLimiter = this._getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
+    const twitterRequestRateLimiter = getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/twitter/', twitterRequestRateLimiter)
 
@@ -200,7 +185,7 @@ class App {
     // Eth relay rate limits
     // Default to 50 per ip per day and one of 10 per wallet per day
     const isIPWhitelisted = this._isIPWhitelisted
-    const ethRelayIPRateLimiter = this._getRateLimiter({
+    const ethRelayIPRateLimiter = getRateLimiter({
       prefix: 'ethRelayIPRateLimiter',
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerIPPerDay'),
@@ -208,7 +193,7 @@ class App {
         return isIPWhitelisted(req.ip)
       }
     })
-    const ethRelayWalletRateLimiter = this._getRateLimiter({
+    const ethRelayWalletRateLimiter = getRateLimiter({
       prefix: `ethRelayWalletRateLimiter`,
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerWalletPerDay'),
@@ -224,6 +209,7 @@ class App {
       ethRelayWalletRateLimiter,
       ethRelayIPRateLimiter
     )
+    this.express.use('/', rateLimiterMiddleware)
   }
 
   setRoutes () {

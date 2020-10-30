@@ -23,6 +23,26 @@ const ModuloBase = 24
 // Delay 1 hour between production state machine jobs
 const ProductionJobDelayInMs = 3600000
 
+// Describes the priority of a sync operation in the sync queue.
+// High priority syncs will be processed before low priority ones.
+const SyncPriority = Object.freeze({
+  Low: 2,
+  High: 1
+})
+
+// Helpful strings for printing priorities
+const priorityMap = {
+  [SyncPriority.High]: 'HIGH',
+  [SyncPriority.Low]: 'LOW'
+}
+
+// Describes the sync type - Recurring (scheduled) or Manual (triggered
+// by a user action). Currently only used for logging purposes.
+const SyncType = Object.freeze({
+  Recurring: 'RECURRING',
+  Manual: 'MANUAL'
+})
+
 /*
   SnapbackSM aka Snapback StateMachine
   Ensures file availability through recurring sync operations
@@ -124,8 +144,38 @@ class SnapbackSM {
     }, {})
   }
 
-  // Enqueue a sync request to a particular secondary
-  async issueSecondarySync (userWallet, secondaryEndpoint, primaryEndpoint, primaryClockValue) {
+  // Enqueues a manual (high priority) sync.
+  // Returns the added job.
+  async enqueueManualSync ({
+    primaryEndpoint,
+    secondaryEndpoint,
+    userWallet
+  }) {
+    try {
+      const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
+      return this.issueSecondarySync({
+        userWallet,
+        secondaryEndpoint,
+        primaryEndpoint,
+        primaryClockValue,
+        priority: SyncPriority.High,
+        syncType: SyncType.Manual
+      })
+    } catch (e) {
+      logger.error(`Error enqueing manual sync for user: ${userWallet}, error: ${e.message}`)
+    }
+  }
+
+  // Enqueue a sync request to a particular secondary.
+  // Returns the added job
+  async issueSecondarySync ({
+    primaryEndpoint,
+    secondaryEndpoint,
+    userWallet,
+    primaryClockValue,
+    priority,
+    syncType = SyncType.Recurring
+  }) {
     let syncRequestParameters = {
       baseURL: secondaryEndpoint,
       url: '/sync',
@@ -133,10 +183,11 @@ class SnapbackSM {
       data: {
         wallet: [userWallet],
         creator_node_endpoint: primaryEndpoint,
-        state_machine: true // state machine specific flag
+        sync_type: syncType
       }
     }
-    await this.syncQueue.add({ syncRequestParameters, startTime: Date.now(), primaryClockValue })
+    // Note: we pass in syncType as job name for observability
+    return this.syncQueue.add(syncType, { syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
   }
 
   // Main state machine processing function
@@ -267,12 +318,24 @@ class SnapbackSM {
             this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
             // Enqueue sync for secondary1 if required
             if (secondary1SyncRequired && secondary1 != null) {
-              await this.issueSecondarySync(userWallet, secondary1, this.endpoint, primaryClockValue)
+              await this.issueSecondarySync({
+                userWallet,
+                secondaryEndpoint: secondary1,
+                primaryEndpoint: this.endpoint,
+                primaryClockValue,
+                priority: SyncPriority.Low
+              })
               numSyncsIssued += 1
             }
             // Enqueue sync for secondary2 if required
             if (secondary2SyncRequired && secondary2 != null) {
-              await this.issueSecondarySync(userWallet, secondary2, this.endpoint, primaryClockValue)
+              await this.issueSecondarySync({
+                userWallet,
+                secondaryEndpoint: secondary2,
+                primaryEndpoint: this.endpoint,
+                primaryClockValue,
+                priority: SyncPriority.Low
+              })
               numSyncsIssued += 1
             }
           } catch (e) {
@@ -312,6 +375,7 @@ class SnapbackSM {
         if (respData.clockValue >= primaryClockValue) {
           syncAttemptCompleted = true
           this.log(`processSync ${syncWallet} clockValue from secondary:${respData.clockValue}, primary:${primaryClockValue}`)
+          break
         }
       } catch (e) {
         this.log(`processSync ${syncWallet} error querying sync_status: ${e}`)
@@ -331,6 +395,7 @@ class SnapbackSM {
 
   // Main sync queue job
   async processSyncOperation (job) {
+    const { name: jobType, opts: { priority }, id } = job
     const syncRequestParameters = job.data.syncRequestParameters
     let isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -346,7 +411,7 @@ class SnapbackSM {
     const syncWallet = syncRequestParameters.data.wallet[0]
     const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
-    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} ------------------`)
+    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${jobType} | priority: ${priorityMap[priority]} | jobID: ${id} ------------------`)
 
     // Issue sync request to secondary
     await axios(syncRequestParameters)
@@ -356,7 +421,7 @@ class SnapbackSM {
 
     // Exit when sync status is computed
     // Determine how many times to retry this operation
-    this.log('------------------END Process SYNC------------------')
+    this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
   }
 
   // Query eth-contracts chain for endpoint to ID info
@@ -393,7 +458,8 @@ class SnapbackSM {
   }
 
   // Initialize the state machine
-  async init () {
+  // Optionally accepts `maxSyncJobs` to set sync concurrency limit other than `MaxParallelSyncJobs`
+  async init (maxSyncJobs) {
     await this.stateMachineQueue.empty()
     await this.syncQueue.empty()
 
@@ -427,7 +493,8 @@ class SnapbackSM {
     // Initialize sync queue processor function, as drained will issue syncs
     // A maximum of 10 sync jobs are allowed to be issued at once
     this.syncQueue.process(
-      MaxParallelSyncJobs,
+      '*', // process all job types (manual + recurring)
+      maxSyncJobs || MaxParallelSyncJobs, // set max concurrency
       async (job, done) => {
         try {
           await this.processSyncOperation(job)
@@ -445,6 +512,14 @@ class SnapbackSM {
     // Enqueue first state machine operation
     await this.stateMachineQueue.add({ startTime: Date.now() })
   }
+
+  async getSyncQueueJobs () {
+    const [pending, active] = await Promise.all([
+      this.syncQueue.getJobs(['waiting']),
+      this.syncQueue.getJobs(['active'])
+    ])
+    return { pending, active }
+  }
 }
 
-module.exports = SnapbackSM
+module.exports = { SnapbackSM, SyncPriority, SyncType, priorityMap }

@@ -1,5 +1,4 @@
 const ContractClient = require('../contracts/ContractClient')
-const DEFAULT_GAS_AMOUNT = 1000000
 
 class ClaimDistributionClient extends ContractClient {
   // ===================== Contract Methods =====================
@@ -37,7 +36,7 @@ class ClaimDistributionClient extends ContractClient {
     const tx = await this.web3Manager.relayTransaction(
       method,
       contractAddress,
-      DEFAULT_GAS_AMOUNT
+      account
     )
     return tx
   }

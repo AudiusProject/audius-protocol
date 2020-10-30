@@ -7,7 +7,7 @@
             "additionalProperties": true,
             "properties": {
                 "name": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "default": null
                 },
                 "profile_picture": {

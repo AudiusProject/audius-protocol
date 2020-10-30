@@ -15,9 +15,21 @@ const logger = bunyan.createLogger({
 })
 logger.info('Loglevel set to:', logLevel)
 
-const excludedRoutes = [ '/health_check' ]
+/**
+ * TODO make this more readable
+ */
+const excludedRoutes = [
+  '/health_check',
+  '/ipfs',
+  'ipfs_peer_info',
+  '/tracks/download_status',
+  '/db_check',
+  '/version',
+  '/disk_check',
+  '/sync_status'
+]
 function requestNotExcludedFromLogging (url) {
-  return (excludedRoutes.indexOf(url) === -1)
+  return (excludedRoutes.filter(excludedRoute => url.includes(excludedRoute))).length === 0
 }
 
 function getRequestLoggingContext (req, requestID) {
@@ -42,7 +54,7 @@ function loggingMiddleware (req, res, next) {
   req.logger = logger.child(req.logContext)
 
   if (requestNotExcludedFromLogging(req.originalUrl)) {
-    req.logger.debug('Begin processing request')
+    req.logger.info('Begin processing request')
   }
   next()
 }

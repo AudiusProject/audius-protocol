@@ -38,13 +38,13 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 }
 
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
-  reqLogger.info(`Acquiring lock for ${walletPublicKey}`)
+  reqLogger.info(`L1 txRelay - Acquiring lock for ${walletPublicKey}`)
   let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
   while (ethRelayerWallets[ethWalletIndex].locked) {
     await delay(200)
   }
   ethRelayerWallets[ethWalletIndex].locked = true
-  reqLogger.info(`Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+  reqLogger.info(`L1 txRelay - Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
   return {
     selectedEthRelayerWallet: ethRelayerWallets[ethWalletIndex],
     ethWalletIndex
@@ -66,7 +66,8 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   let ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
 
   // Select the 'fast' gas price
-  let ethRelayGasPrice = ethGasPriceInfo.averageGweiHex
+  let ethRelayGasPrice = ethGasPriceInfo[config.get('ethRelayerProdGasTier')]
+
   let resp
   try {
     resp = await createAndSendEthTransaction(
@@ -110,7 +111,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
-  logger.info(`Final params: ${JSON.stringify(txParams)}`)
+  logger.info(`L1 txRelay - Final params: ${JSON.stringify(txParams)}`)
   if (data) {
     txParams = { ...txParams, data }
   }
@@ -131,7 +132,8 @@ const getProdGasInfo = async (redis, logger) => {
   if (ENVIRONMENT === 'development') {
     return {
       fastGweiHex: GANACHE_GAS_PRICE,
-      averageGweiHex: GANACHE_GAS_PRICE
+      averageGweiHex: GANACHE_GAS_PRICE,
+      fastestGweiHex: GANACHE_GAS_PRICE
     }
   }
   const prodGasPriceKey = 'eth-gas-prod-price-info'
