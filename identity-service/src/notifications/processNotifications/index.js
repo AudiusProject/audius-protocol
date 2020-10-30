@@ -9,7 +9,7 @@ const processRemixCosignNotifications = require('./remixCosignNotification')
 const processCreateNotifications = require('./createNotification')
 
 // Mapping of Notification type to processing function.
-const notifcationMapping = {
+const notificationMapping = {
   [notificationTypes.Follow]: processFollowNotifications,
   [notificationTypes.Repost.base]: processRepostNotifications,
   [notificationTypes.Favorite.base]: processFavoriteNotifications,
@@ -36,9 +36,9 @@ async function processNotifications (notifications, tx) {
 
   // Loop through each notification type and batch process
   for (const notifType in notificationCategories) {
-    if (notifType in notifcationMapping) {
+    if (notifType in notificationMapping) {
       const notifications = notificationCategories[notifType]
-      const processType = notifcationMapping[notifType]
+      const processType = notificationMapping[notifType]
       logger.debug(`Processing: ${notifications.length} notifications of type ${notifType}`)
       await processType(notifications, tx)
     }
