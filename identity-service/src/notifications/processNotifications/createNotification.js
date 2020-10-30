@@ -26,6 +26,12 @@ const getNotifType = (entityType) => {
   }
 }
 
+/**
+ * Batch process create notifications, by bulk insertion in the DB for each
+ * set of subscribers and dedpupe tracks in collections.
+ * @param {Array<Object>} notifications
+ * @param {*} tx The DB transcation to attach to DB requests
+ */
 async function processCreateNotifications (notifications, tx) {
   for (const notification of notifications) {
     const blocknumber = notification.blocknumber
@@ -36,7 +42,7 @@ async function processCreateNotifications (notifications, tx) {
     } = getNotifType(notification.metadata.entity_type)
 
     // Query user IDs from subscriptions table
-    // Notifications go to all users subscribing to this track uploader
+    // Notifications go to all users subscribing to this content uploader
     let subscribers = await models.Subscription.findAll({
       where: {
         userId: notification.initiator
@@ -56,15 +62,15 @@ async function processCreateNotifications (notifications, tx) {
         : notification.metadata.entity_id
 
     // Action table entity is trackId for CreateTrack notifications
-    // Allowing multiple track creates to be associated w/ a single notif for your subscription
-    // For collections, the entity is the owner id, producing a distinct notif for each
+    // Allowing multiple track creates to be associated w/ a single notification for your subscription
+    // For collections, the entity is the owner id, producing a distinct notification for each
     let createdActionEntityId =
       actionEntityType === actionEntityTypes.Track
         ? notification.metadata.entity_id
         : notification.metadata.entity_owner_id
 
-    // Create notification for each subscriber
-    const subscriberIds = subscribers.map(s => s.subscriberId) 
+    // Query all subscribers for a un-viewed notification - is no un-view notification exists a new one is created
+    const subscriberIds = subscribers.map(s => s.subscriberId)
     let unreadSubscribers = await models.Notification.findAll({
       where: {
         isViewed: false,
@@ -78,7 +84,8 @@ async function processCreateNotifications (notifications, tx) {
     const unreadSubscribersUserIds = new Set(unreadSubscribers.map(s => s.userId))
     const subscriberIdsWithoutNotification = subscriberIds.filter(s => !unreadSubscribersUserIds.has(s))
     if (subscriberIdsWithoutNotification.length > 0) {
-      let createTrackNotifTx = await models.Notification.bulkCreate(subscriberIdsWithoutNotification.map(id => ({
+      // Bulk create notifications for users that do not have a un-viewed notification
+      const createTrackNotifTx = await models.Notification.bulkCreate(subscriberIdsWithoutNotification.map(id => ({
         isViewed: false,
         isRead: false,
         isHidden: false,
@@ -90,7 +97,7 @@ async function processCreateNotifications (notifications, tx) {
       }), { transaction: tx }))
       notificationIds.push(...createTrackNotifTx.map(notif => notif.id))
     }
-    
+
     await Promise.all(notificationIds.map(async (notificationId) => {
       // Action entity id can be one of album/playlist/track
       let notifActionCreateTx = await models.NotificationAction.findOrCreate({

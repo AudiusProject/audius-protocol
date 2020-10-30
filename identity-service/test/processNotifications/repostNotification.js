@@ -8,81 +8,92 @@ const {
 
 const { clearDatabase, runMigrations } = require('../lib/app')
 
+/**
+ * User id 1 reposts track 10 owned by user id 20
+ * User id 2 reposts track 10 owned by user id 20
+ * User id 2 reposts track 11 owned by user id 20
+ * User id 3 reposts playlist 14 owned by user id 23
+ * User id 4 reposts album 10 owned by user id 25
+ */
 const initialNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-        "entity_id": 10,
-        "entity_owner_id": 20,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 10,
+      'entity_owner_id': 20,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-24T19:39:45 Z",
-    "type": "Repost"
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }, {
-    "blocknumber": 1,
-    "initiator": 2,
-    "metadata": {
-        "entity_id": 10,
-        "entity_owner_id": 20,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'entity_id': 10,
+      'entity_owner_id': 20,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-24T19:39:45 Z",
-    "type": "Repost"
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }, {
-      "blocknumber": 1,
-      "initiator": 2,
-      "metadata": {
-          "entity_id": 11,
-          "entity_owner_id": 20,
-          "entity_type": "track"
-      },
-      "timestamp": "2020-10-24T19:39:45 Z",
-      "type": "Repost"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'entity_id': 11,
+      'entity_owner_id': 20,
+      'entity_type': 'track'
+    },
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }, {
-      "blocknumber": 1,
-      "initiator": 3,
-      "metadata": {
-          "entity_id": 14,
-          "entity_owner_id": 23,
-          "entity_type": "playlist"
-      },
-      "timestamp": "2020-10-24T19:39:45 Z",
-      "type": "Repost"
+    'blocknumber': 1,
+    'initiator': 3,
+    'metadata': {
+      'entity_id': 14,
+      'entity_owner_id': 23,
+      'entity_type': 'playlist'
+    },
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }, {
-      "blocknumber": 1,
-      "initiator": 4,
-      "metadata": {
-          "entity_id": 10,
-          "entity_owner_id": 25,
-          "entity_type": "album"
-      },
-      "timestamp": "2020-10-24T19:39:45 Z",
-      "type": "Repost"
+    'blocknumber': 1,
+    'initiator': 4,
+    'metadata': {
+      'entity_id': 10,
+      'entity_owner_id': 25,
+      'entity_type': 'album'
+    },
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }
 ]
 
+/**
+ * User id 5 reposts track 10 owned by user id 20
+ * User id 5 reposts album 11 owned by user id 20
+ */
 const additionalNotifications = [
   {
-    "blocknumber": 2,
-    "initiator": 5,
-    "metadata": {
-        "entity_id": 10,
-        "entity_owner_id": 20,
-        "entity_type": "track"
+    'blocknumber': 2,
+    'initiator': 5,
+    'metadata': {
+      'entity_id': 10,
+      'entity_owner_id': 20,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-24T19:39:45 Z",
-    "type": "Repost"
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }, {
-      "blocknumber": 2,
-      "initiator": 5,
-      "metadata": {
-          "entity_id": 11,
-          "entity_owner_id": 20,
-          "entity_type": "track"
-      },
-      "timestamp": "2020-10-24T19:39:45 Z",
-      "type": "Repost"
+    'blocknumber': 2,
+    'initiator': 5,
+    'metadata': {
+      'entity_id': 11,
+      'entity_owner_id': 20,
+      'entity_type': 'track'
+    },
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Repost'
   }
 ]
 
@@ -111,7 +122,7 @@ describe('Test Repost Notification', function () {
 
     const userIdsThatFavoirtedTrack10 = track10NotificationActions.map(na => na.actionEntityId)
     assert.deepStrictEqual(userIdsThatFavoirtedTrack10, [1, 2])
-     
+
     // User 23 Should have 1 notifications
     // 1.) users 3 liked playlist 14 (owned by user 23)
     const user23Notifs = await models.Notification.findAll({ where: { userId: 23 } })
@@ -157,11 +168,10 @@ describe('Test Repost Notification', function () {
     assert.deepStrictEqual(track10PrevActions.length, 2)
 
     const track10NewActions = await models.NotificationAction.findAll({ where: { notificationId: track10New.id } })
-    assert.deepStrictEqual(track10NewActions.length,  1)
-    assert.deepStrictEqual(track10NewActions[0].actionEntityId,  5)
+    assert.deepStrictEqual(track10NewActions.length, 1)
+    assert.deepStrictEqual(track10NewActions[0].actionEntityId, 5)
 
     const track11Actions = await models.NotificationAction.findAll({ where: { notificationId: track11.id } })
-    assert.deepStrictEqual(track11Actions.length,  2)
-
+    assert.deepStrictEqual(track11Actions.length, 2)
   })
 })

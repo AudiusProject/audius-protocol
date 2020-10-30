@@ -4,56 +4,65 @@ const processFollowNotifications = require('../../src/notifications/processNotif
 
 const { clearDatabase, runMigrations } = require('../lib/app')
 
+/**
+ * User id 1 follows user id 2
+ * User id 1 follows user id 3
+ * User id 2 follows user id 3
+ */
 const initialNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-      "followee_user_id": 2,
-      "follower_user_id": 1
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'followee_user_id': 2,
+      'follower_user_id': 1
     },
-    "timestamp": "2020-10-24T19:39:45 Z",
-    "type": "Follow"
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Follow'
   }, {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-      "followee_user_id": 3,
-      "follower_user_id": 1
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'followee_user_id': 3,
+      'follower_user_id': 1
     },
-    "timestamp": "2020-10-24T19:39:45 Z",
-    "type": "Follow"
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Follow'
   }, {
-      "blocknumber": 1,
-      "initiator": 2,
-      "metadata": {
-        "followee_user_id": 3,
-        "follower_user_id": 2
-      },
-      "timestamp": "2020-10-24T19:39:45 Z",
-      "type": "Follow"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'followee_user_id': 3,
+      'follower_user_id': 2
+    },
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Follow'
   }
 ]
 
+/**
+ * User id 4 follows user id 2
+ * User id 4 follows user id 3
+ */
 const additionalNotifications = [
   {
-    "blocknumber": 2,
-    "initiator": 4,
-    "metadata": {
-      "followee_user_id": 2,
-      "follower_user_id": 4
+    'blocknumber': 2,
+    'initiator': 4,
+    'metadata': {
+      'followee_user_id': 2,
+      'follower_user_id': 4
     },
-    "timestamp": "2020-10-24T19:39:45 Z",
-    "type": "Follow"
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Follow'
   }, {
-      "blocknumber": 2,
-      "initiator": 4,
-      "metadata": {
-      "followee_user_id": 3,
-      "follower_user_id": 4
-      },
-      "timestamp": "2020-10-24T19:39:45 Z",
-      "type": "Follow"
+    'blocknumber': 2,
+    'initiator': 4,
+    'metadata': {
+      'followee_user_id': 3,
+      'follower_user_id': 4
+    },
+    'timestamp': '2020-10-24T19:39:45 Z',
+    'type': 'Follow'
   }
 ]
 
@@ -78,7 +87,7 @@ describe('Test Follow Notification', function () {
     const user2NotificationActions = await models.NotificationAction.findAll({ where: { notificationId: user2Notifs[0].id } })
     assert.deepStrictEqual(user2NotificationActions.length, 1)
     assert.deepStrictEqual(user2NotificationActions[0].actionEntityId, 1)
-     
+
     // User 3 should have 1 notifications (user 1 & 2 following)
     const user3Notifs = await models.Notification.findAll({ where: { userId: 3 } })
     assert.deepStrictEqual(user3Notifs.length, 1)
@@ -87,7 +96,7 @@ describe('Test Follow Notification', function () {
     const userIdsThatFollowedUser3 = user3NotifAction.map(na => na.actionEntityId)
     userIdsThatFollowedUser3.sort()
     assert.deepStrictEqual(userIdsThatFollowedUser3, [1, 2])
-     
+
     // ======================================= Mark some Notifications as viewed =======================================
     user3Notifs[0].isViewed = true
     await user3Notifs[0].save()
@@ -121,7 +130,5 @@ describe('Test Follow Notification', function () {
     const user3NewActions = await models.NotificationAction.findAll({ where: { notificationId: user3New.id } })
     assert.deepStrictEqual(user3NewActions.length, 1)
     assert.deepStrictEqual(user3NewActions[0].actionEntityId, 4)
-
-
   })
 })

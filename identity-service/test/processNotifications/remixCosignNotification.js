@@ -3,41 +3,48 @@ const models = require('../../src/models')
 const processFavoriteNotifications = require('../../src/notifications/processNotifications/remixCosignNotification')
 const { clearDatabase, runMigrations } = require('../lib/app')
 
+/**
+ * User id 1 cosigns track id 12 owned by user 2
+ * User id 1 cosigns track id 13 owned by user 3
+ */
 const initialNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-      "entity_id": 12,
-      "entity_owner_id": 2,
-      "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 12,
+      'entity_owner_id': 2,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-24T11:45:10 Z",
-    "type": "RemixCosign"
+    'timestamp': '2020-10-24T11:45:10 Z',
+    'type': 'RemixCosign'
   }, {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-      "entity_id": 13,
-      "entity_owner_id": 3,
-      "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 13,
+      'entity_owner_id': 3,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-24T11:45:10 Z",
-    "type": "RemixCosign"
+    'timestamp': '2020-10-24T11:45:10 Z',
+    'type': 'RemixCosign'
   }
 ]
 
+/**
+ * User id 1 cosigns track id 12 owned by user 2
+ */
 const additionalNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-      "entity_id": 12,
-      "entity_owner_id": 2,
-      "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 12,
+      'entity_owner_id': 2,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-24T11:45:10 Z",
-    "type": "RemixCosign"
+    'timestamp': '2020-10-24T11:45:10 Z',
+    'type': 'RemixCosign'
   }
 ]
 
@@ -71,7 +78,7 @@ describe('Test Remix Cosign Notification', function () {
 
     const cosign13Actions = await models.NotificationAction.findAll({ where: { notificationId: cosign13.id } })
     assert.deepStrictEqual(cosign13Actions[0].actionEntityId, 1)
-    
+
     // ======================================= Mark some Notifications as viewed =======================================
     cosign12.isViewed = true
     await cosign12.save()
@@ -84,6 +91,5 @@ describe('Test Remix Cosign Notification', function () {
     // No additional notifications should be created
     const updatedUserNotifs = await models.Notification.findAll({ where: { userId: 2 } })
     assert.deepStrictEqual(updatedUserNotifs.length, 1)
-
   })
 })

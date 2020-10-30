@@ -14,10 +14,7 @@ const repost = require('./mockNotifications/repost.json')
 const favorite = require('./mockNotifications/favorite.json')
 const create = require('./mockNotifications/create.json')
 
-
 const mockAudiusLibs = require('./mockLibs')
-const notifications = require('./notifications.json')
-
 
 describe('Test Send Notifications', function () {
   beforeEach(async () => {
@@ -28,34 +25,34 @@ describe('Test Send Notifications', function () {
   })
 
   it('should have the correct remix create notifications', async function () {
-      // Create a mobile notification setting, defaults to true for remixes
-      await models.UserNotificationMobileSettings.create({ userId: 100 })
-      await models.UserNotificationMobileSettings.create({ userId: 101, remixes: false })
-      await models.UserNotificationBrowserSettings.create({ userId: 101, remixes: true })
+    // Create a mobile notification setting, defaults to true for remixes
+    await models.UserNotificationMobileSettings.create({ userId: 100 })
+    await models.UserNotificationMobileSettings.create({ userId: 101, remixes: false })
+    await models.UserNotificationBrowserSettings.create({ userId: 101, remixes: true })
 
-      const tx1 = await models.sequelize.transaction()
-      await processNotifications(remixCreate, tx1)
-      await sendNotifications(mockAudiusLibs, remixCreate, tx1)
-      await tx1.commit()
-      let pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    const tx1 = await models.sequelize.transaction()
+    await processNotifications(remixCreate, tx1)
+    await sendNotifications(mockAudiusLibs, remixCreate, tx1)
+    await tx1.commit()
+    let pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
 
-      for (const notification of pushNotifications) {
-        assert.deepStrictEqual(notification.notificationParams.title, 'New Remix Of Your Track ♻️')
-      }
-      const user100Notifs = pushNotifications.filter(n => n.userId === 100)
-      assert.deepStrictEqual(user100Notifs.length, 2)
+    for (const notification of pushNotifications) {
+      assert.deepStrictEqual(notification.notificationParams.title, 'New Remix Of Your Track ♻️')
+    }
+    const user100Notifs = pushNotifications.filter(n => n.userId === 100)
+    assert.deepStrictEqual(user100Notifs.length, 2)
 
-      const user101Notifs = pushNotifications.filter(n => n.userId === 101)
-      assert.deepStrictEqual(user101Notifs.length, 1)
+    const user101Notifs = pushNotifications.filter(n => n.userId === 101)
+    assert.deepStrictEqual(user101Notifs.length, 1)
 
-      for (const notification of user100Notifs) {
-        assert.deepStrictEqual(notification.types, ['mobile'])
-      }
+    for (const notification of user100Notifs) {
+      assert.deepStrictEqual(notification.types, ['mobile'])
+    }
 
-      for (const notification of user101Notifs) {
-        assert.deepStrictEqual(notification.types, ['browser'])
-      }
-    })  
+    for (const notification of user101Notifs) {
+      assert.deepStrictEqual(notification.types, ['browser'])
+    }
+  })
 
   it('should have the correct remix cosign notifications', async function () {
     // NOTE: remix cosign will attempt to send to mobile and browser
@@ -78,10 +75,9 @@ describe('Test Send Notifications', function () {
     const user3Notifs = pushNotifications.filter(n => n.userId === 3)
     assert.deepStrictEqual(user3Notifs.length, 1)
     assert.deepStrictEqual(user3Notifs[0].notificationParams.message, 'user 1 Co-Signed your Remix of Title, Track id: 11')
-  })  
+  })
 
   it('should have the correct follow notifications', async function () {
-
     await models.UserNotificationMobileSettings.create({ userId: 2 })
     await models.UserNotificationBrowserSettings.create({ userId: 3 })
 
@@ -96,7 +92,7 @@ describe('Test Send Notifications', function () {
     for (const notification of pushNotifications) {
       assert.deepStrictEqual(notification.notificationParams.title, 'New Follower')
     }
- 
+
     const user2Notifs = pushNotifications.filter(n => n.userId === 2)
     assert.deepStrictEqual(user2Notifs.length, 1)
     assert.deepStrictEqual(user2Notifs[0].notificationParams.message, 'user 1 followed you')
@@ -112,9 +108,7 @@ describe('Test Send Notifications', function () {
     // NOTE: No notifications for user 4 who has no settings set.
   })
 
-
   it('should have the correct repost notifications', async function () {
-
     await models.UserNotificationMobileSettings.bulkCreate([1, 2, 7].map(userId => ({ userId })))
 
     const tx1 = await models.sequelize.transaction()
@@ -130,7 +124,7 @@ describe('Test Send Notifications', function () {
       assert.deepStrictEqual(notification.notificationParams.title, 'New Repost')
       assert.deepStrictEqual(notification.types, ['mobile'])
     }
- 
+
     const user2Notifs = pushNotifications.filter(n => n.userId === 2)
     assert.deepStrictEqual(user2Notifs.length, 3)
     assert.deepStrictEqual(user2Notifs[0].notificationParams.message, 'user 1 reposted your track Title, Track id: 100')
@@ -142,10 +136,9 @@ describe('Test Send Notifications', function () {
     assert.deepStrictEqual(user7Notifs[0].notificationParams.message, 'user 4 reposted your album PLaylist id: 104')
 
     // NOTE: No notifications for user 4 who has no settings set.
-  })  
+  })
 
   it('should have the correct favorite notifications', async function () {
-
     await models.UserNotificationMobileSettings.bulkCreate([1, 2, 7].map(userId => ({ userId })))
 
     const tx1 = await models.sequelize.transaction()
@@ -161,7 +154,7 @@ describe('Test Send Notifications', function () {
       assert.deepStrictEqual(notification.notificationParams.title, 'New Favorite')
       assert.deepStrictEqual(notification.types, ['mobile'])
     }
- 
+
     const user2Notifs = pushNotifications.filter(n => n.userId === 2)
     assert.deepStrictEqual(user2Notifs.length, 3)
     assert.deepStrictEqual(user2Notifs[0].notificationParams.message, 'user 1 favorited your track Title, Track id: 100')
@@ -173,10 +166,10 @@ describe('Test Send Notifications', function () {
     assert.deepStrictEqual(user7Notifs[0].notificationParams.message, 'user 4 favorited your album PLaylist id: 104')
 
     // NOTE: No notifications for user 4 who has no settings set.
-  })  
+  })
 
   it('should have the correct create notifications', async function () {
-    this.timeout(65000); // Must wait for tracks debouncing.
+    this.timeout(65000) // Must wait for tracks debouncing.
 
     // User 1 creates tracks 1, 2, 3, 4
     // User 2 creates track 5
@@ -187,7 +180,7 @@ describe('Test Send Notifications', function () {
     await models.Subscription.bulkCreate([
       { subscriberId: 3, userId: 1 }, // User 3 subscribes to user 1
       { subscriberId: 4, userId: 1 }, // User 4 subscribes to user 1
-      { subscriberId: 4, userId: 2 }, // User 4 subscribes to user 1
+      { subscriberId: 4, userId: 2 } // User 4 subscribes to user 1
     ])
 
     const tx1 = await models.sequelize.transaction()
@@ -200,7 +193,7 @@ describe('Test Send Notifications', function () {
     assert.deepStrictEqual(pushNotifications.length, 0)
 
     // Wait 60 seconds to debounce tracks / album notifications
-    await new Promise(resolve => setTimeout(resolve, 60*1000))
+    await new Promise(resolve => setTimeout(resolve, 60 * 1000))
     const tx2 = await models.sequelize.transaction()
     await sendNotifications(mockAudiusLibs, [], tx2)
     await tx2.commit()
@@ -215,10 +208,10 @@ describe('Test Send Notifications', function () {
     }
 
     const user3Messages = [
-      "user 1 released a new track Title, Track id: 3",
-      "user 1 released a new track Title, Track id: 4",
-      "user 1 released a new playlist PLaylist id: 1",
-      "user 1 released a new album PLaylist id: 2"
+      'user 1 released a new track Title, Track id: 3',
+      'user 1 released a new track Title, Track id: 4',
+      'user 1 released a new playlist PLaylist id: 1',
+      'user 1 released a new album PLaylist id: 2'
     ]
 
     const user3Notifs = pushNotifications.filter(n => n.userId === 3)
@@ -227,12 +220,11 @@ describe('Test Send Notifications', function () {
       assert.deepStrictEqual(user3Notifs.some(n => n.notificationParams.message === message), true)
     }
 
-    const user4Messages = user3Messages.concat("user 2 released a new track Title, Track id: 5")
+    const user4Messages = user3Messages.concat('user 2 released a new track Title, Track id: 5')
     const user4Notifs = pushNotifications.filter(n => n.userId === 4)
     assert.deepStrictEqual(user4Notifs.length, 5)
     for (let message of user4Messages) {
       assert.deepStrictEqual(user4Notifs.some(n => n.notificationParams.message === message), true)
     }
-  })  
-
+  })
 })

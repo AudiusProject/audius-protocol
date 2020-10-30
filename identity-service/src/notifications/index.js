@@ -150,8 +150,10 @@ class NotificationProcessor {
    * @param {Integer} minBlock min start block to start querying discprov for new notifications
    */
   async indexAll (audiusLibs, minBlock, oldMaxBlockNumber) {
-    const start = Date.now()
-    logger.info(`${new Date()} - notifications main indexAll job`, minBlock, oldMaxBlockNumber, start)
+    const startDate = Date.now()
+    const startTime = process.hrtime()
+
+    logger.info({ minBlock, oldMaxBlockNumber, startDate }, `${new Date()} - notifications main indexAll job`)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await calculateTrackListenMilestones()
@@ -199,7 +201,10 @@ class NotificationProcessor {
 
       // actually send out push notifications
       await drainPublishedMessages()
-      logger.info(`indexAll - finished main notification index job`, minBlock, start)
+
+      const endTime = process.hrtime(startTime)
+      const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+      logger.info({ minBlock, startDate, duration, notifications: notifications.length }, `indexAll - finished main notification index job`)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)

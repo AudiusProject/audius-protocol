@@ -8,7 +8,6 @@ const {
 // Debouncing time for track notification being removed by playlist/album notif
 const PENDING_CREATE_DEDUPE_SEC = 60 * 1000
 
-
 const shouldNotifyUser = (userId, prop, settings) => {
   const userNotification = { notifyMobile: false, notifyBrowserPush: false }
   if (!(userId in settings)) return userNotification
@@ -82,7 +81,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       let notificationTarget = notif.metadata.entity_owner_id
       const shouldNotify = shouldNotifyUser(notificationTarget, 'reposts', notificationSettings)
       if (shouldNotify.mobile || shouldNotify.browser) {
-        const formattedRepost =  {
+        const formattedRepost = {
           ...notif,
           actions: [{
             actionEntityType: actionEntityTypes.User,
@@ -196,7 +195,6 @@ async function _processSubscriberPushNotifications () {
   return [filteredFormattedCreateNotifications, users]
 }
 
-
 async function _processCreateNotifications (notif, tx) {
   let blocknumber = notif.blocknumber
   let createType = null
@@ -296,6 +294,5 @@ async function _processCreateNotifications (notif, tx) {
     }
   }
 }
-
 
 module.exports = formatNotifications

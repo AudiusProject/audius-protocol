@@ -1,126 +1,136 @@
 const assert = require('assert')
 const models = require('../../src/models')
 const processCreateNotifications = require('../../src/notifications/processNotifications/createNotification')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../../src/notifications/constants')
+const { notificationTypes } = require('../../src/notifications/constants')
 
 const { clearDatabase, runMigrations } = require('../lib/app')
 
+/**
+ * User id 1 creates track id 1
+ * User id 1 creates track id 2
+ * User id 1 creates track id 3
+ * User id 2 creates track id 4
+ * User id 1 creates playlist id 1 with track 2
+ */
 const initialNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-        "entity_id": 1,
-        "entity_owner_id": 1,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 1,
+      'entity_owner_id': 1,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   }, {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-        "entity_id": 2,
-        "entity_owner_id": 1,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 2,
+      'entity_owner_id': 1,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   }, {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-        "entity_id": 3,
-        "entity_owner_id": 1,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 3,
+      'entity_owner_id': 1,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   }, {
-    "blocknumber": 1,
-    "initiator": 2,
-    "metadata": {
-        "entity_id": 4,
-        "entity_owner_id": 2,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'entity_id': 4,
+      'entity_owner_id': 2,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   }, {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-        "collection_content": {
-            "track_ids": [
-                {
-                    "time": 1603811420,
-                    "track": 2
-                }
-            ]
-        },
-        "entity_id": 1,
-        "entity_owner_id": 1,
-        "entity_type": "playlist"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'collection_content': {
+        'track_ids': [
+          {
+            'time': 1603811420,
+            'track': 2
+          }
+        ]
+      },
+      'entity_id': 1,
+      'entity_owner_id': 1,
+      'entity_type': 'playlist'
     },
-    "timestamp": "2020-10-27T15:10:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:10:20 Z',
+    'type': 'Create'
   }
 ]
 
+/**
+ * User id 1 creates track id 5
+ * User id 2 creates track id 7
+ * User id 2 creates track id 8
+ * User id 2 creates album id 2 with track 7
+ */
 const additionalNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 1,
-    "metadata": {
-        "entity_id": 5,
-        "entity_owner_id": 1,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 1,
+    'metadata': {
+      'entity_id': 5,
+      'entity_owner_id': 1,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   },
   {
-    "blocknumber": 1,
-    "initiator": 2,
-    "metadata": {
-        "entity_id": 7,
-        "entity_owner_id": 1,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'entity_id': 7,
+      'entity_owner_id': 1,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   },
   {
-    "blocknumber": 1,
-    "initiator": 2,
-    "metadata": {
-        "entity_id": 8,
-        "entity_owner_id": 1,
-        "entity_type": "track"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'entity_id': 8,
+      'entity_owner_id': 1,
+      'entity_type': 'track'
     },
-    "timestamp": "2020-10-27T15:14:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:14:20 Z',
+    'type': 'Create'
   }, {
-    "blocknumber": 1,
-    "initiator": 2,
-    "metadata": {
-        "collection_content": {
-            "track_ids": [
-                {
-                    "time": 1603811420,
-                    "track": 7
-                }
-            ]
-        },
-        "entity_id": 2,
-        "entity_owner_id": 2,
-        "entity_type": "album"
+    'blocknumber': 1,
+    'initiator': 2,
+    'metadata': {
+      'collection_content': {
+        'track_ids': [
+          {
+            'time': 1603811420,
+            'track': 7
+          }
+        ]
+      },
+      'entity_id': 2,
+      'entity_owner_id': 2,
+      'entity_type': 'album'
     },
-    "timestamp": "2020-10-27T15:10:20 Z",
-    "type": "Create"
+    'timestamp': '2020-10-27T15:10:20 Z',
+    'type': 'Create'
   }
 ]
 
@@ -144,7 +154,6 @@ describe('Test Favorite Notification', function () {
     await processCreateNotifications(initialNotifications, tx1)
     await tx1.commit()
 
-
     // ======================================= Run checks against the Notifications =======================================
     // User 11 subscribes to user 1 and gets the notification when user 1 creates tracks 1, 2, 3, and playlist 1 which contains track 2
     const user11Notifs = await models.Notification.findAll({ where: { userId: 11 } })
@@ -165,8 +174,7 @@ describe('Test Favorite Notification', function () {
     assert.deepStrictEqual(user11PlaylistNotifActions.length, 1)
     assert.deepStrictEqual(user11PlaylistNotifActions[0].actionEntityId, 1)
 
-
-    // User 10 subscriber to user 1 and user 2 
+    // User 10 subscriber to user 1 and user 2
     const user10Notifs = await models.Notification.findAll({ where: { userId: 10 } })
     assert.deepStrictEqual(user10Notifs.length, 3)
     const user10TrackNotifs = user10Notifs.find(notif => notif.type === notificationTypes.Create.track && notif.entityId === 2)
@@ -175,12 +183,11 @@ describe('Test Favorite Notification', function () {
     const user10TrackNotifActions = await models.NotificationAction.findAll({ where: { notificationId: user10TrackNotifs.id } })
     assert.deepStrictEqual(user10TrackNotifActions.length, 1)
     assert.deepStrictEqual(user10TrackNotifActions[0].actionEntityId, 4) // Track ID 4 was created
-    
 
     // Check that user 12 also has 2 notifications, should be the same as user 11
     const user12Notifs = await models.Notification.findAll({ where: { userId: 12 } })
     assert.deepStrictEqual(user12Notifs.length, 2)
-     
+
     // ======================================= Mark some Notifications as viewed =======================================
     user11Notifs[0].isViewed = true
     await user11Notifs[0].save()
@@ -214,7 +221,7 @@ describe('Test Favorite Notification', function () {
     const updatedNotifTrackIds = user12NewTrackNotifActions.map(na => na.actionEntityId)
     updatedNotifTrackIds.sort()
     assert.deepStrictEqual(updatedNotifTrackIds, [1, 3, 5])
-    
+
     // User 10 subscribes to user 1 & 2 but did not view any notifications, so the only new notification should be user 12 album upload
     const updatedUser10Notifs = await models.Notification.findAll({ where: { userId: 10 } })
     assert.deepStrictEqual(updatedUser10Notifs.length, 4) // user 1 track & playlist upload & user 2 track & album upload

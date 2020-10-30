@@ -1,12 +1,12 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addIndex('NotificationActions', [
-        'notificationId',
-        'actionEntityType',
-        'actionEntityId',
-        'blocknumber'
+      'notificationId',
+      'actionEntityType',
+      'actionEntityId',
+      'blocknumber'
     ])
   },
 
@@ -18,4 +18,4 @@ module.exports = {
       'blocknumber'
     ])
   }
-};
+}

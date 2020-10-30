@@ -1,69 +1,57 @@
-// {
-//   "blocknumber": 17811830,
-//   "initiator": 3678,
-//   "metadata": {
-//       "entity_id": 102478,
-//       "entity_owner_id": 3678,
-//       "entity_type": "track",
-//       "remix_parent_track_id": 80888,
-//       "remix_parent_track_user_id": 9152
-//   },
-//   "timestamp": "2020-10-24T11:45:10 Z",
-//   "type": "RemixCreate"
-// },
-
-
 const assert = require('assert')
 const models = require('../../src/models')
 const processFavoriteNotifications = require('../../src/notifications/processNotifications/remixCreateNotification')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../../src/notifications/constants')
 
 const { clearDatabase, runMigrations } = require('../lib/app')
 
+/**
+ * User id 50 creates track 10 which remixes track 9 owned by user 40
+ * User id 52 creates track 12 which remixes track 15 owned by user 40
+ */
 const initialNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 50,
-    "metadata": {
-      "entity_id": 10,
-      "entity_owner_id": 50,
-      "entity_type": "track",
-      "remix_parent_track_id": 9,
-      "remix_parent_track_user_id": 40
+    'blocknumber': 1,
+    'initiator': 50,
+    'metadata': {
+      'entity_id': 10,
+      'entity_owner_id': 50,
+      'entity_type': 'track',
+      'remix_parent_track_id': 9,
+      'remix_parent_track_user_id': 40
     },
-    "timestamp": "2020-10-24T11:45:10 Z",
-    "type": "RemixCreate"
+    'timestamp': '2020-10-24T11:45:10 Z',
+    'type': 'RemixCreate'
   }, {
-    "blocknumber": 1,
-    "initiator": 52,
-    "metadata": {
-      "entity_id": 12,
-      "entity_owner_id": 52,
-      "entity_type": "track",
-      "remix_parent_track_id": 15,
-      "remix_parent_track_user_id": 40
+    'blocknumber': 1,
+    'initiator': 52,
+    'metadata': {
+      'entity_id': 12,
+      'entity_owner_id': 52,
+      'entity_type': 'track',
+      'remix_parent_track_id': 15,
+      'remix_parent_track_user_id': 40
     },
-    "timestamp": "2020-10-24T11:45:10 Z",
-    "type": "RemixCreate"
+    'timestamp': '2020-10-24T11:45:10 Z',
+    'type': 'RemixCreate'
   }
 ]
 
+/**
+ * User id 52 creates track 13 which remixes track 9 owned by user 40
+ */
 const additionalNotifications = [
   {
-    "blocknumber": 1,
-    "initiator": 52,
-    "metadata": {
-      "entity_id": 13,
-      "entity_owner_id": 52,
-      "entity_type": "track",
-      "remix_parent_track_id": 9,
-      "remix_parent_track_user_id": 40
+    'blocknumber': 1,
+    'initiator': 52,
+    'metadata': {
+      'entity_id': 13,
+      'entity_owner_id': 52,
+      'entity_type': 'track',
+      'remix_parent_track_id': 9,
+      'remix_parent_track_user_id': 40
     },
-    "timestamp": "2020-10-24T11:45:10 Z",
-    "type": "RemixCreate"
+    'timestamp': '2020-10-24T11:45:10 Z',
+    'type': 'RemixCreate'
   }
 ]
 
@@ -114,7 +102,6 @@ describe('Test Remix Create Notification', function () {
 
     const track13Actions = await models.NotificationAction.findAll({ where: { notificationId: track13.id } })
     assert.deepStrictEqual(track13Actions.length, 1)
-    assert.deepStrictEqual(track13Actions[0].actionEntityId,  9)
-
+    assert.deepStrictEqual(track13Actions[0].actionEntityId, 9)
   })
 })
