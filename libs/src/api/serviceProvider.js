@@ -1,6 +1,6 @@
 const { sampleSize } = require('lodash')
 const { Base } = require('./base')
-const { timeRequests, timeRequestsAndSortByVersion } = require('../utils/network')
+const { timeRequestsAndSortByVersion } = require('../utils/network')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
@@ -40,7 +40,7 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    const timings = await timeRequests(
+    const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
         url: `${node.endpoint}/version`
