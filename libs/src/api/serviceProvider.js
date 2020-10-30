@@ -96,7 +96,7 @@ class ServiceProvider extends Base {
       .filter(Boolean)
 
     // Time requests and autoselect nodes
-    let timings = await timeRequestsAndSortByVersion(
+    const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node,
         url: `${node}/version` // TODO: add country data to health_check and switch to health_check
