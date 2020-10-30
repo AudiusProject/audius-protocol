@@ -1,5 +1,9 @@
 const CreatorNode = require('../services/creatorNode')
 
+/**
+ * Add secondary creator nodes for a user if they don't have any
+ * Goal: Make it so users always have a replica set
+ */
 const addSecondaries = async (libs) => {
   console.debug('Sanity Check - addSecondaries')
   const user = libs.userStateManager.getCurrentUser()
