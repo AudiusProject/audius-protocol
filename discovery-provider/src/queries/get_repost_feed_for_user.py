@@ -1,11 +1,11 @@
 from sqlalchemy import desc, or_
 
-from src.models import Track, Repost, RepostType, Follow, Playlist, Save, SaveType, User
+from src.models import Track, Repost, RepostType, Playlist, SaveType, User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
-from src.queries.query_helpers import get_repost_counts, get_save_counts, \
-    paginate_query, get_users_by_id, get_users_ids, populate_playlist_metadata, populate_track_metadata
+from src.queries.query_helpers import paginate_query, get_users_by_id, \
+    get_users_ids, populate_playlist_metadata, populate_track_metadata
 
 
 def get_repost_feed_for_user(user_id, args):
@@ -102,7 +102,7 @@ def get_repost_feed_for_user(user_id, args):
             current_user_id
         )
 
-        # add activity timestamps        
+        # add activity timestamps   
         for track in tracks:
             track[response_name_constants.activity_timestamp] = track_repost_dict[track["track_id"]]["created_at"]
 
