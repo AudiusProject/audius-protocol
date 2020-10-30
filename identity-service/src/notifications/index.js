@@ -5,7 +5,6 @@ const axios = require('axios')
 const fs = require('fs')
 const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
-const { indexNotifications } = require('./notificationProcessing')
 const {
   updateBlockchainIds,
   calculateTrackListenMilestones,
@@ -18,6 +17,8 @@ const { notificationJobType, announcementJobType } = require('./constants')
 const { drainPublishedMessages } = require('./notificationQueue')
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
+const processNotifications = require('./processNotifications/index.js')
+const sendNotifications = require('./sendNotifications/index.js')
 
 class NotificationProcessor {
   constructor () {
@@ -187,7 +188,10 @@ class NotificationProcessor {
           owner: owners.tracks[x.trackId]
         }
       })
-      await indexNotifications(notifications, tx, audiusLibs)
+
+      await processNotifications(notifications, tx)
+      await sendNotifications(audiusLibs, notifications, tx)
+
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
 
       // Commit

@@ -374,16 +374,16 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       }]
     }
 
-    const metadata = await fetchNotificationMetadata(audiusLibs, milestoneValue, [notifStub])
+    const metadata = await fetchNotificationMetadata(audiusLibs, [milestoneValue], [notifStub])
     const mapNotification = notificationResponseMap[milestoneType]
     try {
       let msgGenNotif = {
         ...notifStub,
         ...(mapNotification(notifStub, metadata))
       }
-      logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
+      // logger.debug('processMilestone - About to generate message for milestones push notification', msgGenNotif, metadata)
       const msg = pushNotificationMessagesMap[notificationTypes.Milestone](msgGenNotif)
-      logger.debug(`processMilestone - message: ${msg}`)
+      // logger.debug(`processMilestone - message: ${msg}`)
       const title = notificationResponseTitleMap[notificationTypes.Milestone]
       let types = []
       if (notifyMobile) types.push(deviceType.Mobile)
