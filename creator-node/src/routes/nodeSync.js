@@ -409,7 +409,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Save all track files to disk in batches (to limit concurrent load)
           for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
             const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-            req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
+            req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
             await Promise.all(trackFilesSlice.map(
               trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
             ))
@@ -419,7 +419,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Save all non-track files to disk in batches (to limit concurrent load)
           for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
             const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-            req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
+            req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
             await Promise.all(nonTrackFilesSlice.map(
               nonTrackFile => {
                 // Skip over directories since there's no actual content to sync
