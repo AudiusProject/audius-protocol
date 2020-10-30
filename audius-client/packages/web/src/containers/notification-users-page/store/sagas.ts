@@ -1,10 +1,12 @@
 import UserListSagaFactory from 'containers/user-list/store/sagas'
 import { USER_LIST_TAG } from '../NotificationUsersPage'
-import { put, select } from 'redux-saga/effects'
+import { call, put, select } from 'redux-saga/effects'
 import { getId, getUserList } from './selectors'
 import { getNotificationError } from './actions'
 import { watchRepostsError } from './errorSagas'
 import { getNotificationById } from 'containers/notification/store/selectors'
+import { fetchUsers as retrieveUsers } from 'store/cache/users/sagas'
+import { getUserIds } from 'containers/notification-users-page/store/selectors'
 
 function* errorDispatcher(error: Error) {
   const id = yield select(getId)
@@ -19,7 +21,15 @@ function* fetchUsers(currentPage: number, pageSize: number) {
   const offset = currentPage * pageSize
   const hasMore = userIds.length > offset + pageSize
   const paginatedUserIds = userIds.slice(offset, offset + pageSize)
-  return { userIds: paginatedUserIds, hasMore }
+
+  // Retrieve the users in case they're not yet cached
+  yield call(retrieveUsers, paginatedUserIds)
+
+  // Append new users to existing ones
+  const existingUserIds = yield select(getUserIds)
+  const fullList = [...existingUserIds, ...paginatedUserIds]
+
+  return { userIds: fullList, hasMore }
 }
 
 const userListSagas = UserListSagaFactory.createSagas({
