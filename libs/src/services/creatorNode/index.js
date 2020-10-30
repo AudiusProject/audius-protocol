@@ -20,6 +20,12 @@ class CreatorNode {
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
   /**
+   * Pulls the user's creator nodes out of the list
+   * @param {string} endpoints user.creator_node_endpoint
+   */
+  static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
