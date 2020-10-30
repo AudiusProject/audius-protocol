@@ -1,4 +1,6 @@
 const isCreator = require('./isCreator')
+const sanitizeNodes = require('./sanitizeNodes')
+const addSecondaries = require('./addSecondaries')
 const syncNodes = require('./syncNodes')
 const rolloverNodes = require('./rolloverNodes')
 const recoveryEmail = require('./needsRecoveryEmail')
@@ -15,6 +17,8 @@ class SanityChecks {
    */
   async run (creatorNodeWhitelist = null) {
     await isCreator(this.libs)
+    await sanitizeNodes(this.libs)
+    await addSecondaries(this.libs)
     await syncNodes(this.libs)
     await rolloverNodes(this.libs, creatorNodeWhitelist)
     await recoveryEmail(this.libs)

@@ -87,6 +87,7 @@ class ServiceProvider extends Base {
       creatorNodes.map(async node => {
         try {
           const { isBehind, isConfigured } = await this.creatorNode.getSyncStatus(node.endpoint)
+          console.debug(`Got sync status for ${node.endpoint}, isBehind: ${isBehind}, isConfigured: ${isConfigured}`)
           return isConfigured && isBehind ? false : node.endpoint
         } catch (e) {
           return false
