@@ -333,13 +333,14 @@ const trackFileUpload = multer({
   storage: trackDiskStorage,
   limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
+    const fileExtension = getFileExtension(file.originalname).slice(1)
     // the function should call `cb` with a boolean to indicate if the file should be accepted
-    if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(getFileExtension(file.originalname).slice(1)) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
-      req.logger.info(`Filetype : ${getFileExtension(file.originalname).slice(1)}`)
+    if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
+      req.logger.info(`Filetype: ${fileExtension}`)
       req.logger.info(`Mimetype: ${file.mimetype}`)
       cb(null, true)
     } else {
-      req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}]`
+      req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}], got ${fileExtension}`
       cb(null, false)
     }
   }
@@ -350,6 +351,10 @@ const handleTrackContentUpload = (req, res, next) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         req.fileSizeError = err
+      } else if (err instanceof multer.MulterError) {
+        req.logger.error(`Multer error: ${err}`)
+      } else {
+        req.logger.error(`Content upload error: ${err}`)
       }
     }
     next()
