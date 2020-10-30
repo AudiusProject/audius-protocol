@@ -1,6 +1,11 @@
 import React, { useCallback } from 'react'
-import AudiusModal from 'components/general/AudiusModal'
-import { Button, ButtonSize, ButtonType, IconRemove } from '@audius/stems'
+import {
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconRemove,
+  Modal
+} from '@audius/stems'
 
 import styles from './SourceFilesModal.module.css'
 import Dropzone from 'components/upload/Dropzone'
@@ -11,6 +16,11 @@ import IconButton from 'components/general/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Switch from 'components/general/Switch'
 import cn from 'classnames'
+import {
+  incrementScrollCount,
+  decrementScrollCount
+} from 'store/application/ui/scrollLock/actions'
+import { useDispatch } from 'react-redux'
 
 const MAX_ROWS = 5
 
@@ -263,8 +273,16 @@ const SourceFilesModal = ({
   onSelectCategory,
   onDeleteStem
 }: SourceFilesModalProps) => {
+  const dispatch = useDispatch()
+  const incrementScroll = useCallback(() => dispatch(incrementScrollCount()), [
+    dispatch
+  ])
+  const decrementScroll = useCallback(() => dispatch(decrementScrollCount()), [
+    dispatch
+  ])
+
   return (
-    <AudiusModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       showTitleHeader
@@ -276,6 +294,9 @@ const SourceFilesModal = ({
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
       subtitleClassName={styles.modalSubtitle}
+      zIndex={12000}
+      incrementScrollCount={incrementScroll}
+      decrementScrollCount={decrementScroll}
     >
       <SourceFilesView
         downloadSettings={downloadSettings}
@@ -292,7 +313,7 @@ const SourceFilesModal = ({
         type={ButtonType.SECONDARY}
         onClick={onClose}
       />
-    </AudiusModal>
+    </Modal>
   )
 }
 
