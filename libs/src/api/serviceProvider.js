@@ -1,6 +1,6 @@
 const { sampleSize } = require('lodash')
 const { Base } = require('./base')
-const { timeRequests, timeRequestsAndSortByVersion } = require('../utils/network')
+const { timeRequestsAndSortByVersion } = require('../utils/network')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
@@ -40,7 +40,7 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    const timings = await timeRequests(
+    const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
         url: `${node.endpoint}/version`
@@ -99,14 +99,16 @@ class ServiceProvider extends Base {
     const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node,
-        url: `${node}/health_check`
+        url: `${node}/version` // TODO: add country data to health_check and switch to health_check
       }))
     )
 
+    // Store all the healthy services in a map. Used in UI to select other available services
     let services = {}
     timings.forEach(timing => {
       services[timing.request.id] = timing.response.data
     })
+
     // Primary: select the lowest-latency
     const primary = timings[0] ? timings[0].request.id : null
 

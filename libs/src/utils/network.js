@@ -13,7 +13,13 @@ async function timeRequest (request) {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
-  const response = await axios.get(request.url)
+  let response
+  try {
+    response = await axios.get(request.url)
+  } catch (e) {
+    console.debug(`Error with request for ${request.url}: ${e}`)
+    return null
+  }
   const millis = new Date().getTime() - startTime
   return { request, response, millis }
 }
@@ -43,15 +49,9 @@ async function timeRequestsAndSortByVersion (requests) {
     timeRequest(request)
   ))
 
-  return timings.sort((a, b) => {
-    try {
-      if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
-      if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
-    } catch (e) {
-      // Unable to sort by version -- probably failed health check. Send to the back
-      if (!a.response) return 1
-      if (!b.response) return -1
-    }
+  return timings.filter(Boolean).sort((a, b) => {
+    if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
+    if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
 
     // If same version, do a tie breaker on the response time
     return a.millis - b.millis
