@@ -42,6 +42,7 @@ type ExtraProps = {
 }
 
 const formatListenCount = (listenCount?: number) => {
+  if (!listenCount) return null
   const suffix = listenCount === 1 ? 'Play' : 'Plays'
   return `${formatCount(listenCount)} ${suffix}`
 }
