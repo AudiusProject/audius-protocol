@@ -144,7 +144,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       await writeFile(expectedStoragePath, fileBuffer)
       req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
     } catch (e) {
-      req.logger.info(`Multihash ${multihash} is not available on local ipfs node ${e.message}`)
+      req.logger.warn(`Multihash ${multihash} is not available on local ipfs node ${e.message}`)
     }
 
     // If file not already available on local ipfs node, fetch from IPFS.
@@ -161,7 +161,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         fileFound = true
         req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
       } catch (e) {
-        req.logger.info(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
+        req.logger.warn(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
       }
     }
 
