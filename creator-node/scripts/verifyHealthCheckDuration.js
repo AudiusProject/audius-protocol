@@ -27,7 +27,6 @@ async function run () {
     // Add randomBytes to outgoing request parameters
     const reqParam = signedLocalData
     reqParam.randomBytes = randomBytesToSign
-
     let requestConfig = {
       url: `${CREATOR_NODE_ENDPOINT}/health_check/duration`,
       method: 'get',
