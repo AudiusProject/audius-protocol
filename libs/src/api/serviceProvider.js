@@ -99,21 +99,15 @@ class ServiceProvider extends Base {
     let timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node,
-        url: `${node}/health_check`
+        url: `${node}/version` // TODO: add country data to health_check and switch to health_check
       }))
     )
 
     // Store all the healthy services in a map. Used in UI to select other available services
     let services = {}
-    const available = []
     timings.forEach(timing => {
-      // Filter out unhealthy nodes (nodes with no response)
-      if (timing.response) {
-        services[timing.request.id] = timing.response.data
-        available.push(timing)
-      }
+      services[timing.request.id] = timing.response.data
     })
-    timings = available
 
     // Primary: select the lowest-latency
     const primary = timings[0] ? timings[0].request.id : null
