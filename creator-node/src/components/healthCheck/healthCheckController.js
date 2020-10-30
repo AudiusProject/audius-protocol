@@ -39,15 +39,15 @@ const syncHealthCheckController = async () => {
  * Controller for health_check/duration route
  * Calls healthCheckComponentService
  */
- const healthCheckDurationController = async (req) => {
+const healthCheckDurationController = async (req) => {
   let { timestamp, randomBytes, signature } = req.query
-  const recoveryObject = { randomBytesToSign:randomBytes, timestamp }
+  const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
   const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
   const recoveredTimestampDate = new Date(timestamp)
   const currentTimestampDate = new Date()
   const requestAge = currentTimestampDate - recoveredTimestampDate
   if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-      throw new Error(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`)
+    throw new Error(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`)
   }
   const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
   if (recoveredPublicWallet !== delegateOwnerWallet) {
