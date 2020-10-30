@@ -146,19 +146,23 @@ class BlacklistManager {
    * @param {int} id user or track id
    * @param {enum} type ['USER', 'TRACK']
    */
-  static async addToDb ({ id, type }) {
-    let resp
+  static async addToDb ({ ids, type }) {
+    const errs = []
     try {
-      resp = await models.ContentBlacklist.findOrCreate({ where: { id, type } })
+      models.ContentBlacklist.bulkCreate(ids.map(id => ({
+        id,
+        type
+      })), { ignoreDuplicates: true }) // if dupes found, do not update any columns
     } catch (e) {
-      throw new Error(`Error with adding entry with type (${type}) and id (${id}): ${e}`)
+      errs.push(e)
     }
 
-    if (resp) {
-      console.log(`Added entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
+    if (errs.length > 0) {
+      throw new Error(`Error with adding to ContentBlacklist: ${errs.toString()}`)
     }
 
-    return { type, id }
+    console.log(`Sucessfully added entries with type (${type}) and ids (${ids}) to the ContentBlacklist table!`)
+    return { type, ids }
   }
 
   /**
@@ -166,25 +170,25 @@ class BlacklistManager {
    * @param {int} id user or track id
    * @param {enum} type ['USER', 'TRACK']
    */
-  static async removeFromDb ({ id, type }) {
+  static async removeFromDb ({ ids, type }) {
     let numRowsDestroyed
     try {
       numRowsDestroyed = await models.ContentBlacklist.destroy({
         where: {
-          id,
+          id: { [models.Sequelize.Op.in]: ids },
           type
         }
       })
     } catch (e) {
-      throw new Error(`Error with removing entry with type (${type}) and id (${id}): ${e}`)
+      throw new Error(`Error with removing entry with type (${type}) and id (${ids}): ${e}`)
     }
 
-    if (numRowsDestroyed) {
-      console.log(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
-      return { type, id }
+    if (numRowsDestroyed > 0) {
+      console.log(`Removed entry with type (${type}) and id (${ids}) to the ContentBlacklist table!`)
+      return { type, ids }
     }
 
-    console.log(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
+    console.log(`Entry with type (${type}) and id (${ids}) does not exist in ContentBlacklist.`)
     return null
   }
 

@@ -38,7 +38,7 @@ const sendResponse = module.exports.sendResponse = (req, res, resp) => {
       errorMessage: resp.object.error
     })
     if (req && req.body) {
-      logger.info('Error processing request:', resp.object.error, '|| Request Body:', req.body)
+      logger.info('Error processing request:', resp.object.error, '|| Request Body:', req.body, '|| Request Query Params:', req.query)
     } else {
       logger.info('Error processing request:', resp.object.error)
     }
