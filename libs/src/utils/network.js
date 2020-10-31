@@ -116,7 +116,9 @@ async function raceRequests (
         })
     })
   })
-  requests.push(Utils.wait(timeout))
+  if (timeout !== null) {
+    requests.push(Utils.wait(timeout))
+  }
   let response
   let errored
   try {
