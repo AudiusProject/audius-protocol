@@ -85,7 +85,7 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
   }, [status, onClose])
 
   // @ts-ignore
-  const { name, target, lockupDuration } = props
+  const { name, target } = props
   const onCancelSubmit = useCallback(() => {
     if (name === PendingTransactionName.RemoveDelegator) {
       cancelTransaction(target)
@@ -95,7 +95,7 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
   }, [name, target, cancelTransaction])
   const { timeRemaining } = useTimeRemaining(
     props.lockupExpiryBlock,
-    lockupDuration
+    0 /* period - 0 because lockupExpiry has time period baked in */
   )
 
   return (
