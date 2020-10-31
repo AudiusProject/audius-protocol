@@ -1,0 +1,42 @@
+const fs = require('fs')
+const readline = require('readline')
+const ethContractsMigrationOutput = require('../../eth-contracts/migrations/migration-output.json')
+
+// LOCAL DEVELOPMENT ONLY
+// Updates audius_eth_contracts_address in discovery provider
+const configureLocalDiscProv = async () => {
+    let ethRegistryAddress = ethContractsMigrationOutput.registryAddress
+    let envPath = `${process.env.PROTOCOL_DIR}/discovery-provider/compose/.env`
+    await _updateDiscoveryProviderEnvFile(envPath, envPath, ethRegistryAddress)
+}
+
+// Write an update to the local discovery provider config .env file
+const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryAddress) => {
+    const fileStream = fs.createReadStream(readPath)
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity
+    })
+    let output = []
+    let ethRegistryAddressFound = false
+    const ethRegistryAddressLine = `audius_eth_contracts_address=${ethRegistryAddress}`
+
+    console.log('\n')
+    for await (const line of rl) {
+      console.log(line)
+      if (line.includes('audius_eth_contracts_address')) {
+        output.push(ethRegistryAddressLine)
+        ethRegistryAddressFound = true
+      } else {
+        output.push(line)
+      }
+    }
+    if (!ethRegistryAddressFound) {
+      output.push(ethRegistryAddressLine)
+    }
+    console.log(output)
+    fs.writeFileSync(writePath, output.join('\n'))
+    console.log(`Updated DISCOVERY PROVIDER ${writePath} audius_eth_contracts_address=${ethRegistryAddress}`)
+}
+
+configureLocalDiscProv()
