@@ -51,7 +51,6 @@ class File extends Base {
         if (!response) throw new Error(`Could not fetch ${cid}`)
         return response
       } catch (e) {
-
         // TODO: Remove this fallback logic when no more users/tracks/playlists
         // contain "legacy" image formats (no dir cid)
         if (cid.includes('/')) { // dirCID -- an image
