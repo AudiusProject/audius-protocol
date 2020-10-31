@@ -125,42 +125,46 @@ def initContracts():
     )
 
 def initEthContracts():
-    eth_registry_address = eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
-    )
-    logger.warning('eth_registry_address')
-    logger.warning(eth_registry_address)
-    eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
-    )
-    sp_factory_arg = bytes("ServiceProviderFactory", "utf-8")
-    logger.warning('bytes sp arg')
-    logger.warning(sp_factory_arg)
+    try:
+        eth_registry_address = eth_web3.toChecksumAddress(
+            shared_config["eth_contracts"]["registry"]
+        )
+        logger.warning('eth_registry_address')
+        logger.warning(eth_registry_address)
+        eth_registry_instance = eth_web3.eth.contract(
+            address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+        )
+        sp_factory_arg = bytes("ServiceProviderFactory", "utf-8")
+        logger.warning('bytes sp arg')
+        logger.warning(sp_factory_arg)
 
-    sp_factory_address = eth_registry_instance.functions.getContract(
-        bytes("ServiceProviderFactory", "utf-8")
-    ).call()
+        sp_factory_address = eth_registry_instance.functions.getContract(
+            bytes("ServiceProviderFactory", "utf-8")
+        ).call()
 
-    logger.warning("RECOVERED SP FAC ADDR")
-    logger.warning(sp_factory_address)
-    sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
-    )
+        logger.warning("RECOVERED SP FAC ADDR")
+        logger.warning(sp_factory_address)
+        sp_factory_inst = eth_web3.eth.contract(
+            address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+        )
 
-    logger.warning("Initialized sp factory contract")
+        logger.warning("Initialized sp factory contract")
 
-    cn_bytes_arg = bytes("creator-node", "utf-8")
-    total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(cn_bytes_arg).call()
+        cn_bytes_arg = bytes("creator-node", "utf-8")
+        total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(cn_bytes_arg).call()
 
-    logger.warning("totalServiceTypeProviders")
-    logger.warning(total_cn_type_providers)
-    eth_cn_endpoints = {}
-    for i in range(1, total_cn_type_providers + 1):
-        logger.warning(f"querying creator-node {i}")
-        cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(cn_bytes_arg, i).call()
-        logger.warning(cn_endpoint_info)
-        eth_cn_endpoints[cn_endpoint_info[1]] = True
-    logger.warning(eth_cn_endpoints)
+        logger.warning("totalServiceTypeProviders")
+        logger.warning(total_cn_type_providers)
+        eth_cn_endpoints = {}
+        for i in range(1, total_cn_type_providers + 1):
+            logger.warning(f"querying creator-node {i}")
+            cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(cn_bytes_arg, i).call()
+            logger.warning(cn_endpoint_info)
+            eth_cn_endpoints[cn_endpoint_info[1]] = True
+        logger.warning(eth_cn_endpoints)
+    except Exception as e:
+        logger.error(f"Transient catch {e}", exc_info=True)
+        # TODO: THROW HERE
 
 def create_app(test_config=None):
     return create(test_config)
