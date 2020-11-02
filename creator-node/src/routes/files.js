@@ -305,7 +305,7 @@ module.exports = function (app) {
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */
-  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponse(async (req, res) => {
+  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
