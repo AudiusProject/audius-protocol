@@ -531,7 +531,7 @@ class DiscoveryProvider {
    * Gets the healthy discovery provider endpoint used in creating the axios request later.
    * If the number of retries is over the max count for retires, clear the cache and reselect
    * another healthy discovery provider. Else, return the current discovery provider endpoint
-   * @param {int} attemptedRetries the number of attempted requests made to the current disc prov endpoint
+   * @param {number} attemptedRetries the number of attempted requests made to the current disc prov endpoint
    */
   async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
     let endpoint = this.discoveryProviderEndpoint
