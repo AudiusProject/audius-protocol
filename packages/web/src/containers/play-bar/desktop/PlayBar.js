@@ -63,7 +63,9 @@ class PlayBar extends Component {
       seeking: false,
       trackPosition: 0,
       playCounter: null,
-      trackId: null
+      trackId: null,
+      // Capture intent to set initial volume before audio is playing
+      initialVolume: null
     }
     this.seekInterval = null
   }
@@ -98,6 +100,15 @@ class PlayBar extends Component {
         playCounter: playCounter,
         trackPosition: 0,
         listenRecorded: false
+      })
+    }
+
+    // If there was an intent to set initial volume and audio is defined
+    // set the initial volume
+    if (this.state.initialVolume && audio) {
+      audio.setVolume(this.state.initialVolume)
+      this.setState({
+        initialVolume: null
       })
     }
   }
@@ -179,7 +190,15 @@ class PlayBar extends Component {
 
   updateVolume = volume => {
     const { audio } = this.props
-    if (audio) audio.setVolume(volume / VOLUME_GRANULARITY)
+    if (audio) {
+      // If we already have an audio object set the volume immediately!
+      audio.setVolume(volume / VOLUME_GRANULARITY)
+    } else {
+      // Store volume in the state so that when audio does mount we can set it
+      this.setState({
+        initialVolume: volume / VOLUME_GRANULARITY
+      })
+    }
   }
 
   repeatAll = () => {
