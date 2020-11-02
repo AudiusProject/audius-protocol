@@ -4,7 +4,7 @@ const config = require('../config.js')
 const versionInfo = require('../../.version.json')
 const disk = require('diskusage')
 
-const MAX_DB_CONNECTIONS = 90
+const MAX_DB_CONNECTIONS = config.get('dbConnectionPoolMax')
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
@@ -108,7 +108,8 @@ module.exports = function (app) {
       available: _formatBytes(available),
       total: _formatBytes(total),
       usagePercent: `${usagePercent}%`,
-      maxUsagePercent: `${maxUsagePercent}%`
+      maxUsagePercent: `${maxUsagePercent}%`,
+      path
     }
 
     if (maxUsageBytes) { resp.maxUsage = _formatBytes(maxUsageBytes) }
