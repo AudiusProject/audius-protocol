@@ -91,8 +91,8 @@ const contentBlacklistRemoveController = async (req) => {
 function parseQueryParams (queryParams) {
   let { ids, type, timestamp, signature } = queryParams
 
-  if (!ids || !type || !timestamp || !signature) {
-    throw new Error('Missing query params: [id, type, timestamp, signature]')
+  if (!ids || ids.length === 0 || !type || !timestamp || !signature) {
+    throw new Error('Missing query params: [ids, type, timestamp, signature]')
   }
   type = type.toUpperCase()
 
