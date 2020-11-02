@@ -46,7 +46,7 @@ module.exports.handleResponseWithHeartbeat = (func) => {
         if (!res.finished) {
           res.write('1')
         }
-      }, 1000)
+      }, 5000)
 
       // Await the work of the endpoint
       const resp = await func(req, res, next)
