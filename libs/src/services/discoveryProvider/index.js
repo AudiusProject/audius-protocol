@@ -70,7 +70,6 @@ class DiscoveryProvider {
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
    */
   async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) {
-    console.log('i am GETTING USERS!!!!!')
     const req = Requests.getUsers(
       limit,
       offset,
