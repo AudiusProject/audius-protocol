@@ -89,14 +89,11 @@ const contentBlacklistRemoveController = async (req) => {
  * @param {object} queryParams
  */
 function parseQueryParams (queryParams) {
-  console.log('before parsequeryparams')
-  console.log(queryParams)
   let { ids, type, timestamp, signature } = queryParams
 
   if (!ids || !type || !timestamp || !signature) {
     throw new Error('Missing query params: [id, type, timestamp, signature]')
   }
-
   type = type.toUpperCase()
 
   if (!TYPES_SET.has(type)) {
@@ -110,8 +107,6 @@ function parseQueryParams (queryParams) {
     console.warn(`Filterd out non-numeric ids from input. Please only pass integers!`)
   }
 
-  console.log('after parsequeryparams')
-  console.log({ type, ids, timestamp, signature })
   return { type, ids, timestamp, signature }
 }
 
