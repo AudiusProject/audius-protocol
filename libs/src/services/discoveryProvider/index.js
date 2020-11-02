@@ -501,7 +501,7 @@ class DiscoveryProvider {
       if (e.response && e.response.status && e.response.status/100 === 4) {
         return
       }
-      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries+1} with response ${response}: ${e}`)
+      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries} with response ${response}: ${e}`)
       return this._makeRequest(requestObj, attemptedRetries + 1)
     }
 
@@ -523,7 +523,7 @@ class DiscoveryProvider {
       ) {
         // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
         // hopes it will catch up
-        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries+1}...`)
+        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries}...`)
         return this._makeRequest(requestObj, attemptedRetries + 1)
       }
     }
