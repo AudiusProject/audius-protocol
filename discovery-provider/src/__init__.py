@@ -343,7 +343,8 @@ def configure_celery(flask_app, celery, test_config=None):
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
                  "src.tasks.index_cache", "src.tasks.index_plays",
-                 "src.tasks.index_metrics", "src.tasks.index_materialized_views"],
+                 "src.tasks.index_metrics", "src.tasks.index_materialized_views",
+                 "src.tasks.index_network_peers"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -368,6 +369,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=60)
+            },
+            "update_network_peers": {
+                "task": "update_network_peers",
+                "schedule": timedelta(seconds=2)
             }
         },
         task_serializer="json",
