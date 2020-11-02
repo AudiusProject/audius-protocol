@@ -3,17 +3,17 @@ const { drainMessageObject: sendAwsSns } = require('../awsSNS')
 const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
 
 // TODO (DM) - move this into redis
-const buffer = {
+const pushNotificationQueue = {
   PUSH_NOTIFICATIONS_BUFFER: [],
   PUSH_ANNOUNCEMENTS_BUFFER: []
 }
 
 async function publish (message, userId, tx, playSound = true, title = null, types) {
-  await addNotificationToBuffer(message, userId, tx, buffer.PUSH_NOTIFICATIONS_BUFFER, playSound, title, types)
+  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER, playSound, title, types)
 }
 
 async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
-  await addNotificationToBuffer(message, userId, tx, buffer.PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
+  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
 }
 
 async function addNotificationToBuffer (message, userId, tx, buffer, playSound, title, types) {
@@ -33,7 +33,7 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
 }
 
 async function drainPublishedMessages () {
-  for (let bufferObj of buffer.PUSH_NOTIFICATIONS_BUFFER) {
+  for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
       await sendAwsSns(bufferObj)
     }
@@ -44,22 +44,22 @@ async function drainPublishedMessages () {
       ])
     }
   }
-  buffer.PUSH_NOTIFICATIONS_BUFFER = []
+  pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 }
 
 async function drainPublishedAnnouncements () {
-  for (let bufferObj of buffer.PUSH_ANNOUNCEMENTS_BUFFER) {
+  for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
     await Promise.all([
       sendAwsSns(bufferObj),
       sendBrowserNotification(bufferObj),
       sendSafariNotification(bufferObj)
     ])
   }
-  buffer.PUSH_ANNOUNCEMENTS_BUFFER = []
+  pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER = []
 }
 
 module.exports = {
-  buffer,
+  pushNotificationQueue,
   publish,
   publishAnnouncement,
   drainPublishedMessages,

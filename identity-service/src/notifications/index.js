@@ -191,7 +191,10 @@ class NotificationProcessor {
         }
       })
 
+      // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
+
+      // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx)
 
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)

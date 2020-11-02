@@ -3,7 +3,7 @@ const assert = require('assert')
 const models = require('../../src/models')
 const processNotifications = require('../../src/notifications/processNotifications/index.js')
 const sendNotifications = require('../../src/notifications/sendNotifications/index.js')
-const { buffer } = require('../../src/notifications/notificationQueue')
+const { pushNotificationQueue } = require('../../src/notifications/notificationQueue')
 const { clearDatabase, runMigrations } = require('../lib/app')
 
 // Mock Notifications
@@ -21,7 +21,7 @@ describe('Test Send Notifications', function () {
     await clearDatabase()
     await runMigrations()
     // Clear the notifications buffer
-    buffer.PUSH_NOTIFICATIONS_BUFFER = []
+    pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
   })
 
   it('should have the correct remix create notifications', async function () {
@@ -34,7 +34,7 @@ describe('Test Send Notifications', function () {
     await processNotifications(remixCreate, tx1)
     await sendNotifications(mockAudiusLibs, remixCreate, tx1)
     await tx1.commit()
-    let pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    let pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
 
     for (const notification of pushNotifications) {
       assert.deepStrictEqual(notification.notificationParams.title, 'New Remix Of Your Track ♻️')
@@ -62,7 +62,7 @@ describe('Test Send Notifications', function () {
     await sendNotifications(mockAudiusLibs, remixCosign, tx1)
     await tx1.commit()
 
-    const pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
 
     for (const notification of pushNotifications) {
       assert.deepStrictEqual(notification.notificationParams.title, 'New Track Co-Sign! 🔥')
@@ -86,7 +86,7 @@ describe('Test Send Notifications', function () {
     await sendNotifications(mockAudiusLibs, follow, tx1)
     await tx1.commit()
 
-    const pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
     assert.deepStrictEqual(pushNotifications.length, 3)
 
     for (const notification of pushNotifications) {
@@ -116,7 +116,7 @@ describe('Test Send Notifications', function () {
     await sendNotifications(mockAudiusLibs, repost, tx1)
     await tx1.commit()
 
-    const pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
 
     assert.deepStrictEqual(pushNotifications.length, 4)
 
@@ -146,7 +146,7 @@ describe('Test Send Notifications', function () {
     await sendNotifications(mockAudiusLibs, favorite, tx1)
     await tx1.commit()
 
-    const pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
 
     assert.deepStrictEqual(pushNotifications.length, 4)
 
@@ -188,7 +188,7 @@ describe('Test Send Notifications', function () {
     await sendNotifications(mockAudiusLibs, create, tx1)
     await tx1.commit()
 
-    let pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    let pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
 
     assert.deepStrictEqual(pushNotifications.length, 0)
 
@@ -198,9 +198,8 @@ describe('Test Send Notifications', function () {
     await sendNotifications(mockAudiusLibs, [], tx2)
     await tx2.commit()
 
-    pushNotifications = buffer.PUSH_NOTIFICATIONS_BUFFER
+    pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
     assert.deepStrictEqual(pushNotifications.length, 9)
-    // console.log(JSON.stringify(pushNotifications, null, ' '))
 
     for (const notification of pushNotifications) {
       assert.deepStrictEqual(notification.notificationParams.title, 'New Artist Update')
