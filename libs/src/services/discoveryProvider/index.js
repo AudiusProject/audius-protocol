@@ -496,11 +496,8 @@ class DiscoveryProvider {
       response = await axios(axiosRequest)
       parsedResponse = Utils.parseDataFromResponse(response)
     } catch (e) {
-      // If Discovery Provider responds with 4xx status code, content is unavailable. Do not retry.
-      if (e.response && e.response.status && (e.response.status / 100) === 4) {
-        return
-      }
-      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries} with response ${response}: ${e}`)
+      const errMsg = e.response && e.response.data ? e.response.data : e
+      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${errMsg}`)
       return this._makeRequest(requestObj, attemptedRetries + 1)
     }
 
