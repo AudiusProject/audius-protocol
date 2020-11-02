@@ -70,6 +70,7 @@ class DiscoveryProvider {
    * await getUsers(100, 0, [3,2,6]) - Invalid user ids will not be accepted
    */
   async getUsers (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) {
+    console.log('i am GETTING USERS!!!!!')
     const req = Requests.getUsers(
       limit,
       offset,
@@ -490,14 +491,13 @@ class DiscoveryProvider {
     }
 
     let axiosRequest = this.createDiscProvRequest(requestObj)
-
     let response
     let parsedResponse
     try {
       response = await axios(axiosRequest)
       parsedResponse = Utils.parseDataFromResponse(response)
     } catch (e) {
-      console.error(`Failed to make Discovery Provider request: ${e}`)
+      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries+1}: ${e}`)
       return this._makeRequest(requestObj, attemptedRetries + 1)
     }
 
@@ -519,7 +519,7 @@ class DiscoveryProvider {
       ) {
         // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
         // hopes it will catch up
-        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request...`)
+        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries+1}...`)
         return this._makeRequest(requestObj, attemptedRetries + 1)
       }
     }
@@ -528,7 +528,7 @@ class DiscoveryProvider {
   }
 
   /**
-   * Gets the healthy discovery provider endpoint used in creating the axious request later.
+   * Gets the healthy discovery provider endpoint used in creating the axios request later.
    * If the number of retries is over the max count for retires, clear the cache and reselect
    * another healthy discovery provider. Else, return the current discovery provider endpoint
    * @param {int} attemptedRetries the number of attempted requests made to the current disc prov endpoint
@@ -537,7 +537,8 @@ class DiscoveryProvider {
     let endpoint = this.discoveryProviderEndpoint
     if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
-      console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
+      console.info(`Attempted max retries with endpoint ${endpoint}`)
+      this.serviceSelector.addUnhealthy(endpoint)
 
       // Clear the cached endpoint and select new endpoint from backups
       this.serviceSelector.clearCached()
