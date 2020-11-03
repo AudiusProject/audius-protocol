@@ -374,7 +374,7 @@ module.exports = function (app) {
     } catch (e) {
       throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
     }
-    
+
     // Re-compute dirCID from all image files to ensure it matches dirCID returned above
     let ipfsAddRespArr
     try {

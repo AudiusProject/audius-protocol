@@ -23,8 +23,6 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
- *
-
  */
 async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   // make sure user has authenticated before saving file

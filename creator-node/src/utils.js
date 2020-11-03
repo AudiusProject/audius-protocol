@@ -58,7 +58,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
 
   // Ensure every file exists on disk
   await Promise.all(imageFiles.map(async function (imageFile) {
-    if(!(await fs.pathExists(imageFile.storagePath))) {
+    if (!(await fs.pathExists(imageFile.storagePath))) {
       throw new Error(`No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`)
     }
   }))
