@@ -7,18 +7,24 @@ from src.models import Block, User, Track, Repost, Follow, Playlist, Save
 
 logger = logging.getLogger(__name__)
 
-sp_factory_arg = bytes("ServiceProviderFactory", "utf-8")
-cn_bytes_arg = bytes("creator-node", "utf-8")
+sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
+content_node_service_type = bytes("creator-node", "utf-8")
 
 # What is a "Peer" in this context?
 # A peer represents another known entity in the network
 # The logic here is to ensure a robust connection from an active indexer
 # to all active entities in the network.
 # This is to ensure minimal retrieval time within the actual indexing flow itself
+# NOTE - The terminology of "peer" in this file overlaps with ipfs swarm peers
+#   Even though we 'swarm connect' to an ipfs node embedded within our protocol the
+#   concept is very much distinct.
 
 # Perform eth web3 call to fetch endpoint info
 def fetch_cnode_info(sp_id, sp_factory_instance):
-    cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(cn_bytes_arg, sp_id).call()
+    cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
+        content_node_service_type,
+        sp_id
+    ).call()
     return cn_endpoint_info
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
@@ -32,12 +38,12 @@ def retrieve_peers_from_eth_contracts(self):
         address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
     )
     sp_factory_address = eth_registry_instance.functions.getContract(
-        bytes("ServiceProviderFactory", "utf-8")
+        sp_factory_registry_key
     ).call()
     sp_factory_inst = eth_web3.eth.contract(
         address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
     )
-    total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(cn_bytes_arg).call()
+    total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(content_node_service_type).call()
     ids_list = list(range(1, total_cn_type_providers + 1))
     eth_cn_endpoints = {}
     # Given the total number of nodes in the network we can now fetch node info in parallel
@@ -59,8 +65,6 @@ def retrieve_peers_from_eth_contracts(self):
 #   instead we are pulling local db state and retrieving the relevant information
 def retrieve_peers_from_db(self):
     db = update_network_peers.db
-    shared_config = update_network_peers.shared_config
-    interval = int(shared_config["discprov"]["peer_refresh_interval"])
     cnode_endpoints = {}
     with db.scoped_session() as session:
         db_cnode_endpts = (
@@ -77,20 +81,24 @@ def retrieve_peers_from_db(self):
                     if cnode_url == "''":
                         continue
                     cnode_endpoints[cnode_url] = True
-    logger.error(f"FROM DB: {cnode_endpoints}")
     return cnode_endpoints
 
+# Function submitted to future in threadpool executor
+def connect_peer(endpoint, ipfs_client):
+    ipfs_swarm_address = get_ipfs_info_from_cnode_endpoint(endpoint, None)
+    ipfs_client.connect_peer(ipfs_swarm_address)
+
+# Actively connect to all peers in parallel
 def connect_peers(self, peers_list):
     ipfs_client = update_network_peers.ipfs_client
-    for endpoint in peers_list:
-        try:
-            logger.error(f'From peers list: {endpoint}')
-            ipfs_swarm_address = get_ipfs_info_from_cnode_endpoint(endpoint, None)
-            logger.error(f'{ipfs_swarm_address}')
-            ipfs_client.connect_peer(ipfs_swarm_address)
-            logger.error(f'Successfully connected')
-        except Exception as exc:
-            logger.error(exc)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_connect_peer_request = {executor.submit(connect_peer, endpoint, ipfs_client): endpoint for endpoint in peers_list}
+        for future in concurrent.futures.as_completed(future_to_connect_peer_request):
+            try:
+                # No return value expected here so we just ensure all futures are resolved
+                future.result()
+            except Exception as exc:
+                logger.error(exc)
 
 ######## CELERY TASKS ########
 @celery.task(name="update_network_peers", bind=True)
@@ -98,8 +106,8 @@ def update_network_peers(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/__init__.py
-    db = update_network_peers.db
     redis = update_network_peers.redis
+    ipfs_client = update_network_peers.ipfs_client
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -108,21 +116,19 @@ def update_network_peers(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.error("----------")
             # An object returned from web3 chain queries
             peers_from_ethereum = retrieve_peers_from_eth_contracts(self)
-            logger.error("Returned peers array1:")
-            logger.error(peers_from_ethereum)
-            logger.error("Generating 2nd peers array:")
             # An object returned from local database queries
             peers_from_local = retrieve_peers_from_db(self)
-            logger.error("Returned peers array2:")
-            logger.error(peers_from_local)
-            # TODO: COMBINE THIS WITH DB PEERS AND PROCESS ALL AT ONCE
-            # Ensure deduping etc
-            peers_list = list(peers_from_ethereum.keys())
+            # Combine the set of known peers from ethereum and within local database
+            all_peers = peers_from_ethereum
+            all_peers.update(peers_from_local)
+            peers_list = list(all_peers.keys())
+            # Update creator node url list in IPFS Client
+            # This list of known nodes is used to traverse and retrieve metadata from gateways
+            ipfs_client.update_cnode_urls(peers_list)
+            # Connect to all peers
             connect_peers(self, peers_list)
-            logger.error("----------")
         else:
             logger.info("index_network_peers.py | Failed to acquire update_network_peers")
     except Exception as e:
