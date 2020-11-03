@@ -329,7 +329,6 @@ def configure_celery(flask_app, celery, test_config=None):
     # Initialize DB object for celery task context
     db = SessionManager(database_url, engine_args_literal)
     logger.info('Database instance initialized!')
-
     # Initialize IPFS client for celery task context
     gateway_addrs = shared_config["ipfs"]["gateway_hosts"].split(',')
     gateway_addrs.append(
@@ -338,16 +337,11 @@ def configure_celery(flask_app, celery, test_config=None):
     ipfs_client = IPFSClient(
         shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], gateway_addrs
     )
-
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
-
     # Clear existing lock if present
     redis_inst.delete("disc_prov_lock")
     logger.info('Redis instance initialized!')
-
-    logger.warning("INIT-ING TASK")
-
     # Initialize custom task context with database object
     class DatabaseTask(Task):
         def __init__(self, *args, **kwargs):
