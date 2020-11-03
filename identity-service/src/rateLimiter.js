@@ -57,10 +57,10 @@ const getRateLimiterMiddleware = () => {
         const routeMiddleware = endpointRateLimits[route][method].map(limit => {
           const { expiry, max } = limit
           return getRateLimiter({
-              prefix: `${route}:${method}:${expiry}:${max}`,
-              expiry,
-              max
-            })
+            prefix: `${route}:${method}:${expiry}:${max}`,
+            expiry,
+            max
+          })
         })
         router[method](route, routeMiddleware)
       }
