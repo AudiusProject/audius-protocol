@@ -199,7 +199,7 @@ export const useTimeRemaining = (block: number, period: number | null) => {
       if (currentBlock > targetBlock) {
         setTimeRemaining(0)
       } else {
-        setTimeRemaining((targetBlock - currentBlock) * averageBlockTime)
+        setTimeRemaining((targetBlock - currentBlock) * averageBlockTime * 1000)
       }
     }
   }, [averageBlockTime, currentBlock, block, period, targetBlock])
