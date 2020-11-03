@@ -14,7 +14,8 @@ const {
   errorResponseNotFound,
   errorResponseForbidden,
   errorResponseRangeNotSatisfiable,
-  errorResponseUnauthorized
+  errorResponseUnauthorized,
+  handleResponseWithHeartbeat
 } = require('../apiHelpers')
 const { recoverWallet } = require('../apiSigning')
 
