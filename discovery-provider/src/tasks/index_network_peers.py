@@ -1,9 +1,12 @@
 import logging
+import requests
 import concurrent.futures
+from urllib.parse import urljoin
 from src.tasks.celery_app import celery
 from src import eth_abi_values
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.models import Block, User, Track, Repost, Follow, Playlist, Save
+from src.utils.redis_cache import use_redis_cache
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +86,30 @@ def retrieve_peers_from_db(self):
                     cnode_endpoints[cnode_url] = True
     return cnode_endpoints
 
+# calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
+def fetch_cnode_endpoints_from_identity(self):
+    try:
+        identity_url = update_network_peers.shared_config['discprov']['identity_service_url']
+        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
+
+        r = requests.get(identity_endpoint, timeout=3)
+        if r.status_code != 200:
+            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
+
+        registered_cnodes = r.json()
+        logger.info(f"Fetched registered creator nodes from chain via {identity_endpoint} - {registered_cnodes}")
+        return registered_cnodes
+    except Exception as e:
+        logger.error(f"Identity fetch failed {e}")
+        return []
+
+def refresh_cnodes_from_identity(self):
+    registered_cnodes = use_redis_cache(
+        'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_identity(self)
+    )
+    return registered_cnodes
+
+
 # Function submitted to future in threadpool executor
 def connect_peer(endpoint, ipfs_client):
     ipfs_swarm_address = get_ipfs_info_from_cnode_endpoint(endpoint, None)
@@ -123,6 +150,13 @@ def update_network_peers(self):
             # Combine the set of known peers from ethereum and within local database
             all_peers = peers_from_ethereum
             all_peers.update(peers_from_local)
+
+            # Legacy list of cnodes from identity
+            # TODO: IN PROGRESS, local validation
+            identity_cnodes_map = refresh_cnodes_from_identity(self)
+            for node_info in identity_cnodes_map:
+                all_peers[node_info['endpoint']] = True
+
             peers_list = list(all_peers.keys())
             # Update creator node url list in IPFS Client
             # This list of known nodes is used to traverse and retrieve metadata from gateways

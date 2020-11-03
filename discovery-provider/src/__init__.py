@@ -63,8 +63,7 @@ def initContracts():
     user_factory_instance = web3.eth.contract(
         address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
     )
-
-   track_factory_address = registry_instance.functions.getContract(
+    track_factory_address = registry_instance.functions.getContract(
         bytes("TrackFactory", "utf-8")
     ).call()
     track_factory_instance = web3.eth.contract(
@@ -346,6 +345,8 @@ def configure_celery(flask_app, celery, test_config=None):
     # Clear existing lock if present
     redis_inst.delete("disc_prov_lock")
     logger.info('Redis instance initialized!')
+
+    logger.warning("INIT-ING TASK")
 
     # Initialize custom task context with database object
     class DatabaseTask(Task):

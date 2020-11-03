@@ -465,57 +465,41 @@ def refresh_peer_connections(task_context):
     ipfs_client = task_context.ipfs_client
     redis = task_context.redis
     interval = int(task_context.shared_config["discprov"]["peer_refresh_interval"])
-    with db.scoped_session() as session:
-        db_cnode_endpts = (
-            session.query(
-                User.creator_node_endpoint).filter(
-                    User.creator_node_endpoint != None, User.is_current == True
-                ).distinct()
-        )
 
-        cnode_endpoints = {}
-        # Generate dictionary of unique creator node endpoints
-        for entry in db_cnode_endpts:
-            for cnode_user_set in entry:
-                cnode_entries = cnode_user_set.split(',')
-                for cnode_url in cnode_entries:
-                    if cnode_url == "''":
-                        continue
-                    cnode_endpoints[cnode_url] = True
+    # Generate dictionary of unique creator node endpoints
+    cnode_endpoints = {}
 
-        # Add user metadata URL to peer connection list
-        user_node_url = task_context.shared_config["discprov"]["user_metadata_service_url"]
-        cnode_endpoints[user_node_url] = True
+    # Add user metadata URL to peer connection list
+    user_node_url = task_context.shared_config["discprov"]["user_metadata_service_url"]
+    cnode_endpoints[user_node_url] = True
 
-        # update cnode_endpoints with list of creator nodes registered on chain, on 30s refresh interval
-        registered_cnodes = use_redis_cache(
-            'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_chain(task_context)
-        )
-        for node_info in registered_cnodes:
-            cnode_endpoints[node_info['endpoint']] = True
+    # update cnode_endpoints with list of creator nodes registered on chain, on 30s refresh interval
+    registered_cnodes = use_redis_cache(
+        'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_chain(task_context)
+    )
 
-        # Update creator node list
-        ipfs_client.update_cnode_urls(list(cnode_endpoints.keys()))
+    for node_info in registered_cnodes:
+        cnode_endpoints[node_info['endpoint']] = True
 
-        # Query ipfs information for each cnode endpoint
-        multiaddr_info = {}
-        for cnode_url in cnode_endpoints:
-            stored_in_redis = redis.get(cnode_url)
-            if stored_in_redis is not None:
-                continue
-            if cnode_url == "''":
-                continue
+    # Query ipfs information for each cnode endpoint
+    multiaddr_info = {}
+    for cnode_url in cnode_endpoints:
+        stored_in_redis = redis.get(cnode_url)
+        if stored_in_redis is not None:
+            continue
+        if cnode_url == "''":
+            continue
 
-            try:
-                logger.warning('index.py | Retrieving connection info for %s', cnode_url)
-                multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(
-                    cnode_url,
-                    None
-                )
-            except Exception as e:  # pylint: disable=broad-except
-                # Handle error in retrieval by not peering this node
-                logger.warning('index.py | Error retrieving info for %s, %s', cnode_url, str(e))
-                multiaddr_info[cnode_url] = None
+        try:
+            logger.warning('index.py | Retrieving connection info for %s', cnode_url)
+            multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(
+                cnode_url,
+                None
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            # Handle error in retrieval by not peering this node
+            logger.warning('index.py | Error retrieving info for %s, %s', cnode_url, str(e))
+            multiaddr_info[cnode_url] = None
 
         for key in multiaddr_info:
             if multiaddr_info[key] is not None:
@@ -526,7 +510,6 @@ def refresh_peer_connections(task_context):
                     redis.set(key, multiaddr_info[key], ex=interval)
                 except Exception as e: #pylint: disable=broad-except
                     logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
-
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
