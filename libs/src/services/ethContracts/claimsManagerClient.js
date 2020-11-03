@@ -87,14 +87,16 @@ class ClaimsManagerClient extends ContractClient {
     return info
   }
 
-  // Returns boolean indicating whether a claim is considered pending
-  async initiateRound () {
+  // Initiate a round
+  async initiateRound (privateKey = null) {
     const method = await this.getMethod(
       'initiateRound'
     )
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT
+      DEFAULT_GAS_AMOUNT,
+      this._contractAddress,
+      privateKey
     )
   }
 }

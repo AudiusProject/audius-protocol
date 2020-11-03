@@ -3,7 +3,7 @@ const path = require('path')
 
 const { setServiceVersion } = require('./helpers/version')
 const { getStakingParameters } = require('./helpers/spRegistration')
-const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
+const { initiateRound, getLastFundedBlock } = require('./helpers/initiateRound')
 
 const AudiusLibs = require('../src/index')
 
@@ -37,19 +37,14 @@ const run = async () => {
         }
         await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
         break
-      case 'getclaim':
-        await getClaimInfo(audiusLibs)
-        break
-      case 'fundclaim':
-        if (!args[4]) {
-          throw new Error('missing argument - format: node mainnet.js fundclaim <amountOfAuds>')
-        }
-
-        const amountOfAuds = args[4]
-        await fundNewClaim(audiusLibs, amountOfAuds, privateKey)
-        break
       case 'stakeinfo':
         await getStakingParameters(audiusLibs)
+        break
+      case 'initiate-round':
+        await initiateRound(audiusLibs, privateKey)
+        break
+      case 'last-funded-block':
+        await getLastFundedBlock(audiusLibs)
         break
       default:
         _throwArgError()
