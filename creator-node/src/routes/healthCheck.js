@@ -100,8 +100,8 @@ module.exports = function (app) {
     const maxUsageBytes = parseInt(req.query.maxUsageBytes)
     const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
 
-    const path = config.get('storagePath')
-    const { available, total } = await disk.check(path)
+    const storagePath = config.get('storagePath')
+    const { available, total } = await disk.check(storagePath)
     const usagePercent = Math.round((total - available) * 100 / total)
 
     const resp = {
@@ -109,7 +109,7 @@ module.exports = function (app) {
       total: _formatBytes(total),
       usagePercent: `${usagePercent}%`,
       maxUsagePercent: `${maxUsagePercent}%`,
-      path
+      storagePath
     }
 
     if (maxUsageBytes) { resp.maxUsage = _formatBytes(maxUsageBytes) }
