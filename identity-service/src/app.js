@@ -13,7 +13,7 @@ const NotificationProcessor = require('./notifications/index.js')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
-const { getRateLimiter, rateLimiterMiddleware } = require('./rateLimiter.js')
+const { getRateLimiter, getRateLimiterMiddleware } = require('./rateLimiter.js')
 
 const DOMAIN = 'mail.audius.co'
 
@@ -246,7 +246,7 @@ class App {
       ethRelayWalletRateLimiter,
       ethRelayIPRateLimiter
     )
-    this.express.use('/', rateLimiterMiddleware)
+    this.express.use(getRateLimiterMiddleware())
   }
 
   setRoutes () {

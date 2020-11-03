@@ -1,8 +1,8 @@
+const express = require('express')
 const rateLimit = require('express-rate-limit')
 const config = require('./config.js')
 const RedisStore = require('rate-limit-redis')
 const client = require('./redis.js')
-const compose = require('./middlewares/composeMiddleware.js')
 
 let endpointRateLimits = {}
 try {
@@ -100,26 +100,28 @@ const getRateLimiter = ({
   })
 }
 
-const rateLimiterMiddleware = (req, res, next) => {
-  const definedMethods = endpointRateLimits[req.path]
-  if (!definedMethods) {
-    return next()
+/**
+ * Create an express router to attach the rate-limiting middleware
+ */
+const validRouteMethods = ['get', 'post', 'put', 'delete']
+const getRateLimiterMiddleware = () => {
+  const router = express.Router()
+  for (const route in endpointRateLimits) {
+    for (const method in endpointRateLimits[route]) {
+      if (validRouteMethods.includes(method)) {
+        const routeMiddleware = endpointRateLimits[route][method].map(limit => {
+          const { expiry, max } = limit
+          return getRateLimiter({
+              prefix: `${route}:${method}:${expiry}:${max}`,
+              expiry,
+              max
+            })
+        })
+        router[method](route, routeMiddleware)
+      }
+    }
   }
-  const definedLimits = definedMethods[req.method.toLowerCase()]
-  if (!definedLimits || !definedLimits.length) {
-    return next()
-  }
-
-  const limiters = definedLimits.map(limit => {
-    const { expiry, max } = limit
-    return getRateLimiter({
-      prefix: req.path,
-      expiry,
-      max
-    })
-  })
-
-  return compose(limiters)(req, res, next)
+  return router
 }
 
 module.exports = {
@@ -128,5 +130,5 @@ module.exports = {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
-  rateLimiterMiddleware
+  getRateLimiterMiddleware
 }

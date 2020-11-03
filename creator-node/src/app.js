@@ -12,7 +12,7 @@ const {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
-  rateLimiterMiddleware
+  getRateLimiterMiddleware
 } = require('./reqLimiter')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
@@ -33,7 +33,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
-app.use('/', rateLimiterMiddleware)
+app.use(getRateLimiterMiddleware())
 
 // import routes
 require('./routes')(app)
