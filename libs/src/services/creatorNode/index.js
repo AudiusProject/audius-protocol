@@ -497,6 +497,9 @@ class CreatorNode {
           }
         }
       )
+      if (resp.data && resp.data.error) {
+        throw new Error(resp.data.error)
+      }
       onProgress(total, total)
       return resp.data
     } catch (e) {
@@ -516,7 +519,7 @@ function _handleErrorHelper (e, requestUrl) {
     // delete headers, may contain tokens
     if (e.config && e.config.headers) delete e.config.headers
     console.error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
-    throw new Error(`Network error while making request to ${requestUrl}`)
+    throw new Error(`Network error while making request to ${requestUrl} ${e}`)
   } else {
     throw e
   }
