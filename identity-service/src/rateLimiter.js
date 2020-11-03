@@ -16,6 +16,10 @@ try {
   console.error('Failed to parse endpointRateLimits!')
 }
 
+const onLimitReached = (req, res, options) => {
+  req.logger.warn(req.rateLimit, `Rate Limit Hit`)
+}
+
 /**
  * A generic endpoint rate limiter
  * @param {object} config
@@ -41,7 +45,8 @@ const getRateLimiter = ({
     }),
     max, // max requests per hour
     skip,
-    keyGenerator
+    keyGenerator,
+    onLimitReached
   })
 }
 
