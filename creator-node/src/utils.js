@@ -62,7 +62,7 @@ async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
       throw new Error(`No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`)
     }
   }))
-  
+
   req.logger.info(`Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
   return dirFile.fileUUID
 }

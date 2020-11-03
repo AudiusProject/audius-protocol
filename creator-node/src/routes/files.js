@@ -1,7 +1,5 @@
 const Redis = require('ioredis')
-const { promisify } = require('util')
 const fs = require('fs-extra')
-const fsStat = promisify(fs.stat)
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
@@ -387,7 +385,7 @@ module.exports = function (app) {
         }
 
         // fsStat(filePath) will throw error if no file exists at filePath
-        const fileStat = await fsStat(resizeRespFileObj.storagePath)
+        const fileStat = await fs.stat(resizeRespFileObj.storagePath)
         if (fileStat.size !== file.size) {
           throw new Error(`File on disk has unexpected size - expected: ${file.size} - actual ${fileStat.size}`)
         }
