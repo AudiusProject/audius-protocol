@@ -57,27 +57,28 @@ def retrieve_peers_from_eth_contracts(self):
 # Determine the known set of distinct peers currently within a user replica set
 # This function differs from the above as we are not interacting with eth-contracts,
 #   instead we are pulling local db state and retrieving the relevant information
-# def retrieve_peers_from_db(self):
-#     db = update_network_peers.db
-#     shared_config = update_network_peers.shared_config
-#     interval = int(shared_config["discprov"]["peer_refresh_interval"])
-#     cnode_endpoints = {}
-#     with db.scoped_session() as session:
-#         db_cnode_endpts = (
-#             session.query(
-#                 User.creator_node_endpoint).filter(
-#                     User.creator_node_endpoint != None, User.is_current == True
-#                 ).distinct()
-#         )
-#         # Generate dictionary of unique creator node endpoints
-#         for entry in db_cnode_endpts:
-#             for cnode_user_set in entry:
-#                 cnode_entries = cnode_user_set.split(',')
-#                 for cnode_url in cnode_entries:
-#                     if cnode_url == "''":
-#                         continue
-#                     cnode_endpoints[cnode_url] = True
-#     logger.error(f"FROM DB: {cnode_endpoints}")
+def retrieve_peers_from_db(self):
+    db = update_network_peers.db
+    shared_config = update_network_peers.shared_config
+    interval = int(shared_config["discprov"]["peer_refresh_interval"])
+    cnode_endpoints = {}
+    with db.scoped_session() as session:
+        db_cnode_endpts = (
+            session.query(
+                User.creator_node_endpoint).filter(
+                    User.creator_node_endpoint != None, User.is_current == True
+                ).distinct()
+        )
+        # Generate dictionary of unique creator node endpoints
+        for entry in db_cnode_endpts:
+            for cnode_user_set in entry:
+                cnode_entries = cnode_user_set.split(',')
+                for cnode_url in cnode_entries:
+                    if cnode_url == "''":
+                        continue
+                    cnode_endpoints[cnode_url] = True
+    logger.error(f"FROM DB: {cnode_endpoints}")
+    return cnode_endpoints
 
 def connect_peers(self, peers_list):
     ipfs_client = update_network_peers.ipfs_client
@@ -107,12 +108,21 @@ def update_network_peers(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            logger.error("----------")
+            # An object returned from web3 chain queries
             peers_from_ethereum = retrieve_peers_from_eth_contracts(self)
-            logger.error("Returned peers array:")
+            logger.error("Returned peers array1:")
+            logger.error(peers_from_ethereum)
+            logger.error("Generating 2nd peers array:")
+            # An object returned from local database queries
+            peers_from_local = retrieve_peers_from_db(self)
+            logger.error("Returned peers array2:")
+            logger.error(peers_from_local)
             # TODO: COMBINE THIS WITH DB PEERS AND PROCESS ALL AT ONCE
             # Ensure deduping etc
             peers_list = list(peers_from_ethereum.keys())
             connect_peers(self, peers_list)
+            logger.error("----------")
         else:
             logger.info("index_network_peers.py | Failed to acquire update_network_peers")
     except Exception as e:
