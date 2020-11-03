@@ -106,6 +106,7 @@ class IdentityService {
    * @param {number} userId
    */
   async logTrackListen (trackId, userId, listenerAddress) {
+    console.log({listenerRequest})
     const request = {
       url: `/tracks/${trackId}/listen`,
       method: 'post',

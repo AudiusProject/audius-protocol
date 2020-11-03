@@ -7,7 +7,10 @@ const compose = require('./composeMiddlewares.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
-const DEFAULT_KEY_GENERATOR = (req) => req.ip
+const DEFAULT_KEY_GENERATOR = (req) => {
+  console.log("RATE LIMITING IP: " + req.ip)
+  return req.ip
+}
 
 let endpointRateLimits = {}
 try {
