@@ -5,11 +5,13 @@
  * out of their account.
  */
 const needsRecoveryEmail = async (libs) => {
+  console.debug('Sanity Check - needsRecoveryEmail')
   const user = libs.userStateManager.getCurrentUser()
   if (!user || !user.wallet) return
 
   const events = await libs.identityService.getUserEvents(user.wallet)
   if (events.needsRecoveryEmail) {
+    console.debug('Sanity Check - needsRecoveryEmail - Sending Email')
     // Send email
     await libs.Account.generateRecoveryLink()
   }
