@@ -1,11 +1,11 @@
 import logging
-import requests
 import concurrent.futures
 from urllib.parse import urljoin
+import requests
 from src.tasks.celery_app import celery
 from src import eth_abi_values
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save
+from src.models import User
 from src.utils.redis_cache import use_redis_cache
 
 logger = logging.getLogger(__name__)
@@ -119,7 +119,9 @@ def connect_peer(endpoint, ipfs_client):
 def connect_peers(self, peers_list):
     ipfs_client = update_network_peers.ipfs_client
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_connect_peer_request = {executor.submit(connect_peer, endpoint, ipfs_client): endpoint for endpoint in peers_list}
+        future_to_connect_peer_request = {
+            executor.submit(connect_peer, endpoint, ipfs_client): endpoint for endpoint in peers_list
+        }
         for future in concurrent.futures.as_completed(future_to_connect_peer_request):
             try:
                 # No return value expected here so we just ensure all futures are resolved
