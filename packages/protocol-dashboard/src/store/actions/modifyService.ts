@@ -7,7 +7,7 @@ import { Status, ServiceType, Address } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { getCreatorNode } from 'store/cache/creatorNode/hooks'
+import { getContentNode } from 'store/cache/contentNode/hooks'
 
 function modifyAudiusService(
   serviceType: ServiceType,
@@ -42,7 +42,7 @@ function modifyAudiusService(
       if (serviceType === ServiceType.DiscoveryProvider) {
         dispatch(getDiscoveryProvider(spID))
       } else {
-        dispatch(getCreatorNode(spID))
+        dispatch(getContentNode(spID))
       }
 
       setStatus(Status.Success)

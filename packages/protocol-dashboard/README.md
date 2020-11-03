@@ -1,7 +1,7 @@
 # Audius Service Provider Dashboard
 
 ## Summary
-Audius Service Provider Dashboard allows users to register creator nodes and discovery providers, 
+Audius Service Provider Dashboard allows users to register content nodes and discovery providers, 
 view your registered services & which ones are out date, and explore all audius services.
 
 

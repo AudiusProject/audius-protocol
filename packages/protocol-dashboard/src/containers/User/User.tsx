@@ -9,7 +9,7 @@ import Timeline from 'components/Timeline'
 import UserStat from 'components/UserStat'
 import UserStakedStat from 'components/UserStakedStat'
 import DiscoveryTable from 'components/DiscoveryTable'
-import CreatorTable from 'components/CreatorTable'
+import ContentTable from 'components/ContentTable'
 import DelegatorsTable from 'components/DelegatorsTable'
 import DelegatesTable from 'components/DelegatesTable'
 import UserInfo from 'components/UserInfo'
@@ -68,8 +68,8 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
   const isServiceProvider = user && 'serviceProvider' in user
   const hasDiscoveryProviders =
     isServiceProvider && (user as Operator).discoveryProviders.length > 0
-  const hasCreatorNodes =
-    isServiceProvider && (user as Operator).creatorNodes.length > 0
+  const hasContentNodes =
+    isServiceProvider && (user as Operator).contentNodes.length > 0
 
   const replaceRoute = useReplaceRoute()
 
@@ -85,7 +85,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
   if (status !== Status.Success) return null
   const services =
     ((user as Operator)?.discoveryProviders?.length ?? 0) +
-    ((user as Operator)?.creatorNodes?.length ?? 0)
+    ((user as Operator)?.contentNodes?.length ?? 0)
 
   return (
     <Page
@@ -148,12 +148,12 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
           <DiscoveryTable
             owner={user.wallet}
             className={clsx(styles.serviceTable, {
-              [styles.rightSpacing]: hasCreatorNodes
+              [styles.rightSpacing]: hasContentNodes
             })}
           />
         )}
-        {hasCreatorNodes && (
-          <CreatorTable
+        {hasContentNodes && (
+          <ContentTable
             owner={user.wallet}
             className={clsx(styles.serviceTable, {
               [styles.leftSpacing]: hasDiscoveryProviders

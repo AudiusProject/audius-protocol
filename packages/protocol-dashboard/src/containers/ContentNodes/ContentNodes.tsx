@@ -1,18 +1,18 @@
 import React from 'react'
 
-import styles from './CreatorNodes.module.css'
+import styles from './ContentNodes.module.css'
 import Page from 'components/Page'
-import CreatorTable from 'components/CreatorTable'
+import ContentTable from 'components/ContentTable'
 import { SERVICES_TITLE, SERVICES } from 'utils/routes'
 
 const messages = {
-  title: 'Creator Nodes'
+  title: 'Content Nodes'
 }
 
 type OwnProps = {}
-type CreatorNodesProps = OwnProps
+type ContentNodesProps = OwnProps
 
-const CreatorNodes: React.FC<CreatorNodesProps> = () => {
+const ContentNodes: React.FC<ContentNodesProps> = () => {
   return (
     <Page
       title={messages.title}
@@ -20,9 +20,9 @@ const CreatorNodes: React.FC<CreatorNodesProps> = () => {
       defaultPreviousPage={SERVICES_TITLE}
       defaultPreviousPageRoute={SERVICES}
     >
-      <CreatorTable className={styles.serviceTable} />
+      <ContentTable className={styles.serviceTable} />
     </Page>
   )
 }
 
-export default CreatorNodes
+export default ContentNodes

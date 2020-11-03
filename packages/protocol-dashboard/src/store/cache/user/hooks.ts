@@ -27,8 +27,8 @@ import {
 } from '../discoveryProvider/hooks'
 import {
   getFilteredNodes as getCNNodes,
-  fetchCreatorNodes
-} from '../creatorNode/hooks'
+  fetchContentNodes
+} from '../contentNode/hooks'
 import { useAccountUser } from 'store/account/hooks'
 
 type UseUsersProp = {
@@ -90,7 +90,7 @@ const getServiceProviderMetadata = async (
 ): Promise<{
   serviceProvider: ServiceProvider
   discoveryProviders: Array<number>
-  creatorNodes: Array<number>
+  contentNodes: Array<number>
   delegators: Array<Delegate>
   delegatedTotal: BN
   totalStakedFor: BN
@@ -108,15 +108,15 @@ const getServiceProviderMetadata = async (
     wallet,
     ServiceType.DiscoveryProvider
   )
-  const creatorNodes = await aud.ServiceProviderClient.getServiceProviderIdsFromAddress(
+  const contentNodes = await aud.ServiceProviderClient.getServiceProviderIdsFromAddress(
     wallet,
-    ServiceType.CreatorNode
+    ServiceType.ContentNode
   )
   const voteHistory = await aud.Governance.getVotesByAddress([wallet])
   return {
     serviceProvider,
     discoveryProviders,
-    creatorNodes,
+    contentNodes,
     totalStakedFor,
     delegatedTotal,
     delegators,
@@ -161,7 +161,7 @@ function fetchUsers(): ThunkAction<void, AppState, Audius, Action<string>> {
     dispatch(setLoading())
     await Promise.all([
       dispatch(fetchDiscoveryProviders()),
-      dispatch(fetchCreatorNodes())
+      dispatch(fetchContentNodes())
     ])
     const state = getState()
     const dpNodes = getDPNodes()(state)
