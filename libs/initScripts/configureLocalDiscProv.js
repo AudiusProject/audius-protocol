@@ -20,10 +20,7 @@ const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryA
     let output = []
     let ethRegistryAddressFound = false
     const ethRegistryAddressLine = `audius_eth_contracts_registry=${ethRegistryAddress}`
-
-    console.log('\n')
     for await (const line of rl) {
-      console.log(line)
       if (line.includes('audius_eth_contracts_registry')) {
         output.push(ethRegistryAddressLine)
         ethRegistryAddressFound = true
@@ -34,7 +31,6 @@ const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryA
     if (!ethRegistryAddressFound) {
       output.push(ethRegistryAddressLine)
     }
-    console.log(output)
     fs.writeFileSync(writePath, output.join('\n'))
     console.log(`Updated DISCOVERY PROVIDER ${writePath} audius_eth_contracts_registry=${ethRegistryAddress}`)
 }
