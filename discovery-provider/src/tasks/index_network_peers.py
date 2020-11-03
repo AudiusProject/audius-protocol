@@ -152,7 +152,6 @@ def update_network_peers(self):
             all_peers.update(peers_from_local)
 
             # Legacy list of cnodes from identity
-            # TODO: IN PROGRESS, local validation
             identity_cnodes_map = refresh_cnodes_from_identity(self)
             for node_info in identity_cnodes_map:
                 all_peers[node_info['endpoint']] = True
