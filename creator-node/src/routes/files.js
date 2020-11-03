@@ -1,5 +1,7 @@
 const Redis = require('ioredis')
-const fs = require('fs')
+const { promisify } = require('util')
+const fs = require('fs-extra')
+const fsStat = promisify(fs.stat)
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
@@ -351,6 +353,52 @@ module.exports = function (app) {
       req.logger.debug('ipfs add resp', resizeResp)
     } catch (e) {
       return errorResponseServerError(e)
+    }
+
+    /**
+     * Data validation for resize image response
+     * - Ensure dir exists on disk for dirCID
+     * - Check dir contents with ipfs.ls
+     * - Confirm all files are stored on disk in expected location and have expected size
+     */
+     try {
+      const ipfs = req.app.get('ipfsLatestAPI')
+      
+      const resizeRespFileMap = resizeResp.files.reduce((map, obj) => (map[obj.multihash] = obj, map), {})
+
+      const dirCID = resizeResp.dir.dirCID
+
+      // Ensure dir exists on disk
+      if (!(await fs.pathExists(resizeResp.dir.dirDestPath))) {
+        throw new Error(`No dir found on disk for dir CID ${dirCID} at expected path ${resizeResp.dir.dirDestPath}`)
+      }
+
+      // Ensure each imageCID exists on disk with expected size and matches data from resizeResp object
+      let fileCount = 0
+      for await (const file of ipfs.ls(dirCID, { timeout: 500 })) {
+        if (file.type !== 'file' || file.depth !== 1) {
+          throw new Error(`Found unexpected non-file contents in dir ${dirCID}`)
+        }
+        const cid = file.cid.toString()
+        const resizeRespFileObj = resizeRespFileMap[cid]
+
+        if (!resizeRespFileObj) {
+          throw new Error(`resizeResp object for dir ${dirCID} missing data for file ${cid}`)
+        }
+
+        // fsStat(filePath) will throw error if no file exists at filePath
+        const fileStat = await fsStat(resizeRespFileObj.storagePath)
+        if (fileStat.size !== file.size) {
+          throw new Error(`File on disk has unexpected size - expected: ${file.size} - actual ${fileStat.size}`)
+        }
+
+        fileCount++
+      }
+      if (fileCount != resizeResp.files.length) {
+        throw new Error(`IPFS Dir contents don't match resizeImage response for dir CID ${dirCID} - expected length: ${resizeResp.files.length} - actual length: ${fileCount}`)
+      }
+    } catch (e) {
+      throw new Error(`IPFS Validation failed - ${e.message}`)
     }
 
     // Record image file entries in DB

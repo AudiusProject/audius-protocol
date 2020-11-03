@@ -14,7 +14,7 @@ const {
   errorResponseServerError,
   errorResponseForbidden
 } = require('../apiHelpers')
-const { getFileUUIDForImageCID } = require('../utils')
+const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
@@ -310,7 +310,7 @@ module.exports = function (app) {
     // Get coverArtFileUUID for multihash in metadata object, else error
     let coverArtFileUUID
     try {
-      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
+      coverArtFileUUID = await validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.cover_art_sizes)
     } catch (e) {
       return errorResponseServerError(e.message)
     }
