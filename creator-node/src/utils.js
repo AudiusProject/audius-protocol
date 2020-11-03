@@ -30,11 +30,10 @@ class Utils {
  * This function does not do further validation since image_upload provides remaining guarantees
  */
 async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
-  req.logger.info(`Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
-
   if (!imageDirCID) {
     return null
   }
+  req.logger.info(`Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
 
   // Ensure file exists for dirCID
   const dirFile = await models.File.findOne({

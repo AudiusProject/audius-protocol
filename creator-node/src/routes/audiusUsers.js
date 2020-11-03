@@ -85,10 +85,10 @@ module.exports = function (app) {
     // Get coverArtFileUUID and profilePicFileUUID for multihashes in metadata object, if present.
     let coverArtFileUUID, profilePicFileUUID
     try {
-      [coverArtFileUUID, profilePicFileUUID] = await Promise.all(
+      [coverArtFileUUID, profilePicFileUUID] = await Promise.all([
         validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.cover_photo_sizes),
         validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.profile_picture_sizes)
-      )
+      ])
     } catch (e) {
       return errorResponseBadRequest(e.message)
     }
