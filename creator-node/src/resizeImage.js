@@ -2,11 +2,8 @@ const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
 const { logger: genericLogger } = require('./logging')
 const { ipfs } = require('./ipfsClient')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
-const { promisify } = require('util')
-const writeFile = promisify(fs.writeFile)
-const mkdir = promisify(fs.mkdir)
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xFFFFFFFF
@@ -159,28 +156,32 @@ module.exports = async (job) => {
   }
 
   try {
-    await mkdir(dirDestPath)
+    await fs.mkdir(dirDestPath)
   } catch (e) {
     // if error = 'already exists', ignore else throw
     if (e.message.indexOf('already exists') < 0) throw e
   }
 
-  const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
-  await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
-    logger.info('file CID', fileResp.hash)
+  // Save all image file buffers to disk
+  try {
+    // Slice ipfsAddResp to remove dir entry at last index
+    const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
 
-    // Save file to disk
-    const destPath = path.join(storagePath, dirCID, fileResp.hash)
-    await writeFile(destPath, resizes[i])
+    await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
+      // Save file to disk
+      const destPath = path.join(storagePath, dirCID, fileResp.hash)
+      await fs.writeFile(destPath, resizes[i])
 
-    logger.info('Added file', fileResp, file)
-
-    resp.files.push({
-      multihash: fileResp.hash,
-      sourceFile: fileResp.path,
-      storagePath: destPath
-    })
-  }))
+      // Append saved file info to response object
+      resp.files.push({
+        multihash: fileResp.hash,
+        sourceFile: fileResp.path,
+        storagePath: destPath
+      })
+    }))
+  } catch (e) {
+    throw new Error(`Failed to write files to disk after resizing ${e}`)
+  }
 
   return Promise.resolve(resp)
 }

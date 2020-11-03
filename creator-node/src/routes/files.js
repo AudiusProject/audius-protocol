@@ -354,49 +354,51 @@ module.exports = function (app) {
     }
 
     /**
-     * Data validation for resize image response
-     * - Ensure dir exists on disk for dirCID
-     * - Check dir contents with ipfs.ls
-     * - Confirm all files are stored on disk in expected location and have expected size
+     * Ensure image files written to disk match dirCID returned from resizeImage
      */
-     try {
-      const ipfs = req.app.get('ipfsLatestAPI')
-      
-      const resizeRespFileMap = resizeResp.files.reduce((map, obj) => (map[obj.multihash] = obj, map), {})
 
-      const dirCID = resizeResp.dir.dirCID
+    const ipfs = req.app.get('ipfsLatestAPI')
 
-      // Ensure dir exists on disk
-      if (!(await fs.pathExists(resizeResp.dir.dirDestPath))) {
-        throw new Error(`No dir found on disk for dir CID ${dirCID} at expected path ${resizeResp.dir.dirDestPath}`)
-      }
+    const dirCID = resizeResp.dir.dirCID
 
-      // Ensure each imageCID exists on disk with expected size and matches data from resizeResp object
-      let fileCount = 0
-      for await (const file of ipfs.ls(dirCID, { timeout: 500 })) {
-        if (file.type !== 'file' || file.depth !== 1) {
-          throw new Error(`Found unexpected non-file contents in dir ${dirCID}`)
+    // build ipfs add array
+    let ipfsAddArray = []
+    try {
+      await Promise.all(resizeResp.files.map(async function (file) {
+        const fileBuffer = await fs.readFile(file.storagePath)
+        ipfsAddArray.push({
+          path: file.sourceFile,
+          content: fileBuffer
+        })
+      }))
+    } catch (e) {
+      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+    }
+    
+    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+    let ipfsAddRespArr
+    try {
+      const ipfsAddResp = await ipfs.add(
+        ipfsAddArray,
+        {
+          pin: false,
+          onlyHash: true,
+          timeout: 1000
         }
-        const cid = file.cid.toString()
-        const resizeRespFileObj = resizeRespFileMap[cid]
-
-        if (!resizeRespFileObj) {
-          throw new Error(`resizeResp object for dir ${dirCID} missing data for file ${cid}`)
-        }
-
-        // fsStat(filePath) will throw error if no file exists at filePath
-        const fileStat = await fs.stat(resizeRespFileObj.storagePath)
-        if (fileStat.size !== file.size) {
-          throw new Error(`File on disk has unexpected size - expected: ${file.size} - actual ${fileStat.size}`)
-        }
-
-        fileCount++
-      }
-      if (fileCount != resizeResp.files.length) {
-        throw new Error(`IPFS Dir contents don't match resizeImage response for dir CID ${dirCID} - expected length: ${resizeResp.files.length} - actual length: ${fileCount}`)
+      )
+      ipfsAddRespArr = []
+      for await (const resp of ipfsAddResp) {
+        ipfsAddRespArr.push(resp)
       }
     } catch (e) {
-      throw new Error(`IPFS Validation failed - ${e.message}`)
+      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
+      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+    }
+
+    // Ensure actual and expected dirCIDs match
+    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+    if (expectedDirCID !== dirCID) {
+      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID ${dirCID}`)
     }
 
     // Record image file entries in DB
@@ -419,7 +421,7 @@ module.exports = function (app) {
           sourceFile: file.sourceFile,
           storagePath: file.storagePath,
           type: 'image', // TODO - replace with models enum
-          dirMultihash: resizeResp.dir.dirCID,
+          dirMultihash: dirCID,
           fileName: file.sourceFile.split('/').slice(-1)[0]
         }
         await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
@@ -427,12 +429,13 @@ module.exports = function (app) {
 
       req.logger.info(`route time = ${Date.now() - routestart}`)
       await transaction.commit()
-      triggerSecondarySyncs(req)
-      return successResponse({ dirCID: resizeResp.dir.dirCID })
     } catch (e) {
       await transaction.rollback()
       return errorResponseServerError(e)
     }
+
+    triggerSecondarySyncs(req)
+    return successResponse({ dirCID })
   }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
