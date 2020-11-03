@@ -124,51 +124,8 @@ def initContracts():
         contract_address_dict,
     )
 
-def initEthContracts():
-    try:
-        eth_registry_address = eth_web3.toChecksumAddress(
-            shared_config["eth_contracts"]["registry"]
-        )
-        logger.warning('eth_registry_address')
-        logger.warning(eth_registry_address)
-        eth_registry_instance = eth_web3.eth.contract(
-            address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
-        )
-        sp_factory_arg = bytes("ServiceProviderFactory", "utf-8")
-        logger.warning('bytes sp arg')
-        logger.warning(sp_factory_arg)
-
-        sp_factory_address = eth_registry_instance.functions.getContract(
-            bytes("ServiceProviderFactory", "utf-8")
-        ).call()
-
-        logger.warning("RECOVERED SP FAC ADDR")
-        logger.warning(sp_factory_address)
-        sp_factory_inst = eth_web3.eth.contract(
-            address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
-        )
-
-        logger.warning("Initialized sp factory contract")
-
-        cn_bytes_arg = bytes("creator-node", "utf-8")
-        total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(cn_bytes_arg).call()
-
-        logger.warning("totalServiceTypeProviders")
-        logger.warning(total_cn_type_providers)
-        eth_cn_endpoints = {}
-        for i in range(1, total_cn_type_providers + 1):
-            logger.warning(f"querying creator-node {i}")
-            cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(cn_bytes_arg, i).call()
-            logger.warning(cn_endpoint_info)
-            eth_cn_endpoints[cn_endpoint_info[1]] = True
-        logger.warning(eth_cn_endpoints)
-    except Exception as e:
-        logger.error(f"Transient catch {e}", exc_info=True)
-        # TODO: THROW HERE
-
 def create_app(test_config=None):
     return create(test_config)
-
 
 def create_celery(test_config=None):
     # pylint: disable=W0603
@@ -177,12 +134,9 @@ def create_celery(test_config=None):
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.loadAbiValues()
-    logger.warning('loading abi values')
     eth_abi_values = helpers.loadEthAbiValues()
     # Initialize eth web3
     eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
-    logger.warning('loaded ETH ABI VALUES')
-    logger.warning(eth_abi_values)
 
     global registry
     global user_factory
@@ -205,10 +159,7 @@ def create_celery(test_config=None):
         contract_addresses
     ) = initContracts()
 
-    initEthContracts()
-
     return create(test_config, mode="celery")
-
 
 def create(test_config=None, mode="app"):
     arg_type = type(mode)
