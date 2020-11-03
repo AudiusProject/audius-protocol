@@ -19,7 +19,7 @@ const messages = {
     'Actions cannot be taken until pending transactions are completed. Please try again.',
   okay: 'OKAY',
   discoveryProvider: 'Discovery Provider',
-  creatorNode: 'Creator Node',
+  contentNode: 'Content Node',
   stakingAmount: `Staking Amount ${TICKER}`,
   newService: 'NEW SERVICES',
   delegateOwnerWallet: 'Delegate Owner Wallet',
@@ -75,7 +75,7 @@ export const NewService: React.FC<NewServiceProps> = props => {
       <div className={styles.newServiceType}>
         {props.serviceType === ServiceType.DiscoveryProvider
           ? messages.discoveryProvider
-          : messages.creatorNode}
+          : messages.contentNode}
       </div>
       <div className={styles.newServiceDelegateWallet}>
         {messages.delegateOwnerWallet}

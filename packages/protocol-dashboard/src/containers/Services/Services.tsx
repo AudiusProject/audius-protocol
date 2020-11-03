@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import Page from 'components/Page'
 import ManageService from 'components/ManageService'
 import DiscoveryTable from 'components/DiscoveryTable'
-import CreatorTable from 'components/CreatorTable'
+import ContentTable from 'components/ContentTable'
 import TopAddressesTable from 'components/TopAddressesTable'
 import { useAccount } from 'store/account/hooks'
 
@@ -40,7 +40,7 @@ const Services: React.FC<ServicesProps> = () => {
           limit={NODE_LIMIT}
           alwaysShowMore
         />
-        <CreatorTable
+        <ContentTable
           className={clsx(styles.serviceTable, styles.leftSpacing)}
           limit={NODE_LIMIT}
           alwaysShowMore

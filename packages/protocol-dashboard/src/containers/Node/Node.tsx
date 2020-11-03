@@ -3,7 +3,7 @@ import { RouteComponentProps } from 'react-router'
 import { matchPath } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
 import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { useCreatorNode } from 'store/cache/creatorNode/hooks'
+import { useContentNode } from 'store/cache/contentNode/hooks'
 import { useAccount } from 'store/account/hooks'
 
 import styles from './Node.module.css'
@@ -20,15 +20,15 @@ import {
 const messages = {
   title: 'SERVICE',
   discovery: 'Discovery Provider',
-  creator: 'Creator Node'
+  content: 'Content Node'
 }
 
-type CreatorNodeProps = { spID: number; accountWallet: Address | undefined }
-const CreatorNode: React.FC<CreatorNodeProps> = ({
+type ContentNodeProps = { spID: number; accountWallet: Address | undefined }
+const ContentNode: React.FC<ContentNodeProps> = ({
   spID,
   accountWallet
-}: CreatorNodeProps) => {
-  const { node: creatorNode, status } = useCreatorNode({ spID })
+}: ContentNodeProps) => {
+  const { node: contentNode, status } = useContentNode({ spID })
 
   if (status === Status.Failure) {
     return null
@@ -37,18 +37,18 @@ const CreatorNode: React.FC<CreatorNodeProps> = ({
   }
 
   // TODO: compare owner with the current user
-  const isOwner = accountWallet === creatorNode!.owner
+  const isOwner = accountWallet === contentNode!.owner
 
   return (
     <NodeOverview
       spID={spID}
-      serviceType={ServiceType.CreatorNode}
-      version={creatorNode!.version}
-      endpoint={creatorNode!.endpoint}
-      operatorWallet={creatorNode!.owner}
-      delegateOwnerWallet={creatorNode!.delegateOwnerWallet}
+      serviceType={ServiceType.ContentNode}
+      version={contentNode!.version}
+      endpoint={contentNode!.endpoint}
+      operatorWallet={contentNode!.owner}
+      delegateOwnerWallet={contentNode!.delegateOwnerWallet}
       isOwner={isOwner}
-      isDeregistered={creatorNode!.isDeregistered}
+      isDeregistered={contentNode!.isDeregistered}
     />
   )
 }
@@ -109,7 +109,7 @@ const Node: React.FC<NodeProps> = (props: NodeProps) => {
       {isDiscovery ? (
         <DiscoveryProvider spID={spID} accountWallet={accountWallet} />
       ) : (
-        <CreatorNode spID={spID} accountWallet={accountWallet} />
+        <ContentNode spID={spID} accountWallet={accountWallet} />
       )}
     </Page>
   )

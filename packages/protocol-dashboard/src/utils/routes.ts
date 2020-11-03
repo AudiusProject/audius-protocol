@@ -21,10 +21,10 @@ export const SERVICES_DISCOVERY_PROVIDER_NODE =
   '/services/discovery-provider/:spID'
 export const SERVICES_DISCOVERY_PROVIDER_NODE_TITLE = 'Service'
 
-export const SERVICES_CREATOR = '/services/creator-node'
-export const SERVICES_CREATOR_TITLE = 'Service'
-export const SERVICES_CREATOR_NODE = '/services/creator-node/:spID'
-export const SERVICES_CREATOR_NODE_TITLE = 'Service'
+export const SERVICES_CONTENT = '/services/content-node'
+export const SERVICES_CONTENT_TITLE = 'Service'
+export const SERVICES_CONTENT_NODE = '/services/content-node/:spID'
+export const SERVICES_CONTENT_NODE_TITLE = 'Service'
 
 export const SERVICES_SERVICE_PROVIDERS = '/services/service-providers'
 export const SERVICES_SERVICE_PROVIDERS_TITLE = 'All Service Operators'
@@ -58,8 +58,8 @@ export const discoveryNodePage = (spID: number) => {
   return `${SERVICES_DISCOVERY_PROVIDER}/${spID}`
 }
 
-export const creatorNodePage = (spID: number) => {
-  return `${SERVICES_CREATOR}/${spID}`
+export const contentNodePage = (spID: number) => {
+  return `${SERVICES_CONTENT}/${spID}`
 }
 
 export const proposalPage = (proposalId: number) => {
@@ -92,12 +92,12 @@ const routes = [
     title: SERVICES_SERVICE_PROVIDERS_TITLE
   },
   {
-    matchParams: { path: SERVICES_CREATOR_NODE, exact: true },
-    title: SERVICES_CREATOR_NODE_TITLE
+    matchParams: { path: SERVICES_CONTENT_NODE, exact: true },
+    title: SERVICES_CONTENT_NODE_TITLE
   },
   {
-    matchParams: { path: SERVICES_CREATOR, exact: true },
-    title: SERVICES_CREATOR_TITLE
+    matchParams: { path: SERVICES_CONTENT, exact: true },
+    title: SERVICES_CONTENT_TITLE
   },
   {
     matchParams: { path: SERVICES_DISCOVERY_PROVIDER_NODE, exact: true },

@@ -10,7 +10,7 @@ import { History } from 'history'
 import Audius from 'services/Audius'
 import thunk from 'redux-thunk'
 import discoveryProvider from 'store/cache/discoveryProvider/slice'
-import creatorNode from 'store/cache/creatorNode/slice'
+import contentNode from 'store/cache/contentNode/slice'
 import protocol from 'store/cache/protocol/slice'
 import user from 'store/cache/user/slice'
 import proposals from 'store/cache/proposals/slice'
@@ -43,7 +43,7 @@ const getReducer = (history: History) => {
     modal,
     cache: combineReducers({
       discoveryProvider,
-      creatorNode,
+      contentNode,
       protocol,
       user,
       proposals,

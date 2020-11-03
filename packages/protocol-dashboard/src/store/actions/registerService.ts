@@ -9,7 +9,7 @@ import { AppState } from 'store/types'
 import { getAccountWallet } from 'store/account/hooks'
 import { fetchUser } from 'store/cache/user/hooks'
 import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { getCreatorNode } from 'store/cache/creatorNode/hooks'
+import { getContentNode } from 'store/cache/contentNode/hooks'
 
 function registerAudiusService(
   serviceType: ServiceType,
@@ -46,7 +46,7 @@ function registerAudiusService(
       if (serviceType === ServiceType.DiscoveryProvider) {
         await dispatch(getDiscoveryProvider(spID))
       } else {
-        await dispatch(getCreatorNode(spID))
+        await dispatch(getContentNode(spID))
       }
 
       setStatus(Status.Success)

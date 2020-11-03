@@ -14,7 +14,7 @@ export type Amount = BigNumber
 
 export enum ServiceType {
   DiscoveryProvider = 'discovery-provider',
-  CreatorNode = 'creator-node'
+  ContentNode = 'creator-node'
 }
 
 export enum Permission {
@@ -37,13 +37,13 @@ export type DiscoveryProvider = {
   isDeregistered: boolean
 } & Node
 
-export type CreatorNode = {
-  type: ServiceType.CreatorNode
+export type ContentNode = {
+  type: ServiceType.ContentNode
   version: Version
   isDeregistered: boolean
 } & Node
 
-export type NodeService = DiscoveryProvider | CreatorNode
+export type NodeService = DiscoveryProvider | ContentNode
 
 export type ServiceProvider = {
   deployerCut: number
@@ -77,7 +77,7 @@ export type User = {
 export type Operator = {
   serviceProvider: ServiceProvider
   discoveryProviders: Array<number>
-  creatorNodes: Array<number>
+  contentNodes: Array<number>
   delegators: Array<Delegate>
   delegatedTotal: BN
   totalStakedFor: BN

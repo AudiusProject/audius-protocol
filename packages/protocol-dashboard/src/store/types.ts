@@ -1,6 +1,6 @@
 import { RouterState } from 'connected-react-router'
 import { State as DiscoveryProviderState } from 'store/cache/discoveryProvider/slice'
-import { State as CreatorNodeState } from 'store/cache/creatorNode/slice'
+import { State as ContentNodeState } from 'store/cache/contentNode/slice'
 import { State as ProtocolState } from 'store/cache/protocol/slice'
 import { State as UserState } from 'store/cache/user/slice'
 import { State as AccountState } from 'store/account/slice'
@@ -20,7 +20,7 @@ export type AppState = {
   modal: ModalState
   cache: {
     discoveryProvider: DiscoveryProviderState
-    creatorNode: CreatorNodeState
+    contentNode: ContentNodeState
     protocol: ProtocolState
     user: UserState
     proposals: ProposalsState
