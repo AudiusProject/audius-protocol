@@ -1,5 +1,4 @@
 const express = require('express')
-const axios = require('axios')
 
 const {
   getAllContentBlacklist,
@@ -28,40 +27,10 @@ const contentBlacklistGetAllController = async (req) => {
 }
 
 const contentBlacklistAddController = async (req) => {
-  console.debug(`ContentBlackListController - [add] parsing query params`)
-  let parsedQueryParams
-  try {
-    parsedQueryParams = parseQueryParams(req.query)
-  } catch (e) {
-    return errorResponseBadRequest(`Improper blacklist input data: ${JSON.stringify(req.query)}`)
-  }
-
-  console.debug(`ContentBlackListController - [add] verifying signature`)
-  const { type, ids, timestamp, signature } = parsedQueryParams
-  try {
-    verifyRequest({ ids, type, timestamp }, signature)
-  } catch (e) {
-    return errorResponseUnauthorized('Unauthorized user.')
-  }
-
-  console.debug(`ContentBlacklistController - [add] checking if ${type} id: ${ids} exist`)
-  const libs = req.app.get('audiusLibs')
-  let resp
-  try {
-    switch (type) {
-      case 'USER':
-        resp = await libs.User.getUsers(ids.length, 0, ids)
-        break
-      case 'TRACK':
-        resp = await libs.Track.getTracks(ids.length, 0, ids)
-        break
-    }
-  } catch (e) {
-    return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}: ${e.message}`)
-  }
-  if (!resp || resp.data.length === 0) {
-    return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}`)
-  }
+  // If validateInputData() does not return ids and type, an error is returned
+  const response = await validateInputData(req, 'add')
+  const { ids, type } = response
+  if (!ids || !type) return response
 
   console.debug(`ContentBlackListController - [add] updating blacklist`)
   try {
@@ -75,40 +44,10 @@ const contentBlacklistAddController = async (req) => {
 }
 
 const contentBlacklistRemoveController = async (req) => {
-  console.debug(`ContentBlackListController - [remove] parsing query params`)
-  let parsedQueryParams
-  try {
-    parsedQueryParams = parseQueryParams(req.query)
-  } catch (e) {
-    return errorResponseBadRequest(`Improper blacklist input data: ${JSON.stringify(req.query)}`)
-  }
-
-  console.debug(`ContentBlackListController - [remove] verifying signature`)
-  const { type, ids, timestamp, signature } = parsedQueryParams
-  try {
-    verifyRequest({ ids, type, timestamp }, signature)
-  } catch (e) {
-    return errorResponseUnauthorized('Unauthorized user.')
-  }
-
-  console.debug(`ContentBlacklistController - [remove] checking if ${type} id: ${ids} exist`)
-  const libs = req.app.get('audiusLibs')
-  let resp
-  try {
-    switch (type) {
-      case 'USER':
-        resp = await libs.User.getUsers(ids.length, 0, ids)
-        break
-      case 'TRACK':
-        resp = await libs.Track.getTracks(ids.length, 0, ids)
-        break
-    }
-  } catch (e) {
-    return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}: ${e.message}`)
-  }
-  if (!resp || resp.data.length === 0) {
-    return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}`)
-  }
+  // If validateInputData() does not return ids and type, an error is returned
+  const response = await validateInputData(req, 'remove')
+  const { ids, type } = response
+  if (!ids || !type) return response
 
   console.debug(`ContentBlackListController - [remove] updating blacklist`)
   try {
@@ -119,6 +58,48 @@ const contentBlacklistRemoveController = async (req) => {
 
   console.debug(`ContentBlacklistController - [remove] success for ${JSON.stringify({ type, ids })}`)
   return successResponse({ type, ids })
+}
+
+const validateInputData = async (req, action) => {
+  console.debug(`ContentBlackListController - [${action}] parsing query params`)
+  let parsedQueryParams
+  try {
+    parsedQueryParams = parseQueryParams(req.query)
+  } catch (e) {
+    return errorResponseBadRequest(`Improper blacklist input data: ${JSON.stringify(req.query)}`)
+  }
+
+  console.debug(`ContentBlackListController - [${action}] verifying signature`)
+  let { type, ids, timestamp, signature } = parsedQueryParams
+  try {
+    verifyRequest({ ids, type, timestamp }, signature)
+  } catch (e) {
+    return errorResponseUnauthorized('Unauthorized user.')
+  }
+
+  console.debug(`ContentBlacklistController - [${action}] checking if ${type} id: ${ids} exist`)
+  const libs = req.app.get('audiusLibs')
+  let resp
+  try {
+    switch (type) {
+      case 'USER':
+        resp = await libs.User.getUsers(ids.length, 0, ids)
+        // If response is empty, then no users or tracks were found. Return error response
+        if (!resp || resp.length === 0) return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}`)
+        // Else, if only some input ids were found, only blacklist the ids that were found
+        if (resp.length < ids.length) ids = resp.map(user => user.user_id)
+        break
+      case 'TRACK':
+        resp = await libs.Track.getTracks(ids.length, 0, ids)
+        if (!resp || resp.length === 0) return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}`)
+        if (resp.length < ids.length) ids = resp.map(track => track.track_id)
+        break
+    }
+  } catch (e) {
+    return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}: ${e.message}`)
+  }
+
+  return { type, ids }
 }
 
 // Helper methods
