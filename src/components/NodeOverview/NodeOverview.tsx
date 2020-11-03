@@ -16,7 +16,7 @@ const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
   dp: 'Discovery Provider',
-  cn: 'Creator Node',
+  cn: 'Content Node',
   title: 'SERVICE',
   version: 'VER.',
   deregistered: 'DEREGISTERED',

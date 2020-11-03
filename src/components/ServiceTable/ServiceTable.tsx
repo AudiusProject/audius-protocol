@@ -1,6 +1,6 @@
 import React from 'react'
 import clsx from 'clsx'
-import { NodeService, CreatorNode, DiscoveryProvider } from 'types'
+import { NodeService, ContentNode, DiscoveryProvider } from 'types'
 import styles from './ServiceTable.module.css'
 import Table from 'components/Table'
 
@@ -23,7 +23,7 @@ type OwnProps = {
   limit?: number
   moreText?: string
   onRowClick:
-    | ((props: CreatorNode) => void)
+    | ((props: ContentNode) => void)
     | ((props: DiscoveryProvider) => void)
   onClickMore?: () => void
   alwaysShowMore?: boolean

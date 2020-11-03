@@ -27,8 +27,8 @@ const messages = {
   stakingPlaceholder: `200,000 ${TICKER}`,
   dpEndpoint: 'Discovery Provider Service Endpoint',
   dpEndpointPlaceholder: 'https://discoveryprovider.audius.co',
-  cnEndpoint: 'Creator Node Service Endpoint',
-  cnEndpointPlaceholder: 'https://creatornode.audius.co',
+  cnEndpoint: 'Content Node Service Endpoint',
+  cnEndpointPlaceholder: 'https://contentnode.audius.co',
   delegate: 'Delegate Owner Wallet',
   registerService: 'Register Service'
 }
@@ -42,7 +42,7 @@ type RegisterServiceModalProps = OwnProps
 
 const tabOptions = [
   { key: ServiceType.DiscoveryProvider, text: 'Discovery Provider' },
-  { key: ServiceType.CreatorNode, text: 'Creator Node' }
+  { key: ServiceType.ContentNode, text: 'Content Node' }
 ]
 
 const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
@@ -55,7 +55,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   const selectedServiceInfo =
     selectedTab === ServiceType.DiscoveryProvider
       ? serviceInfo.discoveryProvider
-      : serviceInfo.creatorNode
+      : serviceInfo.contentNode
   const [stakingBN, setStakingBN] = useState(
     selectedServiceInfo?.minStake ?? Utils.toBN('0')
   )

@@ -1,15 +1,15 @@
 import React, { useCallback } from 'react'
 import { usePushRoute } from 'utils/effects'
 
-import { CreatorNode, Address, Status } from 'types'
-import { SERVICES_CREATOR, creatorNodePage } from 'utils/routes'
+import { ContentNode, Address, Status } from 'types'
+import { SERVICES_CONTENT, contentNodePage } from 'utils/routes'
 
 import ServiceTable from 'components/ServiceTable'
-import { useCreatorNodes } from 'store/cache/creatorNode/hooks'
+import { useContentNodes } from 'store/cache/contentNode/hooks'
 
 const messages = {
-  title: 'Creator Nodes',
-  viewMore: 'View All Creator Nodes'
+  title: 'Content Nodes',
+  viewMore: 'View All Content Nodes'
 }
 
 type OwnProps = {
@@ -19,23 +19,23 @@ type OwnProps = {
   alwaysShowMore?: boolean
 }
 
-type CreatorTableProps = OwnProps
-const CreatorTable: React.FC<CreatorTableProps> = ({
+type ContentTableProps = OwnProps
+const ContentTable: React.FC<ContentTableProps> = ({
   className,
   limit,
   owner,
   alwaysShowMore
-}: CreatorTableProps) => {
-  const { nodes, status } = useCreatorNodes({ owner })
+}: ContentTableProps) => {
+  const { nodes, status } = useContentNodes({ owner })
   const pushRoute = usePushRoute()
 
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_CREATOR)
+    pushRoute(SERVICES_CONTENT)
   }, [pushRoute])
 
   const onRowClick = useCallback(
-    (row: CreatorNode) => {
-      pushRoute(creatorNodePage(row.spID))
+    (row: ContentNode) => {
+      pushRoute(contentNodePage(row.spID))
     },
     [pushRoute]
   )
@@ -55,4 +55,4 @@ const CreatorTable: React.FC<CreatorTableProps> = ({
   )
 }
 
-export default CreatorTable
+export default ContentTable

@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { CreatorNode, Status } from 'types'
+import { ContentNode, Status } from 'types'
 
 export type State = {
-  nodes: { [spId: number]: CreatorNode }
+  nodes: { [spId: number]: ContentNode }
   total?: number
   status?: Status
   error?: string
@@ -16,7 +16,7 @@ export const initialState: State = {
 type SetNodesPayload =
   | {
       status?: Status.Success
-      nodes: { [spId: number]: CreatorNode }
+      nodes: { [spId: number]: ContentNode }
     }
   | {
       status: Status.Failure
@@ -28,7 +28,7 @@ type SetTotalPayload = {
 }
 
 const slice = createSlice({
-  name: 'creatorNode',
+  name: 'contentNode',
   initialState,
   reducers: {
     setLoading: state => {

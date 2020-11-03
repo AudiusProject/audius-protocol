@@ -19,7 +19,7 @@ const messages = {
   cancel: 'Cancel',
   placeholder: 'DEREGISTER',
   confirmDeregister: 'Deregister',
-  creatorNode: 'Creator Node',
+  contentNode: 'Content Node',
   discoveryProvider: 'Discovery Provider'
 }
 
@@ -90,7 +90,7 @@ const DeregisterServiceModal: React.FC<DeregisterServiceModalProps> = ({
         {`${messages.confirmDeregister} ${
           serviceType === ServiceType.DiscoveryProvider
             ? messages.discoveryProvider
-            : messages.creatorNode
+            : messages.contentNode
         }`}
       </div>
       <div className={styles.confirmEndpoint}>{endpoint}</div>

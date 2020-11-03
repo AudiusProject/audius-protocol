@@ -11,7 +11,7 @@ import Services from 'containers/Services'
 import Node from 'containers/Node'
 import User from 'containers/User'
 import DiscoveryProviders from 'containers/DiscoveryProviders'
-import CreatorNodes from 'containers/CreatorNodes'
+import ContentNodes from 'containers/ContentNodes'
 import ServiceOperators from 'containers/ServiceOperators'
 import Analytics from 'containers/Analytics'
 import * as routes from 'utils/routes'
@@ -47,11 +47,11 @@ const Root = () => (
               component={Node}
             />
             <Route
-              path={routes.SERVICES_CREATOR}
+              path={routes.SERVICES_CONTENT}
               exact
-              component={CreatorNodes}
+              component={ContentNodes}
             />
-            <Route path={routes.SERVICES_CREATOR_NODE} exact component={Node} />
+            <Route path={routes.SERVICES_CONTENT_NODE} exact component={Node} />
             <Route
               path={routes.SERVICES_SERVICE_PROVIDERS}
               exact
