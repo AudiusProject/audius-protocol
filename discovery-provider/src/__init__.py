@@ -64,9 +64,7 @@ def initContracts():
         address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
     )
 
-    logger.warning("trackfac functioning query")
-    logger.warning(bytes("TrackFactory", "utf-8"))
-    track_factory_address = registry_instance.functions.getContract(
+   track_factory_address = registry_instance.functions.getContract(
         bytes("TrackFactory", "utf-8")
     ).call()
     track_factory_instance = web3.eth.contract(
@@ -100,8 +98,6 @@ def initContracts():
     ipld_blacklist_factory_inst = web3.eth.contract(
         address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
     )
-
-    logger.info('loading sp factory address')
 
     contract_address_dict = {
         "registry": registry_address,
@@ -350,8 +346,6 @@ def configure_celery(flask_app, celery, test_config=None):
     # Clear existing lock if present
     redis_inst.delete("disc_prov_lock")
     logger.info('Redis instance initialized!')
-
-    logger.warning("INIT-ING TASK")
 
     # Initialize custom task context with database object
     class DatabaseTask(Task):
