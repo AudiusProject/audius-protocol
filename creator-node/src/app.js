@@ -4,7 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
-console.log('startup profiling - app.js - about to require')
+console.log('startup profiling - app.js - about to start requires')
 const { logger, loggingMiddleware } = require('./logging')
 console.log('startup profiling - app.js - required logging', Math.floor((Date.now() - start) / 1000))
 const { userNodeMiddleware } = require('./userNodeMiddleware')

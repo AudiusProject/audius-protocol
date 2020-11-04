@@ -5,7 +5,7 @@ const ON_DEATH = require('death')
 const path = require('path')
 const EthereumWallet = require('ethereumjs-wallet')
 
-console.log('startup profiling - index.js - about to require')
+console.log('startup profiling - index.js - about to start requires')
 const initializeApp = require('./app')
 console.log('startup profiling - index.js - required app', Math.floor((Date.now() - start) / 1000))
 

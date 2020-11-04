@@ -1,6 +1,6 @@
 const start = Date.now()
 
-console.log('startup profiling - healthCheckController.js - before requires', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - about to start requires')
 const express = require('express')
 
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
