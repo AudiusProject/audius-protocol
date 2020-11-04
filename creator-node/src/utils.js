@@ -30,6 +30,7 @@ class Utils {
  * This function does not do further validation since image_upload provides remaining guarantees
  */
 async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
+  // This handles case where a user/track metadata obj contains no image CID
   if (!imageDirCID) {
     return null
   }
