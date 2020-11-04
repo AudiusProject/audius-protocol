@@ -4,25 +4,25 @@ console.log('startup profiling - healthCheckController.js - about to start requi
 const express = require('express')
 
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
-console.log('startup profiling - healthCheckController.js - after apiHelpers', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required apiHelpers', Math.floor((Date.now() - start) / 1000))
 
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
-console.log('startup profiling - healthCheckController.js - after healthCheckComponentService', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required healthCheckComponentService', Math.floor((Date.now() - start) / 1000))
 
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
-console.log('startup profiling - healthCheckController.js - after syncHealthCheckComponentService', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required syncHealthCheckComponentService', Math.floor((Date.now() - start) / 1000))
 
 const { serviceRegistry } = require('../../serviceRegistry')
-console.log('startup profiling - healthCheckController.js - after serviceRegistry', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required serviceRegistry', Math.floor((Date.now() - start) / 1000))
 
 const { sequelize } = require('../../models')
-console.log('startup profiling - healthCheckController.js - after models', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required models', Math.floor((Date.now() - start) / 1000))
 
 const { recoverWallet } = require('../../apiSigning')
-console.log('startup profiling - healthCheckController.js - after apiSigning', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required apiSigning', Math.floor((Date.now() - start) / 1000))
 
 const config = require('../../config')
-console.log('startup profiling - healthCheckController.js - after config', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - healthCheckController.js - required config', Math.floor((Date.now() - start) / 1000))
 
 console.log('startup profiling - healthCheckController.js - finished requires')
 
