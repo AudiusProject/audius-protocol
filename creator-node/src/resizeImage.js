@@ -155,12 +155,8 @@ module.exports = async (job) => {
     files: []
   }
 
-  try {
-    await fs.mkdir(dirDestPath)
-  } catch (e) {
-    // if error = 'already exists', ignore else throw
-    if (e.message.indexOf('already exists') < 0) throw e
-  }
+  // Create dir on disk
+  await fs.ensureDir(dirDestPath)
 
   // Save all image file buffers to disk
   try {
