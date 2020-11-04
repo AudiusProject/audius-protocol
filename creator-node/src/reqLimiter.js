@@ -11,6 +11,27 @@ try {
   console.error('Failed to parse endpointRateLimits!')
 }
 
+const ipKeyGenerator = (req) => req.ip
+const getReqKeyGenerator = (options = {}) => (req) => {
+  const { query = [], body = [], withIp = true } = options
+  let key = withIp ? req.ip : ''
+  if (req.query && query.length > 0) {
+    query.forEach(queryKey => {
+      if (queryKey in req.query) {
+        key = key.concat(req.query[queryKey])
+      }
+    })
+  }
+  if (req.body && body.length > 0) {
+      body.forEach(paramKey => {
+      if (paramKey in req.body) {
+        key = key.concat(req.body[paramKey])
+      }
+    })
+  }
+  return key
+}
+
 const userReqLimiter = rateLimit({
   store: new RedisStore({
     client: client,
@@ -18,9 +39,7 @@ const userReqLimiter = rateLimit({
     expiry: 60 * 60 // one hour in seconds
   }),
   max: config.get('rateLimitingUserReqLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
-  }
+  keyGenerator: ipKeyGenerator
 })
 
 const trackReqLimiter = rateLimit({
@@ -30,9 +49,7 @@ const trackReqLimiter = rateLimit({
     expiry: 60 * 60 // one hour in seconds
   }),
   max: config.get('rateLimitingTrackReqLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
-  }
+  keyGenerator: ipKeyGenerator
 })
 
 const audiusUserReqLimiter = rateLimit({
@@ -42,9 +59,7 @@ const audiusUserReqLimiter = rateLimit({
     expiry: 60 * 60 // one hour in seconds
   }),
   max: config.get('rateLimitingAudiusUserReqLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
-  }
+  keyGenerator: ipKeyGenerator
 })
 
 const metadataReqLimiter = rateLimit({
@@ -54,9 +69,7 @@ const metadataReqLimiter = rateLimit({
     expiry: 60 * 60 // one hour in seconds
   }),
   max: config.get('rateLimitingMetadataReqLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
-  }
+  keyGenerator: ipKeyGenerator
 })
 
 const imageReqLimiter = rateLimit({
@@ -66,9 +79,7 @@ const imageReqLimiter = rateLimit({
     expiry: 60 * 60 // one hour in seconds
   }),
   max: config.get('rateLimitingImageReqLimit'), // max requests per hour
-  keyGenerator: function (req) {
-    return req.ip
-  }
+  keyGenerator: ipKeyGenerator
 })
 
 const onLimitReached = (req, res, options) => {
@@ -115,11 +126,13 @@ const getRateLimiterMiddleware = () => {
     for (const method in endpointRateLimits[route]) {
       if (validRouteMethods.includes(method)) {
         const routeMiddleware = endpointRateLimits[route][method].map(limit => {
-          const { expiry, max } = limit
+          const { expiry, max, options = {} } = limit
+          const keyGenerator = getReqKeyGenerator(options)
           return getRateLimiter({
             prefix: `${route}:${method}:${expiry}:${max}`,
             expiry,
-            max
+            max,
+            keyGenerator
           })
         })
         router[method](route, routeMiddleware)
