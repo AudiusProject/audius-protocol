@@ -23,7 +23,7 @@ const getReqKeyGenerator = (options = {}) => (req) => {
     })
   }
   if (req.body && body.length > 0) {
-      body.forEach(paramKey => {
+    body.forEach(paramKey => {
       if (paramKey in req.body) {
         key = key.concat(req.body[paramKey])
       }
