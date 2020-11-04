@@ -308,11 +308,12 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
         return yield call(pollPlaylist, confirmedPlaylistId, userId, check)
       },
       function* (confirmedPlaylist) {
+        // Update the cached collection so it no longer contains image upload artifacts
         yield put(
           cacheActions.update(Kind.COLLECTIONS, [
             {
               id: confirmedPlaylist.playlist_id,
-              metadata: reformat(confirmedPlaylist)
+              metadata: { ...reformat(confirmedPlaylist), artwork: {} }
             }
           ])
         )
