@@ -27,6 +27,8 @@ console.log('startup profiling - index.js - required ipfsClient', Math.floor((Da
 const { serviceRegistry } = require('./serviceRegistry')
 console.log('startup profiling - index.js - required serviceRegistry', Math.floor((Date.now() - start) / 1000))
 
+console.log('startup profiling - index.js - finished requires')
+
 const exitWithError = (...msg) => {
   logger.error(...msg)
   process.exit(1)

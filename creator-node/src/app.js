@@ -28,6 +28,7 @@ const contentBlacklistRoutes = require('./components/contentBlacklist/contentBla
 console.log('startup profiling - app.js - required contentBlacklistController', Math.floor((Date.now() - start) / 1000))
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 console.log('startup profiling - app.js - required healthCheckController', Math.floor((Date.now() - start) / 1000))
+
 console.log('startup profiling - app.js - finished requires')
 
 const app = express()

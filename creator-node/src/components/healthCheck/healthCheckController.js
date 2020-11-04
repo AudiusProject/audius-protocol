@@ -19,8 +19,12 @@ const { sequelize } = require('../../models')
 console.log('startup profiling - healthCheckController.js - after models', Math.floor((Date.now() - start) / 1000))
 
 const { recoverWallet } = require('../../apiSigning')
+console.log('startup profiling - healthCheckController.js - after apiSigning', Math.floor((Date.now() - start) / 1000))
 
 const config = require('../../config')
+console.log('startup profiling - healthCheckController.js - after config', Math.floor((Date.now() - start) / 1000))
+
+console.log('startup profiling - healthCheckController.js - finished requires')
 
 const router = express.Router()
 
