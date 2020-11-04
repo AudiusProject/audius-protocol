@@ -63,7 +63,7 @@ describe('test ContentBlacklist', function () {
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({
         type: BlacklistManager.getTypes().user,
         'ids[]': [1],
@@ -78,7 +78,7 @@ describe('test ContentBlacklist', function () {
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({
         type: BlacklistManager.getTypes().track,
         'ids[]': [1],
@@ -104,7 +104,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -126,7 +126,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -148,12 +148,12 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/delete')
+      .post('/blacklist/remove/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -174,12 +174,12 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/delete')
+      .post('/blacklist/remove/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -200,7 +200,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/delete')
+      .post('/blacklist/remove/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -219,7 +219,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/delete')
+      .post('/blacklist/remove/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -238,12 +238,12 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -265,12 +265,12 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -293,7 +293,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -319,7 +319,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(200)
 
@@ -337,6 +337,7 @@ describe('test ContentBlacklist', function () {
     assert.deepStrictEqual(track.type, type)
     assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(track.id), 1)
   })
+
   // Tests that should return error responses
 
   it("should throw error if delegate private key does not match that of the creator node's", async () => {
@@ -347,7 +348,7 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, BAD_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp, signature })
       .expect(401)
   })
@@ -357,12 +358,12 @@ describe('test ContentBlacklist', function () {
     const type = BlacklistManager.getTypes().track
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids })
       .expect(400)
 
     await request(app)
-      .post('/blacklist/delete')
+      .post('/blacklist/remove/ids')
       .query({ type, 'ids[]': ids })
       .expect(400)
   })
@@ -373,12 +374,12 @@ describe('test ContentBlacklist', function () {
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, signature, timestamp })
       .expect(400)
 
     await request(app)
-      .post('/blacklist/delete')
+      .post('/blacklist/remove/ids')
       .query({ type, 'ids[]': ids, signature, timestamp })
       .expect(400)
   })
@@ -391,7 +392,7 @@ describe('test ContentBlacklist', function () {
     const type = BlacklistManager.getTypes().track
     const { signature, timestamp } = generateTimestampAndSignature({ type, ids: [resp.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': [resp.track.blockchainId], signature, timestamp })
       .expect(200)
 
@@ -416,7 +417,7 @@ describe('test ContentBlacklist', function () {
     const resp1 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
       .expect(400)
 
@@ -425,7 +426,7 @@ describe('test ContentBlacklist', function () {
     const resp2 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
       .expect(400)
   })
@@ -437,7 +438,7 @@ describe('test ContentBlacklist', function () {
     const resp1 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
       .expect(400)
 
@@ -446,7 +447,7 @@ describe('test ContentBlacklist', function () {
     const resp2 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
       .expect(400)
   })
@@ -458,7 +459,7 @@ describe('test ContentBlacklist', function () {
     const resp1 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
       .expect(400)
 
@@ -467,7 +468,7 @@ describe('test ContentBlacklist', function () {
     const resp2 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add')
+      .post('/blacklist/add/ids')
       .query({ type, 'ids[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
       .expect(400)
   })

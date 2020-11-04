@@ -1,21 +1,21 @@
 const BlacklistManager = require('../../blacklistManager')
 
 const getAllContentBlacklist = async () => {
+  // todo: fetch the cids too
   const { trackIdsToBlacklist, userIdsToBlacklist } = await BlacklistManager.getTrackAndUserIdsToBlacklist()
   return { trackIds: trackIdsToBlacklist, userIds: userIdsToBlacklist }
 }
 
-const addToContentBlacklist = async ({ type, ids }) => {
-  const resp = await BlacklistManager.addToDb({ ids, type })
+const addIdsToContentBlacklist = async ({ type, ids }) => {
+  const resp = await BlacklistManager.addIdsToDb({ ids, type })
 
-  // add to redis
   switch (type) {
     case 'USER': {
-      await BlacklistManager.add([], ids)
+      await BlacklistManager.fetchCIDsAndAddToRedis([], ids)
       break
     }
     case 'TRACK': {
-      await BlacklistManager.add(ids)
+      await BlacklistManager.fetchCIDsAndAddToRedis(ids)
       break
     }
   }
@@ -23,21 +23,40 @@ const addToContentBlacklist = async ({ type, ids }) => {
   return resp
 }
 
-const removeFromContentBlacklist = async ({ type, ids }) => {
-  const resp = await BlacklistManager.removeFromDb({ ids, type })
+const removeIdsFromContentBlacklist = async ({ type, ids }) => {
+  const resp = await BlacklistManager.removeIdsFromDb({ ids, type })
 
   if (resp) {
-    // remove from redis
     switch (type) {
       case 'USER': {
-        await BlacklistManager.remove([], ids)
+        await BlacklistManager.fetchCIDsAndRemoveFromRedis([], ids)
         break
       }
       case 'TRACK': {
-        await BlacklistManager.remove(ids)
+        await BlacklistManager.fetchCIDsAndRemoveFromRedis(ids)
         break
       }
     }
+  }
+
+  return resp
+}
+
+const addCIDsToContentBlacklist = async ({ cids }) => {
+  const resp = await BlacklistManager.addCIDsToDb(cids)
+
+  if (resp) {
+    await BlacklistManager.fetchCIDsAndAddToRedis([], [], cids)
+  }
+
+  return resp
+}
+
+const removeCIDsFromContentBlacklist = async ({ cids }) => {
+  const resp = await BlacklistManager.removeCIDsFromDb(cids)
+
+  if (resp) {
+    await BlacklistManager.fetchCIDsAndRemoveFromRedis([], [], cids)
   }
 
   return resp
@@ -45,6 +64,8 @@ const removeFromContentBlacklist = async ({ type, ids }) => {
 
 module.exports = {
   getAllContentBlacklist,
-  addToContentBlacklist,
-  removeFromContentBlacklist
+  addIdsToContentBlacklist,
+  removeIdsFromContentBlacklist,
+  addCIDsToContentBlacklist,
+  removeCIDsFromContentBlacklist
 }
