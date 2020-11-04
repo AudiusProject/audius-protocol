@@ -520,10 +520,10 @@ class DiscoveryProvider {
         !indexedBlock ||
         (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
       ) {
-        // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-        // hopes it will catch up
-        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries}...`)
         if (retry) {
+          // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
+          // hopes it will catch up
+          console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries}...`)
           return this._makeRequest(requestObj, retry, attemptedRetries + 1)
         }
         return null
