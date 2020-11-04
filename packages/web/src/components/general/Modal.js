@@ -18,7 +18,8 @@ const Modal = props => {
     closeable,
     onClose,
     onVisible,
-    children
+    children,
+    zIndex
   } = props
 
   useEffect(() => {
@@ -37,7 +38,7 @@ const Modal = props => {
       centered
       onCancel={onClose}
       destroyOnClose
-      zIndex={11000}
+      zIndex={zIndex}
     >
       <div className={cn(styles.modal, className)}>
         <div className={cn(styles.header, headerClassName)}>
@@ -62,7 +63,8 @@ Modal.propTypes = {
   headerClassName: PropTypes.string,
   onClose: PropTypes.func,
   onVisible: PropTypes.func,
-  children: PropTypes.node
+  children: PropTypes.node,
+  zIndex: PropTypes.number
 }
 
 Modal.defaultProps = {
@@ -70,7 +72,8 @@ Modal.defaultProps = {
   title: '',
   width: 360,
   visible: true,
-  closeable: true
+  closeable: true,
+  zIndex: 11000
 }
 
 export default Modal
