@@ -1,9 +1,22 @@
+const start = Date.now()
+
+console.log('startup profiling - healthCheckController.js - before requires', Math.floor((Date.now() - start) / 1000))
 const express = require('express')
+
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
+console.log('startup profiling - healthCheckController.js - after apiHelpers', Math.floor((Date.now() - start) / 1000))
+
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
+console.log('startup profiling - healthCheckController.js - after healthCheckComponentService', Math.floor((Date.now() - start) / 1000))
+
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
+console.log('startup profiling - healthCheckController.js - after syncHealthCheckComponentService', Math.floor((Date.now() - start) / 1000))
+
 const { serviceRegistry } = require('../../serviceRegistry')
+console.log('startup profiling - healthCheckController.js - after serviceRegistry', Math.floor((Date.now() - start) / 1000))
+
 const { sequelize } = require('../../models')
+console.log('startup profiling - healthCheckController.js - after models', Math.floor((Date.now() - start) / 1000))
 
 const { recoverWallet } = require('../../apiSigning')
 

@@ -1,11 +1,18 @@
+const start = Date.now()
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
-const { sendResponse, errorResponseServerError } = require('./apiHelpers')
+console.log('startup profiling - app.js - about to require')
 const { logger, loggingMiddleware } = require('./logging')
+console.log('startup profiling - app.js - required logging', Math.floor((Date.now() - start) / 1000))
 const { userNodeMiddleware } = require('./userNodeMiddleware')
+console.log('startup profiling - app.js - required userNodeMiddleware', Math.floor((Date.now() - start) / 1000))
 const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
+console.log('startup profiling - app.js - required readOnlyMiddleware', Math.floor((Date.now() - start) / 1000))
+const { sendResponse, errorResponseServerError } = require('./apiHelpers')
+console.log('startup profiling - app.js - required apiHelpers', Math.floor((Date.now() - start) / 1000))
 const {
   userReqLimiter,
   trackReqLimiter,
@@ -14,9 +21,14 @@ const {
   imageReqLimiter,
   rateLimiterMiddleware
 } = require('./reqLimiter')
+console.log('startup profiling - app.js - required reqLimiter', Math.floor((Date.now() - start) / 1000))
 const config = require('./config')
-const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
+console.log('startup profiling - app.js - required config', Math.floor((Date.now() - start) / 1000))
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
+console.log('startup profiling - app.js - required contentBlacklistController', Math.floor((Date.now() - start) / 1000))
+const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
+console.log('startup profiling - app.js - required healthCheckController', Math.floor((Date.now() - start) / 1000))
+console.log('startup profiling - app.js - finished requires')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below

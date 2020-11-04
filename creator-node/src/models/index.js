@@ -1,5 +1,7 @@
 'use strict'
 
+const start = Date.now()
+
 const fs = require('fs')
 const path = require('path')
 const Sequelize = require('sequelize')
@@ -8,6 +10,8 @@ const globalConfig = require('../config')
 
 const basename = path.basename(__filename)
 const db = {}
+
+console.log('startup profiling - models/index.js - before sequelize init', Math.floor((Date.now() - start) / 1000))
 
 const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: globalConfig.get('printSequelizeLogs'),
@@ -19,6 +23,8 @@ const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
     idle: 10000
   }
 })
+
+console.log('startup profiling - models/index.js - after sequelize init', Math.floor((Date.now() - start) / 1000))
 
 fs
   .readdirSync(__dirname)

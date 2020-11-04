@@ -1,16 +1,31 @@
 'use strict'
 
+const start = Date.now()
 const ON_DEATH = require('death')
 const path = require('path')
 const EthereumWallet = require('ethereumjs-wallet')
 
+console.log('startup profiling - index.js - about to require')
 const initializeApp = require('./app')
+console.log('startup profiling - index.js - required app', Math.floor((Date.now() - start) / 1000))
+
 const config = require('./config')
+console.log('startup profiling - index.js - required config', Math.floor((Date.now() - start) / 1000))
+
 const { sequelize } = require('./models')
+console.log('startup profiling - index.js - required sequelize', Math.floor((Date.now() - start) / 1000))
+
 const { runMigrations } = require('./migrationManager')
+console.log('startup profiling - index.js - required migrationManager', Math.floor((Date.now() - start) / 1000))
+
 const { logger } = require('./logging')
+console.log('startup profiling - index.js - required logging', Math.floor((Date.now() - start) / 1000))
+
 const { logIpfsPeerIds } = require('./ipfsClient')
+console.log('startup profiling - index.js - required ipfsClient', Math.floor((Date.now() - start) / 1000))
+
 const { serviceRegistry } = require('./serviceRegistry')
+console.log('startup profiling - index.js - required serviceRegistry', Math.floor((Date.now() - start) / 1000))
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
@@ -78,7 +93,9 @@ const startApp = async () => {
 
     await logIpfsPeerIds()
 
+    console.log('startup profiling - index.js - before serviceManager init', Math.floor((Date.now() - start) / 1000))
     await serviceRegistry.initServices()
+    console.log('startup profiling - index.js - after serviceManager init', Math.floor((Date.now() - start) / 1000))
     logger.info('Initialized services!')
 
     appInfo = initializeApp(config.get('port'), storagePath, serviceRegistry)
