@@ -61,6 +61,7 @@
   font-weight: var(--font-medium);
   letter-spacing: 0;
   line-height: 20px;
+  margin-right: 16px;
 }
 
 .dropzoneTitle {

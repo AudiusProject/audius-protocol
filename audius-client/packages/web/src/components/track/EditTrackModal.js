@@ -84,7 +84,14 @@ const EditTrackModal = props => {
   }
 
   return (
-    <Modal title={title} width={1080} visible={visible} onClose={onClose}>
+    <Modal
+      title={title}
+      width={1080}
+      visible={visible}
+      onClose={onClose}
+      // Antd modal default value, behind DropdownInput
+      zIndex={1000}
+    >
       <div className={styles.editTrack}>
         <FormTile
           // Key the form tile by id so each id gets a different instance
