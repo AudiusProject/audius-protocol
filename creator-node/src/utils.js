@@ -1,8 +1,6 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
-const { promisify } = require('util')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
-const mkdir = promisify(fs.mkdir)
 const { BufferListStream } = require('bl')
 const axios = require('axios')
 
@@ -26,47 +24,47 @@ class Utils {
   }
 }
 
-async function getFileUUIDForImageCID (req, imageCID) {
-  const ipfs = req.app.get('ipfsAPI')
-  if (imageCID) { // assumes imageCIDs are optional params
-    // Ensure CID points to a dir, not file
-    let cidIsFile = false
-    try {
-      await ipfs.cat(imageCID, { length: 1 })
-      cidIsFile = true
-    } catch (e) {
-      // Ensure file exists for dirCID
-      const dirFile = await models.File.findOne({
-        where: { multihash: imageCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
-      })
-      if (!dirFile) {
-        throw new Error(`No file stored in DB for dir CID ${imageCID}`)
-      }
+/**
+ * Ensure DB and disk records exist for dirCID and its contents
+ * Return fileUUID for dir DB record
+ * This function does not do further validation since image_upload provides remaining guarantees
+ */
+async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
+  // This handles case where a user/track metadata obj contains no image CID
+  if (!imageDirCID) {
+    return null
+  }
+  req.logger.info(`Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
 
-      // Ensure file refs exist in DB for every file in dir
-      const dirContents = await ipfs.ls(imageCID)
-      req.logger.info(dirContents)
+  // Ensure file exists for dirCID
+  const dirFile = await models.File.findOne({
+    where: { multihash: imageDirCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
+  })
+  if (!dirFile) {
+    throw new Error(`No file stored in DB for imageDirCID ${imageDirCID}`)
+  }
 
-      // Iterates through directory contents but returns upon first iteration
-      // TODO: refactor to remove for-loop
-      for (let fileObj of dirContents) {
-        if (!fileObj.hasOwnProperty('hash') || !fileObj.hash) {
-          throw new Error(`Malformatted dir contents for dirCID ${imageCID}. Cannot process.`)
-        }
+  // Ensure dir exists on disk
+  if (!(await fs.pathExists(dirFile.storagePath))) {
+    throw new Error(`No dir found on disk for imageDirCID ${imageDirCID} at expected path ${dirFile.storagePath}`)
+  }
 
-        const imageFile = await models.File.findOne({
-          where: { multihash: fileObj.hash, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
-        })
-        if (!imageFile) {
-          throw new Error(`No file ref stored in DB for CID ${fileObj.hash} in dirCID ${imageCID}`)
-        }
-        return dirFile.fileUUID
-      }
+  const imageFiles = await models.File.findAll({
+    where: { dirMultihash: imageDirCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
+  })
+  if (!imageFiles) {
+    throw new Error(`No image file records found in DB for imageDirCID ${imageDirCID}`)
+  }
+
+  // Ensure every file exists on disk
+  await Promise.all(imageFiles.map(async function (imageFile) {
+    if (!(await fs.pathExists(imageFile.storagePath))) {
+      throw new Error(`No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`)
     }
-    if (cidIsFile) {
-      throw new Error(`CID ${imageCID} must point to a valid directory on IPFS`)
-    }
-  } else return null
+  }))
+
+  req.logger.info(`Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
+  return dirFile.fileUUID
 }
 
 async function getIPFSPeerId (ipfs) {
@@ -417,7 +415,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
 
 async function createDirForFile (fileStoragePath) {
   const dir = path.dirname(fileStoragePath)
-  await mkdir(dir, { recursive: true })
+  await fs.ensureDir(dir)
 }
 
 async function writeStreamToFileSystem (stream, expectedStoragePath, createDir = false) {
@@ -437,7 +435,7 @@ async function writeStreamToFileSystem (stream, expectedStoragePath, createDir =
 }
 
 module.exports = Utils
-module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
+module.exports.validateStateForImageDirCIDAndReturnFileUUID = validateStateForImageDirCIDAndReturnFileUUID
 module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
 module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
