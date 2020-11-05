@@ -187,7 +187,11 @@ class SnapbackSM {
       }
     }
     // Note: we pass in syncType as job name for observability
-    return this.syncQueue.add(syncType, { syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
+    return this.syncQueue.add(
+      syncType,
+      { syncRequestParameters, startTime: Date.now(), primaryClockValue },
+      { priority, removeOnComplete: true, removeOnFail: true }
+    )
   }
 
   // Main state machine processing function

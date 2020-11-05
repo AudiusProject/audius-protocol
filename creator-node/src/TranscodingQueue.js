@@ -96,7 +96,8 @@ class TranscodingQueue {
   async segment (fileDir, fileName, { logContext }) {
     const job = await this.queue.add(
       PROCESS_NAMES.segment,
-      { fileDir, fileName, logContext }
+      { fileDir, fileName, logContext },
+      { removeOnComplete: true, removeOnFail: true }
     )
     const result = await job.finished()
     return result
@@ -111,7 +112,8 @@ class TranscodingQueue {
   async transcode320 (fileDir, fileName, { logContext }) {
     const job = await this.queue.add(
       PROCESS_NAMES.transcode320,
-      { fileDir, fileName, logContext }
+      { fileDir, fileName, logContext },
+      { removeOnComplete: true, removeOnFail: true }
     )
     const result = await job.finished()
     return result

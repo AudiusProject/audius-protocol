@@ -76,7 +76,8 @@ class RehydrateIpfsQueue {
     if (count > MAX_COUNT) return
     const job = await this.queue.add(
       PROCESS_NAMES.rehydrate_file,
-      { multihash, storagePath, filename, logContext }
+      { multihash, storagePath, filename, logContext },
+      { removeOnComplete: true, removeOnFail: true }
     )
     this.logStatus(logContext, 'Successfully added a rehydrateIpfsFromFsIfNecessary task!')
 
@@ -94,7 +95,8 @@ class RehydrateIpfsQueue {
     if (count > MAX_COUNT) return
     const job = await this.queue.add(
       PROCESS_NAMES.rehydrate_dir,
-      { multihash, logContext }
+      { multihash, logContext },
+      { removeOnComplete: true, removeOnFail: true }
     )
     this.logStatus(logContext, 'Successfully added a rehydrateIpfsDirFromFsIfNecessary task!')
 
