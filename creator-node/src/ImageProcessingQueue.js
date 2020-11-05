@@ -23,6 +23,10 @@ class ImageProcessingQueue {
         redis: {
           port: config.get('redisPort'),
           host: config.get('redisHost')
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true
         }
       }
     )
@@ -84,8 +88,7 @@ class ImageProcessingQueue {
   }) {
     const job = await this.queue.add(
       PROCESS_NAMES.resizeImage,
-      { file, fileName, storagePath, sizes, square, logContext },
-      { removeOnComplete: true, removeOnFail: true }
+      { file, fileName, storagePath, sizes, square, logContext }
     )
     const result = await job.finished()
     return result

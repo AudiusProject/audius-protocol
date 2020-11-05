@@ -81,6 +81,10 @@ class SnapbackSM {
         redis: {
           port: config.get('redisPort'),
           host: config.get('redisHost')
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true
         }
       }
     )
@@ -189,8 +193,7 @@ class SnapbackSM {
     // Note: we pass in syncType as job name for observability
     return this.syncQueue.add(
       syncType,
-      { syncRequestParameters, startTime: Date.now(), primaryClockValue },
-      { priority, removeOnComplete: true, removeOnFail: true }
+      { syncRequestParameters, startTime: Date.now(), primaryClockValue }
     )
   }
 
