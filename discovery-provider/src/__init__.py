@@ -318,7 +318,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_network_peers": {
                 "task": "update_network_peers",
-                "schedule": timedelta(seconds=2)
+                "schedule": timedelta(seconds=30)
             }
         },
         task_serializer="json",
