@@ -488,7 +488,7 @@ class CreatorNode {
       // rather than XMLHttpRequest. We force that here.
       // https://github.com/axios/axios/issues/1180
       const isBrowser = typeof window !== 'undefined'
-      console.info(`Uploading file to ${url}`)
+      console.debug(`Uploading file to ${url}`)
       const resp = await axios.post(
         url,
         formData,
@@ -506,7 +506,7 @@ class CreatorNode {
         throw new Error(resp.data.error)
       }
       onProgress(total, total)
-      console.info(`Upload file response for ${url}: ${JSON.stringify(resp)}`)
+      console.debug(`Upload file response for ${url}: ${JSON.stringify(resp)}`)
       return resp.data
     } catch (e) {
       _handleErrorHelper(e, url)
