@@ -29,7 +29,11 @@ function* watchUploadStems() {
         }
       }
     })
-    const { trackIds } = yield call(handleUploads, stemTracks, false, true)
+    const { trackIds } = yield call(handleUploads, {
+      tracks: stemTracks,
+      isCollection: false,
+      isStem: true
+    })
 
     yield put(stemUploadsSucceeded({ parentId, batchUID }))
 
