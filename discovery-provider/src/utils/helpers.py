@@ -159,7 +159,7 @@ def configure_flask_app_logging(app, loglevel_str):
         return response
 
 
-def loadAbiValues():
+def load_abi_values():
     abiDir = os.path.join(os.getcwd(), "build", "contracts")
     jsonFiles = os.listdir(abiDir)
     loaded_abi_values = {}
@@ -171,7 +171,7 @@ def loadAbiValues():
     return loaded_abi_values
 
 # Load Ethereum ABI values
-def loadEthAbiValues():
+def load_eth_abi_values():
     abiDir = os.path.join(os.getcwd(), "build", "eth-contracts")
     jsonFiles = os.listdir(abiDir)
     loaded_abi_values = {}
