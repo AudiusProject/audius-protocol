@@ -1,4 +1,4 @@
-import { call, put, take, takeEvery } from 'redux-saga/effects'
+import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 import { each } from 'lodash'
 import moment from 'moment'
 
@@ -11,20 +11,25 @@ import { formatUrlName } from 'utils/formatUtil'
 import { getBalance } from 'store/wallet/slice'
 import { getRemoteVar, IntKeys } from 'services/remote-config'
 import { DASHBOARD_PAGE } from 'utils/route'
+import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 
 function* fetchDashboardAsync(action) {
   yield call(waitForBackendSetup)
 
   const account = yield call(waitForValue, getAccountUser)
 
-  const tracks = yield call(AudiusBackend.getArtistTracks, {
-    offset: 0,
-    limit: null,
-    userId: account.user_id
-  })
+  const [tracks, playlists] = yield all([
+    call(retrieveUserTracks, {
+      handle: account.handle,
+      currentUserId: account.user_id,
+      // TODO: This only supports up to 500, we need to redesign / paginate
+      // the dashboard
+      limit: account.track_count
+    }),
+    call(AudiusBackend.getPlaylists, account.user_id, [])
+  ])
 
   const trackIds = tracks.map(t => t.track_id)
-  const playlists = yield call(AudiusBackend.getPlaylists, account.user_id, [])
   const now = moment()
 
   yield call(fetchDashboardListenDataAsync, {
