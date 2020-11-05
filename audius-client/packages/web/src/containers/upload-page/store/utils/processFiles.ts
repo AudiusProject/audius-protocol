@@ -49,6 +49,8 @@ const ALLOWED_AUDIO_FILE_EXTENSIONS = [
   'tsa'
 ]
 
+const ALLOWED_AUDIO_FILE_MIME = /^audio/
+
 const readMediaTags = (file: File): Promise<any> => {
   return new Promise(function (resolve, reject) {
     jsmediatags.read(file, {
@@ -85,12 +87,19 @@ export const processFiles = (
       handleInvalid(file.name, 'size')
       return null
     }
+    // Check file extension (heuristic for failure)
     if (
       !ALLOWED_AUDIO_FILE_EXTENSIONS.some(ext =>
         file.name.trim().toLowerCase().endsWith(ext)
       )
     ) {
       handleInvalid(file.name, 'type')
+      return null
+    }
+    // If the mime type is somehow undefined or it doesn't begin with audio/ reject.
+    // Backend will try to match on mime again and if it's not an audio/ match, it'll error
+    if (file.type && !file.type.match(ALLOWED_AUDIO_FILE_MIME)) {
+      handleInvalid(file.type, 'type')
       return null
     }
     const title = file.name.replace(/\.[^/.]+$/, '') // strip file extension
