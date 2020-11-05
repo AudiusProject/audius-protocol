@@ -20,6 +20,12 @@ class CreatorNode {
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
   /**
+   * Pulls the user's creator nodes out of the list
+   * @param {string} endpoints user.creator_node_endpoint
+   */
+  static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
@@ -491,6 +497,9 @@ class CreatorNode {
           }
         }
       )
+      if (resp.data && resp.data.error) {
+        throw new Error(resp.data.error)
+      }
       onProgress(total, total)
       return resp.data
     } catch (e) {
@@ -510,7 +519,7 @@ function _handleErrorHelper (e, requestUrl) {
     // delete headers, may contain tokens
     if (e.config && e.config.headers) delete e.config.headers
     console.error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
-    throw new Error(`Network error while making request to ${requestUrl}`)
+    throw new Error(`Network error while making request to ${requestUrl} ${e}`)
   } else {
     throw e
   }

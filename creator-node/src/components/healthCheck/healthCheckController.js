@@ -1,5 +1,5 @@
 const express = require('express')
-const { handleResponse, successResponse, errorResponseBadRequest } = require('../../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
@@ -64,5 +64,6 @@ const healthCheckDurationController = async (req) => {
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get('/health_check/duration', handleResponse(healthCheckDurationController))
+router.get('/health_check/duration/heartbeat', handleResponseWithHeartbeat(healthCheckDurationController))
 
 module.exports = router
