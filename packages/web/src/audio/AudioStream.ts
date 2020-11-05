@@ -86,6 +86,7 @@ class AudioStream {
   url: string | null
   hls: Hls | null
   onError: (e: AudioError, data: string | Event | Hls.errorData) => void
+  errorRateLimiter: Set<string>
 
   constructor() {
     this.audio = new Audio()
@@ -121,6 +122,10 @@ class AudioStream {
 
     // Listen for errors
     this.onError = (e, data) => {}
+    // Per load / instantiation of HLS (once per track),
+    // we limit rate limit logging to once per type
+    // this is to prevent log spam, something HLS.js is *very* good at
+    this.errorRateLimiter = new Set()
   }
 
   _initContext = () => {
@@ -192,10 +197,26 @@ class AudioStream {
       const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
       this.hls = new Hls(hlsConfig)
 
+      // On load of HLS, reset error rate limiter
+      this.errorRateLimiter = new Set()
+
       this.hls.on(Hls.Events.ERROR, (event, data) => {
+        // Only emit on fatal because HLS is very noisy (e.g. pauses trigger errors)
         if (data.fatal) {
-          // Only emit on fatal because HLS is very noisy (e.g. pauses trigger errors)
-          this.onError(AudioError.HLS, data)
+          // Buffer stall errors occur but are rarely fatal even if they claim to be.
+          // This occurs when you play a track, pause it, and then wait a few seconds.
+          // It appears as if we see this despite being able to play through the track.
+          if (data.details === 'bufferStalledError') {
+            return
+          }
+
+          // Only emit an error if we haven't errored on an error with the same "details"
+          if (!this.errorRateLimiter.has(data.details)) {
+            this.onError(AudioError.HLS, data)
+          }
+
+          // Only one "details" of error are allowed per HLS load
+          this.errorRateLimiter.add(data.details)
 
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
