@@ -85,7 +85,8 @@ describe('test sync queue', function () {
     while (jobIds.length) {
       const remainingManualCount = jobIds.filter(id => manualSyncIds.has(id)).length
       const remainingRecurringCount = jobIds.filter(id => recurringSyncIds.has(id)).length
-
+      console.log("remainingManualCount", remainingManualCount, manualSyncIds)
+      console.log("remainingRecurringCount", remainingRecurringCount, recurringSyncIds)
       // We know we processed a recurring job before a manual job
       // if there are still manual jobs left to process but we have fewer
       // unprocessed recurring jobs remaining than we did last iteration through the loop
