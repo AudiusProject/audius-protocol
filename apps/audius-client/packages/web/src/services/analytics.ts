@@ -59,6 +59,8 @@ export enum Name {
   TRACK_UPLOAD_COPY_LINK = 'Track Upload: Copy Link',
   TRACK_UPLOAD_SHARE_WITH_FANS = 'Track Upload: Share with your fans',
   TRACK_UPLOAD_VIEW_TRACK_PAGE = 'Track Upload: View Track page',
+  TRACK_UPLOAD_SUCCESS = 'Track Upload: Success',
+  TRACK_UPLOAD_FAILURE = 'Track Upload: Failure',
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
   TRENDING_PAGINATE = 'Trending: Fetch next page',
   FEED_CHANGE_VIEW = 'Feed: Change view',
@@ -379,6 +381,19 @@ type TrackUploadCompleteUpload = {
   kind: 'tracks' | 'album' | 'playlist'
 }
 
+type TrackUploadSuccess = {
+  eventName: Name.TRACK_UPLOAD_SUCCESS
+  endpoint: string
+  kind: 'single_track' | 'multi_track' | 'album' | 'playlist'
+}
+
+type TrackUploadFailure = {
+  eventName: Name.TRACK_UPLOAD_FAILURE
+  endpoint: string
+  kind: 'single_track' | 'multi_track' | 'album' | 'playlist'
+  error?: string
+}
+
 type TrackUploadCopyLink = {
   eventName: Name.TRACK_UPLOAD_COPY_LINK
   uploadType: string
@@ -693,6 +708,8 @@ export type AllTrackingEvents =
   | TrackUploadStartUploading
   | TrackUploadTrackUploading
   | TrackUploadCompleteUpload
+  | TrackUploadSuccess
+  | TrackUploadFailure
   | TrackUploadCopyLink
   | TrackUploadShareWithFans
   | TrackUploadViewTrackPage
