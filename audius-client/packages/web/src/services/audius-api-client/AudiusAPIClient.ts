@@ -431,7 +431,10 @@ class AudiusAPIClient {
     return adapted
   }
 
-  async getTrack({ id, currentUserId, unlistedArgs }: GetTrackArgs) {
+  async getTrack(
+    { id, currentUserId, unlistedArgs }: GetTrackArgs,
+    retry = true
+  ) {
     const encodedTrackId = this._encodeOrThrow(id)
     const encodedCurrentUserId = encodeHashId(currentUserId)
 
@@ -446,7 +449,11 @@ class AudiusAPIClient {
 
     const trackResponse: Nullable<APIResponse<
       APITrack
-    >> = await this._getResponse(ENDPOINT_MAP.getTrack(encodedTrackId), args)
+    >> = await this._getResponse(
+      ENDPOINT_MAP.getTrack(encodedTrackId),
+      args,
+      retry
+    )
 
     if (!trackResponse) return null
 
@@ -765,16 +772,21 @@ class AudiusAPIClient {
 
   async _getResponse<T>(
     path: string,
-    params: QueryParams = {}
+    params: QueryParams = {},
+    retry = true
   ): Promise<Nullable<T>> {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
 
     if (this.initializationState.type === 'libs' && window.audiusLibs) {
-      const data = await window.audiusLibs.discoveryProvider._makeRequest({
-        endpoint: this._formatPath(path),
-        queryParams: params
-      })
+      const data = await window.audiusLibs.discoveryProvider._makeRequest(
+        {
+          endpoint: this._formatPath(path),
+          queryParams: params
+        },
+        retry
+      )
+      if (!data) return null
       // TODO: Type boundaries of API
       return { data } as any
     }
