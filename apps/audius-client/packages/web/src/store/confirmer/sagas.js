@@ -56,7 +56,7 @@ export function* pollTrack(
     return yield call(
       args => {
         try {
-          return apiClient.getTrack(args)
+          return apiClient.getTrack(args, /* retry */ false)
         } catch (e) {
           // TODO: for now we treat all errors from DP
           // here as cause to retry, we should just
