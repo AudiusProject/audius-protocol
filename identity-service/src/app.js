@@ -121,9 +121,48 @@ class App {
     return whitelistRegex && !!ip.match(whitelistRegex)
   }
 
+  _getIP (req) {
+    // Gets the IP for ratelistening based on X-Forwarded-For headers
+    // Algorithm:
+    // If > 1 headers:
+    //    If rightmost is CN, then use rightmost - 1 (known to be safe)
+    //    If rightmost is not CN, then use rightmost
+    // If 1 header or no headers:
+    //    use req.ip (leftmost)
+
+    let ip = req.ip
+    const forwardedFor = req.get('X-Forwarded-For')
+
+    // This shouldn't ever happen since Identity will always be behind CF
+    if (!forwardedFor) {
+      console.debug('_getIP: no forwarded-for')
+      return ip
+    }
+
+    const headers = forwardedFor.split(',')
+    // headers length == 1 means that no x-forwarded-for was passed into identity CF,
+    // so the request wasn't from CN. We can just use req.ip which corresponds
+    // to the forward-for that CF added
+    if (headers.length === 1) {
+      console.debug(`_getIP: recording listen with 1 x-forwarded-for header, ip: ${ip}`)
+      return ip
+    }
+
+    const rightMost = headers[headers.length - 1]
+
+    if (this._isIPWhitelisted(rightMost)) {
+      const forwardedIP = headers[headers.length - 2]
+      console.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}`)
+      return forwardedIP
+    }
+    console.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}`)
+    return rightMost
+  }
+
   // Create rate limits for listens on a per track per user basis and per track per ip basis
   _createRateLimitsForListenCounts (interval, timeInSeconds) {
     const isIPWhitelisted = this._isIPWhitelisted
+    const getIP = this._getIP.bind(this)
 
     const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
@@ -143,12 +182,10 @@ class App {
       prefix: `listenCountLimiter:::${interval}-ip:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
-      skip: function (req) {
-        return isIPWhitelisted(req.ip)
-      },
       keyGenerator: function (req) {
         const trackId = req.params.id
-        return `${req.ip}:::${trackId}`
+        const ip = getIP(req)
+        return `${ip}:::${trackId}`
       }
     })
     return [listenCountLimiter, listenCountIPLimiter]
