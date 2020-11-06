@@ -122,7 +122,7 @@ class App {
   }
 
   _getIP (req) {
-    // Gets the IP for ratelistening based on X-Forwarded-For headers
+    // Gets the IP for rate-limiting based on X-Forwarded-For headers
     // Algorithm:
     // If > 1 headers:
     //    If rightmost is CN, then use rightmost - 1 (known to be safe)
@@ -133,18 +133,18 @@ class App {
     let ip = req.ip
     const forwardedFor = req.get('X-Forwarded-For')
 
-    // This shouldn't ever happen since Identity will always be behind CF
+    // This shouldn't ever happen since Identity will always be behind a proxy
     if (!forwardedFor) {
-      console.debug('_getIP: no forwarded-for')
+      req.logger.debug('_getIP: no forwarded-for')
       return ip
     }
 
     const headers = forwardedFor.split(',')
-    // headers length == 1 means that no x-forwarded-for was passed into identity CF,
+    // headers length == 1 means that no x-forwarded-for was passed to identity proxy,
     // so the request wasn't from CN. We can just use req.ip which corresponds
-    // to the forward-for that CF added
+    // to the forward-for that the proxy added
     if (headers.length === 1) {
-      console.debug(`_getIP: recording listen with 1 x-forwarded-for header, ip: ${ip}`)
+      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, ip: ${ip}`)
       return ip
     }
 
@@ -152,10 +152,10 @@ class App {
 
     if (this._isIPWhitelisted(rightMost)) {
       const forwardedIP = headers[headers.length - 2]
-      console.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}`)
+      req.logger.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}`)
       return forwardedIP
     }
-    console.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}`)
+    req.logger.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}`)
     return rightMost
   }
 
