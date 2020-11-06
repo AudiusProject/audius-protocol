@@ -2,8 +2,7 @@ const Redis = require('ioredis')
 const RedisStore = require('rate-limit-redis')
 const config = require('./config.js')
 const rateLimit = require('express-rate-limit')
-const compose = require('./composeMiddlewares.js')
-
+const express = require('express')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
@@ -14,6 +13,30 @@ try {
   endpointRateLimits = JSON.parse(config.get('endpointRateLimits'))
 } catch (e) {
   console.error('Failed to parse endpointRateLimits!')
+}
+
+const getReqKeyGenerator = (options = {}) => (req) => {
+  const { query = [], body = [], withIp = true } = options
+  let key = withIp ? req.ip : ''
+  if (req.query && query.length > 0) {
+    query.forEach(queryKey => {
+      if (queryKey in req.query) {
+        key = key.concat(req.query[queryKey])
+      }
+    })
+  }
+  if (req.body && body.length > 0) {
+    body.forEach(paramKey => {
+      if (paramKey in req.body) {
+        key = key.concat(req.body[paramKey])
+      }
+    })
+  }
+  return key
+}
+
+const onLimitReached = (req, res, options) => {
+  req.logger.warn(req.rateLimit, `Rate Limit Hit`)
 }
 
 /**
@@ -41,30 +64,35 @@ const getRateLimiter = ({
     }),
     max, // max requests per hour
     skip,
-    keyGenerator
+    keyGenerator,
+    onLimitReached
   })
 }
 
-const rateLimiterMiddleware = (req, res, next) => {
-  const definedMethods = endpointRateLimits[req.path]
-  if (!definedMethods) {
-    return next()
+/**
+ * Create an express router to attach the rate-limiting middleware
+ */
+const validRouteMethods = ['get', 'post', 'put', 'delete']
+const getRateLimiterMiddleware = () => {
+  const router = express.Router()
+  for (const route in endpointRateLimits) {
+    for (const method in endpointRateLimits[route]) {
+      if (validRouteMethods.includes(method)) {
+        const routeMiddleware = endpointRateLimits[route][method].map(limit => {
+          const { expiry, max, options = {} } = limit
+          const keyGenerator = getReqKeyGenerator(options)
+          return getRateLimiter({
+            prefix: `${route}:${method}:${expiry}:${max}`,
+            expiry,
+            max,
+            keyGenerator
+          })
+        })
+        router[method](route, routeMiddleware)
+      }
+    }
   }
-  const definedLimits = definedMethods[req.method.toLowerCase()]
-  if (!definedLimits || !definedLimits.length) {
-    return next()
-  }
-
-  const limiters = definedLimits.map(limit => {
-    const { expiry, max } = limit
-    return getRateLimiter({
-      prefix: req.path,
-      expiry,
-      max
-    })
-  })
-
-  return compose(limiters)(req, res, next)
+  return router
 }
 
-module.exports = { getRateLimiter, rateLimiterMiddleware }
+module.exports = { getRateLimiter, getRateLimiterMiddleware }
