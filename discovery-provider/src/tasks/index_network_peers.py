@@ -1,10 +1,11 @@
 import logging
+import re
 import concurrent.futures
 from urllib.parse import urljoin
 import requests
 from src.tasks.celery_app import celery
 from src import eth_abi_values
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
 from src.models import User
 from src.utils.redis_cache import use_redis_cache
 
@@ -49,18 +50,24 @@ def retrieve_peers_from_eth_contracts(self):
     total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(content_node_service_type).call()
     ids_list = list(range(1, total_cn_type_providers + 1))
     eth_cn_endpoints = {}
-    # Given the total number of nodes in the network we can now fetch node info in parallel
+   # Given the total number of nodes in the network we can now fetch node info in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         fetch_cnode_futures = {executor.submit(fetch_cnode_info, i, sp_factory_inst): i for i in ids_list}
         for future in concurrent.futures.as_completed(fetch_cnode_futures):
             single_cnode_fetch_op = fetch_cnode_futures[future]
             try:
                 cn_endpoint_info = future.result()
-                # 1 index entry in the returned array from ServiceProviderFactory
-                eth_cn_endpoints[cn_endpoint_info[1]] = True
+               # Validate the endpoint on chain
+                # As endpoints get deregistered, this peering system must not slow down with failed connections
+                #   or unanticipated load
+                eth_sp_endpoint = cn_endpoint_info[1]
+                valid_endpoint = is_fqdn(eth_sp_endpoint)
+                # Only valid FQDN strings are worth validating
+                if valid_endpoint:
+                    eth_cn_endpoints[cn_endpoint_info[1]] = True
             except Exception as exc:
                 logger.error(f"index_network_peers.py | fetch_cnode_futures {single_cnode_fetch_op} generated {exc}")
-    # Return dictionary with key = endpoint, formatted as { endpoint: True }
+   # Return dictionary with key = endpoint, formatted as { endpoint: True }
     return eth_cn_endpoints
 
 # Determine the known set of distinct peers currently within a user replica set

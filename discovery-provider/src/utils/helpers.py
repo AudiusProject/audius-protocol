@@ -31,6 +31,16 @@ def bytes32_to_str(bytes32input):
     bytes32_stripped = bytes32input.rstrip(b"\x00")
     return bytes32_stripped.decode("utf8")
 
+# Regex used to verify valid FQDN
+fqdn_regex = re.compile(r'^(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$')
+
+# Helper function to check if a given string is a valid FQDN
+def is_fqdn(endpoint_str):
+    # Regex used to verify valid FQDN
+    valid_endpoint = fqdn_regex.match(endpoint_str)
+    if valid_endpoint:
+        return True
+    return False
 
 # relationships_to_include is a list of table names that have relationships to be added
 # and returned in the model_dict
