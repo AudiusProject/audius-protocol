@@ -11,7 +11,10 @@ try {
   console.error('Failed to parse endpointRateLimits!')
 }
 
+// Key generator for rate limiter that rate limits based on unique IP
 const ipKeyGenerator = (req) => req.ip
+
+// Creates custom rate limiter key generator function based off url query, request body and IP
 const getReqKeyGenerator = (options = {}) => (req) => {
   const { query = [], body = [], withIp = true } = options
   let key = withIp ? req.ip : ''
