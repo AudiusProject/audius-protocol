@@ -506,7 +506,6 @@ class CreatorNode {
         throw new Error(resp.data.error)
       }
       onProgress(total, total)
-      // console.debug(`Upload file response for ${url}: ${JSON.stringify(resp)}`)
       return resp.data
     } catch (e) {
       _handleErrorHelper(e, url)
