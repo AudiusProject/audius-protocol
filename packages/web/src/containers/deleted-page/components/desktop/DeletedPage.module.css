@@ -23,7 +23,6 @@
   user-select: none;
 
   display: flex;
-  flex-wrap: wrap;
 }
 
 .image {
@@ -32,6 +31,7 @@
   margin: 24px 12px 24px 24px;
   border-radius: 8px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .rightSide {
