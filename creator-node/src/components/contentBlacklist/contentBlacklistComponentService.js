@@ -14,11 +14,11 @@ const addIdsToContentBlacklist = async ({ type, ids }) => {
 
   switch (type) {
     case 'USER': {
-      await BlacklistManager.fetchCIDsAndAddToRedis([], ids)
+      await BlacklistManager.fetchCIDsAndAddToRedis({ userIdsToBlacklist: ids })
       break
     }
     case 'TRACK': {
-      await BlacklistManager.fetchCIDsAndAddToRedis(ids)
+      await BlacklistManager.fetchCIDsAndAddToRedis({ trackIdsToBlacklist: ids })
       break
     }
   }
@@ -32,11 +32,11 @@ const removeIdsFromContentBlacklist = async ({ type, ids }) => {
   if (resp) {
     switch (type) {
       case 'USER': {
-        await BlacklistManager.fetchCIDsAndRemoveFromRedis([], ids)
+        await BlacklistManager.fetchCIDsAndRemoveFromRedis({ userIdsToBlacklist: ids })
         break
       }
       case 'TRACK': {
-        await BlacklistManager.fetchCIDsAndRemoveFromRedis(ids)
+        await BlacklistManager.fetchCIDsAndRemoveFromRedis({ trackIdsToBlacklist: ids })
         break
       }
     }
@@ -49,7 +49,7 @@ const addCIDsToContentBlacklist = async ({ cids }) => {
   const resp = await BlacklistManager.addCIDsToDb({ cids, type: types.cid })
 
   if (resp) {
-    await BlacklistManager.fetchCIDsAndAddToRedis([], [], cids)
+    await BlacklistManager.fetchCIDsAndAddToRedis({ segmentsToBlacklist: cids })
   }
 
   return resp
@@ -59,7 +59,7 @@ const removeCIDsFromContentBlacklist = async ({ cids }) => {
   const resp = await BlacklistManager.removeCIDsFromDb({ cids, type: types.cid })
 
   if (resp) {
-    await BlacklistManager.fetchCIDsAndRemoveFromRedis([], [], cids)
+    await BlacklistManager.fetchCIDsAndRemoveFromRedis({ segmentsToBlacklist: cids })
   }
 
   return resp

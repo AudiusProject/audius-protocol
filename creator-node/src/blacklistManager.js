@@ -105,6 +105,7 @@ class BlacklistManager {
   * Also remove the trackIds, userIds, and segmentCIDs from redis blacklist sets to prevent future interaction.
   */
   static async fetchCIDsAndRemoveFromRedis (trackIdsToRemove = [], userIdsToRemove = [], cidsToRemove = []) {
+  static async fetchCIDsAndRemoveFromRedis ({ trackIdsToBlacklist = [], userIdsToBlacklist = [], segmentsToBlacklist = [] }) {
     // Get tracks from param and by parsing through user tracks
     const tracks = await this.getTracksFromUsers(userIdsToRemove)
     trackIdsToRemove = [...tracks.map(track => track.blockchainId), ...trackIdsToRemove]
