@@ -10,13 +10,13 @@ program
 
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 
-const PRIVATE_KEY = process.env.delegatePrivateKey
+const PRIVATE_KEY = process.env.delegatePrivateKey // add 0x prefix
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 
 // Available action types
 const ACTION_ARR = ['ADD', 'REMOVE']
 const ACTION_SET = new Set(ACTION_ARR)
-const TYPES_ARR = ['USER', 'TRACK']
+const TYPES_ARR = ['USER', 'TRACK', 'CID']
 const TYPES_SET = new Set(TYPES_ARR)
 
 // Script usage:
@@ -65,16 +65,21 @@ async function run () {
   }
 
   if (cids) {
-    switch (action) {
-      case 'ADD': {
-        await addCIDsToContentBlacklist(cids)
-        break
-      }
+    try {
+      switch (action) {
+        case 'ADD': {
+          await addCIDsToContentBlacklist(cids)
+          break
+        }
 
-      case 'REMOVE': {
-        await removeCIDsFromContentBlacklist(cids)
-        break
+        case 'REMOVE': {
+          await removeCIDsFromContentBlacklist(cids)
+          break
+        }
       }
+      console.log(`Successfully performed [${action}] for cids [${cids}]`)
+    } catch (e) {
+      console.error(e)
     }
   }
 }
@@ -191,7 +196,7 @@ async function addCIDsToContentBlacklist (cids) {
       responseType: 'json'
     })
   } catch (e) {
-    throw new Error(`Error with removing cids [${cids.toString()}] from ContentBlacklist: ${e}`)
+    throw new Error(`Error with adding cids [${cids.toString()}] from ContentBlacklist: ${e}`)
   }
 
   return resp.data

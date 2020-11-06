@@ -1,4 +1,7 @@
 const BlacklistManager = require('../../blacklistManager')
+const models = require('../../models')
+
+const types = models.ContentBlacklist.Types
 
 const getAllContentBlacklist = async () => {
   // todo: fetch the cids too
@@ -43,7 +46,7 @@ const removeIdsFromContentBlacklist = async ({ type, ids }) => {
 }
 
 const addCIDsToContentBlacklist = async ({ cids }) => {
-  const resp = await BlacklistManager.addCIDsToDb(cids)
+  const resp = await BlacklistManager.addCIDsToDb({ cids, type: types.cid })
 
   if (resp) {
     await BlacklistManager.fetchCIDsAndAddToRedis([], [], cids)
@@ -53,7 +56,7 @@ const addCIDsToContentBlacklist = async ({ cids }) => {
 }
 
 const removeCIDsFromContentBlacklist = async ({ cids }) => {
-  const resp = await BlacklistManager.removeCIDsFromDb(cids)
+  const resp = await BlacklistManager.removeCIDsFromDb({ cids, type: types.cid })
 
   if (resp) {
     await BlacklistManager.fetchCIDsAndRemoveFromRedis([], [], cids)

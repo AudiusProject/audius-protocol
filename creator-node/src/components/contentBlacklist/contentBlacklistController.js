@@ -19,8 +19,10 @@ const models = require('../../../src/models')
 const config = require('../../config')
 const { logger } = require('../../logging')
 
-const TYPES_SET = new Set(models.ContentBlacklist.Types)
 const router = express.Router()
+
+const types = models.ContentBlacklist.Types
+const TYPES_SET = new Set([types.cid, types.user, types.track])
 
 // Controllers
 
@@ -56,6 +58,7 @@ const contentBlacklistAddIdsController = async (req) => {
 
   logger.debug(`ContentBlackListController - [add ids] updating blacklist`)
   try {
+    ids = ids.map(id => id.toString())
     await addIdsToContentBlacklist({ type, ids })
   } catch (e) {
     return errorResponseServerError(e.message)
@@ -92,6 +95,7 @@ const contentBlacklistRemoveIdsController = async (req) => {
 
   logger.debug(`ContentBlackListController - [remove ids] updating blacklist`)
   try {
+    ids = ids.map(id => id.toString())
     await removeIdsFromContentBlacklist({ type, ids })
   } catch (e) {
     return errorResponseServerError(e.message)
@@ -208,8 +212,8 @@ function parseQueryParamsForCIDs (queryParams) {
  * @param {{ids: [number], type: enum, timestamp: string}} obj raw data to be used in recovering the public wallet
  * @param {string} signature
  */
-function verifyRequest ({ ids, type, timestamp }, signature) {
-  const recoveredPublicWallet = recoverWallet({ ids, type, timestamp }, signature)
+function verifyRequest (data, signature) {
+  const recoveredPublicWallet = recoverWallet(data, signature)
   if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
   }
@@ -229,13 +233,13 @@ const filterNonexistantIds = async (libs, type, ids) => {
       case 'USER':
         resp = await libs.User.getUsers(ids.length, 0, ids)
         // If response is empty, then no users or tracks were found. Return error response
-        if (!resp || resp.length === 0) return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}`)
+        if (!resp || resp.length === 0) throw new Error('Users not found.')
         // Else, if only some input ids were found, only blacklist the ids that were found
         if (resp.length < ids.length) ids = resp.map(user => user.user_id)
         break
       case 'TRACK':
         resp = await libs.Track.getTracks(ids.length, 0, ids)
-        if (!resp || resp.length === 0) return errorResponseBadRequest(`Could not find ${type} with ids ${ids.toString()}`)
+        if (!resp || resp.length === 0) throw new Error('Tracks not found.')
         if (resp.length < ids.length) ids = resp.map(track => track.track_id)
         break
       default:
