@@ -27,8 +27,8 @@ const TYPES_SET = new Set([types.cid, types.user, types.track])
 // Controllers
 
 const contentBlacklistGetAllController = async (req) => {
-  const { trackIds, userIds } = await getAllContentBlacklist()
-  return successResponse({ trackIds, userIds })
+  const blacklistedContent = await getAllContentBlacklist()
+  return successResponse(blacklistedContent)
 }
 
 const contentBlacklistAddIdsController = async (req) => {

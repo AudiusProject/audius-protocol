@@ -4,9 +4,24 @@ const models = require('../../models')
 const types = models.ContentBlacklist.Types
 
 const getAllContentBlacklist = async () => {
-  // todo: fetch the cids too
-  const { trackIdsToBlacklist, userIdsToBlacklist } = await BlacklistManager.getTrackAndUserIdsToBlacklist()
-  return { trackIds: trackIdsToBlacklist, userIds: userIdsToBlacklist }
+  // Segments stored in the ContentBlacklist may not be associated with a track
+  const segmentsFromCBL = await models.ContentBlacklist.findAll({
+    attributes: ['value'],
+    where: {
+      type: types.cid
+    },
+    raw: true
+  })
+  const individuallyBlacklistedSegments = segmentsFromCBL.map(entry => entry.value)
+
+  const blacklistedContent = {
+    trackIds: await BlacklistManager.getAllTrackIds(),
+    userIds: await BlacklistManager.getAllUserIds(),
+    individualSegments: individuallyBlacklistedSegments,
+    allSegments: await BlacklistManager.getAllCIDs()
+  }
+
+  return blacklistedContent
 }
 
 const addIdsToContentBlacklist = async ({ type, ids }) => {

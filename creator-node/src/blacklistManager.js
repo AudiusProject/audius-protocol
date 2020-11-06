@@ -300,6 +300,21 @@ class BlacklistManager {
   static async CIDIsInBlacklist (CID) {
     return redis.sismember(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, CID)
   }
+
+  // Retrieves all CIDs in redis
+  static async getAllCIDs () {
+    return redis.smembers(REDIS_SET_BLACKLIST_SEGMENTCID_KEY)
+  }
+
+  // Retrieves all user ids in redis
+  static async getAllUserIds () {
+    return redis.smembers(REDIS_SET_BLACKLIST_USERID_KEY)
+  }
+
+  // Retrieves all track ids in redis
+  static async getAllTrackIds () {
+    return redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
+  }
 }
 
 module.exports = BlacklistManager
