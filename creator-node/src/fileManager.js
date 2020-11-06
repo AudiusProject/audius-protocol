@@ -53,14 +53,15 @@ async function saveFileToIPFSFromFS (req, srcPath) {
     throw new Error('User must be authenticated to save a file')
   }
 
+  const ipfs = req.app.get('ipfsAPI')
+
+  // Add to IPFS without pinning and retrieve multihash
+  const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
+
+  // store file copy by multihash for future retrieval
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
+
   try {
-    const ipfs = req.app.get('ipfsAPI')
-
-    // Add to IPFS without pinning and retrieve multihash
-    const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
-
-    // store file copy by multihash for future retrieval
-    const dstPath = path.join(req.app.get('storagePath'), multihash)
     fs.copyFileSync(srcPath, dstPath)
   } catch (e) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
