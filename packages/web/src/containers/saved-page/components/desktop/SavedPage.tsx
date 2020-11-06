@@ -160,6 +160,7 @@ const SavedPage = ({
             size='medium'
             playlistName={album.playlist_name}
             playlistId={album.playlist_id}
+            isPlaylist={false}
             isPublic={!album.is_private}
             handle={album.ownerHandle}
             primaryText={album.playlist_name}
