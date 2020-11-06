@@ -19,7 +19,7 @@ const {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
-  rateLimiterMiddleware
+  getRateLimiterMiddleware
 } = require('./reqLimiter')
 console.log('startup profiling - app.js - required reqLimiter', Math.floor((Date.now() - start) / 1000))
 const config = require('./config')
@@ -46,7 +46,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
-app.use('/', rateLimiterMiddleware)
+app.use(getRateLimiterMiddleware())
 
 // import routes
 require('./routes')(app)
