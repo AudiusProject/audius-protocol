@@ -40,7 +40,7 @@ const Image = memo(props => {
       wrapperClassName={cn(styles.imageContainer)}
       className={cn({
         [styles.image]: image,
-        [styles.userImage]: isUser && image,
+        [styles.userImage]: isUser,
         [styles.emptyUserImage]: isUser && image === defaultImage
       })}
       image={image}
