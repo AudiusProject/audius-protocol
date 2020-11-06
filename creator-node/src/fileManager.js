@@ -66,10 +66,11 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   } catch (e) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
     if (e.message.includes('ENOSPC')) {
-      await Utils.runShellCommand(`df`, ['-h'], req.logger)
-      await Utils.runShellCommand(`df`, ['-ih'], req.logger)
+      await Promise.all([
+        Utils.runShellCommand(`df`, ['-h'], req.logger),
+        Utils.runShellCommand(`df`, ['-ih'], req.logger)
+      ])
     }
-    req.logger.error('Error in saveFileToIPFSFromFS', e)
     throw e
   }
 
