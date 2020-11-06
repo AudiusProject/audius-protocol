@@ -47,6 +47,10 @@ function getRequestLoggingContext (req, requestID) {
 }
 
 function loggingMiddleware (req, res, next) {
+  console.log(`SIDTEST request header ${req.get('request-ID')}`)
+  // if (!req.get('request-ID')) {
+  //   res.set()
+  // }
   const requestID = shortid.generate()
   res.set('CN-Request-ID', requestID)
 

@@ -1,5 +1,6 @@
 const axios = require('axios')
 const FormData = require('form-data')
+const shortid = require('shortid')
 
 const SchemaValidator = require('../schemaValidator')
 
@@ -26,6 +27,24 @@ class CreatorNode {
   static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
 
   /**
+   * Attaches request-ID header to axiosRequestObj and makes axios call
+   */
+  static async _makeAxiosRequest (axiosRequestObj) {
+    console.log(`SIDTEST makeAxiosReq start`, axiosRequestObj)
+    axiosRequestObj.headers = axiosRequestObj.headers || {}
+
+    // Generate and attach request ID header to trace request from start to finish
+    if (!axiosRequestObj.headers['request-ID']) {
+      axiosRequestObj.headers['request-ID'] = shortid.generate()
+      // requestObj.headers['request-ID-Origin'] = 'libs'
+    }
+    
+    console.log(`SIDTEST axios headers: ${axiosRequestObj.headers}`)
+
+    return axios(axiosRequestObj)
+  }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
@@ -33,12 +52,12 @@ class CreatorNode {
   static async checkIfDownloadAvailable (endpoints, trackId) {
     const primary = CreatorNode.getPrimary(endpoints)
     if (primary) {
-      const req = {
+      const axiosRequestObj = {
         baseURL: primary,
         url: `/tracks/download_status/${trackId}`,
         method: 'get'
       }
-      const res = await axios(req)
+      const res = await _makeAxiosRequest(axiosRequestObj)
       if (res.data.cid) return res.data.cid
     }
     // Download is not available, clients should display "processing"
@@ -48,6 +67,7 @@ class CreatorNode {
   /* -------------- */
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
+    console.log(`SIDTEST COME ON NOW`)
     this.web3Manager = web3Manager
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
@@ -286,14 +306,16 @@ class CreatorNode {
    * @param {string} endpoint
    */
   async getSyncStatus (endpoint) {
+    console.log(`SIDTEST getsyncstatus`)
     const user = this.userStateManager.getCurrentUser()
     if (user) {
-      const req = {
+      const axiosRequestObj = {
         baseURL: endpoint,
         url: `/sync_status/${user.wallet}`,
         method: 'get'
       }
-      const status = await axios(req)
+      console.log(`SIDTEST calling makeAxiosRequest getSyncStatus`)
+      const status = await _makeAxiosRequest(axiosRequestObj)
       return {
         status: status.data,
         userBlockNumber: user.blocknumber,
@@ -325,7 +347,7 @@ class CreatorNode {
     }
     const secondaries = new Set(CreatorNode.getSecondaries(user.creator_node_endpoint))
     if (primary && secondary && (!validate || secondaries.has(secondary))) {
-      const req = {
+      const axiosRequestObj = {
         baseURL: secondary,
         url: '/sync',
         method: 'post',
@@ -335,7 +357,7 @@ class CreatorNode {
           immediate
         }
       }
-      return axios(req)
+      return _makeAxiosRequest(axiosRequestObj)
     }
   }
 
@@ -440,7 +462,7 @@ class CreatorNode {
 
     // Axios throws for non-200 responses
     try {
-      const resp = await axios(axiosRequestObj)
+      const resp = await _makeAxiosRequest(axiosRequestObj)
       return resp.data
     } catch (e) {
       _handleErrorHelper(e, axiosRequestObj.url)
@@ -484,19 +506,19 @@ class CreatorNode {
       // rather than XMLHttpRequest. We force that here.
       // https://github.com/axios/axios/issues/1180
       const isBrowser = typeof window !== 'undefined'
-      const resp = await axios.post(
+      
+      const axiosRequestObj = {
         url,
-        formData,
-        {
-          headers: headers,
-          adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
-          // Add a 10% inherit processing time for the file upload.
-          onUploadProgress: (progressEvent) => {
-            if (!total) total = progressEvent.total
-            onProgress(progressEvent.loaded, total)
-          }
+        data: formData,
+        headers,
+        adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
+        // Add a 10% inherit processing time for the file upload.
+        onUploadProgress: (progressEvent) => {
+          if (!total) total = progressEvent.total
+          onProgress(progressEvent.loaded, total)
         }
-      )
+      }
+      const resp = await _makeAxiosRequest(axiosRequestObj)
       if (resp.data && resp.data.error) {
         throw new Error(resp.data.error)
       }
