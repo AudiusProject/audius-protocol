@@ -435,6 +435,12 @@ async function writeStreamToFileSystem (stream, expectedStoragePath, createDir =
   })
 }
 
+/**
+ * Generic function to run shell commands, eg `ls -alh`
+ * @param {String} command Command you want to execute from the shell eg `ls`
+ * @param {Array} args array of string quoted arguments to pass eg ['-alh']
+ * @param {Object} logger logger object with context
+ */
 async function runShellCommand (command, args, logger) {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args)
