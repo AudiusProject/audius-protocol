@@ -56,7 +56,7 @@ describe('test ContentBlacklist', function () {
 
   // Tests that should return success responses
 
-  it('should return the proper userIds and trackIds', async () => {
+  it('should return the proper userIds, trackIds, and segments', async () => {
     const addUserData = generateTimestampAndSignature({
       type: BlacklistManager.getTypes().user,
       ids: [1]
@@ -87,14 +87,30 @@ describe('test ContentBlacklist', function () {
       })
       .expect(200)
 
+    const cids = [generateRandomCID()]
+    const addCIDData = generateTimestampAndSignature({
+      cids
+    }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add/cids')
+      .query({
+        'cids[]': cids,
+        signature: addCIDData.signature,
+        timestamp: addCIDData.timestamp
+      })
+      .expect(200)
+
     await request(app)
       .get('/blacklist')
       .expect(200)
       .expect(resp => {
-        assert.deepStrictEqual(resp.body.trackIds[0], 1)
         assert.deepStrictEqual(resp.body.trackIds.length, 1)
-        assert.deepStrictEqual(resp.body.userIds[0], 1)
+        assert.deepStrictEqual(resp.body.trackIds[0], '1')
         assert.deepStrictEqual(resp.body.userIds.length, 1)
+        assert.deepStrictEqual(resp.body.userIds[0], '1')
+        assert.deepStrictEqual(resp.body.individualSegments.length, 1)
+        assert.deepStrictEqual(resp.body.individualSegments[0], cids[0])
       })
   })
 
