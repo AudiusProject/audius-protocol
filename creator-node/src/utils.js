@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const { BufferListStream } = require('bl')
 const axios = require('axios')
+const spawn = require('child_process').spawn
 
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
@@ -434,6 +435,26 @@ async function writeStreamToFileSystem (stream, expectedStoragePath, createDir =
   })
 }
 
+async function runShellCommand (command, args, logger) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args)
+    let stdout = ''
+    let stderr = ''
+    proc.stdout.on('data', (data) => (stdout += data.toString()))
+    proc.stderr.on('data', (data) => (stderr += data.toString()))
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        logger.info(`Successfully executed command ${command} ${args} with output: \n${stdout}`)
+        resolve()
+      } else {
+        logger.info(`Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`)
+        reject(new Error(`Error while executing command ${command} ${args}`))
+      }
+    })
+  })
+}
+
 module.exports = Utils
 module.exports.validateStateForImageDirCIDAndReturnFileUUID = validateStateForImageDirCIDAndReturnFileUUID
 module.exports.getIPFSPeerId = getIPFSPeerId
@@ -446,3 +467,4 @@ module.exports.ipfsStat = ipfsStat
 module.exports.writeStreamToFileSystem = writeStreamToFileSystem
 module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
 module.exports.findCIDInNetwork = findCIDInNetwork
+module.exports.runShellCommand = runShellCommand
