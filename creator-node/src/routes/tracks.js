@@ -557,7 +557,7 @@ module.exports = function (app) {
       req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
       // Fire and forget listen recording
       // TODO: Consider queueing these requests
-      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet, req.ip)
     }
 
     req.params.CID = multihash
