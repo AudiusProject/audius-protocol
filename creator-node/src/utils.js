@@ -448,7 +448,7 @@ async function runShellCommand (command, args, logger) {
         logger.info(`Successfully executed command ${command} ${args} with output: \n${stdout}`)
         resolve()
       } else {
-        logger.info(`Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`)
+        logger.error(`Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`)
         reject(new Error(`Error while executing command ${command} ${args}`))
       }
     })
