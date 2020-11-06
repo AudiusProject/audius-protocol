@@ -104,21 +104,21 @@ class BlacklistManager {
   * Given trackIds and userIds to remove from blacklist, fetch all segmentCIDs.
   * Also remove the trackIds, userIds, and segmentCIDs from redis blacklist sets to prevent future interaction.
   */
-  static async fetchCIDsAndRemoveFromRedis (trackIdsToRemove = [], userIdsToRemove = [], cidsToRemove = []) {
   static async fetchCIDsAndRemoveFromRedis ({ trackIdsToBlacklist = [], userIdsToBlacklist = [], segmentsToBlacklist = [] }) {
     // Get tracks from param and by parsing through user tracks
-    const tracks = await this.getTracksFromUsers(userIdsToRemove)
-    trackIdsToRemove = [...tracks.map(track => track.blockchainId), ...trackIdsToRemove]
+    const tracks = await this.getTracksFromUsers(userIdsToBlacklist)
+    trackIdsToBlacklist = [...tracks.map(track => track.blockchainId), ...trackIdsToBlacklist]
 
     // Dedupe trackIds
-    const trackIds = new Set(trackIdsToRemove)
+    const trackIds = new Set(trackIdsToBlacklist)
 
     // Retrieves CIDs from deduped trackIds
-    const segmentCIDsToRemove = [await this.getCIDsFromTrackIds([...trackIds]), ...cidsToRemove]
+    const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
+    const segmentCIDsToRemove = [...segmentsFromTrackIds, ...segmentsToBlacklist]
 
     try {
-      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToRemove)
-      await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToRemove)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToBlacklist)
       await this.removeFromRedis(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, segmentCIDsToRemove)
     } catch (e) {
       throw new Error(`Failed to remove from blacklist: ${e}`)
