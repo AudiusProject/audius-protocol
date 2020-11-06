@@ -49,7 +49,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       order: [
         ['timestamp', 'DESC'],
         ['entityId', 'ASC'],
-        [{ model: models.NotificationAction, as: 'actions' }, 'created', 'DESC']
+        [{ model: models.NotificationAction, as: 'actions' }, 'createdAt', 'DESC']
       ],
       include: [{
         model: models.NotificationAction,
