@@ -40,7 +40,7 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    let timings = await timeRequestsAndSortByVersion(
+    const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
         url: `${node.endpoint}/health_check`
