@@ -8,13 +8,14 @@ const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
 const {
   handleResponse,
+  handleResponseWithHeartbeat,
   sendResponse,
   successResponse,
   errorResponseBadRequest,
   errorResponseServerError,
   errorResponseForbidden
 } = require('../apiHelpers')
-const { getFileUUIDForImageCID } = require('../utils')
+const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
@@ -27,7 +28,7 @@ module.exports = function (app) {
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
     if (req.fileSizeError) {
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
@@ -310,7 +311,7 @@ module.exports = function (app) {
     // Get coverArtFileUUID for multihash in metadata object, else error
     let coverArtFileUUID
     try {
-      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
+      coverArtFileUUID = await validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.cover_art_sizes)
     } catch (e) {
       return errorResponseServerError(e.message)
     }
@@ -556,11 +557,12 @@ module.exports = function (app) {
       req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
       // Fire and forget listen recording
       // TODO: Consider queueing these requests
-      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet, req.ip)
     }
 
     req.params.CID = multihash
     req.params.streamable = true
+    res.set('Content-Type', 'audio/mpeg')
     next()
   }, getCID)
 

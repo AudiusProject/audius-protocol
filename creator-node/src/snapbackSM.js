@@ -30,6 +30,12 @@ const SyncPriority = Object.freeze({
   High: 1
 })
 
+// Helpful strings for printing priorities
+const priorityMap = {
+  [SyncPriority.High]: 'HIGH',
+  [SyncPriority.Low]: 'LOW'
+}
+
 // Describes the sync type - Recurring (scheduled) or Manual (triggered
 // by a user action). Currently only used for logging purposes.
 const SyncType = Object.freeze({
@@ -75,6 +81,10 @@ class SnapbackSM {
         redis: {
           port: config.get('redisPort'),
           host: config.get('redisHost')
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true
         }
       }
     )
@@ -180,7 +190,8 @@ class SnapbackSM {
         sync_type: syncType
       }
     }
-    return this.syncQueue.add({ syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
+    // Note: we pass in syncType as job name for observability
+    return this.syncQueue.add(syncType, { syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
   }
 
   // Main state machine processing function
@@ -388,6 +399,7 @@ class SnapbackSM {
 
   // Main sync queue job
   async processSyncOperation (job) {
+    const { name: jobType, opts: { priority }, id } = job
     const syncRequestParameters = job.data.syncRequestParameters
     let isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -403,7 +415,7 @@ class SnapbackSM {
     const syncWallet = syncRequestParameters.data.wallet[0]
     const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
-    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} ------------------`)
+    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${jobType} | priority: ${priorityMap[priority]} | jobID: ${id} ------------------`)
 
     // Issue sync request to secondary
     await axios(syncRequestParameters)
@@ -413,7 +425,7 @@ class SnapbackSM {
 
     // Exit when sync status is computed
     // Determine how many times to retry this operation
-    this.log('------------------END Process SYNC------------------')
+    this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
   }
 
   // Query eth-contracts chain for endpoint to ID info
@@ -485,7 +497,8 @@ class SnapbackSM {
     // Initialize sync queue processor function, as drained will issue syncs
     // A maximum of 10 sync jobs are allowed to be issued at once
     this.syncQueue.process(
-      maxSyncJobs || MaxParallelSyncJobs,
+      '*', // process all job types (manual + recurring)
+      maxSyncJobs || MaxParallelSyncJobs, // set max concurrency
       async (job, done) => {
         try {
           await this.processSyncOperation(job)
@@ -504,9 +517,13 @@ class SnapbackSM {
     await this.stateMachineQueue.add({ startTime: Date.now() })
   }
 
-  async getPendingSyncJobs () {
-    return this.syncQueue.getJobs(['waiting'])
+  async getSyncQueueJobs () {
+    const [pending, active] = await Promise.all([
+      this.syncQueue.getJobs(['waiting']),
+      this.syncQueue.getJobs(['active'])
+    ])
+    return { pending, active }
   }
 }
 
-module.exports = { SnapbackSM, SyncPriority, SyncType }
+module.exports = { SnapbackSM, SyncPriority, SyncType, priorityMap }
