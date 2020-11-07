@@ -62,7 +62,12 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const dstPath = path.join(req.app.get('storagePath'), multihash)
 
   try {
-    fs.copyFileSync(srcPath, dstPath)
+    await new Promise((resolve, reject) => {
+      fs.copyFile(srcPath, dstPath, (err) => {
+        if (err) reject(err)
+        resolve()
+      })
+    })
   } catch (e) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
     if (e.message.includes('ENOSPC')) {
