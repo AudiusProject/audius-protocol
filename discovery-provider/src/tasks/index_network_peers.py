@@ -1,5 +1,4 @@
 import logging
-import re
 import concurrent.futures
 from urllib.parse import urljoin
 import requests
@@ -104,7 +103,9 @@ def fetch_cnode_endpoints_from_identity(self):
             raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
 
         registered_cnodes = r.json()
-        logger.info(f"index_network_peers.py | Fetched registered creator nodes from chain via {identity_endpoint} - {registered_cnodes}")
+        logger.info(
+            f"index_network_peers.py | Fetched registered creator nodes from chain via {identity_endpoint} - {registered_cnodes}"
+        )
         return registered_cnodes
     except Exception as e:
         logger.error(f"Identity fetch failed {e}")
