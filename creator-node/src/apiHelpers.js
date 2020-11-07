@@ -56,8 +56,11 @@ module.exports.handleResponseWithHeartbeat = (func) => {
       sendResponseWithHeartbeatTerminator(req, res, resp)
       next()
     } catch (error) {
-      console.error('HandleResponse', error)
-      next(error)
+      sendResponseWithHeartbeatTerminator(
+        req,
+        res,
+        errorResponse(500, error)
+      )
     }
   }
 }
