@@ -162,7 +162,10 @@ const contentBlacklistRemoveCIDsController = async (req) => {
 
 /**
  * Parse query params. Should contain id, type, timestamp, signature
- * @param {object} queryParams
+ * @param {Object} queryParams
+ * @param {string} queryParams.type the type (user, track, cid) (paired with ids)
+ * @param {number[]} queryParams.ids[] the ids of either users or tracks
+ * @param {string} queryParams.timestamp the timestamp of when the data was signed
  */
 function parseQueryParamsForIds (queryParams) {
   let { ids, type, timestamp, signature } = queryParams
@@ -188,6 +191,12 @@ function parseQueryParamsForIds (queryParams) {
   return { type, ids, timestamp, signature }
 }
 
+/**
+ * Parse query params. Should contain cids, timestmap, signature
+ * @param {Object} queryParams
+ * @param {string[]} queryParams.cids[] the cids
+ * @param {string} queryParams.timestamp the timestamp of when the data was signed
+ */
 function parseQueryParamsForCIDs (queryParams) {
   let { cids, timestamp, signature } = queryParams
 
@@ -209,8 +218,12 @@ function parseQueryParamsForCIDs (queryParams) {
 
 /**
  * Verify that the requester is authorized to make changes to ContentBlacklist
- * @param {{ids: [number], type: enum, timestamp: string}} obj raw data to be used in recovering the public wallet
- * @param {string} signature
+ * @param {Object} data data to sign. In context of ContentBlacklist, can be {type, ids, timestamp}, or {cids, timestamp}
+ * @param {string} [data.type] the type (user, track, cid) (paired with ids) -- optional
+ * @param {number[]} [data.ids[]] the ids of either users or tracks -- optional
+ * @param {string[]} [data.cids[]] the cids -- optional
+ * @param {string} data.timestamp the timestamp of when the data was signed
+ * @param {string} signature the signature generated from signing the data
  */
 function verifyRequest (data, signature) {
   const recoveredPublicWallet = recoverWallet(data, signature)
@@ -221,10 +234,10 @@ function verifyRequest (data, signature) {
 
 /**
  * Checks if ids exist in discovery provider
- * @param {object} libs
+ * @param {Object} libs
  * @param {string} action
  * @param {string} type
- * @param {[number]} ids
+ * @param {number[]} ids
  */
 const filterNonexistantIds = async (libs, type, ids) => {
   let resp

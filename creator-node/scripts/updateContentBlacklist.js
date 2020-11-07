@@ -149,7 +149,7 @@ function parseEnvVarsAndArgs () {
  * 1. Signs the data {type, id, timestamp} with PRIVATE_KEY specified in this script
  * 2. Sends axios request to add entry to content blacklist of type and id
  * @param {string} type
- * @param {[number]} ids
+ * @param {number[]} ids
  */
 async function addIdsToContentBlacklist (type, ids) {
   const { timestamp, signature } = generateTimestampAndSignature({ type, ids }, PRIVATE_KEY)
@@ -173,7 +173,7 @@ async function addIdsToContentBlacklist (type, ids) {
  * 1. Signs the data {type, id, timestamp} with PRIVATE_KEY specified in this script
  * 2. Sends axios request to remove entry from content blacklist of type and id
  * @param {string} type
- * @param {[number]} ids
+ * @param {number[]} ids
  */
 async function removeIdsFromContentBlacklist (type, ids) {
   const { timestamp, signature } = generateTimestampAndSignature({ type, ids }, PRIVATE_KEY)
@@ -196,7 +196,7 @@ async function removeIdsFromContentBlacklist (type, ids) {
 /**
  * 1. Signs the data {cids, timestamp} with PRIVATE_KEY specified in this script
  * 2. Sends axios request to add cids to content blacklist
- * @param {[string]} cids
+ * @param {string[]} cids
  */
 async function addCIDsToContentBlacklist (cids) {
   const { timestamp, signature } = generateTimestampAndSignature({ cids }, PRIVATE_KEY)
@@ -219,7 +219,7 @@ async function addCIDsToContentBlacklist (cids) {
 /**
  * 1. Signs the data {cids, timestamp} with PRIVATE_KEY specified in this script
  * 2. Sends axios request to remove cids from content blacklist
- * @param {[string]} cids
+ * @param {string[]} cids
  */
 async function removeCIDsFromContentBlacklist (cids) {
   const { timestamp, signature } = generateTimestampAndSignature({ cids }, PRIVATE_KEY)
@@ -243,7 +243,7 @@ async function removeCIDsFromContentBlacklist (cids) {
  * 1. Get all blacklisted content
  * 2. Iterate through passed in CLI args against fetched content
  * @param {string} type
- * @param {[number or string]} list cids or ids
+ * @param {(number[]|string[])} list cids or ids
  */
 async function verify (type, list) {
   let resp

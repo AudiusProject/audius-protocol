@@ -127,7 +127,7 @@ class BlacklistManager {
 
   /**
    * Retrieves the CIDs for each trackId in trackIds and returns a deduped list of segments CIDs
-   * @param {int[]} trackIds
+   * @param {number[]} trackIds
    */
   static async getCIDsFromTrackIds (trackIds) {
     const tracks = await models.Track.findAll({ where: { blockchainId: trackIds } })
@@ -149,7 +149,7 @@ class BlacklistManager {
   /**
    * Adds ids and types as individual entries to ContentBlacklist table
    * @param {number} id user or track id
-   * @param {enum} type ['USER', 'TRACK']
+   * @param {'USER'|'TRACK'} type
    */
   static async addIdsToDb ({ ids, type }) {
     const errs = []
@@ -192,7 +192,7 @@ class BlacklistManager {
   /**
    * Removes entry from Contentblacklist table
    * @param {number} id user or track id
-   * @param {enum} type ['USER', 'TRACK']
+   * @param {'USER'|'TRACK'} type
    */
   static async removeIdsFromDb ({ ids, type }) {
     let numRowsDestroyed
@@ -241,7 +241,7 @@ class BlacklistManager {
   /**
    * Adds key with value to redis.
    * @param {string} key
-   * @param {[number]} value
+   * @param {number[]} value
    */
   static async addToRedis (key, value) {
     if (!value || value.length === 0) return
@@ -256,7 +256,7 @@ class BlacklistManager {
   /**
    * Removes key with value to redis. If value does not exist, redis should ignore.
    * @param {string} key
-   * @param {[number]} value
+   * @param {number[]} value
    */
   static async removeFromRedis (key, value) {
     if (!value || value.length === 0) return
