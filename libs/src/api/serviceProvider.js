@@ -1,10 +1,6 @@
 const { Base } = require('./base')
-<<<<<<< HEAD
 const { timeRequestsAndSortByVersion } = require('../utils/network')
-=======
-const { timeRequests } = require('../utils/network')
 const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
->>>>>>> cf3d56c5... add creator node selection class + unit tests
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
