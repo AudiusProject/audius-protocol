@@ -6,13 +6,11 @@ const { handleResponse, successResponse, errorResponse, errorResponseServerError
 const config = require('../config')
 const middlewares = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
 const TrackSaveConcurrencyLimit = 10
 const NonTrackFileSaveConcurrencyLimit = 10
-const RehydrateIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
   /**
@@ -28,7 +26,6 @@ module.exports = function (app) {
 
     // TODO - allow for offsets in the /export
     const walletPublicKeys = req.query.wallet_public_key // array
-    const dbOnlySync = (req.query.db_only_sync === true || req.query.db_only_sync === 'true')
     const sourceEndpoint = req.query.source_endpoint || '' // string
 
     const MaxClock = 25000
@@ -129,30 +126,6 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       const ipfsIDObj = await getIPFSPeerId(ipfs)
 
-      if (!dbOnlySync) {
-        // Rehydrate files if necessary
-        for (let i = 0; i < files.length; i += RehydrateIPFSConcurrencyLimit) {
-          const exportFilesSlice = files.slice(i, i + RehydrateIPFSConcurrencyLimit)
-          req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}`)
-          // Ensure all relevant files are available through IPFS at export time
-          await Promise.all(exportFilesSlice.map(async (file) => {
-            try {
-              if (
-                (file.type === 'track' || file.type === 'metadata' || file.type === 'copy320') ||
-                // to address legacy single-res image rehydration where images are stored directly under its file CID
-                (file.type === 'image' && file.sourceFile === null)
-              ) {
-                await RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(file.multihash, file.storagePath, { logContext: req.logContext })
-              } else if (file.type === 'dir') {
-                await RehydrateIpfsQueue.addRehydrateIpfsDirFromFsIfNecessaryTask(file.multihash, { logContext: req.logContext })
-              }
-            } catch (e) {
-              req.logger.info(`Export rehydrateIpfs processing files ${i} to ${i + RehydrateIPFSConcurrencyLimit}, ${e}`)
-            }
-          }))
-        }
-      }
-
       req.logger.info('Successful export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ms`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
@@ -192,7 +165,8 @@ module.exports = function (app) {
         req.logger.info('set timeout for', wallet, 'time', Date.now())
       }
     } else {
-      await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
+      if (errorObj) return errorResponseServerError(errorObj)
     }
     return successResponse()
   }))
@@ -311,7 +285,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Spread + set uniq's the array
           userReplicaSet = [...new Set(userReplicaSet)]
         } catch (e) {
-          req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash`)
+          req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash - ${e.message}`)
         }
       }
 
@@ -435,7 +409,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Save all track files to disk in batches (to limit concurrent load)
           for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
             const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-            req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit}...`)
+            req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
             await Promise.all(trackFilesSlice.map(
               trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
             ))
@@ -445,7 +419,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Save all non-track files to disk in batches (to limit concurrent load)
           for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
             const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-            req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit}...`)
+            req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
             await Promise.all(nonTrackFilesSlice.map(
               nonTrackFile => {
                 // Skip over directories since there's no actual content to sync

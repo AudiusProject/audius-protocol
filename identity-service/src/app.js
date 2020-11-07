@@ -1,9 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const rateLimit = require('express-rate-limit')
 const mailgun = require('mailgun-js')
-const RedisStore = require('rate-limit-redis')
 const Redis = require('ioredis')
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
@@ -15,9 +13,9 @@ const NotificationProcessor = require('./notifications/index.js')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
+const { getRateLimiter, getRateLimiterMiddleware } = require('./rateLimiter.js')
+
 const DOMAIN = 'mail.audius.co'
-const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
-const DEFAULT_KEY_GENERATOR = (req) => req.ip
 
 class App {
   constructor (port) {
@@ -123,24 +121,50 @@ class App {
     return whitelistRegex && !!ip.match(whitelistRegex)
   }
 
-  _getRateLimiter ({ prefix, max, expiry = DEFAULT_EXPIRY, keyGenerator = DEFAULT_KEY_GENERATOR, skip }) {
-    return rateLimit({
-      store: new RedisStore({
-        client: this.redisClient,
-        prefix,
-        expiry
-      }),
-      max, // max requests per hour
-      skip,
-      keyGenerator
-    })
+  _getIP (req) {
+    // Gets the IP for rate-limiting based on X-Forwarded-For headers
+    // Algorithm:
+    // If > 1 headers:
+    //    If rightmost is CN, then use rightmost - 1 (known to be safe)
+    //    If rightmost is not CN, then use rightmost
+    // If 1 header or no headers:
+    //    use req.ip (leftmost)
+
+    let ip = req.ip
+    const forwardedFor = req.get('X-Forwarded-For')
+
+    // This shouldn't ever happen since Identity will always be behind a proxy
+    if (!forwardedFor) {
+      req.logger.debug('_getIP: no forwarded-for')
+      return ip
+    }
+
+    const headers = forwardedFor.split(',')
+    // headers length == 1 means that no x-forwarded-for was passed to identity proxy,
+    // so the request wasn't from CN. We can just use req.ip which corresponds
+    // to the forward-for that the proxy added
+    if (headers.length === 1) {
+      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, ip: ${ip}`)
+      return ip
+    }
+
+    const rightMost = headers[headers.length - 1]
+
+    if (this._isIPWhitelisted(rightMost)) {
+      const forwardedIP = headers[headers.length - 2]
+      req.logger.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}`)
+      return forwardedIP
+    }
+    req.logger.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}`)
+    return rightMost
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
   _createRateLimitsForListenCounts (interval, timeInSeconds) {
     const isIPWhitelisted = this._isIPWhitelisted
+    const getIP = this._getIP.bind(this)
 
-    const listenCountLimiter = this._getRateLimiter({
+    const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
@@ -154,30 +178,28 @@ class App {
       }
     })
 
-    const listenCountIPLimiter = this._getRateLimiter({
+    const listenCountIPLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-ip:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
-      skip: function (req) {
-        return isIPWhitelisted(req.ip)
-      },
       keyGenerator: function (req) {
         const trackId = req.params.id
-        return `${req.ip}:::${trackId}`
+        const ip = getIP(req)
+        return `${ip}:::${trackId}`
       }
     })
     return [listenCountLimiter, listenCountIPLimiter]
   }
 
   setRateLimiters () {
-    const requestRateLimiter = this._getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
+    const requestRateLimiter = getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
     this.express.use(requestRateLimiter)
 
-    const authRequestRateLimiter = this._getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
+    const authRequestRateLimiter = getRateLimiter({ prefix: 'authLimiter', max: config.get('rateLimitingAuthLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/authentication/', authRequestRateLimiter)
 
-    const twitterRequestRateLimiter = this._getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
+    const twitterRequestRateLimiter = getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/twitter/', twitterRequestRateLimiter)
 
@@ -200,7 +222,7 @@ class App {
     // Eth relay rate limits
     // Default to 50 per ip per day and one of 10 per wallet per day
     const isIPWhitelisted = this._isIPWhitelisted
-    const ethRelayIPRateLimiter = this._getRateLimiter({
+    const ethRelayIPRateLimiter = getRateLimiter({
       prefix: 'ethRelayIPRateLimiter',
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerIPPerDay'),
@@ -208,7 +230,7 @@ class App {
         return isIPWhitelisted(req.ip)
       }
     })
-    const ethRelayWalletRateLimiter = this._getRateLimiter({
+    const ethRelayWalletRateLimiter = getRateLimiter({
       prefix: `ethRelayWalletRateLimiter`,
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerWalletPerDay'),
@@ -224,6 +246,7 @@ class App {
       ethRelayWalletRateLimiter,
       ethRelayIPRateLimiter
     )
+    this.express.use(getRateLimiterMiddleware())
   }
 
   setRoutes () {

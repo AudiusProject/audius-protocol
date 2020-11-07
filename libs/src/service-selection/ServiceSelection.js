@@ -31,6 +31,7 @@ const { raceRequests, allRequests } = require('../utils/network')
 class ServiceSelection {
   /**
    * @param config
+   * @param {Set<string>} config.blacklist services from this list should not be picked
    * @param {Set<string>} config.whitelist only services from this list are allowed to be picked
    * @param {() => Promise<String[]>} conffig.getServices an (async) method to get a list of services
    * to choose from
@@ -71,6 +72,18 @@ class ServiceSelection {
 
     // The decision tree path that was taken. Reset on each new selection.
     this.decisionTree = []
+
+    this.state = Object.freeze({
+      CHECK_SHORT_CIRCUIT: 'Check Short Circuit',
+      GET_ALL_SERVICES: 'Get All Services',
+      FILTER_TO_WHITELIST: 'Filter To Whitelist',
+      FILTER_FROM_BLACKLIST: 'Filter From Blacklist',
+      FILTER_OUT_KNOWN_UNHEALTHY: 'Filter Out Known Unhealthy',
+      GET_SELECTION_ROUND: 'Get Selection Round',
+      NO_SERVICES_LEFT_TO_TRY: 'No Services Left To Try',
+      SELECTED_FROM_BACKUP: 'Selected From Backup',
+      FAILED_AND_RESETTING: 'Failed Everything -- Resetting'
+    })
   }
 
   /**
@@ -82,43 +95,49 @@ class ServiceSelection {
 
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = this.shortcircuit()
-    this.decisionTree.push({ stage: 'Check Short Circuit', val: shortcircuit })
+    this.decisionTree.push({ stage: this.state.CHECK_SHORT_CIRCUIT, val: shortcircuit })
     if (shortcircuit) return shortcircuit
 
     // Get all the services
     let services = await this.getServices()
-    this.decisionTree.push({ stage: 'Get All Services', val: services })
+    this.decisionTree.push({ stage: this.state.GET_ALL_SERVICES, val: services })
 
     // If a whitelist is provided, filter down to it
     if (this.whitelist) {
       services = this.filterToWhitelist(services)
-      this.decisionTree.push({ stage: 'Filter To Whitelist', val: services })
+      this.decisionTree.push({ stage: this.state.FILTER_TO_WHITELIST, val: services })
+    }
+
+    // if a blacklist is provided, filter out services in the list
+    if (this.blacklist) {
+      services = this.filterFromBlacklist(services)
+      this.decisionTree.push({ stage: this.state.FILTER_FROM_BLACKLIST, val: services })
     }
 
     // Filter out anything we know is already unhealthy
     const filteredServices = this.filterOutKnownUnhealthy(services)
-    this.decisionTree.push({ stage: 'Filter Out Known Unhealthy', val: filteredServices })
+    this.decisionTree.push({ stage: this.state.FILTER_OUT_KNOWN_UNHEALTHY, val: filteredServices })
 
     // Randomly sample a "round" to test
     const round = this.getSelectionRound(filteredServices)
-    this.decisionTree.push({ stage: 'Get Selection Round', val: round })
+    this.decisionTree.push({ stage: this.state.GET_SELECTION_ROUND, val: round })
 
     this.totalAttempts += round.length
 
     // If there are no services left to try, either pick a backup or return null
     if (filteredServices.length === 0) {
-      this.decisionTree.push({ stage: 'No Services Left To Try' })
+      this.decisionTree.push({ stage: this.state.NO_SERVICES_LEFT_TO_TRY })
       if (this.getBackupsSize() > 0) {
         // Some backup exists
         const backup = this.selectFromBackups()
-        this.decisionTree.push({ stage: 'Selected From Backup', val: backup })
+        this.decisionTree.push({ stage: this.state.SELECTED_FROM_BACKUP, val: backup })
         return backup
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
         this.unhealthy = new Set([])
         this.backups = {}
-        this.decisionTree.push({ stage: 'Failed Everything. Resetting.' })
+        this.decisionTree.push({ stage: this.state.FAILED_AND_RESETTING })
         return null
       }
     }

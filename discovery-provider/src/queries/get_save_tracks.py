@@ -36,6 +36,10 @@ def get_save_tracks(args):
             Save.created_at.desc(), Track.track_id.desc())
 
         query_results = add_query_pagination(base_query, limit, offset).all()
+
+        if not query_results:
+            return []
+
         tracks, save_dates = zip(*query_results)
         tracks = helpers.query_result_to_list(tracks)
         track_ids = list(map(lambda track: track["track_id"], tracks))
