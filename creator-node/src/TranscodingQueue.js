@@ -25,10 +25,6 @@ class TranscodingQueue {
         redis: {
           port: config.get('redisPort'),
           host: config.get('redisHost')
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true
         }
       })
 
@@ -36,7 +32,6 @@ class TranscodingQueue {
     // *any* process fn below
     // See https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueprocess
     this.queue.process(PROCESS_NAMES.segment, MAX_CONCURRENCY, async (job, done) => {
-      const start = Date.now()
       const { fileDir, fileName, logContext } = job.data
 
       try {
@@ -47,16 +42,15 @@ class TranscodingQueue {
           fileName,
           { logContext }
         )
-        this.logStatus(logContext, `Successfully completed segment job ${fileDir} ${fileName} in duration ${Date.now() - start}ms`)
+
         done(null, { filePaths })
       } catch (e) {
-        this.logStatus(logContext, `Segment Job Error ${e} in duration ${Date.now() - start}ms`)
+        this.logStatus(logContext, `Error ${e}`)
         done(e)
       }
     })
 
     this.queue.process(PROCESS_NAMES.transcode320, /* inherited */ 0, async (job, done) => {
-      const start = Date.now()
       const { fileDir, fileName, logContext } = job.data
 
       try {
@@ -67,10 +61,9 @@ class TranscodingQueue {
           fileName,
           { logContext }
         )
-        this.logStatus(logContext, `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${Date.now() - start}ms`)
         done(null, { filePath })
       } catch (e) {
-        this.logStatus(logContext, `Transcode320 Job Error ${e} in duration ${Date.now() - start}`)
+        this.logStatus(logContext, `Error ${e}`)
         done(e)
       }
     })
@@ -87,8 +80,9 @@ class TranscodingQueue {
    */
   async logStatus (logContext, message) {
     const logger = genericLogger.child(logContext)
-    const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
-    logger.info(`Transcoding Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `)
+    const count = await this.queue.count()
+    logger.info(`Transcoding Queue: ${message}`)
+    logger.info(`Transcoding Queue: count: ${count}`)
   }
 
   /**

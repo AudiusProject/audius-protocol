@@ -26,7 +26,6 @@ const findCorrectNode = async (nodes, cids) => {
 }
 
 const isCreator = async (libs) => {
-  console.debug('Sanity Check - isCreator')
   const user = libs.userStateManager.getCurrentUser()
   if (
     // There is no currently logged in user
@@ -36,8 +35,6 @@ const isCreator = async (libs) => {
     // The user is a creator and has a creator node endpoint
     (user.is_creator && user.creator_node_endpoint)
   ) return
-
-  console.debug('Sanity Check - isCreator - Running Check')
 
   // Find the CIDs for all of the user's content (tracks + images)
   let cids = [
@@ -61,7 +58,6 @@ const isCreator = async (libs) => {
   // Upgrade the user to a creator
   if (correctNode) {
     try {
-      console.debug('Sanity Check - isCreator - Upgrading to Creator')
       await libs.User.upgradeToCreator(null, correctNode.endpoint)
     } catch (e) {
       console.error(e)

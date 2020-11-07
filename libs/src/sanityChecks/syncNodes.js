@@ -7,7 +7,6 @@ const syncNodeIfBehind = async (libs, endpoint) => {
   try {
     const { isBehind, isConfigured } = await libs.creatorNode.getSyncStatus(endpoint)
     if (isBehind || !isConfigured) {
-      console.debug(`Sanity Check - syncNodes - syncing ${endpoint}`)
       await libs.creatorNode.syncSecondary(endpoint)
     }
   } catch (e) {
@@ -16,7 +15,6 @@ const syncNodeIfBehind = async (libs, endpoint) => {
 }
 
 const syncNodes = async (libs) => {
-  console.debug('Sanity Check - syncNodes')
   const user = libs.userStateManager.getCurrentUser()
 
   if (!user || !user.is_creator) return

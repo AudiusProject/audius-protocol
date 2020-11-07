@@ -48,8 +48,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       },
       order: [
         ['timestamp', 'DESC'],
-        ['entityId', 'ASC'],
-        [{ model: models.NotificationAction, as: 'actions' }, 'createdAt', 'DESC']
+        ['entityId', 'ASC']
       ],
       include: [{
         model: models.NotificationAction,
@@ -100,7 +99,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
 
     const finalUserNotifications = userNotifications.slice(0, limit)
     // Explicitly fetch image thumbnails
-    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
+    const metadata = await fetchNotificationMetadata(audius, userId, finalUserNotifications, true)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
@@ -108,8 +107,8 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
   }
 }
 
-async function fetchNotificationMetadata (audius, userIds = [], notifications, fetchThumbnails = false) {
-  let userIdsToFetch = [...userIds]
+async function fetchNotificationMetadata (audius, userId, notifications, fetchThumbnails = false) {
+  let userIdsToFetch = [userId]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
   let fetchTrackRemixParents = []
@@ -274,11 +273,9 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
     return um
   }, {})
 
-  if (fetchThumbnails) {
-    for (let trackId of Object.keys(trackMap)) {
-      const track = trackMap[trackId]
-      track.thumbnail = await getTrackImage(track, userMap)
-    }
+  for (let trackId of Object.keys(trackMap)) {
+    const track = trackMap[trackId]
+    track.thumbnail = await getTrackImage(track, userMap)
   }
 
   return {

@@ -6,14 +6,7 @@ const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
-const {
-  userReqLimiter,
-  trackReqLimiter,
-  audiusUserReqLimiter,
-  metadataReqLimiter,
-  imageReqLimiter,
-  getRateLimiterMiddleware
-} = require('./reqLimiter')
+const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
@@ -33,7 +26,6 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
-app.use(getRateLimiterMiddleware())
 
 // import routes
 require('./routes')(app)
@@ -58,9 +50,6 @@ const initializeApp = (port, storageDir, serviceRegistry) => {
 
   // add a newer version of ipfs as app property
   app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
-
-  // https://expressjs.com/en/guide/behind-proxies.html
-  app.set('trust proxy', true)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 

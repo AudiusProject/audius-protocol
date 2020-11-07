@@ -1,5 +1,5 @@
 const { Base } = require('./base')
-const { timeRequestsAndSortByVersion } = require('../utils/network')
+const { timeRequests } = require('../utils/network')
 const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
@@ -40,16 +40,16 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    const timings = await timeRequestsAndSortByVersion(
+    const timings = await timeRequests(
       creatorNodes.map(node => ({
         id: node.endpoint,
-        url: `${node.endpoint}/health_check`
+        url: `${node.endpoint}/version`
       }))
     )
 
     let services = {}
     timings.forEach(timing => {
-      if (timing.response) services[timing.request.id] = timing.response.data
+      services[timing.request.id] = timing.response.data
     })
 
     return services

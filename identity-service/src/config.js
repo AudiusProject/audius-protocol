@@ -204,25 +204,6 @@ const config = convict({
     env: 'rateLimitingListensIPWhitelist',
     default: null
   },
-  endpointRateLimits: {
-    doc: `A serialized objects of rate limits with the form {
-      <req.path>: {
-        <req.method>:
-          [
-            {
-              expiry: <seconds>,
-              max: <count>
-            },
-            ...
-          ],
-          ...
-        }
-      }
-    `,
-    format: String,
-    env: 'endpointRateLimits',
-    default: '{}'
-  },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,

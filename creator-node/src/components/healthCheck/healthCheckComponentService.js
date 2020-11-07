@@ -1,6 +1,5 @@
 const versionInfo = require('../../../.version.json')
 const config = require('../../config')
-const utils = require('../../utils.js')
 
 /**
  * Perform a basic health check, returning the
@@ -36,19 +35,6 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
   return response
 }
 
-/**
- * Perform a duration health check limited to configured delegateOwnerWalet
- * Used to validate availability prior to joiing the network
- * @param {*} ServiceRegistry
- * @param {*} logger
- */
-const healthCheckDuration = async () => {
-  // Wait 5 minutes, intentionally holding this route open
-  await utils.timeout(300000)
-  return { success: true }
-}
-
 module.exports = {
-  healthCheck,
-  healthCheckDuration
+  healthCheck
 }

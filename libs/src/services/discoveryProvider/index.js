@@ -472,7 +472,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
+  async _makeRequest (requestObj, attemptedRetries = 0) {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
@@ -490,18 +490,15 @@ class DiscoveryProvider {
     }
 
     let axiosRequest = this.createDiscProvRequest(requestObj)
+
     let response
     let parsedResponse
     try {
       response = await axios(axiosRequest)
       parsedResponse = Utils.parseDataFromResponse(response)
     } catch (e) {
-      const errMsg = e.response && e.response.data ? e.response.data : e
-      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(errMsg)}`)
-      if (retry) {
-        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
-      }
-      return null
+      console.error(`Failed to make Discovery Provider request: ${e}`)
+      return this._makeRequest(requestObj, attemptedRetries + 1)
     }
 
     if (
@@ -520,13 +517,10 @@ class DiscoveryProvider {
         !indexedBlock ||
         (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
       ) {
-        if (retry) {
-          // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-          // hopes it will catch up
-          console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries}...`)
-          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
-        }
-        return null
+        // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
+        // hopes it will catch up
+        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request...`)
+        return this._makeRequest(requestObj, attemptedRetries + 1)
       }
     }
 
@@ -534,17 +528,16 @@ class DiscoveryProvider {
   }
 
   /**
-   * Gets the healthy discovery provider endpoint used in creating the axios request later.
+   * Gets the healthy discovery provider endpoint used in creating the axious request later.
    * If the number of retries is over the max count for retires, clear the cache and reselect
    * another healthy discovery provider. Else, return the current discovery provider endpoint
-   * @param {number} attemptedRetries the number of attempted requests made to the current disc prov endpoint
+   * @param {int} attemptedRetries the number of attempted requests made to the current disc prov endpoint
    */
   async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
     let endpoint = this.discoveryProviderEndpoint
     if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
-      console.info(`Attempted max retries with endpoint ${endpoint}`)
-      this.serviceSelector.addUnhealthy(endpoint)
+      console.info(`Attempted max retries with endpoint ${this.discoveryProviderEndpoint}`)
 
       // Clear the cached endpoint and select new endpoint from backups
       this.serviceSelector.clearCached()

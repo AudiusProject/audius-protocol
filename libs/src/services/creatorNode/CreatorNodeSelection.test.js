@@ -26,7 +26,7 @@ const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   }
 })
 
-describe('test CreatorNodeSelection', () => {
+describe.only('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
@@ -214,11 +214,10 @@ describe('test CreatorNodeSelection', () => {
   })
 
   it('selects the healthiest among the services of different statuses', async () => {
-    // the cream of the crop -- up to date version, slow. you want this
+    // the cream of the crop -- up to date version, fast. you want this
     const shouldBePrimary = 'https://shouldBePrimary.audius.co'
     nock(shouldBePrimary)
       .get('/health_check')
-      .delay(200)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '1.2.3',
@@ -239,7 +238,7 @@ describe('test CreatorNodeSelection', () => {
         longitude: '-122.4619'
       } })
 
-    // stale chips from 2 weeks ago -- behind by major version, kinda slow.
+    // stale chips from 2 weeks ago -- behind by major version, kinda fast.
     // you kind of don't want this but only if there is nothing better
     const shouldBeSecondary2 = 'https://shouldBeSecondary2.audius.co'
     nock(shouldBeSecondary2)

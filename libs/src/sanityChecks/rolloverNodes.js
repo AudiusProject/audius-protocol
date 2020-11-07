@@ -29,7 +29,6 @@ const getNewPrimary = async (libs, secondaries) => {
 }
 
 const rolloverNodes = async (libs, creatorNodeWhitelist) => {
-  console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager.getCurrentUser()
 
   if (!user || !user.is_creator) return
@@ -62,7 +61,6 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
     // Update the user
     const newMetadata = { ...user }
     newMetadata.creator_node_endpoint = newEndpoints.join(',')
-    console.debug(`Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`)
     await libs.User.updateCreator(user.user_id, newMetadata)
   } catch (e) {
     console.error(e)

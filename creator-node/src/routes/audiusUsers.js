@@ -4,7 +4,7 @@ const fs = require('fs')
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const { getFileUUIDForImageCID } = require('../utils')
 const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const DBManager = require('../dbManager')
 
@@ -85,10 +85,8 @@ module.exports = function (app) {
     // Get coverArtFileUUID and profilePicFileUUID for multihashes in metadata object, if present.
     let coverArtFileUUID, profilePicFileUUID
     try {
-      [coverArtFileUUID, profilePicFileUUID] = await Promise.all([
-        validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.cover_photo_sizes),
-        validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.profile_picture_sizes)
-      ])
+      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
+      profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
     } catch (e) {
       return errorResponseBadRequest(e.message)
     }

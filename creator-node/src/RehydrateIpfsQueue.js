@@ -18,10 +18,6 @@ class RehydrateIpfsQueue {
         redis: {
           host: config.get('redisHost'),
           port: config.get('redisPort')
-        },
-        defaultJobOptions: {
-          removeOnComplete: true,
-          removeOnFail: true
         }
       }
     )

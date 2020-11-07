@@ -20,12 +20,6 @@ class CreatorNode {
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
   /**
-   * Pulls the user's creator nodes out of the list
-   * @param {string} endpoints user.creator_node_endpoint
-   */
-  static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
-
-  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
@@ -194,13 +188,9 @@ class CreatorNode {
     }
 
     const sourceFile = trackContentResp.source_file
-    if (!sourceFile) {
-      throw new Error(`Invalid or missing sourceFile in response: ${JSON.stringify(trackContentResp)}`)
-    }
+    if (!sourceFile) throw new Error('Invalid or missing sourceFile')
 
-    if (coverArtResp) {
-      metadata.cover_art_sizes = coverArtResp.dirCID
-    }
+    if (coverArtResp) metadata.cover_art_sizes = coverArtResp.dirCID
     // Creates new track entity on creator node, making track's metadata available on IPFS
     // @returns {Object} {cid: cid of track metadata on IPFS, id: id of track to be used with associate function}
     const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
@@ -488,7 +478,6 @@ class CreatorNode {
       // rather than XMLHttpRequest. We force that here.
       // https://github.com/axios/axios/issues/1180
       const isBrowser = typeof window !== 'undefined'
-      console.debug(`Uploading file to ${url}`)
       const resp = await axios.post(
         url,
         formData,
@@ -502,9 +491,6 @@ class CreatorNode {
           }
         }
       )
-      if (resp.data && resp.data.error) {
-        throw new Error(resp.data.error)
-      }
       onProgress(total, total)
       return resp.data
     } catch (e) {
@@ -523,9 +509,8 @@ function _handleErrorHelper (e, requestUrl) {
   } else if (!e.response) {
     // delete headers, may contain tokens
     if (e.config && e.config.headers) delete e.config.headers
-
     console.error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
-    throw new Error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
+    throw new Error(`Network error while making request to ${requestUrl}`)
   } else {
     throw e
   }
