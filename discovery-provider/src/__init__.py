@@ -337,11 +337,19 @@ def configure_celery(flask_app, celery, test_config=None):
     ipfs_client = IPFSClient(
         shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], gateway_addrs
     )
+
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
-    # Clear existing lock if present
+    # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
+    redis_inst.delete("network_peers_lock")
+    redis_inst.delete("materialized_view_lock")
+    redis_inst.delete("update_metrics_lock")
+    redis_inst.delete("update_play_count_lock")
+    redis_inst.delete("ipld_blacklist_lock")
+    redis_inst.delete("update_discovery_lock")
     logger.info('Redis instance initialized!')
+
     # Initialize custom task context with database object
     class DatabaseTask(Task):
         def __init__(self, *args, **kwargs):
