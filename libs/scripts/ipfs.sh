@@ -3,6 +3,7 @@
 API_PORT=6001
 SWARM_PORT=6002
 CONTAINER_NAME=local_ipfs_node
+IPFS_RELEASE_VERSION=ipfs/go-ipfs:v0.7.0
 
 if [[ "$1" =~ ^up|down$ ]]; then 
   echo "Local ipfs operations:"
@@ -34,13 +35,13 @@ if [[ "$1" == 'up' ]]; then
   fi
 
   # Pull image
-  docker pull ipfs/go-ipfs:v0.4.23
+  docker pull $IPFS_RELEASE_VERSION
 
   if [[ -z "$5" ]]; then
-    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 --network=audius_dev ipfs/go-ipfs:v0.4.23 daemon
+    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 --network=audius_dev $IPFS_RELEASE_VERSION daemon
   else
     GATEWAY_PORT=$5
-    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 -p 127.0.0.1:$GATEWAY_PORT:8080 --network=audius_dev ipfs/go-ipfs:v0.4.23 daemon
+    docker run -d --name $CONTAINER_NAME -p 127.0.0.1:$API_PORT:5001 -p 127.0.0.1:$SWARM_PORT:4001 -p 127.0.0.1:$GATEWAY_PORT:8080 --network=audius_dev $IPFS_RELEASE_VERSION daemon
   fi
 
 elif [[ "$1" == 'down' ]]; then

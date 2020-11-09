@@ -54,7 +54,7 @@ def initialize_blocks_table_if_necessary(db):
                 parenthash=target_blockhash,
                 is_current=True,
             )
-            if target_block.number == 0:
+            if target_block.number == 0 or target_blockhash == default_config_start_hash:
                 block_model.number = None
 
             session.add(block_model)

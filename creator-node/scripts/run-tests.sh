@@ -47,7 +47,7 @@ if [ "$1" == "standalone_creator" ]; then
 
   if [ ! "${IPFS_EXISTS}" ]; then
     echo "IPFS Container doesn't exist"
-    docker run -d --name $IPFS_CONTAINER -p 127.0.0.1:$ipfsPort:5001 ipfs/go-ipfs:v0.4.23 daemon
+    docker run -d --name $IPFS_CONTAINER -p 127.0.0.1:$ipfsPort:5001 ipfs/go-ipfs:v0.7.0 daemon
   fi
 
   if [ ! "${DB_EXISTS}" ]; then
