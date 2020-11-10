@@ -11,6 +11,7 @@ const { generateTimestampAndSignature } = require('../src/apiSigning')
 
 const PRIVATE_KEY = process.env.delegatePrivateKey // add 0x prefix
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
+const DISCOVERY_PROVIDER_ENDPOINT = process.env.discoveryProviderEndpoint
 
 // Available action types
 const ACTION_ARR = ['ADD', 'REMOVE']
@@ -47,50 +48,34 @@ async function run () {
     return
   }
 
-  const { action, type, ids, cids } = args
+  const { action, type, values } = args
 
   try {
-    switch (type) {
-      case 'USER':
-      case 'TRACK':
-        switch (action) {
-          case 'ADD': {
-            await addToContentBlacklist(type, ids)
-            break
-          }
-          case 'REMOVE': {
-            await removeFromContentBlacklist(type, ids)
-            break
-          }
-          case 'VERIFY': {
-            await verify(type, ids)
-            break
-          }
-        }
-        console.log(`Successfully performed [${action}] for type [${type}] and ids [${ids}]`)
+    switch (action) {
+      case 'ADD': {
+        await addToContentBlacklist(type, values)
         break
-      case 'CID':
-        switch (action) {
-          case 'ADD': {
-            await addToContentBlacklist(type, cids)
-            break
-          }
-          case 'REMOVE': {
-            await removeCIDsFromContentBlacklist(cids)
-            break
-          }
-          case 'VERIFY': {
-            await verify(type, cids)
-            break
-          }
-        }
-        console.log(`Successfully performed [${action}] for cids [${cids}]`)
+      }
+      case 'REMOVE': {
+        await removeFromContentBlacklist(type, values)
         break
-      default:
+      }
+      default: {
         console.error('Should not have reached here :(')
+        return
+      }
     }
+    console.log(`Successfully performed [${action}] for type [${type}] and values [${values}]`)
   } catch (e) {
     console.error(`Failed to perform [${action}] for [${type}]: ${e}`)
+  }
+
+  try {
+    console.log('\nVerifying content against blacklist...\n')
+    await verifyWithBlacklist({ type, values, action })
+    console.log(`All values for type ${type} are blacklisted!\nValues: ${values.toString()}`)
+  } catch (e) {
+    console.error(`Verification check failed: ${e}`)
   }
 }
 
@@ -101,8 +86,9 @@ function parseEnvVarsAndArgs () {
   program.parse(process.argv)
 
   // Parse env vars
-  if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY) {
-    let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}] or private key [${PRIVATE_KEY}] have not been exported. `
+  if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY || !DISCOVERY_PROVIDER_ENDPOINT) {
+    let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}], private key [${PRIVATE_KEY}]`
+    errorMsg += ` or discovery provider endpoint [${DISCOVERY_PROVIDER_ENDPOINT}] have not been exported.`
     errorMsg += "\nPlease export environment variables 'delegatePrivateKey' and 'creatorNodeEndpoint'."
     errorMsg += "\nAlso make sure to add the prefix '0x' to the 'delegatePrivateKey'"
     throw new Error(errorMsg)
@@ -116,33 +102,29 @@ function parseEnvVarsAndArgs () {
   }
 
   // Check if ids or CIDs are passed in
-  let list = program.list
-  if (!list || list.length === 0) throw new Error('Please pass in a comma separated list of ids and/or cids.')
+  let values = program.list
+  if (!values || values.length === 0) throw new Error('Please pass in a comma separated list of ids and/or cids.')
 
-  let ids = []
-  let cids = []
   // Parse ids into ints greater than 0
   if (type === 'USER' || type === 'TRACK') {
-    const originalNumIds = list.length
-    list = list.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
-    if (list.length === 0) throw new Error('List of ids is not proper.')
-    if (originalNumIds !== list.length) {
+    const originalNumIds = values.length
+    values = values.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
+    if (values.length === 0) throw new Error('List of ids is not proper.')
+    if (originalNumIds !== values.length) {
       console.warn(`Filterd out non-numeric ids from input. Please only pass integers!`)
     }
-    ids = list
   } else { // else will be CID
     // Parse cids and ensure they follow the pattern Qm...
-    const orignalNumCIDs = list.length
+    const orignalNumCIDs = values.length
     const cidRegex = new RegExp('^Qm[a-zA-Z0-9]{44}$')
-    list = list.filter(cid => cidRegex.test(cid))
-    if (list.length === 0) throw new Error('List of cids is not proper.')
-    if (orignalNumCIDs !== list.length) {
+    values = values.filter(cid => cidRegex.test(cid))
+    if (values.length === 0) throw new Error('List of cids is not proper.')
+    if (orignalNumCIDs !== values.length) {
       console.warn(`Filtered out improper cids from input. Please only pass valid CIDs!`)
     }
-    cids = list
   }
 
-  return { action, ids, cids, type }
+  return { action, values, type }
 }
 
 /**
@@ -197,50 +179,114 @@ async function removeFromContentBlacklist (type, values) {
  * 1. Get all blacklisted content
  * 2. Iterate through passed in CLI args against fetched content
  * @param {string} type
- * @param {(number[]|string[])} list cids or ids
+ * @param {(number[]|string[])} values cids or ids
  */
-async function verify (type, list) {
-  let resp
+async function verifyWithBlacklist ({ type, values, action }) {
+  let allSegments = await getSegments(type, values)
+
+  // Hit creator node /ipfs/:CID route to see if segment is blacklisted
+  let checkFn
+  switch (action) {
+    case 'ADD':
+      checkFn = checkIsBlacklisted
+      break
+    case 'REMOVE':
+      checkFn = checkIsNotBlacklisted
+      break
+  }
+  const creatorNodeResponses = await Promise.all(allSegments.map(segment => checkFn(segment)))
+  const notBlacklistedSegments = creatorNodeResponses
+    .filter(resp => !resp.blacklisted)
+    .map(resp => resp.segment)
+
+  if (notBlacklistedSegments.length > 0) {
+    let errorMsg = `Some segments from [${type}] and values [${values}] were not blacklisted.`
+    errorMsg += `\nSegments not blacklisted: [${notBlacklistedSegments.toString()}]`
+    throw new Error(errorMsg)
+  }
+}
+
+async function getSegments (type, values) {
+  let allSegments = []
   try {
-    resp = await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/blacklist`,
+    // Fetch the segments via disc prov
+    switch (type) {
+      case 'USER': {
+        const discProvRequests = values.map(value => axios({
+          url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
+          method: 'get',
+          params: { user_id: value },
+          responseType: 'json'
+        }))
+        let resps = await Promise.all(discProvRequests)
+        for (const resp of resps) {
+          for (const track of resp.data.data) {
+            for (const segment of track.track_segments) {
+              allSegments.push(segment.multihash)
+            }
+          }
+        }
+        break
+      }
+      case 'TRACK': {
+        const discProvRequests = values.map(value => axios({
+          url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
+          method: 'get',
+          params: { track_id: value },
+          responseType: 'json'
+        })
+        )
+        let resps = await Promise.all(discProvRequests)
+        for (const resp of resps) {
+          for (const track of resp.data.data) {
+            for (const segment of track.track_segments) {
+              allSegments.push(segment.multihash)
+            }
+          }
+        }
+        break
+      }
+      case 'CID': {
+        allSegments = values
+        break
+      }
+    }
+  } catch (e) {
+    throw new Error(`Error with fetching segments for verifcation: ${e}`)
+  }
+  return allSegments
+}
+
+async function checkIsBlacklisted (segment) {
+  try {
+    await axios({
+      url: `${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`,
       method: 'get',
-      responseType: 'json'
+      responseType: 'json',
+      params: { CID: segment }
     })
   } catch (e) {
-    throw new Error(`Error with verifying Content Blacklist content: ${e}`)
+    if (e.response && e.response.status && e.response.status === 403) {
+      return { segment, blacklisted: true }
+    }
+    console.error(`Failed to check for segment [${segment}]: ${e}`)
   }
-  const blacklistedContent = resp.data
+  return { segment, blacklisted: false }
+}
 
-  let set
-  switch (type) {
-    case 'USER':
-      set = new Set(blacklistedContent.userIds)
-      list = list.map(entry => entry.toString())
-      break
-    case 'TRACK':
-      set = new Set(blacklistedContent.trackIds)
-      list = list.map(entry => entry.toString())
-      break
-    case 'CID':
-      set = new Set(blacklistedContent.allSegments)
-      break
-  }
-
-  const missing = []
-  for (let entry of list) {
-    if (!set.has(entry)) missing.push(entry)
-  }
-
-  if (missing.length > 0) {
-    console.error(`Not all ids/cids for type ${type} are blacklisted.`)
-    console.log({
-      missing,
-      input: list
+async function checkIsNotBlacklisted (segment) {
+  try {
+    await axios({
+      url: `${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`,
+      method: 'get',
+      responseType: 'json',
+      params: { CID: segment }
     })
-  } else {
-    console.log(`All ids/cids for type ${type} are is blacklisted.`)
+  } catch (e) {
+    console.error(`Failed to check for segment [${segment}]: ${e}`)
+    return { segment, blacklisted: true }
   }
+  return { segment, blacklisted: false }
 }
 
 run()

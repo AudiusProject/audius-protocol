@@ -461,9 +461,7 @@ describe.only('test ContentBlacklist', function () {
     await request(app)
       .post('/blacklist/add')
       .query({ type, 'values[]': [1], signature, timestamp })
-      .expect(200, resp => {
-        console.log('what is resp ', resp)
-      })
+      .expect(200)
 
     // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
     await Promise.all(
@@ -501,11 +499,12 @@ describe.only('test ContentBlacklist', function () {
 
   it('should throw an error when adding a cid to the blacklist and streaming /ipfs/:CID', async () => {
     const cids = [generateRandomCID()]
-    const { signature, timestamp } = generateTimestampAndSignature({ type: BlacklistManager.getTypes().cid, values: cids }, DELEGATE_PRIVATE_KEY)
+    const type = BlacklistManager.getTypes().cid
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: cids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ 'values[]': cids, timestamp, signature })
+      .query({ type, 'values[]': cids, timestamp, signature })
       .expect(200)
 
     await request(app)
