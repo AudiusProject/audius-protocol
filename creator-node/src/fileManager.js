@@ -11,6 +11,7 @@ const unlink = promisify(fs.unlink)
 const rmdir = promisify(fs.rmdir)
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
+const copyFile = promisify(fs.copyFile)
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -62,7 +63,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const dstPath = path.join(req.app.get('storagePath'), multihash)
 
   try {
-    fs.copyFileSync(srcPath, dstPath)
+    await copyFile(srcPath, dstPath)
   } catch (e) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
     if (e.message.includes('ENOSPC')) {
