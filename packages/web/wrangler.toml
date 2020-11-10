@@ -1,0 +1,15 @@
+type = "webpack"
+account_id = "3811365464a8e56b2b27a5590e328e49"
+workers_dev = true
+
+[site]
+bucket = "./build"
+entry-point = "./scripts/workers-site"
+
+[env.staging]
+name = "audius-staging"
+vars = { ENVIRONMENT = "staging", GA = "https://general-admission.staging.audius.co" }
+
+[env.production]
+name = "audius"
+vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co" }
