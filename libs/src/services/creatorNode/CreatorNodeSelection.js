@@ -1,8 +1,6 @@
-// const semver = require('semver')
-
 const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
-const { CREATOR_NODE_SERVICE_NAME } = require('./constants')
+const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
 class CreatorNodeSelection extends ServiceSelection {
   constructor ({ creatorNode, numberOfNodes, ethContracts, whitelist, blacklist }) {
@@ -20,18 +18,6 @@ class CreatorNodeSelection extends ServiceSelection {
     this.ethContracts = ethContracts
     // Services with the structure {request, response, millis} (see timeRequest) sorted by semver and response time
     this.healthCheckedServicesList = []
-
-    // List of valid past creator node versions registered on chain
-    this.validVersions = null
-
-    this.state = Object.freeze({
-      GET_ALL_SERVICES: 'GET ALL SERVICES',
-      FILTERED_TO_WHITELIST: 'FILTERED TO WHITELIST',
-      FILTERED_FROM_BLACKLIST: 'FILTERED FROM BLACKLIST',
-      FILTERED_OUT_UNHEALTHY_AND_OUTDATED: 'FILTERED OUT UNHEALTHY AND OUTDATED',
-      FILTERED_OUT_SYNC_IN_PROGRESS: 'FILTERED OUT SYNC IN PROGRESS',
-      SELECTED_PRIMARY_AND_SECONDARIES: 'SELECTED PRIMARY AND SECONDARIES'
-    })
   }
 
   /**
@@ -50,13 +36,13 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // Get all the creator node endpoints on chain and filter
     let services = await this.getServices()
-    this.decisionTree.push({ stage: this.state.GET_ALL_SERVICES, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
 
     if (this.whitelist) { services = this.filterToWhitelist(services) }
-    this.decisionTree.push({ stage: this.state.FILTERED_TO_WHITELIST, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_TO_WHITELIST, val: services })
 
     if (this.blacklist) { services = this.filterFromBlacklist(services) }
-    this.decisionTree.push({ stage: this.state.FILTERED_FROM_BLACKLIST, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_FROM_BLACKLIST, val: services })
 
     const healthCheckedServices = await timeRequestsAndSortByVersion(
       services.map(node => ({
@@ -90,7 +76,7 @@ class CreatorNodeSelection extends ServiceSelection {
       return isHealthy
     })
     services = healthyServices.map(service => service.request.id)
-    this.decisionTree.push({ stage: this.state.FILTERED_OUT_UNHEALTHY_AND_OUTDATED, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_OUT_UNHEALTHY_AND_OUTDATED, val: services })
 
     const successfulSyncCheckServices = []
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
@@ -111,12 +97,12 @@ class CreatorNodeSelection extends ServiceSelection {
     })
 
     services = [...successfulSyncCheckServices]
-    this.decisionTree.push({ stage: this.state.FILTERED_OUT_SYNC_IN_PROGRESS, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_OUT_SYNC_IN_PROGRESS, val: services })
 
     const primary = this.getPrimary(services)
     const secondaries = this.getSecondaries(services, primary)
     this.decisionTree.push({
-      stage: this.state.SELECTED_PRIMARY_AND_SECONDARIES,
+      stage: DECISION_TREE_STATE.SELECTED_PRIMARY_AND_SECONDARIES,
       val: { primary, secondaries: secondaries.toString() }
     })
 
@@ -170,11 +156,15 @@ class CreatorNodeSelection extends ServiceSelection {
     // Index 1 to n of services will be sorted in highest version -> lowest version
     // Select up to numberOfNodes-1 of secondaries that is not null and not the primary
     let remainingSecondaries = this.numberOfNodes - 1
-    const secondaries = services
-      .filter(service => {
-        const validSecondary = service && service !== primary && remainingSecondaries-- > 0
-        return validSecondary
-      })
+    const secondaries = []
+
+    // Select from healthy services
+    for (const service of services) {
+      if (service && service !== primary && remainingSecondaries > 0) {
+        remainingSecondaries--
+        secondaries.push(service)
+      }
+    }
 
     // If not enough secondaries returned from services, select from backups
     remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
