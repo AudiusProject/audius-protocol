@@ -165,7 +165,7 @@ class IPFSClient:
         try:
             if peer in self._ipfsid['Addresses']:
                 return
-            r = self._api.swarm.connect(peer)
+            r = self._api.swarm.connect(peer, timeout=3)
             logger.info(r)
         except Exception as e:
             logger.error(f"IPFSCLIENT | IPFS Failed to update peer")

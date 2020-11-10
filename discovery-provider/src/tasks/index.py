@@ -11,12 +11,11 @@ from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
-from src.utils.helpers import get_ipfs_info_from_cnode_endpoint
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
     most_recent_indexed_block_redis_key
 from src.utils.redis_cache import remove_cached_user_ids, \
-    remove_cached_track_ids, remove_cached_playlist_ids, use_redis_cache
+    remove_cached_track_ids, remove_cached_playlist_ids
 
 logger = logging.getLogger(__name__)
 
@@ -459,75 +458,6 @@ def fetch_cnode_endpoints_from_chain(task_context):
         logger.error(f"Identity fetch failed {e}")
         return []
 
-######## IPFS PEER REFRESH ########
-def refresh_peer_connections(task_context):
-    db = task_context.db
-    ipfs_client = task_context.ipfs_client
-    redis = task_context.redis
-    interval = int(task_context.shared_config["discprov"]["peer_refresh_interval"])
-    with db.scoped_session() as session:
-        db_cnode_endpts = (
-            session.query(
-                User.creator_node_endpoint).filter(
-                    User.creator_node_endpoint != None, User.is_current == True
-                ).distinct()
-        )
-
-        cnode_endpoints = {}
-        # Generate dictionary of unique creator node endpoints
-        for entry in db_cnode_endpts:
-            for cnode_user_set in entry:
-                cnode_entries = cnode_user_set.split(',')
-                for cnode_url in cnode_entries:
-                    if cnode_url == "''":
-                        continue
-                    cnode_endpoints[cnode_url] = True
-
-        # Add user metadata URL to peer connection list
-        user_node_url = task_context.shared_config["discprov"]["user_metadata_service_url"]
-        cnode_endpoints[user_node_url] = True
-
-        # update cnode_endpoints with list of creator nodes registered on chain, on 30s refresh interval
-        registered_cnodes = use_redis_cache(
-            'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_chain(task_context)
-        )
-        for node_info in registered_cnodes:
-            cnode_endpoints[node_info['endpoint']] = True
-
-        # Update creator node list
-        ipfs_client.update_cnode_urls(list(cnode_endpoints.keys()))
-
-        # Query ipfs information for each cnode endpoint
-        multiaddr_info = {}
-        for cnode_url in cnode_endpoints:
-            stored_in_redis = redis.get(cnode_url)
-            if stored_in_redis is not None:
-                continue
-            if cnode_url == "''":
-                continue
-
-            try:
-                logger.warning('index.py | Retrieving connection info for %s', cnode_url)
-                multiaddr_info[cnode_url] = get_ipfs_info_from_cnode_endpoint(
-                    cnode_url,
-                    None
-                )
-            except Exception as e:  # pylint: disable=broad-except
-                # Handle error in retrieval by not peering this node
-                logger.warning('index.py | Error retrieving info for %s, %s', cnode_url, str(e))
-                multiaddr_info[cnode_url] = None
-
-        for key in multiaddr_info:
-            if multiaddr_info[key] is not None:
-                try:
-                # Peer nodes
-                    logger.warning('index.py | Connecting to %s', multiaddr_info[key])
-                    ipfs_client.connect_peer(multiaddr_info[key])
-                    redis.set(key, multiaddr_info[key], ex=interval)
-                except Exception as e: #pylint: disable=broad-except
-                    logger.warning('index.py | Error connection to %s, %s, %s', multiaddr_info[key], cnode_url, str(e))
-
-
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
 def update_task(self):
@@ -549,9 +479,6 @@ def update_task(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            # Refresh all IPFS peer connections
-            refresh_peer_connections(self)
-
             logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
 
