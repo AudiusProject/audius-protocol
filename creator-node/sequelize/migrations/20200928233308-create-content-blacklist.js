@@ -25,9 +25,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return Promise.all([
-      queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_ContentBlacklists_type";'),
-      queryInterface.dropTable('ContentBlacklists')
-    ])
+    return queryInterface.dropTable('ContentBlacklists')
   }
 }
