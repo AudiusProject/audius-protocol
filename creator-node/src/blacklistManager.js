@@ -82,7 +82,7 @@ class BlacklistManager {
   static async fetchCIDsAndAddToRedis ({ trackIdsToBlacklist = [], userIdsToBlacklist = [], segmentsToBlacklist = [] }) {
     // Get tracks from param and by parsing through user tracks
     const tracks = await this.getTracksFromUsers(userIdsToBlacklist)
-    trackIdsToBlacklist = [...tracks.map(track => track.blockchainId), ...trackIdsToBlacklist]
+    trackIdsToBlacklist = trackIdsToBlacklist.concat(tracks.map(track => track.blockchainId))
 
     // Dedupe trackIds
     const trackIds = new Set(trackIdsToBlacklist)
@@ -107,7 +107,7 @@ class BlacklistManager {
   static async fetchCIDsAndRemoveFromRedis ({ trackIdsToBlacklist = [], userIdsToBlacklist = [], segmentsToBlacklist = [] }) {
     // Get tracks from param and by parsing through user tracks
     const tracks = await this.getTracksFromUsers(userIdsToBlacklist)
-    trackIdsToBlacklist = [...tracks.map(track => track.blockchainId), ...trackIdsToBlacklist]
+    trackIdsToBlacklist = trackIdsToBlacklist.concat(tracks.map(track => track.blockchainId))
 
     // Dedupe trackIds
     const trackIds = new Set(trackIdsToBlacklist)
