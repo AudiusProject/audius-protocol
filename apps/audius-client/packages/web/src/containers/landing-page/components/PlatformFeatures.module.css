@@ -121,6 +121,9 @@
   line-height: 24px;
 }
 
+.featureDescription a {
+  color: var(--secondary);
+}
 
 /* Mobile Styles */
 
