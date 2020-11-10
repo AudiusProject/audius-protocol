@@ -20,6 +20,8 @@ const ACTION_SET = new Set(ACTION_ARR)
 const TYPES_ARR = ['USER', 'TRACK', 'CID']
 const TYPES_SET = new Set(TYPES_ARR)
 
+const REQUEST_CONCURRENCY_LIMIT = 20
+
 // Script usage:
 // node updateContentBlacklist.js -a add -l 1,3,7 -t user
 // node updateContentBlacklist.js -a add -l 1,3,7 -t track
@@ -204,7 +206,14 @@ async function verifyWithBlacklist ({ type, values, action }) {
       filterFn = status => status
       break
   }
-  const creatorNodeResponses = await Promise.all(allSegments.map(segment => checkFn(segment)))
+
+  // Batch requests
+  let creatorNodeResponses = []
+  const checkSegmentBlacklistStatusRequests = allSegments.map(segment => checkFn(segment))
+  for (let i = 0; i < allSegments.length; i += REQUEST_CONCURRENCY_LIMIT) {
+    const creatorNodeResponsesSlice = await Promise.all(checkSegmentBlacklistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
+    creatorNodeResponses = creatorNodeResponses.concat(creatorNodeResponsesSlice)
+  }
 
   // Segments that were not accounted for during blacklisting/unblacklisting
   const unaccountedSegments = creatorNodeResponses
@@ -249,8 +258,14 @@ async function getSegments (type, values) {
       }
     }
 
-    let resps = await Promise.all(discProvRequests)
-    for (const resp of resps) {
+    // Batch requests
+    let discProvResps = []
+    for (let i = 0; i < discProvRequests.length; i += REQUEST_CONCURRENCY_LIMIT) {
+      const discProvResponsesSlice = await Promise.all(discProvRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
+      discProvResps = discProvResps.concat(discProvResponsesSlice)
+    }
+
+    for (const resp of discProvResps) {
       for (const track of resp.data.data) {
         for (const segment of track.track_segments) {
           allSegments.push(segment.multihash)
