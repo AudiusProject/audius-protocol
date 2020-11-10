@@ -20,7 +20,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe('test ContentBlacklist', function () {
+describe.only('test ContentBlacklist', function () {
   let app, server, libsMock
 
   beforeEach(async () => {
@@ -59,14 +59,14 @@ describe('test ContentBlacklist', function () {
   it('should return the proper userIds, trackIds, and segments', async () => {
     const addUserData = generateTimestampAndSignature({
       type: BlacklistManager.getTypes().user,
-      ids: [1]
+      values: [1]
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
+      .post('/blacklist/add')
       .query({
         type: BlacklistManager.getTypes().user,
-        'ids[]': [1],
+        'values[]': [1],
         signature: addUserData.signature,
         timestamp: addUserData.timestamp
       })
@@ -74,14 +74,14 @@ describe('test ContentBlacklist', function () {
 
     const addTrackData = generateTimestampAndSignature({
       type: BlacklistManager.getTypes().track,
-      ids: [1]
+      values: [1]
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
+      .post('/blacklist/add')
       .query({
         type: BlacklistManager.getTypes().track,
-        'ids[]': [1],
+        'values[]': [1],
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
       })
@@ -89,13 +89,15 @@ describe('test ContentBlacklist', function () {
 
     const cids = [generateRandomCID()]
     const addCIDData = generateTimestampAndSignature({
-      cids
+      type: BlacklistManager.getTypes().cid,
+      values: cids
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/cids')
+      .post('/blacklist/add')
       .query({
-        'cids[]': cids,
+        type: BlacklistManager.getTypes().cid,
+        'values[]': cids,
         signature: addCIDData.signature,
         timestamp: addCIDData.timestamp
       })
@@ -117,11 +119,11 @@ describe('test ContentBlacklist', function () {
   it('should add user type and id to db and redis', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const user = await models.ContentBlacklist.findOne({
@@ -139,11 +141,11 @@ describe('test ContentBlacklist', function () {
   it('should add track type and id to db and redis', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const track = await models.ContentBlacklist.findOne({
@@ -161,16 +163,16 @@ describe('test ContentBlacklist', function () {
   it('should remove user type and id from db and redis', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/remove/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const user = await models.ContentBlacklist.findOne({
@@ -187,16 +189,16 @@ describe('test ContentBlacklist', function () {
   it('should remove track type and id from db and redis', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/remove/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const track = await models.ContentBlacklist.findOne({
@@ -213,11 +215,11 @@ describe('test ContentBlacklist', function () {
   it('should return success when removing a user that does not exist', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/remove/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const user = await models.ContentBlacklist.findOne({ where: {
@@ -232,11 +234,11 @@ describe('test ContentBlacklist', function () {
   it('should return success when removing a track that does not exist', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/remove/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const track = await models.ContentBlacklist.findOne({ where: {
@@ -252,16 +254,16 @@ describe('test ContentBlacklist', function () {
   it('should ignore duplicate add for track', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const tracks = await models.ContentBlacklist.findAll({ where: {
@@ -279,16 +281,16 @@ describe('test ContentBlacklist', function () {
   it('should ignore duplicate add for user', async () => {
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     const users = await models.ContentBlacklist.findAll({ where: {
@@ -307,11 +309,11 @@ describe('test ContentBlacklist', function () {
     const ids = [generateRandomNaturalNumber(), generateRandomNaturalNumber()]
     libsMock.User.getUsers.returns([{ user_id: ids[0] }]) // only user @ index 0 is found
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     // Ensure only one user was added to the blacklist
@@ -333,11 +335,11 @@ describe('test ContentBlacklist', function () {
     const ids = [generateRandomNaturalNumber(), generateRandomNaturalNumber()]
     libsMock.Track.getTracks.returns([{ track_id: ids[0] }]) // only user @ index 0 is found
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     // Ensure only one track was added to the blacklist
@@ -357,12 +359,12 @@ describe('test ContentBlacklist', function () {
 
   it('should add cids to db and redis', async () => {
     const cids = [generateRandomCID()]
-    const { signature, timestamp } = generateTimestampAndSignature({ cids }, DELEGATE_PRIVATE_KEY)
     const type = BlacklistManager.getTypes().cid
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: cids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/cids')
-      .query({ 'cids[]': cids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': cids, timestamp, signature })
       .expect(200)
 
     const entry = await models.ContentBlacklist.findOne({
@@ -379,17 +381,17 @@ describe('test ContentBlacklist', function () {
 
   it('should remove cids from db and redis', async () => {
     const cids = [generateRandomCID()]
-    const { signature, timestamp } = generateTimestampAndSignature({ cids }, DELEGATE_PRIVATE_KEY)
     const type = BlacklistManager.getTypes().cid
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: cids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/cids')
-      .query({ 'cids[]': cids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': cids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/remove/cids')
-      .query({ 'cids[]': cids, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': cids, timestamp, signature })
       .expect(200)
 
     const entry = await models.ContentBlacklist.findAll({
@@ -410,11 +412,11 @@ describe('test ContentBlacklist', function () {
     const type = BlacklistManager.getTypes().user
     const BAD_KEY = '0xBADKEY4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
 
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, BAD_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, BAD_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(401)
   })
 
@@ -423,43 +425,45 @@ describe('test ContentBlacklist', function () {
     const type = BlacklistManager.getTypes().track
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids })
       .expect(400)
 
     await request(app)
-      .post('/blacklist/remove/ids')
-      .query({ type, 'ids[]': ids })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids })
       .expect(400)
   })
 
   it('should throw an error if query params id and type are not proper', async () => {
     const ids = 'halsey'
     const type = 'is fantastic'
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, signature, timestamp })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, signature, timestamp })
       .expect(400)
 
     await request(app)
-      .post('/blacklist/remove/ids')
-      .query({ type, 'ids[]': ids, signature, timestamp })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, signature, timestamp })
       .expect(400)
   })
 
-  it('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
+  it.only('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
     // Create user and upload track
     const resp = await createUserAndUploadTrack()
 
     // Blacklist trackId
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids: [1] }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [1] }, DELEGATE_PRIVATE_KEY)
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': [1], signature, timestamp })
-      .expect(200)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [1], signature, timestamp })
+      .expect(200, resp => {
+        console.log('what is resp ', resp)
+      })
 
     // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
     await Promise.all(
@@ -469,6 +473,8 @@ describe('test ContentBlacklist', function () {
           .expect(403)
       )
     )
+
+    // TODO: add remove and test that the segments are unblacklisted
   })
 
   it('should throw an error when adding a track id to the blacklist and streaming /ipfs/:CID route', async () => {
@@ -477,10 +483,10 @@ describe('test ContentBlacklist', function () {
 
     // Blacklist trackId
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, ids: [resp.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [resp.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': [resp.track.blockchainId], signature, timestamp })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [resp.track.blockchainId], signature, timestamp })
       .expect(200)
 
     // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
@@ -495,11 +501,11 @@ describe('test ContentBlacklist', function () {
 
   it('should throw an error when adding a cid to the blacklist and streaming /ipfs/:CID', async () => {
     const cids = [generateRandomCID()]
-    const { signature, timestamp } = generateTimestampAndSignature({ cids }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type: BlacklistManager.getTypes().cid, values: cids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/cids')
-      .query({ 'cids[]': cids, timestamp, signature })
+      .post('/blacklist/add')
+      .query({ 'values[]': cids, timestamp, signature })
       .expect(200)
 
     await request(app)
@@ -511,20 +517,20 @@ describe('test ContentBlacklist', function () {
     libsMock.User.getUsers.returns([])
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const resp1 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const resp1 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
       .expect(400)
 
     // Ensure works with multiple ids
     ids.push(generateRandomNaturalNumber())
-    const resp2 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const resp2 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
       .expect(400)
   })
 
@@ -532,20 +538,20 @@ describe('test ContentBlacklist', function () {
     libsMock.Track.getTracks.returns([])
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const resp1 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const resp1 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
       .expect(400)
 
     // Ensure works with multiple ids
     ids.push(generateRandomNaturalNumber())
-    const resp2 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const resp2 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
       .expect(400)
   })
 
@@ -553,33 +559,33 @@ describe('test ContentBlacklist', function () {
     libsMock.User.getUsers.returns([])
     const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const resp1 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const resp1 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
       .expect(400)
 
     // Ensure works with multiple ids
     ids.push(generateRandomNaturalNumber())
-    const resp2 = generateTimestampAndSignature({ type, ids }, DELEGATE_PRIVATE_KEY)
+    const resp2 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/ids')
-      .query({ type, 'ids[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
       .expect(400)
   })
 
   it('should throw an error if query params cids does not match the Qm... pattern', async () => {
     const cids = ['vicky was here', 'and here too', generateRandomNaturalNumber(), '###%^&']
     const type = BlacklistManager.getTypes().cid
-    const { timestamp, signature } = generateTimestampAndSignature({ cids }, DELEGATE_PRIVATE_KEY)
+    const { timestamp, signature } = generateTimestampAndSignature({ type: BlacklistManager.getTypes().cid, values: cids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/add/cids')
+      .post('/blacklist/add')
       .query({
         type,
-        'cids[]': cids,
+        'values[]': cids,
         timestamp,
         signature
       })

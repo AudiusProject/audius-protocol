@@ -146,16 +146,56 @@ class BlacklistManager {
     return [...segmentCIDs]
   }
 
+  static async add ({ values, type }) {
+    await this.addToDb({ values, type })
+
+    // add to redis
+    switch (type) {
+      case 'USER':
+        // add user ids to redis under userid key + its associated track segments
+        await this.fetchCIDsAndAddToRedis({ userIdsToBlacklist: values })
+        break
+      case 'TRACK':
+        // add track ids to redis under trackid key + its associated track segments
+        await this.fetchCIDsAndAddToRedis({ trackIdsToBlacklist: values })
+        break
+      case 'CID':
+        // add segments to redis under segment key
+        await this.fetchCIDsAndAddToRedis({ segmentsToBlacklist: values })
+        break
+    }
+  }
+
+  static async remove ({ values, type }) {
+    await this.removeFromDb({ values, type })
+
+    // add to redis
+    switch (type) {
+      case 'USER':
+        // add user ids to redis under userid key + its associated track segments
+        await this.fetchCIDsAndRemoveFromRedis({ userIdsToBlacklist: values })
+        break
+      case 'TRACK':
+        // add track ids to redis under trackid key + its associated track segments
+        await this.fetchCIDsAndRemoveFromRedis({ trackIdsToBlacklist: values })
+        break
+      case 'CID':
+        // add segments to redis under segment key
+        await this.fetchCIDsAndRemoveFromRedis({ segmentsToBlacklist: values })
+        break
+    }
+  }
+
   /**
    * Adds ids and types as individual entries to ContentBlacklist table
    * @param {number} id user or track id
    * @param {'USER'|'TRACK'} type
    */
-  static async addIdsToDb ({ ids, type }) {
+  static async addToDb ({ values, type }) {
     const errs = []
     try {
-      await models.ContentBlacklist.bulkCreate(ids.map(id => ({
-        value: id, // todo: do i need to convert this to a string
+      await models.ContentBlacklist.bulkCreate(values.map(value => ({
+        value,
         type
       })), { ignoreDuplicates: true }) // if dupes found, do not update any columns
     } catch (e) {
@@ -166,27 +206,8 @@ class BlacklistManager {
       throw new Error(`Error with adding to ContentBlacklist: ${errs.toString()}`)
     }
 
-    console.log(`Sucessfully added entries with type (${type}) and ids (${ids}) to the ContentBlacklist table!`)
-    return { type, ids }
-  }
-
-  static async addCIDsToDb ({ cids, type }) {
-    const errs = []
-    try {
-      await models.ContentBlacklist.bulkCreate(cids.map(cid => ({
-        value: cid,
-        type
-      })), { ignoreDuplicates: true }) // if dupes found, do not update any columns
-    } catch (e) {
-      errs.push(e)
-    }
-
-    if (errs.length > 0) {
-      throw new Error(`Error with adding to ContentBlacklist: ${errs.toString()}`)
-    }
-
-    console.log(`Sucessfully added cids [${cids}] to the ContentBlacklist table!`)
-    return cids
+    logger.info(`Sucessfully added entries with type (${type}) and values (${values}) to the ContentBlacklist table!`)
+    return { type, values }
   }
 
   /**
@@ -194,47 +215,25 @@ class BlacklistManager {
    * @param {number} id user or track id
    * @param {'USER'|'TRACK'} type
    */
-  static async removeIdsFromDb ({ ids, type }) {
+  static async removeFromDb ({ values, type }) {
     let numRowsDestroyed
     try {
       numRowsDestroyed = await models.ContentBlacklist.destroy({
         where: {
-          value: { [models.Sequelize.Op.in]: ids }, // todo: might need to convert this to string before where clause
+          value: { [models.Sequelize.Op.in]: values }, // todo: might need to convert this to string before where clause
           type
         }
       })
     } catch (e) {
-      throw new Error(`Error with removing entry with type [${type}] and id [${ids.toString()}]: ${e}`)
+      throw new Error(`Error with removing entry with type [${type}] and id [${values.toString()}]: ${e}`)
     }
 
     if (numRowsDestroyed > 0) {
-      console.debug(`Removed entry with type [${type}] and ids [${ids.toString()}] to the ContentBlacklist table!`)
-      return { type, ids }
+      logger.debug(`Removed entry with type [${type}] and values [${values.toString()}] to the ContentBlacklist table!`)
+      return { type, values }
     }
 
-    console.debug(`Entry with type [${type}] and id [${ids.toString()}] does not exist in ContentBlacklist.`)
-    return null
-  }
-
-  static async removeCIDsFromDb ({ cids, type }) {
-    let numRowsDestroyed
-    try {
-      numRowsDestroyed = await models.ContentBlacklist.destroy({
-        where: {
-          value: { [models.Sequelize.Op.in]: cids },
-          type
-        }
-      })
-    } catch (e) {
-      throw new Error(`Error with removing entries with cids [${cids.toString()}]: ${e}`)
-    }
-
-    if (numRowsDestroyed > 0) {
-      console.debug(`Removed entries with cids [${cids.toString()}] to the ContentBlacklist table!`)
-      return cids
-    }
-
-    console.debug(`Entries with cid [${cids.toString()}]  does not exist in ContentBlacklist.`)
+    logger.debug(`Entry with type [${type}] and id [${values.toString()}] does not exist in ContentBlacklist.`)
     return null
   }
 

@@ -13,7 +13,7 @@ const PRIVATE_KEY = process.env.delegatePrivateKey // add 0x prefix
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 
 // Available action types
-const ACTION_ARR = ['ADD', 'REMOVE', 'VERIFY']
+const ACTION_ARR = ['ADD', 'REMOVE']
 const ACTION_SET = new Set(ACTION_ARR)
 const TYPES_ARR = ['USER', 'TRACK', 'CID']
 const TYPES_SET = new Set(TYPES_ARR)
@@ -55,11 +55,11 @@ async function run () {
       case 'TRACK':
         switch (action) {
           case 'ADD': {
-            await addIdsToContentBlacklist(type, ids)
+            await addToContentBlacklist(type, ids)
             break
           }
           case 'REMOVE': {
-            await removeIdsFromContentBlacklist(type, ids)
+            await removeFromContentBlacklist(type, ids)
             break
           }
           case 'VERIFY': {
@@ -72,7 +72,7 @@ async function run () {
       case 'CID':
         switch (action) {
           case 'ADD': {
-            await addCIDsToContentBlacklist(cids)
+            await addToContentBlacklist(type, cids)
             break
           }
           case 'REMOVE': {
@@ -146,94 +146,48 @@ function parseEnvVarsAndArgs () {
 }
 
 /**
- * 1. Signs the data {type, id, timestamp} with PRIVATE_KEY specified in this script
- * 2. Sends axios request to add entry to content blacklist of type and id
+ * 1. Signs the data {type, values, timestamp} with PRIVATE_KEY specified in this script
+ * 2. Sends axios request to add entry to content blacklist of type and values
  * @param {string} type
- * @param {number[]} ids
+ * @param {number[]|string[]} values
  */
-async function addIdsToContentBlacklist (type, ids) {
-  const { timestamp, signature } = generateTimestampAndSignature({ type, ids }, PRIVATE_KEY)
+async function addToContentBlacklist (type, values) {
+  const { timestamp, signature } = generateTimestampAndSignature({ type, values }, PRIVATE_KEY)
 
   let resp
   try {
     resp = await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/blacklist/add/ids`,
+      url: `${CREATOR_NODE_ENDPOINT}/blacklist/add`,
       method: 'post',
-      params: { type, ids, timestamp, signature },
+      params: { type, values, timestamp, signature },
       responseType: 'json'
     })
   } catch (e) {
-    throw new Error(`Error with adding type [${type}] and id [${ids}] to ContentBlacklist: ${e}`)
+    throw new Error(`Error with adding type [${type}] and values [${values}] to ContentBlacklist: ${e}`)
   }
 
   return resp.data
 }
 
 /**
- * 1. Signs the data {type, id, timestamp} with PRIVATE_KEY specified in this script
+ * 1. Signs the data {type, values, timestamp} with PRIVATE_KEY specified in this script
  * 2. Sends axios request to remove entry from content blacklist of type and id
  * @param {string} type
- * @param {number[]} ids
+ * @param {number[]|string[]} values
  */
-async function removeIdsFromContentBlacklist (type, ids) {
-  const { timestamp, signature } = generateTimestampAndSignature({ type, ids }, PRIVATE_KEY)
+async function removeFromContentBlacklist (type, values) {
+  const { timestamp, signature } = generateTimestampAndSignature({ type, values }, PRIVATE_KEY)
 
   let resp
   try {
     resp = await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/blacklist/remove/ids`,
+      url: `${CREATOR_NODE_ENDPOINT}/blacklist/remove`,
       method: 'post',
-      params: { type, ids, timestamp, signature },
+      params: { type, values, timestamp, signature },
       responseType: 'json'
     })
   } catch (e) {
-    throw new Error(`Error with removing type [${type}] and ids [${ids}] from ContentBlacklist: ${e}`)
-  }
-
-  return resp.data
-}
-
-/**
- * 1. Signs the data {cids, timestamp} with PRIVATE_KEY specified in this script
- * 2. Sends axios request to add cids to content blacklist
- * @param {string[]} cids
- */
-async function addCIDsToContentBlacklist (cids) {
-  const { timestamp, signature } = generateTimestampAndSignature({ cids }, PRIVATE_KEY)
-
-  let resp
-  try {
-    resp = await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/blacklist/add/cids`,
-      method: 'post',
-      params: { cids, timestamp, signature },
-      responseType: 'json'
-    })
-  } catch (e) {
-    throw new Error(`Error with adding cids [${cids.toString()}] from ContentBlacklist: ${e}`)
-  }
-
-  return resp.data
-}
-
-/**
- * 1. Signs the data {cids, timestamp} with PRIVATE_KEY specified in this script
- * 2. Sends axios request to remove cids from content blacklist
- * @param {string[]} cids
- */
-async function removeCIDsFromContentBlacklist (cids) {
-  const { timestamp, signature } = generateTimestampAndSignature({ cids }, PRIVATE_KEY)
-
-  let resp
-  try {
-    resp = await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/blacklist/remove/cids`,
-      method: 'post',
-      params: { cids, timestamp, signature },
-      responseType: 'json'
-    })
-  } catch (e) {
-    throw new Error(`Error with removing cids [${cids.toString()}] from ContentBlacklist: ${e}`)
+    throw new Error(`Error with removing type [${type}] and values [${values}] from ContentBlacklist: ${e}`)
   }
 
   return resp.data
