@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const readline = require('readline')
 const ethContractsMigrationOutput = require('../../eth-contracts/migrations/migration-output.json')
 
@@ -6,7 +7,7 @@ const ethContractsMigrationOutput = require('../../eth-contracts/migrations/migr
 // Updates audius_eth_contracts_registry in discovery provider
 const configureLocalDiscProv = async () => {
   let ethRegistryAddress = ethContractsMigrationOutput.registryAddress
-  let envPath = `${process.env.PROTOCOL_DIR}/discovery-provider/compose/.env`
+  let envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
   await _updateDiscoveryProviderEnvFile(envPath, envPath, ethRegistryAddress)
 }
 
