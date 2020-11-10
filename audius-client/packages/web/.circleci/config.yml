@@ -258,25 +258,7 @@ jobs:
       - pr-comment:
           comment: Preview this change https://frontend-demo.audius.co/${CIRCLE_BRANCH}
 
-  deploy-ci:
-    working_directory: ~/audius-dapp
-    docker:
-      - image: circleci/python:2.7-jessie
-    steps:
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Deploy to S3
-          command: aws s3 sync build-ci s3://ci.audius.co --delete --cache-control max-age=0
-      - run:
-          name: Invalidate cache
-          # Note: cache invalidation is charged per path, so this only counts as 1/1000 monthly quota.
-          command: aws cloudfront create-invalidation --distribution-id EOMGWGQC168GB --paths "/*"
-
-  deploy-staging:
+  deploy-staging-s3:
     working_directory: ~/audius-dapp
     docker:
       - image: circleci/python:2.7-jessie
@@ -292,6 +274,28 @@ jobs:
           command: |
             aws s3 sync --exclude ./resources/apple-app-site-association --exclude "sitemaps/*" build-staging s3://staging.audius.co --delete --cache-control max-age=0
             aws s3 cp ./resources/apple-app-site-association s3://staging.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+
+  deploy-staging-cloudflare:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - run:
+          name: install wrangler
+          command: 'npm install @cloudflare/wrangler'
+      - run:
+          name: Deploy to Cloudflare
+          command: |
+            mv build-staging build
+            cp ./resources/apple-app-site-association build
+            echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env staging
+            npx wrangler publish --env staging
 
   deploy-mobile-staging:
     working_directory: ~/audius-dapp
@@ -325,7 +329,7 @@ jobs:
             aws s3 cp s3://release.audius.co/index.html s3://release.audius.co/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
             aws s3 cp ./resources/apple-app-site-association s3://release.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
 
-  deploy-production:
+  deploy-production-s3:
     working_directory: ~/audius-dapp
     docker:
       - image: circleci/python:2.7-jessie
@@ -348,6 +352,28 @@ jobs:
           name: Invalidate cache
           # Note: cache invalidation is charged per path, so this only counts as 1/1000 monthly quota.
           command: aws cloudfront create-invalidation --distribution-id E1ZJ9Z971FJQJ8 --paths "/*"
+
+  deploy-production-cloudflare:
+    working_directory: ~/audius-dapp
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - run:
+          name: install wrangler
+          command: 'npm install @cloudflare/wrangler'
+      - run:
+          name: Deploy to Cloudflare
+          command: |
+            mv build-production build
+            cp ./resources/apple-app-site-association build
+            echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env production
+            npx wrangler publish --env production
 
   deploy-sentry-sourcemaps:
     working_directory: ~/audius-dapp
@@ -539,13 +565,22 @@ workflows:
           requires:
             - build-staging
 
-      - deploy-staging:
+      - deploy-staging-s3:
           context: Audius Client
           requires:
             - test-staging
           filters:
             branches:
               only: /^master$/
+
+      - deploy-staging-cloudflare:
+          context: Audius Client
+          requires:
+            - test-staging
+          filters:
+            branches:
+              only: /^master$/
+
       - deploy-release:
           context: Audius Client
           requires:
@@ -594,7 +629,14 @@ workflows:
           filters:
             branches:
               only: /(^master)|(^hotfix.*)$/
-      - deploy-production:
+      - deploy-production-s3:
+          context: Audius Client
+          requires:
+            - hold-production
+          filters:
+            branches:
+              only: /(^master)|(^hotfix.*)$/
+      - deploy-production-cloudflare:
           context: Audius Client
           requires:
             - hold-production
@@ -606,7 +648,7 @@ workflows:
       - deploy-sentry-sourcemaps:
           context: Audius Client
           requires:
-            - deploy-production
+            - deploy-production-s3
           filters:
             branches:
               only: /(^master)|(^hotfix.*)$/
