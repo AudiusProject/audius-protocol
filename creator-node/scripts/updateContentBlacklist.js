@@ -2,7 +2,7 @@ const axios = require('axios')
 const { Command } = require('commander')
 const program = new Command()
 program
-  .usage('[action] [type] [ids or cids]')
+  .usage('-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]')
   .requiredOption('-t, --type <type>', 'user, track, or cid')
   .requiredOption('-l, --list <list>', 'comma separated list of ids or cids', ids => ids.split(','))
   .requiredOption('-a, --act <action>', 'add, remove, or verify')
@@ -35,6 +35,8 @@ const REQUEST_CONCURRENCY_LIMIT = 20
 // node updateContentBlacklist.js -a verify -l 1,3,7 -t track
 // node updateContentBlacklist.js -a verify -l Qm..., Qm..., -t cid
 
+// add -v flag to each script run to see the segments and number of segments touched
+
 // For help:
 // node updateContentBlacklist.js --help
 
@@ -51,8 +53,8 @@ async function run () {
     return
   }
 
+  console.log('Updating Content Blacklist...\n')
   const { action, type, values, verbose } = args
-
   try {
     switch (action) {
       case 'ADD': {
@@ -73,7 +75,7 @@ async function run () {
     return
   }
 
-  console.log('\nVerifying content against blacklist...\n')
+  console.log('Verifying content against blacklist...\n')
   try {
     const segments = await verifyWithBlacklist({ type, values, action })
 
