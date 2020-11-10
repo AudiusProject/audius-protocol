@@ -89,7 +89,7 @@ class BlacklistManager {
 
     // Retrieves CIDs from deduped trackIds
     const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
-    const segmentCIDsToBlacklist = [...segmentsFromTrackIds, ...segmentsToBlacklist] // filter out empty strings? why is there an empty string
+    const segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
 
     try {
       await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
@@ -114,7 +114,7 @@ class BlacklistManager {
 
     // Retrieves CIDs from deduped trackIds
     const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
-    const segmentCIDsToRemove = [...segmentsFromTrackIds, ...segmentsToBlacklist]
+    const segmentCIDsToRemove = segmentsFromTrackIds.concat(segmentsToBlacklist)
 
     try {
       await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
