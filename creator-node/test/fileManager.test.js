@@ -101,7 +101,7 @@ describe('test fileManager', () => {
      * When: file copying fails
      * Then: an error is thrown
      */
-    it.only('should throw an error if file copy fails', async () => {
+    it('should throw an error if file copy fails', async () => {
       const copyFileStub = sinon.stub().throws((new Error('Failed to copy files!!')))
       const utilStub = { promisify: sinon.stub().callsFake(() => copyFileStub) }
       const { saveFileToIPFSFromFS } = proxyquire('../src/fileManager', {
