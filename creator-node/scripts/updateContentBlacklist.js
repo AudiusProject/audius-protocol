@@ -222,47 +222,39 @@ async function verifyWithBlacklist ({ type, values, action }) {
 }
 
 async function getSegments (type, values) {
+  if (type === 'CID') return values
+
   let allSegments = []
+  let discProvRequests
   try {
     // Fetch the segments via disc prov
     switch (type) {
       case 'USER': {
-        const discProvRequests = values.map(value => axios({
+        discProvRequests = values.map(value => axios({
           url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
           method: 'get',
           params: { user_id: value },
           responseType: 'json'
         }))
-        let resps = await Promise.all(discProvRequests)
-        for (const resp of resps) {
-          for (const track of resp.data.data) {
-            for (const segment of track.track_segments) {
-              allSegments.push(segment.multihash)
-            }
-          }
-        }
         break
       }
       case 'TRACK': {
-        const discProvRequests = values.map(value => axios({
+        discProvRequests = values.map(value => axios({
           url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
           method: 'get',
           params: { id: value },
           responseType: 'json'
         }))
-        let resps = await Promise.all(discProvRequests)
-        for (const resp of resps) {
-          for (const track of resp.data.data) {
-            for (const segment of track.track_segments) {
-              allSegments.push(segment.multihash)
-            }
-          }
-        }
         break
       }
-      case 'CID': {
-        allSegments = values
-        break
+    }
+
+    let resps = await Promise.all(discProvRequests)
+    for (const resp of resps) {
+      for (const track of resp.data.data) {
+        for (const segment of track.track_segments) {
+          allSegments.push(segment.multihash)
+        }
       }
     }
   } catch (e) {
