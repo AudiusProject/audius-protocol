@@ -20,7 +20,7 @@ const messages = {
 
 type FeatureProps = {
   title: string
-  description: string
+  description: string | ReactNode
   icon: ReactNode
 }
 
@@ -38,9 +38,21 @@ const features: Array<FeatureProps> = [
     icon: <IconAudio className={styles.featureIcon} />
   },
   {
-    title: 'Censorship Resistance',
-    description:
-      'Your artist profile can never be "deplatformed", and your tracks can never be censored or removed.',
+    title: 'EXCLUSIVE CONTENT',
+    description: (
+      <>
+        {`Your fans can download stems and find remixes of your tracks right from
+        the track page. `}
+        <a
+          href='https://twitter.com/AudiusProject/status/1272614652623519744?s=20'
+          rel='noopener noreferrer'
+          target='_blank'
+        >
+          Run your own contest
+        </a>
+        .
+      </>
+    ),
     icon: <IconCensorship className={styles.featureIcon} />
   }
 ]
