@@ -6,6 +6,7 @@ program
   .requiredOption('-t, --type <type>', 'user, track, or cid')
   .requiredOption('-l, --list <list>', 'comma separated list of ids or cids', ids => ids.split(','))
   .requiredOption('-a, --act <action>', 'add, remove, or verify')
+  .option('-v, --verbose', 'boolean to print out blacklisted/unblacklisted segments')
 
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 
@@ -48,7 +49,7 @@ async function run () {
     return
   }
 
-  const { action, type, values } = args
+  const { action, type, values, verbose } = args
 
   try {
     switch (action) {
@@ -65,15 +66,21 @@ async function run () {
         return
       }
     }
-    console.log(`Successfully performed [${action}] for type [${type}] and values [${values}]`)
   } catch (e) {
     console.error(`Failed to perform [${action}] for [${type}]: ${e}`)
+    return
   }
 
+  console.log('\nVerifying content against blacklist...\n')
   try {
-    console.log('\nVerifying content against blacklist...\n')
-    await verifyWithBlacklist({ type, values, action })
-    console.log(`All values for type ${type} are blacklisted!\nValues: ${values.toString()}`)
+    const segments = await verifyWithBlacklist({ type, values, action })
+
+    let successMsg = `Successfully performed [${action}] for type [${type}]!\nValues: [${values}]`
+    if (verbose) {
+      successMsg += `\nNumber of Segments: ${segments.length}`
+      successMsg += `\nSegments: ${segments}`
+    }
+    console.log(successMsg)
   } catch (e) {
     console.error(`Verification check failed: ${e}`)
   }
@@ -124,7 +131,7 @@ function parseEnvVarsAndArgs () {
     }
   }
 
-  return { action, values, type }
+  return { action, values, type, verbose: program.verbose }
 }
 
 /**
@@ -180,30 +187,38 @@ async function removeFromContentBlacklist (type, values) {
  * 2. Iterate through passed in CLI args against fetched content
  * @param {string} type
  * @param {(number[]|string[])} values cids or ids
+ * @returns {string[]} all segments associated with input
  */
 async function verifyWithBlacklist ({ type, values, action }) {
   let allSegments = await getSegments(type, values)
 
   // Hit creator node /ipfs/:CID route to see if segment is blacklisted
-  let checkFn
+  let checkFn, filterFn
   switch (action) {
     case 'ADD':
       checkFn = checkIsBlacklisted
+      filterFn = status => !status
       break
     case 'REMOVE':
       checkFn = checkIsNotBlacklisted
+      filterFn = status => status
       break
   }
   const creatorNodeResponses = await Promise.all(allSegments.map(segment => checkFn(segment)))
-  const notBlacklistedSegments = creatorNodeResponses
-    .filter(resp => !resp.blacklisted)
+
+  // Segments that were not accounted for during blacklisting/unblacklisting
+  const unaccountedSegments = creatorNodeResponses
+    .filter(resp => filterFn(resp.blacklisted))
     .map(resp => resp.segment)
 
-  if (notBlacklistedSegments.length > 0) {
-    let errorMsg = `Some segments from [${type}] and values [${values}] were not blacklisted.`
-    errorMsg += `\nSegments not blacklisted: [${notBlacklistedSegments.toString()}]`
+  if (unaccountedSegments.length > 0) {
+    let errorMsg = `Some segments from [${type}] and values [${values}] were not blacklisted/unblacklisted.`
+    errorMsg += `\nNumber of Segments: ${unaccountedSegments.length}`
+    errorMsg += `\nSegments: [${unaccountedSegments.toString()}]`
     throw new Error(errorMsg)
   }
+
+  return allSegments
 }
 
 async function getSegments (type, values) {
@@ -232,10 +247,9 @@ async function getSegments (type, values) {
         const discProvRequests = values.map(value => axios({
           url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
           method: 'get',
-          params: { track_id: value },
+          params: { id: value },
           responseType: 'json'
-        })
-        )
+        }))
         let resps = await Promise.all(discProvRequests)
         for (const resp of resps) {
           for (const track of resp.data.data) {
@@ -276,12 +290,7 @@ async function checkIsBlacklisted (segment) {
 
 async function checkIsNotBlacklisted (segment) {
   try {
-    await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`,
-      method: 'get',
-      responseType: 'json',
-      params: { CID: segment }
-    })
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
   } catch (e) {
     console.error(`Failed to check for segment [${segment}]: ${e}`)
     return { segment, blacklisted: true }
