@@ -238,6 +238,8 @@ const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
     return CIDCache.get(cid)
   }
 
+  creatorNodeGateways.push(USER_NODE)
+
   const primary = creatorNodeGateways[0]
   if (primary) {
     // Attempt to fetch/load the image using the first creator node gateway
