@@ -330,12 +330,8 @@ def configure_celery(flask_app, celery, test_config=None):
     db = SessionManager(database_url, engine_args_literal)
     logger.info('Database instance initialized!')
     # Initialize IPFS client for celery task context
-    gateway_addrs = shared_config["ipfs"]["gateway_hosts"].split(',')
-    gateway_addrs.append(
-        shared_config["discprov"]["user_metadata_service_url"])
-    logger.warning(f"__init__.py | {gateway_addrs}")
     ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], gateway_addrs
+        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
     )
 
     # Initialize Redis connection
