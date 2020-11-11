@@ -10,7 +10,7 @@ program
 
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 
-const PRIVATE_KEY = process.env.delegatePrivateKey // add 0x prefix
+const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 const DISCOVERY_PROVIDER_ENDPOINT = process.env.discoveryProviderEndpoint
 
@@ -101,8 +101,6 @@ function parseEnvVarsAndArgs () {
   if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY || !DISCOVERY_PROVIDER_ENDPOINT) {
     let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}], private key [${PRIVATE_KEY}]`
     errorMsg += ` or discovery provider endpoint [${DISCOVERY_PROVIDER_ENDPOINT}] have not been exported.`
-    errorMsg += "\nPlease export environment variables 'delegatePrivateKey' and 'creatorNodeEndpoint'."
-    errorMsg += "\nAlso make sure to add the prefix '0x' to the 'delegatePrivateKey'"
     throw new Error(errorMsg)
   }
 
