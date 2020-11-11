@@ -39,10 +39,10 @@ class CreatorNodeSelection extends ServiceSelection {
     this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
 
     if (this.whitelist) { services = this.filterToWhitelist(services) }
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_TO_WHITELIST, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST, val: services })
 
     if (this.blacklist) { services = this.filterFromBlacklist(services) }
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_FROM_BLACKLIST, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST, val: services })
 
     const healthCheckedServices = await timeRequestsAndSortByVersion(
       services.map(node => ({
@@ -76,7 +76,7 @@ class CreatorNodeSelection extends ServiceSelection {
       return isHealthy
     })
     services = healthyServices.map(service => service.request.id)
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_OUT_UNHEALTHY_AND_OUTDATED, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
 
     const successfulSyncCheckServices = []
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
@@ -97,7 +97,7 @@ class CreatorNodeSelection extends ServiceSelection {
     })
 
     services = [...successfulSyncCheckServices]
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTERED_OUT_SYNC_IN_PROGRESS, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
 
     const primary = this.getPrimary(services)
     const secondaries = this.getSecondaries(services, primary)
