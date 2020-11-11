@@ -23,6 +23,8 @@ const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 
+const SaveFileToIPFSConcurrencyLimit = 10
+
 module.exports = function (app) {
   /**
    * upload track segment files and make avail - will later be associated with Audius track
@@ -70,11 +72,19 @@ module.exports = function (app) {
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
     const transcodeFileIPFSResp = await saveFileToIPFSFromFS(req, transcodedFilePath)
-    const segmentFileIPFSResps = await Promise.all(segmentFilePaths.map(async (segmentFilePath) => {
-      const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-      const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
-      return { multihash, srcPath: segmentFilePath, dstPath }
-    }))
+
+    let segmentFileIPFSResps = []
+    for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
+      const segmentFilePathsSlice = segmentFilePaths.slice(i, i + SaveFileToIPFSConcurrencyLimit)
+
+      const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
+        const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
+        const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
+        return { multihash, srcPath: segmentFilePath, dstPath }
+      }))
+
+      segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
+    }
     req.logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Retrieve all segment durations as map(segment srcFilePath => segment duration)

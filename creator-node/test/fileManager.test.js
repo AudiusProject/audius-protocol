@@ -4,6 +4,7 @@ const uuid = require('uuid/v4')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const path = require('path')
+const proxyquire = require('proxyquire')
 
 const { ipfs } = require('../src/ipfsClient')
 const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
@@ -101,7 +102,11 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if file copy fails', async () => {
-      sinon.stub(fs, 'copyFileSync').throws(new Error('Failed to copy files!!'))
+      const copyFileStub = sinon.stub().throws((new Error('Failed to copy files!!')))
+      const utilStub = { promisify: sinon.stub().callsFake(() => copyFileStub) }
+      const { saveFileToIPFSFromFS } = proxyquire('../src/fileManager', {
+        util: utilStub
+      })
 
       try {
         await saveFileToIPFSFromFS(req, srcPath)

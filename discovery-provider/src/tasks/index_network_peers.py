@@ -1,0 +1,183 @@
+import logging
+import concurrent.futures
+from urllib.parse import urljoin
+import requests
+from src.tasks.celery_app import celery
+from src import eth_abi_values
+from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
+from src.models import User
+from src.utils.redis_cache import use_redis_cache
+
+logger = logging.getLogger(__name__)
+
+sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
+content_node_service_type = bytes("creator-node", "utf-8")
+
+# What is a "Peer" in this context?
+# A peer represents another known entity in the network
+# The logic here is to ensure a robust connection from an active indexer
+# to all active entities in the network.
+# This is to ensure minimal retrieval time within the actual indexing flow itself
+# NOTE - The terminology of "peer" in this file overlaps with ipfs swarm peers
+#   Even though we 'swarm connect' to an ipfs node embedded within our protocol the
+#   concept is very much distinct.
+
+# Perform eth web3 call to fetch endpoint info
+def fetch_cnode_info(sp_id, sp_factory_instance):
+    cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
+        content_node_service_type,
+        sp_id
+    ).call()
+    return cn_endpoint_info
+
+# Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
+def retrieve_peers_from_eth_contracts(self):
+    shared_config = update_network_peers.shared_config
+    eth_web3 = update_network_peers.eth_web3
+    eth_registry_address = update_network_peers.eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    sp_factory_address = eth_registry_instance.functions.getContract(
+        sp_factory_registry_key
+    ).call()
+    sp_factory_inst = eth_web3.eth.contract(
+        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+    )
+    total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(content_node_service_type).call()
+    ids_list = list(range(1, total_cn_type_providers + 1))
+    eth_cn_endpoints_set = set()
+   # Given the total number of nodes in the network we can now fetch node info in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        fetch_cnode_futures = {executor.submit(fetch_cnode_info, i, sp_factory_inst): i for i in ids_list}
+        for future in concurrent.futures.as_completed(fetch_cnode_futures):
+            single_cnode_fetch_op = fetch_cnode_futures[future]
+            try:
+                cn_endpoint_info = future.result()
+               # Validate the endpoint on chain
+                # As endpoints get deregistered, this peering system must not slow down with failed connections
+                #   or unanticipated load
+                eth_sp_endpoint = cn_endpoint_info[1]
+                valid_endpoint = is_fqdn(eth_sp_endpoint)
+                # Only valid FQDN strings are worth validating
+                if valid_endpoint:
+                    eth_cn_endpoints_set.add(cn_endpoint_info[1])
+            except Exception as exc:
+                logger.error(f"index_network_peers.py | fetch_cnode_futures {single_cnode_fetch_op} generated {exc}")
+   # Return dictionary with key = endpoint, formatted as { endpoint: True }
+    return eth_cn_endpoints_set
+
+# Determine the known set of distinct peers currently within a user replica set
+# This function differs from the above as we are not interacting with eth-contracts,
+#   instead we are pulling local db state and retrieving the relevant information
+def retrieve_peers_from_db(self):
+    db = update_network_peers.db
+    cnode_endpoints_set = set()
+    with db.scoped_session() as session:
+        db_cnode_endpts = (
+            session.query(
+                User.creator_node_endpoint).filter(
+                    User.creator_node_endpoint != None, User.is_current == True
+                ).distinct()
+        )
+        # Generate dictionary of unique creator node endpoints
+        for entry in db_cnode_endpts:
+            for cnode_user_set in entry:
+                cnode_entries = cnode_user_set.split(',')
+                for cnode_url in cnode_entries:
+                    if cnode_url == "''":
+                        continue
+                    cnode_endpoints_set.add(cnode_url)
+    return cnode_endpoints_set
+
+# calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
+def fetch_cnode_endpoints_from_identity(self):
+    try:
+        identity_url = update_network_peers.shared_config['discprov']['identity_service_url']
+        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
+
+        r = requests.get(identity_endpoint, timeout=3)
+        if r.status_code != 200:
+            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
+
+        registered_cnodes = r.json()
+        logger.info(
+            f"index_network_peers.py | Fetched registered creator nodes from chain via {identity_endpoint} - {registered_cnodes}"
+        )
+        return registered_cnodes
+    except Exception as e:
+        logger.error(f"Identity fetch failed {e}")
+        return []
+
+def refresh_cnodes_from_identity(self):
+    registered_cnodes = use_redis_cache(
+        'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_identity(self)
+    )
+    return registered_cnodes
+
+# Function submitted to future in threadpool executor
+def connect_peer(endpoint, ipfs_client):
+    logger.info(f"index_network_peers.py | Peering with {endpoint}")
+    ipfs_swarm_address = get_ipfs_info_from_cnode_endpoint(endpoint, None)
+    ipfs_client.connect_peer(ipfs_swarm_address)
+    logger.info(f"index_network_peers.py | Successfully peered with {endpoint}")
+
+# Actively connect to all peers in parallel
+def connect_peers(self, peers_list):
+    ipfs_client = update_network_peers.ipfs_client
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_connect_peer_request = {
+            executor.submit(connect_peer, endpoint, ipfs_client): endpoint for endpoint in peers_list
+        }
+        for future in concurrent.futures.as_completed(future_to_connect_peer_request):
+            try:
+                # No return value expected here so we just ensure all futures are resolved
+                future.result()
+            except Exception as exc:
+                logger.error(exc)
+
+######## CELERY TASKS ########
+@celery.task(name="update_network_peers", bind=True)
+def update_network_peers(self):
+    # Cache custom task class properties
+    # Details regarding custom task context can be found in wiki
+    # Custom Task definition can be found in src/__init__.py
+    redis = update_network_peers.redis
+    ipfs_client = update_network_peers.ipfs_client
+    # Define lock acquired boolean
+    have_lock = False
+    # Define redis lock object
+    update_lock = redis.lock("network_peers_lock", timeout=7200)
+    try:
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            # An object returned from web3 chain queries
+            peers_from_ethereum = retrieve_peers_from_eth_contracts(self)
+            # An object returned from local database queries
+            peers_from_local = retrieve_peers_from_db(self)
+            # Combine the set of known peers from ethereum and within local database
+            all_peers = peers_from_ethereum
+            all_peers.update(peers_from_local)
+
+            # Legacy list of cnodes from identity
+            identity_cnodes_map = refresh_cnodes_from_identity(self)
+            for node_info in identity_cnodes_map:
+                all_peers.add(node_info['endpoint'])
+
+            peers_list = list(all_peers)
+            # Update creator node url list in IPFS Client
+            # This list of known nodes is used to traverse and retrieve metadata from gateways
+            ipfs_client.update_cnode_urls(peers_list)
+            # Connect to all peers
+            connect_peers(self, peers_list)
+        else:
+            logger.info("index_network_peers.py | Failed to acquire update_network_peers")
+    except Exception as e:
+        logger.error("index_network_peers.py | Fatal error in main loop", exc_info=True)
+        raise e
+    finally:
+        if have_lock:
+            update_lock.release()
