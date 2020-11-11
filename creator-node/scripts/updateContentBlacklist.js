@@ -269,7 +269,7 @@ async function getSegments (type, values) {
               return axios(axiosRequest)
             }
           })
-          // Filter out null resps from users with over 500 tracks
+          // Filter out null resps from mapping requests with users with over 500 tracks
           .filter(Boolean)
 
         discProvRequests.concat(additionalRequests)
@@ -294,10 +294,13 @@ async function getSegments (type, values) {
     }
 
     // Iterate through disc prov responses and grab all the track segments
-    allSegments = discProvResps
-      .map(resp => resp.data.data[0])
-      .map(track => track.track_segments)[0]
-      .map(segment => segment.multihash)
+    let allSegmentObjs = []
+    for (const resp of discProvResps) {
+      for (const track of resp.data.data) {
+        allSegmentObjs = allSegmentObjs.concat(track.track_segments)
+      }
+    }
+    allSegments = allSegmentObjs.map(segmentObj => segmentObj.multihash)
   } catch (e) {
     throw new Error(`Error with fetching segments for verifcation: ${e}`)
   }
@@ -309,15 +312,15 @@ async function getSegments (type, values) {
  * @param {number[]} userIds
  */
 async function fetchUserToNumTracksMap (userIds) {
-  const resps = await axios({
+  const resp = await axios({
     url: `${DISCOVERY_PROVIDER_ENDPOINT}/users`,
     method: 'get',
-    params: { user_id: userIds },
+    params: { id: userIds },
     responseType: 'json'
   })
 
   const map = {}
-  resps.map(resp => {
+  resp.data.data.map(resp => {
     map[resp.user_id] = resp.track_count
   })
   return map
