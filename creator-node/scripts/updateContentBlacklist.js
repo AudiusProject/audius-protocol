@@ -21,6 +21,7 @@ const TYPES_ARR = ['USER', 'TRACK', 'CID']
 const TYPES_SET = new Set(TYPES_ARR)
 
 const REQUEST_CONCURRENCY_LIMIT = 20
+const MAX_LIMIT = 500
 
 // Script usage:
 // node updateContentBlacklist.js -a add -l 1,3,7 -t user
@@ -235,18 +236,45 @@ async function verifyWithBlacklist ({ type, values, action }) {
 async function getSegments (type, values) {
   if (type === 'CID') return values
 
-  let allSegments = []
   let discProvRequests
+  let allSegments
   try {
-    // Fetch the segments via disc prov
+    // Fetch all the segments via disc prov
     switch (type) {
       case 'USER': {
-        discProvRequests = values.map(value => axios({
-          url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
-          method: 'get',
-          params: { user_id: value },
-          responseType: 'json'
-        }))
+        const map = await fetchUserToNumTracksMap(values)
+        const additionalRequests = []
+        discProvRequests = values
+          .map(value => {
+            let numTracksForUser = map[value]
+            const axiosRequest = {
+              url: `${DISCOVERY_PROVIDER_ENDPOINT}/tracks`,
+              method: 'get',
+              params: { user_id: value, limit: MAX_LIMIT },
+              responseType: 'json'
+            }
+
+            if (numTracksForUser > MAX_LIMIT) {
+            // If users have over 500 tracks, add additional requests to query those tracks
+              let offset = 0
+              while (numTracksForUser > MAX_LIMIT) {
+                const axiosRequestWithOffset = { ...axiosRequest }
+                axiosRequestWithOffset.params.offset = offset
+                additionalRequests.push(axios(axiosRequest))
+
+                offset += MAX_LIMIT
+                numTracksForUser -= MAX_LIMIT
+              }
+              return null
+            } else {
+              // Else, create one request
+              return axios(axiosRequest)
+            }
+          })
+          // Filter out null resps from users with over 500 tracks
+          .filter(Boolean)
+
+        discProvRequests.concat(additionalRequests)
         break
       }
       case 'TRACK': {
@@ -267,19 +295,40 @@ async function getSegments (type, values) {
       discProvResps = discProvResps.concat(discProvResponsesSlice)
     }
 
-    for (const resp of discProvResps) {
-      for (const track of resp.data.data) {
-        for (const segment of track.track_segments) {
-          allSegments.push(segment.multihash)
-        }
-      }
-    }
+    // Iterate through disc prov responses and grab all the track segments
+    allSegments = discProvResps
+      .map(resp => resp.data.data[0])
+      .map(track => track.track_segments)[0]
+      .map(segment => segment.multihash)
   } catch (e) {
     throw new Error(`Error with fetching segments for verifcation: ${e}`)
   }
   return allSegments
 }
 
+/**
+ * Fetches the total tracks count from all input userIds, and returns a map of user_id:track_count
+ * @param {number[]} userIds
+ */
+async function fetchUserToNumTracksMap (userIds) {
+  const resps = await axios({
+    url: `${DISCOVERY_PROVIDER_ENDPOINT}/users`,
+    method: 'get',
+    params: { user_id: userIds },
+    responseType: 'json'
+  })
+
+  const map = {}
+  resps.map(resp => {
+    map[resp.user_id] = resp.track_count
+  })
+  return map
+}
+
+/**
+ * Check if segment is blacklisted via /ipfs/:CID route
+ * @param {string} segment
+ */
 async function checkIsBlacklisted (segment) {
   try {
     await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
@@ -292,6 +341,10 @@ async function checkIsBlacklisted (segment) {
   return { segment, blacklisted: false }
 }
 
+/**
+ * Check if segment is not blacklisted via /ipfs/:CID route
+ * @param {string} segment
+ */
 async function checkIsNotBlacklisted (segment) {
   try {
     await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
