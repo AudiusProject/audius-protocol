@@ -170,7 +170,7 @@ def update_network_peers(self):
                 all_peers.add(node_info['endpoint'])
 
             # Legacy user metadata node is always added to set of known peers
-            user_metadata_url = update_network_peers.shared_config["discprov"]["user_metadata_service_url"])
+            user_metadata_url = update_network_peers.shared_config["discprov"]["user_metadata_service_url"]
             all_peers.add(user_metadata_url)
 
             logger.info(f"index_network_peers.py | All known peers {all_peers}")
