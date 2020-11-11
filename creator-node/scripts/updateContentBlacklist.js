@@ -282,12 +282,7 @@ async function getSegments (type, values) {
 
 async function checkIsBlacklisted (segment) {
   try {
-    await axios({
-      url: `${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`,
-      method: 'get',
-      responseType: 'json',
-      params: { CID: segment }
-    })
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
   } catch (e) {
     if (e.response && e.response.status && e.response.status === 403) {
       return { segment, blacklisted: true }

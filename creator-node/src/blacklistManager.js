@@ -192,18 +192,13 @@ class BlacklistManager {
    * @param {'USER'|'TRACK'} type
    */
   static async addToDb ({ values, type }) {
-    const errs = []
     try {
       await models.ContentBlacklist.bulkCreate(values.map(value => ({
         value,
         type
       })), { ignoreDuplicates: true }) // if dupes found, do not update any columns
     } catch (e) {
-      errs.push(e)
-    }
-
-    if (errs.length > 0) {
-      throw new Error(`Error with adding to ContentBlacklist: ${errs.toString()}`)
+      throw new Error(`Error with adding to ContentBlacklist: ${e}`)
     }
 
     logger.info(`Sucessfully added entries with type (${type}) and values (${values}) to the ContentBlacklist table!`)

@@ -20,7 +20,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe.only('test ContentBlacklist', function () {
+describe('test ContentBlacklist', function () {
   let app, server, libsMock
 
   beforeEach(async () => {
@@ -451,7 +451,7 @@ describe.only('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  it.only('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
+  it('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
     // Create user and upload track
     const resp = await createUserAndUploadTrack()
 

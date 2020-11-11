@@ -20,11 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     value: {
       allowNull: false,
-      type: DataTypes.TEXT,
-      // Matches positive integers from 0-n, and Qm... of length 46
-      validate: {
-        is: /^(0|[1-9]\d*)$|(^Qm[a-zA-Z0-9]{44}$)/
-      }
+      type: DataTypes.STRING
     },
     createdAt: {
       allowNull: false,
