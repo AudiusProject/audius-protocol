@@ -110,6 +110,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
     //       Is there any actual downside to orphaning old spID <-> wallets?
 
+    // TODO: Expose CRUD for special addresses permissioned to deployer(?)
+
     // Function used to permission updates to a given user's replica set
     function updateReplicaSet(
         uint _userId,
