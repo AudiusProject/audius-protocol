@@ -26,7 +26,7 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
     redis: redisClient
   }
 
-  const appInfo = require('../../src/app')(8000, config.get('storagePath'), mockServiceRegistry)
+  const appInfo = require('../../src/app')(8000, mockServiceRegistry)
 
   return appInfo
 }

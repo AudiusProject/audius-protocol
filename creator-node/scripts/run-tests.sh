@@ -14,6 +14,7 @@ fi
 
 export storagePath='./test_file_storage'
 export logLevel='info'
+export printSequelizeLogs=false
 
 tear_down () {
   set +e
