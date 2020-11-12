@@ -8,6 +8,9 @@ const userReplicaSetManagerKey = web3.utils.utf8ToHex('UserReplicaSetManager')
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
+    // TODO: Consider how this migration will be run against prod
+    //       Registry.deployed() is not the right way to do this
+    //       A separate migration or some added logic here should handle the requirements
     let registry = await Registry.deployed()
     const registryAddress = registry.address
     const networkId = Registry.network_id
