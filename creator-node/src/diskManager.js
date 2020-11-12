@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const config = require('./config')
 
-// use this set to cache existing paths we know we've created so we don't make extraneous file system calls
+// use this set to cache existing directory paths we know we've created so we don't make extraneous file system calls
 let EXISTING_PATHS = new Set()
 
 class DiskManager {
@@ -32,14 +32,14 @@ class DiskManager {
   }
 
   /**
-   *
+   * Given a directory path, this function will create the dirPath if it doesn't exist
+   * If it does exist, it will not overwrite, effectively a no-op
    * @param {*} dirPath fs directory path to create if it does not exist
    */
   static ensureDirPathExists (dirPath) {
     try {
       if (!EXISTING_PATHS.has(dirPath)) {
-        // calling this on an existing directory doesn't overwrite the existing data or throw an error
-        // the mkdir recursive is equivalent to `mkdir -p`
+        // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
         fs.mkdirSync(dirPath, { recursive: true })
         EXISTING_PATHS.add(dirPath)
       }

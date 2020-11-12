@@ -14,7 +14,7 @@ describe('Test DiskManager', function () {
 
   it('Should pass if computeCIDFilePath returns the correct path', function () {
     const fullPath = DiskManager.computeCIDFilePath('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    const validPath = `${config.get('storagePath')}/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6`
+    const validPath = `${DiskManager.getConfigStoragePath()}/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6`
     assert.deepStrictEqual(fullPath, validPath)
   })
 
@@ -28,7 +28,7 @@ describe('Test DiskManager', function () {
 
   it(`Should fail if fileName doesn't contain the appropriate amount of characters`, function () {
     try {
-      DiskManager.computeCIDFilePath('as')
+      DiskManager.computeCIDFilePath('asd')
     } catch (e) {
       assert.ok(e.message.includes('Please pass in a valid fileName to computeCIDFilePath'))
     }
