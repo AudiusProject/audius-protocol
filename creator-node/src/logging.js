@@ -1,5 +1,5 @@
 const bunyan = require('bunyan')
-const shortid = require('shortid')
+const { nanoid } = require('nanoid')
 
 const config = require('./config')
 
@@ -47,10 +47,9 @@ function getRequestLoggingContext (req, requestID) {
 }
 
 function loggingMiddleware (req, res, next) {
-  console.log(`SIDTEST request header ${req.get('request-ID')}`)
-
-  const requestID = req.get('request-ID') || shortid.generate()
+  const requestID = req.get('request-ID') || nanoid()
   res.set('CN-Request-ID', requestID)
+  console.log(`SIDTEST request header ${requestID}`)
 
   req.logContext = getRequestLoggingContext(req, requestID)
   req.logger = logger.child(req.logContext)

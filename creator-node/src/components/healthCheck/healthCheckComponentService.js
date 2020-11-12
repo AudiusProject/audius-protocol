@@ -19,6 +19,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
     'spID': config.get('spID')
   }
 
+  logger.info('i am doing a health check')
   if (libs) {
     response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
   } else {
