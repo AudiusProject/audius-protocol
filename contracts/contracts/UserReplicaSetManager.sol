@@ -263,6 +263,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             );
             if (signer == spIdToCreatorNodeDelegateWallet[_oldSecondaries[i]]) {
                 secondarySenderFound = true;
+                // TODO: Break out of loop here?
             }
         }
         return secondarySenderFound;
