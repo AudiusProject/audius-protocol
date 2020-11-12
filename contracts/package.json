@@ -22,6 +22,7 @@
     "lint": "./node_modules/.bin/standard",
     "lint-fix": "./node_modules/.bin/standard --fix",
     "test": "npm run truffle-test",
+    "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
     "test-circle-ci": "./scripts/circleci-test.sh",
     "discprov-script-t": "./node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -test --ipfs-test-host localhost --ipfs-test-port 6001"
   },
