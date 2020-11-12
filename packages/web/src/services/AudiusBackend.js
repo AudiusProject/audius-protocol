@@ -14,7 +14,7 @@ import { Name } from 'services/analytics'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
 import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
-import { IntKeys, getRemoteVar } from 'services/remote-config'
+import { IntKeys, getRemoteVar, StringKeys } from 'services/remote-config'
 import {
   waitForLibsInit,
   withEagerOption,
@@ -34,9 +34,9 @@ const WEB3_PROVIDER_URLS = process.env.REACT_APP_WEB3_PROVIDER_URL.split(',')
 const WEB3_NETWORK_ID = process.env.REACT_APP_WEB3_NETWORK_ID
 
 const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
-const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
 const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS
 const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
+const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
 const COMSTOCK_URL = process.env.REACT_APP_COMSTOCK_URL
 const CLAIM_DISTRIBUTION_CONTRACT_ADDRESS =
   process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
@@ -397,6 +397,16 @@ class AudiusBackend {
         window.addEventListener('WEB3_LOADED', onLoad)
       })
     }
+    // Wait for optimizely to load if necessary
+    if (!window.optimizelyDatafile) {
+      await new Promise(resolve => {
+        const onLoad = () => {
+          window.removeEventListener('OPTIMIZELY_LOADED', onLoad)
+          resolve()
+        }
+        window.addEventListener('OPTIMIZELY_LOADED', onLoad)
+      })
+    }
 
     const { libs, libsUtils, libsSanityChecks } = await import(
       './audius-backend/AudiusLibsLazyLoader'
@@ -468,11 +478,13 @@ class AudiusBackend {
   }
 
   static getEthWeb3Config() {
+    const ethProviderUrls =
+      getRemoteVar(StringKeys.ETH_PROVIDER_URLS) || ETH_PROVIDER_URLS
     return {
       ethWeb3Config: AudiusLibs.configEthWeb3(
         ETH_TOKEN_ADDRESS,
         ETH_REGISTRY_ADDRESS,
-        ETH_PROVIDER_URLS,
+        ethProviderUrls,
         ETH_OWNER_WALLET,
         CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
       )
