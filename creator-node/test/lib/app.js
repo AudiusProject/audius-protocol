@@ -1,5 +1,4 @@
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
-const config = require('../../src/config')
 const redisClient = require('../../src/redis')
 
 // Initialize private IPFS gateway counters
