@@ -1,7 +1,6 @@
 'use strict'
 
 const ON_DEATH = require('death')
-const path = require('path')
 const EthereumWallet = require('ethereumjs-wallet')
 
 const initializeApp = require('./app')
@@ -11,17 +10,11 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
-const DiskManager = require('./diskManager')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
   process.exit(1)
 }
-
-// delete configFileStorage, ran test below to confirm equality
-// if ((path.resolve('./', config.get('storagePath'))) === DiskManager.getConfigStoragePath()) {
-//   console.log("paths equal")
-// }
 
 const runDBMigrations = async () => {
   try {
