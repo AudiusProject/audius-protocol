@@ -32,10 +32,6 @@ const MAX_LIMIT = 500
 // node updateContentBlacklist.js -a remove -l 1,3,7 -t track
 // node updateContentBlacklist.js -a remove -l Qm..., Qm..., -t cid
 
-// node updateContentBlacklist.js -a verify -l 1,3,7 -t user
-// node updateContentBlacklist.js -a verify -l 1,3,7 -t track
-// node updateContentBlacklist.js -a verify -l Qm..., Qm..., -t cid
-
 // add -v flag to each script run to see the segments and number of segments touched
 
 // For help:
