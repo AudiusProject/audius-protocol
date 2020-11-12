@@ -22,6 +22,7 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
+const CID_DIRECTORY_REGEX = /\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
@@ -97,36 +98,29 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   try {
-    const storagePath = req.app.get('storagePath') // should be `/file_storage'
-
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
     let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
-    // Check if the file we are trying to copy is in a directory and if so, create the directory first
-    // E.g if the expectedStoragePath includes a dir like /file_storage/QmABC/Qm123, path.parse gives us
-    // { root: '/', dir: '/file_storage/QmABC', base: 'Qm123',ext: '', name: 'Qm2' }
-    // but if expectedStoragePath is a file like /file_storage/Qm123, path.parse gives us
-    // { root: '/', dir: '/file_storage', base: 'Qm123', ext: '', name: 'Qm123' }
-    // In the case where the parsed expectedStoragePath dir contains storagePath (`/file_storage`)
-    // but does not equal it, we know that it's a directory
     const parsedStoragePath = path.parse(expectedStoragePath).dir
-    if (parsedStoragePath !== storagePath && parsedStoragePath.includes(storagePath) && fileNameForImage) {
-      const splitPath = parsedStoragePath.split('/')
-      // parsedStoragePath looks like '/file_storage/Qm123' for a dir and when you call split, the result is
-      // ['', 'file_storage', 'Qm123']. the third item in the array is the directory cid, so index 2
-      if (splitPath.length !== 3) throw new Error(`Invalid expectedStoragePath for directory ${expectedStoragePath}`)
 
+    try {
+      // calling this on an existing directory doesn't overwrite the existing data or throw an error
+      // the mkdir recursive is equivalent to `mkdir -p`
+      await mkdir(parsedStoragePath, { recursive: true })
+    } catch (e) {
+      throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
+    }
+
+    // regex match to check if a directory or just a regular file
+    // if directory will have both outer and inner properties in match.groups
+    // else will have just outer
+    const match = CID_DIRECTORY_REGEX
+
+    // if this is a directory, make it compatible with our dir cid gateway url
+    if (match && match.groups && match.groups.outer && match.groups.inner && fileNameForImage) {
       // override gateway urls to make it compatible with directory
-      gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[2]}/${fileNameForImage}`)
-
-      try {
-        // calling this on an existing directory doesn't overwrite the existing data or throw an error
-        // the mkdir recursive is equivalent to `mkdir -p`
-        await mkdir(parsedStoragePath, { recursive: true })
-      } catch (e) {
-        throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
-      }
+      gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${match.groups.outer}/${fileNameForImage}`)
     }
 
     /**

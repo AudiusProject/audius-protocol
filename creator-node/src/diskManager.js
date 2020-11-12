@@ -20,10 +20,13 @@ class DiskManager {
    * @param {String} fileName file CID or dir CID name
    */
   static computeCIDFilePath (fileName) {
+    // TODO - reject paths here
     if (!fileName || fileName.length < 4) throw new Error(`Please pass in a valid fileName to computeCIDFilePath. Passed in ${fileName}`)
 
     // this is the directory path that file with fileName will go into
     const parentDirPath = path.join(this.getConfigStoragePath(), fileName.slice(-4, -1))
+    // in order to easily dev against the older and newer paths, the line below is the legacy storage path
+    // const parentDirPath = this.getConfigStoragePath()
 
     // create the subdirectories in parentDirHash if they don't exist
     this.ensureDirPathExists(parentDirPath)
