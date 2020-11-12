@@ -21,6 +21,7 @@ export const DiscoveryProviderFactory = artifacts.require('./contract/DiscoveryP
 export const SocialFeatureFactory = artifacts.require('./contract/SocialFeatureFactory')
 export const PlaylistFactory = artifacts.require('./contract/PlaylistFactory')
 export const UserLibraryFactory = artifacts.require('./contract/UserLibraryFactory')
+export const UserReplicaSetManager = artifacts.require('./contract/UserReplicaSetManager')
 
 // Test contract artifacts
 export const TestStorage = artifacts.require('./contract/storage/test/TestStorage')
