@@ -1,6 +1,7 @@
 const DiskManager = require('./diskManager')
 const assert = require('assert')
 const config = require('./config')
+const path = require('path')
 
 describe('Test DiskManager', function () {
   before(function () {
@@ -14,7 +15,7 @@ describe('Test DiskManager', function () {
 
   it('Should pass if computeCIDFilePath returns the correct path', function () {
     const fullPath = DiskManager.computeCIDFilePath('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    const validPath = `${DiskManager.getConfigStoragePath()}/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6`
+    const validPath = path.join(DiskManager.getConfigStoragePath(), 'muU', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(fullPath, validPath)
   })
 
