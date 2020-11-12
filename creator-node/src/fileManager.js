@@ -15,6 +15,7 @@ const copyFile = promisify(fs.copyFile)
 
 const config = require('./config')
 const Utils = require('./utils')
+const DiskManager = require('./diskManager')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -37,7 +38,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
 
   // Write file to disk by multihash for future retrieval
-  const dstPath = path.join(req.app.get('storagePath'), multihash)
+  const dstPath = DiskManager.computeCIDFilePath(multihash)
   await writeFile(dstPath, buffer)
 
   return { multihash, dstPath }
@@ -60,7 +61,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
 
   // store file copy by multihash for future retrieval
-  const dstPath = path.join(req.app.get('storagePath'), multihash)
+  const dstPath = DiskManager.computeCIDFilePath(multihash)
 
   try {
     await copyFile(srcPath, dstPath)
@@ -78,6 +79,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   return { multihash, dstPath }
 }
 
+// TODO - fix this function
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
@@ -323,7 +325,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = path.join(req.app.get('storagePath'), randomFileName)
+    const fileDir = DiskManager.computeCIDFilePath(randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)

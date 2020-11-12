@@ -326,7 +326,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '150x150.jpg': 150,
             '480x480.jpg': 480,
@@ -339,7 +338,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '640x.jpg': 640,
             '2000x.jpg': 2000
