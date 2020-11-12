@@ -47,7 +47,12 @@ export enum StringKeys {
   /**
    * Custom text for a top of page notice.
    */
-  APP_WIDE_NOTICE_TEXT = 'APP_WIDE_NOTICE_TEXT'
+  APP_WIDE_NOTICE_TEXT = 'APP_WIDE_NOTICE_TEXT',
+
+  /**
+   * Custom eth provider urls to use for talking to main-net contracts
+   */
+  ETH_PROVIDER_URLS = 'ETH_PROVIDER_URLS'
 }
 
 export type AllRemoteConfigKeys =
