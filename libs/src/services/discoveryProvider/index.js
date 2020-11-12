@@ -1,5 +1,5 @@
 const axios = require('axios')
-
+const { nanoid } = require('nanoid')
 const Utils = require('../../utils')
 
 const {
@@ -489,7 +489,7 @@ class DiscoveryProvider {
       return
     }
 
-    let axiosRequest = this.createDiscProvRequest(requestObj)
+    let axiosRequest = this._makeAxiosRequest(requestObj)
     let response
     let parsedResponse
     try {
@@ -563,7 +563,7 @@ class DiscoveryProvider {
    * Creates the discovery provider axiox request object with necessary configs
    * @param {object} requestObj
    */
-  createDiscProvRequest (requestObj) {
+  _makeAxiosRequest (requestObj) {
     let requestUrl
 
     if (urlJoin && urlJoin.default) {
@@ -572,7 +572,7 @@ class DiscoveryProvider {
       requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = {}
+    const headers = { 'request-ID': nanoid() }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId

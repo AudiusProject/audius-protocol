@@ -18,6 +18,7 @@ logger.info('Loglevel set to:', logLevel)
 /**
  * TODO make this more readable
  */
+// These excluded routes are only used to check if it should print 'Begin processing reuquest'
 const excludedRoutes = [
   '/health_check',
   '/ipfs',
@@ -42,13 +43,15 @@ function getRequestLoggingContext (req, requestID) {
     requestUrl: urlParts[0],
     requestQueryParams: urlParts.length > 1 ? urlParts[1] : undefined,
     requestWallet: req.get('user-wallet-addr'),
-    requestBlockchainUserId: req.get('user-id')
+    requestBlockchainUserId: req.get('user-id'),
+    vickywashere: 'hi'
   }
 }
 
 function loggingMiddleware (req, res, next) {
   const requestID = req.get('request-ID') || nanoid()
-  res.set('CN-Request-ID', requestID)
+  // do we need this? e.g. a service provider specific request id
+  res.set('request-ID', requestID)
   console.log(`SIDTEST request header ${requestID}`)
 
   req.logContext = getRequestLoggingContext(req, requestID)

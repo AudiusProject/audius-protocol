@@ -1,5 +1,5 @@
 const bunyan = require('bunyan')
-const shortid = require('shortid')
+const { nanoid } = require('nanoid')
 
 const config = require('./config')
 
@@ -15,13 +15,17 @@ const logger = bunyan.createLogger({
 })
 logger.info('Loglevel set to:', logLevel)
 
+// ? why dont we use a set here instead
 const excludedRoutes = [ '/health_check', '/balance_check' ]
 function requestNotExcludedFromLogging (url) {
   return (excludedRoutes.indexOf(url) === -1)
 }
 
 function loggingMiddleware (req, res, next) {
-  const requestID = shortid.generate()
+  // Generate requestID, and then pass to response
+  const requestID = req.get('request-ID') || nanoid()
+  res.set('request-ID', requestID)
+
   const urlParts = req.url.split('?')
   req.startTime = process.hrtime()
   req.logger = logger.child({

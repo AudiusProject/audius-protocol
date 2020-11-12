@@ -1,6 +1,6 @@
 const axios = require('axios')
 const FormData = require('form-data')
-const shortid = require('shortid')
+const { nanoid } = require('nanoid')
 
 const SchemaValidator = require('../schemaValidator')
 
@@ -422,7 +422,7 @@ class CreatorNode {
 
     // Generate and attach request ID header to trace request from start to finish
     if (!axiosRequestObj.headers['request-ID']) {
-      axiosRequestObj.headers['request-ID'] = shortid.generate()
+      axiosRequestObj.headers['request-ID'] = nanoid()
 
       // TODO - log request origin? maybe unnecessary
       // requestObj.headers['request-ID-Origin'] = 'libs'
@@ -502,7 +502,6 @@ class CreatorNode {
       // rather than XMLHttpRequest. We force that here.
       // https://github.com/axios/axios/issues/1180
       const isBrowser = typeof window !== 'undefined'
-      
       const axiosRequestObj = {
         url,
         data: formData,

@@ -6,6 +6,7 @@ from json.encoder import JSONEncoder
 import re
 import time
 import contextlib
+import uuid
 from urllib.parse import urljoin
 from functools import reduce
 import requests
@@ -128,7 +129,6 @@ def configure_flask_app_logging(app, loglevel_str):
     # Log the request
     @app.after_request
     def log_request(response): # pylint: disable=W0612
-
         now = time.time()
         duration = int((now - g.start) * 1000)
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -149,6 +149,12 @@ def configure_flask_app_logging(app, loglevel_str):
         request_user_id = request.headers.get('X-User-ID')
         if request_user_id:
             log_params['request_user_id'] = request_user_id
+
+        request_id = request.headers.get('request-ID')
+        if not request_id:
+            log_params['request-ID'] = str(uuid.uuid4())
+        else:
+            log_params['request-ID'] = request_id
 
         parts = []
         for name, value in log_params.items():

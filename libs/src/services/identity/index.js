@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { nanoid } = require('nanoid')
 
 const Requests = require('./requests')
 
@@ -260,11 +261,9 @@ class IdentityService {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
-    axiosRequestObj.baseURL = this.identityServiceEndpoint
-
     // Axios throws for non-200 responses
     try {
-      const resp = await axios(axiosRequestObj)
+      const resp = await this._makeAxiosRequest(axiosRequestObj)
       return resp.data
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {
@@ -274,6 +273,17 @@ class IdentityService {
       }
       throw e
     }
+  }
+
+  /**
+   * Add baseURL and request-ID to axios request
+   * @param {Object} axiosRequestObj
+   */
+  async _makeAxiosRequest (axiosRequestObj) {
+    axiosRequestObj.baseURL = this.identityServiceEndpoint
+    axiosRequestObj['request-ID'] = nanoid()
+
+    return axios(axiosRequestObj)
   }
 }
 
