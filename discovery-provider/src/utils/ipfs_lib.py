@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 class IPFSClient:
     """ Helper class for Audius Discovery Provider + IPFS interaction """
 
-    def __init__(self, ipfs_peer_host, ipfs_peer_port, gateway_addresses):
+    def __init__(self, ipfs_peer_host, ipfs_peer_port):
         self._api = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
-        self._gateway_addresses = gateway_addresses
         self._cnode_endpoints = []
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
@@ -115,8 +114,7 @@ class IPFSClient:
         gateway_endpoints = self._cnode_endpoints
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, \
                 \ncombined addresses: {gateway_endpoints}, \
-                \ncnode_endpoints: {self._cnode_endpoints}, \
-                \naddresses: {self._gateway_addresses}")
+                \ncnode_endpoints: {self._cnode_endpoints}")
 
         query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in gateway_endpoints]
         data = self.query_ipfs_metadata_json(query_urls, metadata_format)
@@ -165,7 +163,7 @@ class IPFSClient:
         try:
             if peer in self._ipfsid['Addresses']:
                 return
-            r = self._api.swarm.connect(peer)
+            r = self._api.swarm.connect(peer, timeout=3)
             logger.info(r)
         except Exception as e:
             logger.error(f"IPFSCLIENT | IPFS Failed to update peer")

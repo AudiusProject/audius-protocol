@@ -106,14 +106,21 @@ class IdentityService {
    * @param {number} trackId
    * @param {number} userId
    */
-  async logTrackListen (trackId, userId) {
-    return this._makeRequest({
+  async logTrackListen (trackId, userId, listenerAddress) {
+    const request = {
       url: `/tracks/${trackId}/listen`,
       method: 'post',
       data: {
         userId: userId
       }
-    })
+    }
+
+    if (listenerAddress) {
+      request.headers = {
+        'x-forwarded-for': listenerAddress
+      }
+    }
+    return this._makeRequest(request)
   }
 
   /**

@@ -35,6 +35,9 @@ web3endpoint = None
 web3 = None
 abi_values = None
 
+eth_web3 = None
+eth_abi_values = None
+
 registry = None
 user_factory = None
 track_factory = None
@@ -60,7 +63,6 @@ def initContracts():
     user_factory_instance = web3.eth.contract(
         address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
     )
-
     track_factory_address = registry_instance.functions.getContract(
         bytes("TrackFactory", "utf-8")
     ).call()
@@ -117,18 +119,19 @@ def initContracts():
         contract_address_dict,
     )
 
-
 def create_app(test_config=None):
     return create(test_config)
 
-
 def create_celery(test_config=None):
     # pylint: disable=W0603
-    global web3endpoint, web3, abi_values
+    global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
-    abi_values = helpers.loadAbiValues()
+    abi_values = helpers.load_abi_values()
+    eth_abi_values = helpers.load_eth_abi_values()
+    # Initialize eth web
+    eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
 
     global registry
     global user_factory
@@ -152,7 +155,6 @@ def create_celery(test_config=None):
     ) = initContracts()
 
     return create(test_config, mode="celery")
-
 
 def create(test_config=None, mode="app"):
     arg_type = type(mode)
@@ -287,7 +289,8 @@ def configure_celery(flask_app, celery, test_config=None):
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
                  "src.tasks.index_cache", "src.tasks.index_plays",
-                 "src.tasks.index_metrics", "src.tasks.index_materialized_views"],
+                 "src.tasks.index_metrics", "src.tasks.index_materialized_views",
+                 "src.tasks.index_network_peers"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -312,6 +315,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=60)
+            },
+            "update_network_peers": {
+                "task": "update_network_peers",
+                "schedule": timedelta(seconds=30)
             }
         },
         task_serializer="json",
@@ -322,21 +329,21 @@ def configure_celery(flask_app, celery, test_config=None):
     # Initialize DB object for celery task context
     db = SessionManager(database_url, engine_args_literal)
     logger.info('Database instance initialized!')
-
     # Initialize IPFS client for celery task context
-    gateway_addrs = shared_config["ipfs"]["gateway_hosts"].split(',')
-    gateway_addrs.append(
-        shared_config["discprov"]["user_metadata_service_url"])
-    logger.warning(f"__init__.py | {gateway_addrs}")
     ipfs_client = IPFSClient(
-        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"], gateway_addrs
+        shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
     )
 
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
-
-    # Clear existing lock if present
+    # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
+    redis_inst.delete("network_peers_lock")
+    redis_inst.delete("materialized_view_lock")
+    redis_inst.delete("update_metrics_lock")
+    redis_inst.delete("update_play_count_lock")
+    redis_inst.delete("ipld_blacklist_lock")
+    redis_inst.delete("update_discovery_lock")
     logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object
@@ -348,6 +355,7 @@ def configure_celery(flask_app, celery, test_config=None):
             self._shared_config = shared_config
             self._ipfs_client = ipfs_client
             self._redis = redis_inst
+            self._eth_web3_provider = eth_web3
 
         @property
         def abi_values(self):
@@ -372,6 +380,10 @@ def configure_celery(flask_app, celery, test_config=None):
         @property
         def redis(self):
             return self._redis
+
+        @property
+        def eth_web3(self):
+            return self._eth_web3_provider
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 

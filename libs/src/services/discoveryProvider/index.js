@@ -497,7 +497,7 @@ class DiscoveryProvider {
       parsedResponse = Utils.parseDataFromResponse(response)
     } catch (e) {
       const errMsg = e.response && e.response.data ? e.response.data : e
-      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${errMsg}`)
+      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(errMsg)}`)
       if (retry) {
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }

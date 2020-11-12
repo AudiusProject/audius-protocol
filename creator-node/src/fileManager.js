@@ -11,6 +11,7 @@ const unlink = promisify(fs.unlink)
 const rmdir = promisify(fs.rmdir)
 const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
+const copyFile = promisify(fs.copyFile)
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -23,8 +24,6 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
- *
-
  */
 async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   // make sure user has authenticated before saving file
@@ -62,7 +61,19 @@ async function saveFileToIPFSFromFS (req, srcPath) {
 
   // store file copy by multihash for future retrieval
   const dstPath = path.join(req.app.get('storagePath'), multihash)
-  fs.copyFileSync(srcPath, dstPath)
+
+  try {
+    await copyFile(srcPath, dstPath)
+  } catch (e) {
+    // if we see a ENOSPC error, log out the disk space and inode details from the system
+    if (e.message.includes('ENOSPC')) {
+      await Promise.all([
+        Utils.runShellCommand(`df`, ['-h'], req.logger),
+        Utils.runShellCommand(`df`, ['-ih'], req.logger)
+      ])
+    }
+    throw e
+  }
 
   return { multihash, dstPath }
 }

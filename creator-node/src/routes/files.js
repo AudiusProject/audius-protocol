@@ -1,5 +1,5 @@
 const Redis = require('ioredis')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
@@ -354,6 +354,54 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
+    /**
+     * Ensure image files written to disk match dirCID returned from resizeImage
+     */
+
+    const ipfs = req.app.get('ipfsLatestAPI')
+
+    const dirCID = resizeResp.dir.dirCID
+
+    // build ipfs add array
+    let ipfsAddArray = []
+    try {
+      await Promise.all(resizeResp.files.map(async function (file) {
+        const fileBuffer = await fs.readFile(file.storagePath)
+        ipfsAddArray.push({
+          path: file.sourceFile,
+          content: fileBuffer
+        })
+      }))
+    } catch (e) {
+      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+    }
+
+    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+    let ipfsAddRespArr
+    try {
+      const ipfsAddResp = await ipfs.add(
+        ipfsAddArray,
+        {
+          pin: false,
+          onlyHash: true,
+          timeout: 1000
+        }
+      )
+      ipfsAddRespArr = []
+      for await (const resp of ipfsAddResp) {
+        ipfsAddRespArr.push(resp)
+      }
+    } catch (e) {
+      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
+      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+    }
+
+    // Ensure actual and expected dirCIDs match
+    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+    if (expectedDirCID !== dirCID) {
+      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID ${dirCID}`)
+    }
+
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
     try {
@@ -374,7 +422,7 @@ module.exports = function (app) {
           sourceFile: file.sourceFile,
           storagePath: file.storagePath,
           type: 'image', // TODO - replace with models enum
-          dirMultihash: resizeResp.dir.dirCID,
+          dirMultihash: dirCID,
           fileName: file.sourceFile.split('/').slice(-1)[0]
         }
         await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
@@ -382,12 +430,13 @@ module.exports = function (app) {
 
       req.logger.info(`route time = ${Date.now() - routestart}`)
       await transaction.commit()
-      triggerSecondarySyncs(req)
-      return successResponse({ dirCID: resizeResp.dir.dirCID })
     } catch (e) {
       await transaction.rollback()
       return errorResponseServerError(e)
     }
+
+    triggerSecondarySyncs(req)
+    return successResponse({ dirCID })
   }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
