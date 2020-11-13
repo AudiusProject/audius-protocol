@@ -253,7 +253,7 @@ describe('test fileManager', () => {
 
 describe('test removeTrackFolder()', async function () {
   const testTrackUploadDir = './test/testTrackUploadDir/'
-  const trackSourceFileDir = DiskManager.computeCIDFilePath('testTrackSourceFileDir')
+  const trackSourceFileDir = path.join(storagePath, 'testTrackSourceFileDir')
 
   // copy test dir into /test_file_storage dir to be deleted by removeTrackFolder()
   beforeEach(async function () {
