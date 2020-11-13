@@ -484,9 +484,6 @@ describe('test Tracks with real IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    let storagePath = config.get('storagePath')
-    storagePath = storagePath.slice(0, 1) === '/' ? '.' + storagePath : storagePath
-
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
