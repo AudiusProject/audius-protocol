@@ -16,7 +16,7 @@ class DiskManager {
   /**
    * Construct a subdirectory path given a file CID or dir CID
    * @dev Returns a subdirectory path with the three characters before the last character
-   *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/uU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
+   *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
    * @param {String} fileName file CID or dir CID name
    */
   static computeCIDFilePath (fileName) {

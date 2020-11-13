@@ -68,7 +68,7 @@ describe('test fileManager', () => {
           info: () => {}
         },
         app: {
-          get: () => { return path.join(storagePath) }
+          get: () => { return DiskManager.getConfigStoragePath() }
         }
       }
 
@@ -170,7 +170,7 @@ describe('test fileManager', () => {
           info: () => {}
         },
         app: {
-          get: () => { return path.join(storagePath) }
+          get: () => { return DiskManager.getConfigStoragePath() }
         }
       }
 

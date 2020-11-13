@@ -1,7 +1,6 @@
 const request = require('supertest')
 const assert = require('assert')
 const sinon = require('sinon')
-const path = require('path')
 const fs = require('fs')
 
 const models = require('../src/models')
