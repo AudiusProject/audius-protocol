@@ -559,7 +559,7 @@ describe('test Tracks with real IPFS', function () {
     assert.deepStrictEqual(resp.body.error, '/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
   })
 
-  it.only('successfully adds metadata file to filesystem, db, and ipfs', async function () {
+  it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
