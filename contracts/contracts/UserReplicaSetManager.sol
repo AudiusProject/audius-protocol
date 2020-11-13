@@ -13,9 +13,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // User factory key used to confirm valid users during reconfig operations
     bytes32 private userFactoryRegistryKey;
 
-    // Initial deployer of contract, used to revoke special permissions if necessary
-    address deployer;
-
     // Address permissioned to register nodes in addition to nodes themselves
     address nodeBootstrapAddress;
 
@@ -33,7 +30,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     }
 
     // Current uint userId to Replica Set
-    mapping (uint => ReplicaSet) artistReplicaSets;
+    mapping (uint => ReplicaSet) userReplicaSets;
 
     /* Events */
     event UpdateReplicaSet(
@@ -69,19 +66,15 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             _userFactoryRegistryKey.length != 0,
             "Requires non-zero _registryAddress and registryKey"
         );
-
         registry = RegistryInterface(_registryAddress);
         userFactoryRegistryKey = _userFactoryRegistryKey;
         nodeBootstrapAddress = _nodeBootstrapAddress;
         userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
-        deployer = msg.sender;
     }
 
-    /*
-        Chain of trust based authentication scheme
-        Nodes are required to have an identity in Audius L2 and this function enables
-            known entities to register other known entities on L2 contracts.
-    */
+    // Chain of trust based authentication scheme
+    // Nodes are required to have an identity in Audius L2 and this function enables
+    //     known entities to register other known entities on L2 contracts.
     function addOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
@@ -158,7 +151,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
         // Caller's notion of existing primary must match regisered value on chain
         require(
-            artistReplicaSets[_userId].primary == _oldPrimary,
+            userReplicaSets[_userId].primary == _oldPrimary,
             "Invalid prior primary configuration"
         );
 
@@ -181,7 +174,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         }
 
         // Perform replica set update
-        artistReplicaSets[_userId] = ReplicaSet({
+        userReplicaSets[_userId] = ReplicaSet({
             primary: _primary,
             secondaries: _secondaries
         });
@@ -194,8 +187,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     returns (uint primary, uint[] memory secondaries)
     {
         return (
-            artistReplicaSets[_userId].primary,
-            artistReplicaSets[_userId].secondaries
+            userReplicaSets[_userId].primary,
+            userReplicaSets[_userId].secondaries
         );
     }
 
@@ -283,13 +276,13 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         // Caller's notion of secondary values must match registered value on chain
         // A secondary node can also be considered a valid updater
         require(
-            _oldSecondaries.length == artistReplicaSets[_userId].secondaries.length,
+            _oldSecondaries.length == userReplicaSets[_userId].secondaries.length,
             "Invalid prior secondary configuration"
         );
         bool secondarySenderFound = senderFound;
         for (uint i = 0; i < _oldSecondaries.length; i++) {
             require(
-                artistReplicaSets[_userId].secondaries[i] == _oldSecondaries[i],
+                userReplicaSets[_userId].secondaries[i] == _oldSecondaries[i],
                 "Invalid prior secondary configuration"
             );
             if (signer == spIdToCreatorNodeDelegateWallet[_oldSecondaries[i]]) {

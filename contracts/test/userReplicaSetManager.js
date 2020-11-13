@@ -127,7 +127,7 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         assert.equal(chainUsrmBootstrapAddress, userReplicaBootstrapAddress, 'Mismatched constructor argument for userReplicaBootstrapAddress')
     })
 
-    it('Configure + update artist replica set', async () => {
+    it('Configure + update user replica set', async () => {
         let user1Primary = toBN(1)
         let user1Secondaries = toBNArray([2, 3])
         let oldPrimary = user1Primary
