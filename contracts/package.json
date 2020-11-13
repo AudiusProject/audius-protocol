@@ -37,6 +37,7 @@
     "truffle": "5.0.42"
   },
   "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.6",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "chance": "^1.0.18",

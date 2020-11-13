@@ -189,6 +189,37 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         emit UpdateReplicaSet(_userId, _primary, _secondaries);
     }
 
+    // Return a users current replica set
+    function getUserReplicaSet(uint _userId) external view
+    returns (uint primary, uint[] memory secondaries)
+    {
+        return (
+            artistReplicaSets[_userId].primary,
+            artistReplicaSets[_userId].secondaries
+        );
+    }
+
+    // Get wallet corresponding to creator node
+    function getCreatorNodeWallet(uint _spID) external view
+    returns (address wallet)
+    {
+        return spIdToCreatorNodeDelegateWallet[_spID];
+    }
+
+    // Get nodeBootstrapAddress
+    function getNodeBootstrapAddress() external view
+    returns (address)
+    {
+        return nodeBootstrapAddress;
+    }
+
+    // Get userReplicaSetBootstrapAddress
+    function getUserReplicaSetBootstrapAddress() external view
+    returns (address)
+    {
+        return userReplicaSetBootstrapAddress;
+    }
+
     /* EIP712 - Signer recovery */
     function _recoverAddOrUpdateCreatorNodeRequestSignerAddress(
         uint _cnodeId,
