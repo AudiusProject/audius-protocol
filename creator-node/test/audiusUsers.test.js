@@ -9,6 +9,7 @@ const models = require('../src/models')
 const ipfsClient = require('../src/ipfsClient')
 const config = require('../src/config')
 const BlacklistManager = require('../src/blacklistManager')
+const DiskManager = require('../src/diskManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -153,7 +154,7 @@ describe('Test AudiusUsers with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = path.join(config.get('storagePath'), resp.body.metadataMultihash)
+    const metadataPath = DiskManager.computeCIDFilePath(resp.body.metadataMultihash)
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
