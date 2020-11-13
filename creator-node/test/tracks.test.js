@@ -501,7 +501,7 @@ describe('test Tracks with real IPFS', function () {
     const segmentCIDs = resp.body.data.track_segments
     assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
     segmentCIDs.map(function (cid, index) {
-      const cidPath = path.join(storagePath, cid.multihash)
+      const cidPath = DiskManager.computeCIDFilePath(cid.multihash)
 
       // Ensure file exists
       assert.ok(fs.existsSync(cidPath))
