@@ -45,6 +45,11 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint _proposerSpId
     );
 
+    event NodeBootstrapAddressUpdated(
+        address _newBootstrapAddress,
+        address _oldBootstrapAddress
+    );
+
     /* EIP-712 */
     bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
         "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
@@ -104,6 +109,15 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     //       Is there any actual downside to orphaning old spID <-> wallets?
 
     // TODO: Expose CRUD for special addresses permissioned to deployer(?)
+    function updateNodeBootstrapAddress(address _newBootstrapAddress) external {
+        require(
+            msg.sender == nodeBootstrapAddress,
+            "Only callable by current nodeBootstrapAddress"
+        );
+        address oldBootstrapAddress = nodeBootstrapAddress;
+        nodeBootstrapAddress = _newBootstrapAddress;
+        emit NodeBootstrapAddressUpdated(oldBootstrapAddress, nodeBootstrapAddress);
+    }
 
     // Function used to permission updates to a given user's replica set
     function updateReplicaSet(
