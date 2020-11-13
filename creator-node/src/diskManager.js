@@ -20,7 +20,8 @@ class DiskManager {
    * @param {String} fileName file CID or dir CID name
    */
   static computeCIDFilePath (fileName) {
-    // TODO - reject paths here
+    // TODO - reject paths/dirs here
+    // TODO allow path joining for dirCID and file
     if (!fileName || fileName.length < 4) throw new Error(`Please pass in a valid fileName to computeCIDFilePath. Passed in ${fileName}`)
 
     // this is the directory path that file with fileName will go into
