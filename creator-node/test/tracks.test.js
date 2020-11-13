@@ -10,6 +10,7 @@ const ipfsClient = require('../src/ipfsClient')
 const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
+const DiskManager = require('../src/diskManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -489,7 +490,7 @@ describe('test Tracks with real IPFS', function () {
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
-    const transcodedTrackPath = path.join(storagePath, resp.body.data.transcodedTrackCID)
+    const transcodedTrackPath = DiskManager.computeCIDFilePath(resp.body.data.transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
@@ -558,7 +559,7 @@ describe('test Tracks with real IPFS', function () {
     assert.deepStrictEqual(resp.body.error, '/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
   })
 
-  it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
+  it.only('successfully adds metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({
       test: 'field1',
       track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
@@ -578,7 +579,7 @@ describe('test Tracks with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = path.join(config.get('storagePath'), resp.body.data.metadataMultihash)
+    const metadataPath = DiskManager.computeCIDFilePath(resp.body.data.metadataMultihash)
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
