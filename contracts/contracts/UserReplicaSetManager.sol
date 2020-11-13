@@ -105,6 +105,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
         emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpId);
     }
+
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
     //       Is there any actual downside to orphaning old spID <-> wallets?
 
