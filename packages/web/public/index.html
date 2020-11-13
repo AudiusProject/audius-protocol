@@ -139,6 +139,7 @@
     <script
       async
       onLoad="window.dispatchEvent(new CustomEvent('OPTIMIZELY_LOADED'))"
+      onError="window.optimizelyDatafile = {}; window.dispatchEvent(new CustomEvent('OPTIMIZELY_LOADED'))"
       src="https://experiments.audius.co/datafiles/%REACT_APP_OPTIMIZELY_KEY%.json/tag.js">
     </script>
     <!-- end Optimizely -->
