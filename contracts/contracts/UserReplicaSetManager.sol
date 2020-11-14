@@ -29,6 +29,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint[] secondaries;
     }
 
+    uint[] bootstrapSPIds;
+    address[] bootstrapNodeDelegateWallets;
+
     // Current uint userId to Replica Set
     mapping (uint => ReplicaSet) userReplicaSets;
 
@@ -61,8 +64,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     constructor(
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
-        address _nodeBootstrapAddress,
         address _userReplicaSetBootstrapAddress,
+        uint[] memory _bootstrapSPIds,
+        address[] memory _bootstrapNodeDelegateWallets,
         uint _networkId
     ) SigningLogic("User Replica Set Manager", "1", _networkId) public
     {
@@ -73,8 +77,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         );
         registry = RegistryInterface(_registryAddress);
         userFactoryRegistryKey = _userFactoryRegistryKey;
-        nodeBootstrapAddress = _nodeBootstrapAddress;
         userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
+        bootstrapSPIds = _bootstrapSPIds;
+        bootstrapNodeDelegateWallets = _bootstrapNodeDelegateWallets;
     }
 
     // Chain of trust based authentication scheme

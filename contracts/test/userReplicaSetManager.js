@@ -120,7 +120,7 @@ contract.only('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it('Validate bootstrap configs', async () => {
+    it.only('Validate bootstrap configs', async () => {
         let chainBootstrapNodeAddress = await userReplicaSetManager.getNodeBootstrapAddress()
         let chainUsrmBootstrapAddress = await userReplicaSetManager.getUserReplicaSetBootstrapAddress()
         assert.equal(chainBootstrapNodeAddress, nodeBootstrapAddress, 'Mismatched constructor argument for nodeBootstrapAddress')
