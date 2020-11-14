@@ -15,7 +15,7 @@ describe('Test DiskManager', function () {
 
   it('Should pass if computeBasePath returns the correct path', function () {
     const fullPath = DiskManager.computeBasePath('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    const validPath = path.join(DiskManager.getConfigStoragePath(), 'muU', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    const validPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'muU', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(fullPath, validPath)
   })
 
@@ -45,13 +45,13 @@ describe('Test DiskManager', function () {
 
   it('Should pass if computeBasePath returns the correct path', function () {
     const fullPath = DiskManager.computeFilePathInDir('QmdirectoryName', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    const validPath = path.join(DiskManager.getConfigStoragePath(), 'Nam', 'QmdirectoryName', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    const validPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'Nam', 'QmdirectoryName', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(fullPath, validPath)
   })
 
   it('Should fail if dirName and fileName are not passed into computeBasePath', function () {
     try {
-      const fullPath = DiskManager.computeFilePathInDir()
+      DiskManager.computeFilePathInDir()
     } catch (e) {
       assert.ok(e.message.includes('Must pass in valid dirName and fileName'))
     }
