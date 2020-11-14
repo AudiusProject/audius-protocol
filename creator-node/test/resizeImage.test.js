@@ -336,7 +336,7 @@ describe('test resizeImage', () => {
 
     // If hash found in ipfs is not found in file_storage, fail
     ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = path.join(DiskManager.computeBasePath(DIR_CID_NOT_SQUARE), ipfsFile.hash)
+      const fsPathForIpfsFile = DiskManager.computeFilePathInDir(DIR_CID_NOT_SQUARE, ipfsFile.hash)
       if (!fs.existsSync(fsPathForIpfsFile)) {
         assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
       }

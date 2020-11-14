@@ -165,7 +165,7 @@ module.exports = async (job) => {
 
     await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
       // Save file to disk
-      const destPath = path.join(dirDestPath, fileResp.hash)
+      const destPath = DiskManager.computeFilePathInDir(dirCID, fileResp.hash)
       await fs.writeFile(destPath, resizes[i])
 
       // Append saved file info to response object
