@@ -153,7 +153,7 @@ describe('Test AudiusUsers with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeCIDFilePath(resp.body.metadataMultihash)
+    const metadataPath = DiskManager.computeBasePath(resp.body.metadataMultihash)
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified

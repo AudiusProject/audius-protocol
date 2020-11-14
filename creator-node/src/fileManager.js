@@ -39,7 +39,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
 
   // Write file to disk by multihash for future retrieval
-  const dstPath = DiskManager.computeCIDFilePath(multihash)
+  const dstPath = DiskManager.computeBasePath(multihash)
   await writeFile(dstPath, buffer)
 
   return { multihash, dstPath }
@@ -62,7 +62,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
 
   // store file copy by multihash for future retrieval
-  const dstPath = DiskManager.computeCIDFilePath(multihash)
+  const dstPath = DiskManager.computeBasePath(multihash)
 
   try {
     await copyFile(srcPath, dstPath)
@@ -80,7 +80,6 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   return { multihash, dstPath }
 }
 
-// TODO - fix this function
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
@@ -119,7 +118,10 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
 
     // if this is a directory, make it compatible with our dir cid gateway url
     if (match && match.groups && match.groups.outer && match.groups.inner && fileNameForImage) {
-      // override gateway urls to make it compatible with directory
+      // override gateway urls to make it compatible with directory given an endpoint
+      // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
+      // in the case of a directory, override the gatewayUrlsMapped array to look like
+      // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
       gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${match.groups.outer}/${fileNameForImage}`)
     }
 
@@ -319,7 +321,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = DiskManager.computeCIDFilePath(randomFileName)
+    const fileDir = DiskManager.computeBasePath(randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)

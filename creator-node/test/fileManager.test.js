@@ -135,7 +135,7 @@ describe('test fileManager', () => {
 
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
       const segmentCID = 'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd'
-      const syncedSegmentPath = DiskManager.computeCIDFilePath(segmentCID)
+      const syncedSegmentPath = DiskManager.computeBasePath(segmentCID)
       assert.ok(fs.existsSync(syncedSegmentPath))
 
       // the segment content should match the original sourcefile
@@ -230,7 +230,7 @@ describe('test fileManager', () => {
       }
 
       // check that the metadata file was written to storagePath under its multihash
-      const metadataPath = DiskManager.computeCIDFilePath(resp.multihash)
+      const metadataPath = DiskManager.computeBasePath(resp.multihash)
       assert.ok(fs.existsSync(metadataPath))
 
       // check that the contents of the metadata file is what we expect

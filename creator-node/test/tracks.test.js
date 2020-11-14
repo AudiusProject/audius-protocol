@@ -487,7 +487,7 @@ describe('test Tracks with real IPFS', function () {
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
-    const transcodedTrackPath = DiskManager.computeCIDFilePath(resp.body.data.transcodedTrackCID)
+    const transcodedTrackPath = DiskManager.computeBasePath(resp.body.data.transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
@@ -498,7 +498,7 @@ describe('test Tracks with real IPFS', function () {
     const segmentCIDs = resp.body.data.track_segments
     assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
     segmentCIDs.map(function (cid, index) {
-      const cidPath = DiskManager.computeCIDFilePath(cid.multihash)
+      const cidPath = DiskManager.computeBasePath(cid.multihash)
 
       // Ensure file exists
       assert.ok(fs.existsSync(cidPath))
@@ -576,7 +576,7 @@ describe('test Tracks with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeCIDFilePath(resp.body.data.metadataMultihash)
+    const metadataPath = DiskManager.computeBasePath(resp.body.data.metadataMultihash)
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
