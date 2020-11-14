@@ -22,6 +22,10 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
+
+// regex to check if a directory or just a regular file
+// if directory - will have both outer and inner properties in match.groups
+// else - will have just outer property, no inner
 const CID_DIRECTORY_REGEX = /\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
@@ -114,7 +118,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     // regex match to check if a directory or just a regular file
     // if directory will have both outer and inner properties in match.groups
     // else will have just outer
-    const match = CID_DIRECTORY_REGEX
+    const match = CID_DIRECTORY_REGEX.exec(expectedStoragePath)
 
     // if this is a directory, make it compatible with our dir cid gateway url
     if (match && match.groups && match.groups.outer && match.groups.inner && fileNameForImage) {
