@@ -1,8 +1,8 @@
-const axios = require('axios')
-const { generateTimestampAndSignature } = require('../src/apiSigning')
+const crypto = require('crypto')
 const { promisify } = require('util')
 
-const crypto = require('crypto')
+const RequestManager = require('../src/requestManager')
+const { generateTimestampAndSignature } = require('../src/apiSigning')
 
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
@@ -33,7 +33,7 @@ async function run () {
       params: reqParam,
       responseType: 'json'
     }
-    let resp = await axios(requestConfig)
+    let resp = await RequestManager.makeAxiosRequest(requestConfig)
     let data = resp.data
     console.dir(data, { depth: 5 })
   } catch (e) {

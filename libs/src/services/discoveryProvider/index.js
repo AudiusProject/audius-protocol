@@ -572,7 +572,7 @@ class DiscoveryProvider {
       requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
-    const headers = { 'request-ID': nanoid() }
+    const headers = { 'request-ID': nanoid() + '_libs_discovery_banana' }
     const currentUserId = this.userStateManager.getCurrentUserId()
     if (currentUserId) {
       headers['X-User-ID'] = currentUserId

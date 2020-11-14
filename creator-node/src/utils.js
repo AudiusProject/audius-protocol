@@ -2,7 +2,6 @@ const { recoverPersonalSignature } = require('eth-sig-util')
 const fs = require('fs-extra')
 const path = require('path')
 const { BufferListStream } = require('bl')
-const axios = require('axios')
 const spawn = require('child_process').spawn
 
 const { logger: genericLogger } = require('./logging')
@@ -11,6 +10,7 @@ const { ipfs, ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
 
 const config = require('./config')
+const RequestManager = require('./requestManager')
 const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
 
@@ -197,7 +197,7 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
   }
 })
 
-async function findCIDInNetwork (filePath, cid, logger, libs) {
+async function findCIDInNetwork (filePath, cid, logger, libs, requestID = null) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -212,19 +212,20 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
 
   for (let index = 0; index < creatorNodes.length; index++) {
     node = creatorNodes[index]
+    const requestParams = {
+      method: 'get',
+      url: `${node.endpoint}/file_lookup`,
+      params: {
+        filePath,
+        timestamp,
+        delegateWallet,
+        signature
+      },
+      responseType: 'stream',
+      timeout: 1000
+    }
     try {
-      const resp = await axios({
-        method: 'get',
-        url: `${node.endpoint}/file_lookup`,
-        params: {
-          filePath,
-          timestamp,
-          delegateWallet,
-          signature
-        },
-        responseType: 'stream',
-        timeout: 1000
-      })
+      const resp = await RequestManager.makeAxiosRequest(requestParams, requestID)
       if (resp.data) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 

@@ -2,7 +2,6 @@ const path = require('path')
 const fs = require('fs')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
-const axios = require('axios')
 const { promisify } = require('util')
 
 const lstat = promisify(fs.lstat)
@@ -13,6 +12,7 @@ const writeFile = promisify(fs.writeFile)
 const mkdir = promisify(fs.mkdir)
 const copyFile = promisify(fs.copyFile)
 
+const RequestManager = require('./requestManager')
 const config = require('./config')
 const Utils = require('./utils')
 
@@ -187,12 +187,12 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         for (let index = 0; index < gatewayUrlsMapped.length; index++) {
           const url = gatewayUrlsMapped[index]
           try {
-            const resp = await axios({
+            const resp = await RequestManager.makeAxiosRequest({
               method: 'get',
               url,
               responseType: 'stream',
               timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-            })
+            }, req.get('request-ID'))
             if (resp.data) {
               response = resp
               break

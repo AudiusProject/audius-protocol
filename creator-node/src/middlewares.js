@@ -103,7 +103,7 @@ async function triggerSecondarySyncs (req) {
     await Promise.all(secondaries.map(async secondary => {
       if (!secondary || !_isFQDN(secondary)) return
       const userWallet = req.session.wallet
-      await snapbackSM.enqueueManualSync({ userWallet, secondaryEndpoint: secondary, primaryEndpoint: primary })
+      await snapbackSM.enqueueManualSync({ userWallet, secondaryEndpoint: secondary, primaryEndpoint: primary, requestID: req.get('request-ID') })
     }))
   } catch (e) {
     req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)

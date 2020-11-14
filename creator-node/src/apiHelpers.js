@@ -36,6 +36,7 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 
       // set custom CORS headers that's required if you want to response
       // headers through axios
+      // what is this for?
       res.set('Access-Control-Expose-Headers', 'CN-Request-ID')
 
       // Write a key for the heartbeat

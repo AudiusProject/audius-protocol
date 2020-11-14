@@ -426,7 +426,7 @@ class CreatorNode {
 
     // Generate and attach request ID header to trace request from start to finish
     if (!axiosRequestObj.headers['request-ID']) {
-      axiosRequestObj.headers['request-ID'] = nanoid()
+      axiosRequestObj.headers['request-ID'] = nanoid() + '_libs_creator_banana'
 
       // TODO - log request origin? maybe unnecessary
       // requestObj.headers['request-ID-Origin'] = 'libs'

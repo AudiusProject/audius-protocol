@@ -1,8 +1,9 @@
+const AudiusLibs = require('@audius/libs')
+
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
 const { SnapbackSM } = require('./snapbackSM')
-const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 
 /**
@@ -46,7 +47,7 @@ class ServiceRegistry {
     // Conditionally initialize state machine
     if (!config.get('isUserMetadataNode')) {
       this.snapbackSM = new SnapbackSM(this.libs)
-      await this.snapbackSM.init()
+      await this.snapbackSM.init
     }
   }
 }

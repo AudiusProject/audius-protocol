@@ -1,6 +1,6 @@
+const RequestManager = require('../requestManager')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
-const axios = require('axios')
 
 module.exports = function (app) {
   app.post('/vector_clock_backfill/:wallet', handleResponse(async (req, res, next) => {
@@ -31,14 +31,14 @@ module.exports = function (app) {
         await transaction.commit()
         // first try/catch is to make sure if the secondaries are not synced. if not, we try to sync
         try {
-          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock, req.get('request-ID'))
         } catch (e) {
           await _triggerSecondarySyncs(req, primary, secondaries, walletPublicKey)
         }
 
         // if we kick off a sync and it still not fixed, return with error
         try {
-          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock)
+          await _checkSecondaryClockValues(secondaries, walletPublicKey, cnodeUser.clock, req.get('request-ID'))
         } catch (e) {
           return errorResponseServerError(e)
         }
@@ -140,7 +140,7 @@ module.exports = function (app) {
     try {
       // trigger secondary syncs here
       await _triggerSecondarySyncs(req, primary, secondaries, walletPublicKey)
-      await _checkSecondaryClockValues(secondaries, walletPublicKey, clock)
+      await _checkSecondaryClockValues(secondaries, walletPublicKey, clock, req.get('request-ID'))
     } catch (e) {
       return errorResponseServerError(e)
     }
@@ -148,7 +148,7 @@ module.exports = function (app) {
   }))
 }
 
-async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) {
+async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock, requestID = null) {
   if (clock > 25000) clock = 25000
 
   const resp = (await Promise.all(secondaries.map(secondary => {
@@ -157,7 +157,7 @@ async function _checkSecondaryClockValues (secondaries, walletPublicKey, clock) 
       url: `/sync_status/${walletPublicKey}`,
       method: 'get'
     }
-    return axios(axiosReq)
+    return RequestManager.makeAxiosRequest(axiosReq, requestID)
   }))).map(r => r.data.data.clockValue)
 
   resp.map(r => {
@@ -180,7 +180,7 @@ async function _triggerSecondarySyncs (req, primary, secondaries, walletPublicKe
           db_only_sync: true
         }
       }
-      return axios(axiosReq)
+      return RequestManager.makeAxiosRequest(axiosReq, req.get('request-ID'))
     }))
   }
 }

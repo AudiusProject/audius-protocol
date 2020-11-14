@@ -49,7 +49,7 @@ function getRequestLoggingContext (req, requestID) {
 }
 
 function loggingMiddleware (req, res, next) {
-  const requestID = req.get('request-ID') || nanoid()
+  const requestID = req.get('request-ID') || nanoid() + '_creator_banana'
   // do we need this? e.g. a service provider specific request id
   res.set('request-ID', requestID)
   console.log(`SIDTEST request header ${requestID}`)

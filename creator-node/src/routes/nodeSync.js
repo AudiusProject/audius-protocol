@@ -1,5 +1,4 @@
-const axios = require('axios')
-
+const RequestManager = require('../requestManager')
 const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
@@ -230,8 +229,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       db_only_sync: dbOnlySync
     }
     if (config.get('creatorNodeEndpoint')) exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
-
-    const resp = await axios({
+    const requestParams = {
       method: 'get',
       baseURL: creatorNodeEndpoint,
       url: '/export',
@@ -239,7 +237,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       responseType: 'json',
       /** @notice - this request timeout is arbitrarily large for now until we find an appropriate value */
       timeout: 300000 /* 5m = 300000ms */
-    })
+    }
+    const resp = await RequestManager.makeAxiosRequest(requestParams, req.get('request-ID'))
     if (resp.status !== 200) {
       req.logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
       throw new Error(resp.data['error'])

@@ -162,7 +162,7 @@ def configure_flask_app_logging(app, loglevel_str):
 
         request_id = request.headers.get('request-ID')
         if not request_id:
-            log_params['request-ID'] = str(uuid.uuid4())
+            log_params['request-ID'] = str(uuid.uuid4()) + '_discovery_banana'
         else:
             log_params['request-ID'] = request_id
 

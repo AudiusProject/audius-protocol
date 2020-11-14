@@ -5,6 +5,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const assert = require('assert')
 const utils = require('../src/utils')
 const { getApp } = require('./lib/app')
+const { nanoid } = require('nanoid')
 
 const constants = {
   userWallet: 'user_wallet',
@@ -73,7 +74,8 @@ describe('test sync queue', function () {
         secondaryEndpoint: constants.secondaryEndpoint,
         primaryEndpoint: constants.primaryEndpoint,
         priority: SyncPriority.High,
-        syncType: SyncType.Manual
+        syncType: SyncType.Manual,
+        requestID: nanoid()
       })
       manualSyncIds.add(id)
     }

@@ -1,6 +1,8 @@
-const config = require('./config')
 const Bull = require('bull')
-const axios = require('axios')
+const { nanoid } = require('nanoid')
+
+const RequestManager = require('./requestManager')
+const config = require('./config')
 const utils = require('./utils')
 const models = require('./models')
 const { logger } = require('./logging')
@@ -112,7 +114,7 @@ class SnapbackSM {
   }
 
   // Retrieve users with this node as primary
-  async getNodePrimaryUsers () {
+  async getNodePrimaryUsers (requestID) {
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!currentlySelectedDiscProv) {
       // Re-initialize if no discovery provider has been selected
@@ -128,7 +130,7 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
-    let resp = await axios(requestParams)
+    let resp = await RequestManager.makeAxiosRequest(requestParams, requestID)
     this.log(`Discovery provider: ${currentlySelectedDiscProv}`)
     return resp.data.data
   }
@@ -153,7 +155,8 @@ class SnapbackSM {
   async enqueueManualSync ({
     primaryEndpoint,
     secondaryEndpoint,
-    userWallet
+    userWallet,
+    requestID
   }) {
     try {
       const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
@@ -195,7 +198,7 @@ class SnapbackSM {
   }
 
   // Main state machine processing function
-  async processStateMachineOperation (job) {
+  async processStateMachineOperation (job, requestID) {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
     if (this.audiusLibs == null) {
       logger.error(`Invalid libs instance`)
@@ -217,7 +220,7 @@ class SnapbackSM {
       return
     }
     // Retrieve users list for this node
-    let usersList = await this.getNodePrimaryUsers()
+    let usersList = await this.getNodePrimaryUsers(requestID)
 
     // Generate list of wallets to query clock number
     // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
@@ -280,7 +283,7 @@ class SnapbackSM {
             }
           }
           this.log(`Requesting ${walletsToQuery.length} users from ${node}`)
-          let resp = await axios(requestParams)
+          let resp = await RequestManager.makeAxiosRequest(requestParams, requestID)
           let userClockStatusList = resp.data.users
           // Process returned clock values from this secondary node
           userClockStatusList.map(
@@ -358,7 +361,7 @@ class SnapbackSM {
   }
 
   // Track an ongoing sync operation to a secondary
-  async monitorSecondarySync (syncWallet, primaryClockValue, secondaryUrl) {
+  async monitorSecondarySync (syncWallet, primaryClockValue, secondaryUrl, requestID) {
     let startTime = Date.now()
     // Monitor the sync status
     let syncMonitoringRequestParameters = {
@@ -370,7 +373,7 @@ class SnapbackSM {
     let syncAttemptCompleted = false
     while (!syncAttemptCompleted) {
       try {
-        let syncMonitoringResp = await axios(syncMonitoringRequestParameters)
+        let syncMonitoringResp = await RequestManager.makeAxiosRequest(syncMonitoringRequestParameters, requestID)
         let respData = syncMonitoringResp.data.data
         this.log(`processSync ${syncWallet} secondary response: ${JSON.stringify(respData)}`)
         // A success response does not necessarily guarantee completion, validate response data to confirm
@@ -398,7 +401,7 @@ class SnapbackSM {
   }
 
   // Main sync queue job
-  async processSyncOperation (job) {
+  async processSyncOperation (job, requestID) {
     const { name: jobType, opts: { priority }, id } = job
     const syncRequestParameters = job.data.syncRequestParameters
     let isValidSyncJobData = (
@@ -418,10 +421,10 @@ class SnapbackSM {
     this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${jobType} | priority: ${priorityMap[priority]} | jobID: ${id} ------------------`)
 
     // Issue sync request to secondary
-    await axios(syncRequestParameters)
+    await RequestManager.makeAxiosRequest(syncRequestParameters, requestID)
 
     // Monitor the sync status
-    await this.monitorSecondarySync(syncWallet, primaryClockValue, secondaryUrl)
+    await this.monitorSecondarySync(syncWallet, primaryClockValue, secondaryUrl, requestID)
 
     // Exit when sync status is computed
     // Determine how many times to retry this operation
@@ -463,7 +466,7 @@ class SnapbackSM {
 
   // Initialize the state machine
   // Optionally accepts `maxSyncJobs` to set sync concurrency limit other than `MaxParallelSyncJobs`
-  async init (maxSyncJobs) {
+  async init (maxSyncJobs = null) {
     await this.stateMachineQueue.empty()
     await this.syncQueue.empty()
 
@@ -473,11 +476,12 @@ class SnapbackSM {
       return
     }
 
+    const requestID = nanoid() + '_creator_snapback_banana'
     // Initialize state machine queue processor
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
-          await this.processStateMachineOperation(job)
+          await this.processStateMachineOperation(job, requestID)
         } catch (e) {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {
@@ -501,7 +505,7 @@ class SnapbackSM {
       maxSyncJobs || MaxParallelSyncJobs, // set max concurrency
       async (job, done) => {
         try {
-          await this.processSyncOperation(job)
+          await this.processSyncOperation(job, requestID)
         } catch (e) {
           this.log(`syncQueue error processing ${e}`)
         } finally {

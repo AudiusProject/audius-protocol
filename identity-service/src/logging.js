@@ -16,14 +16,14 @@ const logger = bunyan.createLogger({
 logger.info('Loglevel set to:', logLevel)
 
 // ? why dont we use a set here instead
-const excludedRoutes = [ '/health_check', '/balance_check' ]
+const excludedRoutes = [ '/balance_check' ]
 function requestNotExcludedFromLogging (url) {
   return (excludedRoutes.indexOf(url) === -1)
 }
 
 function loggingMiddleware (req, res, next) {
   // Generate requestID, and then pass to response
-  const requestID = req.get('request-ID') || nanoid()
+  const requestID = req.get('request-ID') || nanoid() + '_identity_banana'
   res.set('request-ID', requestID)
 
   const urlParts = req.url.split('?')
@@ -34,7 +34,7 @@ function loggingMiddleware (req, res, next) {
     requestHostname: req.hostname,
     requestUrl: urlParts[0],
     requestQueryParams: urlParts.length > 1 ? urlParts[1] : undefined,
-    requestIP: req.ip
+    requestIP: req.ip,
   })
   if (requestNotExcludedFromLogging(req.originalUrl)) {
     req.logger.debug('Begin processing request')

@@ -288,7 +288,7 @@ class IdentityService {
    */
   async _makeAxiosRequest (axiosRequestObj) {
     axiosRequestObj.baseURL = this.identityServiceEndpoint
-    axiosRequestObj['request-ID'] = nanoid()
+    axiosRequestObj['request-ID'] = nanoid() + '_libs_identity_banana'
 
     return axios(axiosRequestObj)
   }
