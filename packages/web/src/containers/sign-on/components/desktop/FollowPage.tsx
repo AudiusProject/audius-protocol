@@ -19,7 +19,10 @@ const messages = {
   following: 'Following'
 }
 
-const MINIMUM_FOLLOWER_COUNT = 3
+const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
+const MINIMUM_FOLLOWER_COUNT =
+  ENVIRONMENT === 'production' || ENVIRONMENT === 'staging' ? 3 : 0
+
 // Because the cards are in a dynamically size container to allow wrapping user cards,
 // The 'pick for me' text needs to align w/ the last user card, so it is checked manually
 const isFourWide = window.innerWidth <= 1208
