@@ -5,6 +5,11 @@ const config = require('./config')
 // use this set to cache existing directory paths we know we've created so we don't make extraneous file system calls
 let EXISTING_PATHS = new Set()
 
+// regex to check if a directory or just a regular file
+// if directory - will have both outer and inner properties in match.groups
+// else - will have just outer property, no inner
+const CID_DIRECTORY_REGEX = /\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
+
 class DiskManager {
   /**
    * Return the storagePath from the config
@@ -75,6 +80,30 @@ class DiskManager {
     } catch (e) {
       throw new Error(`Error making directory at ${dirPath} - ${e.message}`)
     }
+  }
+
+  /**
+   * Given a file system path, extract CID's from the path and returns obj
+   * @param {String} fsPath file system path like /file_storage/files/r12/Qmdir123/Qmabcxyz
+   * @returns {Object} {isDir: Boolean, outer: CID, inner: CID|null}
+   *    outer should always be defined and can either be a file if not dir, or the dir name if dir
+   *    inner will be defined if the file is inside the dir matched by the outer match group
+   */
+  static extractCIDsFromPath (fsPath) {
+    const match = CID_DIRECTORY_REGEX.exec(fsPath)
+    let ret = {}
+
+    if (!match || !match.groups) return null
+
+    if (match && match.groups && match.groups.outer && match.groups.inner) {
+      ret = { isDir: true, outer: match.groups.outer, inner: match.groups.inner }
+    } else if (match.groups.outer && !match.groups.inner) {
+      ret = { isDir: false, outer: match.groups.outer, inner: null }
+    } else {
+      ret = null
+    }
+
+    return ret
   }
 }
 

@@ -23,11 +23,6 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
-// regex to check if a directory or just a regular file
-// if directory - will have both outer and inner properties in match.groups
-// else - will have just outer property, no inner
-const CID_DIRECTORY_REGEX = /\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
-
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  */
@@ -118,15 +113,15 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     // regex match to check if a directory or just a regular file
     // if directory will have both outer and inner properties in match.groups
     // else will have just outer
-    const match = CID_DIRECTORY_REGEX.exec(expectedStoragePath)
+    const matchObj = DiskManager.extractCIDsFromPath(expectedStoragePath)
 
     // if this is a directory, make it compatible with our dir cid gateway url
-    if (match && match.groups && match.groups.outer && match.groups.inner && fileNameForImage) {
+    if (matchObj && matchObj.isDir && matchObj.outer && fileNameForImage) {
       // override gateway urls to make it compatible with directory given an endpoint
       // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
       // in the case of a directory, override the gatewayUrlsMapped array to look like
       // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
-      gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${match.groups.outer}/${fileNameForImage}`)
+      gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${matchObj.outer}/${fileNameForImage}`)
     }
 
     /**
