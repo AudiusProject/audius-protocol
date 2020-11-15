@@ -67,27 +67,27 @@ describe('Test DiskManager', function () {
   })
 
   /**
-   * extractCIDsFromPath
+   * extractCIDsFromFSPath
    */
-  it('Should pass if extractCIDsFromPath is passed in a directory and file', function () {
+  it('Should pass if extractCIDsFromFSPath is passed in a directory and file', function () {
     const path = '/file_storage/files/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grouter/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
-    const matchObj = DiskManager.extractCIDsFromPath(path)
+    const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj.isDir, true)
     assert.deepStrictEqual(matchObj.outer, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grouter')
     assert.deepStrictEqual(matchObj.inner, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner')
   })
 
-  it('Should pass if extractCIDsFromPath is passed in just a file', function () {
+  it('Should pass if extractCIDsFromFSPath is passed in just a file', function () {
     const path = '/file_storage/files/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
-    const matchObj = DiskManager.extractCIDsFromPath(path)
+    const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj.isDir, false)
     assert.deepStrictEqual(matchObj.outer, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner')
     assert.deepStrictEqual(matchObj.inner, null)
   })
 
-  it('Should return null if extractCIDsFromPath is passed in no valid CID', function () {
+  it('Should return null if extractCIDsFromFSPath is passed in no valid CID', function () {
     const path = '/file_storage/files/QMcidhere'
-    const matchObj = DiskManager.extractCIDsFromPath(path)
+    const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj, null)
   })
 })

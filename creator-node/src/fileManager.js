@@ -113,7 +113,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     // regex match to check if a directory or just a regular file
     // if directory will have both outer and inner properties in match.groups
     // else will have just outer
-    const matchObj = DiskManager.extractCIDsFromPath(expectedStoragePath)
+    const matchObj = DiskManager.extractCIDsFromFSPath(expectedStoragePath)
 
     // if this is a directory, make it compatible with our dir cid gateway url
     if (matchObj && matchObj.isDir && matchObj.outer && fileNameForImage) {

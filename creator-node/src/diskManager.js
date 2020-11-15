@@ -89,18 +89,15 @@ class DiskManager {
    *    outer should always be defined and can either be a file if not dir, or the dir name if dir
    *    inner will be defined if the file is inside the dir matched by the outer match group
    */
-  static extractCIDsFromPath (fsPath) {
+  static extractCIDsFromFSPath (fsPath) {
     const match = CID_DIRECTORY_REGEX.exec(fsPath)
-    let ret = {}
-
     if (!match || !match.groups) return null
 
+    let ret = null
     if (match && match.groups && match.groups.outer && match.groups.inner) {
       ret = { isDir: true, outer: match.groups.outer, inner: match.groups.inner }
     } else if (match.groups.outer && !match.groups.inner) {
       ret = { isDir: false, outer: match.groups.outer, inner: null }
-    } else {
-      ret = null
     }
 
     return ret

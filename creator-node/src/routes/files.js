@@ -504,7 +504,7 @@ module.exports = function (app) {
     const filePathNormalized = path.normalize(filePath)
 
     // check that the regex works and verify it's not blacklisted
-    const matchObj = DiskManager.extractCIDsFromPath(filePathNormalized)
+    const matchObj = DiskManager.extractCIDsFromFSPath(filePathNormalized)
     if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
     const { outer, inner } = matchObj
