@@ -2,7 +2,7 @@ const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
 const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
 
-const CREATOR_NODE_SERVICE_NAME = 'creator-node'
+const CREATOR_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
 
 /**

@@ -11,6 +11,7 @@ class AudiusTokenClient {
   /* ------- GETTERS ------- */
 
   async balanceOf (account) {
+    console.log('bal', account)
     const balance = await this.AudiusTokenContract.methods.balanceOf(account).call()
     return this.web3.utils.toBN(balance)
   }
