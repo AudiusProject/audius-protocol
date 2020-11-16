@@ -160,12 +160,20 @@ module.exports = function (app) {
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
 
+    // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
+    if (walletPublicKeys.length == 0) {
+      throw new Error(`Must provide one wallet param`)
+    }
+    else if (walletPublicKeys.length > 1) {
+      throw new Error(`Multi wallet syncs are temporarily disabled`)
+    }
+
     // Log syncType
     const syncType = req.body.sync_type
     if (syncType) req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
 
     if (immediate) {
-      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax)
+      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
       if (errorObj) {
         return errorResponseServerError(errorObj)
       } else {
@@ -182,7 +190,7 @@ module.exports = function (app) {
       }
       syncQueue[wallet] = setTimeout(
         async function () {
-          return _nodesync(req, [wallet], creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax)
+          return _nodesync(req, [wallet], creatorNodeEndpoint)
         },
         debounceTime
       )
@@ -220,11 +228,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   const redisClient = req.app.get('redisClient')
   const redisLock = redisClient.lock
 
-  // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
-  if (walletPublicKeys.length > 1) {
-    throw new Error(`Multi wallet syncs are temporarily disabled`)
-  }
-
   let redisKey
   for (let wallet of walletPublicKeys) {
     redisKey = redisClient.getNodeSyncRedisKey(wallet)
@@ -236,17 +239,16 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   }
 
   try {
-    // Query own latest clockValue and call export with that value + 1
+    // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
     const cnodeUser = await models.CNodeUser.findOne({
-      where: { walletPublicKey: fetchedWalletPublicKey },
-      transaction
+      where: { walletPublicKey: walletPublicKeys[0] }
     })
-    const exportClockRangeMin = (cnodeUser) ? cnodeUser.clock : 0
+    const localMaxClockVal = (cnodeUser) ? cnodeUser.clock + 1 : -1
 
     // Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
     const exportQueryParams = {
       wallet_public_key: walletPublicKeys,
-      clock_range_min: exportClockRangeMin
+      clock_range_min: (localMaxClockVal + 1)
     }
     if (config.get('creatorNodeEndpoint')) {
       exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
@@ -321,10 +323,11 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       const fetchedLatestClockVal = fetchedCNodeUser.clock
 
       // Error if returned data is not within requested range
-      if (fetchedLatestClockVal < requestedClockRangeMin) {
-        throw new Error(`Cannot sync for requested clock range [${requestedClockRangeMin},${requestedClockRangeMax}] - imported data has max clock val ${fetchedLatestClockVal}`)
+      if (fetchedLatestClockVal < localMaxClockVal) {
+        throw new Error(`Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`)
       }
 
+      // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
       const transaction = await models.sequelize.transaction()
 
       try {
