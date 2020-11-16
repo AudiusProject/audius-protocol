@@ -8,6 +8,10 @@ const { CID } = require('ipfs-http-client-latest')
 // else - will have just outer property, no inner
 const CID_DIRECTORY_REGEX = /\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
+// variable to cache if we've run `ensureDirPathExists` in getTmpTrackUploadArtifactsPath so we don't run
+// it every time a track is uploaded
+let TMP_TRACK_ARTIFACTS_CREATED = false
+
 class DiskManager {
   /**
    * Return the storagePath from the config
@@ -23,7 +27,10 @@ class DiskManager {
    */
   static getTmpTrackUploadArtifactsPath () {
     const dirPath = path.join(config.get('storagePath'), 'files', 'tmp_track_artifacts')
-    this.ensureDirPathExists(dirPath)
+    if (!TMP_TRACK_ARTIFACTS_CREATED) {
+      this.ensureDirPathExists(dirPath)
+      TMP_TRACK_ARTIFACTS_CREATED = true
+    }
     return dirPath
   }
 
