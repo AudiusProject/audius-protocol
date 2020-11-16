@@ -44,6 +44,27 @@ class CreatorNodeSelection extends ServiceSelection {
     if (this.blacklist) { services = this.filterFromBlacklist(services) }
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST, val: services })
 
+    const successfulSyncCheckServices = []
+    const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
+    syncResponses.forEach(response => {
+      if (response.error) {
+        console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.e}`)
+        this.removeFromBackups(response.service)
+        this.addUnhealthy(response.service)
+      }
+
+      const { isBehind, isConfigured } = response.syncStatus
+      // a first time creator will have a sync status as isBehind = true and isConfiugred = false. this is ok
+      const firstTimeCreator = isBehind && !isConfigured
+      // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
+      const existingCreator = !isBehind && isConfigured
+      // if neither of these two are true, the cnode is not suited to be selected
+      if (firstTimeCreator || existingCreator) successfulSyncCheckServices.push(response.service)
+    })
+
+    services = [...successfulSyncCheckServices]
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
+
     const healthCheckedServices = await timeRequestsAndSortByVersion(
       services.map(node => ({
         id: node,
@@ -75,40 +96,29 @@ class CreatorNodeSelection extends ServiceSelection {
 
       return isHealthy
     })
+
     services = healthyServices.map(service => service.request.id)
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
 
-    const successfulSyncCheckServices = []
-    const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
-    syncResponses.forEach(response => {
-      if (response.error) {
-        console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.e}`)
-        this.removeFromBackups(response.service)
-        this.addUnhealthy(response.service)
-      }
-
-      const { isBehind, isConfigured } = response.syncStatus
-      // a first time creator will have a sync status as isBehind = true and isConfiugred = false. this is ok
-      const firstTimeCreator = isBehind && !isConfigured
-      // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
-      const existingCreator = !isBehind && isConfigured
-      // if neither of these two are true, the cnode is not suited to be selected
-      if (firstTimeCreator || existingCreator) successfulSyncCheckServices.push(response.service)
-    })
-
-    services = [...successfulSyncCheckServices]
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
+    // Create mapping of services to health check responses; used on dapp as other services to select from
+    const servicesMap = {}
+    healthCheckedServices
+      .map(service => {
+        if (service.response) {
+          servicesMap[service.request.id] = service.response.data
+        }
+      })
 
     const primary = this.getPrimary(services)
     const secondaries = this.getSecondaries(services, primary)
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
-      val: { primary, secondaries: secondaries.toString() }
+      val: { primary, secondaries: secondaries.toString(), services: servicesMap }
     })
 
     console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
 
-    return { primary, secondaries, services: healthCheckedServices }
+    return { primary, secondaries, services: servicesMap }
   }
 
   /**
