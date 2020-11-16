@@ -163,15 +163,6 @@ module.exports = function (app) {
     // Log syncType
     const syncType = req.body.sync_type
     if (syncType) req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
-    
-    // [requestedClockRangeMin, requestedClockRangeMax] is inclusive range
-    // TODO move to helper function
-    const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
-    const maxrequestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
-    const requestedClockRangeMax = Math.min((parseInt(req.query.clock_range_max) || maxrequestedClockRangeMax), maxrequestedClockRangeMax)
-    if (requestedClockRangeMax <= requestedClockRangeMin) {
-      return errorResponseBadRequest(`Invalid query params: clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] provided.`)
-    }
 
     if (immediate) {
       let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax)
@@ -219,7 +210,7 @@ module.exports = function (app) {
   }))
 }
 
-async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax) {
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   const start = Date.now()
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
@@ -245,11 +236,17 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, requestedC
   }
 
   try {
+    // Query own latest clockValue and call export with that value + 1
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { walletPublicKey: fetchedWalletPublicKey },
+      transaction
+    })
+    const exportClockRangeMin = (cnodeUser) ? cnodeUser.clock : 0
+
     // Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
     const exportQueryParams = {
       wallet_public_key: walletPublicKeys,
-      clock_range_min: requestedClockRangeMin,
-      clock_range_max: requestedClockRangeMax
+      clock_range_min: exportClockRangeMin
     }
     if (config.get('creatorNodeEndpoint')) {
       exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
@@ -331,11 +328,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, requestedC
       const transaction = await models.sequelize.transaction()
 
       try {
-        const cnodeUser = await models.CNodeUser.findOne({
-          where: { walletPublicKey: fetchedWalletPublicKey },
-          transaction
-        })
-
         // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
         if (cnodeUser) {
           // Ensure imported data has higher blocknumber than already stored.
