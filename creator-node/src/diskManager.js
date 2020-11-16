@@ -2,9 +2,6 @@ const path = require('path')
 const fs = require('fs')
 const config = require('./config')
 
-// use this set to cache existing directory paths we know we've created so we don't make extraneous file system calls
-let EXISTING_PATHS = new Set()
-
 // regex to check if a directory or just a regular file
 // if directory - will have both outer and inner properties in match.groups
 // else - will have just outer property, no inner
@@ -84,11 +81,8 @@ class DiskManager {
    */
   static ensureDirPathExists (dirPath) {
     try {
-      if (!EXISTING_PATHS.has(dirPath)) {
-        // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
-        fs.mkdirSync(dirPath, { recursive: true })
-        EXISTING_PATHS.add(dirPath)
-      }
+      // the mkdir recursive option is equivalent to `mkdir -p` and should created nested folders several levels deep
+      fs.mkdirSync(dirPath, { recursive: true })
     } catch (e) {
       throw new Error(`Error making directory at ${dirPath} - ${e.message}`)
     }
