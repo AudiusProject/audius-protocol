@@ -37,7 +37,7 @@ describe('Test DiskManager', function () {
     try {
       DiskManager.computeFilePath()
     } catch (e) {
-      assert.ok(e.message.includes('Please pass in a valid fsDest to computeFilePath'))
+      assert.ok(e.message.includes('Please pass in a valid cid to computeFilePath'))
     }
   })
 
@@ -45,7 +45,7 @@ describe('Test DiskManager', function () {
     try {
       DiskManager.computeFilePath('asd')
     } catch (e) {
-      assert.ok(e.message.includes('Please pass in a valid fsDest to computeFilePath'))
+      assert.ok(e.message.includes('Please pass in a valid cid to computeFilePath'))
     }
   })
 
@@ -53,7 +53,7 @@ describe('Test DiskManager', function () {
     try {
       DiskManager.computeFilePath('/file_storage/asdf')
     } catch (e) {
-      assert.ok(e.message.includes('Cannot pass in a directory path into this function, please pass in the leaf dir or file name'))
+      assert.ok(e.message.includes('Please pass in a valid cid to computeFilePath'))
     }
   })
 
@@ -61,16 +61,24 @@ describe('Test DiskManager', function () {
    * computeFilePathInDir
    */
   it('Should pass if computeFilePathInDir returns the correct path', function () {
-    const fullPath = DiskManager.computeFilePathInDir('QmdirectoryName', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    const validPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'Nam', 'QmdirectoryName', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    const fullPath = DiskManager.computeFilePathInDir('QmRSvU8NtadxPPrP4M72wUPBiTqykqziWDuGr6q2arsYW4', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    const validPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'sYW', 'QmRSvU8NtadxPPrP4M72wUPBiTqykqziWDuGr6q2arsYW4', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(fullPath, validPath)
   })
 
-  it('Should fail if dirName and fileName are not passed into computeFilePath', function () {
+  it('Should fail if dirName and fileName are not passed into computeFilePathInDir', function () {
     try {
       DiskManager.computeFilePathInDir()
     } catch (e) {
       assert.ok(e.message.includes('Must pass in valid dirName and fileName'))
+    }
+  })
+
+  it('Should fail if dirName or fileName are not a CID passed into computeFilePathInDir', function () {
+    try {
+      DiskManager.computeFilePathInDir('Qmdirhash', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    } catch (e) {
+      assert.ok(e.message.includes('Please pass in a valid cid to computeFilePathInDir for dirName and fileName'))
     }
   })
 

@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const config = require('./config')
+const { CID } = require('ipfs-http-client-latest')
 
 // regex to check if a directory or just a regular file
 // if directory - will have both outer and inner properties in match.groups
@@ -27,26 +28,28 @@ class DiskManager {
   }
 
   /**
-   * Construct the path to a file or directory
+   * Construct the path to a file or directory given a CID
    *
-   * eg. if you have a file `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
-   * eg. if you have a dir `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
+   * eg. if you have a file CID `Qmabcxyz`, use this function to get the path /file_storage/files/cxy/Qmabcxyz
+   * eg. if you have a dir CID `Qmdir123`, use this function to get the path /file_storage/files/r12/Qmdir123/
    * Use `computeFilePathInDir` if you want to get the path for a file inside a directory.
    *
    * @dev Returns a path with the three characters before the last character
    *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
-   * @param {String} fsDest file system destination, either filename or directory name
+   * @param {String} cid file system destination, either filename or directory
    */
-  static computeFilePath (fsDest) {
-    // fsDesk needs to be at least 4 characters because we pick the three characters preceding the last character as the folder name
-    if (!fsDest || fsDest.length < 4) throw new Error(`Please pass in a valid fsDest to computeFilePath. Passed in ${fsDest}`)
-    if (fsDest.includes('/')) throw new Error('Cannot pass in a directory path into this function, please pass in the leaf dir or file name')
+  static computeFilePath (cid) {
+    try {
+      CID.isCID(new CID(cid))
+    } catch (e) {
+      throw new Error(`Please pass in a valid cid to computeFilePath. Passed in ${cid} ${e.message}`)
+    }
 
-    // This is the directory path that file with fsDest will go into.
+    // This is the directory path that file with cid will go into.
     // The reason for nesting `files` inside `/file_storage` is because legacy nodes store files at the root of `/file_storage`, and
     // that can cause potential collisions if we're creating large amounts of subdirectories. A way to mitigate this is create one
-    // directory in the root `/file_storage` and all other directories inside of it like `file_storage/files/<directoryID>/<fsDest>
-    const directoryID = fsDest.slice(-4, -1)
+    // directory in the root `/file_storage` and all other directories inside of it like `file_storage/files/<directoryID>/<cid>
+    const directoryID = cid.slice(-4, -1)
     const parentDirPath = path.join(this.getConfigStoragePath(), 'files', directoryID)
     // in order to easily dev against the older and newer paths, the line below is the legacy storage path
     // const parentDirPath = this.getConfigStoragePath()
@@ -54,7 +57,7 @@ class DiskManager {
     // create the subdirectories in parentDirHash if they don't exist
     this.ensureDirPathExists(parentDirPath)
 
-    return path.join(parentDirPath, fsDest)
+    return path.join(parentDirPath, cid)
   }
 
   /**
@@ -69,6 +72,12 @@ class DiskManager {
    */
   static computeFilePathInDir (dirName, fileName) {
     if (!dirName || !fileName) throw new Error('Must pass in valid dirName and fileName')
+    try {
+      CID.isCID(new CID(dirName))
+      CID.isCID(new CID(fileName))
+    } catch (e) {
+      throw new Error(`Please pass in a valid cid to computeFilePathInDir for dirName and fileName. Passed in dirName: ${dirName} fileName: ${fileName} ${e.message}`)
+    }
 
     const parentDirPath = this.computeFilePath(dirName)
     return path.join(parentDirPath, fileName)
