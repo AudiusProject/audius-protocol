@@ -14,15 +14,20 @@ module.exports = (deployer, network, accounts) => {
     const networkId = Registry.network_id
     const config = contractConfig[network]
 
-    const nodeBootstrapAddress = config.nodeBootstrapAddress || accounts[25]
     const userReplicaSetBootstrapAddress = config.userReplicaSetBootstrapAddress || accounts[27]
+
+    // TODO: FIGURE THIS OUT FOR LOCAL DEV
+    //       Must be migrated separately after rest of contracts
+    const bootstrapSPIds = []
+    const bootstrapNodeDelegateWallets = []
 
     await deployer.deploy(
         UserReplicaSetManager,
         registryAddress,
         userFactoryKey,
-        nodeBootstrapAddress,
         userReplicaSetBootstrapAddress,
+        bootstrapSPIds,
+        bootstrapNodeDelegateWallets,
         networkId
     )
     await registry.addContract(

@@ -32,6 +32,10 @@ contract.only('UserReplicaSetManager', async (accounts) => {
     const nodeBootstrapAddress = accounts[12]
     const userReplicaBootstrapAddress = accounts[14]
 
+
+    const bootstrapSPIds = [cnode1SpID, cnode2SpID, cnode3SpID, cnode4SpID]
+    const bootstrapDelegateWallets = [cnode1Account, cnode2Account, cnode3Account, cnode4Account]
+
     // Contract objects
     let registry
     let userStorage
@@ -47,17 +51,27 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         await registry.addContract(_constants.userStorageKey, userStorage.address)
         userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, verifierAddress)
         await registry.addContract(_constants.userFactoryKey, userFactory.address)
+        console.log(`Initializing with following info: ${bootstrapSPIds}, ${bootstrapDelegateWallets}`)
+
         userReplicaSetManager = await UserReplicaSetManager.new(
             registry.address,
             _constants.userFactoryKey,
-            nodeBootstrapAddress,
             userReplicaBootstrapAddress,
+            bootstrapSPIds,
+            bootstrapDelegateWallets,
             networkId,
             { from: deployer }
         )
+
         await registry.addContract(_constants.userReplicaSetManagerKey, userReplicaSetManager.address)
-        // Initialize users
+
+        // Initialize users to POA UserFactory
         await registerInitialUsers()
+
+        console.log(`All set up!`)
+
+        await validateBootstrapNodes()
+        /*
         // Setup cnode 1 from deployer address
         await addOrUpdateCreatorNode(cnode1SpID, cnode1Account, 0, nodeBootstrapAddress)
         // Setup cnode 2 through cnode1Account
@@ -66,7 +80,19 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         await addOrUpdateCreatorNode(cnode3SpID, cnode3Account, cnode2SpID, cnode2Account)
         // Setup cnode 4 through cn3Account
         await addOrUpdateCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account)
+        */
     })
+
+    // Confirm constructor arguments are respected on chain
+    let validateBootstrapNodes = async () => {
+        for (var i = 0; i < bootstrapSPIds.length; i++) {
+            let spID = bootstrapSPIds[i]
+            let cnodeWallet = bootstrapDelegateWallets[i]
+            console.log(`Validating ${spID}, ${cnodeWallet}`)
+            let walletFromChain = await userReplicaSetManager.getContentNodeWallet(spID)
+            console.log(`From chain: ${spID} - ${walletFromChain}`)
+        }
+    }
 
     // Helper Functions
     // Initial 2 users registered to test UserFactory
@@ -101,7 +127,7 @@ contract.only('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateOwnerWallet,
             proposerId,
             proposerWallet)
-        let walletFromChain = await userReplicaSetManager.getCreatorNodeWallet(newCnodeId)
+        let walletFromChain = await userReplicaSetManager.getContentNodeWallet(newCnodeId)
         assert.equal(walletFromChain, newCnodeDelegateOwnerWallet, 'Expect wallet assignment')
     }
 
@@ -120,7 +146,11 @@ contract.only('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it.only('Validate bootstrap configs', async () => {
+    it.only('Sandbox', async () => {
+        console.log('Made it to the sandbox bb')
+    })
+
+    it('Validate bootstrap configs', async () => {
         let chainBootstrapNodeAddress = await userReplicaSetManager.getNodeBootstrapAddress()
         let chainUsrmBootstrapAddress = await userReplicaSetManager.getUserReplicaSetBootstrapAddress()
         assert.equal(chainBootstrapNodeAddress, nodeBootstrapAddress, 'Mismatched constructor argument for nodeBootstrapAddress')

@@ -13,9 +13,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // User factory key used to confirm valid users during reconfig operations
     bytes32 private userFactoryRegistryKey;
 
-    // Address permissioned to register nodes in addition to nodes themselves
-    address nodeBootstrapAddress;
-
     // Address permissioned to update user replica sets
     address userReplicaSetBootstrapAddress;
 
@@ -48,11 +45,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint _proposerSpId
     );
 
-    event NodeBootstrapAddressUpdated(
-        address _newBootstrapAddress,
-        address _oldBootstrapAddress
-    );
-
     /* EIP-712 */
     bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
         "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
@@ -80,6 +72,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
         bootstrapSPIds = _bootstrapSPIds;
         bootstrapNodeDelegateWallets = _bootstrapNodeDelegateWallets;
+        _seedBootstrapNodes(bootstrapSPIds, bootstrapNodeDelegateWallets);
     }
 
     // Chain of trust based authentication scheme
@@ -102,9 +95,10 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         );
 
         // Requirements for non nodeBootstrapAddress address
-        if (signer != nodeBootstrapAddress) {
-            require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer, "Mismatch proposer wallet for existing spID");
-        }
+        // TODO: RE-enable with multiple valid addresses
+        // if (signer != nodeBootstrapAddress) {
+        //     require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer, "Mismatch proposer wallet for existing spID");
+        // }
 
         spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
 
@@ -113,17 +107,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
     //       Is there any actual downside to orphaning old spID <-> wallets?
-
-    // TODO: Expose CRUD for special addresses permissioned to deployer(?)
-    function updateNodeBootstrapAddress(address _newBootstrapAddress) external {
-        require(
-            msg.sender == nodeBootstrapAddress,
-            "Only callable by current nodeBootstrapAddress"
-        );
-        address oldBootstrapAddress = nodeBootstrapAddress;
-        nodeBootstrapAddress = _newBootstrapAddress;
-        emit NodeBootstrapAddressUpdated(oldBootstrapAddress, nodeBootstrapAddress);
-    }
 
     // Function used to permission updates to a given user's replica set
     function updateReplicaSet(
@@ -213,17 +196,10 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     }
 
     // Get wallet corresponding to creator node
-    function getCreatorNodeWallet(uint _spID) external view
+    function getContentNodeWallet(uint _spID) external view
     returns (address wallet)
     {
         return spIdToCreatorNodeDelegateWallet[_spID];
-    }
-
-    // Get nodeBootstrapAddress
-    function getNodeBootstrapAddress() external view
-    returns (address)
-    {
-        return nodeBootstrapAddress;
     }
 
     // Get userReplicaSetBootstrapAddress
@@ -311,5 +287,17 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             }
         }
         return secondarySenderFound;
+    }
+
+    // Update state given constructor arguments
+    function _seedBootstrapNodes(
+        uint[] memory _spIDs,
+        address[] memory _delegateOwnerWallets
+    ) internal
+    {
+        require(_spIDs.length == _delegateOwnerWallets.length, "Mismatched bootsrap config");
+        for (uint i = 0; i < _spIDs.length; i++) {
+            spIdToCreatorNodeDelegateWallet[_spIDs[i]] = _delegateOwnerWallets[i];
+        }
     }
 }
