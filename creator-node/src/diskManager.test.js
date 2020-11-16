@@ -17,6 +17,14 @@ describe('Test DiskManager', function () {
   })
 
   /**
+   * getTmpTrackUploadArtifactsPath
+   */
+  it('Should pass if storagePath is correctly set', function () {
+    const tmpTrackArtifactPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'tmp_track_artifacts')
+    assert.deepStrictEqual(tmpTrackArtifactPath, DiskManager.getTmpTrackUploadArtifactsPath())
+  })
+
+  /**
    * computeFilePath
    */
   it('Should pass if computeFilePath returns the correct path', function () {

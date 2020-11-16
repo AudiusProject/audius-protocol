@@ -320,7 +320,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = DiskManager.computeFilePath(randomFileName)
+    const fileDir = path.join(DiskManager.getTmpTrackUploadArtifactsPath(), randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)
