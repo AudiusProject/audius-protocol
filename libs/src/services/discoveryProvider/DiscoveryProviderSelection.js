@@ -67,7 +67,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
           }
         }
       } catch (e) {
-        console.error('Could not retrieve cached discovery endpoint from localStorage', e)
+        console.error('Could not retrieve cached discovery endpoint from localStorage', e.message)
       }
     }
     return null

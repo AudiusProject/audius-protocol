@@ -2,7 +2,7 @@ const axios = require('axios')
 
 const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
-const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const config = require('../config')
 const middlewares = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
@@ -24,11 +24,18 @@ module.exports = function (app) {
   app.get('/export', handleResponse(async (req, res) => {
     const start = Date.now()
 
-    // TODO - allow for offsets in the /export
     const walletPublicKeys = req.query.wallet_public_key // array
     const sourceEndpoint = req.query.source_endpoint || '' // string
 
-    const MaxClock = 25000
+    maxExportClockValueRange =config.get('maxExportClockValueRange')
+
+    // [requestedClockRangeMin, requestedClockRangeMax] is inclusive range
+    const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
+    const maxrequestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
+    const requestedClockRangeMax = Math.min((parseInt(req.query.clock_range_max) || maxrequestedClockRangeMax), maxrequestedClockRangeMax)
+    if (requestedClockRangeMax <= requestedClockRangeMin) {
+      return errorResponseBadRequest(`Invalid query params: clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] provided.`)
+    }
 
     const transaction = await models.sequelize.transaction()
     try {
@@ -43,7 +50,8 @@ module.exports = function (app) {
           where: {
             cnodeUserUUID: cnodeUserUUIDs,
             clock: {
-              [models.Sequelize.Op.lte]: MaxClock
+              [models.Sequelize.Op.gte]: requestedClockRangeMin,
+              [models.Sequelize.Op.lte]: requestedClockRangeMax
             }
           },
           order: [['clock', 'ASC']],
@@ -54,7 +62,8 @@ module.exports = function (app) {
           where: {
             cnodeUserUUID: cnodeUserUUIDs,
             clock: {
-              [models.Sequelize.Op.lte]: MaxClock
+              [models.Sequelize.Op.gte]: requestedClockRangeMin,
+              [models.Sequelize.Op.lte]: requestedClockRangeMax
             }
           },
           order: [['clock', 'ASC']],
@@ -65,7 +74,8 @@ module.exports = function (app) {
           where: {
             cnodeUserUUID: cnodeUserUUIDs,
             clock: {
-              [models.Sequelize.Op.lte]: MaxClock
+              [models.Sequelize.Op.gte]: requestedClockRangeMin,
+              [models.Sequelize.Op.lte]: requestedClockRangeMax
             }
           },
           order: [['clock', 'ASC']],
@@ -76,7 +86,8 @@ module.exports = function (app) {
           where: {
             cnodeUserUUID: cnodeUserUUIDs,
             clock: {
-              [models.Sequelize.Op.lte]: MaxClock
+              [models.Sequelize.Op.gte]: requestedClockRangeMin,
+              [models.Sequelize.Op.lte]: requestedClockRangeMax
             }
           },
           order: [['clock', 'ASC']],
@@ -98,14 +109,19 @@ module.exports = function (app) {
         cnodeUser['clockRecords'] = []
 
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
+        const curCnodeUserClockVal = cnodeUser.clock
 
-        // TODO - remove this once we no longer have a MaxClock in export
-        // this just overrides the clock value to the max clock we're sending over to the secondary so it knows
-        // there's more data to pull
-        if (cnodeUser.clock > MaxClock) {
+        cnodeUser['clockInfo'] = {
+          requestedClockRangeMin,
+          requestedClockRangeMax,
+          localClockMax: curCnodeUserClockVal
+        }
+
+        // Resets cnodeUser clock value to requestedClockRangeMax to ensure secondary knows there is more data to sync
+        if (cnodeUser.clock > requestedClockRangeMax) {
           // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
-          req.logger.info('nodeSync.js#export - cnode user clock value is higher than MaxClock, resetting', clockRecords[clockRecords.length - 1].clock)
-          cnodeUser.clock = clockRecords[clockRecords.length - 1].clock
+          cnodeUser.clock = requestedClockRangeMax
+          req.logger.info(`nodeSync.js#export - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`)
         }
       })
 
@@ -126,10 +142,10 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       const ipfsIDObj = await getIPFSPeerId(ipfs)
 
-      req.logger.info('Successful export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ms`)
+      req.logger.info(`Successful export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      req.logger.error('Error in /export for wallets', walletPublicKeys, `to source endpoint ${sourceEndpoint} || route duration ${Date.now() - start} ms ||`, e)
+      req.logger.error(`Error in /export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms ||`, e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
@@ -142,47 +158,46 @@ module.exports = function (app) {
   app.post('/sync', handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-    const immediate = (req.body.immediate === true || req.body.immediate === 'true')
-    // option to sync just the db records as opposed to db records and files on disk, defaults to false
-    const dbOnlySync = (req.body.db_only_sync === true || req.body.db_only_sync === 'true')
+    const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
 
     // Log syncType
     const syncType = req.body.sync_type
     if (syncType) req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
+    
+    // [requestedClockRangeMin, requestedClockRangeMax] is inclusive range
+    // TODO move to helper function
+    const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
+    const maxrequestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
+    const requestedClockRangeMax = Math.min((parseInt(req.query.clock_range_max) || maxrequestedClockRangeMax), maxrequestedClockRangeMax)
+    if (requestedClockRangeMax <= requestedClockRangeMin) {
+      return errorResponseBadRequest(`Invalid query params: clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] provided.`)
+    }
 
-    if (!immediate) {
-      req.logger.info('debounce time', config.get('debounceTime'))
-      // Debounce nodeysnc op
-      for (let wallet of walletPublicKeys) {
-        if (wallet in syncQueue) {
-          clearTimeout(syncQueue[wallet])
-          req.logger.info('clear timeout for', wallet, 'time', Date.now())
-        }
-        syncQueue[wallet] = setTimeout(
-          async () => _nodesync(req, [wallet], creatorNodeEndpoint, dbOnlySync),
-          config.get('debounceTime')
-        )
-        req.logger.info('set timeout for', wallet, 'time', Date.now())
+    if (immediate) {
+      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax)
+      if (errorObj) {
+        return errorResponseServerError(errorObj)
+      } else {
+        return successResponse()
       }
-    } else {
-      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
-      if (errorObj) return errorResponseServerError(errorObj)
     }
-    return successResponse()
-  }))
 
-  // copy the code as the regular sync, just to make sure it's isolated and not called by any other cnode code
-  // force immediate and dbOnlySync to be true
-  app.post('/vector_clock_sync', handleResponse(async (req, res) => {
-    const walletPublicKeys = req.body.wallet // array
-    const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-    // option to sync just the db records as opposed to db records and files on disk, defaults to false
-    const dbOnlySync = true
-
-    let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync)
-    if (errorObj) {
-      return errorResponseServerError(errorObj.message)
+    // Trigger nodesync operation with debounce
+    const debounceTime = config.get('debounceTime')
+    for (let wallet of walletPublicKeys) {
+      if (wallet in syncQueue) {
+        clearTimeout(syncQueue[wallet])
+        req.logger.info('clear timeout for', wallet, 'time', Date.now())
+      }
+      syncQueue[wallet] = setTimeout(
+        async function () {
+          return _nodesync(req, [wallet], creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax)
+        },
+        debounceTime
+      )
+      req.logger.info('set timeout for', wallet, 'time', Date.now())
     }
+
     return successResponse()
   }))
 
@@ -204,15 +219,21 @@ module.exports = function (app) {
   }))
 }
 
-async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync) {
+async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, requestedClockRangeMin, requestedClockRangeMax) {
   const start = Date.now()
-  let errorObj = null // object to track if the function errored, returned at the end of the function
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
-  // ensure access to each wallet, then acquire it for sync.
+  let errorObj = null // object to track if the function errored, returned at the end of the function
+
+  // ensure access to each wallet, then acquire redis lock for duration of sync
   const redisClient = req.app.get('redisClient')
   const redisLock = redisClient.lock
-  // TODO - redisKey will be inaccurate when /sync is called with more than 1 walletPublicKey
+
+  // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
+  if (walletPublicKeys.length > 1) {
+    throw new Error(`Multi wallet syncs are temporarily disabled`)
+  }
+
   let redisKey
   for (let wallet of walletPublicKeys) {
     redisKey = redisClient.getNodeSyncRedisKey(wallet)
@@ -224,12 +245,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
   }
 
   try {
-    // Fetch data export from creatorNodeEndpoint for given walletPublicKeys
+    // Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
     const exportQueryParams = {
       wallet_public_key: walletPublicKeys,
-      db_only_sync: dbOnlySync
+      clock_range_min: requestedClockRangeMin,
+      clock_range_max: requestedClockRangeMax
     }
-    if (config.get('creatorNodeEndpoint')) exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
+    if (config.get('creatorNodeEndpoint')) {
+      exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
+    }
 
     const resp = await axios({
       method: 'get',
@@ -240,10 +264,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       /** @notice - this request timeout is arbitrarily large for now until we find an appropriate value */
       timeout: 300000 /* 5m = 300000ms */
     })
+
     if (resp.status !== 200) {
       req.logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
       throw new Error(resp.data['error'])
     }
+
     // TODO - explain patch
     if (!resp.data) {
       if (resp.request && resp.request.responseText) {
@@ -255,13 +281,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
     }
     req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
 
-    if (!dbOnlySync) {
-      // Attempt to connect directly to target CNode's IPFS node.
-      await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
-      req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
-    }
+    // Attempt to connect directly to target CNode's IPFS node.
+    await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
+    req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
 
-    // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
+    /**
+     * For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
+     */
+
     for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
@@ -271,28 +298,35 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
       let userReplicaSet = []
 
-      if (!dbOnlySync) {
-        try {
-          const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
-          userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+      // TODO move this logic to right before file save ops...
+      // Build user replica set array for use in file fetch + save
+      try {
+        const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
+        userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
 
-          // push user metadata node to user's replica set if defined
-          if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
+        // push user metadata node to user's replica set if defined
+        if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
 
-          // filter out current node from user's replica set
-          userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
+        // filter out current node from user's replica set
+        userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
 
-          // Spread + set uniq's the array
-          userReplicaSet = [...new Set(userReplicaSet)]
-        } catch (e) {
-          req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash - ${e.message}`)
-        }
+        // Spread + set uniq's the array
+        userReplicaSet = [...new Set(userReplicaSet)]
+      } catch (e) {
+        req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash - ${e.message}`)
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
       const fetchedCnodeUserUUID = fetchedCNodeUser.cnodeUserUUID
+      const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
+      const fetchedLatestClockVal = fetchedCNodeUser.clock
+
+      // Error if returned data is not within requested range
+      if (fetchedLatestClockVal < requestedClockRangeMin) {
+        throw new Error(`Cannot sync for requested clock range [${requestedClockRangeMin},${requestedClockRangeMax}] - imported data has max clock val ${fetchedLatestClockVal}`)
+      }
 
       const transaction = await models.sequelize.transaction()
 
@@ -301,8 +335,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           where: { walletPublicKey: fetchedWalletPublicKey },
           transaction
         })
-        const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
-        const fetchedLatestClockVal = fetchedCNodeUser.clock
 
         // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
         if (cnodeUser) {
@@ -313,7 +345,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           if (latestClockValue > fetchedLatestClockVal) {
             throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
               ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}. \
-              fetched latestClockVal: ${fetchedLatestClockVal}, self latestClockVal: ${latestClockValue}`)
+              fetched latestClockVal: ${fetchedLatestClockVal}, self latestClockVal: ${latestClockValue}`
+            )
           } else if (latestClockValue === fetchedLatestClockVal) {
             // Already to update, no sync necessary
             req.logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! fetchedLatestClockVal=${fetchedLatestClockVal}, latestClockValue=${latestClockValue}`)
@@ -327,7 +360,13 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
 
           const numAudiusUsersDeleted = await models.AudiusUser.destroy({
-            where: { cnodeUserUUID },
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: fetchedLatestClockVal
+              }
+            },
             transaction
           })
           req.logger.info(redisKey, `numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
@@ -336,27 +375,49 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           const numTrackFilesDeleted = await models.File.destroy({
             where: {
               cnodeUserUUID,
-              trackBlockchainId: { [models.Sequelize.Op.ne]: null } // Op.ne = notequal
+              trackBlockchainId: { [models.Sequelize.Op.ne]: null }, // Op.ne = notequal
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: fetchedLatestClockVal
+              }
             },
             transaction
           })
           req.logger.info(redisKey, `numTrackFilesDeleted ${numTrackFilesDeleted}`)
 
           const numTracksDeleted = await models.Track.destroy({
-            where: { cnodeUserUUID },
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: fetchedLatestClockVal
+              }
+            },
             transaction
           })
           req.logger.info(redisKey, `numTracksDeleted ${numTracksDeleted}`)
 
           // Delete all remaining files (image / metadata files).
           const numNonTrackFilesDeleted = await models.File.destroy({
-            where: { cnodeUserUUID },
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: fetchedLatestClockVal
+              }
+            },
             transaction
           })
           req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
 
           const numClockRecordsDeleted = await models.ClockRecord.destroy({
-            where: { cnodeUserUUID },
+            where: {
+              cnodeUserUUID,
+              clock: {
+                [models.Sequelize.Op.gte]: requestedClockRangeMin,
+                [models.Sequelize.Op.lte]: fetchedLatestClockVal
+              }
+            },
             transaction
           })
           req.logger.info(redisKey, `numClockRecordsDeleted ${numClockRecordsDeleted}`)
@@ -385,7 +446,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           clock: fetchedCNodeUser.clock,
           createdAt: fetchedCNodeUser.createdAt
         }, { transaction })
-        req.logger.info(redisKey, `Inserted nodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        req.logger.info(redisKey, `Inserted CNodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
         // Save all clockRecords to DB
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
@@ -404,40 +465,38 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
-        // if not just db records sync, sync everything
-        if (!dbOnlySync) {
-          // Save all track files to disk in batches (to limit concurrent load)
-          for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
-            const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-            req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
-            await Promise.all(trackFilesSlice.map(
-              trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
-            ))
-          }
-          req.logger.info(redisKey, 'Saved all track files to disk.')
+        // Save all track files to disk in batches (to limit concurrent load)
+        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
+          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
+          req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
 
-          // Save all non-track files to disk in batches (to limit concurrent load)
-          for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
-            const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-            req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
-            await Promise.all(nonTrackFilesSlice.map(
-              nonTrackFile => {
-                // Skip over directories since there's no actual content to sync
-                // The files inside the directory are synced separately
-                if (nonTrackFile.type !== 'dir') {
-                  // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
-                  // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
-                  if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                    return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
-                  } else {
-                    return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
-                  }
+          await Promise.all(trackFilesSlice.map(
+            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+          ))
+        }
+        req.logger.info(redisKey, 'Saved all track files to disk.')
+
+        // Save all non-track files to disk in batches (to limit concurrent load)
+        for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
+          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
+          req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
+          await Promise.all(nonTrackFilesSlice.map(
+            nonTrackFile => {
+              // Skip over directories since there's no actual content to sync
+              // The files inside the directory are synced separately
+              if (nonTrackFile.type !== 'dir') {
+                // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
+                // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
+                if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
+                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                } else {
+                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
                 }
               }
-            ))
-          }
-          req.logger.info(redisKey, 'Saved all non-track files to disk.')
+            }
+          ))
         }
+        req.logger.info(redisKey, 'Saved all non-track files to disk.')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           ...file,
@@ -452,7 +511,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
         })), { transaction })
         req.logger.info(redisKey, 'created all tracks')
 
-        // Save all track files to db
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
           ...trackFile,
           cnodeUserUUID: fetchedCnodeUserUUID
@@ -466,14 +524,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
         req.logger.info(redisKey, 'saved all audiususer data to db')
 
         await transaction.commit()
-        req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
-        redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
+
+        req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
       } catch (e) {
         req.logger.error(redisKey, `Transaction failed for cnodeUserUUID ${fetchedCnodeUserUUID}`, e)
+        
         await transaction.rollback()
-        redisKey = redisClient.getNodeSyncRedisKey(fetchedWalletPublicKey)
         await redisLock.removeLock(redisKey)
+
         throw new Error(e)
       }
     }

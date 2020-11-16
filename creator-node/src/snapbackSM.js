@@ -260,6 +260,7 @@ class SnapbackSM {
         if (secondary2 != null) nodeVectorClockQueryList[secondary2].push(userWallet)
       }
     )
+
     this.log(`Processing ${usersToProcess.length} users`)
     // Cached primary clock values for currently processing user set
     let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
@@ -299,7 +300,7 @@ class SnapbackSM {
     )
 
     this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
-
+        
     // Issue syncs if necessary
     // For each user in the initially returned usersList,
     //  compare local primary clock value to value from secondary retrieved in bulk above
