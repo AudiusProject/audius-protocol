@@ -148,7 +148,7 @@ module.exports = async (job) => {
   // return the CIDs and storage paths to write to db
   // in the main thread
   const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
-  const dirDestPath = DiskManager.computeBasePath(dirCID)
+  const dirDestPath = DiskManager.computeFilePath(dirCID)
 
   const resp = {
     dir: { dirCID, dirDestPath },

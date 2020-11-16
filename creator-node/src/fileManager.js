@@ -38,7 +38,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
 
   // Write file to disk by multihash for future retrieval
-  const dstPath = DiskManager.computeBasePath(multihash)
+  const dstPath = DiskManager.computeFilePath(multihash)
   await writeFile(dstPath, buffer)
 
   return { multihash, dstPath }
@@ -61,7 +61,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
 
   // store file copy by multihash for future retrieval
-  const dstPath = DiskManager.computeBasePath(multihash)
+  const dstPath = DiskManager.computeFilePath(multihash)
 
   try {
     await copyFile(srcPath, dstPath)
@@ -320,7 +320,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = DiskManager.computeBasePath(randomFileName)
+    const fileDir = DiskManager.computeFilePath(randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)

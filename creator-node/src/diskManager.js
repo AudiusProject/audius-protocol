@@ -29,8 +29,9 @@ class DiskManager {
    *      eg QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6 will be eg /file_storage/muU/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6
    * @param {String} fsDest file system destination, either filename or directory name
    */
-  static computeBasePath (fsDest) {
-    if (!fsDest || fsDest.length < 4) throw new Error(`Please pass in a valid fsDest to computeBasePath. Passed in ${fsDest}`)
+  static computeFilePath (fsDest) {
+    // fsDesk needs to be at least 4 characters because we pick the three characters preceding the last character as the folder name
+    if (!fsDest || fsDest.length < 4) throw new Error(`Please pass in a valid fsDest to computeFilePath. Passed in ${fsDest}`)
     if (fsDest.includes('/')) throw new Error('Cannot pass in a directory path into this function, please pass in the leaf dir or file name')
 
     // This is the directory path that file with fsDest will go into.
@@ -53,7 +54,7 @@ class DiskManager {
    *
    * eg if you're manually computing the file path to an file `Qmabcxyz` inside a dir `Qmdir123`, use this function to get the
    * path with both the dir and the file /file_storage/files/r12/Qmdir123/Qmabcxyz
-   * Use `computeBasePath` if you just want to get to the path of a file or directory.
+   * Use `computeFilePath` if you just want to get to the path of a file or directory.
    *
    * @param {String} dirName directory name
    * @param {String} fileName file name
@@ -61,7 +62,7 @@ class DiskManager {
   static computeFilePathInDir (dirName, fileName) {
     if (!dirName || !fileName) throw new Error('Must pass in valid dirName and fileName')
 
-    const parentDirPath = this.computeBasePath(dirName)
+    const parentDirPath = this.computeFilePath(dirName)
     return path.join(parentDirPath, fileName)
   }
 
