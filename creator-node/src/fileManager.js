@@ -223,7 +223,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     try {
       const ipfs = req.app.get('ipfsLatestAPI')
       const content = fs.createReadStream(expectedStoragePath)
-      for await (const result of ipfs.add(content, { onlyHash: true, timeout: 2000 })) {
+      for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
