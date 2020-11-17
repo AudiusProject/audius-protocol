@@ -243,7 +243,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     const cnodeUser = await models.CNodeUser.findOne({
       where: { walletPublicKey: walletPublicKeys[0] }
     })
-    const localMaxClockVal = (cnodeUser) ? cnodeUser.clock + 1 : -1
+    const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
 
     // Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
     const exportQueryParams = {
@@ -297,8 +297,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
       let userReplicaSet = []
 
-      // TODO move this logic to right before file save ops...
       // Build user replica set array for use in file fetch + save
+      // TODO move this logic to right before file save ops...
       try {
         const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
         userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
@@ -318,130 +318,50 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
-      const fetchedCnodeUserUUID = fetchedCNodeUser.cnodeUserUUID
-      const fetchedLatestBlockNumber = fetchedCNodeUser.latestBlockNumber
-      const fetchedLatestClockVal = fetchedCNodeUser.clock
+
+      const {
+        cnodeUserUUID: fetchedCnodeUserUUID,
+        latestBlockNumber: fetchedLatestBlockNumber,
+        clock: fetchedLatestClockVal,
+        clockRecords: fetchedClockRecords
+      } = fetchedCNodeUser
 
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
         throw new Error(`Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`)
+      } else if (fetchedLatestClockVal === localMaxClockVal) {
+        // Already up to date, no sync necessary
+        req.logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`)
+        // the transaction declared outside the try/catch needs to be closed. if we call the continue
+        // and do not end the tx, it will never be closed
+        transaction.rollback()
+        continue
+      } else if (fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
+        throw new Error(`Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`)
       }
 
       // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
       const transaction = await models.sequelize.transaction()
 
       try {
-        // Delete any previously stored data for cnodeUser in reverse table dependency order (cannot be parallelized).
-        if (cnodeUser) {
-          // Ensure imported data has higher blocknumber than already stored.
-          const latestBlockNumber = cnodeUser.latestBlockNumber
-          const latestClockValue = cnodeUser.clock
-
-          if (latestClockValue > fetchedLatestClockVal) {
-            throw new Error(`Imported data is outdated, will not sync. Imported latestBlockNumber \
-              ${fetchedLatestBlockNumber} Self latestBlockNumber ${latestBlockNumber}. \
-              fetched latestClockVal: ${fetchedLatestClockVal}, self latestClockVal: ${latestClockValue}`
-            )
-          } else if (latestClockValue === fetchedLatestClockVal) {
-            // Already to update, no sync necessary
-            req.logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! fetchedLatestClockVal=${fetchedLatestClockVal}, latestClockValue=${latestClockValue}`)
-            // the transaction declared outside the try/catch needs to be closed. if we call the continue
-            // and do not end the tx, it will never be closed
-            transaction.rollback()
-            continue
-          }
-
-          const cnodeUserUUID = cnodeUser.cnodeUserUUID
-          req.logger.info(redisKey, `beginning delete ops for cnodeUserUUID ${cnodeUserUUID}`)
-
-          const numAudiusUsersDeleted = await models.AudiusUser.destroy({
-            where: {
-              cnodeUserUUID,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: fetchedLatestClockVal
-              }
-            },
-            transaction
-          })
-          req.logger.info(redisKey, `numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
-
-          // TrackFiles must be deleted before associated Tracks can be deleted.
-          const numTrackFilesDeleted = await models.File.destroy({
-            where: {
-              cnodeUserUUID,
-              trackBlockchainId: { [models.Sequelize.Op.ne]: null }, // Op.ne = notequal
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: fetchedLatestClockVal
-              }
-            },
-            transaction
-          })
-          req.logger.info(redisKey, `numTrackFilesDeleted ${numTrackFilesDeleted}`)
-
-          const numTracksDeleted = await models.Track.destroy({
-            where: {
-              cnodeUserUUID,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: fetchedLatestClockVal
-              }
-            },
-            transaction
-          })
-          req.logger.info(redisKey, `numTracksDeleted ${numTracksDeleted}`)
-
-          // Delete all remaining files (image / metadata files).
-          const numNonTrackFilesDeleted = await models.File.destroy({
-            where: {
-              cnodeUserUUID,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: fetchedLatestClockVal
-              }
-            },
-            transaction
-          })
-          req.logger.info(redisKey, `numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
-
-          const numClockRecordsDeleted = await models.ClockRecord.destroy({
-            where: {
-              cnodeUserUUID,
-              clock: {
-                [models.Sequelize.Op.gte]: requestedClockRangeMin,
-                [models.Sequelize.Op.lte]: fetchedLatestClockVal
-              }
-            },
-            transaction
-          })
-          req.logger.info(redisKey, `numClockRecordsDeleted ${numClockRecordsDeleted}`)
-
-          const numSessionTokensDeleted = await models.SessionToken.destroy({
-            where: { cnodeUserUUID },
-            transaction
-          })
-          req.logger.info(redisKey, `numSessionTokensDeleted ${numSessionTokensDeleted}`)
-
-          // Delete cnodeUser entry
-          await cnodeUser.destroy({ transaction })
-          req.logger.info(redisKey, `deleted cnodeUserEntry`)
-        }
-
-        /* Populate all new data for fetched cnodeUser. */
-
         req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
-        // Upsert cnodeUser row.
-        await models.CNodeUser.create({
-          cnodeUserUUID: fetchedCnodeUserUUID,
-          walletPublicKey: fetchedWalletPublicKey,
-          latestBlockNumber: fetchedLatestBlockNumber,
-          lastLogin: fetchedCNodeUser.lastLogin,
-          clock: fetchedCNodeUser.clock,
-          createdAt: fetchedCNodeUser.createdAt
-        }, { transaction })
+        // Upsert cnodeUser row
+        await models.CNodeUser.upsert(
+          {
+            cnodeUserUUID: fetchedCnodeUserUUID,
+            walletPublicKey: fetchedWalletPublicKey,
+            lastLogin: fetchedCNodeUser.lastLogin,
+            latestBlockNumber: fetchedLatestBlockNumber,
+            clock: fetchedCNodeUser.clock,
+            createdAt: fetchedCNodeUser.createdAt
+          }, {
+            transaction
+          }
+        )
         req.logger.info(redisKey, `Inserted CNodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+
+        /* Populate all new data for fetched cnodeUser. */
 
         // Save all clockRecords to DB
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
