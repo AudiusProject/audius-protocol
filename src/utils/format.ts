@@ -39,9 +39,17 @@ export const formatAudString = (num: string) => {
  * Format a wallet into the shorted form for display
  * @param num BN
  */
-// Formats a number into human readable format
 export const formatShortNumber = (num: number) => {
   return numeral(num).format('0a')
+}
+
+/**
+ * Format a wallet into the shorted form for display with an optional digit after
+ * the decimal place
+ * @param num BN
+ */
+export const formatShortNumberWithDecimal = (num: number) => {
+  return numeral(num).format('0[.]0a')
 }
 
 export const formatShortWallet = (wallet: Address) => {

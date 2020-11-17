@@ -12,6 +12,7 @@ import mobileStyles from './BarChartMobile.module.css'
 import { createStyles } from 'utils/mobile'
 import { useIsMobile } from 'utils/hooks'
 import { formatBucketText } from 'store/cache/analytics/hooks'
+import Error from 'components/Error'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -129,6 +130,7 @@ type OwnProps = {
   column2: string
   labels: string[] | null
   data?: number[] | null
+  error?: boolean
   options?: string[]
   selection?: string
   onSelectOption?: (option: string) => void
@@ -142,6 +144,7 @@ const BarChart: React.FC<BarChartProps> = ({
   column2,
   data,
   labels,
+  error,
   options,
   selection,
   onSelectOption
@@ -163,7 +166,9 @@ const BarChart: React.FC<BarChartProps> = ({
         )}
       </div>
       <div className={styles.chart}>
-        {data && labels ? (
+        {error ? (
+          <Error text="Incomplete Data" />
+        ) : data && labels ? (
           <>
             <div className={styles.columns}>
               <div>{column1}</div>
