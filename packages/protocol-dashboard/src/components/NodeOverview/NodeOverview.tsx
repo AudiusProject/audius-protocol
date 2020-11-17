@@ -15,7 +15,7 @@ import { createStyles } from 'utils/mobile'
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
-  dp: 'Discovery Provider',
+  dp: 'Discovery Node',
   cn: 'Content Node',
   title: 'SERVICE',
   version: 'VER.',

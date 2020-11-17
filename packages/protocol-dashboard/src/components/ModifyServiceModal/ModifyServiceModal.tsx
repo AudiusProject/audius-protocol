@@ -13,7 +13,7 @@ import { useModalControls } from 'utils/hooks'
 
 const messages = {
   title: 'Modify Service',
-  dpEndpoint: 'Discovery Provider Service Endpoint',
+  dpEndpoint: 'Discovery Node Service Endpoint',
   dpEndpointPlaceholder: 'https://discoveryprovider.audius.co',
   cnEndpoint: 'Content Node Service Endpoint',
   cnEndpointPlaceholder: 'https://contentnode.audius.co',

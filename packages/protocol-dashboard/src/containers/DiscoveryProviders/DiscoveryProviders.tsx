@@ -6,7 +6,7 @@ import DiscoveryTable from 'components/DiscoveryTable'
 import { SERVICES, SERVICES_TITLE } from 'utils/routes'
 
 const messages = {
-  title: 'Discovery Providers'
+  title: 'Discovery Nodes'
 }
 
 type OwnProps = {}
