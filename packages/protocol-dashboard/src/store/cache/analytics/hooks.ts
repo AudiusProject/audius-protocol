@@ -15,7 +15,8 @@ import {
   TimeSeriesRecord,
   CountRecord,
   setTopApps,
-  setTrailingTopGenres
+  setTrailingTopGenres,
+  MetricError
 } from './slice'
 import { useEffect, useState } from 'react'
 import { DiscoveryProvider } from 'types'
@@ -134,38 +135,32 @@ const joinTimeSeriesDatasets = (datasets: TimeSeriesRecord[][]) => {
 
 // -------------------------------- Selectors  ---------------------------------
 export const getApiCalls = (state: AppState, { bucket }: { bucket: Bucket }) =>
-  state.cache.analytics.apiCalls
-    ? (state.cache.analytics.apiCalls[bucket] as TimeSeriesRecord[])
-    : null
+  state.cache.analytics.apiCalls ? state.cache.analytics.apiCalls[bucket] : null
 export const getTotalStaked = (
   state: AppState,
   { bucket }: { bucket: Bucket }
 ) =>
   state.cache.analytics.totalStaked
-    ? (state.cache.analytics.totalStaked[bucket] as TimeSeriesRecord[])
+    ? state.cache.analytics.totalStaked[bucket]
     : null
 export const getPlays = (state: AppState, { bucket }: { bucket: Bucket }) =>
-  state.cache.analytics.plays
-    ? (state.cache.analytics.plays[bucket] as TimeSeriesRecord[])
-    : null
+  state.cache.analytics.plays ? state.cache.analytics.plays[bucket] : null
 export const getTrailingApiCalls = (
   state: AppState,
   { bucket }: { bucket: Bucket }
 ) =>
   state.cache.analytics.trailingApiCalls
-    ? (state.cache.analytics.trailingApiCalls[bucket] as CountRecord)
+    ? state.cache.analytics.trailingApiCalls[bucket]
     : null
 export const getTrailingTopGenres = (
   state: AppState,
   { bucket }: { bucket: Bucket }
 ) =>
   state.cache.analytics.trailingTopGenres
-    ? (state.cache.analytics.trailingTopGenres[bucket] as CountRecord)
+    ? state.cache.analytics.trailingTopGenres[bucket]
     : null
 export const getTopApps = (state: AppState, { bucket }: { bucket: Bucket }) =>
-  state.cache.analytics.topApps
-    ? (state.cache.analytics.topApps[bucket] as CountRecord)
-    : null
+  state.cache.analytics.topApps ? state.cache.analytics.topApps[bucket] : null
 
 // -------------------------------- Thunk Actions  ---------------------------------
 
@@ -175,6 +170,7 @@ async function fetchTimeSeries(
   nodes: DiscoveryProvider[]
 ) {
   const startTime = getStartTime(bucket)
+  let error = false
   const datasets = (
     await Promise.all(
       nodes.map(async node => {
@@ -185,11 +181,16 @@ async function fetchTimeSeries(
           return res.data
         } catch (e) {
           console.error(e)
+          error = true
           return null
         }
       })
     )
   ).filter(Boolean)
+
+  if (error) {
+    return MetricError.ERROR
+  }
 
   const metric = joinTimeSeriesDatasets(datasets).reverse()
   return metric
@@ -279,6 +280,7 @@ export function fetchTrailingApiCalls(
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     const startTime = getStartTime(bucket)
+    let error = false
     const datasets = (
       await Promise.all(
         nodes.map(async node => {
@@ -291,12 +293,16 @@ export function fetchTrailingApiCalls(
             } as CountRecord
           } catch (e) {
             console.error(e)
+            error = true
             return {}
           }
         })
       )
     ).filter(Boolean)
-
+    if (error) {
+      dispatch(setTrailingApiCalls({ metric: MetricError.ERROR, bucket }))
+      return
+    }
     const metric = joinCountDatasets(datasets)
 
     dispatch(setTrailingApiCalls({ metric, bucket }))
@@ -310,6 +316,7 @@ export function fetchTopApps(
   const limit = 8
   return async (dispatch, getState, aud) => {
     const startTime = getStartTime(bucket)
+    let error = false
     const datasets = (
       await Promise.all(
         nodes.map(async node => {
@@ -328,13 +335,20 @@ export function fetchTopApps(
             return apps
           } catch (e) {
             console.error(e)
+            error = true
             return {}
           }
         })
       )
     ).filter(Boolean)
 
+    if (error) {
+      dispatch(setTopApps({ metric: MetricError.ERROR, bucket }))
+      return
+    }
+
     const metric = joinCountDatasets(datasets)
+
     const keys = Object.keys(metric)
     keys.sort((a, b) => {
       return metric[b] - metric[a]
@@ -382,6 +396,7 @@ export function fetchTrailingTopGenres(
 
       dispatch(setTrailingTopGenres({ metric, bucket }))
     } catch (e) {
+      dispatch(setTrailingTopGenres({ metric: MetricError.ERROR, bucket }))
       console.error(e)
     }
   }
