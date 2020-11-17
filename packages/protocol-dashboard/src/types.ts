@@ -14,7 +14,7 @@ export type Amount = BigNumber
 
 export enum ServiceType {
   DiscoveryProvider = 'discovery-provider',
-  ContentNode = 'creator-node'
+  ContentNode = 'content-node'
 }
 
 export enum Permission {
