@@ -8,7 +8,7 @@ import {
 import * as _constants from './utils/constants'
 const { expectRevert } = require('@openzeppelin/test-helpers');
 
-contract.only('UserReplicaSetManager', async (accounts) => {
+contract('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const userId1 = 1
@@ -41,17 +41,17 @@ contract.only('UserReplicaSetManager', async (accounts) => {
     let userStorage
     let userFactory
     let userReplicaSetManager
+    let networkId
 
     beforeEach(async () => {
         // Initialize contract state
         registry = await Registry.new()
-        const networkId = Registry.network_id
+        networkId = Registry.network_id
         // Add user storage and user factory
         userStorage = await UserStorage.new(registry.address)
         await registry.addContract(_constants.userStorageKey, userStorage.address)
         userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, verifierAddress)
         await registry.addContract(_constants.userFactoryKey, userFactory.address)
-        console.log(`Initializing with following info: ${bootstrapSPIds}, ${bootstrapDelegateWallets}`)
 
         userReplicaSetManager = await UserReplicaSetManager.new(
             registry.address,
@@ -62,15 +62,9 @@ contract.only('UserReplicaSetManager', async (accounts) => {
             networkId,
             { from: deployer }
         )
-
         await registry.addContract(_constants.userReplicaSetManagerKey, userReplicaSetManager.address)
-
         // Initialize users to POA UserFactory
         await registerInitialUsers()
-
-        console.log(`All set up!`)
-
-        await validateBootstrapNodes()
         /*
         // Setup cnode 1 from deployer address
         await addOrUpdateCreatorNode(cnode1SpID, cnode1Account, 0, nodeBootstrapAddress)
@@ -85,14 +79,31 @@ contract.only('UserReplicaSetManager', async (accounts) => {
 
     // Confirm constructor arguments are respected on chain
     let validateBootstrapNodes = async () => {
+        // Manually query every constructor spID and confirm matching wallet on chain
         for (var i = 0; i < bootstrapSPIds.length; i++) {
             let spID = bootstrapSPIds[i]
             let cnodeWallet = bootstrapDelegateWallets[i]
-            console.log(`Validating ${spID}, ${cnodeWallet}`)
             let walletFromChain = await userReplicaSetManager.getContentNodeWallet(spID)
-            console.log(`From chain: ${spID} - ${walletFromChain}`)
+            assert.isTrue(
+                cnodeWallet === walletFromChain,
+                `Mismatched spID wallet: Expected ${spID} w/wallet ${cnodeWallet}, found ${walletFromChain}`
+            )
         }
-    }
+
+        // Validate returned arguments from chain match constructor arguments
+        let bootstrapIDsFromChain = await userReplicaSetManager.getBootstrapServiceProviderIDs()
+        let bootstrapWalletsFromChain = await userReplicaSetManager.getBootstrapServiceProviderDelegateWallets()
+        assert.isTrue(
+            (bootstrapIDsFromChain.length === bootstrapWalletsFromChain.length) &&
+            (bootstrapIDsFromChain.length === bootstrapSPIds.length) &&
+            (bootstrapSPIds.length === bootstrapDelegateWallets.length),
+            "Unexpected bootstrap constructor argument length returned"
+        )
+         for (var i = 0; i < bootstrapIDsFromChain.length; i++) {
+            assert.isTrue(bootstrapIDsFromChain[i] == bootstrapSPIds[i])
+            assert.isTrue(bootstrapWalletsFromChain[i] == bootstrapDelegateWallets[i])
+        }
+     }
 
     // Helper Functions
     // Initial 2 users registered to test UserFactory
@@ -146,16 +157,55 @@ contract.only('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it.only('Sandbox', async () => {
-        console.log('Made it to the sandbox bb')
+    it('Validate constructor bootstrap arguments', async () => {
+        // Confirm constructor arguments validated
+        await validateBootstrapNodes()
+
+        // Create an intentionally mismatched length list of bootstrap spIDs<->delegateWallets
+        const invalidSPIds = [cnode1SpID, cnode2SpID, cnode3SpID]
+        await expectRevert(
+            UserReplicaSetManager.new(
+                registry.address,
+                _constants.userFactoryKey,
+                userReplicaBootstrapAddress,
+                invalidSPIds,
+                bootstrapDelegateWallets,
+                networkId,
+                { from: deployer }
+            ),
+            "Mismatched bootstrap array lengths"
+        )
     })
 
-    it('Validate bootstrap configs', async () => {
-        let chainBootstrapNodeAddress = await userReplicaSetManager.getNodeBootstrapAddress()
-        let chainUsrmBootstrapAddress = await userReplicaSetManager.getUserReplicaSetBootstrapAddress()
-        assert.equal(chainBootstrapNodeAddress, nodeBootstrapAddress, 'Mismatched constructor argument for nodeBootstrapAddress')
-        assert.equal(chainUsrmBootstrapAddress, userReplicaBootstrapAddress, 'Mismatched constructor argument for userReplicaBootstrapAddress')
+    it('Register additional nodes through bootstrap nodes', async () => {
+        let newCNodeSPId = 10
+        let newCnodeDelegateWallet = accounts[20]
+        let invalidProposerId = 12
+        let invalidProposerDelegateWallet = accounts[23]
+        // Attempt to register from an unknown spID
+        await expectRevert(
+            addOrUpdateCreatorNode(
+                newCNodeSPId,
+                newCnodeDelegateWallet,
+                invalidProposerId,
+                invalidProposerDelegateWallet
+            ),
+            "Mismatch proposer wallet for existing spID"
+        )
+        let validProposerId = bootstrapSPIds[2]
+        let validBootstrapDelegateWallet = bootstrapDelegateWallets[2]
+        // Add from a valid proposer and confirm functionality
+        await addOrUpdateCreatorNode(
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            validProposerId,
+            validBootstrapDelegateWallet
+        )
     })
+
+    // TODO: Can a given spID <-> delegateWallet update itself?
+
+    // TODO: Validate this scenario - any cnode can ADD another cnode if not present, but ONLY bootstrappers can evict
 
     it('Configure + update user replica set', async () => {
         let user1Primary = toBN(1)

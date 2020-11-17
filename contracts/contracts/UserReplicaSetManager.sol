@@ -26,7 +26,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint[] secondaries;
     }
 
+    // Consider frontrunning of spIDs
     uint[] bootstrapSPIds;
+    // TODO: Do we even need this second array? We just need ONE
     address[] bootstrapNodeDelegateWallets;
 
     // Current uint userId to Replica Set
@@ -70,9 +72,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         registry = RegistryInterface(_registryAddress);
         userFactoryRegistryKey = _userFactoryRegistryKey;
         userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
-        bootstrapSPIds = _bootstrapSPIds;
-        bootstrapNodeDelegateWallets = _bootstrapNodeDelegateWallets;
-        _seedBootstrapNodes(bootstrapSPIds, bootstrapNodeDelegateWallets);
+        _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
     }
 
     // Chain of trust based authentication scheme
@@ -94,12 +94,12 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             _subjectSig
         );
 
-        // Requirements for non nodeBootstrapAddress address
-        // TODO: RE-enable with multiple valid addresses
-        // if (signer != nodeBootstrapAddress) {
-        //     require(spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer, "Mismatch proposer wallet for existing spID");
-        // }
+        require(
+            spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer,
+            "Mismatch proposer wallet for existing spID"
+        );
 
+        // TODO: Should this be limited to first time registration? like should updates be allowed?
         spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
 
         emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpId);
@@ -107,6 +107,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
     //       Is there any actual downside to orphaning old spID <-> wallets?
+    //       Proposal: eliminate update ability from 'addOrUpdateCreatorNode' and limit to valid entities?
 
     // Function used to permission updates to a given user's replica set
     function updateReplicaSet(
@@ -183,6 +184,18 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         });
 
         emit UpdateReplicaSet(_userId, _primary, _secondaries);
+    }
+
+    function getBootstrapServiceProviderIDs () external view
+    returns (uint[] memory)
+    {
+        return bootstrapSPIds;
+    }
+
+    function getBootstrapServiceProviderDelegateWallets () external view
+    returns (address[] memory)
+    {
+        return bootstrapNodeDelegateWallets;
     }
 
     // Return a users current replica set
@@ -291,13 +304,26 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
 
     // Update state given constructor arguments
     function _seedBootstrapNodes(
-        uint[] memory _spIDs,
-        address[] memory _delegateOwnerWallets
+        uint[] memory _bootstrapSPIDs,
+        address[] memory _bootstrapDelegateOwnerWallets
     ) internal
     {
-        require(_spIDs.length == _delegateOwnerWallets.length, "Mismatched bootsrap config");
-        for (uint i = 0; i < _spIDs.length; i++) {
-            spIdToCreatorNodeDelegateWallet[_spIDs[i]] = _delegateOwnerWallets[i];
+        require(_bootstrapSPIDs.length == _bootstrapDelegateOwnerWallets.length, "Mismatched bootstrap array lengths");
+        for (uint i = 0; i < _bootstrapSPIDs.length; i++) {
+            spIdToCreatorNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapDelegateOwnerWallets[i];
         }
+        bootstrapSPIds = _bootstrapSPIDs;
+        bootstrapNodeDelegateWallets = _bootstrapDelegateOwnerWallets;
+    }
+
+    function _isBootstrapNode(uint _spID, address _spDelegateOwnerWallet)
+    internal view returns (bool)
+    {
+        for (uint i = 0; i < bootstrapSPIds.length; i++) {
+            if (bootstrapSPIds[i] == _spID && bootstrapNodeDelegateWallets[i] == _spDelegateOwnerWallet) {
+                return true;
+            }
+        }
+        return false;
     }
 }
