@@ -25,8 +25,8 @@ import { useModalControls } from 'utils/hooks'
 const messages = {
   staking: `Staking Amount ${TICKER}`,
   stakingPlaceholder: `200,000 ${TICKER}`,
-  dpEndpoint: 'Discovery Provider Service Endpoint',
-  dpEndpointPlaceholder: 'https://discoveryprovider.audius.co',
+  dpEndpoint: 'Discovery Node Service Endpoint',
+  dpEndpointPlaceholder: 'https://discoverynode.audius.co',
   cnEndpoint: 'Content Node Service Endpoint',
   cnEndpointPlaceholder: 'https://contentnode.audius.co',
   delegate: 'Delegate Owner Wallet',
@@ -41,7 +41,7 @@ type OwnProps = {
 type RegisterServiceModalProps = OwnProps
 
 const tabOptions = [
-  { key: ServiceType.DiscoveryProvider, text: 'Discovery Provider' },
+  { key: ServiceType.DiscoveryProvider, text: 'Discovery Node' },
   { key: ServiceType.ContentNode, text: 'Content Node' }
 ]
 
