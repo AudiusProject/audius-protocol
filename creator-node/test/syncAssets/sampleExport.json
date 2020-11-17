@@ -1941,7 +1941,7 @@
   },
   "signer": "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25",
   "version": "0.3.22",
-  "service": "creator-node",
+  "service": "content-node",
   "timestamp": "2020-10-02T18:48:17.781Z",
   "signature": "0x0b15fd18955ac3c610795c2e3dfa396a25a708255814e0133a2710379255078450a22a7dfdfbed4d284b8239f7e4c47af591da894e54986539f38beb7091f9f51c"
 }

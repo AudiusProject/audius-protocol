@@ -18,8 +18,8 @@ function getIPFSMock () {
     cat: sinon.stub(),
     get: sinon.stub()
   }
-  ipfsMock.add.returns([{ hash: 'testCIDLink' }])
-  ipfsMock.addFromFs.returns([{ hash: 'testCIDLink' }])
+  ipfsMock.add.returns([{ hash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' }])
+  ipfsMock.addFromFs.returns([{ hash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' }])
   ipfsMock.id.returns({
     addresses: ['/ip4/127.0.0.1/tcp/4001/ipfs/QmPjSNZPCTmQsKAUM7QDjAzymcbxaVVbRcV5pZvBRMZmca']
   })

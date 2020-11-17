@@ -1,7 +1,7 @@
 const Web3 = require('../src/web3')
 const path = require('path')
 
-const { setServiceVersion } = require('./helpers/version')
+const { setServiceVersion, addServiceType } = require('./helpers/version')
 const { getStakingParameters } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
@@ -36,6 +36,15 @@ const run = async () => {
           throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
         }
         await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
+        break
+      case 'addservicetype':
+        const newServiceType = args[4]
+        const serviceTypeMin = args[5]
+        const serviceTypeMax = args[6]
+        if (!newServiceType || !serviceTypeMin || !serviceTypeMax) {
+          throw new Error('missing arguments - format: node mainnet.js addservicetype <serviceType> <serviceTypeMin> <serviceTypeMax>')
+        }
+        await addServiceType(audiusLibs, newServiceType, serviceTypeMin, serviceTypeMax, privateKey)
         break
       case 'getclaim':
         await getClaimInfo(audiusLibs)

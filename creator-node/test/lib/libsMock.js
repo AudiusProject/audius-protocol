@@ -21,7 +21,7 @@ function getLibsMock () {
     endpoint: 'http://localhost:5000',
     owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
     spID: '1',
-    type: 'creator-node',
+    type: 'content-node',
     blockNumber: 1234,
     delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
   })

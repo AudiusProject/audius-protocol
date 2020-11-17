@@ -20,29 +20,20 @@ const mockLogger = {
 }
 
 describe('Test Health Check', function () {
-  before(async function () {
+  it('Should pass', async function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
-    config.set('serviceCountry', 'US')
-    config.set('serviceLatitude', '1')
-    config.set('serviceLongitude', '2')
-  })
-
-  it('Should pass', async function () {
     let expectedEndpoint = config.get('creatorNodeEndpoint')
     let expectedSpID = config.get('spID')
     const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
-      service: 'creator-node',
+      service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: TEST_ENDPOINT,
       spID: expectedSpID,
-      creatorNodeEndpoint: expectedEndpoint,
-      country: 'US',
-      latitude: '1',
-      longitude: '2'
+      creatorNodeEndpoint: expectedEndpoint
     })
   })
 
@@ -50,15 +41,12 @@ describe('Test Health Check', function () {
     const res = await healthCheck({}, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
-      service: 'creator-node',
+      service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: 'none',
       spID: config.get('spID'),
-      creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      country: config.get('serviceCountry'),
-      latitude: config.get('serviceLatitude'),
-      longitude: config.get('serviceLongitude')
+      creatorNodeEndpoint: config.get('creatorNodeEndpoint')
     })
   })
 })

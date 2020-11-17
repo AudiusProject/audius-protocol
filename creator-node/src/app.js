@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
+const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
@@ -47,11 +48,12 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, serviceRegistry) => {
+const initializeApp = (port, serviceRegistry) => {
+  const storagePath = DiskManager.getConfigStoragePath()
   // TODO: Can remove these when all routes
   // consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
-  app.set('storagePath', storageDir)
+  app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
