@@ -1,6 +1,5 @@
 const { sampleSize } = require('lodash')
 const { raceRequests, allRequests } = require('../utils/network')
-const { DECISION_TREE_STATE } = require('./constants')
 
 /**
  * A class that assists with autoselecting services.
@@ -32,7 +31,6 @@ const { DECISION_TREE_STATE } = require('./constants')
 class ServiceSelection {
   /**
    * @param config
-   * @param {Set<string>} config.blacklist services from this list should not be picked
    * @param {Set<string>} config.whitelist only services from this list are allowed to be picked
    * @param {() => Promise<String[]>} conffig.getServices an (async) method to get a list of services
    * to choose from
@@ -45,7 +43,6 @@ class ServiceSelection {
    * tried again (re-requested)
    */
   constructor ({
-    blacklist,
     whitelist,
     getServices,
     maxConcurrentRequests = 6,
@@ -53,8 +50,6 @@ class ServiceSelection {
     unhealthyTTL = 60 * 60 * 1000, // 1 hour
     backupsTTL = 2 * 60 * 1000 // 2 min
   }) {
-    // For Creator Node selection
-    this.blacklist = blacklist
     this.whitelist = whitelist
     this.getServices = getServices
     this.maxConcurrentRequests = maxConcurrentRequests
@@ -84,49 +79,43 @@ class ServiceSelection {
 
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = this.shortcircuit()
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.CHECK_SHORT_CIRCUIT, val: shortcircuit })
+    this.decisionTree.push({ stage: 'Check Short Circuit', val: shortcircuit })
     if (shortcircuit) return shortcircuit
 
     // Get all the services
     let services = await this.getServices()
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
+    this.decisionTree.push({ stage: 'Get All Services', val: services })
 
     // If a whitelist is provided, filter down to it
     if (this.whitelist) {
       services = this.filterToWhitelist(services)
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST, val: services })
-    }
-
-    // if a blacklist is provided, filter out services in the list
-    if (this.blacklist) {
-      services = this.filterFromBlacklist(services)
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST, val: services })
+      this.decisionTree.push({ stage: 'Filter To Whitelist', val: services })
     }
 
     // Filter out anything we know is already unhealthy
     const filteredServices = this.filterOutKnownUnhealthy(services)
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY, val: filteredServices })
+    this.decisionTree.push({ stage: 'Filter Out Known Unhealthy', val: filteredServices })
 
     // Randomly sample a "round" to test
     const round = this.getSelectionRound(filteredServices)
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_SELECTION_ROUND, val: round })
+    this.decisionTree.push({ stage: 'Get Selection Round', val: round })
 
     this.totalAttempts += round.length
 
     // If there are no services left to try, either pick a backup or return null
     if (filteredServices.length === 0) {
-      this.decisionTree.push({ stage: DECISION_TREE_STATE.NO_SERVICES_LEFT_TO_TRY })
+      this.decisionTree.push({ stage: 'No Services Left To Try' })
       if (this.getBackupsSize() > 0) {
         // Some backup exists
         const backup = this.selectFromBackups()
-        this.decisionTree.push({ stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP, val: backup })
+        this.decisionTree.push({ stage: 'Selected From Backup', val: backup })
         return backup
       } else {
         // Nothing could be found that was healthy.
         // Reset everything we know so that we might try again.
         this.unhealthy = new Set([])
         this.backups = {}
-        this.decisionTree.push({ stage: DECISION_TREE_STATE.FAILED_AND_RESETTING })
+        this.decisionTree.push({ stage: 'Failed Everything. Resetting.' })
         return null
       }
     }
@@ -209,14 +198,6 @@ class ServiceSelection {
     return null
   }
 
-  /**
-   * Filter out services that are in the blacklist
-   * @param {[string]} services endpoints
-   */
-  filterFromBlacklist (services) {
-    return services.filter(s => !this.blacklist.has(s))
-  }
-
   /** Filter down services to those in the whitelist */
   filterToWhitelist (services) {
     return services.filter(s => this.whitelist.has(s))
@@ -244,7 +225,7 @@ class ServiceSelection {
 
   /**
    * What the criteria is for a healthy service
-   * @param {response} response axios response
+   * @param {Response} response axios response
    * @param {{ [key: string]: string}} urlMap health check urls mapped to their cannonical url
    * e.g. https://discoveryprovider.audius.co/health_check => https://discoveryprovider.audius.co
    */
@@ -252,7 +233,7 @@ class ServiceSelection {
     return response.status === 200
   }
 
-  /** Races requests against each other with provided timeouts and health checks */
+  /** Races requests against eachother with provided timeouts and health checks */
   async race (services) {
     // Key the services by their health check endpoint
     const map = services.reduce((acc, s) => {
@@ -288,14 +269,6 @@ class ServiceSelection {
   }
 
   /**
-   * Removes from unhealthy set
-   * @param {string} key service endpoint
-   */
-  removeFromUnhealthy (key) {
-    if (this.unhealthy.has(key)) this.unhealthy.delete(key)
-  }
-
-  /**
    * Adds a service to the list of backups
    * @param {string} service the service to add
    * @param {Response} response the services response. This can be used to weigh various
@@ -309,16 +282,8 @@ class ServiceSelection {
    * Controls how a backup is picked. Overriding methods may choose to use the backup's response.
    * e.g. pick a backup that's the fewest versions behind
    */
-  selectFromBackups () {
+  async selectFromBackups () {
     return Object.keys(this.backups)[0]
-  }
-
-  /**
-   * Removes from backups
-   * @param {string} key service endpoint
-   */
-  removeFromBackups (key) {
-    if (this.backups.hasOwnProperty(key)) delete this.backups[key]
   }
 
   /**

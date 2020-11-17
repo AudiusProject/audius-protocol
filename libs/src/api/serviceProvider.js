@@ -1,6 +1,6 @@
+const { sampleSize } = require('lodash')
 const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
-const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
 
 const CREATOR_NODE_SERVICE_NAME = 'creator-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-provider'
@@ -43,13 +43,13 @@ class ServiceProvider extends Base {
     const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
-        url: `${node.endpoint}/health_check`
+        url: `${node.endpoint}/version`
       }))
     )
 
     let services = {}
     timings.forEach(timing => {
-      if (timing.response) services[timing.request.id] = timing.response.data
+      services[timing.request.id] = timing.response.data
     })
 
     return services
@@ -71,15 +71,53 @@ class ServiceProvider extends Base {
     whitelist = null,
     blacklist = null
   ) {
-    const creatorNodeSelection = new CreatorNodeSelection({
-      creatorNode: this.creatorNode,
-      ethContracts: this.ethContracts,
-      numberOfNodes,
-      whitelist,
-      blacklist
+    let creatorNodes = await this.listCreatorNodes()
+
+    // Filter whitelist
+    if (whitelist) {
+      creatorNodes = creatorNodes.filter(node => whitelist.has(node.endpoint))
+    }
+    // Filter blacklist
+    if (blacklist) {
+      creatorNodes = creatorNodes.filter(node => !blacklist.has(node.endpoint))
+    }
+
+    // Filter to healthy nodes
+    creatorNodes = (await Promise.all(
+      creatorNodes.map(async node => {
+        try {
+          const { isBehind, isConfigured } = await this.creatorNode.getSyncStatus(node.endpoint)
+          console.debug(`Got sync status for ${node.endpoint}, isBehind: ${isBehind}, isConfigured: ${isConfigured}`)
+          return isConfigured && isBehind ? false : node.endpoint
+        } catch (e) {
+          return false
+        }
+      })
+    ))
+      .filter(Boolean)
+
+    // Time requests and autoselect nodes
+    const timings = await timeRequestsAndSortByVersion(
+      creatorNodes.map(node => ({
+        id: node,
+        url: `${node}/version` // TODO: add country data to health_check and switch to health_check
+      }))
+    )
+
+    // Store all the healthy services in a map. Used in UI to select other available services
+    let services = {}
+    timings.forEach(timing => {
+      services[timing.request.id] = timing.response.data
     })
 
-    const { primary, secondaries, services } = await creatorNodeSelection.select()
+    // Primary: select the lowest-latency
+    const primary = timings[0] ? timings[0].request.id : null
+
+    // Secondaries: select randomly
+    // TODO: Implement geolocation-based selection
+    const secondaries = sampleSize(timings.slice(1), numberOfNodes - 1)
+      .map(timing => timing.request.id)
+
     return { primary, secondaries, services }
   }
 
