@@ -29,7 +29,6 @@ const contentNodeType = 'content-node'
 const contentNodeTypeMin = 200000
 const contentNodeTypeMax = 10000000
 
-
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
 let serviceTypesList = []
@@ -159,8 +158,6 @@ const run = async () => {
 }
 
 run()
-
-
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)

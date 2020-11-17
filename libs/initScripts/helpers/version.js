@@ -45,12 +45,14 @@ async function addServiceType (audiusLibs, serviceType, serviceTypeMin, serviceT
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   console.log('----addServiceType---')
+  let weiMin = web3.utils.toWei(serviceTypeMin.toString(), 'ether')
+  let weiMax = web3.utils.toWei(serviceTypeMax.toString(), 'ether')
 
   try {
     const resp = await audiusLibs.ethContracts.ServiceTypeManagerClient.addServiceType(
       serviceType,
-      web3.utils.toWei(serviceTypeMin.toString(), 'ether'),
-      web3.utils.toWei(serviceTypeMax.toString(), 'ether'),
+      weiMin,
+      weiMax,
       privateKey)
     console.log(resp)
   } catch (e) {
@@ -58,8 +60,9 @@ async function addServiceType (audiusLibs, serviceType, serviceTypeMin, serviceT
   }
 
   let serviceTypeInfo = await audiusLibs.ethContracts.ServiceTypeManagerClient.getServiceTypeInfo(serviceType)
-  console.log(`Expected values for ${serviceType} | expected min ${serviceTypeMin} | expected max ${serviceTypeMax}`)
-  console.log(`got values from contract: ${JSON.stringify(serviceTypeInfo)}`)
+  console.log(`Expected values for ${serviceType} | expected min ${weiMin} | expected max ${weiMax}`)
+  console.log(`Values from contract: ${JSON.stringify(serviceTypeInfo)}`)
+  console.log(`Min: ${serviceTypeInfo.minStake.toString()} Max: ${serviceTypeInfo.maxStake.toString()}`)
 
   console.log('/----addServiceType---')
 }
