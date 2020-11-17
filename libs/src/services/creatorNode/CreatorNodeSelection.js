@@ -102,7 +102,7 @@ class CreatorNodeSelection extends ServiceSelection {
     const primary = this.getPrimary(services)
     const secondaries = this.getSecondaries(services, primary)
     this.decisionTree.push({
-      stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
+      stage: DECISION_TREE_STATE.SELECTED_PRIMARY_AND_SECONDARIES,
       val: { primary, secondaries: secondaries.toString() }
     })
 
