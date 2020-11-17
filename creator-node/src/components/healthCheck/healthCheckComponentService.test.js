@@ -34,7 +34,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
-      service: 'creator-node',
+      service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: TEST_ENDPOINT,
@@ -50,7 +50,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck({}, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
-      service: 'creator-node',
+      service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: 'none',
