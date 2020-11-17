@@ -3,7 +3,7 @@ const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
-const { setServiceVersion } = require('./helpers/version')
+const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {
   registerLocalService,
   queryLocalServices,
@@ -24,6 +24,10 @@ const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
 const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
 const creatorNodeEndpoint4 = 'http://cn4_creator-node_1:4003'
 const amountOfAuds = 2000000
+
+const contentNodeType = 'content-node'
+const contentNodeTypeMin = 200000
+const contentNodeTypeMax = 10000000
 
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
@@ -157,6 +161,7 @@ run()
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)
+  await _initEthContractTypes(audiusLibs)
   await _initAllVersions(audiusLibs)
   await queryLocalServices(audiusLibs, serviceTypesList)
 }
@@ -233,6 +238,12 @@ const _initAllVersions = async (audiusLibs) => {
   for (let serviceType of serviceTypesList) {
     await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
   }
+}
+
+const _initEthContractTypes = async (libs) => {
+  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  // Add content-node serviceType
+  await addServiceType(libs, contentNodeType, contentNodeTypeMin, contentNodeTypeMax)
 }
 
 // Write an update to either the common .sh file for creator nodes or docker env file
