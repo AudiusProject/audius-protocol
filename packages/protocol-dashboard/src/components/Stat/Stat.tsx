@@ -3,18 +3,24 @@ import React, { ReactNode } from 'react'
 import Paper from 'components/Paper'
 import styles from './Stat.module.css'
 import Loading from 'components/Loading'
+import Error from 'components/Error'
 
 type OwnProps = {
   stat: ReactNode
   label: string
+  error?: boolean
 }
 
 type StatProps = OwnProps
 
-const Stat: React.FC<StatProps> = ({ stat, label }) => {
+const Stat: React.FC<StatProps> = ({ stat, label, error }) => {
   return (
     <Paper className={styles.container}>
-      {stat !== null ? (
+      {error ? (
+        <div className={styles.stat}>
+          <Error text="Incomplete Data" />
+        </div>
+      ) : stat !== null ? (
         <div className={styles.stat}>{stat}</div>
       ) : (
         <div className={styles.loadingContainer}>

@@ -1,4 +1,5 @@
 import Dropdown from 'components/Dropdown'
+import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
 import React from 'react'
@@ -60,6 +61,7 @@ type OwnProps = {
   title: string
   labels: string[] | null
   data?: number[] | null
+  error?: boolean
   options?: string[]
   selection?: string
   onSelectOption?: (option: string) => void
@@ -71,6 +73,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
   title,
   data,
   labels,
+  error,
   options,
   selection,
   onSelectOption
@@ -91,7 +94,9 @@ const RadarChart: React.FC<RadarChartProps> = ({
         )}
       </div>
       <div className={styles.chart}>
-        {data && labels ? (
+        {error ? (
+          <Error text="Incomplete Data" />
+        ) : data && labels ? (
           <Radar data={getData(data, labels)} options={getOptions()} />
         ) : (
           <Loading className={styles.loading} />

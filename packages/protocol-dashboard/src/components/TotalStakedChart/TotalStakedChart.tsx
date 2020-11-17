@@ -1,7 +1,7 @@
 import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
 import { useTotalStaked } from 'store/cache/analytics/hooks'
-import { Bucket } from 'store/cache/analytics/slice'
+import { Bucket, MetricError } from 'store/cache/analytics/slice'
 
 type OwnProps = {}
 
@@ -11,11 +11,19 @@ const TotalStakedChart: React.FC<TotalStakedChartProps> = () => {
   const [bucket, setBucket] = useState(Bucket.MONTH)
 
   const { totalStaked } = useTotalStaked(bucket)
-  const labels = totalStaked?.map(s => s.timestamp) ?? null
-  const data = totalStaked?.map(s => s.count) ?? null
+  let error, labels, data
+  if (totalStaked === MetricError.ERROR) {
+    error = true
+    labels = []
+    data = []
+  } else {
+    labels = totalStaked?.map(s => s.timestamp) ?? null
+    data = totalStaked?.map(s => s.count) ?? null
+  }
   return (
     <LineChart
       title="Total Staked"
+      error={error}
       data={data}
       labels={labels}
       selection={bucket}

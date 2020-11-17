@@ -18,12 +18,16 @@ export enum Bucket {
   DAY = 'day' // Granularity: hour
 }
 
+export enum MetricError {
+  ERROR = 'error'
+}
+
 type TimeSeriesMetric = {
-  [key in Bucket]?: TimeSeriesRecord[]
+  [key in Bucket]?: TimeSeriesRecord[] | MetricError
 }
 
 type CountMetric = {
-  [key in Bucket]?: CountRecord
+  [key in Bucket]?: CountRecord | MetricError
 }
 
 export type State = {
@@ -44,12 +48,18 @@ export const initialState: State = {
   trailingApiCalls: {}
 }
 
-type SetApiCalls = { metric: TimeSeriesRecord[]; bucket: Bucket }
-type SetTotalStaked = { metric: TimeSeriesRecord[]; bucket: Bucket }
-type SetPlays = { metric: TimeSeriesRecord[]; bucket: Bucket }
-type SetTopApps = { metric: CountRecord; bucket: Bucket }
-type SetTrailingTopGenres = { metric: CountRecord; bucket: Bucket }
-type SetTrailingApiCalls = { metric: CountRecord; bucket: Bucket }
+type SetApiCalls = { metric: TimeSeriesRecord[] | MetricError; bucket: Bucket }
+type SetTotalStaked = {
+  metric: TimeSeriesRecord[] | MetricError
+  bucket: Bucket
+}
+type SetPlays = { metric: TimeSeriesRecord[] | MetricError; bucket: Bucket }
+type SetTopApps = { metric: CountRecord | MetricError; bucket: Bucket }
+type SetTrailingTopGenres = {
+  metric: CountRecord | MetricError
+  bucket: Bucket
+}
+type SetTrailingApiCalls = { metric: CountRecord | MetricError; bucket: Bucket }
 
 const slice = createSlice({
   name: 'analytics',

@@ -1,4 +1,5 @@
 import Dropdown from 'components/Dropdown'
+import Error from 'components/Error'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
 import React from 'react'
@@ -7,7 +8,7 @@ import { formatBucketText } from 'store/cache/analytics/hooks'
 import { Bucket } from 'store/cache/analytics/slice'
 import {
   formatNumber,
-  formatShortNumber,
+  formatShortNumberWithDecimal,
   getShortDate,
   getShortMonth
 } from 'utils/format'
@@ -122,7 +123,7 @@ const getOptions = (
           fontSize: 12,
           fontStyle: 'bold',
           callback: (value: any, index: any, values: any) => {
-            return formatShortNumber(value)
+            return formatShortNumberWithDecimal(value)
           }
         }
       }
@@ -231,6 +232,7 @@ type OwnProps = {
   options?: Bucket[]
   selection?: Bucket
   onSelectOption?: (option: string) => void
+  error?: boolean
 }
 
 type LineChartProps = OwnProps
@@ -242,7 +244,8 @@ const LineChart: React.FC<LineChartProps> = ({
   labels,
   options,
   selection,
-  onSelectOption
+  onSelectOption,
+  error
 }) => {
   const dateFormatter =
     selection === Bucket.ALL_TIME || selection === Bucket.YEAR
@@ -267,7 +270,9 @@ const LineChart: React.FC<LineChartProps> = ({
         )}
       </div>
       <div className={styles.chart}>
-        {data && labels ? (
+        {error ? (
+          <Error text="Incomplete Data" />
+        ) : data && labels ? (
           <Line
             data={getData(data, labels)}
             options={getOptions(title, dateFormatter, tooltipTitle)}
