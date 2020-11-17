@@ -8,6 +8,7 @@
   "twitterAPISecret": "",
   "instagramAPIKey": "",
   "instagramAPISecret": "",
+  "instagramRedirectUrl": "",
   "web3Provider": "http://audius_ganache_cli:8545/",
   "secondaryWeb3Provider": "http://audius_ganache_cli:8545/",
   "audiusNotificationUrl": "https://download.staging.audius.co/notifications",
