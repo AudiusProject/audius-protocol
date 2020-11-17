@@ -49,7 +49,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
   it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
     const metadata = { test: 'field1' }
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
-    ipfsMock.pin.add.once().withArgs('testCIDLink')
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
 
     const resp = await request(app)
       .post('/audius_users/metadata')
@@ -57,7 +57,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'testCIDLink' || !resp.body.metadataFileUUID) {
+    if (resp.body.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' || !resp.body.metadataFileUUID) {
       throw new Error('invalid return data')
     }
   })
@@ -66,7 +66,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
     const metadata = { test: 'field1' }
 
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
-    ipfsMock.pin.add.once().withArgs('testCIDLink')
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     libsMock.User.getUsers.exactly(2)
 
     const resp = await request(app)
@@ -75,7 +75,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'testCIDLink') {
+    if (resp.body.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
       throw new Error('invalid return data')
     }
 

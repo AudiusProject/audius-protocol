@@ -44,7 +44,7 @@ const srcPath = path.join(segmentsDirPath, sourceFile)
 // consts used for testing saveFileFromBufferToIPFSAndDisk()
 const metadata = {
   test: 'field1',
-  track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+  track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
   owner_id: 1
 }
 const buffer = Buffer.from(JSON.stringify(metadata))

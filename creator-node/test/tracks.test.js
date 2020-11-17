@@ -124,11 +124,11 @@ describe('test Tracks with mocked IPFS', function () {
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
-
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'testCIDLink')
+    console.log('trackContentResp', trackContentResp)
+    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
     assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
-    assert.deepStrictEqual(trackContentResp.body.data.transcodedTrackCID, 'testCIDLink')
+    assert.deepStrictEqual(trackContentResp.body.data.transcodedTrackCID, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(typeof trackContentResp.body.data.transcodedTrackUUID, 'string')
   })
 
@@ -147,7 +147,7 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
     assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
 
@@ -164,7 +164,7 @@ describe('test Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
       .expect(200)
 
-    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'testCIDLink')
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
   })
 
   // depends on "uploads /track_content"
@@ -182,7 +182,7 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
     assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
 
@@ -214,7 +214,7 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
     assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
 
@@ -247,14 +247,14 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
     assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }]
+      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }]
     }
 
     await request(app)
@@ -279,7 +279,7 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
     assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
 
@@ -295,7 +295,7 @@ describe('test Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
       .expect(200)
 
-    if (trackMetadataResp.body.data.metadataMultihash !== 'testCIDLink') {
+    if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
       throw new Error('invalid return data')
     }
 
@@ -321,14 +321,14 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
 
     // creates a downloadable Audius track with no track_id and no source_file
     const metadata = {
       test: 'field1',
       owner_id: 1,
-      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
       download: {
         is_downloadable: true,
         requires_follow: false
@@ -357,7 +357,7 @@ describe('test Tracks with mocked IPFS', function () {
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'testCIDLink')
+    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
     assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
 
@@ -369,7 +369,7 @@ describe('test Tracks with mocked IPFS', function () {
       download: {
         'is_downloadable': true,
         'requires_follow': false,
-        'cid': 'testCIDLink'
+        'cid': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
       }
     }
 
@@ -379,7 +379,7 @@ describe('test Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
       .expect(200)
 
-    if (trackMetadataResp.body.data.metadataMultihash !== 'testCIDLink') {
+    if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
       throw new Error('invalid return data')
     }
 
@@ -526,7 +526,7 @@ describe('test Tracks with real IPFS', function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
       owner_id: 1
     }
 
@@ -543,7 +543,7 @@ describe('test Tracks with real IPFS', function () {
     sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
     const metadata = {
       test: 'field1',
-      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
       owner_id: 1
     }
 
@@ -559,7 +559,7 @@ describe('test Tracks with real IPFS', function () {
   it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
     const metadata = sortKeys({
       test: 'field1',
-      track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+      track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
       owner_id: 1
     })
 
