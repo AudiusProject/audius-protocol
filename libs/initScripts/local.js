@@ -13,9 +13,10 @@ const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
-const serviceTypeList = ['discovery-provider', 'creator-node']
-const spDiscProvType = serviceTypeList[0]
-const spCreatorNodeType = serviceTypeList[1]
+// Directories within the audius-protocol repository used for development
+const serviceDirectoryList = ['discovery-provider', 'creator-node']
+const spDiscProvType = serviceDirectoryList[0]
+const spCreatorNodeType = 'content-node'
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
 const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
@@ -26,9 +27,14 @@ const amountOfAuds = 2000000
 
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
+let serviceTypesList = []
 try {
-  serviceTypeList.forEach((type) => {
-    serviceVersions[type] = (require(`../../${type}/.version.json`)['version'])
+  serviceDirectoryList.forEach((type) => {
+    let typeInfo = require(`../../${type}/.version.json`)
+    let version = typeInfo['version']
+    let serviceType = typeInfo['service']
+    serviceVersions[serviceType] = version
+    serviceTypesList.push(serviceType)
   })
 } catch (e) {
   throw new Error("Couldn't get the service versions")
@@ -120,7 +126,7 @@ const run = async () => {
         break
 
       case 'query-sps':
-        await queryLocalServices(audiusLibs, serviceTypeList)
+        await queryLocalServices(audiusLibs, serviceTypesList)
         break
 
       case 'update-cnode-config': {
@@ -152,7 +158,7 @@ run()
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)
   await _initAllVersions(audiusLibs)
-  await queryLocalServices(audiusLibs, serviceTypeList)
+  await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
 // Account 0
@@ -224,7 +230,7 @@ const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
 }
 
 const _initAllVersions = async (audiusLibs) => {
-  for (let serviceType of serviceTypeList) {
+  for (let serviceType of serviceTypesList) {
     await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
   }
 }
