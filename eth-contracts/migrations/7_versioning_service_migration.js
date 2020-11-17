@@ -20,7 +20,7 @@ const claimsManagerProxyKey = web3.utils.utf8ToHex('ClaimsManagerProxy')
 
 // Known service types
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
-// Creator node
+// Creator node 
 // Minimum: 200,000
 // Maximum: 3,000,000
 const cnTypeMin = _lib.audToWei(200000)
@@ -31,14 +31,6 @@ const cnTypeMax = _lib.audToWei(3000000)
 const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
 const dpTypeMin = _lib.audToWei(200000)
 const dpTypeMax = _lib.audToWei(2000000)
-
-// Content node
-// Minimum: 200,000
-// Maximum: 10,000,000
-const serviceTypeContentNode = web3.utils.utf8ToHex('content-node')
-const contentNodeTypeMin = _lib.audToWei(200000)
-const contentNodeTypeMax = _lib.audToWei(10000000)
-
 // stake lockup duration = 1 wk in blocks
 // - 1/13 block/s * 604800 s/wk ~= 46523 block/wk
 const decreaseStakeLockupDuration = 46523
@@ -114,22 +106,6 @@ module.exports = (deployer, network, accounts) => {
     assert.ok(_lib.toBN(dpTypeMin).eq(serviceTypeDPInfo.minStake), 'Expected same minStake')
     assert.ok(_lib.toBN(dpTypeMax).eq(serviceTypeDPInfo.maxStake), 'Expected same maxStake')
 
-    // TMP Register new type
-     const callDataContentNode = _lib.abiEncode(
-      ['bytes32', 'uint256', 'uint256'],
-      [serviceTypeContentNode, contentNodeTypeMin, contentNodeTypeMax]
-    )
-    await governance.guardianExecuteTransaction(
-      serviceTypeManagerProxyKey,
-      callValue0,
-      signatureAddServiceType,
-      callDataContentNode,
-      { from: guardianAddress }
-    )
-    const contentNodeTypeInfo = await serviceTypeManager.getServiceTypeInfo.call(serviceTypeContentNode)
-    assert.ok(_lib.toBN(contentNodeTypeMin).eq(contentNodeTypeInfo.minStake), 'Expected same minStake')
-    assert.ok(_lib.toBN(contentNodeTypeMax).eq(contentNodeTypeInfo.maxStake), 'Expected same maxStake')
-
     // Deploy ServiceProviderFactory logic and proxy contracts + register proxy
     const serviceProviderFactory0 = await deployer.deploy(ServiceProviderFactory, { from: proxyDeployerAddress })
     const serviceProviderFactoryCalldata = _lib.encodeCall(
@@ -202,7 +178,7 @@ module.exports = (deployer, network, accounts) => {
       'setClaimsManagerAddress(address)',
       _lib.abiEncode(['address'], [process.env.claimsManagerAddress]),
       { from: guardianAddress })
-
+    
     let claimsManagerAddressFromSPFactory = await serviceProviderFactory.getClaimsManagerAddress()
     console.log(`ClaimsManager Address from ServiceProviderFactory.sol: ${claimsManagerAddressFromSPFactory}`);
     // TODO - add DelegateManager
