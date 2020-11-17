@@ -15,8 +15,6 @@ const { getEthContractAccounts } = require('./helpers/utils')
 
 // Directories within the audius-protocol repository used for development
 const serviceDirectoryList = ['discovery-provider', 'creator-node']
-const spDiscProvType = serviceDirectoryList[0]
-const spCreatorNodeType = 'content-node'
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
 const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
@@ -28,6 +26,10 @@ const amountOfAuds = 2000000
 const contentNodeType = 'content-node'
 const contentNodeTypeMin = 200000
 const contentNodeTypeMax = 10000000
+
+const discoveryNodeType = 'discovery-node'
+const discoveryNodeTypeMin = 200000
+const discoveryNodeTypeMax = 7000000
 
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
@@ -109,22 +111,6 @@ const run = async () => {
         break
       }
 
-      case 'register-cnode-1':
-        await _registerCnode1(audiusLibs, ethAccounts)
-        break
-
-      case 'register-cnode-2':
-        await _registerCnode2(audiusLibs, ethAccounts)
-        break
-
-      case 'register-cnode-3':
-        await _registerCnode3(audiusLibs, ethAccounts)
-        break
-
-      case 'register-cnode-4':
-        await _registerCnode4(audiusLibs, ethAccounts)
-        break
-
       case 'deregister-sps':
         await _deregisterAllSPs(audiusLibs, ethAccounts)
         break
@@ -168,46 +154,22 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 
 // Account 0
 const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
+  await registerLocalService(audiusLibs, discoveryNodeType, discProvEndpoint1, amountOfAuds)
 }
 
 // Account 3
 const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
   let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+  await registerLocalService(audiusLibs4, discoveryNodeType, discProvEndpoint2, amountOfAuds)
 }
 
 const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + parseInt(serviceNumber) - 1}`
 
+// Templated cnode to allow for dynamic number of services
 const _registerCnode = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
-  await registerLocalService(audiusLibs, spCreatorNodeType, endpoint, amountOfAuds)
-}
-
-// Account 1
-const _registerCnode1 = async (audiusLibs, ethAccounts) => {
-  let acct = ethAccounts[1].toLowerCase()
-  let audiusLibs2 = await initAudiusLibs(true, null, acct)
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1, amountOfAuds)
-}
-
-// Account 2
-const _registerCnode2 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[2])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint2, amountOfAuds)
-}
-
-// Account 3
-const _registerCnode3 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint3, amountOfAuds)
-}
-
-// Account 4
-const _registerCnode4 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint4, amountOfAuds)
+  await registerLocalService(audiusLibs, contentNodeType, endpoint, amountOfAuds)
 }
 
 const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath, endpoint = null, isShell = false) => {
@@ -220,18 +182,18 @@ const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath,
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
   const audiusLibs1 = audiusLibs
-  await deregisterLocalService(audiusLibs1, spDiscProvType, discProvEndpoint1)
+  await deregisterLocalService(audiusLibs1, discoveryNodeType, discProvEndpoint1)
   const audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
-  await deregisterLocalService(audiusLibs2, spDiscProvType, discProvEndpoint2)
+  await deregisterLocalService(audiusLibs2, discoveryNodeType, discProvEndpoint2)
 
   const audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[1])
-  await deregisterLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint1)
+  await deregisterLocalService(audiusLibs3, contentNodeType, creatorNodeEndpoint1)
   const audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[2])
-  await deregisterLocalService(audiusLibs4, spCreatorNodeType, creatorNodeEndpoint2)
+  await deregisterLocalService(audiusLibs4, contentNodeType, creatorNodeEndpoint2)
   const audiusLibs5 = await initAudiusLibs(true, null, ethAccounts[4])
-  await deregisterLocalService(audiusLibs5, spCreatorNodeType, creatorNodeEndpoint3)
+  await deregisterLocalService(audiusLibs5, contentNodeType, creatorNodeEndpoint3)
   const audiusLibs6 = await initAudiusLibs(true, null, ethAccounts[5])
-  await deregisterLocalService(audiusLibs6, spCreatorNodeType, creatorNodeEndpoint4)
+  await deregisterLocalService(audiusLibs6, contentNodeType, creatorNodeEndpoint4)
 }
 
 const _initAllVersions = async (audiusLibs) => {
@@ -244,6 +206,9 @@ const _initEthContractTypes = async (libs) => {
   console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
   // Add content-node serviceType
   await addServiceType(libs, contentNodeType, contentNodeTypeMin, contentNodeTypeMax)
+  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  // Add discovery-node serviceType
+  await addServiceType(libs, discoveryNodeType, discoveryNodeTypeMin, discoveryNodeTypeMax)
 }
 
 // Write an update to either the common .sh file for creator nodes or docker env file
