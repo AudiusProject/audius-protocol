@@ -8,8 +8,8 @@ import { usePushRoute } from 'utils/effects'
 import ServiceTable from 'components/ServiceTable'
 
 const messages = {
-  title: 'Discovery Providers',
-  viewMore: 'View All Discovery Providers'
+  title: 'Discovery Nodes',
+  viewMore: 'View All Discovery Nodes'
 }
 
 type OwnProps = {

@@ -19,7 +19,7 @@ import {
 
 const messages = {
   title: 'SERVICE',
-  discovery: 'Discovery Provider',
+  discovery: 'Discovery Node',
   content: 'Content Node'
 }
 

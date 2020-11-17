@@ -13,7 +13,7 @@ export type Block = any
 export type Amount = BigNumber
 
 export enum ServiceType {
-  DiscoveryProvider = 'discovery-provider',
+  DiscoveryProvider = 'discovery-node',
   ContentNode = 'content-node'
 }
 

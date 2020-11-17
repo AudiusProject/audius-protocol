@@ -18,7 +18,7 @@ const messages = {
   errorMessage:
     'Actions cannot be taken until pending transactions are completed. Please try again.',
   okay: 'OKAY',
-  discoveryProvider: 'Discovery Provider',
+  discoveryProvider: 'Discovery Node',
   contentNode: 'Content Node',
   stakingAmount: `Staking Amount ${TICKER}`,
   newService: 'NEW SERVICES',

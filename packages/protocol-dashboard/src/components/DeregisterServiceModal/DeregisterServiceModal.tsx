@@ -20,7 +20,7 @@ const messages = {
   placeholder: 'DEREGISTER',
   confirmDeregister: 'Deregister',
   contentNode: 'Content Node',
-  discoveryProvider: 'Discovery Provider'
+  discoveryProvider: 'Discovery Node'
 }
 
 const DEREGISTER = 'DEREGISTER'
