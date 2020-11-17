@@ -48,8 +48,7 @@ const {
 } = require('../discoveryProvider/constants')
 
 const serviceType = Object.freeze({
-  DISCOVERY_PROVIDER: 'discovery-provider',
-  CONTENT_SERVICE: 'content-service',
+  DISCOVERY_PROVIDER: 'discovery-node',
   CREATOR_NODE: 'content-node'
 })
 const serviceTypeList = Object.values(serviceType)
