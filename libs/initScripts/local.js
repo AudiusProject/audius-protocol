@@ -3,7 +3,7 @@ const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
-const { setServiceVersion } = require('./helpers/version')
+const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {
   registerLocalService,
   queryLocalServices,
@@ -13,9 +13,10 @@ const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
-const serviceTypeList = ['discovery-provider', 'creator-node']
-const spDiscProvType = serviceTypeList[0]
-const spCreatorNodeType = serviceTypeList[1]
+// Directories within the audius-protocol repository used for development
+const serviceDirectoryList = ['discovery-provider', 'creator-node']
+const spDiscProvType = serviceDirectoryList[0]
+const spCreatorNodeType = 'content-node'
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
 const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
@@ -24,11 +25,20 @@ const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
 const creatorNodeEndpoint4 = 'http://cn4_creator-node_1:4003'
 const amountOfAuds = 2000000
 
+const contentNodeType = 'content-node'
+const contentNodeTypeMin = 200000
+const contentNodeTypeMax = 10000000
+
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
+let serviceTypesList = []
 try {
-  serviceTypeList.forEach((type) => {
-    serviceVersions[type] = (require(`../../${type}/.version.json`)['version'])
+  serviceDirectoryList.forEach((type) => {
+    let typeInfo = require(`../../${type}/.version.json`)
+    let version = typeInfo['version']
+    let serviceType = typeInfo['service']
+    serviceVersions[serviceType] = version
+    serviceTypesList.push(serviceType)
   })
 } catch (e) {
   throw new Error("Couldn't get the service versions")
@@ -120,7 +130,7 @@ const run = async () => {
         break
 
       case 'query-sps':
-        await queryLocalServices(audiusLibs, serviceTypeList)
+        await queryLocalServices(audiusLibs, serviceTypesList)
         break
 
       case 'update-cnode-config': {
@@ -151,8 +161,9 @@ run()
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)
+  await _initEthContractTypes(audiusLibs)
   await _initAllVersions(audiusLibs)
-  await queryLocalServices(audiusLibs, serviceTypeList)
+  await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
 // Account 0
@@ -224,9 +235,15 @@ const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
 }
 
 const _initAllVersions = async (audiusLibs) => {
-  for (let serviceType of serviceTypeList) {
+  for (let serviceType of serviceTypesList) {
     await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
   }
+}
+
+const _initEthContractTypes = async (libs) => {
+  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  // Add content-node serviceType
+  await addServiceType(libs, contentNodeType, contentNodeTypeMin, contentNodeTypeMax)
 }
 
 // Write an update to either the common .sh file for creator nodes or docker env file
