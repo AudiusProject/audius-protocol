@@ -160,12 +160,12 @@
 
 .signUpButton {
   min-width: 66px;
+  padding: 0;
   border: none;
   color: white;
   background-color: var(--primary);
   margin-right: auto;
   height: 24px;
-  flex-basis: 72;
   border-radius: 6px;
   font-family: var(--font-family);
   font-size: var(--font-s);
