@@ -29,7 +29,6 @@ contract('UserReplicaSetManager', async (accounts) => {
     const cnode4Account = accounts[8]
 
     // Special permission addresses
-    const nodeBootstrapAddress = accounts[12]
     const userReplicaBootstrapAddress = accounts[14]
 
 
@@ -65,16 +64,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         await registry.addContract(_constants.userReplicaSetManagerKey, userReplicaSetManager.address)
         // Initialize users to POA UserFactory
         await registerInitialUsers()
-        /*
-        // Setup cnode 1 from deployer address
-        await addOrUpdateCreatorNode(cnode1SpID, cnode1Account, 0, nodeBootstrapAddress)
-        // Setup cnode 2 through cnode1Account
-        await addOrUpdateCreatorNode(cnode2SpID, cnode2Account, cnode1SpID, cnode1Account)
-        // Setup cnode 3 through cn2Account
-        await addOrUpdateCreatorNode(cnode3SpID, cnode3Account, cnode2SpID, cnode2Account)
-        // Setup cnode 4 through cn3Account
-        await addOrUpdateCreatorNode(cnode4SpID, cnode4Account, cnode3SpID, cnode3Account)
-        */
     })
 
     // Confirm constructor arguments are respected on chain
