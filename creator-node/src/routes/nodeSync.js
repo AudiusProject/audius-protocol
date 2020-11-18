@@ -27,7 +27,7 @@ module.exports = function (app) {
     const walletPublicKeys = req.query.wallet_public_key // array
     const sourceEndpoint = req.query.source_endpoint || '' // string
 
-    maxExportClockValueRange =config.get('maxExportClockValueRange')
+    maxExportClockValueRange = config.get('maxExportClockValueRange')
 
     // [requestedClockRangeMin, requestedClockRangeMax] is inclusive range
     const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
@@ -162,15 +162,17 @@ module.exports = function (app) {
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
     if (walletPublicKeys.length == 0) {
-      throw new Error(`Must provide one wallet param`)
+      return errorResponseBadRequest(`Must provide one wallet param`)
     }
     else if (walletPublicKeys.length > 1) {
-      throw new Error(`Multi wallet syncs are temporarily disabled`)
+      return errorResponseBadRequest(`Multi wallet syncs are temporarily disabled`)
     }
 
     // Log syncType
     const syncType = req.body.sync_type
-    if (syncType) req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
+    if (syncType) {
+      req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
+    }
 
     if (immediate) {
       let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
@@ -278,7 +280,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     if (!resp.data.hasOwnProperty('cnodeUsers') || !resp.data.hasOwnProperty('ipfsIDObj') || !resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
-    req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
+    req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
 
     // Attempt to connect directly to target CNode's IPFS node.
     await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
@@ -329,14 +331,16 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
         throw new Error(`Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`)
-      } else if (fetchedLatestClockVal === localMaxClockVal) {
+      }
+      else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
         req.logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`)
         // the transaction declared outside the try/catch needs to be closed. if we call the continue
         // and do not end the tx, it will never be closed
         transaction.rollback()
         continue
-      } else if (fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
+      }
+      else if (fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
         throw new Error(`Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`)
       }
 

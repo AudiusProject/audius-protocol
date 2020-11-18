@@ -8,10 +8,10 @@ const getJobInfo = job => ({
   secondary: job.data.syncRequestParameters.baseURL
 })
 
-const makeResponse = (pendingJobs, activeJobs) => ({
+const makeResponse = (pendingJobs, activeJobs, jobCounts) => ({
   pending: pendingJobs.map(getJobInfo),
   active: activeJobs.map(getJobInfo),
-  pendingCount: pendingJobs.length
+  counts: jobCounts
 })
 
 /**
@@ -19,12 +19,12 @@ const makeResponse = (pendingJobs, activeJobs) => ({
  * Response: {
  *  pending: Array<{ type, priority, id }>,
  *  active: Array<{ type, priority, id }>,
- *  pendingCount: number
+ *  counts: { waiting, active, completed, failed, delayed, paused }
  * }
  */
 const syncHealthCheck = async ({ snapbackSM }) => {
   const jobs = await snapbackSM.getSyncQueueJobs()
-  return makeResponse(jobs.pending, jobs.active)
+  return makeResponse(jobs.pending, jobs.active, jobs.counts)
 }
 
 module.exports = { syncHealthCheck }
