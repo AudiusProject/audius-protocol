@@ -25,12 +25,12 @@ const service1 = {
   data: {
     latitude: '45.5235',
     longitude: '-122.6762',
-    service: 'creator-node',
+    service: 'content-node',
     version: '0.3.17'
   },
   latitude: '45.5235',
   longitude: '-122.6762',
-  service: 'creator-node',
+  service: 'content-node',
   signature:
     '0x71c58c20ff6e9e44cf7a590a5bed05005f25ed5e4c4ec4080d02ccbdfc057c39658c84c6f5bfd9c10476b0422ce02202b3388275d4a07e9ceeeb341b848d76ac1b',
   signer: '0xd97afD61e49d633DC87C4894F432d8e76a4A61EE',
@@ -43,12 +43,12 @@ const service2 = {
   data: {
     latitude: '46.5235',
     longitude: '-123.6762',
-    service: 'creator-node',
+    service: 'content-node',
     version: '0.3.17'
   },
   latitude: '46.5235',
   longitude: '-123.6762',
-  service: 'creator-node',
+  service: 'content-node',
   signature:
     '0x71c58c20ff6e9e44cf7a590a5bed05005f25ed5e4c4ec4080d02ccbdfc057c39658c84c6f5bfd9c10476b0422ce02202b3388275d4a07e9ceeeb341b848d76ac1b',
   signer: '0xd97afD61e49d633DC87C4894F432d8e76a4A61EE',
