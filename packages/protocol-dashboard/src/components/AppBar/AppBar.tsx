@@ -5,7 +5,7 @@ import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import { ReactComponent as Logo } from 'assets/img/audiusLogoHorizontal.svg'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
-import { Address, Status } from 'types'
+import { Address } from 'types'
 import { formatWei, formatShortAud, formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage, isCryptoPage } from 'utils/routes'
@@ -25,18 +25,49 @@ const messages = {
   name: 'PROTOCOL DASHBOARD',
   launchApp: 'LAUNCH THE APP',
   connectMetaMask: 'Connect Metamask',
+  metaMaskMisconfigured: 'Metamask Misconfigured',
   block: 'Block'
 }
 
 // TODO:
 // * Replace account img, wallet & tokens from store
 type UserAccountSnippetProps = { wallet: Address }
+type MisconfiguredProps = {
+  isAccountMisconfigured: boolean
+  isMisconfigured: boolean
+}
 
-const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
-  const { user, status } = useUser({ wallet })
+const Misconfigured = ({
+  isAccountMisconfigured,
+  isMisconfigured
+}: MisconfiguredProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
   const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
+
+  const onClickHandler = isMisconfigured ? undefined : onClick
+  return (
+    <>
+      <div
+        onClick={onClickHandler}
+        className={clsx(styles.connectMetaMaskContainer, {
+          [styles.misconfigured]: isMisconfigured
+        })}
+      >
+        <div className={styles.connectMetaMaskDot}></div>
+        <div className={styles.connectMetaMask}>
+          {isMisconfigured
+            ? messages.metaMaskMisconfigured
+            : messages.connectMetaMask}
+        </div>
+      </div>
+      <ConnectMetaMaskModal isOpen={isOpen} onClose={onClose} />
+    </>
+  )
+}
+
+const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
+  const { user } = useUser({ wallet })
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {
     if (user) {
@@ -44,19 +75,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
     }
   }, [user, pushRoute])
 
-  if (!user || status !== Status.Success) {
-    return (
-      <>
-        <div onClick={onClick} className={styles.connectMetaMaskContainer}>
-          <div className={styles.connectMetaMaskDot}></div>
-          <div className={styles.connectMetaMask}>
-            {messages.connectMetaMask}
-          </div>
-        </div>
-        <ConnectMetaMaskModal isOpen={isOpen} onClose={onClose} />
-      </>
-    )
-  }
+  if (!user) return null
 
   return (
     <div className={styles.snippetContainer} onClick={onClickUser}>
@@ -100,6 +119,9 @@ const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
   const ethBlock = useEthBlockNumber()
   const { pathname } = useLocation()
   const showBlock = isCryptoPage(pathname) && ethBlock
+
+  const { isMisconfigured, isAccountMisconfigured } = window.aud
+
   return (
     <div className={styles.appBar}>
       <div className={styles.left}>
@@ -116,11 +138,16 @@ const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
             <div className={styles.title}>{messages.block}</div>
             <div className={styles.block}>{ethBlock}</div>
           </div>
-          {isLoggedIn && wallet && (
-            <div className={styles.userAccountSnippetContainer}>
-              <UserAccountSnippet wallet={wallet} />
-            </div>
-          )}
+          <div className={styles.userAccountSnippetContainer}>
+            {isMisconfigured || isAccountMisconfigured ? (
+              <Misconfigured
+                isMisconfigured={isMisconfigured}
+                isAccountMisconfigured={isAccountMisconfigured}
+              />
+            ) : (
+              isLoggedIn && wallet && <UserAccountSnippet wallet={wallet} />
+            )}
+          </div>
           <LaunchTheAppButton />
         </div>
       )}

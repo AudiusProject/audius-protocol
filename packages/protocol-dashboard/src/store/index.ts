@@ -30,10 +30,8 @@ declare global {
 }
 
 const aud = new Audius()
-// TODO: Move this
-aud.setup().then(() => {
-  window.aud = aud
-})
+window.aud = aud
+aud.setup()
 
 const getReducer = (history: History) => {
   return combineReducers({

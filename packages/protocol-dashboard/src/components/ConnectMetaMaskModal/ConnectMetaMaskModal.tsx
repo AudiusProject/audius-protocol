@@ -22,7 +22,9 @@ const ConnectMetaMaskModal: React.FC<ConnectMetaMaskModalProps> = ({
   onClose
 }: ConnectMetaMaskModalProps) => {
   const onOpenMetaMask = useCallback(() => {
-    // TODO: figure out how to do this....
+    if (window.ethereum) {
+      window.ethereum.request({ method: 'eth_requestAccounts' })
+    }
   }, [])
   return (
     <Modal
