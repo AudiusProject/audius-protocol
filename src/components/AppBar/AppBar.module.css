@@ -162,6 +162,10 @@
   cursor: pointer;
 }
 
+.misconfigured {
+  cursor: default;
+}
+
 .connectMetaMaskDot {
   width: 14px;
   height: 14px;

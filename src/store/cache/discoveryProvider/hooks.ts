@@ -100,8 +100,15 @@ export function fetchDiscoveryProviders(
     const discoveryProviders = await aud.ServiceProviderClient.getServiceProviderList(
       ServiceType.DiscoveryProvider
     )
+    const legacy = (
+      await aud.ServiceProviderClient.getServiceProviderList(
+        // @ts-ignore
+        'discovery-provider'
+      )
+    ).map((d, i) => ({ ...d, spID: 100 + i }))
+
     const discoveryProviderVersions = await Promise.all(
-      discoveryProviders.map(node => processDP(node, aud))
+      discoveryProviders.concat(legacy).map(node => processDP(node, aud))
     )
     const nodes = discoveryProviderVersions.reduce(
       (acc: { [spId: number]: DiscoveryProvider }, dp) => {
@@ -110,6 +117,7 @@ export function fetchDiscoveryProviders(
       },
       {}
     )
+
     dispatch(
       setNodes({
         status: Status.Success,
