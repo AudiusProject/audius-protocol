@@ -10,8 +10,8 @@ const { ipfs } = require('../src/ipfsClient')
 const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
-
 const { sortKeys } = require('../src/apiSigning')
+const DiskManager = require('../src/diskManager')
 
 let storagePath = config.get('storagePath')
 storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
@@ -44,7 +44,7 @@ const srcPath = path.join(segmentsDirPath, sourceFile)
 // consts used for testing saveFileFromBufferToIPFSAndDisk()
 const metadata = {
   test: 'field1',
-  track_segments: [{ 'multihash': 'testCIDLink', 'duration': 1000 }],
+  track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
   owner_id: 1
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
@@ -68,7 +68,7 @@ describe('test fileManager', () => {
           info: () => {}
         },
         app: {
-          get: () => { return path.join(storagePath) }
+          get: () => { return DiskManager.getConfigStoragePath() }
         }
       }
 
@@ -135,7 +135,7 @@ describe('test fileManager', () => {
 
       // 1 segment should be saved in <storagePath>/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd
       const segmentCID = 'QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd'
-      const syncedSegmentPath = path.join(storagePath, segmentCID)
+      const syncedSegmentPath = DiskManager.computeFilePath(segmentCID)
       assert.ok(fs.existsSync(syncedSegmentPath))
 
       // the segment content should match the original sourcefile
@@ -170,7 +170,7 @@ describe('test fileManager', () => {
           info: () => {}
         },
         app: {
-          get: () => { return path.join(storagePath) }
+          get: () => { return DiskManager.getConfigStoragePath() }
         }
       }
 
@@ -230,7 +230,7 @@ describe('test fileManager', () => {
       }
 
       // check that the metadata file was written to storagePath under its multihash
-      const metadataPath = path.join(storagePath, resp.multihash)
+      const metadataPath = DiskManager.computeFilePath(resp.multihash)
       assert.ok(fs.existsSync(metadataPath))
 
       // check that the contents of the metadata file is what we expect

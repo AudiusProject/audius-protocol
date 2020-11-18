@@ -1,4 +1,4 @@
 {
   "version": "0.3.25",
-  "service": "discovery-provider"
+  "service": "discovery-node"
 }
