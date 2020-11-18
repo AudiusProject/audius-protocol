@@ -99,6 +99,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             "Mismatch proposer wallet for existing spID"
         );
 
+        // TODO: Should bootstrap delegateWallets be allowed to update at all?
+
         // TODO: Should this be limited to first time registration? like should updates be allowed?
         spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
 
