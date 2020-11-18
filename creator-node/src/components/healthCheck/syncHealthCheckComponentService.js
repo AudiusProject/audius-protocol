@@ -8,8 +8,8 @@ const getJobInfo = job => ({
   secondary: job.data.syncRequestParameters.baseURL
 })
 
-const makeResponse = (waitingJobds, activeJobs, jobCounts) => ({
-  waiting: waitingJobds.map(getJobInfo),
+const makeResponse = (waitingJobs, activeJobs, jobCounts) => ({
+  waiting: waitingJobs.map(getJobInfo),
   active: activeJobs.map(getJobInfo),
   counts: jobCounts
 })
