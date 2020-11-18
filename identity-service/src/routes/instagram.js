@@ -46,45 +46,15 @@ module.exports = function (app) {
         return errorResponseBadRequest(new Error(igUser.error.message))
       }
 
-      const igMetadataResponse = await doRequest({
-        method: 'get',
-        url: `https://www.instagram.com/${igUser.username}/?__a=1`
-      })
-      const igUserMetadata = JSON.parse(igMetadataResponse)
-      const props = [
-        'id',
-        'username',
-        'biography',
-        'full_name',
-        'is_verified',
-        'is_private',
-        'external_url',
-        'business_email',
-        'is_business_account',
-        'profile_pic_url',
-        'profile_pic_url_hd',
-        'edge_followed_by',
-        'edge_follow'
-      ]
-      const igUserProfile = props.reduce((profile, prop) => {
-        profile[prop] = igUserMetadata.graphql.user[prop]
-        return profile
-      }, {})
-
-      if (!igUserMetadata || !igUserMetadata.graphql || !igUserMetadata.graphql.user) {
-        return errorResponseBadRequest(new Error('Unable to retrieve user'))
-      }
-
-      // Store access_token for user in db
+      // Store the access token, user id, and current profile for user in db
       try {
         await models.InstagramUser.upsert({
-          uuid: igUserProfile.id,
-          profile: igUserProfile,
-          verified: igUserProfile.is_verified,
+          uuid: igUser.id,
+          profile: igUser,
           accessToken
         })
 
-        return successResponse(igUserProfile)
+        return successResponse(igUser)
       } catch (err) {
         return errorResponseBadRequest(err)
       }
@@ -92,6 +62,37 @@ module.exports = function (app) {
       return errorResponseBadRequest(err)
     }
   }))
+
+  app.post('/instagram/profile', handleResponse(async (req, res, next) => {
+    const { profile } = req.body
+    try {
+      const checkFields = [
+        'id',
+        'username',
+        'is_verified'
+      ]
+      const hasMinimumFields = checkFields.every(field => (field in profile))
+      if (!hasMinimumFields) throw new Error('Invalid profile')
+
+      try {
+        // Verify the user user id exists in the DB before updating it
+        const igUser = await models.InstagramUser.findOne({ where: {
+          uuid: profile.id
+        } })
+        if (!igUser) throw new Error('User must first be verified')
+        igUser.profile = profile
+        igUser.verified = profile.is_verified
+        await igUser.save()
+
+        return successResponse(profile)
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
+    } catch (err) {
+      return errorResponseBadRequest(err)
+    }
+  }))
+
 
   /**
    * After the user finishes onboarding in the client app and has a blockchain userId, we need to associate
