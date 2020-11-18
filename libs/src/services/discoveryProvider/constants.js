@@ -1,5 +1,5 @@
-module.exports.DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-node-timestamp'
-module.exports.DISCOVERY_SERVICE_NAME = 'discovery-node'
+module.exports.DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-provider-timestamp'
+module.exports.DISCOVERY_SERVICE_NAME = 'discovery-provider'
 module.exports.UNHEALTHY_BLOCK_DIFF = 15
 module.exports.REGRESSED_MODE_TIMEOUT = 2 * 60 * 1000 // two minutes
 

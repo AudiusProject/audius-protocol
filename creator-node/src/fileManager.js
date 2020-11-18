@@ -15,7 +15,6 @@ const copyFile = promisify(fs.copyFile)
 
 const config = require('./config')
 const Utils = require('./utils')
-const DiskManager = require('./diskManager')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -38,7 +37,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
 
   // Write file to disk by multihash for future retrieval
-  const dstPath = DiskManager.computeFilePath(multihash)
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
   await writeFile(dstPath, buffer)
 
   return { multihash, dstPath }
@@ -61,7 +60,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
 
   // store file copy by multihash for future retrieval
-  const dstPath = DiskManager.computeFilePath(multihash)
+  const dstPath = path.join(req.app.get('storagePath'), multihash)
 
   try {
     await copyFile(srcPath, dstPath)
@@ -96,32 +95,36 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  */
 async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   try {
+    const storagePath = req.app.get('storagePath') // should be `/file_storage'
+
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
     let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
+    // Check if the file we are trying to copy is in a directory and if so, create the directory first
+    // E.g if the expectedStoragePath includes a dir like /file_storage/QmABC/Qm123, path.parse gives us
+    // { root: '/', dir: '/file_storage/QmABC', base: 'Qm123',ext: '', name: 'Qm2' }
+    // but if expectedStoragePath is a file like /file_storage/Qm123, path.parse gives us
+    // { root: '/', dir: '/file_storage', base: 'Qm123', ext: '', name: 'Qm123' }
+    // In the case where the parsed expectedStoragePath dir contains storagePath (`/file_storage`)
+    // but does not equal it, we know that it's a directory
     const parsedStoragePath = path.parse(expectedStoragePath).dir
+    if (parsedStoragePath !== storagePath && parsedStoragePath.includes(storagePath) && fileNameForImage) {
+      const splitPath = parsedStoragePath.split('/')
+      // parsedStoragePath looks like '/file_storage/Qm123' for a dir and when you call split, the result is
+      // ['', 'file_storage', 'Qm123']. the third item in the array is the directory cid, so index 2
+      if (splitPath.length !== 3) throw new Error(`Invalid expectedStoragePath for directory ${expectedStoragePath}`)
 
-    try {
-      // calling this on an existing directory doesn't overwrite the existing data or throw an error
-      // the mkdir recursive is equivalent to `mkdir -p`
-      await mkdir(parsedStoragePath, { recursive: true })
-    } catch (e) {
-      throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
-    }
+      // override gateway urls to make it compatible with directory
+      gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${splitPath[2]}/${fileNameForImage}`)
 
-    // regex match to check if a directory or just a regular file
-    // if directory will have both outer and inner properties in match.groups
-    // else will have just outer
-    const matchObj = DiskManager.extractCIDsFromFSPath(expectedStoragePath)
-
-    // if this is a directory, make it compatible with our dir cid gateway url
-    if (matchObj && matchObj.isDir && matchObj.outer && fileNameForImage) {
-      // override gateway urls to make it compatible with directory given an endpoint
-      // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
-      // in the case of a directory, override the gatewayUrlsMapped array to look like
-      // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
-      gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${matchObj.outer}/${fileNameForImage}`)
+      try {
+        // calling this on an existing directory doesn't overwrite the existing data or throw an error
+        // the mkdir recursive is equivalent to `mkdir -p`
+        await mkdir(parsedStoragePath, { recursive: true })
+      } catch (e) {
+        throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
+      }
     }
 
     /**
@@ -223,7 +226,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
     try {
       const ipfs = req.app.get('ipfsLatestAPI')
       const content = fs.createReadStream(expectedStoragePath)
-      for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
+      for await (const result of ipfs.add(content, { onlyHash: true, timeout: 2000 })) {
         if (multihash !== result.cid.toString()) {
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
@@ -320,7 +323,7 @@ const trackDiskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     // save file under randomly named folders to avoid collisions
     const randomFileName = getUuid()
-    const fileDir = path.join(DiskManager.getTmpTrackUploadArtifactsPath(), randomFileName)
+    const fileDir = path.join(req.app.get('storagePath'), randomFileName)
 
     // create directories for original file and segments
     fs.mkdirSync(fileDir)

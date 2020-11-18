@@ -11,7 +11,7 @@ from src.utils.redis_cache import use_redis_cache
 logger = logging.getLogger(__name__)
 
 sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
-content_node_service_type = bytes("content-node", "utf-8")
+content_node_service_type = bytes("creator-node", "utf-8")
 
 # What is a "Peer" in this context?
 # A peer represents another known entity in the network

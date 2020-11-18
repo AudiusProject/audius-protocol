@@ -48,8 +48,9 @@ const {
 } = require('../discoveryProvider/constants')
 
 const serviceType = Object.freeze({
-  DISCOVERY_PROVIDER: 'discovery-node',
-  CREATOR_NODE: 'content-node'
+  DISCOVERY_PROVIDER: 'discovery-provider',
+  CONTENT_SERVICE: 'content-service',
+  CREATOR_NODE: 'creator-node'
 })
 const serviceTypeList = Object.values(serviceType)
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
@@ -255,7 +256,7 @@ class EthContracts {
 
   /**
    * Returns a valid service provider url with the fastest response
-   * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'content-node'
+   * @param {string} spType service provider type: 'discovery-provider' | 'content-service' | 'creator-node'
    * @return {Promise<string>} A valid service provider url with the fastest response
    */
   async selectLatestVersionServiceProvider (spType, whitelist = null) {

@@ -4,8 +4,6 @@ const config = require('../config.js')
 const versionInfo = require('../../.version.json')
 const disk = require('diskusage')
 
-const DiskManager = require('../diskManager')
-
 const MAX_DB_CONNECTIONS = config.get('dbConnectionPoolMax')
 const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
@@ -102,7 +100,7 @@ module.exports = function (app) {
     const maxUsageBytes = parseInt(req.query.maxUsageBytes)
     const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
 
-    const storagePath = DiskManager.getConfigStoragePath()
+    const storagePath = config.get('storagePath')
     const { available, total } = await disk.check(storagePath)
     const usagePercent = Math.round((total - available) * 100 / total)
 

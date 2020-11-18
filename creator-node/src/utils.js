@@ -260,7 +260,7 @@ async function getAllRegisteredCNodes (libs) {
       return JSON.parse(cnodesList)
     }
 
-    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node'))
+    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node'))
     creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
     redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30) // cache this for 30 minutes
     return creatorNodes

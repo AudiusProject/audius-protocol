@@ -1,6 +1,7 @@
 'use strict'
 
 const ON_DEATH = require('death')
+const path = require('path')
 const EthereumWallet = require('ethereumjs-wallet')
 
 const initializeApp = require('./app')
@@ -14,6 +15,13 @@ const { serviceRegistry } = require('./serviceRegistry')
 const exitWithError = (...msg) => {
   logger.error(...msg)
   process.exit(1)
+}
+
+const configFileStorage = () => {
+  if (!config.get('storagePath')) {
+    exitWithError('Must set storagePath to use for content repository.')
+  }
+  return (path.resolve('./', config.get('storagePath')))
 }
 
 const runDBMigrations = async () => {
@@ -55,6 +63,7 @@ const startApp = async () => {
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
   }
+  const storagePath = configFileStorage()
 
   const mode = getMode()
   let appInfo
@@ -72,7 +81,7 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info('Initialized services!')
 
-    appInfo = initializeApp(config.get('port'), serviceRegistry)
+    appInfo = initializeApp(config.get('port'), storagePath, serviceRegistry)
   }
 
   // when app terminates, close down any open DB connections gracefully
