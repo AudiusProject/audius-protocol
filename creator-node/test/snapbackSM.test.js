@@ -54,7 +54,7 @@ describe('test sync queue', function () {
     // Setup the recurring syncs
     const recurringSyncIds = new Set()
     for (let i = 0; i < 5; i++) {
-      const { id } = await snapback.issueSecondarySync({
+      const { id } = await snapback.enqueueSecondarySync({
         userWallet: constants.userWallet,
         secondaryEndpoint: constants.secondaryEndpoint,
         primaryEndpoint: constants.primaryEndpoint,
@@ -79,7 +79,7 @@ describe('test sync queue', function () {
     }
 
     // Verify we complete manual jobs first
-    let jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
+    let jobIds = (await snapback.getSyncQueueJobs()).waiting.map(job => job.id)
     let lastRemainingRecurringCount = 0
 
     while (jobIds.length) {
@@ -98,7 +98,7 @@ describe('test sync queue', function () {
       lastRemainingRecurringCount = remainingRecurringCount
 
       await utils.timeout(500)
-      jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
+      jobIds = (await snapback.getSyncQueueJobs()).waiting.map(job => job.id)
     }
   })
 })

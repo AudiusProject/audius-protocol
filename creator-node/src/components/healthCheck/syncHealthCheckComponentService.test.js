@@ -6,10 +6,10 @@ const WALLET = 'wallet_addr'
 const SECONDARY = 'http:test-cn.audius.co'
 
 describe('Test sync health check', function () {
-  it('Should return active and pending jobs', async function () {
+  it('Should return active and waiting jobs', async function () {
     const mockSnapback = {
       getSyncQueueJobs: async () => Promise.resolve({
-        pending: [{
+        waiting: [{
           name: 'RECURRING',
           id: 2,
           data: {
@@ -39,8 +39,7 @@ describe('Test sync health check', function () {
             {
               priority: SyncPriority.High
             }
-        }
-        ],
+        }],
         active: [{
           name: 'MANUAL',
           id: 1,
@@ -56,15 +55,21 @@ describe('Test sync health check', function () {
             {
               priority: SyncPriority.High
             }
-        }]
+        }],
+        counts: {
+          waiting: 2, active: 1, completed: 0, failed: 0, delayed: 0, paused: 0
+        }
       })
     }
 
     const res = await syncHealthCheck({ snapbackSM: mockSnapback })
+    console.log(JSON.stringify(res))
     assert.deepStrictEqual(res, {
-      pending: [{ type: 'RECURRING', id: 2, priority: 'LOW', wallet: WALLET, secondary: SECONDARY }, { type: 'MANUAL', id: 3, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],
+      waiting: [{ type: 'RECURRING', id: 2, priority: 'LOW', wallet: WALLET, secondary: SECONDARY }, { type: 'MANUAL', id: 3, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],
       active: [{ type: 'MANUAL', id: 1, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],
-      pendingCount: 2
+      counts: {
+        waiting: 2, active: 1, completed: 0, failed: 0, delayed: 0, paused: 0
+      }
     })
   })
 })

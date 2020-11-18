@@ -208,7 +208,7 @@ class SnapbackSM {
 
   /**
    * Main state machine processing function
-   * 
+   *
    * Determines which users need to be processed and triggers syncs to secondaries
    */
   async processStateMachineOperation () {
@@ -317,7 +317,7 @@ class SnapbackSM {
       )
     )
     this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
-        
+
     // Issue syncs if necessary
     // For each user in the initially returned usersList,
     //  compare local primary clock value to value from secondary retrieved in bulk above
@@ -409,7 +409,9 @@ class SnapbackSM {
         //    after primaryClockValue cached and resulting sync is monitored
         if (respData.clockValue >= primaryClockValue) {
           secondaryClockValAfterSync = respData.clockValue
+
           this.log(`Sync for ${userWallet} at ${secondaryUrl} from ${secondaryClockValue} to ${secondaryClockValAfterSync} for primaryClockVal ${primaryClockValue} completed in ${Date.now() - startTime}ms`)
+          syncAttemptCompleted = true
           break
         }
       } catch (e) {
@@ -419,6 +421,7 @@ class SnapbackSM {
       // Stop retrying if max sync monitoring duration exceeded
       if (Date.now() - startTime > MaxSyncMonitoringDurationInMs) {
         this.log(`ERROR: processSync ${userWallet} timed out`)
+        syncAttemptCompleted = true
         break
       }
 
@@ -515,7 +518,7 @@ class SnapbackSM {
 
   /**
    * Initialize the state machine
-   * 
+   *
    * @notice - Optionally accepts `maxSyncJobs` to override sync concurrency limit `MaxParallelSyncJobs`
    */
   async init (maxSyncJobs) {
@@ -573,13 +576,12 @@ class SnapbackSM {
   }
 
   async getSyncQueueJobs () {
-    const [pending, active] = await Promise.all([
+    const [waiting, active] = await Promise.all([
       this.syncQueue.getJobs(['waiting']),
       this.syncQueue.getJobs(['active'])
     ])
     const counts = await this.syncQueue.getJobCounts()
-    this.log(`job counts: ${JSON.stringify(counts)}`)
-    return { pending, active, counts }
+    return { waiting, active, counts }
   }
 }
 

@@ -27,12 +27,12 @@ module.exports = function (app) {
     const walletPublicKeys = req.query.wallet_public_key // array
     const sourceEndpoint = req.query.source_endpoint || '' // string
 
-    maxExportClockValueRange = config.get('maxExportClockValueRange')
+    const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
     // [requestedClockRangeMin, requestedClockRangeMax] is inclusive range
     const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
-    const maxrequestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
-    const requestedClockRangeMax = Math.min((parseInt(req.query.clock_range_max) || maxrequestedClockRangeMax), maxrequestedClockRangeMax)
+    const maxRequestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
+    const requestedClockRangeMax = Math.min((parseInt(req.query.clock_range_max) || maxRequestedClockRangeMax), maxRequestedClockRangeMax)
     if (requestedClockRangeMax <= requestedClockRangeMin) {
       return errorResponseBadRequest(`Invalid query params: clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] provided.`)
     }
@@ -161,10 +161,9 @@ module.exports = function (app) {
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
-    if (walletPublicKeys.length == 0) {
+    if (walletPublicKeys.length === 0) {
       return errorResponseBadRequest(`Must provide one wallet param`)
-    }
-    else if (walletPublicKeys.length > 1) {
+    } else if (walletPublicKeys.length > 1) {
       return errorResponseBadRequest(`Multi wallet syncs are temporarily disabled`)
     }
 
@@ -331,16 +330,11 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       // Error if returned data is not within requested range
       if (fetchedLatestClockVal < localMaxClockVal) {
         throw new Error(`Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`)
-      }
-      else if (fetchedLatestClockVal === localMaxClockVal) {
+      } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
         req.logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`)
-        // the transaction declared outside the try/catch needs to be closed. if we call the continue
-        // and do not end the tx, it will never be closed
-        transaction.rollback()
         continue
-      }
-      else if (fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
+      } else if (fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
         throw new Error(`Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`)
       }
 
@@ -359,9 +353,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             latestBlockNumber: fetchedLatestBlockNumber,
             clock: fetchedCNodeUser.clock,
             createdAt: fetchedCNodeUser.createdAt
-          }, {
-            transaction
-          }
+          },
+          { transaction }
         )
         req.logger.info(redisKey, `Inserted CNodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
 
@@ -448,7 +441,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
       } catch (e) {
         req.logger.error(redisKey, `Transaction failed for cnodeUserUUID ${fetchedCnodeUserUUID}`, e)
-        
+
         await transaction.rollback()
         await redisLock.removeLock(redisKey)
 

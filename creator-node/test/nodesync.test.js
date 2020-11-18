@@ -19,6 +19,7 @@ const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 
 describe('test nodesync', function () {
   let server, app
+  const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
   afterEach(async function () {
     await destroyUsers()
@@ -187,6 +188,12 @@ describe('test nodesync', function () {
         raw: true
       }))
 
+      const clockInfo = {
+        localClockMax: cnodeUser.clock,
+        requestedClockRangeMin: 0,
+        requestedClockRangeMax: maxExportClockValueRange - 1
+      }
+
       // construct the expected response
       const expectedData = {
         [cnodeUserUUID]: {
@@ -196,7 +203,8 @@ describe('test nodesync', function () {
           ],
           tracks: [trackFile],
           files: [userMetadataFile, copy320, ...segmentFiles, trackMetadataFile],
-          clockRecords
+          clockRecords,
+          clockInfo
         }
       }
 
