@@ -12,6 +12,7 @@ declare global {
     ethereum: any
     dataWeb3: any
     configuredMetamaskWeb3: any
+    isAccountMisconfigured: boolean
   }
 }
 
@@ -29,46 +30,47 @@ const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
 
 export async function setup(this: AudiusClient): Promise<void> {
   if (!window.web3 || !window.ethereum) {
-    // metamask is not installed
-    this.isAccountMisconfgured = true
+    // Metamask is not installed
+    this.isViewOnly = true
     this.libs = await configureReadOnlyLibs()
   } else {
+    // Metamask is installed
+    window.web3 = new Web3(window.ethereum)
     try {
       if (window.ethereum) {
-        const isUnlocked = await window.ethereum._metamask.isUnlocked()
-        if (!isUnlocked) {
-          // If the user changes metamask accounts, reload and init
-          window.ethereum.on('accountsChanged', () => {
-            window.location.reload()
-          })
-        }
+        // Reload anytime the accounts change
+        window.ethereum.on('accountsChanged', () => {
+          window.location.reload()
+        })
+        // Reload anytime the network changes
+        window.ethereum.on('chainChanged', () => {
+          window.location.reload()
+        })
       }
 
-      let metamaskWeb3Network = await getMetaMaskNetwork()
+      let metamaskWeb3Network = window.ethereum.networkVersion
       if (metamaskWeb3Network !== ethNetworkId) {
-        this.isAccountMisconfgured = true
+        this.isMisconfigured = true
         this.libs = await configureReadOnlyLibs()
       } else {
         this.libs = await configureLibsWithAccount()
         this.hasValidAccount = true
+
+        // Failed to pull necessary info from metamask, configure read only
+        if (!this.libs) {
+          this.libs = await configureReadOnlyLibs()
+          this.isAccountMisconfigured = true
+        }
       }
     } catch (err) {
+      console.error(err)
       this.libs = await configureReadOnlyLibs()
+      this.isMisconfigured = true
     }
   }
 
   window.audiusLibs = this.libs
   this.isSetup = true
-}
-
-const getMetaMaskNetwork = async () => {
-  // Below is an async version of the web3 version check since metamask 0.20.7 getNetwork doesn't work async
-  return new Promise(async (resolve, reject) => {
-    window.web3.version.getNetwork((error: any, result: any) => {
-      if (error) reject(error)
-      resolve(result)
-    })
-  })
 }
 
 const configureReadOnlyLibs = async () => {
@@ -101,6 +103,11 @@ const configureLibsWithAccount = async () => {
     })
   })
   let metamaskAccount = metamaskAccounts[0]
+
+  // Not connected or no accounts, return
+  if (!metamaskAccount) {
+    return null
+  }
   let audiusLibsConfig = {
     ethWeb3Config: audius.configEthWeb3(
       ethTokenAddress,

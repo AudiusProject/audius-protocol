@@ -48,7 +48,8 @@ export class AudiusClient {
 
   isSetup = false // If the setup is complete
   hasValidAccount = false // If metamask is set up correctly
-  isAccountMisconfgured = false // If metamask is present and misconfigured
+  isAccountMisconfigured = false // If metamask is present and account is not connected
+  isMisconfigured = false // If metamask is present and misconfigured (wrong network)
   isViewOnly = false // If metamask is not present
 
   // Class helpers
