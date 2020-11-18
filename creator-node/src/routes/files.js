@@ -27,13 +27,9 @@ const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, find
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+const DiskManager = require('../diskManager')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
-
-// regex to validate storagePath format passed in for /file_lookup route
-// this will either be of the format /file_storage/<cid> for a file or /file_storage/<cid1>/<cid2> for an dir image
-// there are two named match groups, outer and inner. outer is for file or dirname for dir image. inner is only image cid in dir
-const FILE_SYSTEM_REGEX = /\/file_storage\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
  * Helper method to stream file from file system on creator node
@@ -326,7 +322,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '150x150.jpg': 150,
             '480x480.jpg': 480,
@@ -339,7 +334,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '640x.jpg': 640,
             '2000x.jpg': 2000
@@ -510,10 +504,10 @@ module.exports = function (app) {
     const filePathNormalized = path.normalize(filePath)
 
     // check that the regex works and verify it's not blacklisted
-    const match = FILE_SYSTEM_REGEX.exec(filePathNormalized)
-    if (!match) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
+    const matchObj = DiskManager.extractCIDsFromFSPath(filePathNormalized)
+    if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
-    const { outer, inner } = match.groups
+    const { outer, inner } = matchObj
     if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
       return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
     }
