@@ -1,7 +1,8 @@
+from enum import unique
 import logging
 import time
 from sqlalchemy import func, desc, or_
-from src.models import RouteMetrics
+from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview, RouteMetricsCenturyMatview
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,40 @@ def get_route_metrics(args):
 
 
 def _get_route_metrics(session, args):
+
+    def make_metrics_tuple(metric):
+        return {
+            'timestamp': int(time.mktime(metric.time.timetuple())),
+            'count': metric.count,
+            'unique_count': metric.unique_count,
+        }
+
+    is_simple_args = args.get('path') == "" and args.get('query_string') == None and args.get('start_time') and args.get('exact') == False and args.get('version') == None
+    bucket_size = args.get('bucket_size')
+    if is_simple_args and bucket_size in ["day", "month", "century"]:
+        query = None
+        if bucket_size == "day":
+            logger.warning("SEARCHING USING DAY MATVIEW")
+            # TODO: is > correct or is it > =?
+
+            query = (session.query(RouteMetricsDayMatview)
+                .filter(RouteMetricsDayMatview.time > args.get('start_time')))
+
+        elif bucket_size == "month":
+            logger.warning("SEARCHING USING MONTH MATVIEW")
+            query = (session.query(RouteMetricsMonthMatview)
+                .filter(RouteMetricsMonthMatview.time > args.get('start_time')))
+        else:
+            logger.warning("SEARCH USING CENTURY MATVIEW")
+            query = (session.query(RouteMetricsCenturyMatview))
+
+        query = (query
+            .order_by(desc('time'))
+            .limit(args.get('limit'))
+            .all())
+        metrics = list(map(make_metrics_tuple, query))
+        return metrics
+
     metrics_query = (
         session.query(
             func.date_trunc(args.get('bucket_size'), RouteMetrics.timestamp).label('timestamp'),

@@ -493,3 +493,42 @@ ip={self.ip},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
+
+class RouteMetricsDayMatview(Base):
+    __tablename__ = "route_metrics_day_bucket"
+
+    time = Column(DateTime, nullable=False, primary_key=True)
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+
+    def __repr__(self):
+       return f"<RouteMetricsDayMatview(\
+unique_count={self.unique_count},\
+count={self.count},\
+time={self.time}>"
+
+class RouteMetricsMonthMatview(Base):
+    __tablename__ = "route_metrics_month_bucket"
+
+    time = Column(DateTime, nullable=False, primary_key=True)
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+
+    def __repr__(self):
+       return f"<RouteMetricsMonthMatview(\
+unique_count={self.unique_count},\
+count={self.count},\
+time={self.time}>"
+
+class RouteMetricsCenturyMatview(Base):
+    __tablename__ = "route_metrics_century_bucket"
+
+    time = Column(DateTime, nullable=False, primary_key=True)
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+
+    def __repr__(self):
+       return f"<RouteMetricsCenturyMatview(\
+unique_count={self.unique_count},\
+count={self.count},\
+time={self.time}>"
