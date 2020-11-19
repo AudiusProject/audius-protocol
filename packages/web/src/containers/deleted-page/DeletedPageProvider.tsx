@@ -23,6 +23,7 @@ type OwnProps = {
   canonicalUrl: string
   user: User
   playable: Playable
+  deletedByArtist: boolean
 
   children:
     | React.ComponentType<DesktopDeletedPageProps>
@@ -39,6 +40,7 @@ const DeletedPageProvider = ({
   description,
   canonicalUrl,
   user,
+  deletedByArtist = true,
   playable,
   children: Children,
   currentQueueItem,
@@ -88,7 +90,8 @@ const DeletedPageProvider = ({
     playable,
     user,
     goToArtistPage,
-    getLineupProps
+    getLineupProps,
+    deletedByArtist
   }
 
   return <Children {...childProps} />

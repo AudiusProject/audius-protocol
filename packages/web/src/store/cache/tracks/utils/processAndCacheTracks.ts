@@ -1,10 +1,11 @@
-import { put } from 'redux-saga/effects'
+import { put, call } from 'redux-saga/effects'
 import * as cacheActions from 'store/cache/actions'
 import { reformat } from './reformat'
 import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
 import { addUsersFromTracks } from './helpers'
 import Track, { TrackMetadata } from 'models/Track'
+import { setTracksIsBlocked } from './blocklist'
 
 /**
  * Processes tracks, adding users and calling `reformat`, before
@@ -17,8 +18,10 @@ export function* processAndCacheTracks<T extends TrackMetadata>(
   // Add users
   yield addUsersFromTracks(tracks)
 
+  const checkedTracks: T[] = yield call(setTracksIsBlocked, tracks)
+
   // Remove users, add images
-  const reformattedTracks = tracks.map(reformat)
+  const reformattedTracks = checkedTracks.map(reformat)
 
   // insert tracks into cache
   yield put(
