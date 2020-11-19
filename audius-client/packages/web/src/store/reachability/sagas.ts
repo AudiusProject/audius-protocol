@@ -15,8 +15,7 @@ const REACHABILITY_SHORT_TIMEOUT = 5 * 1000 // 5s
 const REACHABILITY_REQUEST_TIMEOUT = 15 * 1000 // 15s
 
 // Check that a response from REACHABILITY_URL is valid
-const isResponseValid = (response: Response) =>
-  response && response.ok && response.status === 204
+const isResponseValid = (response: Response) => response && response.ok
 
 function* ping() {
   // If there's no reachability url available, consider ourselves reachable

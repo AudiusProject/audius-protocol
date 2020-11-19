@@ -18,7 +18,8 @@ import Playable from 'models/Playable'
 import { NestedNonNullable } from 'utils/typeUtils'
 
 const messages = {
-  trackDeleted: 'Track [Deleted By Artist]',
+  trackDeleted: 'Track [Deleted]',
+  trackDeletedByArtist: 'Track [Deleted By Artist]',
   playlistDeleted: 'Playlist [Deleted by Artist]',
   albumDeleted: 'Album [Deleted By Artist]',
   checkOut: (name: string) => `Check out more by ${name}`,
@@ -59,6 +60,7 @@ export type DeletedPageProps = {
   title: string
   description: string
   canonicalUrl: string
+  deletedByArtist: boolean
 
   playable: Playable
   user: User | null
@@ -79,6 +81,7 @@ const DeletedPage = g(
     canonicalUrl,
     playable,
     user,
+    deletedByArtist = true,
     getLineupProps,
     goToArtistPage
   }) => {
@@ -91,6 +94,8 @@ const DeletedPage = g(
       ? isAlbum
         ? messages.albumDeleted
         : messages.playlistDeleted
+      : deletedByArtist
+      ? messages.trackDeletedByArtist
       : messages.trackDeleted
 
     const renderTile = () => {

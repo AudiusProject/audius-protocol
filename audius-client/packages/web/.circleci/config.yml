@@ -372,6 +372,7 @@ jobs:
           command: |
             mv build-production build
             cp ./resources/apple-app-site-association build
+            cp ./robots.txt build
             echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env production
             npx wrangler publish --env production
 

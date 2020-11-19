@@ -132,10 +132,7 @@ export function getFeatureEnabled(flag: FeatureFlags) {
   }
 }
 
-// Internal
-
-const init = async () => {
-  console.time('remote-config')
+export const waitForRemoteConfig = async () => {
   // Wait for optimizely to load if necessary (as it can be an async or defer tag)
   // @ts-ignore: injected in index.html
   if (!window.optimizelyDatafile) {
@@ -146,6 +143,13 @@ const init = async () => {
     })
     if (cb) window.removeEventListener('OPTIMIZELY_LOADED', cb)
   }
+}
+
+// Internal
+
+const init = async () => {
+  console.time('remote-config')
+  await waitForRemoteConfig()
 
   provider = optimizely.createInstance({
     // @ts-ignore: injected in index.html

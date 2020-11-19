@@ -22,6 +22,7 @@ import {
 import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
 import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import { Timer } from 'utils/performance'
+import { waitForRemoteConfig } from './remote-config/Provider'
 
 export const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 export const USER_NODE = process.env.REACT_APP_USER_NODE
@@ -55,6 +56,18 @@ export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
   Signature: 'Encoded-Data-Signature'
 })
+
+export const waitForWeb3 = async () => {
+  if (!window.web3Loaded) {
+    await new Promise(resolve => {
+      const onLoad = () => {
+        window.removeEventListener('WEB3_LOADED', onLoad)
+        resolve()
+      }
+      window.addEventListener('WEB3_LOADED', onLoad)
+    })
+  }
+}
 
 let AudiusLibs = null
 let Utils = null
@@ -303,25 +316,9 @@ class AudiusBackend {
 
   static async setup() {
     // Wait for web3 to load if necessary
-    if (!window.web3Loaded) {
-      await new Promise(resolve => {
-        const onLoad = () => {
-          window.removeEventListener('WEB3_LOADED', onLoad)
-          resolve()
-        }
-        window.addEventListener('WEB3_LOADED', onLoad)
-      })
-    }
+    await waitForWeb3()
     // Wait for optimizely to load if necessary
-    if (!window.optimizelyDatafile) {
-      await new Promise(resolve => {
-        const onLoad = () => {
-          window.removeEventListener('OPTIMIZELY_LOADED', onLoad)
-          resolve()
-        }
-        window.addEventListener('OPTIMIZELY_LOADED', onLoad)
-      })
-    }
+    await waitForRemoteConfig()
 
     const { libs, libsUtils, libsSanityChecks } = await import(
       './audius-backend/AudiusLibsLazyLoader'
