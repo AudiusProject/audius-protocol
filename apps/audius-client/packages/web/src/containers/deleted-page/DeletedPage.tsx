@@ -12,6 +12,7 @@ type DeletedPageContentProps = {
   canonicalUrl: string
   playable: Playable
   user: User
+  deletedByArtist?: boolean
 }
 
 const DeletedPage = ({
@@ -19,7 +20,8 @@ const DeletedPage = ({
   description,
   canonicalUrl,
   playable,
-  user
+  user,
+  deletedByArtist = true
 }: DeletedPageContentProps) => {
   const isMobile = useIsMobile()
 
@@ -34,6 +36,7 @@ const DeletedPage = ({
       canonicalUrl={canonicalUrl}
       playable={playable}
       user={user}
+      deletedByArtist={deletedByArtist}
     >
       {content}
     </DeletedPageProvider>

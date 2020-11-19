@@ -116,6 +116,8 @@ export type ComputedTrackProperties = {
   _remix_parents?: Array<{ track_id: ID }>
   // Present iff the track has been cosigned
   _co_sign?: Nullable<Remix>
+
+  _blocked?: boolean
 }
 
 export type Track = TrackMetadata & ComputedTrackProperties

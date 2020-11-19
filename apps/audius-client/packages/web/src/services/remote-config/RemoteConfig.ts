@@ -52,7 +52,12 @@ export enum StringKeys {
   /**
    * Custom eth provider urls to use for talking to main-net contracts
    */
-  ETH_PROVIDER_URLS = 'ETH_PROVIDER_URLS'
+  ETH_PROVIDER_URLS = 'ETH_PROVIDER_URLS',
+
+  /**
+   * Blocks content
+   */
+  CONTENT_BLOCK_LIST = 'CONTENT_BLOCK_LIST'
 }
 
 export type AllRemoteConfigKeys =

@@ -424,6 +424,7 @@ class TrackPageProvider extends Component<
           canonicalUrl={canonicalUrl}
           playable={{ metadata: track, type: PlayableType.TRACK }}
           user={user}
+          deletedByArtist={!track._blocked}
         />
       )
     }

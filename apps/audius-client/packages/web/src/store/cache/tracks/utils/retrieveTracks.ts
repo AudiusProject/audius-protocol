@@ -15,6 +15,7 @@ import {
 import { fetchAndProcessStems } from './fetchAndProcessStems'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getUserId } from 'store/account/selectors'
+import { setTracksIsBlocked } from './blocklist'
 
 type UnlistedTrackRequest = { id: ID; url_title: string; handle: string }
 type RetrieveTracksArgs = {
@@ -150,7 +151,8 @@ export function* retrieveTracks({
     deleteExistingEntry: false,
     onBeforeAddToCache: function* <T extends TrackMetadata>(tracks: T[]) {
       yield addUsersFromTracks(tracks)
-      return tracks.map(track => reformat(track))
+      const checkedTracks = yield call(setTracksIsBlocked, tracks)
+      return checkedTracks.map(reformat)
     }
   })
 
