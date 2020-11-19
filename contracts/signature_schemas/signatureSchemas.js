@@ -215,7 +215,7 @@ schemas.addIPLDBlacklist = [
 ]
 
 // User replica set manager schemas
-schemas.addOrUpdateCreatorNode = [
+schemas.proposeAddOrUpdateCreatorNode = [
   { name: 'newCnodeId', type: 'uint' },
   { name: 'newCnodeDelegateOwnerWallet', type: 'address' },
   { name: 'proposerSpId', type: 'uint' },
@@ -795,7 +795,7 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
 }
 
 /* User Replica Set Manager Generators */
-generators.getAddOrUpdateCreatorNodeRequestData = function (
+generators.getProposeAddOrUpdateCreatorNodeRequestData = function (
   chainId,
   contractAddress,
   newCnodeId,
@@ -813,8 +813,8 @@ generators.getAddOrUpdateCreatorNodeRequestData = function (
     domains.getUserReplicaSetManagerDomain,
     chainId,
     contractAddress,
-    'AddOrUpdateCreatorNode',
-    schemas.addOrUpdateCreatorNode,
+    'ProposeAddOrUpdateCreatorNode',
+    schemas.proposeAddOrUpdateCreatorNode,
     message
   )
 }

@@ -47,13 +47,29 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         uint _proposerSpId
     );
 
+    event TestEvent(address _testAddress);
+
     /* EIP-712 */
-    bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-        "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
+    bytes32 constant PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
+        "ProposeAddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
     );
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
     );
+    bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
+        "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,bytes32 proposerSpIdsHash,bytes32 proposerNoncesHash,bytes proposer1Sig,bytes proposer2Sig,uint submitterSpId,bytes32 nonce)"
+    );
+    /*
+            uint _newCnodeId,
+        address _newDelegateWallet,
+        uint[2] calldata _proposerSpIds,
+        bytes32[2] calldata _proposerNonces,
+        bytes calldata _proposer1Sig,
+        bytes calldata _proposer2Sig,
+        uint _submitterProposerId,
+        bytes32 _requestNonce,
+        bytes calldata _submitterSig
+        */
 
     constructor(
         address _registryAddress,
@@ -78,15 +94,20 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Chain of trust based authentication scheme
     // Nodes are required to have an identity in Audius L2 and this function enables
     //     known entities to register other known entities on L2 contracts.
-    function addOrUpdateCreatorNode(
+    // TODO: Multiple parties must sign and submit as part of this request
+    //         - Enforce distinct signers for each entry
+    //         - To support 3 distinct signatures we need a separate public function that is used to generate sub-signatures for each
+    // TODO: Evaluate whether this function is necessary at all?
+    //      All we need is the TYPEHASH to match in order to recover any given signature. come to this after dev work
+    function proposeAddOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
         uint _proposerSpId,
         bytes32 _requestNonce,
         bytes calldata _subjectSig
-    ) external
+    ) external returns (address)
     {
-        address signer = _recoverAddOrUpdateCreatorNodeRequestSignerAddress(
+        address signer = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
             _proposerSpId,
@@ -94,17 +115,35 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             _subjectSig
         );
 
-        require(
-            spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer,
-            "Mismatch proposer wallet for existing spID"
-        );
+        emit TestEvent(signer);
 
-        // TODO: Should bootstrap delegateWallets be allowed to update at all?
+        return signer;
 
-        // TODO: Should this be limited to first time registration? like should updates be allowed?
-        spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+        // require(
+        //     spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer,
+        //     "Mismatch proposer wallet for existing spID"
+        // );
 
-        emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpId);
+        // spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+
+        // emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpId);
+    }
+
+    // This is the TRUE state change
+    function addOrUpdateCnodeOuter(
+        uint _newCnodeId,
+        address _newDelegateWallet,
+        uint[2] calldata _proposerSpIds,
+        bytes32[2] calldata _proposerNonces,
+        bytes calldata _proposer1Sig,
+        bytes calldata _proposer2Sig,
+        uint _submitterProposerId,
+        bytes32 _requestNonce,
+        bytes calldata _submitterSig
+    ) external {
+        // For every entry in spIds/Nonces/Sigs
+        //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
+        //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
     }
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
@@ -225,7 +264,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     }
 
     /* EIP712 - Signer recovery */
-    function _recoverAddOrUpdateCreatorNodeRequestSignerAddress(
+    function _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
         uint _cnodeId,
         address _cnodeWallet,
         uint _proposerId,
@@ -236,7 +275,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         bytes32 signatureDigest = generateSchemaHash(
             keccak256(
                 abi.encode(
-                    ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
+                    PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
                     _cnodeId,
                     _cnodeWallet,
                     _proposerId,
@@ -314,6 +353,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         for (uint i = 0; i < _bootstrapSPIDs.length; i++) {
             spIdToCreatorNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapDelegateOwnerWallets[i];
         }
+        // TODO: Evaluate whether both of these are required...?
         bootstrapSPIds = _bootstrapSPIDs;
         bootstrapNodeDelegateWallets = _bootstrapDelegateOwnerWallets;
     }

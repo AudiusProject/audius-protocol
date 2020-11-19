@@ -6,7 +6,12 @@ import {
     UserReplicaSetManager
 } from './_lib/artifacts.js'
 import * as _constants from './utils/constants'
-const { expectRevert } = require('@openzeppelin/test-helpers');
+const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+
+import { eth_signTypedData } from './utils/util'
+const signatureSchemas = require('../signature_schemas/signatureSchemas')
+import { getNetworkIdForContractInstance } from './utils/getters'
+import { parseTxWithAssertsAndResp } from './utils/parser'
 
 contract('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
@@ -164,6 +169,101 @@ contract('UserReplicaSetManager', async (accounts) => {
             ),
             "Mismatched bootstrap array lengths"
         )
+    })
+    /*
+
+  const nonce = signatureSchemas.getNonce()
+  const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
+  let signatureData = signatureSchemas.generators.getAddOrUpdateCreatorNodeRequestData(
+    chainId,
+    userReplicaSetManager.address,
+    newCnodeId,
+    newCnodeDelegateOwnerWallet,
+    proposerId,
+    nonce)
+  // Sign with proposerWallet
+  let sig = await eth_signTypedData(proposerWallet, signatureData)
+  let tx = await userReplicaSetManager.addOrUpdateCreatorNode(newCnodeId, newCnodeDelegateOwnerWallet, proposerId, nonce, sig)
+  parseTxWithAssertsAndResp(
+    tx,
+    'AddOrUpdateCreatorNode',
+    { _newCnodeId: newCnodeId, _newCnodeDelegateOwnerWallet: newCnodeDelegateOwnerWallet, _proposerSpId: proposerId }
+  )
+
+    */
+
+    it.only('Sandbox 2', async () => {
+        let newCNodeSPId = 10
+        let newCnodeDelegateWallet = accounts[20]
+        console.log(`newCNodeSPId: ${newCNodeSPId}`)
+        console.log(`newCnodeDelegateWallet: ${newCnodeDelegateWallet}`)
+        // Bootstrapped nodes = cn1/cn3/cn3
+        // Submitter = cn1
+        // Proposers = cn2/cn3
+        console.log('---')
+        console.log(`cn2: ${cnode2Account}`)
+        const cn2Nonce = signatureSchemas.getNonce()
+        console.log(`cn2Nonce: ${cn2Nonce}`)
+        const userReplicaSetManagerAddress = userReplicaSetManager.address
+        const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
+        console.log(`UserReplicaSetManager Address: ${userReplicaSetManagerAddress}`)
+        console.log(`chainIdForContract: ${chainIdForContract}`)
+        const cn2SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+            chainIdForContract,
+            userReplicaSetManagerAddress,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode2SpID,
+            cn2Nonce
+        )
+        console.log(`cn2: Generated signature data: ${cn2SignatureData}`)
+        const cn2Sig = await eth_signTypedData(cnode2Account, cn2SignatureData)
+        console.log(`cn2: Generated sig: ${cn2Sig}`)
+        // Submit to on chain verification and confirm equivalency
+        let proposeCn2Tx = await userReplicaSetManager.proposeAddOrUpdateCreatorNode(
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode2SpID,
+            cn2Nonce,
+            cn2Sig
+        )
+        console.log(`cn2: Recovered from chain: ${JSON.stringify(proposeCn2Tx)}`)
+        parseTxWithAssertsAndResp(
+            proposeCn2Tx,
+            'TestEvent',
+            { _testAddress: cnode2Account}
+        )
+        console.log('---')
+        const cn3Nonce = signatureSchemas.getNonce()
+        console.log(`cn3Nonce: ${cn3Nonce}`)
+        const cn3SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+            chainIdForContract,
+            userReplicaSetManagerAddress,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode3SpID,
+            cn3Nonce
+        )
+        console.log(`cn3: Generated signature data: ${cn3SignatureData}`)
+        const cn3Sig = await eth_signTypedData(cnode3Account, cn3SignatureData)
+        console.log(`cn3: Generated sig: ${cn3Sig}`)
+        let proposeCn3Tx = await userReplicaSetManager.proposeAddOrUpdateCreatorNode(
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode3SpID,
+            cn3Nonce,
+            cn3Sig
+        )
+        parseTxWithAssertsAndResp(
+            proposeCn3Tx,
+            'TestEvent',
+            { _testAddress: cnode3Account}
+        )
+        // Generate arguments for proposal
+        let proposerSpIds = [cnode2SpID, cnode3SpID]
+        let proposerNonces = [cn2Nonce, cn3Nonce]
+        let proposer1Sig = cn2Sig
+        let proposer2Sig = cn3Sig
     })
 
     it('Register additional nodes through bootstrap nodes', async () => {
