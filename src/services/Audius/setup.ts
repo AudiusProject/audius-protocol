@@ -28,6 +28,9 @@ const ethProviderUrl =
 const ethOwnerWallet = process.env.REACT_APP_ETH_OWNER_WALLET
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
 
+// Used to prevent two callbacks from firing triggering reload
+let willReload = false
+
 export async function setup(this: AudiusClient): Promise<void> {
   if (!window.web3 || !window.ethereum) {
     // Metamask is not installed
@@ -40,15 +43,27 @@ export async function setup(this: AudiusClient): Promise<void> {
     // Metamask is installed
     window.web3 = new Web3(window.ethereum)
     try {
+      // Add reload listeners, but make sure the page is fully loaded first
+      // 2s is a guess, but the issue is really hard to repro
       if (window.ethereum) {
-        // Reload anytime the accounts change
-        window.ethereum.on('accountsChanged', () => {
-          window.location.reload()
-        })
-        // Reload anytime the network changes
-        window.ethereum.on('chainChanged', () => {
-          window.location.reload()
-        })
+        setTimeout(() => {
+          // Reload anytime the accounts change
+          window.ethereum.on('accountsChanged', () => {
+            if (!willReload) {
+              console.log('Account change')
+              willReload = true
+              window.location.reload()
+            }
+          })
+          // Reload anytime the network changes
+          window.ethereum.on('chainChanged', () => {
+            console.log('Chain change')
+            if (!willReload) {
+              willReload = true
+              window.location.reload()
+            }
+          })
+        }, 2000)
       }
 
       let metamaskWeb3Network = window.ethereum.networkVersion
