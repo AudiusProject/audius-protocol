@@ -253,11 +253,12 @@ contract('UserReplicaSetManager', async (accounts) => {
         console.log(`cn1: Generated sig: ${cn1Sig}`)
 
         // Generate arguments for proposal
-        const proposerSpIds = [cnode2SpID, cnode3SpID]
-        const proposerNonces = [cn2Nonce, cn3Nonce]
+        const proposerSpIds = [cnode1SpID, cnode2SpID, cnode3SpID]
+        const proposerNonces = [cn1Nonce, cn2Nonce, cn3Nonce]
         const proposer1Sig = cn2Sig
         const proposer2Sig = cn3Sig
-        const submitterSpId = cnode1SpID
+
+        const submitterSig = cn1Sig
 
         // Finally, submit tx with all 3 signatures
         let addContentNodeTx = await userReplicaSetManager.addOrUpdateContentNode(
@@ -265,12 +266,11 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             proposerSpIds,
             proposerNonces,
+            submitterSig,
             proposer1Sig,
-            proposer2Sig,
-            submitterSpId,
-            cn1Nonce,
-            cn1Sig
+            proposer2Sig
         )
+
         console.log('Submitted with args')
         console.dir(addContentNodeTx, { depth: 5 })
         parseTxWithAssertsAndResp(
@@ -279,7 +279,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             { _testAddress: cnode1Account}
         )
         console.log(`Submitter: ${cnode1Account}, Proposer1: ${cnode2Account}, Proposer3: ${cnode3Account}`)
-
+        console.log(`New cnode ID: ${newCNodeSPId}, new cn wallet: ${newCnodeDelegateWallet}`)
         // parseTxWithAssertsAndResp(
         //     addContentNodeTx,
         //     'TestEvent',

@@ -44,7 +44,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     event AddOrUpdateCreatorNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
-        uint _proposerSpId
+        uint[3] proposerSpIds
     );
 
     event TestEvent(address _testAddress);
@@ -56,20 +56,6 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
     );
-    // bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-    //     "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,bytes32 proposerSpIdsHash,bytes32 proposerNoncesHash,bytes32 proposer1SigHash,bytes32 proposer2SigHash,uint submitterSpId,bytes32 nonce)"
-    // );
-    /*
-            uint _newCnodeId,
-        address _newDelegateWallet,
-        uint[2] calldata _proposerSpIds,
-        bytes32[2] calldata _proposerNonces,
-        bytes calldata _proposer1Sig,
-        bytes calldata _proposer2Sig,
-        uint _submitterProposerId,
-        bytes32 _requestNonce,
-        bytes calldata _submitterSig
-        */
 
     constructor(
         address _registryAddress,
@@ -94,52 +80,20 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Chain of trust based authentication scheme
     // Nodes are required to have an identity in Audius L2 and this function enables
     //     known entities to register other known entities on L2 contracts.
-    // TODO: Multiple parties must sign and submit as part of this request
+    //  Multiple parties must sign and submit as part of this request
     //         - Enforce distinct signers for each entry
-    //         - To support 3 distinct signatures we need a separate public function that is used to generate sub-signatures for each
     // TODO: Evaluate whether this function is necessary at all?
     //      All we need is the TYPEHASH to match in order to recover any given signature. come to this after dev work
-    // function proposeAddOrUpdateCreatorNode(
-    //     uint _newCnodeId,
-    //     address _newCnodeDelegateOwnerWallet,
-    //     uint _proposerSpId,
-    //     bytes32 _requestNonce,
-    //     bytes calldata _subjectSig
-    // ) external returns (address)
-    // {
-    //     address signer = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
-    //         _newCnodeId,
-    //         _newCnodeDelegateOwnerWallet,
-    //         _proposerSpId,
-    //         _requestNonce,
-    //         _subjectSig
-    //     );
-
-    //     emit TestEvent(signer);
-
-    //     return signer;
-
-    //     // require(
-    //     //     spIdToCreatorNodeDelegateWallet[_proposerSpId] == signer,
-    //     //     "Mismatch proposer wallet for existing spID"
-    //     // );
-
-    //     // spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
-
-    //     // emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpId);
-    // }
 
     // This is the TRUE state change
     function addOrUpdateContentNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
-        uint[2] calldata _proposerSpIds,
-        bytes32[2] calldata _proposerNonces,
+        uint[3] calldata _proposerSpIds,
+        bytes32[3] calldata _proposerNonces,
+        bytes calldata _submitterSig,
         bytes calldata _proposer1Sig,
-        bytes calldata _proposer2Sig,
-        uint _submitterSpId,
-        bytes32 _requestNonce,
-        bytes calldata _submitterSig
+        bytes calldata _proposer2Sig
     ) external {
         // For every entry in spIds/Nonces/Sigs
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
@@ -147,42 +101,36 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         address submitterAddress = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
-            _submitterSpId,
-            _requestNonce,
-            _submitterSig
-        );
-        address proposer1 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
-            _newCnodeId,
-            _newCnodeDelegateOwnerWallet,
             _proposerSpIds[0],
             _proposerNonces[0],
-            _proposer1Sig
+            _submitterSig
         );
-        address proposer2 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+        emit TestEvent(submitterAddress);
+        address proposer1 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
             _proposerSpIds[1],
             _proposerNonces[1],
+            _proposer1Sig
+        );
+        emit TestEvent(proposer1);
+        address proposer2 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+            _newCnodeId,
+            _newCnodeDelegateOwnerWallet,
+            _proposerSpIds[2],
+            _proposerNonces[2],
             _proposer2Sig
         );
+        emit TestEvent(proposer2);
         _validateUpdateOperation(
             submitterAddress,
             proposer1,
             proposer2,
-            _submitterSpId,
             _proposerSpIds
         );
+        spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+        emit AddOrUpdateCreatorNode(_newCnodeId, _newCnodeDelegateOwnerWallet, _proposerSpIds);
     }
-
-    /*
-
-            address _submitterAddress,
-        address _proposer1Address,
-        address _proposer2Address,
-        uint _submitterSpId,
-        uint[2] memory _proposerSpIds
-
-        */
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely
     //       Is there any actual downside to orphaning old spID <-> wallets?
@@ -411,8 +359,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         address _submitterAddress,
         address _proposer1Address,
         address _proposer2Address,
-        uint _submitterSpId,
-        uint[2] memory _proposerSpIds
+        uint[3] memory _proposerSpIds
     ) internal view {
         // Require distinct proposer addresses
         require(
@@ -423,15 +370,15 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         );
         // Confirm addresses and inputted spID values match expected values on chain
         require(
-            spIdToCreatorNodeDelegateWallet[_submitterSpId] == _submitterAddress,
+            spIdToCreatorNodeDelegateWallet[_proposerSpIds[0]] == _submitterAddress,
             "Invalid wallet provided for submitter"
         );
         require(
-            spIdToCreatorNodeDelegateWallet[_proposerSpIds[0]] == _proposer1Address,
+            spIdToCreatorNodeDelegateWallet[_proposerSpIds[1]] == _proposer1Address,
             "Invalid wallet provided for 1st proposer"
         );
         require(
-            spIdToCreatorNodeDelegateWallet[_proposerSpIds[1]] == _proposer2Address,
+            spIdToCreatorNodeDelegateWallet[_proposerSpIds[2]] == _proposer2Address,
             "Invalid wallet provided for 2nd proposer"
         );
     }
