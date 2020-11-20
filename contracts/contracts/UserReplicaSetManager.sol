@@ -153,6 +153,22 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         );
 
         emit TestEvent(submitterAddress);
+        address proposer1 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+            _newCnodeId,
+            _newCnodeDelegateOwnerWallet,
+            _proposerSpIds[0],
+            _proposerNonces[0],
+            _proposer1Sig
+        );
+        emit TestEvent(proposer1);
+        address proposer2 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+            _newCnodeId,
+            _newCnodeDelegateOwnerWallet,
+            _proposerSpIds[1],
+            _proposerNonces[1],
+            _proposer2Sig
+        );
+        emit TestEvent(proposer2);
     }
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely

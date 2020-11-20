@@ -221,20 +221,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         console.log(`cn2: Generated signature data: ${cn2SignatureData}`)
         const cn2Sig = await eth_signTypedData(cnode2Account, cn2SignatureData)
         console.log(`cn2: Generated sig: ${cn2Sig}`)
-        // Submit to on chain verification and confirm equivalency
-        let proposeCn2Tx = await userReplicaSetManager.proposeAddOrUpdateCreatorNode(
-            newCNodeSPId,
-            newCnodeDelegateWallet,
-            cnode2SpID,
-            cn2Nonce,
-            cn2Sig
-        )
-        console.log(`cn2: Recovered from chain: ${JSON.stringify(proposeCn2Tx)}`)
-        parseTxWithAssertsAndResp(
-            proposeCn2Tx,
-            'TestEvent',
-            { _testAddress: cnode2Account}
-        )
 
         // Generate proposer 2 relevant information (cn3)
         console.log('---')
@@ -251,18 +237,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         console.log(`cn3: Generated signature data: ${cn3SignatureData}`)
         const cn3Sig = await eth_signTypedData(cnode3Account, cn3SignatureData)
         console.log(`cn3: Generated sig: ${cn3Sig}`)
-        let proposeCn3Tx = await userReplicaSetManager.proposeAddOrUpdateCreatorNode(
-            newCNodeSPId,
-            newCnodeDelegateWallet,
-            cnode3SpID,
-            cn3Nonce,
-            cn3Sig
-        )
-        parseTxWithAssertsAndResp(
-            proposeCn3Tx,
-            'TestEvent',
-            { _testAddress: cnode3Account}
-        )
 
         // Generate tx submitter relevant information (cn1)
         const cn1Nonce = signatureSchemas.getNonce()
@@ -277,18 +251,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
         const cn1Sig = await eth_signTypedData(cnode1Account, cn1SignatureData)
         console.log(`cn1: Generated sig: ${cn1Sig}`)
-        // let proposeCn1Tx = await userReplicaSetManager.proposeAddOrUpdateCreatorNode(
-        //     newCNodeSPId,
-        //     newCnodeDelegateWallet,
-        //     cnode1SpID,
-        //     cn1Nonce,
-        //     cn1Sig
-        // )
-        // parseTxWithAssertsAndResp(
-        //     proposeCn1Tx,
-        //     'TestEvent',
-        //     { _testAddress: cnode2Account}
-        // )
 
         // Generate arguments for proposal
         const proposerSpIds = [cnode2SpID, cnode3SpID]
@@ -310,12 +272,20 @@ contract('UserReplicaSetManager', async (accounts) => {
             cn1Sig
         )
         console.log('Submitted with args')
+        console.dir(addContentNodeTx, { depth: 5 })
         parseTxWithAssertsAndResp(
             addContentNodeTx,
             'TestEvent',
             { _testAddress: cnode1Account}
         )
-    })
+        console.log(`Submitter: ${cnode1Account}, Proposer1: ${cnode2Account}, Proposer3: ${cnode3Account}`)
+
+        // parseTxWithAssertsAndResp(
+        //     addContentNodeTx,
+        //     'TestEvent',
+        //     { _testAddress: cnode2Account}
+        // )
+     })
 
     it('Register additional nodes through bootstrap nodes', async () => {
         let newCNodeSPId = 10
