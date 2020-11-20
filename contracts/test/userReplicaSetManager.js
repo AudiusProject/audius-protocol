@@ -13,7 +13,7 @@ const signatureSchemas = require('../signature_schemas/signatureSchemas')
 import { getNetworkIdForContractInstance } from './utils/getters'
 import { parseTxWithAssertsAndResp } from './utils/parser'
 
-contract('UserReplicaSetManager', async (accounts) => {
+contract.only('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const userId1 = 1
@@ -151,7 +151,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it.only('Validate constructor bootstrap arguments', async () => {
+    it('Validate constructor bootstrap arguments', async () => {
         // Confirm constructor arguments validated
         await validateBootstrapNodes()
 
@@ -171,7 +171,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
     })
 
-    it.only('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
+    it('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
         // Bootstrapped nodes = cn1/cn3/cn3
         // Proposers = cn1/cn2/cn3
         let newCNodeSPId = 10
@@ -238,7 +238,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         console.dir(addContentNodeTx, { depth: 5 })
     })
 
-    // TODO: Validate this scenario - any cnode can ADD another cnode if not present, but ONLY bootstrappers can evict
     it('Configure + update user replica set', async () => {
         let user1Primary = toBN(1)
         let user1Secondaries = toBNArray([2, 3])
