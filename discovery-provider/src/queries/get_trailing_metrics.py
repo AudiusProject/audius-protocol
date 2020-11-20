@@ -42,24 +42,18 @@ def _get_trailing_app_metrics(session, args):
     limit, time_range = args.get("limit"), args.get("time_range")
 
     if time_range == "week":
-        logger.warning("USING WEEK TRAILING APP METRICS")
         query = session.query(AppMetricsTrailingWeek)
     elif time_range == "month":
-        logger.warning("USING MONTH TRAILING APP METRICS")
         query = session.query(AppMetricsTrailingMonth)
     elif time_range == "all_time":
-        logger.warning("USING ALL_TIME TRAILING APP METRICS")
         query = session.query(AppMetricsAllTime)
     else:
         raise exceptions.ArgumentError("Invalid time_range")
 
     query = (query
-        .order_by(desc('count'))
-        .limit(limit)
-        .all())
+             .order_by(desc('count'))
+             .limit(limit)
+             .all())
 
-    metrics = list(map(lambda m: { "name": m.name , "count": m.count }, query))
+    metrics = list(map(lambda m: {"name": m.name, "count": m.count}, query))
     return metrics
-
-
-

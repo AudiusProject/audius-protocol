@@ -502,7 +502,7 @@ class RouteMetricsDayMatview(Base):
     count = Column(Integer, nullable=False)
 
     def __repr__(self):
-       return f"<RouteMetricsDayMatview(\
+        return f"<RouteMetricsDayMatview(\
 unique_count={self.unique_count},\
 count={self.count},\
 time={self.time}>"
@@ -515,7 +515,7 @@ class RouteMetricsMonthMatview(Base):
     count = Column(Integer, nullable=False)
 
     def __repr__(self):
-       return f"<RouteMetricsMonthMatview(\
+        return f"<RouteMetricsMonthMatview(\
 unique_count={self.unique_count},\
 count={self.count},\
 time={self.time}>"
@@ -528,7 +528,7 @@ class RouteMetricsTrailingMonth(Base):
     PrimaryKeyConstraint(unique_count, count)
 
     def __repr__(self):
-       return f"<RouteMetricsTrailingMonth(\
+        return f"<RouteMetricsTrailingMonth(\
 unique_count={self.unique_count},\
 count={self.count}>"
 
@@ -539,7 +539,7 @@ class AppMetricsTrailingWeek(Base):
     name = Column(String, nullable=False, primary_key=True)
 
     def __repr__(self):
-       return f"<AppMetricsTrailingWeek(\
+        return f"<AppMetricsTrailingWeek(\
 name={self.name},\
 count={self.count}>"
 
@@ -550,7 +550,7 @@ class AppMetricsTrailingMonth(Base):
     name = Column(String, nullable=False, primary_key=True)
 
     def __repr__(self):
-       return f"<AppMetricsTrailingMonth(\
+        return f"<AppMetricsTrailingMonth(\
 name={self.name},\
 count={self.count}>"
 
@@ -561,6 +561,6 @@ class AppMetricsAllTime(Base):
     name = Column(String, nullable=False, primary_key=True)
 
     def __repr__(self):
-       return f"<AppMetricsAllTime(\
+        return f"<AppMetricsAllTime(\
 name={self.name},\
 count={self.count}>"

@@ -103,7 +103,6 @@ class RouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         """Gets trailing month route metrics from matview"""
-        logger.warning("TRAILING MONTH ROUTE METRICS!")
         metrics = get_monthly_trailing_route_metrics()
         response = success_response(metrics)
         return response
@@ -147,6 +146,8 @@ class AppNameListMetrics(Resource):
 
 
 valid_trailing_time_periods = ["week", "month", "all_time"]
+trailing_app_name_parser = reqparse.RequestParser()
+trailing_app_name_parser.add_argument('limit', required=False, type=int)
 
 @ns.route("/app_name/trailing/<string:time_range>")
 class TrailingAppNameMetrics(Resource):
@@ -155,8 +156,9 @@ class TrailingAppNameMetrics(Resource):
     def get(self, time_range):
         if time_range not in valid_trailing_time_periods:
             abort_bad_request_param('time_range', ns)
+        parsed = trailing_app_name_parser.parse_args()
         args = {
-            "limit": 10, # TODO
+            "limit": parsed.get("limit", 10),
             "time_range": time_range
         }
         metrics = get_trailing_app_metrics(args)

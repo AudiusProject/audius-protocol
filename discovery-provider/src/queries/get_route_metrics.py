@@ -35,28 +35,30 @@ def _make_metrics_tuple(metric):
 
 def _get_route_metrics(session, args):
     # Protocol dashboard optimization:
-    # If we're in 'simple' mode (only ask for day/month bucket, no path or query string),
+    # If we're in 'simple' mode (only asking for day/month bucket, no path or query string),
     # query the corresponding matview instead of hitting the DB.
-    is_simple_args = args.get('path') == "" and args.get('query_string') == None and args.get('start_time') and args.get('exact') == False and args.get('version') == None
+    is_simple_args = (
+        args.get('path') == "" and
+        args.get('query_string') == None and
+        args.get('start_time') and
+        args.get('exact') == False and
+        args.get('version') == None
+    )
     bucket_size = args.get('bucket_size')
     if is_simple_args and bucket_size in ["day", "month"]:
         query = None
         if bucket_size == "day":
-            logger.warning("SEARCHING USING DAY MATVIEW")
-            # TODO: is > correct or is it > =?
-
             query = (session.query(RouteMetricsDayMatview)
-                .filter(RouteMetricsDayMatview.time > args.get('start_time')))
+                     .filter(RouteMetricsDayMatview.time > args.get('start_time')))
 
         else:
-            logger.warning("SEARCHING USING MONTH MATVIEW")
             query = (session.query(RouteMetricsMonthMatview)
-                .filter(RouteMetricsMonthMatview.time > args.get('start_time')))
+                     .filter(RouteMetricsMonthMatview.time > args.get('start_time')))
 
         query = (query
-            .order_by(desc('time'))
-            .limit(args.get('limit'))
-            .all())
+                 .order_by(desc('time'))
+                 .limit(args.get('limit'))
+                 .all())
         metrics = list(map(_make_metrics_tuple, query))
         return metrics
 
