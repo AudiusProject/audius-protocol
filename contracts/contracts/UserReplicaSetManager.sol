@@ -44,14 +44,15 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     event AddOrUpdateContentNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
-        uint[3] proposerSpIds
+        uint[3] proposerSpIds,
+        address _proposer1Address,
+        address _proposer2Address,
+        address _proposer3Address
     );
-
-    event TestEvent(address _testAddress);
 
     /* EIP-712 */
     bytes32 constant PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-        "ProposeAddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
+        "ProposeAddOrUpdateContentNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
     );
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
@@ -124,7 +125,10 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         emit AddOrUpdateContentNode(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
-            _proposerSpIds
+            _proposerSpIds,
+            proposer1Address,
+            proposer2Address,
+            proposer3Address
         );
     }
 

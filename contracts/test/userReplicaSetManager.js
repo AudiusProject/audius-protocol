@@ -233,14 +233,12 @@ contract('UserReplicaSetManager', async (accounts) => {
             proposer3Sig
         )
 
-        console.log(`Submitter: ${cnode1Account}, Proposer1: ${cnode2Account}, Proposer3: ${cnode3Account}`)
         let newDelegateWalletFromChain = await userReplicaSetManager.getContentNodeWallet(newCNodeSPId)
         assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect wallet assignment')
-        console.log(`VALIDATED New cnode ID: ${newCNodeSPId}, new cn wallet: ${newCnodeDelegateWallet}`)
+        console.dir(addContentNodeTx, { depth: 5 })
     })
 
     // TODO: Validate this scenario - any cnode can ADD another cnode if not present, but ONLY bootstrappers can evict
-
     it('Configure + update user replica set', async () => {
         let user1Primary = toBN(1)
         let user1Secondaries = toBNArray([2, 3])

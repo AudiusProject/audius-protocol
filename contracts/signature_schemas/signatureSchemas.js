@@ -813,7 +813,7 @@ generators.getProposeAddOrUpdateCreatorNodeRequestData = function (
     domains.getUserReplicaSetManagerDomain,
     chainId,
     contractAddress,
-    'ProposeAddOrUpdateCreatorNode',
+    'ProposeAddOrUpdateContentNode',
     schemas.proposeAddOrUpdateCreatorNode,
     message
   )
