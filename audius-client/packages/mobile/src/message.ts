@@ -20,6 +20,7 @@ import { getInitialDarkModePreference, getPrefersDarkModeChange } from './theme'
 import { track, screen, identify } from './utils/analytics'
 import { Identify, Track, Screen, AnalyticsMessage } from './types/analytics'
 import { checkConnectivity, Connectivity } from './utils/connectivity'
+import { Provider } from './store/oauth/reducer'
 
 let sentInitialTheme = false
 
@@ -59,7 +60,8 @@ export enum MessageType {
   PUSH_ROUTE = 'action/push-route',
 
   // OAuth
-  REQUEST_TWITTER_AUTH = 'request-twiter-auth',
+  REQUEST_TWITTER_AUTH = 'request-twitter-auth',
+  REQUEST_INSTAGRAM_AUTH = 'request-instagram-auth',
 
   // Lifecycle
   ENTER_FOREGROUND = 'action/enter-foreground',
@@ -177,7 +179,9 @@ export const handleMessage = async (
 
     // OAuth
     case MessageType.REQUEST_TWITTER_AUTH:
-      return dispatch(oauthActions.openPopup(message))
+      return dispatch(oauthActions.openPopup(message, Provider.TWITTER))
+    case MessageType.REQUEST_INSTAGRAM_AUTH:
+      return dispatch(oauthActions.openPopup(message, Provider.INSTAGRAM))
 
     // Lifecycle
     case MessageType.BACKEND_SETUP:
