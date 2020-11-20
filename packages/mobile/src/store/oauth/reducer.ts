@@ -9,12 +9,19 @@ export type OAuthState = {
   // Incoming message id to reply back to with OAuth results
   messageId: string | null
   url: string | null
+  provider: Provider | null
+}
+
+export enum Provider {
+  TWITTER = 'TWITTER',
+  INSTAGRAM = 'INSTAGRAM'
 }
 
 const initialState: OAuthState = {
   isOpen: false,
   messageId: null,
-  url: null
+  url: null,
+  provider: null
 }
 
 const reducer = (
@@ -27,14 +34,16 @@ const reducer = (
         ...state,
         isOpen: true,
         messageId: action.message.id,
-        url: action.message.authURL
+        url: action.message.authURL,
+        provider: action.provider
       }
     case CLOSE_POPUP:
       return {
         ...state,
         isOpen: false,
         messageId: null,
-        url: null
+        url: null,
+        provider: null
       }
     default:
       return state

@@ -1,12 +1,13 @@
-import React, { RefObject } from 'react'
+import React, { RefObject, useCallback } from 'react'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import { WebView } from 'react-native-webview'
 import { NativeSyntheticEvent, Modal, View, Button } from 'react-native'
 
-import { getUrl, getIsOpen, getMessageId } from '../../store/oauth/selectors'
+import { getUrl, getIsOpen, getMessageId, getAuthProvider } from '../../store/oauth/selectors'
 import { AppState } from '../../store'
 import { closePopup } from '../../store/oauth/actions'
+import { Provider } from '../../store/oauth/reducer'
 import { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
 import { MessageType } from '../../message'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
@@ -52,6 +53,41 @@ const TWITTER_POLLER = `
 })();
 `
 
+const INSTAGRAM_POLLER = `
+(function() {
+  const exit = () => {
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({})
+    )
+  }
+
+  const polling = () => {
+    try {
+      if (
+        window.location.hostname.includes('audius.co')
+      ) {
+        if (window.location.search) {
+          const query = new URLSearchParams(window.location.search)
+
+          const instagramCode = query.get('code')
+          if (!instagramCode) exit()
+
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ instagramCode })
+          )
+        } else {
+          exit()
+        }
+      }
+    } catch (error) {
+      exit()
+    }
+  }
+
+  setInterval(polling, 500)
+})();
+`
+
 type OwnProps = {
   webRef: RefObject<MessagePostingWebView>
 }
@@ -65,26 +101,63 @@ const OAuth = ({
   isOpen,
   messageId,
   webRef,
+  provider,
   close
 }: Props) => {
 
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
-    if (event.nativeEvent.data) {
+    if (event.nativeEvent.data && webRef.current) {
       const message = JSON.parse(event.nativeEvent.data)
-      if (message.oauthToken && message.oauthVerifier) {
-        if (!webRef.current) return
-        postMessage(webRef.current, {
-          type: MessageType.REQUEST_TWITTER_AUTH,
-          id: messageId,
-          oauthToken: message.oauthToken,
-          oauthVerifier: message.oauthVerifier
-        })
+      if (provider === Provider.TWITTER) {
+        if (message.oauthToken && message.oauthVerifier) {
+          postMessage(webRef.current, {
+            type: MessageType.REQUEST_TWITTER_AUTH,
+            id: messageId,
+            oauthToken: message.oauthToken,
+            oauthVerifier: message.oauthVerifier
+          })
+        } else {
+          postMessage(webRef.current, {
+            type: MessageType.REQUEST_TWITTER_AUTH,
+            id: messageId
+          })
+        }
+      } else if (provider === Provider.INSTAGRAM) {
+        if (message.instagramCode) {
+          postMessage(webRef.current, {
+            type: MessageType.REQUEST_INSTAGRAM_AUTH,
+            id: messageId,
+            code: message.instagramCode
+          })
+        } else {
+          postMessage(webRef.current, {
+            type: MessageType.REQUEST_INSTAGRAM_AUTH,
+            id: messageId
+          })
+        }
       }
     }
     close()
   }
+  const onClose = useCallback(() => {
+    if (provider === Provider.TWITTER && webRef.current) {
+      postMessage(webRef.current, {
+        type: MessageType.REQUEST_TWITTER_AUTH,
+        id: messageId
+      })
+    }
 
+    if (provider === Provider.INSTAGRAM && webRef.current) {
+      postMessage(webRef.current, {
+        type: MessageType.REQUEST_INSTAGRAM_AUTH,
+        id: messageId
+      })
+    }
+    close()
+  }, [close, provider])
+
+  const injected = provider === Provider.INSTAGRAM ? INSTAGRAM_POLLER : TWITTER_POLLER
   return (
     <Modal
       animationType='slide'
@@ -104,13 +177,13 @@ const OAuth = ({
           marginTop: 10
         }}>
           <Button
-            onPress={close}
+            onPress={onClose}
             title='Close'
           >
           </Button>
         </View>
         <WebView
-          injectedJavaScript={TWITTER_POLLER}
+          injectedJavaScript={injected}
           onMessage={onMessageHandler}
           source={{
             uri: url || ''
@@ -124,7 +197,8 @@ const OAuth = ({
 const mapStateToProps = (state: AppState) => ({
   url: getUrl(state),
   isOpen: getIsOpen(state),
-  messageId: getMessageId(state)
+  messageId: getMessageId(state),
+  provider: getAuthProvider(state)
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
