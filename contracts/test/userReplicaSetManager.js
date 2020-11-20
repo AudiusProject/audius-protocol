@@ -151,7 +151,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it('Validate constructor bootstrap arguments', async () => {
+    it.only('Validate constructor bootstrap arguments', async () => {
         // Confirm constructor arguments validated
         await validateBootstrapNodes()
 
@@ -170,95 +170,57 @@ contract('UserReplicaSetManager', async (accounts) => {
             "Mismatched bootstrap array lengths"
         )
     })
-    /*
 
-  const nonce = signatureSchemas.getNonce()
-  const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
-  let signatureData = signatureSchemas.generators.getAddOrUpdateCreatorNodeRequestData(
-    chainId,
-    userReplicaSetManager.address,
-    newCnodeId,
-    newCnodeDelegateOwnerWallet,
-    proposerId,
-    nonce)
-  // Sign with proposerWallet
-  let sig = await eth_signTypedData(proposerWallet, signatureData)
-  let tx = await userReplicaSetManager.addOrUpdateCreatorNode(newCnodeId, newCnodeDelegateOwnerWallet, proposerId, nonce, sig)
-  parseTxWithAssertsAndResp(
-    tx,
-    'AddOrUpdateCreatorNode',
-    { _newCnodeId: newCnodeId, _newCnodeDelegateOwnerWallet: newCnodeDelegateOwnerWallet, _proposerSpId: proposerId }
-  )
-
-    */
-
-    it.only('Sandbox 2', async () => {
+    it.only('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
         // Bootstrapped nodes = cn1/cn3/cn3
-        // Submitter = cn1
-        // Proposers = cn2/cn3
+        // Proposers = cn1/cn2/cn3
         let newCNodeSPId = 10
         let newCnodeDelegateWallet = accounts[20]
-        console.log(`newCNodeSPId: ${newCNodeSPId}`)
-        console.log(`newCnodeDelegateWallet: ${newCnodeDelegateWallet}`)
 
-        // Generate proposer 1 relevant information (cn2)
-        console.log('---')
-        console.log(`cn2: ${cnode2Account}`)
-        const cn2Nonce = signatureSchemas.getNonce()
-        console.log(`cn2Nonce: ${cn2Nonce}`)
-        const userReplicaSetManagerAddress = userReplicaSetManager.address
         const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
-        console.log(`UserReplicaSetManager Address: ${userReplicaSetManagerAddress}`)
-        console.log(`chainIdForContract: ${chainIdForContract}`)
-        const cn2SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
-            chainIdForContract,
-            userReplicaSetManagerAddress,
-            newCNodeSPId,
-            newCnodeDelegateWallet,
-            cnode2SpID,
-            cn2Nonce
-        )
-        console.log(`cn2: Generated signature data: ${cn2SignatureData}`)
-        const cn2Sig = await eth_signTypedData(cnode2Account, cn2SignatureData)
-        console.log(`cn2: Generated sig: ${cn2Sig}`)
 
-        // Generate proposer 2 relevant information (cn3)
-        console.log('---')
-        const cn3Nonce = signatureSchemas.getNonce()
-        console.log(`cn3Nonce: ${cn3Nonce}`)
-        const cn3SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
-            chainIdForContract,
-            userReplicaSetManagerAddress,
-            newCNodeSPId,
-            newCnodeDelegateWallet,
-            cnode3SpID,
-            cn3Nonce
-        )
-        console.log(`cn3: Generated signature data: ${cn3SignatureData}`)
-        const cn3Sig = await eth_signTypedData(cnode3Account, cn3SignatureData)
-        console.log(`cn3: Generated sig: ${cn3Sig}`)
-
-        // Generate tx submitter relevant information (cn1)
+        // Generate proposer 1 relevant information (cn1)
         const cn1Nonce = signatureSchemas.getNonce()
-        console.log(`cn1Nonce: ${cn1Nonce}`)
         const cn1SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
             chainIdForContract,
-            userReplicaSetManagerAddress,
+            userReplicaSetManager.address,
             newCNodeSPId,
             newCnodeDelegateWallet,
             cnode1SpID,
             cn1Nonce
         )
         const cn1Sig = await eth_signTypedData(cnode1Account, cn1SignatureData)
-        console.log(`cn1: Generated sig: ${cn1Sig}`)
+
+        // Generate proposer 2 relevant information (cn2)
+        const cn2Nonce = signatureSchemas.getNonce()
+        const cn2SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+            chainIdForContract,
+            userReplicaSetManager.address,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode2SpID,
+            cn2Nonce
+        )
+        const cn2Sig = await eth_signTypedData(cnode2Account, cn2SignatureData)
+
+        // Generate proposer 3 relevant information (cn3)
+        const cn3Nonce = signatureSchemas.getNonce()
+        const cn3SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+            chainIdForContract,
+            userReplicaSetManager.address,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode3SpID,
+            cn3Nonce
+        )
+        const cn3Sig = await eth_signTypedData(cnode3Account, cn3SignatureData)
 
         // Generate arguments for proposal
         const proposerSpIds = [cnode1SpID, cnode2SpID, cnode3SpID]
         const proposerNonces = [cn1Nonce, cn2Nonce, cn3Nonce]
-        const proposer1Sig = cn2Sig
-        const proposer2Sig = cn3Sig
-
-        const submitterSig = cn1Sig
+        const proposer1Sig = cn1Sig
+        const proposer2Sig = cn2Sig
+        const proposer3Sig = cn3Sig
 
         // Finally, submit tx with all 3 signatures
         let addContentNodeTx = await userReplicaSetManager.addOrUpdateContentNode(
@@ -266,51 +228,16 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             proposerSpIds,
             proposerNonces,
-            submitterSig,
             proposer1Sig,
-            proposer2Sig
+            proposer2Sig,
+            proposer3Sig
         )
 
-        console.log('Submitted with args')
-        console.dir(addContentNodeTx, { depth: 5 })
-        parseTxWithAssertsAndResp(
-            addContentNodeTx,
-            'TestEvent',
-            { _testAddress: cnode1Account}
-        )
         console.log(`Submitter: ${cnode1Account}, Proposer1: ${cnode2Account}, Proposer3: ${cnode3Account}`)
         let newDelegateWalletFromChain = await userReplicaSetManager.getContentNodeWallet(newCNodeSPId)
         assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect wallet assignment')
         console.log(`VALIDATED New cnode ID: ${newCNodeSPId}, new cn wallet: ${newCnodeDelegateWallet}`)
     })
-
-    it('Register additional nodes through bootstrap nodes', async () => {
-        let newCNodeSPId = 10
-        let newCnodeDelegateWallet = accounts[20]
-        let invalidProposerId = 12
-        let invalidProposerDelegateWallet = accounts[23]
-        // Attempt to register from an unknown spID
-        await expectRevert(
-            addOrUpdateCreatorNode(
-                newCNodeSPId,
-                newCnodeDelegateWallet,
-                invalidProposerId,
-                invalidProposerDelegateWallet
-            ),
-            "Mismatch proposer wallet for existing spID"
-        )
-        let validProposerId = bootstrapSPIds[2]
-        let validBootstrapDelegateWallet = bootstrapDelegateWallets[2]
-        // Add from a valid proposer and confirm functionality
-        await addOrUpdateCreatorNode(
-            newCNodeSPId,
-            newCnodeDelegateWallet,
-            validProposerId,
-            validBootstrapDelegateWallet
-        )
-    })
-
-    // TODO: Can a given spID <-> delegateWallet update itself?
 
     // TODO: Validate this scenario - any cnode can ADD another cnode if not present, but ONLY bootstrappers can evict
 
