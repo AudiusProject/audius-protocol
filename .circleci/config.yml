@@ -47,6 +47,7 @@ jobs:
             docker ps
             export ipfsHost="localhost"
             export ipfsPort=6001
+            docker logs cn1_creator-node_1
             npm run start test-ci
   test-libs:
     docker:
