@@ -279,13 +279,10 @@ contract('UserReplicaSetManager', async (accounts) => {
             { _testAddress: cnode1Account}
         )
         console.log(`Submitter: ${cnode1Account}, Proposer1: ${cnode2Account}, Proposer3: ${cnode3Account}`)
-        console.log(`New cnode ID: ${newCNodeSPId}, new cn wallet: ${newCnodeDelegateWallet}`)
-        // parseTxWithAssertsAndResp(
-        //     addContentNodeTx,
-        //     'TestEvent',
-        //     { _testAddress: cnode2Account}
-        // )
-     })
+        let newDelegateWalletFromChain = await userReplicaSetManager.getContentNodeWallet(newCNodeSPId)
+        assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect wallet assignment')
+        console.log(`VALIDATED New cnode ID: ${newCNodeSPId}, new cn wallet: ${newCnodeDelegateWallet}`)
+    })
 
     it('Register additional nodes through bootstrap nodes', async () => {
         let newCNodeSPId = 10

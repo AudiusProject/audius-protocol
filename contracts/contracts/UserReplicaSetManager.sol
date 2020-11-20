@@ -91,41 +91,41 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         address _newCnodeDelegateOwnerWallet,
         uint[3] calldata _proposerSpIds,
         bytes32[3] calldata _proposerNonces,
-        bytes calldata _submitterSig,
         bytes calldata _proposer1Sig,
-        bytes calldata _proposer2Sig
+        bytes calldata _proposer2Sig,
+        bytes calldata _proposer3Sig
     ) external {
         // For every entry in spIds/Nonces/Sigs
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
-        address submitterAddress = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+        address proposer1Address = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
             _proposerSpIds[0],
             _proposerNonces[0],
-            _submitterSig
+            _proposer1Sig
         );
-        emit TestEvent(submitterAddress);
-        address proposer1 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+        emit TestEvent(proposer1Address);
+        address proposer2Address = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
             _proposerSpIds[1],
             _proposerNonces[1],
-            _proposer1Sig
+            _proposer2Sig
         );
-        emit TestEvent(proposer1);
-        address proposer2 = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+        emit TestEvent(proposer2Address);
+        address proposer3Address = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
             _newCnodeId,
             _newCnodeDelegateOwnerWallet,
             _proposerSpIds[2],
             _proposerNonces[2],
-            _proposer2Sig
+            _proposer3Sig
         );
-        emit TestEvent(proposer2);
+        emit TestEvent(proposer3Address);
         _validateUpdateOperation(
-            submitterAddress,
-            proposer1,
-            proposer2,
+            proposer1Address,
+            proposer2Address,
+            proposer3Address,
             _proposerSpIds
         );
         spIdToCreatorNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
