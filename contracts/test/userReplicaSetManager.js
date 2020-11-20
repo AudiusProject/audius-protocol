@@ -181,7 +181,7 @@ contract('UserReplicaSetManager', async (accounts) => {
 
         // Generate proposer 1 relevant information (cn1)
         const cn1Nonce = signatureSchemas.getNonce()
-        const cn1SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+        const cn1SignatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
             chainIdForContract,
             userReplicaSetManager.address,
             newCNodeSPId,
@@ -193,7 +193,7 @@ contract('UserReplicaSetManager', async (accounts) => {
 
         // Generate proposer 2 relevant information (cn2)
         const cn2Nonce = signatureSchemas.getNonce()
-        const cn2SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+        const cn2SignatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
             chainIdForContract,
             userReplicaSetManager.address,
             newCNodeSPId,
@@ -205,7 +205,7 @@ contract('UserReplicaSetManager', async (accounts) => {
 
         // Generate proposer 3 relevant information (cn3)
         const cn3Nonce = signatureSchemas.getNonce()
-        const cn3SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+        const cn3SignatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
             chainIdForContract,
             userReplicaSetManager.address,
             newCNodeSPId,

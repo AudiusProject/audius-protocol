@@ -795,7 +795,7 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
 }
 
 /* User Replica Set Manager Generators */
-generators.getProposeAddOrUpdateCreatorNodeRequestData = function (
+generators.getProposeAddOrUpdateContentNodeRequestData = function (
   chainId,
   contractAddress,
   newCnodeId,
