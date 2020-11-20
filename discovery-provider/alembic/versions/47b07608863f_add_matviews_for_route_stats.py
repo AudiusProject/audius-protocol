@@ -22,6 +22,8 @@ def upgrade():
     connection.execute('''
 
     --- Create matviews for easier protocol dashboard querying
+
+    --- route metrics day
     CREATE MATERIALIZED VIEW route_metrics_day_bucket AS
 	SELECT
 		COUNT (DISTINCT route_metrics.ip) as "unique_count",
@@ -30,6 +32,7 @@ def upgrade():
 	FROM route_metrics
 	GROUP BY date_trunc('day', route_metrics.timestamp);
 
+    --- route metrics month
     CREATE MATERIALIZED VIEW route_metrics_month_bucket AS
 	SELECT
 		COUNT (DISTINCT route_metrics.ip) as "unique_count",
@@ -38,13 +41,39 @@ def upgrade():
 	FROM route_metrics
 	GROUP BY date_trunc('month', route_metrics.timestamp);
 
-    CREATE MATERIALIZED VIEW route_metrics_century_bucket AS
-	SELECT
-		COUNT (DISTINCT route_metrics.ip) as "unique_count",
-		SUM (route_metrics.count) as "count",
-		date_trunc('century', route_metrics.timestamp) as "time"
-	FROM route_metrics
-	GROUP BY date_trunc('century', route_metrics.timestamp);
+    --- route metrics trailing month
+    CREATE MATERIALIZED VIEW route_metrics_trailing_month AS
+    SELECT
+        COUNT (DISTINCT route_metrics.ip) as "unique_count",
+        SUM (route_metrics.count) as "count"
+    FROM route_metrics
+    WHERE route_metrics.timestamp > now() - INTERVAL '1 MONTH';
+
+    --- app name metrics trailing week
+    CREATE MATERIALIZED VIEW app_name_metrics_trailing_week AS
+    SELECT
+        application_name as "name",
+        SUM (app_name_metrics.count) as "count"
+    FROM app_name_metrics
+    WHERE app_name_metrics.timestamp > (now() - INTERVAL '1 WEEK')
+    GROUP BY application_name;
+
+    --- app name metrics trailing month
+    CREATE MATERIALIZED VIEW app_name_metrics_trailing_month AS
+    SELECT
+        application_name as "name",
+        SUM (app_name_metrics.count) as "count"
+    FROM app_name_metrics
+    WHERE app_name_metrics.timestamp > (now() - INTERVAL '1 MONTH')
+    GROUP BY application_name;
+
+    --- app name metrics trailing all-time
+    CREATE MATERIALIZED VIEW app_name_metrics_all_time AS
+    SELECT
+        application_name as "name",
+        SUM (app_name_metrics.count) as "count"
+    FROM app_name_metrics
+    GROUP BY application_name;
     ''')
 
 
@@ -55,4 +84,8 @@ def downgrade():
     connection.execute('''
     DROP MATERIALIZED VIEW route_metrics_day_bucket;
     DROP MATERIALIZED VIEW route_metrics_month_bucket;
+    DROP MATERIALIZED VIEW route_metrics_trailing_month;
+    DROP MATERIALIZED VIEW app_name_metrics_trailing_week;
+    DROP MATERIALIZED VIEW app_name_metrics_trailing_month;
+    DROP MATERIALIZED VIEW app_name_metrics_all_time;
     ''')
