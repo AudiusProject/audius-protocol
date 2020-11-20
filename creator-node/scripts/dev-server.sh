@@ -2,7 +2,14 @@
 set -o xtrace
 set -e
 
-link_libs=true
+link_libs=false
+
+if [ $CNODE_LINK_LIBS_OVERRIDE ]
+then
+    link_libs=$CNODE_LINK_LIBS_OVERRIDE    
+fi
+
+echo "creator-node link_libs:" $link_libs
 
 if [ "$link_libs" = true ]
 then

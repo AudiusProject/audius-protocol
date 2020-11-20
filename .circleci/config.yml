@@ -25,6 +25,7 @@ jobs:
           command: |
             set -e
             export PROTOCOL_DIR=/home/circleci/project
+            export link_libs_override=true
             source ~/.bash_profile
             nvm install v10.16
             nvm use 10.16
