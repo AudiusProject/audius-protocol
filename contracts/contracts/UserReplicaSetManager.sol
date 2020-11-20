@@ -56,9 +56,9 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
     );
-    bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-        "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,bytes32 proposerSpIdsHash,bytes32 proposerNoncesHash,bytes proposer1Sig,bytes proposer2Sig,uint submitterSpId,bytes32 nonce)"
-    );
+    // bytes32 constant ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
+    //     "AddOrUpdateCreatorNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,bytes32 proposerSpIdsHash,bytes32 proposerNoncesHash,bytes32 proposer1SigHash,bytes32 proposer2SigHash,uint submitterSpId,bytes32 nonce)"
+    // );
     /*
             uint _newCnodeId,
         address _newDelegateWallet,
@@ -130,20 +130,29 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     }
 
     // This is the TRUE state change
-    function addOrUpdateCnodeOuter(
+    function addOrUpdateContentNode(
         uint _newCnodeId,
-        address _newDelegateWallet,
+        address _newCnodeDelegateOwnerWallet,
         uint[2] calldata _proposerSpIds,
         bytes32[2] calldata _proposerNonces,
         bytes calldata _proposer1Sig,
         bytes calldata _proposer2Sig,
-        uint _submitterProposerId,
+        uint _submitterSpId,
         bytes32 _requestNonce,
         bytes calldata _submitterSig
     ) external {
         // For every entry in spIds/Nonces/Sigs
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
+        address submitterAddress = _recoverProposeAddOrUpdateCreatorNodeRequestSignerAddress(
+            _newCnodeId,
+            _newCnodeDelegateOwnerWallet,
+            _submitterSpId,
+            _requestNonce,
+            _submitterSig
+        );
+
+        emit TestEvent(submitterAddress);
     }
 
     // TODO: Revisit delete logic - how to remove an spID <-> wallet combo entirely

@@ -193,13 +193,15 @@ contract('UserReplicaSetManager', async (accounts) => {
     */
 
     it.only('Sandbox 2', async () => {
+        // Bootstrapped nodes = cn1/cn3/cn3
+        // Submitter = cn1
+        // Proposers = cn2/cn3
         let newCNodeSPId = 10
         let newCnodeDelegateWallet = accounts[20]
         console.log(`newCNodeSPId: ${newCNodeSPId}`)
         console.log(`newCnodeDelegateWallet: ${newCnodeDelegateWallet}`)
-        // Bootstrapped nodes = cn1/cn3/cn3
-        // Submitter = cn1
-        // Proposers = cn2/cn3
+
+        // Generate proposer 1 relevant information (cn2)
         console.log('---')
         console.log(`cn2: ${cnode2Account}`)
         const cn2Nonce = signatureSchemas.getNonce()
@@ -233,6 +235,8 @@ contract('UserReplicaSetManager', async (accounts) => {
             'TestEvent',
             { _testAddress: cnode2Account}
         )
+
+        // Generate proposer 2 relevant information (cn3)
         console.log('---')
         const cn3Nonce = signatureSchemas.getNonce()
         console.log(`cn3Nonce: ${cn3Nonce}`)
@@ -259,11 +263,58 @@ contract('UserReplicaSetManager', async (accounts) => {
             'TestEvent',
             { _testAddress: cnode3Account}
         )
+
+        // Generate tx submitter relevant information (cn1)
+        const cn1Nonce = signatureSchemas.getNonce()
+        console.log(`cn1Nonce: ${cn1Nonce}`)
+        const cn1SignatureData = signatureSchemas.generators.getProposeAddOrUpdateCreatorNodeRequestData(
+            chainIdForContract,
+            userReplicaSetManagerAddress,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode1SpID,
+            cn1Nonce
+        )
+        const cn1Sig = await eth_signTypedData(cnode1Account, cn1SignatureData)
+        console.log(`cn1: Generated sig: ${cn1Sig}`)
+        // let proposeCn1Tx = await userReplicaSetManager.proposeAddOrUpdateCreatorNode(
+        //     newCNodeSPId,
+        //     newCnodeDelegateWallet,
+        //     cnode1SpID,
+        //     cn1Nonce,
+        //     cn1Sig
+        // )
+        // parseTxWithAssertsAndResp(
+        //     proposeCn1Tx,
+        //     'TestEvent',
+        //     { _testAddress: cnode2Account}
+        // )
+
         // Generate arguments for proposal
-        let proposerSpIds = [cnode2SpID, cnode3SpID]
-        let proposerNonces = [cn2Nonce, cn3Nonce]
-        let proposer1Sig = cn2Sig
-        let proposer2Sig = cn3Sig
+        const proposerSpIds = [cnode2SpID, cnode3SpID]
+        const proposerNonces = [cn2Nonce, cn3Nonce]
+        const proposer1Sig = cn2Sig
+        const proposer2Sig = cn3Sig
+        const submitterSpId = cnode1SpID
+
+        // Finally, submit tx with all 3 signatures
+        let addContentNodeTx = await userReplicaSetManager.addOrUpdateContentNode(
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            proposerSpIds,
+            proposerNonces,
+            proposer1Sig,
+            proposer2Sig,
+            submitterSpId,
+            cn1Nonce,
+            cn1Sig
+        )
+        console.log('Submitted with args')
+        parseTxWithAssertsAndResp(
+            addContentNodeTx,
+            'TestEvent',
+            { _testAddress: cnode1Account}
+        )
     })
 
     it('Register additional nodes through bootstrap nodes', async () => {
