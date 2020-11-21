@@ -44,7 +44,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     event AddOrUpdateContentNode(
         uint _newCnodeId,
         address _newCnodeDelegateOwnerWallet,
-        uint[3] proposerSpIds,
+        uint[3] _proposerSpIds,
         address _proposer1Address,
         address _proposer2Address,
         address _proposer3Address

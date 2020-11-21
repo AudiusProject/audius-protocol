@@ -11,7 +11,6 @@ const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 import { eth_signTypedData } from './utils/util'
 const signatureSchemas = require('../signature_schemas/signatureSchemas')
 import { getNetworkIdForContractInstance } from './utils/getters'
-import { parseTxWithAssertsAndResp } from './utils/parser'
 
 contract.only('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
@@ -97,7 +96,7 @@ contract.only('UserReplicaSetManager', async (accounts) => {
             assert.isTrue(bootstrapIDsFromChain[i] == bootstrapSPIds[i])
             assert.isTrue(bootstrapWalletsFromChain[i] == bootstrapDelegateWallets[i])
         }
-     }
+    }
 
     // Helper Functions
     // Initial 2 users registered to test UserFactory
@@ -235,7 +234,31 @@ contract.only('UserReplicaSetManager', async (accounts) => {
 
         let newDelegateWalletFromChain = await userReplicaSetManager.getContentNodeWallet(newCNodeSPId)
         assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect wallet assignment')
-        console.dir(addContentNodeTx, { depth: 5 })
+        await expectEvent.inTransaction(
+            addContentNodeTx.tx,
+            UserReplicaSetManager,
+            'AddOrUpdateContentNode',
+            {
+                _newCnodeId: toBN(newCNodeSPId),
+                _newCnodeDelegateOwnerWallet: newCnodeDelegateWallet,
+                _proposer1Address: cnode1Account,
+                _proposer2Address: cnode2Account,
+                _proposer3Address: cnode3Account
+            }
+        )
+        // Validate array emitted from event
+        let eventArgs = addContentNodeTx.logs[0].args
+        let eventProposerSpIds = eventArgs._proposerSpIds
+        assert.equal(
+            eventProposerSpIds.length,
+            proposerSpIds.length,
+            "Expect correct number of proposer IDs in AddOrUpdateContentNode event"
+        )
+        // Manually verify each ID from event
+        const proposerSpIdsBn = proposerSpIds.map(x=>toBN(x))
+        for (var i = 0; i < proposerSpIdsBn.length; i++){
+            assert.isTrue(eventProposerSpIds[i].eq(proposerSpIdsBn[i]))
+        }
     })
 
     it('Configure + update user replica set', async () => {
