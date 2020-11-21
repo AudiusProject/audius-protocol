@@ -90,7 +90,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         bytes calldata _proposer1Sig,
         bytes calldata _proposer2Sig,
         bytes calldata _proposer3Sig
-    ) external {
+    ) external
+    {
         // For every entry in spIds/Nonces/Sigs
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
@@ -328,23 +329,28 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
     // Update state given constructor arguments
     function _seedBootstrapNodes(
         uint[] memory _bootstrapSPIDs,
-        address[] memory _bootstrapDelegateOwnerWallets
+        address[] memory _bootstrapWallets
     ) internal
     {
-        require(_bootstrapSPIDs.length == _bootstrapDelegateOwnerWallets.length, "Mismatched bootstrap array lengths");
+        require(
+            _bootstrapSPIDs.length == _bootstrapWallets.length,
+            "Mismatched bootstrap array lengths"
+        );
         for (uint i = 0; i < _bootstrapSPIDs.length; i++) {
-            spIdToContentNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapDelegateOwnerWallets[i];
+            spIdToContentNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapWallets[i];
         }
         // TODO: Evaluate whether both of these are required...?
         bootstrapSPIds = _bootstrapSPIDs;
-        bootstrapNodeDelegateWallets = _bootstrapDelegateOwnerWallets;
+        bootstrapNodeDelegateWallets = _bootstrapWallets;
     }
 
     function _isBootstrapNode(uint _spID, address _spDelegateOwnerWallet)
     internal view returns (bool)
     {
         for (uint i = 0; i < bootstrapSPIds.length; i++) {
-            if (bootstrapSPIds[i] == _spID && bootstrapNodeDelegateWallets[i] == _spDelegateOwnerWallet) {
+            if (bootstrapSPIds[i] == _spID &&
+                bootstrapNodeDelegateWallets[i] == _spDelegateOwnerWallet
+            ) {
                 return true;
             }
         }
@@ -356,7 +362,8 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         address _proposer2Address,
         address _proposer3Address,
         uint[3] memory _proposerSpIds
-    ) internal view {
+    ) internal view
+    {
         // Require distinct proposer addresses
         require(
             (_proposer1Address != _proposer2Address) &&
