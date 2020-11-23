@@ -106,18 +106,18 @@ module.exports = function (app) {
         cnodeUsersDict[cnodeUser.cnodeUserUUID] = cnodeUser
         const curCnodeUserClockVal = cnodeUser.clock
 
-        cnodeUser['clockInfo'] = {
-          requestedClockRangeMin,
-          requestedClockRangeMax,
-          localClockMax: curCnodeUserClockVal
-        }
-
         // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
         // Also ensures secondary knows there is more data to sync
         if (cnodeUser.clock > requestedClockRangeMax) {
           // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
           cnodeUser.clock = requestedClockRangeMax
           req.logger.info(`nodeSync.js#export - cnodeUser clock val ${curCnodeUserClockVal} is higher than requestedClockRangeMax, reset to ${requestedClockRangeMax}`)
+        }
+
+        cnodeUser['clockInfo'] = {
+          requestedClockRangeMin,
+          requestedClockRangeMax,
+          localClockMax: cnodeUser.clock
         }
       })
 
