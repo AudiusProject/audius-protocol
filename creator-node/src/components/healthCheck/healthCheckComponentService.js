@@ -16,10 +16,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
     'git': process.env.GIT_SHA,
     'selectedDiscoveryProvider': 'none',
     'creatorNodeEndpoint': config.get('creatorNodeEndpoint'),
-    'spID': config.get('spID'),
-    country: config.get('serviceCountry'),
-    latitude: config.get('serviceLatitude'),
-    longitude: config.get('serviceLongitude')
+    'spID': config.get('spID')
   }
 
   if (libs) {

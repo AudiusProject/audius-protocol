@@ -18,6 +18,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.ethContracts = ethContracts
     // Services with the structure {request, response, millis} (see timeRequest) sorted by semver and response time
     this.healthCheckedServicesList = []
+    this.healthCheckPath = 'version'
   }
 
   /**
@@ -68,7 +69,7 @@ class CreatorNodeSelection extends ServiceSelection {
     const healthCheckedServices = await timeRequestsAndSortByVersion(
       services.map(node => ({
         id: node,
-        url: `${node}/health_check`
+        url: `${node}/${this.healthCheckPath}`
       }))
     )
 
