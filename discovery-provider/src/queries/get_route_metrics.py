@@ -1,10 +1,12 @@
 import logging
 import time
+from datetime import timedelta
 from sqlalchemy import func, desc, or_
 from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
+
 
 def get_route_metrics(args):
     """
@@ -49,11 +51,11 @@ def _get_route_metrics(session, args):
         query = None
         if bucket_size == "day":
             query = (session.query(RouteMetricsDayMatview)
-                     .filter(RouteMetricsDayMatview.time > args.get('start_time')))
+                     .filter(RouteMetricsDayMatview.time >= (args.get('start_time') - timedelta(days=1))))
 
         else:
             query = (session.query(RouteMetricsMonthMatview)
-                     .filter(RouteMetricsMonthMatview.time > args.get('start_time')))
+                     .filter(RouteMetricsMonthMatview.time >= (args.get('start_time') - timedelta(days=1))))
 
         query = (query
                  .order_by(desc('time'))
