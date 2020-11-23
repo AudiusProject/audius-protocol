@@ -66,8 +66,6 @@ class SnapbackSM {
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
-
-    this.maxExportClockValueRange = config.get('maxExportClockValueRange')
   }
 
   // Class level log output
@@ -373,10 +371,10 @@ class SnapbackSM {
     const previousModuloSlice = this.currentModuloSlice
     this.currentModuloSlice += 1
     this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice}`)
+    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice} out of ${ModuloBase}`)
 
     this.log(`Issued ${numSyncsIssued} sync ops`)
-    this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} ------------------`)
+    this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} / ${ModuloBase} ------------------`)
   }
 
   /**
@@ -437,7 +435,7 @@ class SnapbackSM {
         secondaryEndpoint: secondaryUrl,
         primaryEndpoint: this.endpoint,
         primaryClockValue,
-        secondaryClockValue,
+        secondaryClockValue: secondaryClockValAfterSync || -1,
         priority: SyncPriority.Low
       })
     }

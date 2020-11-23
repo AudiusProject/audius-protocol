@@ -6,14 +6,11 @@ const {
     addAndUpgradeUsers,
     getRandomTrackMetadata,
     getRandomTrackFilePath,
-    delay,
-    genRandomString
+    delay
 } = require('../helpers.js')
 const {
     uploadTrack,
-    getTrackMetadata,
-    getUser,
-    verifyCIDExistsOnCreatorNode
+    getUser
 } = ServiceCommands
 
 

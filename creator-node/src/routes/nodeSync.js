@@ -1,7 +1,7 @@
 const axios = require('axios')
 
 const models = require('../models')
-const { saveFileForMultihash } = require('../fileManager')
+const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const config = require('../config')
 const middlewares = require('../middlewares')
@@ -29,13 +29,8 @@ module.exports = function (app) {
 
     const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
-    // [requestedClockRangeMin, requestedClockRangeMax] is inclusive range
     const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
-    const maxRequestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
-    const requestedClockRangeMax = Math.min((parseInt(req.query.clock_range_max) || maxRequestedClockRangeMax), maxRequestedClockRangeMax)
-    if (requestedClockRangeMax <= requestedClockRangeMin) {
-      return errorResponseBadRequest(`Invalid query params: clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] provided.`)
-    }
+    const requestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
 
     const transaction = await models.sequelize.transaction()
     try {
@@ -117,7 +112,8 @@ module.exports = function (app) {
           localClockMax: curCnodeUserClockVal
         }
 
-        // Resets cnodeUser clock value to requestedClockRangeMax to ensure secondary knows there is more data to sync
+        // Resets cnodeUser clock value to requestedClockRangeMax to ensure consistency with clockRecords data
+        // Also ensures secondary knows there is more data to sync
         if (cnodeUser.clock > requestedClockRangeMax) {
           // since clockRecords are returned by clock ASC, clock val at last index is largest clock val
           cnodeUser.clock = requestedClockRangeMax
@@ -296,10 +292,10 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         throw new Error(`Malformed response received from ${creatorNodeEndpoint}. "walletPublicKey" property not found on CNodeUser in response object`)
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
-      let userReplicaSet = []
 
       // Build user replica set array for use in file fetch + save
       // TODO move this logic to right before file save ops...
+      let userReplicaSet = []
       try {
         const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
         userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
@@ -313,7 +309,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-        req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash - ${e.message}`)
+        req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`)
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
@@ -321,7 +317,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       }
 
       const {
-        cnodeUserUUID: fetchedCnodeUserUUID,
         latestBlockNumber: fetchedLatestBlockNumber,
         clock: fetchedLatestClockVal,
         clockRecords: fetchedClockRecords
@@ -342,28 +337,49 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       const transaction = await models.sequelize.transaction()
 
       try {
-        req.logger.info(redisKey, `beginning add ops for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        req.logger.info(redisKey, `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`)
 
-        // Upsert cnodeUser row
-        await models.CNodeUser.upsert(
-          {
-            cnodeUserUUID: fetchedCnodeUserUUID,
-            walletPublicKey: fetchedWalletPublicKey,
-            lastLogin: fetchedCNodeUser.lastLogin,
-            latestBlockNumber: fetchedLatestBlockNumber,
-            clock: fetchedCNodeUser.clock,
-            createdAt: fetchedCNodeUser.createdAt
-          },
-          { transaction }
-        )
-        req.logger.info(redisKey, `Inserted CNodeUser for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        // Update CNodeUser entry if exists else create
+        // Cannot use upsert since it fails to use default value for cnodeUserUUID per this issue https://github.com/sequelize/sequelize/issues/3247
+        const cnodeUserRecord = await models.CNodeUser.findOne({
+          where: { walletPublicKey: fetchedWalletPublicKey },
+          transaction
+        })
+        let cnodeUser
+        if (cnodeUserRecord) {
+          cnodeUser = await cnodeUserRecord.update(
+            {
+              lastLogin: fetchedCNodeUser.lastLogin,
+              latestBlockNumber: fetchedLatestBlockNumber,
+              clock: fetchedCNodeUser.clock,
+              createdAt: fetchedCNodeUser.createdAt
+            },
+            { transaction }
+          )
+        } else {
+          cnodeUser = await models.CNodeUser.create(
+            {
+              walletPublicKey: fetchedWalletPublicKey,
+              lastLogin: fetchedCNodeUser.lastLogin,
+              latestBlockNumber: fetchedLatestBlockNumber,
+              clock: fetchedCNodeUser.clock,
+              createdAt: fetchedCNodeUser.createdAt
+            },
+            { transaction }
+          )
+        }
+        const cnodeUserUUID = cnodeUser.cnodeUserUUID
+        req.logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}`)
 
-        /* Populate all new data for fetched cnodeUser. */
+        /**
+         * Populate all new data for fetched cnodeUser
+         * Always use local cnodeUserUUID in favor of cnodeUserUUID in exported dataset to ensure consistency
+         */
 
         // Save all clockRecords to DB
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
           ...clockRecord,
-          cnodeUserUUID: fetchedCnodeUserUUID
+          cnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'Recorded all ClockRecord entries in DB')
 
@@ -380,10 +396,10 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
           const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-          req.logger.info(redisKey, `TrackFiles saveFileForMultihash - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
+          req.logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
 
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihash(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            trackFile => saveFileForMultihashToFS(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
           ))
         }
         req.logger.info(redisKey, 'Saved all track files to disk.')
@@ -391,7 +407,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
           const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-          req.logger.info(redisKey, `NonTrackFiles saveFileForMultihash - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
+          req.logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
           await Promise.all(nonTrackFilesSlice.map(
             nonTrackFile => {
               // Skip over directories since there's no actual content to sync
@@ -400,9 +416,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  return saveFileForMultihashToFS(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
                 } else {
-                  return saveFileForMultihash(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  return saveFileForMultihashToFS(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
                 }
               }
             }
@@ -413,34 +429,34 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           ...file,
           trackBlockchainId: null,
-          cnodeUserUUID: fetchedCnodeUserUUID
+          cnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'created all non-track files')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
           ...track,
-          cnodeUserUUID: fetchedCnodeUserUUID
+          cnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'created all tracks')
 
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
           ...trackFile,
-          cnodeUserUUID: fetchedCnodeUserUUID
+          cnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'saved all track files to db')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
           ...audiusUser,
-          cnodeUserUUID: fetchedCnodeUserUUID
+          cnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'saved all audiususer data to db')
 
         await transaction.commit()
         await redisLock.removeLock(redisKey)
 
-        req.logger.info(redisKey, `Transaction successfully committed for cnodeUserUUID ${fetchedCnodeUserUUID}`)
+        req.logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey}`)
       } catch (e) {
-        req.logger.error(redisKey, `Transaction failed for cnodeUserUUID ${fetchedCnodeUserUUID}`, e)
+        req.logger.error(redisKey, `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`, e)
 
         await transaction.rollback()
         await redisLock.removeLock(redisKey)

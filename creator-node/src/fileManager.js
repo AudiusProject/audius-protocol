@@ -82,7 +82,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
- * creating directories, changing IPFS gateway urls before calling _saveFileForMultihash
+ * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
  * 2. attempt to fetch the CID from a variety of sources
  * 3. throws error if failure, couldn't find the file or file contents don't match CID,
  * returns expectedStoragePath if successful
@@ -94,7 +94,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   try {
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
@@ -219,7 +219,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
     }
 
-    // for verification purposes - don't delete. verifies that the contents of the file match the file's cid
+    // verify that the contents of the file match the file's cid
     try {
       const ipfs = req.app.get('ipfsLatestAPI')
       const content = fs.createReadStream(expectedStoragePath)
@@ -234,7 +234,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
 
     return expectedStoragePath
   } catch (e) {
-    throw new Error(`saveFileForMultihash - ${e}`)
+    throw new Error(`saveFileForMultihashToFS - ${e}`)
   }
 }
 
@@ -377,7 +377,7 @@ function getFileExtension (fileName) {
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
   saveFileToIPFSFromFS,
-  saveFileForMultihash,
+  saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
   uploadTempDiskStorage,
