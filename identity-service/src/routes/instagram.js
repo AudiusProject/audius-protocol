@@ -93,7 +93,6 @@ module.exports = function (app) {
     }
   }))
 
-
   /**
    * After the user finishes onboarding in the client app and has a blockchain userId, we need to associate
    * the blockchainUserId with the instagram profile
