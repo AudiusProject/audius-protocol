@@ -520,6 +520,18 @@ unique_count={self.unique_count},\
 count={self.count},\
 time={self.time}>"
 
+class RouteMetricsTrailingWeek(Base):
+    __tablename__ = "route_metrics_trailing_week"
+
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    PrimaryKeyConstraint(unique_count, count)
+
+    def __repr__(self):
+        return f"<RouteMetricsTrailingWeek(\
+unique_count={self.unique_count},\
+count={self.count}>"
+
 class RouteMetricsTrailingMonth(Base):
     __tablename__ = "route_metrics_trailing_month"
 
@@ -529,6 +541,18 @@ class RouteMetricsTrailingMonth(Base):
 
     def __repr__(self):
         return f"<RouteMetricsTrailingMonth(\
+unique_count={self.unique_count},\
+count={self.count}>"
+
+class RouteMetricsAllTime(Base):
+    __tablename__ = "route_metrics_all_time"
+
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    PrimaryKeyConstraint(unique_count, count)
+
+    def __repr__(self):
+        return f"<RouteMetricsTrailingAllTime(\
 unique_count={self.unique_count},\
 count={self.count}>"
 

@@ -1,8 +1,10 @@
 import logging
 from sqlalchemy import desc
-from src.models import RouteMetricsTrailingMonth, AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime
+from src.models import RouteMetricsTrailingWeek, RouteMetricsTrailingMonth, RouteMetricsAllTime, \
+    AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime
 from src.utils import db_session
 from src import exceptions
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +45,13 @@ def _get_trailing_app_metrics(session, args):
 
     if time_range == "week":
         query = session.query(AppMetricsTrailingWeek)
+        route_query = session.query(RouteMetricsTrailingWeek)
     elif time_range == "month":
         query = session.query(AppMetricsTrailingMonth)
+        route_query = session.query(RouteMetricsTrailingMonth)
     elif time_range == "all_time":
         query = session.query(AppMetricsAllTime)
+        route_query = session.query(RouteMetricsAllTime)
     else:
         raise exceptions.ArgumentError("Invalid time_range")
 
@@ -55,5 +60,19 @@ def _get_trailing_app_metrics(session, args):
              .limit(limit)
              .all())
 
+    route_query = route_query.first()
+
     metrics = list(map(lambda m: {"name": m.name, "count": m.count}, query))
+
+    # add unknown count
+    existing_count = reduce(lambda x, y: x + y["count"], metrics, 0)
+    unknown_count = route_query.count - existing_count
+    for i, metric in enumerate(metrics[:]):
+        if unknown_count > metric['count'] or i == len(metrics):
+            metrics.insert(i, {
+                'name': 'unknown',
+                'count': unknown_count,
+            })
+            break
+
     return metrics
