@@ -36,13 +36,13 @@ def to_bytes(val, length=32):
 
 
 def populate_mock_db(db, entities):
-    # """
-    # Helper function to populate thee mock DB with plays
+    """
+    Helper function to populate the mock DB with plays
 
-    # Args:
-    #     db - sqlalchemy db session
-    #     entities - dict of keys tracks, users, plays of arrays of metadata
-    # """
+    Args:
+        db - sqlalchemy db session
+        entities - dict of keys tracks, users, plays of arrays of metadata
+    """
     with db.scoped_session() as session:
         tracks = entities.get('tracks', [])
         users = entities.get('users', [])

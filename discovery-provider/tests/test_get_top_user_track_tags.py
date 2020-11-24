@@ -3,7 +3,7 @@ from src.utils.db_session import get_db
 from tests.utils import populate_mock_db
 
 def test_get_top_user_track_tags(app):
-    """Tests that genre metrics can be queried"""
+    """Tests that top tags for users can be queried"""
     with app.app_context():
         db = get_db()
 

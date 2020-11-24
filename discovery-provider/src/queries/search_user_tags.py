@@ -9,6 +9,21 @@ from src.queries.query_helpers import populate_user_metadata
 logger = logging.getLogger(__name__)
 
 def search_user_tags(session, args):
+    """
+    Gets the users with tracks with a given tag
+
+    Args:
+        session: sqlalchemy db session instance
+        args: dict of arguments
+        args.search_str: string the tag search string
+        args.current_user_id: id | null The user id making the query
+        args.limit: number the query limit of number of returns tracks
+        args.offset: number the query offset for results
+        args.user_tag_count: number The number of tracks with the query tag
+
+    Returns:
+        list of users sorted by followee count
+    """
     user_ids = (
         session.query(TagTrackUserMatview.owner_id)
         .filter(TagTrackUserMatview.tag == args['search_str'].lower())

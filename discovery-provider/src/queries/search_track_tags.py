@@ -8,6 +8,21 @@ from src.queries.query_helpers import populate_track_metadata, get_track_play_co
 logger = logging.getLogger(__name__)
 
 def search_track_tags(session, args):
+    """
+    Gets the tracks with a given tag
+
+    Args:
+        session: sqlalchemy db session instance
+        args: dict of arguments
+        args.search_str: string the tag search string
+        args.current_user_id: id | null The user id making the query
+        args.limit: number the query limit of number of returns tracks
+        args.offset: number the query offset for results
+
+    Returns:
+        list of tracks sorted by play count
+    """
+
     track_ids = (
         session.query(TagTrackUserMatview.track_id)
         .filter(TagTrackUserMatview.tag == args['search_str'].lower())
