@@ -267,7 +267,54 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         }
     })
 
-    // TODO: Duplicate proposer
+    it('Fail to register additional nodes w/duplicate bootstrap signers', async () => {
+        // Bootstrapped nodes = cn1/cn3/cn3
+        // Proposers = cn1/cn2/cn3
+        let newCNodeSPId = 10
+        let newCnodeDelegateWallet = accounts[20]
+        const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
+        // Generate proposer 1 relevant information (cn1)
+        const cn1Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode1SpID,
+            cnode1Account
+        )
+        // Generate proposer 2 relevant information (cn2)
+        const cn2Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode2SpID,
+            cnode2Account
+        )
+        // Generate 2nd proposer 2 relevant information, used to submit duplicate valid signature
+        const cn2InfoDupe = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            cnode2SpID,
+            cnode2Account
+        )
+        // Generate arguments for proposal
+        // Include duplicate proposer - slots 2/3 are the same
+        const proposerSpIds = [cnode1SpID, cnode2SpID, cnode2SpID]
+        const proposerNonces = [cn1Info.nonce, cn2Info.nonce, cn2InfoDupe.nonce]
+        // Finally, submit tx with dupe signatures
+        await expectRevert(
+            userReplicaSetManager.addOrUpdateContentNode(
+                newCNodeSPId,
+                newCnodeDelegateWallet,
+                proposerSpIds,
+                proposerNonces,
+                cn1Info.sig,
+                cn2Info.sig,
+                cn2InfoDupe.sig
+            ),
+            "Distinct proposers required"
+        )
+    })
 
     // TODO: Invalid nonce test case
 
