@@ -35,7 +35,9 @@ async function timeRequests (requests) {
     timeRequest(request)
   ))
 
-  return timings.sort((a, b) => a.millis - b.millis)
+  return timings
+    .filter(timing => timing.response !== null)
+    .sort((a, b) => a.millis - b.millis)
 }
 
 /**

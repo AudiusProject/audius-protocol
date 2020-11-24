@@ -45,6 +45,8 @@ class CreatorNodeSelection extends ServiceSelection {
     if (this.blacklist) { services = this.filterFromBlacklist(services) }
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST, val: services })
 
+    // TODO: add a sample size selection round to not send requests to all available nodes
+
     const successfulSyncCheckServices = []
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
     for (const response of syncResponses) {
@@ -55,7 +57,7 @@ class CreatorNodeSelection extends ServiceSelection {
       }
 
       const { isBehind, isConfigured } = response.syncStatus
-      // a first time creator will have a sync status as isBehind = true and isConfiugred = false. this is ok
+      // a first time creator will have a sync status as isBehind = true and isConfigured = false. this is ok
       const firstTimeCreator = isBehind && !isConfigured
       // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
       const existingCreator = !isBehind && isConfigured
