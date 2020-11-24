@@ -12,6 +12,7 @@ from src.queries.get_tracks import get_tracks
 from src.queries.get_save_tracks import get_save_tracks
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
+from src.queries.get_top_user_track_tags import get_top_user_track_tags
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, get_current_user_id, make_full_response, make_response, search_parser, success_response, abort_bad_request_param, \
@@ -392,6 +393,40 @@ class FavoritedTracks(Resource):
         favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
+
+
+tags_route_parser = reqparse.RequestParser()
+tags_route_parser.add_argument('user_id', required=False, type=str)
+tags_route_parser.add_argument('limit', required=False, type=int)
+tags_response = make_response("tags_response", ns, fields.List(fields.String))
+@ns.route("/<string:user_id>/tags")
+class FavoritedTracks(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User's Most Used Track Tags""",
+        params={
+            'user_id': 'A User ID',
+            "limit": 'Limit on the number of tags'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.expect(tags_route_parser)
+    @ns.marshal_with(tags_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        """Fetch most used tags in a user's tracks."""
+        decoded_id = decode_with_abort(user_id, ns)
+        args = tags_route_parser.parse_args()
+        limit = format_limit(args)
+        tags = get_top_user_track_tags({
+            'user_id': decoded_id,
+            'limit': limit
+        })
+        return success_response(tags)
 
 favorite_route_parser = reqparse.RequestParser()
 favorite_route_parser.add_argument('user_id', required=False, type=str)
