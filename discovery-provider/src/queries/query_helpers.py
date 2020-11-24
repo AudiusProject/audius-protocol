@@ -1,16 +1,14 @@
 # pylint: disable=too-many-lines
 import logging
-from urllib.parse import urljoin
-import requests
 from sqlalchemy import func, desc, text, Integer, and_, bindparam
 
 from flask import request
 
 from src import exceptions
 from src.queries import response_name_constants
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix
+from src.models import User, Track, Repost, RepostType, Follow, \
+    Playlist, Save, SaveType, Remix, AggregatePlays
 from src.utils import helpers
-from src.utils.config import shared_config
 from src.queries.get_unpopulated_users import get_unpopulated_users
 
 logger = logging.getLogger(__name__)
@@ -1069,42 +1067,27 @@ def get_follower_count_dict(session, user_ids, max_block_number=None):
     return follower_count_dict
 
 
-def get_track_play_counts(track_ids):
+def get_track_play_counts(db, track_ids):
     track_listen_counts = {}
 
     if not track_ids:
         return track_listen_counts
 
-    identity_url = shared_config['discprov']['identity_service_url']
-    # Create and query identity service endpoint
-    identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
-
-    post_body = {}
-    post_body['track_ids'] = track_ids
-    try:
-        resp = requests.post(identity_tracks_endpoint, json=post_body)
-    except Exception as e:
-        logger.error(
-            f'Error retrieving play count - {identity_tracks_endpoint}, {e}'
+    track_plays = (
+        db.query(AggregatePlays)
+        .filter(
+            AggregatePlays.play_item_id.in_(track_ids)
         )
-        return track_listen_counts
+        .all()
+    )
 
-    json_resp = resp.json()
-    keys = list(resp.json().keys())
-    if not keys:
-        return track_listen_counts
+    for track_play in track_plays:
+        track_listen_counts[track_play.play_item_id] = track_play.count
 
-    # Scenario should never arise, since we don't impose date parameter on initial query
-    if len(keys) != 1:
-        raise Exception('Invalid number of keys')
+    for track_id in track_ids:
+        if track_id not in track_listen_counts:
+            track_listen_counts[track_id] = 0
 
-    # Parse listen query results into track listen count dictionary
-    date_key = keys[0]
-    listen_count_json = json_resp[date_key]
-    if 'listenCounts' in listen_count_json:
-        for listen_info in listen_count_json['listenCounts']:
-            current_id = listen_info['trackId']
-            track_listen_counts[current_id] = listen_info['listens']
     return track_listen_counts
 
 
