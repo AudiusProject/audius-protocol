@@ -400,7 +400,7 @@ tags_route_parser.add_argument('user_id', required=False, type=str)
 tags_route_parser.add_argument('limit', required=False, type=int)
 tags_response = make_response("tags_response", ns, fields.List(fields.String))
 @ns.route("/<string:user_id>/tags")
-class FavoritedTracks(Resource):
+class MostUsedTags(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User's Most Used Track Tags""",
@@ -416,7 +416,7 @@ class FavoritedTracks(Resource):
     )
     @full_ns.expect(tags_route_parser)
     @ns.marshal_with(tags_response)
-    @cache(ttl_sec=5)
+    @cache(ttl_sec=60*5)
     def get(self, user_id):
         """Fetch most used tags in a user's tracks."""
         decoded_id = decode_with_abort(user_id, ns)
