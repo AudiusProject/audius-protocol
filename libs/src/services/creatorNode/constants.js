@@ -1,5 +1,5 @@
 module.exports = {
-  CREATOR_NODE_SERVICE_NAME: 'creator-node',
+  CREATOR_NODE_SERVICE_NAME: 'content-node',
   DECISION_TREE_STATE: Object.freeze({
     GET_ALL_SERVICES: 'Get All Services',
     FILTER_TO_WHITELIST: 'Filter To Whitelist',

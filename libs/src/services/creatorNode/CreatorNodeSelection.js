@@ -47,11 +47,11 @@ class CreatorNodeSelection extends ServiceSelection {
 
     const successfulSyncCheckServices = []
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
-    syncResponses.forEach(response => {
+    for (const response of syncResponses) {
       if (response.error) {
         console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.e}`)
-        this.removeFromBackups(response.service)
         this.addUnhealthy(response.service)
+        continue
       }
 
       const { isBehind, isConfigured } = response.syncStatus
@@ -59,10 +59,14 @@ class CreatorNodeSelection extends ServiceSelection {
       const firstTimeCreator = isBehind && !isConfigured
       // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
       const existingCreator = !isBehind && isConfigured
-      // if neither of these two are true, the cnode is not suited to be selected
-      if (firstTimeCreator || existingCreator) successfulSyncCheckServices.push(response.service)
-    })
-
+      // if either of these two are true, the cnode is suited to be selected
+      if (firstTimeCreator || existingCreator) {
+        successfulSyncCheckServices.push(response.service)
+      } else {
+        // else, add to unhealthy
+        this.addUnhealthy(response.service)
+      }
+    }
     services = [...successfulSyncCheckServices]
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
 
