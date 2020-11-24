@@ -64,7 +64,7 @@ def _get_trailing_app_metrics(session, args):
 
     metrics = list(map(lambda m: {"name": m.name, "count": m.count}, query))
 
-    # add unknown count
+    # add unknown count, inserted sorted by count
     existing_count = reduce(lambda x, y: x + y["count"], metrics, 0)
     unknown_count = route_query.count - existing_count
     for i, metric in enumerate(metrics[:]):

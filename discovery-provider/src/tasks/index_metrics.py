@@ -120,7 +120,7 @@ def refresh_metrics_matviews(db):
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_month_bucket')
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_trailing_week')
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_trailing_month')
-        session.execute('REFRESH MATERIALIZED VIEW route_metrics_trailing_all_time')
+        session.execute('REFRESH MATERIALIZED VIEW route_metrics_all_time')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_week')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_month')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_all_time')
