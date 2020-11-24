@@ -152,7 +152,7 @@ trailing_app_name_parser.add_argument('limit', required=False, type=int)
 @ns.route("/app_name/trailing/<string:time_range>")
 class TrailingAppNameMetrics(Resource):
     @ns.marshal_with(app_name_trailing_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self, time_range):
         """Gets trailing app name metrics from matview"""
         if time_range not in valid_trailing_time_periods:

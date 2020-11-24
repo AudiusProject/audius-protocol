@@ -50,12 +50,13 @@ def _get_route_metrics(session, args):
     if is_simple_args and bucket_size in ["day", "month"]:
         query = None
         if bucket_size == "day":
+            # subtract 1 day from the start_time so that the last day is fully complete
             query = (session.query(RouteMetricsDayMatview)
-                     .filter(RouteMetricsDayMatview.time >= (args.get('start_time') - timedelta(days=1))))
+                     .filter(RouteMetricsDayMatview.time > (args.get('start_time') - timedelta(days=1))))
 
         else:
             query = (session.query(RouteMetricsMonthMatview)
-                     .filter(RouteMetricsMonthMatview.time >= (args.get('start_time') - timedelta(days=1))))
+                     .filter(RouteMetricsMonthMatview.time > (args.get('start_time'))))
 
         query = (query
                  .order_by(desc('time'))
