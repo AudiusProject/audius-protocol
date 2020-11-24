@@ -314,6 +314,29 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     return users
 
 
+def get_user_follower_counts(session, user_ids, users):
+    follower_counts = (
+        session.query(
+            Follow.followee_user_id,
+            func.count(Follow.followee_user_id)
+        )
+        .filter(
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.followee_user_id.in_(user_ids)
+        )
+        .group_by(Follow.followee_user_id)
+        .all()
+    )
+    follower_count_dict = {user_id: follower_count for (
+        user_id, follower_count) in follower_counts}
+    for user in users:
+        user_id = user["user_id"]
+        user[response_name_constants.follower_count] = follower_count_dict.get(
+            user_id, 0)
+    return users
+
+
 def get_track_play_count_dict(session, track_ids):
     if not track_ids:
         return {}
@@ -494,6 +517,30 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         else:
             track[response_name_constants.remix_of] = None
 
+    return tracks
+
+
+def get_track_repost_counts(session, track_ids, tracks):
+    repost_counts = (
+        session.query(
+            Repost.repost_item_id,
+            func.count(Repost.repost_item_id)
+        )
+        .filter(
+            Repost.is_current == True,
+            Repost.is_delete == False,
+            Repost.repost_item_id.in_(track_ids),
+            Repost.repost_type == RepostType.track
+        )
+        .group_by(Repost.repost_item_id)
+        .all()
+    )
+    repost_count_dict = {track_id: repost_count for (
+        track_id, repost_count) in repost_counts}
+    for track in tracks:
+        track_id = track["track_id"]
+        track[response_name_constants.repost_count] = repost_count_dict.get(
+            track_id, 0)
     return tracks
 
 
@@ -747,6 +794,19 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             user_reposted_playlist_dict.get(playlist_id, False)
         playlist[response_name_constants.has_current_user_saved] = user_saved_playlist_dict.get(
             playlist_id, False)
+
+    return playlists
+
+
+def get_playlist_repost_counts(session, playlist_ids, playlists, repost_types):
+    # build dict of playlist id --> repost count
+    playlist_repost_counts = dict(get_repost_counts(
+        session, False, False, playlist_ids, repost_types))
+
+    for playlist in playlists:
+        playlist_id = playlist["playlist_id"]
+        playlist[response_name_constants.repost_count] = playlist_repost_counts.get(
+            playlist_id, 0)
 
     return playlists
 
