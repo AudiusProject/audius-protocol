@@ -1,7 +1,7 @@
 from enum import Enum
 import logging  # pylint: disable=C0302
-from flask import Blueprint, request
 from functools import cmp_to_key
+from flask import Blueprint, request
 import sqlalchemy
 
 from src import api_helpers, exceptions
@@ -13,7 +13,8 @@ from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.queries.query_helpers import get_current_user_id, get_playlist_repost_counts, get_track_repost_counts, get_user_follower_counts, get_users_by_id, get_users_ids, populate_user_metadata, \
+from src.queries.query_helpers import get_current_user_id, get_playlist_repost_counts, get_track_repost_counts, \
+    get_user_follower_counts, get_users_by_id, get_users_ids, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
     get_track_play_counts
 

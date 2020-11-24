@@ -104,7 +104,8 @@ def fetch_cnode_endpoints_from_identity(self):
 
         registered_cnodes = r.json()
         logger.info(
-            f"index_network_peers.py | Fetched registered creator nodes from chain via {identity_endpoint} - {registered_cnodes}"
+            f"index_network_peers.py | Fetched registered creator nodes from chain via"
+            f"{identity_endpoint} - {registered_cnodes}"
         )
         return registered_cnodes
     except Exception as e:
