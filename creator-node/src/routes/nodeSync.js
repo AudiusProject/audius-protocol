@@ -25,7 +25,7 @@ module.exports = function (app) {
     const start = Date.now()
 
     const walletPublicKeys = req.query.wallet_public_key // array
-    const sourceEndpoint = req.query.source_endpoint || '' // string
+    const sourceEndpoint = req.query.source_endpoint // string
 
     const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
@@ -138,10 +138,10 @@ module.exports = function (app) {
       const ipfs = req.app.get('ipfsAPI')
       const ipfsIDObj = await getIPFSPeerId(ipfs)
 
-      req.logger.info(`Successful export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms`)
+      req.logger.info(`Successful export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint || '(not provided)'} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
     } catch (e) {
-      req.logger.error(`Error in /export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms ||`, e)
+      req.logger.error(`Error in /export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint || '(not provided)'} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms ||`, e)
       await transaction.rollback()
       return errorResponseServerError(e.message)
     }
@@ -345,17 +345,28 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           where: { walletPublicKey: fetchedWalletPublicKey },
           transaction
         })
+        req.logger.info(`SIDTEST existing cnodeUserRecord: ${JSON.stringify(cnodeUserRecord, null, 2)}`)
         let cnodeUser
         if (cnodeUserRecord) {
-          cnodeUser = await cnodeUserRecord.update(
+          const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {
               lastLogin: fetchedCNodeUser.lastLogin,
               latestBlockNumber: fetchedLatestBlockNumber,
               clock: fetchedCNodeUser.clock,
               createdAt: fetchedCNodeUser.createdAt
             },
-            { transaction }
+            {
+              where: { walletPublicKey: fetchedWalletPublicKey },
+              fields: ['lastLogin', 'latestBlockNumber', 'clock', 'createdAt', 'updatedAt'],
+              returning: true,
+              transaction
+            }
           )
+          if (numRowsUpdated !== 1 || respObj.length !== 1) {
+            throw new Error('Failed to update cnodeUser row TODO fix error msg')
+          }
+          cnodeUser = respObj[0]
+          req.logger.info(`SIDTEST CNODE USER UPDATE ${JSON.stringify(cnodeUser, null, 2)}`)
         } else {
           cnodeUser = await models.CNodeUser.create(
             {
@@ -365,11 +376,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
               clock: fetchedCNodeUser.clock,
               createdAt: fetchedCNodeUser.createdAt
             },
-            { transaction }
+            {
+              returning: true,
+              transaction
+            }
           )
+          req.logger.info(`SIDTEST CNODE USER create ${JSON.stringify(cnodeUser, null, 2)}`)
         }
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
-        req.logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}`)
+        req.logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`)
 
         /**
          * Populate all new data for fetched cnodeUser

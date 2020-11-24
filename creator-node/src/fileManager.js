@@ -229,7 +229,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         }
       }
     } catch (e) {
-      throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
+      // throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
     return expectedStoragePath
