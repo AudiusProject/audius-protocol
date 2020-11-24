@@ -59,11 +59,32 @@ const healthCheckDurationController = async (req) => {
   return successResponse(response)
 }
 
+/**
+ * Controller for `health_check/verbose` route
+ * Calls `healthCheckComponentService`.
+ *
+ * @todo Add disk usage, current load, and/or node details to response.
+ * Will be used for cnode selection.
+ */
+const healthCheckVerboseController = async (req) => {
+  const logger = req.logger
+  const healthCheckResponse = await healthCheck(serviceRegistry, logger, sequelize)
+
+  // TODO: add disk usage, current load, and/or node details to response
+  return successResponse({
+    ...healthCheckResponse,
+    country: config.get('serviceCountry'),
+    latitude: config.get('serviceLatitude'),
+    longitude: config.get('serviceLongitude')
+  })
+}
+
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get('/health_check/duration', handleResponse(healthCheckDurationController))
 router.get('/health_check/duration/heartbeat', handleResponseWithHeartbeat(healthCheckDurationController))
+router.get('/health_check/verbose', handleResponse(healthCheckVerboseController))
 
 module.exports = router
