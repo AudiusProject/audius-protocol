@@ -34,6 +34,7 @@
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "openzeppelin-solidity": "^2.1.0",
+    "@openzeppelin/upgrades": "2.8.0",
     "truffle": "5.0.42"
   },
   "devDependencies": {
