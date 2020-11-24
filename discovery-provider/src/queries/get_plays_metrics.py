@@ -31,7 +31,7 @@ def _get_plays_metrics(session, args):
             func.count(Play.id).label('count')
         )
         .filter(
-            Play.created_at > args.get('start_time')
+            (func.date_trunc(args.get('bucket_size'), Play.created_at)) > args.get('start_time')
         )
         .group_by(func.date_trunc(args.get('bucket_size'), Play.created_at))
         .order_by(desc('timestamp'))

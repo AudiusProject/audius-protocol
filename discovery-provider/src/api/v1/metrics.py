@@ -100,7 +100,7 @@ metrics_app_name_list_parser.add_argument('include_unknown', required=False, typ
 @ns.route("/routes/trailing/month", doc=False)
 class RouteMetricsTrailingMonth(Resource):
     @ns.marshal_with(route_metrics_trailing_month_response)
-    @cache(ttl_sec=3 * 60 * 60)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """Gets trailing month route metrics from matview"""
         metrics = get_monthly_trailing_route_metrics()
@@ -125,7 +125,7 @@ class AppNameListMetrics(Resource):
     )
     @ns.expect(metrics_app_name_list_parser)
     @ns.marshal_with(app_name_response)
-    @cache(ttl_sec=3 * 60 * 60)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         """List all the app names"""
         args = metrics_app_name_list_parser.parse_args()
@@ -152,7 +152,7 @@ trailing_app_name_parser.add_argument('limit', required=False, type=int)
 @ns.route("/app_name/trailing/<string:time_range>")
 class TrailingAppNameMetrics(Resource):
     @ns.marshal_with(app_name_trailing_response)
-    @cache(ttl_sec=3 * 60 * 60)
+    @cache(ttl_sec=30 * 60)
     def get(self, time_range):
         """Gets trailing app name metrics from matview"""
         if time_range not in valid_trailing_time_periods:
@@ -188,7 +188,7 @@ class AppNameMetrics(Resource):
     )
     @ns.expect(metrics_app_name_parser)
     @ns.marshal_with(app_name_metrics_response)
-    @cache(ttl_sec=3 * 60 * 60)
+    @cache(ttl_sec=30 * 60)
     def get(self, app_name):
         """Get the app name metrics"""
         args = metrics_app_name_parser.parse_args()

@@ -41,6 +41,14 @@ def upgrade():
 	FROM route_metrics
 	GROUP BY date_trunc('month', route_metrics.timestamp);
 
+    --- route metrics trailing week
+    CREATE MATERIALIZED VIEW route_metrics_trailing_week AS
+    SELECT
+        COUNT (DISTINCT route_metrics.ip) as "unique_count",
+        SUM (route_metrics.count) as "count"
+    FROM route_metrics
+    WHERE route_metrics.timestamp > now() - INTERVAL '1 WEEK';
+
     --- route metrics trailing month
     CREATE MATERIALIZED VIEW route_metrics_trailing_month AS
     SELECT
@@ -48,6 +56,13 @@ def upgrade():
         SUM (route_metrics.count) as "count"
     FROM route_metrics
     WHERE route_metrics.timestamp > now() - INTERVAL '1 MONTH';
+
+    --- route metrics all-time
+    CREATE MATERIALIZED VIEW route_metrics_all_time AS
+    SELECT
+        COUNT (DISTINCT route_metrics.ip) as "unique_count",
+        SUM (route_metrics.count) as "count"
+    FROM route_metrics;
 
     --- app name metrics trailing week
     CREATE MATERIALIZED VIEW app_name_metrics_trailing_week AS
@@ -84,7 +99,9 @@ def downgrade():
     connection.execute('''
     DROP MATERIALIZED VIEW route_metrics_day_bucket;
     DROP MATERIALIZED VIEW route_metrics_month_bucket;
+    DROP MATERIALIZED VIEW route_metrics_trailing_week;
     DROP MATERIALIZED VIEW route_metrics_trailing_month;
+    DROP MATERIALIZED VIEW route_metrics_trailing_all_time;
     DROP MATERIALIZED VIEW app_name_metrics_trailing_week;
     DROP MATERIALIZED VIEW app_name_metrics_trailing_month;
     DROP MATERIALIZED VIEW app_name_metrics_all_time;

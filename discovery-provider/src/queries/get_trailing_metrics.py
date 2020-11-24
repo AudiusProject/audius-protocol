@@ -1,10 +1,10 @@
+from functools import reduce
 import logging
 from sqlalchemy import desc
 from src.models import RouteMetricsTrailingWeek, RouteMetricsTrailingMonth, RouteMetricsAllTime, \
     AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime
 from src.utils import db_session
 from src import exceptions
-from functools import reduce
 
 logger = logging.getLogger(__name__)
 
