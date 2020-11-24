@@ -489,8 +489,6 @@ def track_search_query(
         res,
         {
             "query": searchStr,
-            # Get at least 5 results from the lexeme even if limit is less than 5 so secondary
-            # sorts can be applied. Trim at limit still.
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "title_weight": trackTitleWeight,
@@ -567,8 +565,6 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
         res,
         {
             "query": searchStr,
-            # Get at least 5 results from the lexeme even if limit is less than 5 so secondary
-            # sorts can be applied. Trim at limit still.
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": userNameWeight,
@@ -652,8 +648,6 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         res,
         {
             "query": searchStr,
-            # Get at least 5 results from the lexeme even if limit is less than 5 so secondary
-            # sorts can be applied. Trim at limit still.
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": playlistNameWeight,
