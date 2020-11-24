@@ -170,6 +170,24 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         )
     })
 
+    let generateProposeAddOrUpdateContentNodeData = async (chainId, newCNodeSPId, newCnodeDelegateWallet, proposerSpId, proposerAccount) => {
+        const nonce = signatureSchemas.getNonce()
+        const signatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
+            chainId,
+            userReplicaSetManager.address,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            proposerSpId,
+            nonce
+        )
+        const sig = await eth_signTypedData(proposerAccount, signatureData)
+        return {
+            nonce,
+            signatureData,
+            sig
+        }
+    }
+
     it('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
         // Bootstrapped nodes = cn1/cn3/cn3
         // Proposers = cn1/cn2/cn3
@@ -179,47 +197,35 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
 
         // Generate proposer 1 relevant information (cn1)
-        const cn1Nonce = signatureSchemas.getNonce()
-        const cn1SignatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
+        const cn1Info = await generateProposeAddOrUpdateContentNodeData(
             chainIdForContract,
-            userReplicaSetManager.address,
             newCNodeSPId,
             newCnodeDelegateWallet,
             cnode1SpID,
-            cn1Nonce
+            cnode1Account
         )
-        const cn1Sig = await eth_signTypedData(cnode1Account, cn1SignatureData)
 
         // Generate proposer 2 relevant information (cn2)
-        const cn2Nonce = signatureSchemas.getNonce()
-        const cn2SignatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
+        const cn2Info = await generateProposeAddOrUpdateContentNodeData(
             chainIdForContract,
-            userReplicaSetManager.address,
             newCNodeSPId,
             newCnodeDelegateWallet,
             cnode2SpID,
-            cn2Nonce
+            cnode2Account
         )
-        const cn2Sig = await eth_signTypedData(cnode2Account, cn2SignatureData)
 
         // Generate proposer 3 relevant information (cn3)
-        const cn3Nonce = signatureSchemas.getNonce()
-        const cn3SignatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
+        const cn3Info = await generateProposeAddOrUpdateContentNodeData(
             chainIdForContract,
-            userReplicaSetManager.address,
             newCNodeSPId,
             newCnodeDelegateWallet,
             cnode3SpID,
-            cn3Nonce
+            cnode3Account
         )
-        const cn3Sig = await eth_signTypedData(cnode3Account, cn3SignatureData)
 
         // Generate arguments for proposal
         const proposerSpIds = [cnode1SpID, cnode2SpID, cnode3SpID]
-        const proposerNonces = [cn1Nonce, cn2Nonce, cn3Nonce]
-        const proposer1Sig = cn1Sig
-        const proposer2Sig = cn2Sig
-        const proposer3Sig = cn3Sig
+        const proposerNonces = [cn1Info.nonce, cn2Info.nonce, cn3Info.nonce]
 
         // Finally, submit tx with all 3 signatures
         let addContentNodeTx = await userReplicaSetManager.addOrUpdateContentNode(
@@ -227,9 +233,9 @@ contract.only('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             proposerSpIds,
             proposerNonces,
-            proposer1Sig,
-            proposer2Sig,
-            proposer3Sig
+            cn1Info.sig,
+            cn2Info.sig,
+            cn3Info.sig
         )
 
         let newDelegateWalletFromChain = await userReplicaSetManager.getContentNodeWallet(newCNodeSPId)
@@ -260,6 +266,10 @@ contract.only('UserReplicaSetManager', async (accounts) => {
             assert.isTrue(eventProposerSpIds[i].eq(proposerSpIdsBn[i]))
         }
     })
+
+    // TODO: Duplicate proposer
+
+    // TODO: Invalid nonce test case
 
     it('Configure + update user replica set', async () => {
         let user1Primary = toBN(1)
