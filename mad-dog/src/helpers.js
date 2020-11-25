@@ -61,21 +61,22 @@ const addAndUpgradeUsers = async (
       if (existingUser) {
         existingUserIds.push(existingUser.user_id)
         userId = existingUser.user_id
-        logger.info(`Found existing user: ${userId}`)
+        logger.info(`Found existing user with id ${userId}`)
       } else {
         const userMetadata = users[i]
         const newUserId = await addUser(libs, userMetadata, USER_PIC_PATH)
         addedUserIds.push(newUserId)
         userId = newUserId
-        logger.info(`Found existing user: ${userId}`)
+        logger.info(`Created new user with id ${userId}`)
       }
 
       // add to wallet index to userId mapping
       walletIndexToUserIdMap[i] = userId
     })
     // print userIds that exist and were added
-    logger.info(`Added users, userIds=${addedUserIds}`)
-    logger.info(`Existing users, userIds=${existingUserIds}`)
+    if (addedUserIds.length) logger.info(`Added users, userIds = [${addedUserIds}]`)
+    if (existingUserIds.length) logger.info(`Existing users, userIds = [${existingUserIds}]`)
+
     await waitForIndexing()
   })
 

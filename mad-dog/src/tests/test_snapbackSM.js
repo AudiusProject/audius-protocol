@@ -55,7 +55,7 @@ const monitorAllUsersSyncStatus = async({ executeAll }) => {
                 }
             } catch(e) {
                 logger.info(e)
-                throw new Error(`Failed sync monitoring for ${userId}`)
+                throw new Error(`Failed sync monitoring for user=${userId} with error ${e}`)
             }
             if (!synced) {
                 // Wait 1s

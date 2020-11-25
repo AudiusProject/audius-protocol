@@ -281,7 +281,11 @@ class Users extends Base {
   }
 
   /**
-   * Updates a creator (updates their data on the creator node)
+   * Updates creator metadata (updates their data on the creator node and on chain)
+   * 
+   * @dev TODO - remove `userId` param and fetch from user metadata
+   * @dev TODO - instead of returning `userId` return `txReceipt.blockNumber`
+   * 
    * @param {number} userId
    * @param {Object} metadata
    */

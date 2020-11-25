@@ -2,7 +2,7 @@ const request = require('supertest')
 const models = require('../src/models')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const { getIPFSMock } = require('./lib/ipfsMock')
+// const { getIPFSMock } = require('./lib/ipfsMock')
 const { createStarterCNodeUser, testEthereumConstants, destroyUsers } = require('./lib/dataSeeds')
 const BlacklistManager = require('../src/blacklistManager')
 const ipfsClient = require('../src/ipfsClient')
@@ -17,7 +17,7 @@ const config = require('../src/config')
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 
-describe('test nodesync', function () {
+describe.only('test nodesync', function () {
   let server, app
 
   let maxExportClockValueRange = config.get('maxExportClockValueRange')
@@ -51,12 +51,13 @@ describe('test nodesync', function () {
           testField: 'testValue'
         }
       }
-      const userMedataResp = await request(app)
+      const userMetadataResp = await request(app)
         .post('/audius_users/metadata')
         .set('X-Session-ID', sessionToken)
         .send(metadata)
-      metadataMultihash = userMedataResp.body.data.metadataMultihash
-      metadataFileUUID = userMedataResp.body.data.metadataFileUUID
+        .expect(200)
+      metadataMultihash = userMetadataResp.body.data.metadataMultihash
+      metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
 
       // Associate user with with blockchain ID
       const associateRequest = {
@@ -68,6 +69,7 @@ describe('test nodesync', function () {
         .post('/audius_users')
         .set('X-Session-ID', sessionToken)
         .send(associateRequest)
+        .expect(200)
 
       /** Upload a track */
 
@@ -244,9 +246,17 @@ describe('test nodesync', function () {
 
       beforeEach(createUserAndTrack)
 
+      /**
+       * unset maxExportClockValueRange
+       */
+      afterEach(async function () {
+        delete process.env.maxExportClockValueRange
+      })
+
       it('Export from clock = 0', async function () {
         const requestedClockRangeMin = 0
         const requestedClockRangeMax = (maxExportClockValueRange - 1)
+        console.log(`SIDTEST requestedClockRangeMax: ${requestedClockRangeMax}`)
 
         // confirm maxExportClockValueRange < cnodeUser.clock
         const cnodeUserClock = (await models.CNodeUser.findOne({
@@ -554,44 +564,62 @@ describe('test nodesync', function () {
     })
   })
 
-  describe.only('Test /sync route', function () {
+  describe.skip('Test /sync route', function () {
     const TEST_ENDPOINT = 'http://test-cn.co'
     const userMetadataURI = config.get('userMetadataNodeUrl')
     const { pubKey } = testEthereumConstants
+
+    const createUser = async function () {
+      // Create user
+      const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser()
+
+      // Upload user metadata
+      const metadata = {
+        metadata: {
+          testField: 'testValue'
+        }
+      }
+      const userMetadataResp = await request(app)
+        .post('/audius_users/metadata')
+        .set('X-Session-ID', sessionToken)
+        .send(metadata)
+        .expect(200)
+
+      const metadataFileUUID = userMetadataResp.body.data.metadataFileUUID
+
+      // Associate user with with blockchain ID
+      const associateRequest = {
+        blockchainUserId: 1,
+        metadataFileUUID,
+        blockNumber: 10
+      }
+      await request(app)
+        .post('/audius_users')
+        .set('X-Session-ID', sessionToken)
+        .send(associateRequest)
+        .expect(200)
+
+      return cnodeUserUUID
+    }
 
     /**
      * Setup deps + mocks + app
      */
     beforeEach(async function () {
-      const ipfsMock = getIPFSMock()
-
-      // Make ipfs add return the cid
-      // used to create the readstream.
-      // Used in the final step of
-      // `saveFileForMultihashToFS`
-      ipfsMock.add = function * (content) {
-        const { path } = content
-        const cid = path.split('/')[1]
-        yield {
-          cid: {
-            toString: () => cid
-          }
-        }
-      }
-
+      // const ipfsMock = getIPFSMock()
+      const ipfs = ipfsClient.ipfs
       const libsMock = getLibsMock()
-      const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+      const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
       server = appInfo.server
       app = appInfo.app
     })
 
-    it.only('Syncs correctly from clock = 0 with mocked export object', async function () {
+    it.skip('Syncs correctly from clean user state with mocked export object', async function () {
       // Get the saved export
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
       const audiusUser = cnodeUser.audiusUsers[0]
       const { tracks, files, clockRecords } = cnodeUser
-      console.log(`SIDTEST audiusUser: ${JSON.stringify(audiusUser, null, 2)}`)
 
       // Setup mocked responses
       nock(TEST_ENDPOINT)
@@ -603,13 +631,29 @@ describe('test nodesync', function () {
         .get(uri => uri.includes('/ipfs'))
         .reply(200, { data: Buffer.alloc(32) })
 
-      // Create start cnodeUser
-      // const { sessionToken } = await createStarterCNodeUser()
+      // // Make ipfs.add() return the cid
+      // // used to create the readstream.
+      // // Used in the final step of
+      // // `saveFileForMultihashToFS`
+      // ipfsMock.add = function * (content) {
+      //   const { path } = content
+      //   const cid = path.split('/')[1]
+      //   yield {
+      //     cid: {
+      //       toString: () => cid
+      //     }
+      //   }
+      // }
+
+      // add every CID to IPFS node
+
+      // Confirm no local user state before sync
+      const initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
 
       // test: sync
       await request(app)
         .post('/sync')
-        // .set('X-Session-ID', sessionToken)
         .send({
           wallet: [pubKey.toLowerCase()],
           creator_node_endpoint: TEST_ENDPOINT,
@@ -709,6 +753,147 @@ describe('test nodesync', function () {
       }
     })
 
-    it.skip('Test sync when cnodeUser entry already exists locally')
+    it.skip('Syncs correctly when cnodeUser data already exists locally', async function () {
+      // Get the saved export
+      const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
+      const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
+      const audiusUser = cnodeUser.audiusUsers[0]
+      const { tracks, files, clockRecords } = cnodeUser
+
+      // Setup mocked responses
+      nock(TEST_ENDPOINT)
+        .persist()
+        .get(uri => uri.includes('/export'))
+        .reply(200, sampleExport)
+      nock(userMetadataURI)
+        .persist()
+        .get(uri => uri.includes('/ipfs'))
+        .reply(200, { data: Buffer.alloc(32) })
+
+      // // Make ipfs.add() return the hash used to compute file write path.
+      // // Used in `saveFileFromBufferToIPFSAndDisk`
+      // ipfsMock.add = function * (content) {
+      //   const { path } = content
+      //   const hash = path.split('/')[1]
+      //   yield {
+      //     hash: {
+      //       toString: () => cid
+      //     }
+      //   }
+      // }
+
+      // Confirm initial local state is empty
+      let initialCNodeUserCount = await models.CNodeUser.count()
+      assert.strictEqual(initialCNodeUserCount, 0)
+
+      // seed user state locally with different cnodeUserUUID
+      const cnodeUserUUID = await createUser()
+
+      // Confirm user state exists locally before sync
+      initialCNodeUserCount = await models.CNodeUser.count({
+        where: { cnodeUserUUID: cnodeUserUUID }
+      })
+      assert.strictEqual(initialCNodeUserCount, 1)
+
+      // test: sync
+      await request(app)
+        .post('/sync')
+        .send({
+          wallet: [pubKey.toLowerCase()],
+          creator_node_endpoint: TEST_ENDPOINT,
+          immediate: true
+        }).expect(200)
+
+      const exportedCnodeUser = {
+        walletPublicKey: cnodeUser.walletPublicKey,
+        lastLogin: cnodeUser.lastLogin,
+        latestBlockNumber: cnodeUser.latestBlockNumber,
+        clock: cnodeUser.clock,
+        createdAt: cnodeUser.createdAt
+      }
+
+      // verify CNodeUser
+      const localCNodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
+        where: {
+          cnodeUserUUID,
+          walletPublicKey: cnodeUser.walletPublicKey
+        },
+        raw: true
+      }))
+      assert.deepStrictEqual(
+        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+        exportedCnodeUser
+      )
+
+      // verify AudiusUser
+      const localAudiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
+        where: {
+          cnodeUserUUID,
+          clock: audiusUser.clock
+        },
+        raw: true
+      }))
+      assert.deepStrictEqual(
+        _.omit(localAudiusUser, ['cnodeUserUUID']),
+        _.omit(audiusUser, ['cnodeUserUUID'])
+      )
+
+      // TODO verify: expected files are all on disc
+
+      // verify clock records
+      for (let exportedRecord of clockRecords) {
+        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
+        const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+          where: {
+            clock,
+            cnodeUserUUID,
+            sourceTable,
+            createdAt,
+            updatedAt
+          },
+          raw: true
+        }))
+        assert.deepStrictEqual(
+          _.omit(localRecord, ['cnodeUserUUID']),
+          _.omit(exportedRecord, ['cnodeUserUUID'])
+        )
+      }
+
+      // verify files
+      for (let exportedFile of files) {
+        const { fileUUID, multihash, clock } = exportedFile
+        const localFile = stringifiedDateFields(await models.File.findOne({
+          where: {
+            clock,
+            cnodeUserUUID,
+            multihash,
+            fileUUID
+          },
+          raw: true
+        }))
+        assert.deepStrictEqual(
+          _.omit(localFile, ['cnodeUserUUID']),
+          _.omit(exportedFile, ['cnodeUserUUID'])
+        )
+      }
+
+      // verify tracks
+      for (let exportedTrack of tracks) {
+        const { clock, blockchainId, metadataFileUUID } = exportedTrack
+        const localFile = stringifiedDateFields(await models.Track.findOne({
+          where: {
+            clock,
+            cnodeUserUUID,
+            blockchainId,
+            metadataFileUUID
+          },
+          raw: true
+        }))
+        assert.deepStrictEqual(
+          _.omit(localFile, ['cnodeUserUUID']),
+          _.omit(exportedTrack, ['cnodeUserUUID'])
+        )
+      }
+    })
   })
 })
