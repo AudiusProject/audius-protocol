@@ -31,6 +31,8 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
 
 function clearRequireCache () {
   Object.keys(require.cache).forEach(function (key) {
+    // exclude src/models/index from the key deletion because it initalizes a new connection pool
+    // every time and we hit a db error if we clear the cache and keep creating new pg pools
     if (key.includes('creator-node/src/') && !key.includes('creator-node/src/models/index.js')) {
       console.log('deleting cache', key)
       delete require.cache[key]
