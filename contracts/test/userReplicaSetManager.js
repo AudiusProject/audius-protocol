@@ -46,7 +46,6 @@ contract('UserReplicaSetManager', async (accounts) => {
     let userReplicaSetManager
     let networkId
 
-
     beforeEach(async () => {
         // Initialize contract state
         registry = await Registry.new()
