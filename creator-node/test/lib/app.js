@@ -31,7 +31,7 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
 
 function clearRequireCache () {
   Object.keys(require.cache).forEach(function (key) {
-    if (key.includes('creator-node/src/')) {
+    if (key.includes('creator-node/src/') && !key.includes('creator-node/src/models/index.js')) {
       console.log('deleting cache', key)
       delete require.cache[key]
     }
