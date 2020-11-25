@@ -3,13 +3,13 @@ const path = require('path')
 const fs = require('fs')
 var { exec } = require('child_process')
 
-const wallets = require('./user_metadata_to_cnode_missing_files_wallets')
+const userIds = require('./user_metadata_to_cnode_missing_files_userids')
 
 if (!process.env.UM_DB_URL) throw new Error('Please pass in the required UM_DB_URL property')
 const UM_MODELS = require('./sequelize')(process.env.UM_DB_URL)
 if (!process.env.CN_DB_URL) throw new Error('Please pass in the required CN_DB_URL property')
 const CN_MODELS = require('./sequelize')(process.env.CN_DB_URL)
-const dbManager = require('./dbManagerClone')
+const DBManager = require('./dbManagerClone')
 
 const USER_METADATA_ENDPOINT = 'https://usermetadata.audius.co'
 const METADATA_NODE_ENDPOINT = 'https://discoveryprovider.audius.co'
@@ -22,37 +22,42 @@ const PRIMARY_TO_PODS = {
 const KUBE_NAMESPACE = `kubectl -n stage`
 
 let COMMANDS_RUN = new Set()
+let SUCCESSFUL_USERS = []
 
 async function run () {
-  for (let wallet of wallets) {
+  for (let userId of userIds) {
     try {
-      console.log(`------------ Starting run for wallet ${wallet} ------------`)
+      console.log(`------------ Starting run for userId ${userId} ------------`)
       // find user's primary
-      const primary = await findUsersPrimary(wallet)
-      if (!primary) throw new Error('no primary for wallet', wallet)
+      const userObj = await findUsersPrimary(userId)
+      if (!userObj) throw new Error('no primary for userId', userId)
+      const { primary, wallet } = userObj
+
       if (!primary.includes('creatornode.audius.co')) {
-        console.log(`Skipping content-node primary for wallet ${wallet}`)
+        console.log(`Skipping content-node primary for userId ${userId}`)
         continue
       }
 
-      // export data from user metadata for wallet
+      // export data from user metadata for userId
       const exportData = await exportDataForWallet(wallet)
       // console.log('exportData', exportData)
 
       // write files from the export to the local files_um/ folder
-      const { writesSuccessful, files } = await writeFilesLocallyForUser(exportData, wallet)
-      if (!writesSuccessful || files.length === 0) throw new Error(`Did not successfully fetch files for wallet ${wallet}`)
+      const { writesSuccessful, files } = await writeFilesLocallyForUser(exportData, userId)
+      if (!writesSuccessful || files.length === 0) throw new Error(`Did not successfully fetch files for userId ${userId}`)
 
       // move files to primary
-      // await copyFilesToPrimary(wallet, files, primary)
+      // await copyFilesToPrimary(userId, files, primary)
 
       // write files to db
       await writeFilesToDB(wallet, files)
-      console.log(`------------ Finished for wallet ${wallet} ------------\n`)
+      console.log(`------------ Finished for userId ${userId} ------------\n`)
+      SUCCESSFUL_USERS.push(userId)
     } catch (e) {
-      console.error(`error transferring files from user metadata for user: ${wallet}`, e)
+      console.error(`error transferring files from user metadata for user: ${userId}`, e)
     }
   }
+  console.log('successfully finished for', SUCCESSFUL_USERS)
   process.exit()
 }
 
@@ -112,20 +117,20 @@ async function writeFilesLocallyForUser (data, wallet) {
 
   for (let cnodeUserUUID in data.cnodeUsers) {
     const cnodeUser = data.cnodeUsers[cnodeUserUUID]
-    for (let file of cnodeUser.files) {
-      // skip dir types for file fetching and writing, but insert these into db
-      if (file.type === 'dir') continue
+    // for (let file of cnodeUser.files) {
+    //   // skip dir types for file fetching and writing, but insert these into db
+    //   if (file.type === 'dir') continue
 
-      console.log(`about to fetch file from user metadata: ${file.multihash}`)
-      const responseStream = await _getFileFromUserMetadata(file.multihash)
+    //   console.log(`about to fetch file from user metadata: ${file.multihash}`)
+    //   const responseStream = await _getFileFromUserMetadata(file.multihash)
 
-      if (responseStream) {
-        await _writeStreamToFileSystem(responseStream, path.join('files_um', file.multihash))
-      } else {
-        console.log(`could not download file for object`, file)
-        writesSuccessful = false
-      }
-    }
+    //   if (responseStream) {
+    //     await _writeStreamToFileSystem(responseStream, path.join('files_um', file.multihash))
+    //   } else {
+    //     console.log(`could not download file for object`, file)
+    //     writesSuccessful = false
+    //   }
+    // }
 
     // this return is in a for loop, but we're assuming data.cnodeUsers is an object with a single property
     return { writesSuccessful, files: cnodeUser.files || [] }
@@ -157,32 +162,33 @@ async function copyFilesToPrimary (wallet, files, primaryUrl) {
 }
 
 /**
- * Given a user's wallet, find the primary creator node
+ * Given a user's id, find and return the primary creator node and wallet address
  */
-async function findUsersPrimary (wallet) {
+async function findUsersPrimary (userId) {
   const resp = await axios({
     method: 'get',
     baseURL: METADATA_NODE_ENDPOINT,
     url: '/users',
-    params: { wallet },
+    params: { id: userId },
     responseType: 'json',
     timeout: 300000 /* 5m = 300000ms */
   })
 
   if (resp.status !== 200) {
-    console.error(`Failed to retrieve findUsersPrimary`, wallet)
+    console.error(`Failed to retrieve findUsersPrimary`, userId)
     throw new Error(resp.data['error'])
   }
 
   // resp.data is {data: [{user object}], signature: '', signer: ''}
   if (!resp.data || !resp.data.data || !resp.data.data[0]) {
-    throw new Error(`Malformed response for findUsersPrimary ${wallet}`)
+    throw new Error(`Malformed response for findUsersPrimary ${userId}`)
   }
 
   const primary = resp.data.data[0].creator_node_endpoint.split(',')[0]
-  if (primary) {
+  const wallet = resp.data.data[0].wallet
+  if (primary && wallet) {
     console.log(`primary endpoint for wallet ${wallet}: ${primary}`)
-    return primary
+    return { primary, wallet }
   }
 
   return null
@@ -194,30 +200,49 @@ async function writeFilesToDB (wallet, files) {
   // in a try/catch, call dbManager function to write files
   let cnodeUserUM
   let cnodeUserCN
+  let filesToAdd = []
   try {
-    cnodeUserUM = await UM_MODELS.CNodeUser.findOne({ where: { walletPublicKey: wallet }})
+    cnodeUserUM = await UM_MODELS.CNodeUser.findOne({ where: { walletPublicKey: wallet } })
     // console.log(cnodeUserUM)
-    cnodeUserCN = await CN_MODELS.CNodeUser.findOne({ where: { walletPublicKey: wallet }})
+    cnodeUserCN = await CN_MODELS.CNodeUser.findOne({ where: { walletPublicKey: wallet } })
     // console.log(cnodeUserCN)
   } catch (e) {
     throw new Error(`writeFilesToDB - Could not retrieve cnodeUser - ${e.message}`)
   }
 
-
   try {
-    let filesFromUM = await UM_MODELS.File.findAll({ where: { multihash: files.map(f => f.multihash), cnodeUserUUID: cnodeUserUM.cnodeUserUUID }})
+    let filesFromUM = await UM_MODELS.File.findAll({ where: { multihash: files.map(f => f.multihash), cnodeUserUUID: cnodeUserUM.cnodeUserUUID } })
     console.log('filesFromUM', filesFromUM.length)
     let multihashArrFromUM = filesFromUM.map(f => f.multihash)
-    
-    let filesFromCN = await CN_MODELS.File.findAll({ where: { multihash: files.map(f => f.multihash), cnodeUserUUID: cnodeUserCN.cnodeUserUUID }})
+
+    let filesFromCN = await CN_MODELS.File.findAll({ where: { multihash: files.map(f => f.multihash), cnodeUserUUID: cnodeUserCN.cnodeUserUUID } })
     console.log('filesFromCN', filesFromCN.length)
     let multihashArrFromCN = filesFromCN.map(f => f.multihash)
-    
-    const differenceSet = new Set([...multihashArrFromUM].filter(x => !(new Set(multihashArrFromCN)).has(x) ))
+
+    const differenceSet = new Set([...multihashArrFromUM].filter(x => !(new Set(multihashArrFromCN)).has(x)))
+    const intersectionSet = new Set([...multihashArrFromUM].filter(x => (new Set(multihashArrFromCN)).has(x)))
+    console.log(`intersection set for user ${wallet}`, intersectionSet)
     if (differenceSet.size === 0) throw new Error('No new records to add to users primary')
-    console.log('adding', differenceSet.size, 'to files table')
+
+    filesToAdd = files.filter(file => differenceSet.has(file.multihash))
   } catch (e) {
     throw new Error(`writeFilesToDB - Error in difference set - ${e.message}`)
+  }
+
+  console.log('adding', filesToAdd.length, 'to files table for user', wallet, filesToAdd)
+  const transaction = await CN_MODELS.sequelize.transaction()
+  try {
+    for (let file of filesToAdd) {
+      let fileToAddObj = { ...file }
+      delete fileToAddObj['clock']
+      delete fileToAddObj['cnodeUserUUID']
+      console.log(fileToAddObj)
+      await DBManager.createNewDataRecord(fileToAddObj, cnodeUserCN.cnodeUserUUID, CN_MODELS.File, transaction, CN_MODELS)
+    }
+    await transaction.rollback()
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`Error writing files to db ${e.message}`)
   }
 }
 
