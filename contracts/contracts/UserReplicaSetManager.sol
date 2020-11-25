@@ -3,11 +3,12 @@ pragma solidity ^0.5.0;
 import "./interface/RegistryInterface.sol";
 import "./registry/RegistryContract.sol";
 import "./UserFactory.sol";
-import "./SigningLogic.sol";
+
+import "./SigningLogicInitializable.sol";
 
 
 /** @title Contract for Audius user replica set management */
-contract UserReplicaSetManager is RegistryContract, SigningLogic {
+contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     // Reference to data contract registry
     RegistryInterface private registry = RegistryInterface(0);
     // User factory key used to confirm valid users during reconfig operations
@@ -58,14 +59,35 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
     );
 
-    constructor(
+    // constructor(
+    //     address _registryAddress,
+    //     bytes32 _userFactoryRegistryKey,
+    //     address _userReplicaSetBootstrapAddress,
+    //     uint[] memory _bootstrapSPIds,
+    //     address[] memory _bootstrapNodeDelegateWallets,
+    //     uint _networkId
+    // ) SigningLogic("User Replica Set Manager", "1", _networkId) public
+    // {
+    //     require(
+    //         _registryAddress != address(0x00) &&
+    //         _userFactoryRegistryKey.length != 0,
+    //         "Requires non-zero _registryAddress and registryKey"
+    //     );
+    //     registry = RegistryInterface(_registryAddress);
+    //     userFactoryRegistryKey = _userFactoryRegistryKey;
+    //     userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
+    //     _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
+    // }
+
+    // TODO does this have to be marked as initializer?
+    function initialize(
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
         address _userReplicaSetBootstrapAddress,
         uint[] memory _bootstrapSPIds,
         address[] memory _bootstrapNodeDelegateWallets,
         uint _networkId
-    ) SigningLogic("User Replica Set Manager", "1", _networkId) public
+    ) public initializer
     {
         require(
             _registryAddress != address(0x00) &&
@@ -76,6 +98,12 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
         userFactoryRegistryKey = _userFactoryRegistryKey;
         userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
         _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
+        // Initialize base Signing Logic contract
+        SigningLogicInitializable.initialize(
+            "User Replica Set Manager",
+            "1",
+            _networkId
+        );
     }
 
     // Chain of trust based authentication scheme
@@ -320,7 +348,7 @@ contract UserReplicaSetManager is RegistryContract, SigningLogic {
             );
             if (signer == spIdToContentNodeDelegateWallet[_oldSecondaries[i]]) {
                 secondarySenderFound = true;
-                // TODO: Break out of loop here?
+                break;
             }
         }
         return secondarySenderFound;

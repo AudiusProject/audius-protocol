@@ -23,6 +23,9 @@ export const PlaylistFactory = artifacts.require('./contract/PlaylistFactory')
 export const UserLibraryFactory = artifacts.require('./contract/UserLibraryFactory')
 export const UserReplicaSetManager = artifacts.require('./contract/UserReplicaSetManager')
 
+// Proxy contracts
+export const AudiusAdminUpgradeabilityProxy2 = artifacts.require('./contract/AudiusAdminUpgradeabilityProxy2')
+
 // Test contract artifacts
 export const TestStorage = artifacts.require('./contract/storage/test/TestStorage')
 export const TestContract = artifacts.require('./contract/test/TestContract')

@@ -3,14 +3,17 @@ import {
     Registry,
     UserStorage,
     UserFactory,
-    UserReplicaSetManager
+    UserReplicaSetManager,
+    AudiusAdminUpgradeabilityProxy2
 } from './_lib/artifacts.js'
-import * as _constants from './utils/constants'
-const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 
+import * as _constants from './utils/constants'
 import { eth_signTypedData } from './utils/util'
-const signatureSchemas = require('../signature_schemas/signatureSchemas')
 import { getNetworkIdForContractInstance } from './utils/getters'
+
+const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+const signatureSchemas = require('../signature_schemas/signatureSchemas')
+const abi = require('ethereumjs-abi')
 
 contract.only('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
@@ -31,20 +34,24 @@ contract.only('UserReplicaSetManager', async (accounts) => {
     // Fourth spID = 4, accounts = accounts[6]
     const cnode4SpID = 4
     const cnode4Account = accounts[8]
-
     // Special permission addresses
     const userReplicaBootstrapAddress = accounts[14]
-
-
+    // Proxy deployer is explicitly set
+    const proxyAdminAddress = accounts[15]
     const bootstrapSPIds = [cnode1SpID, cnode2SpID, cnode3SpID, cnode4SpID]
     const bootstrapDelegateWallets = [cnode1Account, cnode2Account, cnode3Account, cnode4Account]
-
     // Contract objects
     let registry
     let userStorage
     let userFactory
     let userReplicaSetManager
     let networkId
+
+    const encodeCall = (name, args, values) => {
+        const methodId = abi.methodID(name, args).toString('hex')
+        const params = abi.rawEncode(args, values).toString('hex')
+        return '0x' + methodId + params
+    }
 
     beforeEach(async () => {
         // Initialize contract state
@@ -55,23 +62,41 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         await registry.addContract(_constants.userStorageKey, userStorage.address)
         userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, verifierAddress)
         await registry.addContract(_constants.userFactoryKey, userFactory.address)
-
-        userReplicaSetManager = await UserReplicaSetManager.new(
-            registry.address,
-            _constants.userFactoryKey,
-            userReplicaBootstrapAddress,
-            bootstrapSPIds,
-            bootstrapDelegateWallets,
-            networkId,
-            { from: deployer }
-        )
-        await registry.addContract(_constants.userReplicaSetManagerKey, userReplicaSetManager.address)
         // Initialize users to POA UserFactory
         await registerInitialUsers()
+        // Deploy logic contract
+        let deployLogicTx = await UserReplicaSetManager.new({ from: deployer })
+        let logicAddress = deployLogicTx.address
+        let initializeUserReplicaSetManagerCalldata = encodeCall(
+           'initialize',
+           [
+               'address',
+               'bytes32',
+               'address',
+               'uint[]',
+               'address[]',
+               'uint'
+           ],
+           [
+               registry.address,
+               _constants.userFactoryKey,
+               userReplicaBootstrapAddress,
+               bootstrapSPIds,
+               bootstrapDelegateWallets,
+               networkId
+            ]
+        )
+        let proxyContractDeployTx = await AudiusAdminUpgradeabilityProxy2.new(
+           logicAddress,
+           proxyAdminAddress,
+           initializeUserReplicaSetManagerCalldata,
+           { from: deployer }
+        )
+        userReplicaSetManager = await UserReplicaSetManager.at(proxyContractDeployTx.address)
     })
 
     // Confirm constructor arguments are respected on chain
-    let validateBootstrapNodes = async () => {
+    const validateBootstrapNodes = async () => {
         // Manually query every constructor spID and confirm matching wallet on chain
         for (var i = 0; i < bootstrapSPIds.length; i++) {
             let spID = bootstrapSPIds[i]
@@ -123,18 +148,6 @@ contract.only('UserReplicaSetManager', async (accounts) => {
 
     const toBNArray = (bnArray) => { return bnArray.map(x => toBN(x)) }
 
-    /** Helper Functions **/
-    let addOrUpdateCreatorNode = async (newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
-        await _lib.addOrUpdateCreatorNode(
-            userReplicaSetManager,
-            newCnodeId,
-            newCnodeDelegateOwnerWallet,
-            proposerId,
-            proposerWallet)
-        let walletFromChain = await userReplicaSetManager.getContentNodeWallet(newCnodeId)
-        assert.equal(walletFromChain, newCnodeDelegateOwnerWallet, 'Expect wallet assignment')
-    }
-
     let updateReplicaSet = async (userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries, senderAcct) => {
         await _lib.updateReplicaSet(
             userReplicaSetManager,
@@ -148,27 +161,6 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         assert.isTrue(replicaSetFromChain.primary.eq(newPrimary), 'Primary mismatch')
         assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(newSecondaries[i])), 'Secondary mismatch')
     }
-
-    /** Test Cases **/
-    it('Validate constructor bootstrap arguments', async () => {
-        // Confirm constructor arguments validated
-        await validateBootstrapNodes()
-
-        // Create an intentionally mismatched length list of bootstrap spIDs<->delegateWallets
-        const invalidSPIds = [cnode1SpID, cnode2SpID, cnode3SpID]
-        await expectRevert(
-            UserReplicaSetManager.new(
-                registry.address,
-                _constants.userFactoryKey,
-                userReplicaBootstrapAddress,
-                invalidSPIds,
-                bootstrapDelegateWallets,
-                networkId,
-                { from: deployer }
-            ),
-            "Mismatched bootstrap array lengths"
-        )
-    })
 
     let generateProposeAddOrUpdateContentNodeData = async (chainId, newCNodeSPId, newCnodeDelegateWallet, proposerSpId, proposerAccount) => {
         const nonce = signatureSchemas.getNonce()
@@ -187,6 +179,47 @@ contract.only('UserReplicaSetManager', async (accounts) => {
             sig
         }
     }
+
+    /** Test Cases **/
+    it('Validate constructor bootstrap arguments', async () => {
+        // Confirm constructor arguments validated
+        await validateBootstrapNodes()
+
+        // Create an intentionally mismatched length list of bootstrap spIDs<->delegateWallets
+        const invalidSPIds = [cnode1SpID, cnode2SpID, cnode3SpID]
+        let deployLogicTx = await UserReplicaSetManager.new({ from: deployer })
+        let logicAddress = deployLogicTx.address
+
+        // Encode the arguments to the 'initialize' function
+        let userReplicaSetManagerInitData = encodeCall(
+           'initialize',
+           [
+               'address',
+               'bytes32',
+               'address',
+               'uint[]',
+               'address[]',
+               'uint'
+           ],
+           [
+               registry.address,
+               _constants.userFactoryKey,
+               userReplicaBootstrapAddress,
+               invalidSPIds,
+               bootstrapDelegateWallets,
+               networkId
+            ]
+        )
+        // Revert message is not propagated for constructor failures
+        await expectRevert.unspecified(
+            AudiusAdminUpgradeabilityProxy2.new(
+                logicAddress,
+                proxyAdminAddress,
+                userReplicaSetManagerInitData,
+                { from: deployer }
+            )
+        )
+    })
 
     it('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
         // Bootstrapped nodes = cn1/cn3/cn3
@@ -354,4 +387,7 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         )
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3Account)
     })
+
+    // TODO: Proxy upgrade test
+    // TODO: Variants of failed proxy upgrade etc
 })
