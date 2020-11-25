@@ -267,6 +267,7 @@ const makeExecuteAll = libsArray => async operation => {
 }
 
 const makeExecuteOne = libsArray => async (index, operation) => {
+  if (index > libsArray.length) throw new Error(`Cannot execute operation - index ${index} out of bounds`)
   return operation(libsArray[index])
 }
 

@@ -39,6 +39,14 @@ const autoSelectCreatorNodes = async (
   })
 }
 
+const setCreatorNodeEndpoint = async (libsWrapper, primary) => {
+  return libsWrapper.setCreatorNodeEndpoint(primary)
+}
+
+const updateCreator = async (libsWrapper, userId, metadata) => {
+  return libsWrapper.updateCreator(userId, metadata)
+}
+
 const getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
@@ -72,6 +80,8 @@ module.exports = {
   upgradeToCreator,
   getUser,
   autoSelectCreatorNodes,
+  updateCreator,
+  setCreatorNodeEndpoint,
   getLibsUserInfo,
   updateMultihash,
   updateProfilePhoto,

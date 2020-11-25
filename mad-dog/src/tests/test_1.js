@@ -18,7 +18,9 @@ const {
   uploadTrack,
   getTrackMetadata,
   getUser,
-  verifyCIDExistsOnCreatorNode
+  verifyCIDExistsOnCreatorNode,
+  setCreatorNodeEndpoint,
+  updateCreator
 } = ServiceCommands
 
 // NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
@@ -156,6 +158,72 @@ module.exports = consistency1 = async ({
    */
 
   // Check all user replicas until they are synced up to primary
+  await ensureSecondariesAreUpToDate({walletIdMap, executeOne})
+
+  // create array of track upload info to verify
+  const trackUploadInfo = []
+  for (const walletIndex of Object.keys(walletTrackMap)) {
+    const userId = walletIdMap[walletIndex]
+    const tracks = walletTrackMap[walletIndex]
+    if (!tracks) continue
+    for (const trackId of Object.keys(tracks)) {
+      trackUploadInfo.push({
+        walletIndex,
+        trackId,
+        userId
+      })
+    }
+  }
+
+  // Ensure all CIDs exist on every replica
+  const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
+  if (!allCIDsExistOnCNodes) {
+    return { error: 'Not all CIDs exist on creator nodes.' }
+  }
+  const failedWallets = Object.values(failedUploads)
+  if (failedWallets.length) {
+    logger.info({ failedWallets, failedUploads })
+    const userIds = failedWallets.map(w => walletIdMap[w])
+    logger.warn(`Uploads failed for user IDs: [${userIds}]`)
+  }
+
+  // Switch user primary (above tests have already confirmed all secondaries have latest state)
+  for await (const walletIndex of Object.keys(walletIdMap)) {
+    const userId = walletIdMap[walletIndex]
+    const userMetadata = await executeOne(walletIndex, l => getUser(l, userId))
+    const wallet = userMetadata.wallet
+    const [primary, ...secondaries] = userMetadata.creator_node_endpoint.split(',')
+
+    logger.info(`userId ${userId} wallet ${wallet} rset ${userMetadata.creator_node_endpoint}`)
+
+    // Define new rset
+    const newRSet = (secondaries.length) ? [secondaries[0], primary].concat(secondaries.slice(1)) : [primary]
+
+    // Update libs instance with new endpoint
+    await executeOne(walletIndex, libs => setCreatorNodeEndpoint(libs, newRSet[0]))
+
+    // Update user metadata obj
+    const newMetadata = { ...userMetadata }
+    newMetadata.creator_node_endpoint = newRSet.join(',')
+
+    // Update creator state on CN and chain
+    await executeOne(walletIndex, libs => updateCreator(libs, userId, newMetadata))
+
+    logger.info(`Successfully updated creator with id ${userId} on CN and Chain`)
+  }
+
+  // Check all user replicas until they are synced up to primary
+  await ensureSecondariesAreUpToDate({walletIdMap, executeOne})
+
+  // TODO Upload more content to new primary + verify
+
+  // Remove temp storage dir
+  await fs.remove(TEMP_STORAGE_PATH)
+
+  return {}
+}
+
+const ensureSecondariesAreUpToDate = async ({walletIdMap, executeOne}) => {
   await Promise.all(Object.keys(walletIdMap).map(async (walletIndex) => {
     const userId = walletIdMap[walletIndex]
     const user = await executeOne(0, l => getUser(l, userId))
@@ -188,80 +256,6 @@ module.exports = consistency1 = async ({
       logger.info(`userId ${userId} secondary ${secondary} synced up to primary ${primary} at clock ${primClock} after ${retryCount * retryInterval}ms`)
     }))
   }))
-
-  // create array of track upload info to verify
-  const trackUploadInfo = []
-  for (const walletIndex of Object.keys(walletTrackMap)) {
-    const userId = walletIdMap[walletIndex]
-    const tracks = walletTrackMap[walletIndex]
-    if (!tracks) continue
-    for (const trackId of Object.keys(tracks)) {
-      trackUploadInfo.push({
-        walletIndex,
-        trackId,
-        userId
-      })
-    }
-  }
-
-  // Ensure all CIDs exist on every replica
-  const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
-  if (!allCIDsExistOnCNodes) {
-    return { error: 'Not all CIDs exist on creator nodes.' }
-  }
-  const failedWallets = Object.values(failedUploads)
-  if (failedWallets.length) {
-    logger.info({ failedWallets, failedUploads })
-    const userIds = failedWallets.map(w => walletIdMap[w])
-    logger.warn(`Uploads failed for user IDs: [${userIds}]`)
-  }
-
-  // Switch user primary (above tests have already confirmed all secondaries have latest state)
-  for await (const walletIndex of Object.keys(walletIdMap)) {
-    const userId = walletIdMap[walletIndex]
-    const user = await executeOne(walletIndex, l => getUser(l, userId))
-    const wallet = user.wallet
-    const [primary, ...secondaries] = user.creator_node_endpoint.split(',')
-
-    logger.info(`userId ${userId} wallet ${wallet} rset ${user.creator_node_endpoint} metadata: ${JSON.stringify(user, null, 2)}`)
-
-    const newRSet = (secondaries.length) ? [secondaries[0], primary].concat(secondaries.slice(1)) : [primary]
-    /** TODO this is not yet working */
-    // await executeOne(walletIndex, libs => swapPrimaryAndSecondary(libs, user, newRSet))
-  }
-
-  // Wait for sync clock statuses to catch up
-
-  // Upload more content to new primary + verify
-
-  // Remove temp storage dir
-  await fs.remove(TEMP_STORAGE_PATH)
-
-  return {}
-}
-
-const swapPrimaryAndSecondary = async (libs, userMetadata, newRSet) => {
-  const userId = userMetadata.user_id
-  
-  // Set new endpoint + connect to it in libs
-  logger.info(`libs instance`)
-  logger.info(libs.web3Manager.getWalletAddress())
-  // logger.info(libs)
-  return
-  await libs.creatorNode.setEndpoint(newRSet[0])
-
-  // Update user metadata obj
-  const newMetadata = { ...userMetadata }
-  newMetadata.creator_node_endpoint = newRSet.join(',')
-
-  // Update creator state on CN and chain
-  await libs.User.updateCreator(userId, newMetadata)
-
-  logger.info(`Successfully updated creator with id ${userId} on CN and Chain`)
-}
-
-const ensureSecondariesAreUpToDate = async () => {
-
 }
 
 // Retrieve the current clock value on a node

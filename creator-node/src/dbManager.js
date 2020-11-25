@@ -48,7 +48,8 @@ class DBManager {
   }
 
   /**
-   * TODO
+   * TODO document
+   * TODO add unit test
    *
    * @param {*} CNodeUserLookupObj
    * @param {*} sequelizeTableInstance
