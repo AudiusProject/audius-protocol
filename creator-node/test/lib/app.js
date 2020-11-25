@@ -6,12 +6,8 @@ redisClient.set('ipfsGatewayReqs', 0)
 redisClient.set('ipfsStandaloneReqs', 0)
 
 async function getApp (ipfsMock, libsMock, blacklistManager) {
-  delete require.cache[require.resolve('../../src/app')] // force reload between each test
-  delete require.cache[require.resolve('../../src/config')]
-  delete require.cache[require.resolve('../../src/fileManager')]
-  delete require.cache[require.resolve('../../src/blacklistManager')]
-  delete require.cache[require.resolve('../../src/routes/tracks')]
-  delete require.cache[require.resolve('../../src/routes/files')]
+  _clearRequireCache()
+  console.log("cleared all require caches")
 
   // run all migrations before each test
   await clearDatabase()
@@ -28,6 +24,15 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
   const appInfo = require('../../src/app')(8000, mockServiceRegistry)
 
   return appInfo
+}
+
+function _clearRequireCache() {
+  Object.keys(require.cache).forEach(function(key) {
+    if (key.includes('creator-node/src/')) {
+      console.log('deleting cache', key)
+      delete require.cache[key]
+    }
+  })
 }
 
 module.exports = { getApp }
