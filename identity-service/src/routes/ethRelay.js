@@ -51,7 +51,7 @@ module.exports = function (app) {
    */
   app.get('/registered_creator_nodes', handleResponse(async (req, res, next) => {
     const audiusLibsInstance = req.app.get('audiusLibs')
-    const creatorNodes = await audiusLibsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('creator-node')
+    const creatorNodes = await audiusLibsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
     return successResponse(creatorNodes)
   }))
 }
