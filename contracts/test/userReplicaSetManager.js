@@ -15,7 +15,7 @@ const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 const signatureSchemas = require('../signature_schemas/signatureSchemas')
 const abi = require('ethereumjs-abi')
 
-contract.only('UserReplicaSetManager', async (accounts) => {
+contract('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const userId1 = 1
