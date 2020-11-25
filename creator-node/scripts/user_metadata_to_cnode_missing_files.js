@@ -4,22 +4,35 @@ const fs = require('fs')
 var { exec } = require('child_process')
 
 const userIds = require('./user_metadata_to_cnode_missing_files_userids')
+const DBManager = require('./dbManagerClone')
 
+/**
+ * Script usage
+ *
+ * The script can move files from user metadata to one content node at a time. It's also fully idempotent since it does a diff
+ * between the existing files and the files it needs to add, so it will never add duplicates of existing files
+ *
+ * There's 5 env vars that are required
+ * export UM_DB_URL=<user metadata connection string>
+ * export CN_DB_URL=<content node connection string>
+ * export KUBE_POD_NAME=<kubernetes pod name for content node (used to cp files from local file system to /file_storage)>
+ * export KUBE_NAMESPACE=<kubernetes namespace>
+ * export CN_URL=<DNS of the content node eg https://content-node.audius.co>
+ */
 if (!process.env.UM_DB_URL) throw new Error('Please pass in the required UM_DB_URL property')
 const UM_MODELS = require('./sequelize')(process.env.UM_DB_URL)
 if (!process.env.CN_DB_URL) throw new Error('Please pass in the required CN_DB_URL property')
 const CN_MODELS = require('./sequelize')(process.env.CN_DB_URL)
-const DBManager = require('./dbManagerClone')
+if (!process.env.KUBE_POD_NAME) throw new Error('Please pass in the required KUBE_POD_NAME property')
+const KUBE_POD_NAME = process.env.KUBE_POD_NAME
+if (!process.env.KUBE_NAMESPACE) throw new Error('Please pass in the required KUBE_NAMESPACE property')
+const KUBE_NAMESPACE = process.env.KUBE_NAMESPACE
+if (!process.env.CN_URL) throw new Error('Please pass in the required CN_URL property')
+const CN_URL = process.env.CN_URL
 
+// constants
 const USER_METADATA_ENDPOINT = 'https://usermetadata.audius.co'
 const METADATA_NODE_ENDPOINT = 'https://discoveryprovider.audius.co'
-
-const PRIMARY_TO_PODS = {
-  'https://creatornode.audius.co': 'creator-1-backend-8596d98c4b-69hk9',
-  'https://creatornode2.audius.co': 'creator-2-backend-6fbbc79578-brvpr',
-  'https://creatornode3.audius.co': 'creator-3-backend-68f784cffb-csf92'
-}
-const KUBE_NAMESPACE = `kubectl -n stage`
 
 let COMMANDS_RUN = new Set()
 let SUCCESSFUL_USERS = []
@@ -33,8 +46,8 @@ async function run () {
       if (!userObj) throw new Error('no primary for userId', userId)
       const { primary, wallet } = userObj
 
-      if (!primary.includes('creatornode.audius.co')) {
-        console.log(`Skipping content-node primary for userId ${userId}`)
+      if (!primary.includes(CN_URL)) {
+        console.log(`Skipping user since primary for userId ${userId} is not ${primary}`)
         continue
       }
 
@@ -47,7 +60,7 @@ async function run () {
       if (!writesSuccessful || files.length === 0) throw new Error(`Did not successfully fetch files for userId ${userId}`)
 
       // move files to primary
-      // await copyFilesToPrimary(userId, files, primary)
+      await copyFilesToPrimary(userId, files)
 
       // write files to db
       await writeFilesToDB(wallet, files)
@@ -62,10 +75,6 @@ async function run () {
 }
 
 run()
-
-// TODO
-// create a tx and write files to db
-// Move set of commands already run to persistent storage like file (optimization)
 
 /**
  *
@@ -117,20 +126,20 @@ async function writeFilesLocallyForUser (data, wallet) {
 
   for (let cnodeUserUUID in data.cnodeUsers) {
     const cnodeUser = data.cnodeUsers[cnodeUserUUID]
-    // for (let file of cnodeUser.files) {
-    //   // skip dir types for file fetching and writing, but insert these into db
-    //   if (file.type === 'dir') continue
+    for (let file of cnodeUser.files) {
+      // skip dir types for file fetching and writing, but insert these into db
+      if (file.type === 'dir') continue
 
-    //   console.log(`about to fetch file from user metadata: ${file.multihash}`)
-    //   const responseStream = await _getFileFromUserMetadata(file.multihash)
+      console.log(`about to fetch file from user metadata: ${file.multihash}`)
+      const responseStream = await _getFileFromUserMetadata(file.multihash)
 
-    //   if (responseStream) {
-    //     await _writeStreamToFileSystem(responseStream, path.join('files_um', file.multihash))
-    //   } else {
-    //     console.log(`could not download file for object`, file)
-    //     writesSuccessful = false
-    //   }
-    // }
+      if (responseStream) {
+        await _writeStreamToFileSystem(responseStream, path.join('files_um', file.multihash))
+      } else {
+        console.log(`could not download file for object`, file)
+        writesSuccessful = false
+      }
+    }
 
     // this return is in a for loop, but we're assuming data.cnodeUsers is an object with a single property
     return { writesSuccessful, files: cnodeUser.files || [] }
@@ -140,17 +149,15 @@ async function writeFilesLocallyForUser (data, wallet) {
 /**
  * Create the dir on the kube container volume and transfer the files to the appropriate file storage directory
  */
-async function copyFilesToPrimary (wallet, files, primaryUrl) {
-  const containerName = PRIMARY_TO_PODS[primaryUrl]
-
+async function copyFilesToPrimary (wallet, files) {
   for (let file of files) {
     try {
-      const mkdirCmd = _mkdirPathCommand(file.storagePath, containerName)
+      const mkdirCmd = _mkdirPathCommand(file.storagePath)
       if (!COMMANDS_RUN.has(mkdirCmd)) {
         await _runCommand(mkdirCmd)
         COMMANDS_RUN.add(mkdirCmd)
       }
-      const sendFileCmd = _sendFileCommand(file.multihash, file.storagePath, containerName)
+      const sendFileCmd = _sendFileCommand(file.multihash, file.storagePath)
       if (!COMMANDS_RUN.has(sendFileCmd)) {
         await _runCommand(sendFileCmd)
         COMMANDS_RUN.add(sendFileCmd)
@@ -229,7 +236,7 @@ async function writeFilesToDB (wallet, files) {
     throw new Error(`writeFilesToDB - Error in difference set - ${e.message}`)
   }
 
-  console.log('adding', filesToAdd.length, 'to files table for user', wallet, filesToAdd)
+  console.log('adding', filesToAdd.length, 'to files table for user', wallet)
   const transaction = await CN_MODELS.sequelize.transaction()
   try {
     for (let file of filesToAdd) {
@@ -252,19 +259,19 @@ async function writeFilesToDB (wallet, files) {
  *
  */
 
-function _sendFileCommand (cid, expectedStoragePath, containerName) {
-  const cmd = `${KUBE_NAMESPACE} cp ./files_um/${cid} ${containerName}:${expectedStoragePath}`
+function _sendFileCommand (cid, expectedStoragePath) {
+  const cmd = `${KUBE_NAMESPACE} cp ./files_um/${cid} ${KUBE_POD_NAME}:${expectedStoragePath}`
   return cmd
 }
 
-function _mkdirPathCommand (expectedStoragePath, containerName) {
+function _mkdirPathCommand (expectedStoragePath) {
   const dirPath = path.parse(expectedStoragePath).dir
-  const cmd = `${KUBE_NAMESPACE} exec ${containerName} -- mkdir -p ${dirPath}`
+  const cmd = `${KUBE_NAMESPACE} exec ${KUBE_POD_NAME} -- mkdir -p ${dirPath}`
   return cmd
 }
 
 const _runCommand = async (command) => {
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     console.log(`Running command: '${command}'`)
     // resolve() //DELETE THIS
 
