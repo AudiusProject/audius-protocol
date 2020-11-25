@@ -1,6 +1,7 @@
 const contractConfig = require('../contract-config.js')
 const Registry = artifacts.require('Registry')
 const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
+const AudiusAdminUpgradeabilityProxy2 = artifacts.require('AudiusAdminUpgradeabilityProxy2')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
 const userReplicaSetManagerKey = web3.utils.utf8ToHex('UserReplicaSetManager')
 

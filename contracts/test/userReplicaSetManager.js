@@ -13,7 +13,6 @@ import { getNetworkIdForContractInstance } from './utils/getters'
 
 const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 const signatureSchemas = require('../signature_schemas/signatureSchemas')
-const abi = require('ethereumjs-abi')
 
 contract('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
@@ -47,11 +46,6 @@ contract('UserReplicaSetManager', async (accounts) => {
     let userReplicaSetManager
     let networkId
 
-    const encodeCall = (name, args, values) => {
-        const methodId = abi.methodID(name, args).toString('hex')
-        const params = abi.rawEncode(args, values).toString('hex')
-        return '0x' + methodId + params
-    }
 
     beforeEach(async () => {
         // Initialize contract state
@@ -67,7 +61,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Deploy logic contract
         let deployLogicTx = await UserReplicaSetManager.new({ from: deployer })
         let logicAddress = deployLogicTx.address
-        let initializeUserReplicaSetManagerCalldata = encodeCall(
+        let initializeUserReplicaSetManagerCalldata = _lib.encodeCall(
            'initialize',
            [
                'address',
@@ -191,7 +185,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         let logicAddress = deployLogicTx.address
 
         // Encode the arguments to the 'initialize' function
-        let userReplicaSetManagerInitData = encodeCall(
+        let userReplicaSetManagerInitData = _lib.encodeCall(
            'initialize',
            [
                'address',
