@@ -12,6 +12,7 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
   delete require.cache[require.resolve('../../src/blacklistManager')]
   delete require.cache[require.resolve('../../src/routes/tracks')]
   delete require.cache[require.resolve('../../src/routes/files')]
+  delete require.cache[require.resolve('../../src/routes/nodeSync')]
 
   // run all migrations before each test
   await clearDatabase()
