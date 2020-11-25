@@ -6,8 +6,11 @@ redisClient.set('ipfsGatewayReqs', 0)
 redisClient.set('ipfsStandaloneReqs', 0)
 
 async function getApp (ipfsMock, libsMock, blacklistManager) {
-  _clearRequireCache()
-  console.log("cleared all require caches")
+  // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
+  // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
+  // as all files that consume it
+  clearRequireCache()
+  console.log('cleared all require caches')
 
   // run all migrations before each test
   await clearDatabase()
@@ -26,8 +29,8 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
   return appInfo
 }
 
-function _clearRequireCache() {
-  Object.keys(require.cache).forEach(function(key) {
+function clearRequireCache () {
+  Object.keys(require.cache).forEach(function (key) {
     if (key.includes('creator-node/src/')) {
       console.log('deleting cache', key)
       delete require.cache[key]
