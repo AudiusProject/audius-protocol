@@ -24,7 +24,7 @@ export enum DateFormatter {
   MONTH
 }
 
-const getData = (data: number[], labels: string[]) => {
+const getData = (data: number[], labels: string[], showLeadingDay: boolean) => {
   const common = {
     fill: false,
     lineTension: 0.2,
@@ -44,28 +44,38 @@ const getData = (data: number[], labels: string[]) => {
     pointRadius: 0,
     pointHitRadius: 8
   }
-  const solidLine = (data.slice(0, -1) as (number | undefined)[]).concat([
-    undefined
-  ])
-  const dottedLine = new Array(Math.max(data.length - 2, 0))
-    .fill(undefined)
-    .concat(data.slice(-2))
+  let solidLine = data.slice(0, -1) as (number | undefined)[]
+  if (showLeadingDay) {
+    solidLine = solidLine.concat([undefined])
+  }
+
+  const datasets = [
+    {
+      ...common,
+      label: 'past',
+      data: solidLine,
+      borderDash: [] as number[]
+    }
+  ]
+
+  if (showLeadingDay) {
+    const dottedLine = new Array(Math.max(data.length - 2, 0))
+      .fill(undefined)
+      .concat(data.slice(-2))
+
+    datasets.push({
+      ...common,
+      label: 'current',
+      data: dottedLine,
+      borderDash: [2, 6]
+    })
+  }
+
+  const newLabels = showLeadingDay ? labels : labels.slice(0, -1)
+
   return {
-    labels,
-    datasets: [
-      {
-        ...common,
-        label: 'past',
-        data: solidLine,
-        borderDash: []
-      },
-      {
-        ...common,
-        label: 'current',
-        data: dottedLine,
-        borderDash: [2, 6]
-      }
-    ]
+    labels: newLabels,
+    datasets
   }
 }
 
@@ -171,7 +181,7 @@ const getOptions = (
 
       const { date, value } = tooltipModel.title[0] || {}
       const innerHtml = `
-        <div class='${styles.tooltipContainer}'> 
+        <div class='${styles.tooltipContainer}'>
           <div class='${styles.tooltipBody}'>
             <div class='${styles.tooltipDate}'>${date}</div>
             <div class='${styles.tooltipValue}'>${formatNumber(
@@ -233,6 +243,7 @@ type OwnProps = {
   selection?: Bucket
   onSelectOption?: (option: string) => void
   error?: boolean
+  showLeadingDay?: boolean
 }
 
 type LineChartProps = OwnProps
@@ -245,7 +256,8 @@ const LineChart: React.FC<LineChartProps> = ({
   options,
   selection,
   onSelectOption,
-  error
+  error,
+  showLeadingDay = false
 }) => {
   const dateFormatter =
     selection === Bucket.ALL_TIME || selection === Bucket.YEAR
@@ -274,7 +286,7 @@ const LineChart: React.FC<LineChartProps> = ({
           <Error text="Incomplete Data" />
         ) : data && labels ? (
           <Line
-            data={getData(data, labels)}
+            data={getData(data, labels, showLeadingDay)}
             options={getOptions(title, dateFormatter, tooltipTitle)}
           />
         ) : (
