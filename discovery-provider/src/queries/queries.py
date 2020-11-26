@@ -33,6 +33,7 @@ from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_t
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
+from src.queries.get_playlists_containing_content import get_playlists_containing_track
 
 from src.utils.redis_metrics import record_metrics
 
@@ -463,6 +464,17 @@ def get_top_followee_saves_route(type):
         return api_helpers.error_response(str(e), 400)
 
 
+
+@bp.route("/playlists_containing_track/turkey/<int:track_id>", methods=("GET",))
+def get_playlists_containing_track_route(track_id):
+    try:
+        args = { 'track_id': track_id }
+        resp = get_playlists_containing_track(args)
+        return api_helpers.success_response(resp)
+    except Exception as e:
+        return api_helpers.error_response(str(e), 500)
+
+
 # Retrieves the top users for a requested genre under the follow parameters
 # - A given user can only be associated w/ one genre
 # - The user's associated genre is calculated by tallying the genre of the tracks and taking the max
@@ -538,6 +550,7 @@ def get_previously_private_playlists_route():
         return api_helpers.success_response(playlists)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 # Get the users for a given creator node url
 @bp.route("/users/creator_node", methods=("GET",))
