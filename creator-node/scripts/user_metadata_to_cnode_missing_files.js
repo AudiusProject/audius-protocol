@@ -61,7 +61,7 @@ async function run () {
       if (!writesSuccessful || files.length === 0) throw new Error(`Did not successfully fetch files for userId ${userId}`)
 
       // move files to primary
-      // await copyFilesToPrimary(userId, files)
+      await copyFilesToPrimary(userId, files)
 
       // write files to db
       await writeFilesToDB(wallet, files)
@@ -129,20 +129,20 @@ async function writeFilesLocallyForUser (data, wallet) {
 
   for (let cnodeUserUUID in data.cnodeUsers) {
     const cnodeUser = data.cnodeUsers[cnodeUserUUID]
-    // for (let file of cnodeUser.files) {
-    //   // skip dir types for file fetching and writing, but insert these into db
-    //   if (file.type === 'dir') continue
+    for (let file of cnodeUser.files) {
+      // skip dir types for file fetching and writing, but insert these into db
+      if (file.type === 'dir') continue
 
-    //   console.log(`about to fetch file from user metadata: ${file.multihash}`)
-    //   const responseStream = await _getFileFromUserMetadata(file.multihash)
+      console.log(`about to fetch file from user metadata: ${file.multihash}`)
+      const responseStream = await _getFileFromUserMetadata(file.multihash)
 
-    //   if (responseStream) {
-    //     await _writeStreamToFileSystem(responseStream, path.join('files_um', file.multihash))
-    //   } else {
-    //     console.log(`could not download file for object`, file)
-    //     writesSuccessful = false
-    //   }
-    // }
+      if (responseStream) {
+        await _writeStreamToFileSystem(responseStream, path.join('files_um', file.multihash))
+      } else {
+        console.log(`could not download file for object`, file)
+        writesSuccessful = false
+      }
+    }
 
     // this return is in a for loop, but we're assuming data.cnodeUsers is an object with a single property
     return { writesSuccessful, files: cnodeUser.files || [] }
@@ -239,20 +239,22 @@ async function writeFilesToDB (wallet, files) {
   }
 
   console.log('adding', filesToAdd.length, 'to files table for user', wallet)
-  // const transaction = await CN_MODELS.sequelize.transaction()
-  // try {
-  //   for (let file of filesToAdd) {
-  //     let fileToAddObj = { ...file }
-  //     delete fileToAddObj['clock']
-  //     delete fileToAddObj['cnodeUserUUID']
-  //     console.log(fileToAddObj)
-  //     await DBManager.createNewDataRecord(fileToAddObj, cnodeUserCN.cnodeUserUUID, CN_MODELS.File, transaction, CN_MODELS)
-  //   }
-  //   await transaction.rollback()
-  // } catch (e) {
-  //   await transaction.rollback()
-  //   throw new Error(`Error writing files to db ${e.message}`)
-  // }
+  const transaction = await CN_MODELS.sequelize.transaction()
+  try {
+    for (let file of filesToAdd) {
+      let fileToAddObj = { ...file }
+      delete fileToAddObj['clock']
+      delete fileToAddObj['cnodeUserUUID']
+      delete fileToAddObj['createdAt']
+      delete fileToAddObj['updatedAt']
+      // console.log(fileToAddObj)
+      await DBManager.createNewDataRecord(fileToAddObj, cnodeUserCN.cnodeUserUUID, CN_MODELS.File, transaction, CN_MODELS)
+    }
+    await transaction.commit()
+  } catch (e) {
+    await transaction.rollback()
+    throw new Error(`Error writing files to db ${e.message}`)
+  }
 }
 
 /**
