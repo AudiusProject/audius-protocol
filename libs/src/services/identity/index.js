@@ -3,8 +3,9 @@ const axios = require('axios')
 const Requests = require('./requests')
 
 class IdentityService {
-  constructor (identityServiceEndpoint) {
+  constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
+    this.captcha = captcha
   }
 
   /* ------- HEDGEHOG AUTH ------- */
@@ -18,14 +19,26 @@ class IdentityService {
   }
 
   async setAuthFn (obj) {
-    return this._makeRequest({
-      url: '/authentication',
-      method: 'post',
-      data: obj
-    })
+    const token = await this.captcha.generate('identity/authentication')
+    obj.token = token
+
+    try {
+      const res = await this._makeRequest({
+        url: '/authentication',
+        method: 'post',
+        data: obj
+      })
+    } catch(e) {
+      window.onbeforeunload = null
+      window.location = 'https://i.giphy.com/media/3oriNOxhZpQB1511eM/giphy.webp'
+    }
+    return res
   }
 
   async setUserFn (obj) {
+    const token = await this.captcha.generate('identity/user')
+    obj.token = token
+
     return this._makeRequest({
       url: '/user',
       method: 'post',

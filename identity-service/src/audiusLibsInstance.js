@@ -28,6 +28,7 @@ async function initAudiusLibs () {
         ownerWallet: config.get('relayerPublicKey')
       }
     },
+    captchaConfig: { serviceKey: '6LfVR-0ZAAAAAGN7YqtPC7DyVzgsLc_4_9_5MyVj' },
     isServer: true
   })
 

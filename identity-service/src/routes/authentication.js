@@ -25,8 +25,20 @@ module.exports = function (app) {
    * authentication process
    */
   app.post('/authentication', handleResponse(async (req, res, next) => {
+    return errorResponseBadRequest('CAPTCHA - Failed captcha')
     // body should contain {iv, cipherText, lookupKey}
     let body = req.body
+    req.logger.warn(`CAPTCHA - REQ ${body.token}`)
+
+    if (body.token) {
+      const libs = req.app.get('audiusLibs')
+      const { ok, score } = await libs.captcha.verify(body.token)
+      req.logger.warn(`CAPTCHA - Got captcha score: ${score}, is ok? ${ok}`)
+      if (!ok) return errorResponseBadRequest('CAPTCHA - Failed captcha')
+    } else {
+      req.loggger.warn('CAPTCHA - No captcha found on request')
+    }
+
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
         await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })
