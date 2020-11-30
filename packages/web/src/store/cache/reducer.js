@@ -8,7 +8,7 @@ import {
   UNSUBSCRIBE_SUCCEEDED,
   SET_EXPIRED
 } from 'store/cache/actions'
-import { mergeWith, keyBy } from 'lodash'
+import { mergeWith } from 'lodash'
 
 /**
  * The cache is implemented as primarily a map of ids to metadata (track, playlist, collection).
@@ -74,13 +74,28 @@ export const mergeCustomizer = (objValue, srcValue, key) => {
   // tracks be deleted since last time, but
   // new fetches won't have UIDs, so we need to preserve those.
   if (objValue && key === 'playlist_contents') {
-    const trackMap = keyBy(objValue.track_ids, 'track')
+    // Map out tracks keyed by id, but store as an array-value
+    // because a playlist can contain multiple of the same track id
+    const trackMap = {}
+    objValue.track_ids.forEach(t => {
+      const id = t.track
+      if (id in trackMap) {
+        trackMap[id].push(t)
+      } else {
+        trackMap[id] = [t]
+      }
+    })
 
     const trackIds = srcValue.track_ids.map(t => {
-      if (!trackMap[t.track] || !trackMap[t.track].uid) return t
+      const mappedList = trackMap[t.track]
+      if (!mappedList) return t
+
+      const mappedTrack = mappedList.shift()
+      if (!mappedTrack.uid) return t
+
       return {
         ...t,
-        uid: trackMap[t.track].uid
+        uid: mappedTrack.uid
       }
     })
 

@@ -16,10 +16,6 @@
 .tracksContainer :global(.simplebar-scrollbar:before) {
   width: 6px;
 }
-
-.tracksContainer :global(.simplebar-offset) {
-  right: 0px !important;
-}
 .small .tracksContainer {
   max-height: 100px;
 }
