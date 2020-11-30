@@ -76,7 +76,7 @@ const TrackTile = memo(
           // Standalone means that this tile is not w/ a playlist
           [styles.standalone]: !!standalone
         })}
-        onClick={onTogglePlay}
+        onClick={isLoading || isDisabled ? undefined : onTogglePlay}
       >
         {/* prefix ordering */}
         {hasOrdering && <div className={styles.order}>{order}</div>}
