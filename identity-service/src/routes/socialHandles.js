@@ -3,15 +3,29 @@ const models = require('../models')
 
 module.exports = function (app) {
   app.get('/social_handles', handleResponse(async (req, res, next) => {
-    const handle = req.query.handle
+    const { handle } = req.query
     if (!handle) return errorResponseBadRequest('Please provide handle')
 
     const socialHandles = await models.SocialHandles.findOne({
       where: { handle }
     })
 
+    const twitterUser = await models.TwitterUser.findOne({ where: {
+      'twitterProfile.screen_name': handle,
+      verified: true
+    } })
+
+    const instagramUser = await models.InstagramUser.findOne({ where: {
+      'profile.username': handle,
+      verified: true
+    } })
+
     if (socialHandles) {
-      return successResponse(socialHandles)
+      return successResponse({
+        ...socialHandles.dataValues,
+        twitterVerified: !!twitterUser,
+        instagramVerified: !!instagramUser
+      })
     } else return successResponse()
   }))
 

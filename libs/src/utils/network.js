@@ -18,7 +18,7 @@ async function timeRequest (request) {
     response = await axios.get(request.url)
   } catch (e) {
     console.debug(`Error with request for ${request.url}: ${e}`)
-    return null
+    return { request, response: null, millis: null }
   }
   const millis = new Date().getTime() - startTime
   return { request, response, millis }
@@ -35,7 +35,9 @@ async function timeRequests (requests) {
     timeRequest(request)
   ))
 
-  return timings.sort((a, b) => a.millis - b.millis)
+  return timings
+    .filter(timing => timing.response !== null)
+    .sort((a, b) => a.millis - b.millis)
 }
 
 /**
@@ -49,10 +51,13 @@ async function timeRequestsAndSortByVersion (requests) {
     timeRequest(request)
   ))
 
-  return timings.filter(Boolean).sort((a, b) => {
+  return timings.sort((a, b) => {
+    // If health check failed, send to back of timings
+    if (!a.response) return 1
+    if (!b.response) return -1
+    // Sort by highest version
     if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
     if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
-
     // If same version, do a tie breaker on the response time
     return a.millis - b.millis
   })

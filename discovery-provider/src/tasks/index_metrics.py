@@ -113,6 +113,19 @@ def sweep_metrics(db, redis):
                 logger.error(e)
                 redis.delete(key)
 
+def refresh_metrics_matviews(db):
+    with db.scoped_session() as session:
+        logger.info('index_metrics.py | refreshing metrics matviews')
+        session.execute('REFRESH MATERIALIZED VIEW route_metrics_day_bucket')
+        session.execute('REFRESH MATERIALIZED VIEW route_metrics_month_bucket')
+        session.execute('REFRESH MATERIALIZED VIEW route_metrics_trailing_week')
+        session.execute('REFRESH MATERIALIZED VIEW route_metrics_trailing_month')
+        session.execute('REFRESH MATERIALIZED VIEW route_metrics_all_time')
+        session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_week')
+        session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_month')
+        session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_all_time')
+        logger.info('index_metrics.py | refreshed metrics matviews')
+
 ######## CELERY TASK ########
 
 
@@ -136,6 +149,7 @@ def update_metrics(self):
             logger.info(
                 f"index_metrics.py | update_metrics | {self.request.id} | Acquired update_metrics_lock")
             sweep_metrics(db, redis)
+            refresh_metrics_matviews(db)
             logger.info(
                 f"index_metrics.py | update_metrics | {self.request.id} | Processing complete within session")
         else:

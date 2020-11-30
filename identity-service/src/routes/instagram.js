@@ -1,7 +1,7 @@
 const request = require('request')
 const config = require('../config.js')
 const models = require('../models')
-const uuidv4 = require('uuid/v4')
+const txRelay = require('../relay/txRelay')
 
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 
@@ -21,30 +21,70 @@ module.exports = function (app) {
         'client_id': config.get('instagramAPIKey'),
         'client_secret': config.get('instagramAPISecret'),
         'grant_type': 'authorization_code',
-        'redirect_uri': `${req.headers.origin}`,
+        'redirect_uri': config.get('instagramRedirectUrl'),
         code
       }
     }
 
     try {
       const res = await doRequest(reqObj)
-      const igUser = JSON.parse(res)
+      const authAccessToken = JSON.parse(res)
       let {
-        access_token: accessToken,
-        user: profile
-      } = igUser
-      if (!accessToken || !profile) return errorResponseBadRequest(new Error('invalid code'))
+        access_token: accessToken
+      } = authAccessToken
 
-      // Store access_token for user in db
+      const instagramAPIUser = await doRequest({
+        method: 'get',
+        url: 'https://graph.instagram.com/me',
+        qs: {
+          'fields': 'id,username,media_count,account_type',
+          'access_token': accessToken
+        }
+      })
+      const igUser = JSON.parse(instagramAPIUser)
+      if (igUser.error) {
+        return errorResponseBadRequest(new Error(igUser.error.message))
+      }
+
+      // Store the access token, user id, and current profile for user in db
       try {
-        let uuid = uuidv4()
-        models.InstagramUser.create({
-          profile,
-          accessToken,
-          uuid
+        await models.InstagramUser.upsert({
+          uuid: igUser.id,
+          profile: igUser,
+          accessToken
         })
 
-        return successResponse({ profile, uuid })
+        return successResponse(igUser)
+      } catch (err) {
+        return errorResponseBadRequest(err)
+      }
+    } catch (err) {
+      return errorResponseBadRequest(err)
+    }
+  }))
+
+  app.post('/instagram/profile', handleResponse(async (req, res, next) => {
+    const { profile } = req.body
+    try {
+      const checkFields = [
+        'id',
+        'username',
+        'is_verified'
+      ]
+      const hasMinimumFields = checkFields.every(field => (field in profile))
+      if (!hasMinimumFields) throw new Error('Invalid profile')
+
+      try {
+        // Verify the user user id exists in the DB before updating it
+        const igUser = await models.InstagramUser.findOne({ where: {
+          uuid: profile.id
+        } })
+        if (!igUser) throw new Error('User must first be verified')
+        igUser.profile = profile
+        igUser.verified = profile.is_verified
+        await igUser.save()
+
+        return successResponse(profile)
       } catch (err) {
         return errorResponseBadRequest(err)
       }
@@ -59,12 +99,34 @@ module.exports = function (app) {
    */
   app.post('/instagram/associate', handleResponse(async (req, res, next) => {
     let { uuid, userId, handle } = req.body
+    const audiusLibsInstance = req.app.get('audiusLibs')
     try {
       let instagramObj = await models.InstagramUser.findOne({ where: { uuid } })
 
       // only set blockchainUserId if not already set
       if (instagramObj && !instagramObj.blockchainUserId) {
         instagramObj.blockchainUserId = userId
+
+        // if the user is verified, write to chain, otherwise skip to next step
+        if (instagramObj.verified) {
+          const [encodedABI, contractAddress] = await audiusLibsInstance.User.updateIsVerified(
+            userId, true, config.get('userVerifierPrivateKey')
+          )
+          const contractRegKey = await audiusLibsInstance.contracts.getRegistryContractForAddress(contractAddress)
+          const senderAddress = config.get('userVerifierPublicKey')
+          try {
+            var txProps = {
+              contractRegistryKey: contractRegKey,
+              contractAddress: contractAddress,
+              encodedABI: encodedABI,
+              senderAddress: senderAddress,
+              gasLimit: null
+            }
+            await txRelay.sendTransaction(req, false, txProps, 'instagramVerified')
+          } catch (e) {
+            return errorResponseBadRequest(e)
+          }
+        }
 
         const socialHandle = await models.SocialHandles.findOne({ where: { handle } })
         if (socialHandle) {
