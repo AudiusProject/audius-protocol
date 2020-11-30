@@ -95,8 +95,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
   }, [artworkLoaded, hasLoaded, index, showSkeleton])
 
   const fadeIn = {
-    [styles.show]: artworkLoaded,
-    [styles.hide]: !artworkLoaded
+    [styles.show]: artworkLoaded && !showSkeleton,
+    [styles.hide]: !artworkLoaded || showSkeleton
   }
 
   return (
@@ -105,6 +105,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
       <div
         className={styles.mainContent}
         onClick={() => {
+          if (showSkeleton) return
           props.togglePlay(props.uid, id)
         }}
       >
