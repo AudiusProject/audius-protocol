@@ -314,7 +314,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     return users
 
 
-def get_user_follower_counts(session, user_ids, users):
+def populate_user_follower_counts(session, user_ids, users):
+    """Gets user follower counts for an array of user_ids and corresponding users"""
     follower_counts = (
         session.query(
             Follow.followee_user_id,
@@ -520,7 +521,8 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
     return tracks
 
 
-def get_track_repost_counts(session, track_ids, tracks):
+def populate_track_repost_counts(session, track_ids, tracks):
+    """Gets track repost counts for an array of track_ids and corresponding tracks"""
     repost_counts = (
         session.query(
             Repost.repost_item_id,
@@ -798,7 +800,8 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
     return playlists
 
 
-def get_playlist_repost_counts(session, playlist_ids, playlists, repost_types):
+def populate_playlist_repost_counts(session, playlist_ids, playlists, repost_types):
+    """Gets playlist repost counts for an array of playlist_ids and corresponding playlists"""
     # build dict of playlist id --> repost count
     playlist_repost_counts = dict(get_repost_counts(
         session, False, False, playlist_ids, repost_types))

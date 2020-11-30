@@ -13,8 +13,8 @@ from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.queries.query_helpers import get_current_user_id, get_playlist_repost_counts, get_track_repost_counts, \
-    get_user_follower_counts, get_users_by_id, get_users_ids, populate_user_metadata, \
+from src.queries.query_helpers import get_current_user_id, populate_playlist_repost_counts, populate_track_repost_counts, \
+    populate_user_follower_counts, get_users_by_id, get_users_ids, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
     get_track_play_counts
 
@@ -512,7 +512,7 @@ def track_search_query(
         # attach user objects to track objects
         for track in tracks:
             track["user"] = users_dict[track["owner_id"]]
-        tracks = get_track_repost_counts(session, track_ids, tracks)
+        tracks = populate_track_repost_counts(session, track_ids, tracks)
     else:
         # bundle peripheral info into track results
         tracks = populate_track_metadata(
@@ -582,7 +582,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
     # used in search autocomplete as that'll give us better results.
     if is_auto_complete:
         # get follower information to improve search ordering
-        users = get_user_follower_counts(session, user_ids, users)
+        users = populate_user_follower_counts(session, user_ids, users)
     else:
         # bundle peripheral info into user results
         users = populate_user_metadata(
@@ -672,7 +672,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         for playlist in playlists:
             playlist["user"] = users_dict[playlist["playlist_owner_id"]]
 
-        playlists = get_playlist_repost_counts(session, playlist_ids, playlists, [repost_type])
+        playlists = populate_playlist_repost_counts(session, playlist_ids, playlists, [repost_type])
     else:
         # bundle peripheral info into playlist results
         playlists = populate_playlist_metadata(
