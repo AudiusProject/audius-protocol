@@ -44,7 +44,7 @@ loadLibsVars()
  * Each method may throw.
  * @param {int} walletIndex Ganache can be setup with multiple pre-created wallets. WalletIndex lets you pick which wallet to use for libs.
  */
-function LibsWrapper(walletIndex = 0) {
+function LibsWrapper (walletIndex = 0) {
   this.libsInstance = null
 
   const assertLibsDidInit = () => {
@@ -238,6 +238,31 @@ function LibsWrapper(walletIndex = 0) {
   }
 
   /**
+   * Fetch user metadatas from discprov given list of userIds
+   * @param {number[]} userIds
+   */
+  this.getUserAccount = async wallet => {
+    assertLibsDidInit()
+    const userAccount = await this.libsInstance.discoveryProvider.getUserAccount(wallet)
+
+    if (!userAccount) {
+      throw new Error('No user account found.')
+    }
+
+    return userAccount
+  }
+
+  this.setCurrentUser = async userAccount => {
+    assertLibsDidInit()
+    this.libsInstance.userStateManager.setCurrentUser(userAccount)
+    const creatorNodeEndpoints = userAccount.creator_node_endpoint
+    if (creatorNodeEndpoints) {
+      const primary = creatorNodeEndpoints ? creatorNodeEndpoints.split(',')[0] : ''
+      this.creatorNode.setEndpoint(primary)
+    }
+  }
+
+  /**
    * Gets the user associated with the wallet set in libs
    */
   this.getLibsUserInfo = async () => {
@@ -246,7 +271,7 @@ function LibsWrapper(walletIndex = 0) {
       1,
       0,
       null,
-      this.libsInstance.web3Manager.getWalletAddress()
+      this.getWalletAddress()
     )
 
     if (!users.length) {
@@ -414,6 +439,10 @@ function LibsWrapper(walletIndex = 0) {
     }
 
     return playlists
+  }
+
+  this.getWalletAddress = () => {
+    return this.libsInstance.web3Manager.getWalletAddress()
   }
 }
 
