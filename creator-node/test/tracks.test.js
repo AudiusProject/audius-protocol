@@ -124,7 +124,6 @@ describe('test Tracks with mocked IPFS', function () {
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
-    console.log('trackContentResp', trackContentResp)
     assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
     assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)

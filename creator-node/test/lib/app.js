@@ -5,7 +5,7 @@ const redisClient = require('../../src/redis')
 redisClient.set('ipfsGatewayReqs', 0)
 redisClient.set('ipfsStandaloneReqs', 0)
 
-async function getApp (ipfsMock, libsMock, blacklistManager) {
+async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
   // as all files that consume it
@@ -17,9 +17,9 @@ async function getApp (ipfsMock, libsMock, blacklistManager) {
   await runMigrations()
 
   const mockServiceRegistry = {
-    ipfs: ipfsMock,
-    ipfsLatest: ipfsMock,
-    libs: libsMock,
+    ipfs: ipfsClient,
+    ipfsLatest: ipfsLatestClient || ipfsClient,
+    libs: libsClient,
     blacklistManager: blacklistManager,
     redis: redisClient
   }

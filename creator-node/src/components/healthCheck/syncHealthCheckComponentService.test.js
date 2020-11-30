@@ -63,7 +63,6 @@ describe('Test sync health check', function () {
     }
 
     const res = await syncHealthCheck({ snapbackSM: mockSnapback })
-    console.log(JSON.stringify(res))
     assert.deepStrictEqual(res, {
       waiting: [{ type: 'RECURRING', id: 2, priority: 'LOW', wallet: WALLET, secondary: SECONDARY }, { type: 'MANUAL', id: 3, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],
       active: [{ type: 'MANUAL', id: 1, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],

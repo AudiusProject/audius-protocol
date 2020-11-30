@@ -24,6 +24,7 @@ tear_down () {
   docker container rm $IPFS_CONTAINER
   docker container rm $DB_CONTAINER
   docker container rm $REDIS_CONTAINER
+  docker volume prune -f
   set -e
 }
 

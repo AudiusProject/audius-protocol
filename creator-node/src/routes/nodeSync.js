@@ -345,7 +345,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           where: { walletPublicKey: fetchedWalletPublicKey },
           transaction
         })
-        req.logger.info(`SIDTEST existing cnodeUserRecord: ${JSON.stringify(cnodeUserRecord, null, 2)}`)
         let cnodeUser
         if (cnodeUserRecord) {
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
