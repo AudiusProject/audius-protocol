@@ -1,4 +1,5 @@
 const AudiusLibs = require('@audius/libs')
+const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const Utils = require('@audius/libs/src/utils')
 const config = require('../config/config')
 const untildify = require('untildify')
@@ -257,7 +258,7 @@ function LibsWrapper (walletIndex = 0) {
     this.libsInstance.userStateManager.setCurrentUser(userAccount)
     const creatorNodeEndpoints = userAccount.creator_node_endpoint
     if (creatorNodeEndpoints) {
-      const primary = creatorNodeEndpoints ? creatorNodeEndpoints.split(',')[0] : ''
+      const primary = CreatorNode.getPrimary(creatorNodeEndpoints)
       this.creatorNode.setEndpoint(primary)
     }
   }

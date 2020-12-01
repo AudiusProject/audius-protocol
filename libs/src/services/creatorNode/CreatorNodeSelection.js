@@ -185,16 +185,22 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // If not enough secondaries returned from services, select from backups
     remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
-    while (remainingSecondaries-- > 0) {
+    while (remainingSecondaries > 0) {
       const backup = this.selectFromBackups()
-      if (backup && backup !== primary) secondaries.push(backup)
+      if (backup && backup !== primary) {
+        secondaries.push(backup)
+        remainingSecondaries--
+      }
     }
 
     // If not enough secondaries returned from backups, select from unhealthy
     remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
-    while (remainingSecondaries-- > 0) {
+    while (remainingSecondaries > 0) {
       const unhealthy = this.selectFromUnhealthy()
-      if (unhealthy && unhealthy !== primary) secondaries.push(unhealthy)
+      if (unhealthy && unhealthy !== primary) {
+        secondaries.push(unhealthy)
+        remainingSecondaries--
+      }
     }
 
     return secondaries

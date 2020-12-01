@@ -284,4 +284,46 @@ describe('test CreatorNodeSelection', () => {
     assert(secondaries.includes(shouldBeSecondary1))
     assert(secondaries.includes(shouldBeSecondary2))
   })
+
+  it('selects numNodes - 1 number of secondaries (numNodes = 5)', async () => {
+    const services = []
+    const numNodes = 5
+    for (let i = 0; i < numNodes; i++) {
+      const healthyUrl = `https://healthy${i}.audius.co`
+      nock(healthyUrl)
+        .persist()
+        .get('/version')
+        .reply(200, { data: {
+          service: CREATOR_NODE_SERVICE_NAME,
+          version: '1.2.3',
+          country: 'US',
+          latitude: '37.7058',
+          longitude: '-122.4619'
+        } })
+      services.push(healthyUrl)
+    }
+
+    let cns
+    for (let i = 0; i < numNodes; i++) {
+      cns = new CreatorNodeSelection({
+      // Mock Creator Node
+        creatorNode: {
+          getSyncStatus: async () => {
+            return {
+              isBehind: false,
+              isConfigured: true
+            }
+          }
+        },
+        numberOfNodes: numNodes - i,
+        ethContracts: mockEthContracts(services, '1.2.3'),
+        whitelist: null,
+        blacklist: null
+      })
+
+      const { secondaries } = await cns.select()
+      // Should be 4, 3, 2, 1
+      assert(secondaries.length === numNodes - i - 1)
+    }
+  })
 })
