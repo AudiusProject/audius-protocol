@@ -224,7 +224,7 @@ def configure_flask(test_config, app, mode="app"):
         except exc.OperationalError as e:
             if "could not connect to server" in str(e):
                 logger.warning(
-                    "DB connection isn't up yet...setting a teporary timeout and trying again"
+                    "DB connection isn't up yet...setting a temporary timeout and trying again"
                 )
                 time.sleep(10)
             else:
