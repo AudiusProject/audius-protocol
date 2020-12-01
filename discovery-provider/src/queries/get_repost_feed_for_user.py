@@ -1,4 +1,4 @@
-from sqlalchemy import desc, or_
+from sqlalchemy import desc
 
 from src.models import Track, Repost, RepostType, Playlist, SaveType, User
 from src.utils import helpers
@@ -102,7 +102,7 @@ def get_repost_feed_for_user(user_id, args):
             current_user_id
         )
 
-        # add activity timestamps   
+        # add activity timestamps
         for track in tracks:
             track[response_name_constants.activity_timestamp] = track_repost_dict[track["track_id"]]["created_at"]
 
