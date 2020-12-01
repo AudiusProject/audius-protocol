@@ -22,7 +22,7 @@ const messages = {
   placeholderTargetContract: 'DelegateManager',
   placeholderSignature: 'slash(uint256,address)',
   placeholderCallData: `10,0xFE7F25ebc5464F6DA493Eb53FF8F0CE1C906d3D5`,
-  placeholderName: 'A name for the Prorposal',
+  placeholderName: 'A name for the Proposal',
   placeholderDescription: 'A simple description of what the Proposal does',
 
   createProposalConfirmation: 'New Proposal'

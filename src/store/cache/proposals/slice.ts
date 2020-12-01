@@ -52,6 +52,7 @@ const slice = createSlice({
       const resolvedProposals = proposals
         .filter(p => p.outcome !== Outcome.InProgress)
         .map(p => p.proposalId)
+        .reverse()
 
       state.allProposals = allProposals
       state.resolvedProposals = resolvedProposals
