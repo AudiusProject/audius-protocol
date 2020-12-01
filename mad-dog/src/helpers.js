@@ -74,8 +74,8 @@ const addAndUpgradeUsers = async (
 
         // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-        const userWalletAddress = getLibsWalletAddress(libs)
         await waitForIndexing()
+        const userWalletAddress = getLibsWalletAddress(libs)
         const userAccount = await getUserAccount(libs, userWalletAddress)
         setCurrentUser(libs, userAccount)
       }

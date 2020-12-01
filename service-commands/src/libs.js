@@ -239,8 +239,8 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
-   * Fetch user metadatas from discprov given list of userIds
-   * @param {number[]} userIds
+   * Fetch user account from /user/account with wallet param
+   * @param {string} wallet wallet address
    */
   this.getUserAccount = async wallet => {
     assertLibsDidInit()
