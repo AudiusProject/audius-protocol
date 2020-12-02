@@ -49,12 +49,17 @@ const initialState = {
 
 const actionsMap = {
   [FETCH_PROFILE](state, action) {
-    return {
+    const newState = {
       ...state,
-      handle: action.handle,
-      userId: action.userId,
       status: action.shouldSetLoading ? Status.LOADING : state.status
     }
+    if (action.handle) {
+      newState.handle = action.handle
+    }
+    if (action.userId) {
+      newState.userId = action.userId
+    }
+    return newState
   },
   [FETCH_PROFILE_SUCCEEDED](state, action) {
     return {
