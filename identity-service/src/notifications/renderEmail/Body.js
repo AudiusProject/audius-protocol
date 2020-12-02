@@ -74,12 +74,12 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
 
-  return "".concat(user.name, " favorited your ").concat(notification.entity.name);
+  return "".concat(user.name, " favorited your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Repost, function (notification) {
   var _notification$users2 = _slicedToArray(notification.users, 1),
       user = _notification$users2[0];
 
-  return "".concat(user.name, " reposted your ").concat(notification.entity.name);
+  return "".concat(user.name, " reposted your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Follow, function (notification) {
   var _notification$users3 = _slicedToArray(notification.users, 1),
       user = _notification$users3[0];
@@ -102,7 +102,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);
   }
 
-  return "".concat(user.name, " released a new ").concat(notification.entity.type, "  ").concat(notification.entity.name);
+  return "".concat(user.name, " released a new ").concat(notification.entity.type, " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCreate, function (notification) {
   var parentTrack = notification.parentTrack;
   return "New remix of your track ".concat(parentTrack.title);
