@@ -398,6 +398,7 @@ const NowPlayingDrawer = ({
         <div className={styles.nowPlaying}>
           <NowPlaying onClose={close} />
         </div>
+        {/* "Bottom padding" so over drags upwards of the drawer are white */}
         <div className={styles.skirt} />
       </animated.div>
 

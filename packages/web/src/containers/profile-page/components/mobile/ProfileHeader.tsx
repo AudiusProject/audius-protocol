@@ -35,6 +35,7 @@ import SubscribeButton from 'components/general/SubscribeButton'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import UploadButton from './UploadButton'
 
 const messages = {
   tracks: 'Tracks',
@@ -454,6 +455,7 @@ const ProfileHeader = ({
           ) : null}
         </div>
       )}
+      {mode === 'owner' && !isEditing && <UploadButton />}
     </div>
   )
 }
