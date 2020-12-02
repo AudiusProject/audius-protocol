@@ -45,6 +45,7 @@ import firstUploadModal from 'containers/first-upload-modal/store/slice'
 import remixSettingsModal from 'containers/remix-settings-modal/store/slice'
 import remoteConfig from 'containers/remote-config/slice'
 import musicConfetti from 'containers/music-confetti/store/slice'
+import mobileUploadDrawer from 'containers/mobile-upload-drawer/store/slice'
 
 import account from 'store/account/reducer'
 import tracksReducer from 'store/cache/tracks/reducer'
@@ -132,7 +133,8 @@ const createRootReducer = routeHistory =>
         remixSettingsModal,
         stemsUpload,
         appCTAModal,
-        musicConfetti
+        musicConfetti,
+        mobileUploadDrawer
       }),
       pages: combineReducers({
         explore,

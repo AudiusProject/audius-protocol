@@ -1,0 +1,46 @@
+.drawer {
+  height: 460px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 40px 36px;
+}
+
+.iconUpload {
+  width: 66px;
+  height: 66px;
+}
+
+.cta {
+  font-weight: var(--font-heavy);
+  font-size: 28px;
+  line-height: 34px;
+  text-align: center;
+  user-select: none;
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.visit {
+  font-weight: var(--font-medium);
+  font-size: var(--font-2xl);
+  line-height: 29px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.bottom {
+  margin-bottom: 16px;
+}
+
+.action {
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  line-height: 40px;
+}
+
+.action i {
+  margin-right: 16px;
+}
