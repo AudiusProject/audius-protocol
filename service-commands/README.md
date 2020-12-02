@@ -14,10 +14,10 @@ This API allows you to bring services up and down and control your local audius 
 
 **First time setup**
 
-- Initialize all the services by executing the following inside `service-commands/scripts`:
+- Initialize all the services by executing the following inside `service-commands`:
 
 ```
-node setup.js run init-repos up
+node scripts/setup.js run init-repos up
 ```
 
 ***Linking local libs***
