@@ -92,7 +92,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     var entity = notification.entity.type.toLowerCase();
     return "Your ".concat(entity, " ").concat(notification.entity.name, " has reached over ").concat(notification.value, " ").concat(notification.achievement, "s");
   } else {
-    return "You have reached over ".concat(notification.value, " Followers ");
+    return "You have reached over ".concat(notification.value, " Followers");
   }
 }), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
   var _notification$users4 = _slicedToArray(notification.users, 1),
@@ -102,7 +102,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);
   }
 
-  return "".concat(user.name, " released a new ").concat(notification.entity.type, " ").concat(notification.entity.name);
+  return "".concat(user.name, " released a new ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCreate, function (notification) {
   var parentTrack = notification.parentTrack;
   return "New remix of your track ".concat(parentTrack.title);
