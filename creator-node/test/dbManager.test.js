@@ -1,6 +1,7 @@
 const assert = require('assert')
 const proxyquire = require('proxyquire')
 const _ = require('lodash')
+const getUuid = require('uuid/v4')
 
 const models = require('../src/models')
 const DBManager = require('../src/dbManager')
@@ -55,11 +56,7 @@ describe('Test createNewDataRecord()', () => {
 
   /** Wipe all CNodeUsers + dependent data */
   after(async function () {
-    await models.CNodeUser.destroy({
-      where: {},
-      truncate: true,
-      cascade: true // cascades delete to all rows with foreign key on cnodeUser
-    })
+    await destroyUsers()
 
     await server.close()
   })
@@ -302,13 +299,17 @@ describe('Test createNewDataRecord()', () => {
   })
 })
 
-describe('Test ClockRecord model', () => {
+describe.only('Test ClockRecord model', () => {
+  /** Init server to run DB migrations */
+  before(async function () {
+    await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+  })
+
+  beforeEach(async function () {
+    await destroyUsers()
+  })
+
   it('Confirm only valid sourceTable value can be written to ClockRecords table', async () => {
-    await models.CNodeUser.destroy({
-      where: {},
-      truncate: true,
-      cascade: true // cascades delete to all rows with foreign key on cnodeUser
-    })
     const cnodeUserUUID = (await createStarterCNodeUser()).cnodeUserUUID
 
     const validSourceTable = 'AudiusUser'
@@ -317,7 +318,7 @@ describe('Test ClockRecord model', () => {
     // Confirm ClockRecords insert with validSourceTable value will succeed
     await models.ClockRecord.create({
       cnodeUserUUID,
-      clock: 0,
+      clock: 1,
       sourceTable: validSourceTable
     })
 
@@ -326,30 +327,128 @@ describe('Test ClockRecord model', () => {
     assert.strictEqual(clockRecords.length, 1)
     const clockRecord = clockRecords[0]
     assert.strictEqual(clockRecord.cnodeUserUUID, cnodeUserUUID)
-    assert.strictEqual(clockRecord.clock, 0)
+    assert.strictEqual(clockRecord.clock, 1)
     assert.strictEqual(clockRecord.sourceTable, validSourceTable)
 
     // Confirm ClockRecords insert with invalidSourceTable value will fail due to DB error
+    // Use raw query to test DB-level constraints, instead of sequelize-level
     try {
-      await models.sequelize.query(`
-        INSERT INTO "ClockRecords"
+      await models.sequelize.query(
+        `INSERT INTO "ClockRecords"
         ("cnodeUserUUID","clock","sourceTable","createdAt","updatedAt")
         VALUES (
-          'f13d776e-c4a6-4007-93bc-7e625c862873',
-          0,
+          :cnodeUserUUID,
+          1,
           :invalidSourceTable,
           '2020-09-21 23:04:06.339 +00:00',
           '2020-09-21 23:04:06.339 +00:00'
         );`,
-      {
-        replacements: { invalidSourceTable },
-        type: 'RAW',
-        raw: true
-      }
+        {
+          replacements: { cnodeUserUUID, invalidSourceTable },
+          type: 'RAW',
+          raw: true
+        }
       )
     } catch (e) {
       assert.strictEqual(e.name, 'SequelizeDatabaseError')
       assert.strictEqual(e.original.message, `invalid input value for enum "enum_ClockRecords_sourceTable": "${invalidSourceTable}"`)
+    }
+  })
+
+  it.only('Confirm only clockRecords with correct clock values can be inserted', async function () {
+    // Create initial cnodeUser
+    const cnodeUserUUID = (await createStarterCNodeUser()).cnodeUserUUID
+    const validSourceTable = 'AudiusUser'
+
+    // clock value cannot be negative
+    try {
+      await models.ClockRecord.create({
+        cnodeUserUUID,
+        clock: -1,
+        sourceTable: validSourceTable
+      })
+    } catch (e) {
+      assert.strictEqual(e, 'Clock value must be > 0')
+    }
+
+    // clock value cannot be 0
+    try {
+      await models.ClockRecord.create({
+        cnodeUserUUID,
+        clock: 0,
+        sourceTable: validSourceTable
+      })
+    } catch (e) {
+      assert.strictEqual(e, 'Clock value must be > 0')
+    }
+
+    // initial clockRecord must have clock value 1
+    try {
+      await models.ClockRecord.create({
+        cnodeUserUUID,
+        clock: 2,
+        sourceTable: validSourceTable
+      })
+    } catch (e) {
+      assert.strictEqual(e, 'First clockRecord for cnodeUser must have clock value 1')
+    }
+
+    // successfully create initial clockRecord with clock value 1
+    await models.ClockRecord.create({
+      cnodeUserUUID,
+      clock: 1,
+      sourceTable: validSourceTable
+    })
+
+    // clock values must be contiguous
+    try {
+      await models.ClockRecord.create({
+        cnodeUserUUID,
+        clock: 5,
+        sourceTable: validSourceTable
+      })
+    } catch (e) {
+      assert.strictEqual(e, 'Can only insert contiguous clock values')
+    }
+
+    // successfully create clockrecord with contiguous clock value
+    await models.ClockRecord.create({
+      cnodeUserUUID,
+      clock: 2,
+      sourceTable: validSourceTable
+    })
+  })
+
+  it('Confirm ClockRecord and CNodeUser records must start at 1', async function () {
+
+  })
+
+  it('Confirm only valid cnodeUserUUID value can be written to ClockRecords table', async function () {
+    const invalidUUID = getUuid()
+    const validSourceTable = 'AudiusUser'
+    
+    // Attempt to insert a clockRecord into DB with a non-existent cnodeUserUUID
+    // Use raw query to test DB-level constraints, instead of sequelize-level
+    try {
+      await models.sequelize.query(
+        `INSERT INTO "ClockRecords"
+        ("cnodeUserUUID","clock","sourceTable","createdAt","updatedAt")
+        VALUES (
+          :cnodeUserUUID,
+          1,
+          :validSourceTable,
+          '2020-09-21 23:04:06.339 +00:00',
+          '2020-09-21 23:04:06.339 +00:00'
+        );`,
+        {
+          replacements: { cnodeUserUUID: invalidUUID, validSourceTable },
+          type: 'RAW',
+          raw: true
+        }
+      )
+    } catch (e) {
+      assert.strictEqual(e.name, 'SequelizeForeignKeyConstraintError')
+      assert.strictEqual(e.original.message, 'insert or update on table "ClockRecords" violates foreign key constraint "ClockRecords_cnodeUserUUID_fkey"')
     }
   })
 })

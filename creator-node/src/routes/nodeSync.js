@@ -365,7 +365,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             throw new Error('Failed to update cnodeUser row TODO fix error msg')
           }
           cnodeUser = respObj[0]
-          req.logger.info(`SIDTEST CNODE USER UPDATE ${JSON.stringify(cnodeUser, null, 2)}`)
         } else {
           cnodeUser = await models.CNodeUser.create(
             {
@@ -380,7 +379,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
               transaction
             }
           )
-          req.logger.info(`SIDTEST CNODE USER create ${JSON.stringify(cnodeUser, null, 2)}`)
         }
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         req.logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`)
@@ -389,13 +387,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
          * Populate all new data for fetched cnodeUser
          * Always use local cnodeUserUUID in favor of cnodeUserUUID in exported dataset to ensure consistency
          */
-
-        // Save all clockRecords to DB
-        await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
-          ...clockRecord,
-          cnodeUserUUID
-        })), { transaction })
-        req.logger.info(redisKey, 'Recorded all ClockRecord entries in DB')
 
         /*
          * Make list of all track Files to add after track creation
@@ -445,25 +436,31 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           trackBlockchainId: null,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'created all non-track files')
+        req.logger.info(redisKey, 'Saved all non-track File entries to DB')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
           ...track,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'created all tracks')
+        req.logger.info(redisKey, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
           ...trackFile,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'saved all track files to db')
+        req.logger.info(redisKey, 'Saved all track File entries to DB')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
           ...audiusUser,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'saved all audiususer data to db')
+        req.logger.info(redisKey, 'Saved all AudiusUser entries to DB')
+
+        await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
+          ...clockRecord,
+          cnodeUserUUID
+        })), { transaction })
+        req.logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
         await transaction.commit()
         await redisLock.removeLock(redisKey)
