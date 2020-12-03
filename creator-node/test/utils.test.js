@@ -8,7 +8,7 @@ const redis = require('../src/redis')
 
 // Partially tested test file!!
 
-describe('test src/utils.js', () => {
+describe('test src/utils.js', async function () {
   afterEach(async () => {
     // Clear redis
     await redis.del(BlacklistManager.getRedisSegmentCIDKey())

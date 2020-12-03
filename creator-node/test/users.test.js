@@ -227,5 +227,5 @@ describe('test Users', async function () {
       .expect(401)
   })
 
-  it('TODO - clock_status test', async function () {})
+  it.skip('TODO - clock_status test', async function () {})
 })

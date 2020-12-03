@@ -11,6 +11,7 @@ const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/da
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
+const { after } = require('lodash')
 
 describe('Test createNewDataRecord()', async function () {
   const req = {
@@ -300,14 +301,21 @@ describe('Test createNewDataRecord()', async function () {
 })
 
 describe('Test ClockRecord model', async function () {
+  let server
+
   /** Init server to run DB migrations */
   before(async function () {
-    await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    server = appInfo.server
   })
 
   /** Reset DB state */
   beforeEach(async function () {
     await destroyUsers()
+  })
+
+  after(async function () {
+    await server.close()
   })
 
   it('Confirm only valid sourceTable value can be written to ClockRecords table', async function () {
@@ -451,7 +459,7 @@ describe('Test ClockRecord model', async function () {
   it('Confirm only valid cnodeUserUUID value can be written to ClockRecords table', async function () {
     const invalidUUID = getUuid()
     const validSourceTable = 'AudiusUser'
-    
+
     // Attempt to insert a clockRecord into DB with a non-existent cnodeUserUUID
     // Use raw query to test DB-level constraints, instead of sequelize-level
     try {

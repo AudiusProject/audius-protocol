@@ -49,13 +49,13 @@ const metadata = {
 }
 const buffer = Buffer.from(JSON.stringify(metadata))
 
-describe('test fileManager', () => {
-  afterEach(function () {
+describe('test fileManager', function () {
+  afterEach(async function () {
     sinon.restore()
   })
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileToIpfsFromFs() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileToIpfsFromFs()', () => {
+  describe('test saveFileToIpfsFromFs()', async function () {
     /**
      * Given: a file is being saved to ipfs from fs
      * When: the cnodeUserUUID is not present
@@ -157,7 +157,7 @@ describe('test fileManager', () => {
   })
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ saveFileFromBufferToIPFSAndDisk() TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  describe('test saveFileFromBufferToIPFSAndDisk()', () => {
+  describe('test saveFileFromBufferToIPFSAndDisk()', async function () {
     /**
      * Given: a file buffer is being saved to ipfs, fs, and db
      * When: cnodeUserUUID is not present

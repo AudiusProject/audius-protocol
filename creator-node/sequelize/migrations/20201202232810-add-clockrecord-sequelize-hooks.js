@@ -1,5 +1,8 @@
-'use strict';
+'use strict'
 
+/**
+ * TODO comment
+ */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.sequelize.addHook('beforeCreate', 'clockRecordBeforeCreate', async function (instance, options) {
@@ -92,4 +95,4 @@ module.exports = {
     await queryInterface.sequelize.removeHook('beforeCreate', 'clockRecordBeforeCreate')
     await queryInterface.sequelize.removeHook('beforeBulkCreate', 'clockRecordBeforeBulkCreate')
   }
-};
+}

@@ -28,28 +28,28 @@ describe('test expressApp', async function () {
   })
 
   it('responds 404 with invalid endpoint', async function () {
-    request(app)
+    await request(app)
       .get('/asdf')
       .expect(404)
   })
 
   it('returns 401 with omitted session id', async function () {
     // logout endpoint requires login / checks session
-    request(app)
+    await request(app)
       .post('/users/logout')
       .expect(401)
   })
 
   it('returns 401 with invalid session id', async function () {
     // logout endpoint requires login / checks session
-    request(app)
+    await request(app)
       .post('/users/logout')
       .set('X-Session-ID', session.sessionToken + '1')
       .expect(401)
   })
 
   it('succeeds health check', async function () {
-    request(app)
+    await request(app)
       .get('/health_check')
       .expect(200)
   })
