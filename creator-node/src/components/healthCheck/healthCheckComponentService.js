@@ -34,8 +34,8 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
 }
 
 /**
- * Perform a duration health check limited to configured delegateOwnerWalet
- * Used to validate availability prior to joiing the network
+ * Perform a duration health check limited to configured delegateOwnerWallet
+ * Used to validate availability prior to joining the network
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
@@ -45,7 +45,19 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
+/**
+ * Perform a file upload health check limited to configured delegateOwnerWallet
+ * Used to validate availability prior to joining the network
+ * @param {*} ServiceRegistry
+ * @param {*} logger
+ */
+const healthCheckFileUpload = async () => {
+  return { success: true }
+}
+
+
 module.exports = {
   healthCheck,
-  healthCheckDuration
+  healthCheckDuration,
+  healthCheckFileUpload
 }

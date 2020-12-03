@@ -1,6 +1,6 @@
 const express = require('express')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
-const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
+const { healthCheck, healthCheckDuration, healthCheckFileUpload } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
@@ -79,6 +79,32 @@ const healthCheckVerboseController = async (req) => {
   })
 }
 
+/**
+ * Controller for `health_check/fileupload` route
+ * Calls `healthCheckFileUploadService`.
+ */
+const healthCheckFileUploadController = async (req) => {
+  let { timestamp, randomBytes, signature } = req.query
+  if (!timestamp || !randomBytes || !signature) return errorResponseBadRequest('Missing required query parameters')
+
+  const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
+  const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
+  const recoveredTimestampDate = new Date(timestamp)
+  const currentTimestampDate = new Date()
+  const requestAge = currentTimestampDate - recoveredTimestampDate
+  if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
+    throw new Error(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`)
+  }
+  const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
+  if (recoveredPublicWallet !== delegateOwnerWallet) {
+    throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
+  }
+
+  let response = await healthCheckFileUpload()
+  return successResponse(response)
+}
+
+
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
@@ -86,5 +112,6 @@ router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get('/health_check/duration', handleResponse(healthCheckDurationController))
 router.get('/health_check/duration/heartbeat', handleResponseWithHeartbeat(healthCheckDurationController))
 router.get('/health_check/verbose', handleResponse(healthCheckVerboseController))
+router.get('/health_check/fileupload', handleResponse(healthCheckFileUploadController))
 
 module.exports = router
