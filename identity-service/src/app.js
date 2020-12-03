@@ -118,6 +118,7 @@ class App {
 
   _isIPWhitelisted (ip) {
     const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
+    logger.info(`Whitelist regex ${whitelistRegex}`)
     return whitelistRegex && !!ip.match(whitelistRegex)
   }
 
@@ -161,7 +162,7 @@ class App {
         req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
         return senderIP
       }
-      req.logger.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
+      req.logger.debug(`_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
       return forwardedIP
     }
     req.logger.debug(`_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
