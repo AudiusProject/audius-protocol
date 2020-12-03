@@ -83,6 +83,7 @@ class App {
   configureMailgun () {
     // Configure mailgun instance
     let mg = null
+    logger.info('processEmail Mailgun api - ' + config.get('mailgunApiKey'))
     if (config.get('mailgunApiKey')) {
       mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
     }
@@ -144,7 +145,7 @@ class App {
     // so the request wasn't from CN. We can just use req.ip which corresponds
     // to the forward-for that the proxy added
     if (headers.length === 1) {
-      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, ip: ${ip}`)
+      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For ${forwardedFor}`)
       return ip
     }
 
@@ -152,10 +153,10 @@ class App {
 
     if (this._isIPWhitelisted(rightMost)) {
       const forwardedIP = headers[headers.length - 2]
-      req.logger.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}`)
+      req.logger.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
       return forwardedIP
     }
-    req.logger.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}`)
+    req.logger.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}, Forwarded-For: ${forwardedFor}`)
     return rightMost
   }
 
@@ -164,6 +165,7 @@ class App {
     const isIPWhitelisted = this._isIPWhitelisted
     const getIP = this._getIP.bind(this)
 
+    logger.info('Setting limiter', interval)
     const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
