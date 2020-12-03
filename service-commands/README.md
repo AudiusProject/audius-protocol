@@ -5,6 +5,7 @@ This API allows you to bring services up and down and control your local audius 
 
 **Before you begin:**
 - Install tools: `docker`, `docker-compose`, `node`.
+- If you are on Linux, it is possible that your kernal might have updated without a reboot. Reboot to ensure that docker does not have kernel related issues.
 - Clone the [audius-protocol](https://github.com/AudiusProject/audius-protocol) repo.
 - `export` the environment variable `PROTOCOL_DIR` to point to the cloned `protocol` repo.
 
