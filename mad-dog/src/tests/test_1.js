@@ -133,12 +133,17 @@ module.exports = consistency1 = async ({
   })
 
   // Create users, upgrade them to creators
-  const walletIdMap = await addAndUpgradeUsers(
-    numUsers,
-    numCreatorNodes,
-    executeAll,
-    executeOne
-  )
+  let walletIdMap
+  try {
+    walletIdMap = await addAndUpgradeUsers(
+      numUsers,
+      numCreatorNodes,
+      executeAll,
+      executeOne
+    )
+  } catch (e) {
+    return { error: `Issue with creating and upgrading users: ${e}` }
+  }
 
   if (enableFaultInjection) {
     // Create a MadDog instance, responsible for taking down nodes

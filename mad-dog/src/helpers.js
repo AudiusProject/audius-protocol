@@ -72,10 +72,10 @@ const addAndUpgradeUsers = async (
         userId = newUserId
         logger.info(`Created new user: ${userId}`)
 
-        // Poll dp to get all proper and expected user metadata as hardcoded metadata
+        // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-        const userWalletAddress = getLibsWalletAddress(libs)
         await waitForIndexing()
+        const userWalletAddress = getLibsWalletAddress(libs)
         const userAccount = await getUserAccount(libs, userWalletAddress)
         setCurrentUser(libs, userAccount)
       }
@@ -100,6 +100,10 @@ const addAndUpgradeUsers = async (
           const selectedCNodes = await executeOne(i, libsWrapper =>
             autoSelectCreatorNodes(libsWrapper, numCreatorNodes)
           )
+          const { primary, secondaries } = selectedCNodes
+          if (!primary || !secondaries) {
+            throw new Error(`Could not properly select cnodes. primary=${primary} | secondaries=${secondaries}`)
+          }
           const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
           logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
           // Upgrade to creator with replica set

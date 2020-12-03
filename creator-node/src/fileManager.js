@@ -201,7 +201,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         }
 
         if (!response || !response.data) {
-          throw new Error(`Couldn't find files on other creator nodes`)
+          throw new Error(`Couldn't find files on other creator nodes, after trying URLs: ${gatewayUrlsMapped.toString()}`)
         }
 
         // Write file to disk
