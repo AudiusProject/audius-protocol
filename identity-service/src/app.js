@@ -83,7 +83,6 @@ class App {
   configureMailgun () {
     // Configure mailgun instance
     let mg = null
-    logger.info('processEmail Mailgun api - ' + config.get('mailgunApiKey'))
     if (config.get('mailgunApiKey')) {
       mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
     }
