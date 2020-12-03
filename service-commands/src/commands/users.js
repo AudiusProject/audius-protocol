@@ -51,6 +51,18 @@ const getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
 
+const getUserAccount = async (libs, wallet) => {
+  return libs.getUserAccount(wallet)
+}
+
+const getLibsWalletAddress = libs => {
+  return libs.getWalletAddress()
+}
+
+const setCurrentUser = async (libs, userAccount) => {
+  libs.setCurrentUser(userAccount)
+}
+
 const getLibsUserInfo = async libs => {
   return libs.getLibsUserInfo()
 }
@@ -79,6 +91,9 @@ module.exports = {
   addUser,
   upgradeToCreator,
   getUser,
+  getUserAccount,
+  getLibsWalletAddress,
+  setCurrentUser,
   autoSelectCreatorNodes,
   updateCreator,
   setCreatorNodeEndpoint,

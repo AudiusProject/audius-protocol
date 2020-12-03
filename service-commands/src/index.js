@@ -7,6 +7,8 @@ const {
 } = require('./setup')
 
 const { LibsWrapper, Utils } = require('./libs')
+
+// TODO: should make all of these imports dynamic!!!
 const {
   addUser,
   upgradeToCreator,
@@ -14,6 +16,9 @@ const {
   setCreatorNodeEndpoint,
   updateCreator,
   getUser,
+  getUserAccount,
+  getLibsWalletAddress,
+  setCurrentUser,
   getLibsUserInfo,
   updateMultihash,
   updateCoverPhoto,
@@ -46,6 +51,9 @@ module.exports = {
   uploadTrack,
   getTrackMetadata,
   getUser,
+  getUserAccount,
+  getLibsWalletAddress,
+  setCurrentUser,
   getLibsUserInfo,
   updateMultihash,
   updateCoverPhoto,

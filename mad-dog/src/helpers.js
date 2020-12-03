@@ -12,7 +12,10 @@ const {
   addUser,
   upgradeToCreator,
   autoSelectCreatorNodes,
-  getLibsUserInfo
+  getLibsUserInfo,
+  getUserAccount,
+  getLibsWalletAddress,
+  setCurrentUser
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -67,7 +70,14 @@ const addAndUpgradeUsers = async (
         const newUserId = await addUser(libs, userMetadata, USER_PIC_PATH)
         addedUserIds.push(newUserId)
         userId = newUserId
-        logger.info(`Created new user with id ${userId}`)
+        logger.info(`Created new user: ${userId}`)
+
+        // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
+        // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
+        await waitForIndexing()
+        const userWalletAddress = getLibsWalletAddress(libs)
+        const userAccount = await getUserAccount(libs, userWalletAddress)
+        setCurrentUser(libs, userAccount)
       }
 
       // add to wallet index to userId mapping
@@ -80,23 +90,34 @@ const addAndUpgradeUsers = async (
     await waitForIndexing()
   })
 
-  // TODO: should check if existing users are already creators. if so, dont upgrade
   await logOps('Upgrade to creator', async () => {
     try {
       await executeAll(async (libs, i) => {
+        // Check if existing users are already creators. If so, don't upgrade
+        const existingUser = await getUser({ executeOne, walletIndex: i })
+
         // Autoselect replica set from valid nodes on-chain
-        const selectedCNodes = await executeOne(i, libsWrapper =>
-          autoSelectCreatorNodes(libsWrapper, numCreatorNodes)
-        )
-        const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
-        logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
-        // Upgrade to creator with replica set
-        await executeOne(i, l => upgradeToCreator(l, endpointString))
-        logger.info(`Finished upgrading creator wallet index ${i}`)
+        if (!existingUser || !existingUser.creator_node_endpoint) {
+          const selectedCNodes = await executeOne(i, libsWrapper =>
+            autoSelectCreatorNodes(libsWrapper, numCreatorNodes)
+          )
+          const { primary, secondaries } = selectedCNodes
+          if (!primary || !secondaries) {
+            throw new Error(`Could not properly select cnodes. primary=${primary} | secondaries=${secondaries}`)
+          }
+          const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
+          logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
+          // Upgrade to creator with replica set
+          await executeOne(i, l => upgradeToCreator(l, endpointString))
+          logger.info(`Finished upgrading creator wallet index ${i}`)
+        } else {
+          logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
+        }
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
       logger.error(e.message)
+      throw e
     }
     await waitForIndexing()
   })
@@ -219,10 +240,10 @@ const getRandomTrackFilePath = async localDirPath => {
   try {
     await fs.ensureDir(localDirPath)
     await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
-  
-    logger.info(`Wrote track to temp local storage at ${targetFilePath}`)  
+
+    logger.info(`Wrote track to temp local storage at ${targetFilePath}`)
   } catch (e) {
-    const error = `Error with writing track to path ${localDirPath}: ${e.message}` 
+    const error = `Error with writing track to path ${localDirPath}: ${e.message}`
     logger.error(error)
     throw new Error(error)
   }
