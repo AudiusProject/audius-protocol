@@ -103,6 +103,7 @@ const execShellCommands = async (commands, service, { verbose }) => {
 const SetupCommand = Object.freeze({
   UP: 'up',
   DOWN: 'down',
+  RESTART: 'restart',
   REGISTER: 'register',
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
   HEALTH_CHECK: 'health-check'
