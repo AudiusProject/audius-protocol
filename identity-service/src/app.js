@@ -117,8 +117,8 @@ class App {
   }
 
   _isIPWhitelisted (ip) {
+    console.log(config)
     const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
-    logger.info(`Whitelist regex ${whitelistRegex}`)
     return whitelistRegex && !!ip.match(whitelistRegex)
   }
 
@@ -144,9 +144,8 @@ class App {
     }
 
     const headers = forwardedFor.split(',')
-    // headers length == 1 means that no x-forwarded-for was passed to identity proxy,
-    // so the request wasn't from CN. We can just use req.ip which corresponds
-    // to the forward-for that the proxy added
+    // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
+    // We can just use req.ip which corresponds to the best guess forward-for that was added if any
     if (headers.length === 1) {
       req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
       return ip
@@ -174,7 +173,6 @@ class App {
     const isIPWhitelisted = this._isIPWhitelisted
     const getIP = this._getIP.bind(this)
 
-    logger.info('Setting limiter', interval)
     const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
