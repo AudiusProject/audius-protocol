@@ -117,7 +117,6 @@ class App {
   }
 
   _isIPWhitelisted (ip) {
-    console.log(config)
     const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
     return whitelistRegex && !!ip.match(whitelistRegex)
   }
