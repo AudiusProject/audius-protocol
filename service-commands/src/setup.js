@@ -46,7 +46,7 @@ const execShellCommand = (command, service, { verbose }) => {
       service !== 'STOPPING ANY PRE-EXISTING SERVICES' &&
       service !== Service.INIT_REPOS
     ) {
-      command = `${CD_PROTOCOL_DIR_COMMAND} ${command}`
+      command = `bash -c '${CD_PROTOCOL_DIR_COMMAND} ${command}'`
     }
 
     console.log(`${command}`)
