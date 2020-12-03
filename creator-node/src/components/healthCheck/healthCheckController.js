@@ -1,6 +1,6 @@
 const express = require('express')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
-const { healthCheck, healthCheckDuration, healthCheckFileUpload } = require('./healthCheckComponentService')
+const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
@@ -100,10 +100,8 @@ const healthCheckFileUploadController = async (req) => {
     throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
   }
 
-  let response = await healthCheckFileUpload()
-  return successResponse(response)
+  return successResponse({ success: true })
 }
-
 
 // Routes
 
@@ -112,6 +110,6 @@ router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get('/health_check/duration', handleResponse(healthCheckDurationController))
 router.get('/health_check/duration/heartbeat', handleResponseWithHeartbeat(healthCheckDurationController))
 router.get('/health_check/verbose', handleResponse(healthCheckVerboseController))
-router.get('/health_check/fileupload', handleResponse(healthCheckFileUploadController))
+router.post('/health_check/fileupload', handleResponse(healthCheckFileUploadController))
 
 module.exports = router

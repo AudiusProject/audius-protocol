@@ -45,19 +45,7 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
-/**
- * Perform a file upload health check limited to configured delegateOwnerWallet
- * Used to validate availability prior to joining the network
- * @param {*} ServiceRegistry
- * @param {*} logger
- */
-const healthCheckFileUpload = async () => {
-  return { success: true }
-}
-
-
 module.exports = {
   healthCheck,
-  healthCheckDuration,
-  healthCheckFileUpload
+  healthCheckDuration
 }
