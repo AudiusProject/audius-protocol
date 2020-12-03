@@ -15,7 +15,7 @@ const constants = {
 
 const MAX_CONCURRENCY = 1
 
-describe('test sync queue', function () {
+describe('test sync queue', async function () {
   let server
 
   before(async function () {

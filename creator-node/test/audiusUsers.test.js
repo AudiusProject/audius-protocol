@@ -16,7 +16,7 @@ const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 
-describe('test AudiusUsers with mocked IPFS', function () {
+describe('test AudiusUsers with mocked IPFS', async function () {
   let app, server, session, ipfsMock, libsMock
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -90,7 +90,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
 // Below block uses actual ipfsClient (unlike first describe block), hence
 // another describe block for this purpose
 // NOTE: these tests mock ipfs client errors; otherwise, for happy path, uses actual ipfsClient
-describe('Test AudiusUsers with real IPFS', function () {
+describe('Test AudiusUsers with real IPFS', async function () {
   let app, server, session, libsMock, ipfs
 
   // Will need a '.' in front of storagePath to look at current dir

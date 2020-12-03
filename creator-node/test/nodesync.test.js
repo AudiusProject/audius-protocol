@@ -22,7 +22,7 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 const sampleExportFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportFromClock2.json')
 
-describe('test nodesync', function () {
+describe('test nodesync', async function () {
   let server, app
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
@@ -50,7 +50,7 @@ describe('test nodesync', function () {
     await server.close()
   })
 
-  describe('test /export route', function () {
+  describe('test /export route', async function () {
     let cnodeUserUUID, sessionToken, metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID, trackSegments, sourceFile
     let trackMetadataMultihash, trackMetadataFileUUID
 
@@ -578,7 +578,7 @@ describe('test nodesync', function () {
     })
   })
 
-  describe('Test /sync route', function () {
+  describe('Test /sync route', async function () {
     const TEST_ENDPOINT = 'http://test-cn.co'
     const userMetadataURI = config.get('userMetadataNodeUrl')
     const { pubKey } = testEthereumConstants

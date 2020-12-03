@@ -7,7 +7,7 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test expressApp', function () {
+describe('test expressApp', async function () {
   let app, server, session, ipfsMock, libsMock
 
   beforeEach(async () => {
@@ -23,34 +23,34 @@ describe('test expressApp', function () {
     session = await createStarterCNodeUser()
   })
 
-  afterEach(async () => {
+  afterEach(async function () {
     await server.close()
   })
 
-  it('responds 404 with invalid endpoint', function (done) {
+  it('responds 404 with invalid endpoint', async function () {
     request(app)
       .get('/asdf')
-      .expect(404, done)
+      .expect(404)
   })
 
-  it('returns 401 with omitted session id', function (done) {
+  it('returns 401 with omitted session id', async function () {
     // logout endpoint requires login / checks session
     request(app)
       .post('/users/logout')
-      .expect(401, done)
+      .expect(401)
   })
 
-  it('returns 401 with invalid session id', function (done) {
+  it('returns 401 with invalid session id', async function () {
     // logout endpoint requires login / checks session
     request(app)
       .post('/users/logout')
       .set('X-Session-ID', session.sessionToken + '1')
-      .expect(401, done)
+      .expect(401)
   })
 
-  it('succeeds health check', function (done) {
+  it('succeeds health check', async function () {
     request(app)
       .get('/health_check')
-      .expect(200, done)
+      .expect(200)
   })
 })

@@ -431,6 +431,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         }
         req.logger.info(redisKey, 'Saved all non-track files to disk.')
 
+        await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
+          ...clockRecord,
+          cnodeUserUUID
+        })), { transaction })
+        req.logger.info(redisKey, 'Saved all ClockRecord entries to DB')
+
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           ...file,
           trackBlockchainId: null,
@@ -455,12 +461,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           cnodeUserUUID
         })), { transaction })
         req.logger.info(redisKey, 'Saved all AudiusUser entries to DB')
-
-        await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
-          ...clockRecord,
-          cnodeUserUUID
-        })), { transaction })
-        req.logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
         await transaction.commit()
         await redisLock.removeLock(redisKey)

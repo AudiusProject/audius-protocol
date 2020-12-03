@@ -12,7 +12,7 @@ const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('Test createNewDataRecord()', () => {
+describe('Test createNewDataRecord()', async function () {
   const req = {
     logger: {
       error: (msg) => console.log(msg)
@@ -299,17 +299,18 @@ describe('Test createNewDataRecord()', () => {
   })
 })
 
-describe.only('Test ClockRecord model', () => {
+describe('Test ClockRecord model', async function () {
   /** Init server to run DB migrations */
   before(async function () {
     await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
   })
 
+  /** Reset DB state */
   beforeEach(async function () {
     await destroyUsers()
   })
 
-  it('Confirm only valid sourceTable value can be written to ClockRecords table', async () => {
+  it('Confirm only valid sourceTable value can be written to ClockRecords table', async function () {
     const cnodeUserUUID = (await createStarterCNodeUser()).cnodeUserUUID
 
     const validSourceTable = 'AudiusUser'
@@ -355,10 +356,11 @@ describe.only('Test ClockRecord model', () => {
     }
   })
 
-  it.only('Confirm only clockRecords with correct clock values can be inserted', async function () {
-    // Create initial cnodeUser
-    const cnodeUserUUID = (await createStarterCNodeUser()).cnodeUserUUID
+  it('Confirm only clockRecords with correct clock values can be inserted', async function () {
     const validSourceTable = 'AudiusUser'
+
+    // Create initial cnodeUser
+    let cnodeUserUUID = (await createStarterCNodeUser()).cnodeUserUUID
 
     // clock value cannot be negative
     try {
@@ -417,10 +419,33 @@ describe.only('Test ClockRecord model', () => {
       clock: 2,
       sourceTable: validSourceTable
     })
-  })
 
-  it('Confirm ClockRecord and CNodeUser records must start at 1', async function () {
+    // bulk create must contain only contiguous clock values
+    try {
+      await models.ClockRecord.bulkCreate([
+        { cnodeUserUUID, clock: 3, sourceTable: validSourceTable },
+        { cnodeUserUUID, clock: 5, sourceTable: validSourceTable },
+        { cnodeUserUUID, clock: 5, sourceTable: validSourceTable }
+      ])
+    } catch (e) {
+      assert.strictEqual(e, 'Can only insert contiguous clock values')
+    }
 
+    // successfully bulk create multiple clock records
+    await models.ClockRecord.bulkCreate([
+      { cnodeUserUUID, clock: 3, sourceTable: validSourceTable },
+      { cnodeUserUUID, clock: 4, sourceTable: validSourceTable },
+      { cnodeUserUUID, clock: 5, sourceTable: validSourceTable }
+    ])
+
+    // successfully bulk create multiple clock records in one transaction
+    const transaction = await models.sequelize.transaction()
+    await models.ClockRecord.bulkCreate([
+      { cnodeUserUUID, clock: 6, sourceTable: validSourceTable },
+      { cnodeUserUUID, clock: 7, sourceTable: validSourceTable },
+      { cnodeUserUUID, clock: 8, sourceTable: validSourceTable }
+    ], { transaction })
+    await transaction.commit()
   })
 
   it('Confirm only valid cnodeUserUUID value can be written to ClockRecords table', async function () {
@@ -453,4 +478,4 @@ describe.only('Test ClockRecord model', () => {
   })
 })
 
-describe.skip('TODO - Test deleteAllCNodeUserData', () => { })
+describe.skip('TODO - Test deleteAllCNodeUserData', async function () { })

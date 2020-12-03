@@ -8,7 +8,7 @@ const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConst
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test Users', function () {
+describe('test Users', async function () {
   let app, server, ipfsMock, libsMock
 
   /** Setup app + global test vars */
@@ -27,18 +27,18 @@ describe('test Users', function () {
     await server.close()
   })
 
-  it('creates new user', function (done) {
+  it('creates new user', async function () {
     request(app)
       .post('/users')
       .send({ walletAddress: testEthereumConstants.pubKey })
-      .expect(200, done)
+      .expect(200)
   })
 
-  it('fails new user create on bad address', function (done) {
+  it('fails new user create on bad address', async function () {
     request(app)
       .post('/users')
       .send({ walletAddress: '0x123' })
-      .expect(400, done)
+      .expect(400)
   })
 
   it('user create is idempotent', async function () {
@@ -49,10 +49,10 @@ describe('test Users', function () {
       .expect(200)
   })
 
-  it('fail to get challenge without wallet address', function (done) {
+  it('fail to get challenge without wallet address', async function () {
     request(app)
       .get('/users/login/challenge')
-      .expect(400, done)
+      .expect(400)
   })
 
   it('get challenge with wallet address', async function () {

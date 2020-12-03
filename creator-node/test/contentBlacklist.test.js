@@ -20,7 +20,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe('test ContentBlacklist', function () {
+describe('test ContentBlacklist', async function () {
   let app, server, libsMock
 
   beforeEach(async () => {
