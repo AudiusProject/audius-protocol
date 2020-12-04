@@ -16,8 +16,6 @@ class CreatorNodeSelection extends ServiceSelection {
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
-    // Services with the structure {request, response, millis} (see timeRequest) sorted by semver and response time
-    this.healthCheckedServicesList = []
     this.healthCheckPath = 'version'
   }
 
@@ -28,12 +26,13 @@ class CreatorNodeSelection extends ServiceSelection {
    * 2. Filter from/out creator nodes based off of the whitelist and blacklist
    * 3. Filter out unhealthy, outdated, and still syncing nodes via health and sync check
    * 4. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime
-   * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) either from available nodes or backups
+   * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
    */
   async select () {
     // Reset decision tree and backups
     this.decisionTree = []
     this.clearBackups()
+    this.clearUnhealthy()
 
     // Get all the creator node endpoints on chain and filter
     let services = await this.getServices()
@@ -49,7 +48,9 @@ class CreatorNodeSelection extends ServiceSelection {
 
     const successfulSyncCheckServices = []
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
+    // Perform sync checks on all services
     for (const response of syncResponses) {
+      // Could not perform a sync check. Add to unhealthy
       if (response.error) {
         console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`)
         this.addUnhealthy(response.service)
@@ -72,6 +73,7 @@ class CreatorNodeSelection extends ServiceSelection {
     services = [...successfulSyncCheckServices]
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
 
+    // Perform a health check on services that passed the sync checks
     const healthCheckedServices = await timeRequestsAndSortByVersion(
       services.map(node => ({
         id: node,
@@ -79,12 +81,12 @@ class CreatorNodeSelection extends ServiceSelection {
       }))
     )
 
-    // Store a copy of the sorted by version and response time nodes
-    this.healthCheckedServicesList = healthCheckedServices
-
     const healthyServices = healthCheckedServices.filter(resp => {
       const endpoint = resp.request.id
       let isHealthy = false
+
+      // Check that the health check responded with status code 200 and that the
+      // version is up to date on major and minor
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
@@ -94,37 +96,31 @@ class CreatorNodeSelection extends ServiceSelection {
         isHealthy = isUp && versionIsUpToDate
       }
 
-      // If not healthy, add to unhealthy. Else, add as backup
-      if (!isHealthy) {
-        this.addUnhealthy(endpoint)
-      } else {
-        this.addBackup(endpoint, resp.response)
-      }
+      if (!isHealthy) { this.addUnhealthy(endpoint) }
 
       return isHealthy
     })
 
-    services = healthyServices.map(service => service.request.id)
+    // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
+    // Also update services to be healthy services
+    const servicesMap = {}
+    services = healthyServices.map(service => {
+      servicesMap[service.request.id] = service.response.data
+      return service.request.id
+    })
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
 
-    // Create mapping of services to health check responses; used on dapp as other services to select from
-    const servicesMap = {}
-    healthCheckedServices
-      .map(service => {
-        if (service.response) {
-          servicesMap[service.request.id] = service.response.data
-        }
-      })
-
+    // Set index 0 from services as the primary
     const primary = this.getPrimary(services)
+    // Set index 1 - services.length as the backups. Used in selecting secondaries
+    this.addBackups(services.slice(1, services.length))
     const secondaries = this.getSecondaries(services, primary)
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
-      val: { primary, secondaries: secondaries.toString(), services: JSON.stringify(Object.keys(servicesMap)) }
+      val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
     })
 
     console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
-
     return { primary, secondaries, services: servicesMap }
   }
 
@@ -142,26 +138,31 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 
   /**
+   * Adds backups via input list
+   * @param {string[]} backups
+   */
+  addBackups (backups) {
+    // Rest of services that are not selected as the primary are valid backups. Add as backup
+    // This backups list will also be in order of descending highest version/fastest
+    backups.map(backup => {
+      if (backup) this.addBackup(backup)
+    })
+  }
+
+  /**
+   * Get backups in the form of an array
+   */
+  getBackups () {
+    return Object.keys(this.backups)
+  }
+
+  /**
    * Select a primary creator node
    * @param {string[]} services all healthy creator node endpoints
    */
   getPrimary (services) {
     // Index 0 of services will be the most optimal creator node candidate
-    // Select 1 from healthy services
-    let primary = services[0]
-    // All nodes are stored as backup unless unhealthy. Once chosen, remove from backups
-
-    // If no healthy services available, select from backups
-    if (!primary) {
-      primary = this.selectFromBackups()
-    }
-
-    // If no backups available, select from unhealthy
-    if (!primary) {
-      primary = this.selectFromUnhealthy()
-    }
-
-    return primary
+    return services[0]
   }
 
   /**
@@ -171,71 +172,11 @@ class CreatorNodeSelection extends ServiceSelection {
    */
   getSecondaries (services, primary) {
     // Index 1 to n of services will be sorted in highest version -> lowest version
-    // Select up to numberOfNodes-1 of secondaries that is not null and not the primary
-    let remainingSecondaries = this.numberOfNodes - 1
-    const secondaries = []
-
-    // Select from healthy services
-    for (const service of services) {
-      if (service && service !== primary && remainingSecondaries > 0) {
-        remainingSecondaries--
-        secondaries.push(service)
-      }
-    }
-
-    // If not enough secondaries returned from services, select from backups
-    remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
-    while (remainingSecondaries > 0) {
-      const backup = this.selectFromBackups()
-      if (backup && backup !== primary) {
-        secondaries.push(backup)
-        remainingSecondaries--
-      }
-    }
-
-    // If not enough secondaries returned from backups, select from unhealthy
-    remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
-    while (remainingSecondaries > 0) {
-      const unhealthy = this.selectFromUnhealthy()
-      if (unhealthy && unhealthy !== primary) {
-        secondaries.push(unhealthy)
-        remainingSecondaries--
-      }
-    }
+    // Select up to numberOfNodes-1 of secondaries
+    const backups = this.getBackups()
+    const secondaries = backups.slice(0, this.numberOfNodes - 1)
 
     return secondaries
-  }
-
-  /**
-   * `healthCheckedServicesList` will be the list of services that have undergone a health check, and
-   * sorted by descending semver and ascending response time. Thus, it is in the service selection's best
-   * interest to pick a backup from the start of the list.
-   *
-   * Iterate through `healthCheckedServicesList` and if there is a hit in `backups`, remove the service
-   * from backups to prevent it from getting picked again and return it.
-   */
-  selectFromBackups () {
-    for (const service of this.healthCheckedServicesList) {
-      const endpoint = service.request.id
-      if (this.backups.hasOwnProperty(endpoint)) {
-        this.removeFromBackups(endpoint)
-        return endpoint
-      }
-    }
-  }
-
-  /**
-   * If everything is truly unhealthy (ruh roh), select from unhealthy. Similar logic to
-   * `selectFromBackups`,
-   */
-  selectFromUnhealthy () {
-    for (const service of this.healthCheckedServicesList) {
-      const endpoint = service.request.id
-      if (this.unhealthy.has(endpoint)) {
-        this.removeFromUnhealthy(endpoint)
-        return endpoint
-      }
-    }
   }
 }
 
