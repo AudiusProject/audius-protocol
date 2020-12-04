@@ -51,7 +51,7 @@ class CreatorNodeSelection extends ServiceSelection {
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
     for (const response of syncResponses) {
       if (response.error) {
-        console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.e}`)
+        console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`)
         this.addUnhealthy(response.service)
         continue
       }
@@ -120,7 +120,7 @@ class CreatorNodeSelection extends ServiceSelection {
     const secondaries = this.getSecondaries(services, primary)
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
-      val: { primary, secondaries: secondaries.toString(), services: servicesMap }
+      val: { primary, secondaries: secondaries.toString(), services: JSON.stringify(Object.keys(servicesMap)) }
     })
 
     console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
@@ -185,16 +185,22 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // If not enough secondaries returned from services, select from backups
     remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
-    while (remainingSecondaries-- > 0) {
+    while (remainingSecondaries > 0) {
       const backup = this.selectFromBackups()
-      if (backup && backup !== primary) secondaries.push(backup)
+      if (backup && backup !== primary) {
+        secondaries.push(backup)
+        remainingSecondaries--
+      }
     }
 
     // If not enough secondaries returned from backups, select from unhealthy
     remainingSecondaries = this.numberOfNodes - 1 - secondaries.length
-    while (remainingSecondaries-- > 0) {
+    while (remainingSecondaries > 0) {
       const unhealthy = this.selectFromUnhealthy()
-      if (unhealthy && unhealthy !== primary) secondaries.push(unhealthy)
+      if (unhealthy && unhealthy !== primary) {
+        secondaries.push(unhealthy)
+        remainingSecondaries--
+      }
     }
 
     return secondaries

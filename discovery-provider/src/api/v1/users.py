@@ -244,7 +244,7 @@ user_reposts_route_parser.add_argument('user_id', required=False)
 user_reposts_route_parser.add_argument('limit', required=False, type=int)
 user_reposts_route_parser.add_argument('offset', required=False, type=int)
 
-reposts_response = make_full_response("reposts", full_ns, fields.List(fields.Nested(activity_model)))
+reposts_response = make_response("reposts", ns, fields.List(fields.Nested(activity_model)))
 @ns.route(USER_REPOSTS_ROUTE)
 class RepostList(Resource):
     @record_metrics
@@ -397,7 +397,7 @@ favorite_route_parser = reqparse.RequestParser()
 favorite_route_parser.add_argument('user_id', required=False, type=str)
 favorite_route_parser.add_argument('limit', required=False, type=int)
 favorite_route_parser.add_argument('offset', required=False, type=int)
-favorites_response = make_full_response("favorites_response", full_ns, fields.List(fields.Nested(activity_model_full)))
+favorites_response = make_full_response("favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full)))
 @full_ns.route("/<string:user_id>/favorites/tracks")
 class FavoritedTracks(Resource):
     @record_metrics
