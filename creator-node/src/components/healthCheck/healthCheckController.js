@@ -6,6 +6,7 @@ const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 
 const { recoverWallet } = require('../../apiSigning')
+const { handleTrackContentUpload } = require('../../fileManager')
 
 const config = require('../../config')
 
@@ -83,7 +84,7 @@ const healthCheckVerboseController = async (req) => {
  * Controller for `health_check/fileupload` route
  * Calls `healthCheckFileUploadService`.
  */
-const healthCheckFileUploadController = async (req) => {
+const healthCheckFileUploadController = async (req, res, next) => {
   let { timestamp, randomBytes, signature } = req.query
   if (!timestamp || !randomBytes || !signature) return errorResponseBadRequest('Missing required query parameters')
 
@@ -100,7 +101,7 @@ const healthCheckFileUploadController = async (req) => {
     throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
   }
 
-  return successResponse({ success: true })
+  handleTrackContentUpload(req, res, next)
 }
 
 // Routes
