@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux'
-import { 
+import {
   NativeModules,
   Linking,
   Platform,
@@ -21,6 +21,7 @@ import { track, screen, identify } from './utils/analytics'
 import { Identify, Track, Screen, AnalyticsMessage } from './types/analytics'
 import { checkConnectivity, Connectivity } from './utils/connectivity'
 import { Provider } from './store/oauth/reducer'
+import { handleWebAppLog } from './utils/logging'
 
 let sentInitialTheme = false
 
@@ -45,7 +46,7 @@ export enum MessageType {
 
   // Google Cast
   GOOGLE_CAST = 'show-google-cast-picker',
-  
+
   // Notifications
   ENABLE_PUSH_NOTIFICATIONS = 'enable-push-notifications',
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
@@ -90,6 +91,9 @@ export enum MessageType {
   ANALYTICS_IDENTIFY = 'analytics-identify',
   ANALYTICS_TRACK = 'analytics-track',
   ANALYTICS_SCREEN = 'analytics-screen',
+
+  // Logging
+  LOGGING = 'logging'
 }
 
 export interface Message {
@@ -133,7 +137,7 @@ export const handleMessage = async (
       dispatch(lifecycleActions.backendTearDown())
       reload()
       break
-    
+
     // Cast
     case MessageType.GOOGLE_CAST:
       showCastPicker()
@@ -253,6 +257,10 @@ export const handleMessage = async (
     }
     case MessageType.NOT_ON_FIRST_PAGE: {
       return dispatch(lifecycleActions.notOnFirstPage())
+    }
+    case MessageType.LOGGING: {
+      handleWebAppLog(message.level, message.message)
+      break
     }
   }
 }
