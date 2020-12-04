@@ -259,8 +259,15 @@ class CollectionPage extends Component<
 
   componentWillUnmount() {
     if (this.unlisten) this.unlisten()
-    if (this.props.smartCollection || !this.props.isMobile)
+    // If we're on mobile, account for transition delay before
+    // resetting collection
+    if (this.props.isMobile) {
+      setTimeout(() => {
+        this.resetCollection()
+      }, 300)
+    } else {
       this.resetCollection()
+    }
   }
 
   playListContentsEqual(
@@ -287,7 +294,6 @@ class CollectionPage extends Component<
     if (params) {
       const { handle, collectionId } = params
       if (forceFetch || collectionId !== this.state.playlistId) {
-        this.resetCollection()
         this.setState({ playlistId: collectionId as number })
         this.props.fetchCollection(handle, collectionId as number)
         this.props.fetchTracks()
