@@ -44,7 +44,8 @@ const theme = {
 
   '--accent-purple': '#8E51CF',
 
-  '--page-header-gradient': 'linear-gradient(-22deg, #5B23E1 0%, #A22FEB 100%)',
+  '--page-header-gradient-color-1': '#5B23E1',
+  '--page-header-gradient-color-2': '#A22FEB',
 
   '--tile-shadow-1': 'rgba(133,129,153,0.1)',
   '--tile-shadow-2': '#E3E3E3',
