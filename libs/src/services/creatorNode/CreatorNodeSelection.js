@@ -17,6 +17,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
     this.healthCheckPath = 'version'
+    // String array of healthy Content Node endpoints
     this.backupsList = []
   }
 
