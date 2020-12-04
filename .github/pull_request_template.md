@@ -1,8 +1,6 @@
 ### Trello Card Link
 
-
 ### Description
-
 
 ### Services
 
@@ -19,8 +17,15 @@ Delete an option.
 - 🚨 Yes, this touches <flow>
 - ✅ Nope
 
-
 ### How Has This Been Tested?
+
+Tests Checklist:
+
+- [ ] If new unit tests are written, they pass
+- [ ] Existing unit tests pass
+- [ ] If new mad-dog tests are written, they pass
+- [ ] Existing mad-dog tests pass
+- [ ] Local client works with your change
 
 Please describe the tests that you ran to verify your changes. Provide repro instructions & any configuration.
 Include log analysis if applicable.
