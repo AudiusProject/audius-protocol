@@ -17,13 +17,14 @@ class CreatorNodeSelection extends ServiceSelection {
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
     this.healthCheckPath = 'version'
+    this.backupsList = []
   }
 
   /**
-   * Selects a primary and secondary creator nodes. Order of preference is highest version, then response time.
+   * Selects a primary and secondary Content Nodes. Order of preference is highest version, then response time.
    *
-   * 1. Retrieve all the creator node services
-   * 2. Filter from/out creator nodes based off of the whitelist and blacklist
+   * 1. Retrieve all the Content Node services
+   * 2. Filter from/out Content Nodes based off of the whitelist and blacklist
    * 3. Filter out unhealthy, outdated, and still syncing nodes via health and sync check
    * 4. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime
    * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
@@ -34,7 +35,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.clearBackups()
     this.clearUnhealthy()
 
-    // Get all the creator node endpoints on chain and filter
+    // Get all the Content Node endpoints on chain and filter
     let services = await this.getServices()
     this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
 
@@ -113,8 +114,8 @@ class CreatorNodeSelection extends ServiceSelection {
     // Set index 0 from services as the primary
     const primary = this.getPrimary(services)
     // Set index 1 - services.length as the backups. Used in selecting secondaries
-    this.addBackups(services.slice(1, services.length))
-    const secondaries = this.getSecondaries(services, primary)
+    this.setBackupsList(services.slice(1))
+    const secondaries = this.getSecondaries()
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
@@ -125,8 +126,8 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 
   /**
-   * Checks the sync progress of a creator node
-   * @param {string} service creator node endopint
+   * Checks the sync progress of a Content Node
+   * @param {string} service Content Node endopint
    */
   async getSyncStatus (service) {
     try {
@@ -138,42 +139,38 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 
   /**
-   * Adds backups via input list
-   * @param {string[]} backups
+   * Sets backupsList to input
+   * @param {string[]} services string array of Content Node endpoints
    */
-  addBackups (backups) {
+  setBackupsList (services) {
     // Rest of services that are not selected as the primary are valid backups. Add as backup
     // This backups list will also be in order of descending highest version/fastest
-    backups.map(backup => {
-      if (backup) this.addBackup(backup)
-    })
+    this.backupsList = services
   }
 
   /**
    * Get backups in the form of an array
    */
-  getBackups () {
-    return Object.keys(this.backups)
+  getBackupsList () {
+    return this.backupsList
   }
 
   /**
-   * Select a primary creator node
-   * @param {string[]} services all healthy creator node endpoints
+   * Select a primary Content Node
+   * @param {string[]} services all healthy Content Node endpoints
    */
   getPrimary (services) {
-    // Index 0 of services will be the most optimal creator node candidate
+    // Index 0 of services will be the most optimal Content Node candidate
     return services[0]
   }
 
   /**
-   * Selects secondary creator nodes
-   * @param {string[]} services all healthy creator node endpoints
-   * @param {string} primary the chosen primary
+   * Selects secondary Content Nodes
    */
-  getSecondaries (services, primary) {
+  getSecondaries () {
     // Index 1 to n of services will be sorted in highest version -> lowest version
     // Select up to numberOfNodes-1 of secondaries
-    const backups = this.getBackups()
+    const backups = this.getBackupsList()
     const secondaries = backups.slice(0, this.numberOfNodes - 1)
 
     return secondaries
