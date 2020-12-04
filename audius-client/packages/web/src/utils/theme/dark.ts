@@ -30,7 +30,8 @@ const theme = {
   '--neutral-light-10': '#35364F',
   '--white': '#32334D',
 
-  '--page-header-gradient': 'linear-gradient(-22deg, #7652CC 0%, #B05CE6 100%)',
+  '--page-header-gradient-color-1': '#7652CC',
+  '--page-header-gradient-color-2': '#B05CE6',
 
   '--tile-shadow-1': 'rgba(17,17,34,0.1)',
   '--tile-shadow-2': '#35364F',

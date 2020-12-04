@@ -254,6 +254,7 @@ const Drawer = ({
       <animated.div
         ref={clickOutsideRef}
         className={cn(styles.drawer, {
+          [styles.isOpen]: isOpen,
           [styles.native]: NATIVE_MOBILE
         })}
         {...bind()}

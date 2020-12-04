@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="18px" height="15px" viewBox="0 0 18 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <linearGradient id="gradientCrown" gradientTransform="rotate(45)" height="100%" width="100%">
-        <stop offset="0%" stop-color="#A22FEB"/>
-        <stop offset="100%" stop-color="#5B23E1"/>
+        <stop offset="0%" stop-color="var(--page-header-gradient-color-2)"/>
+        <stop offset="100%" stop-color="var(--page-header-gradient-color-1)"/>
     </linearGradient>
     <g id="🌈-Style-Guides" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="Icon-Guide" transform="translate(-69.000000, -300.000000)" fill="#858199">
