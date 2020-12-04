@@ -722,7 +722,11 @@ class AudiusAPIClient {
       (await this._getResponse(ENDPOINT_MAP.searchAutocomplete, params)) ??
       emptySearchResponse
     const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
-    return processSearchResults({ searchText: query, ...adapted })
+    return processSearchResults({
+      searchText: query,
+      isAutocomplete: true,
+      ...adapted
+    })
   }
 
   init() {
