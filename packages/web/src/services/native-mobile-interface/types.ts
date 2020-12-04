@@ -64,7 +64,10 @@ export enum MessageType {
   // Analytics
   ANALYTICS_IDENTIFY = 'analytics-identify',
   ANALYTICS_TRACK = 'analytics-track',
-  ANALYTICS_SCREEN = 'analytics-screen'
+  ANALYTICS_SCREEN = 'analytics-screen',
+
+  // Logging
+  LOGGING = 'logging'
 }
 
 export interface Message {

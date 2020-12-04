@@ -5,6 +5,7 @@ import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { BackendDidSetup } from 'services/native-mobile-interface/lifecycle'
 import Dapp from './app'
 import { getCurrentUserExists } from 'services/LocalStorage'
+import { setupMobileLogging } from 'services/Logging'
 
 const REACT_APP_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -61,6 +62,10 @@ const Root = () => {
       new BackendDidSetup().send()
     }
   }, [connectivityFailure, dappReady])
+
+  useEffect(() => {
+    setupMobileLogging()
+  }, [])
 
   const [shouldShowPopover, setShouldShowPopover] = useState(true)
 
