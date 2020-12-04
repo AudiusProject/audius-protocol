@@ -81,18 +81,22 @@ describe('test CreatorNodeSelection', () => {
 
     const { primary, secondaries, services } = await cns.select()
 
-    assert(primary === healthy)
-    assert(secondaries.length === 2)
-    assert(secondaries.includes(healthyButSlow))
-    assert(secondaries.includes(healthyButSlowest))
+    try {
+      assert(primary === healthy)
+      assert(secondaries.length === 2)
+      assert(secondaries.includes(healthyButSlow))
+      assert(secondaries.includes(healthyButSlowest))
 
-    const returnedHealthyServices = new Set(Object.keys(services))
-    assert(returnedHealthyServices.size === 3)
-    const healthyServices = [healthy, healthyButSlow, healthyButSlowest]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 3)
+      const healthyServices = [healthy, healthyButSlow, healthyButSlowest]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    } catch (e) {
+      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
+    }
   })
 
-  it('filter out behind creator nodes, select the highest version as primary and rest as secondaries', async () => {
+  it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
     const upToDate = 'https://upToDate.audius.co'
     nock(upToDate)
       .get('/version')
@@ -155,14 +159,18 @@ describe('test CreatorNodeSelection', () => {
 
     const { primary, secondaries, services } = await cns.select()
 
-    assert(primary === upToDate)
-    assert(secondaries.length === 1)
-    assert(secondaries.includes(behindPatch))
+    try {
+      assert(primary === upToDate)
+      assert(secondaries.length === 1)
+      assert(secondaries.includes(behindPatch))
 
-    const returnedHealthyServices = new Set(Object.keys(services))
-    assert(returnedHealthyServices.size === 2)
-    const healthyServices = [upToDate, behindPatch]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 2)
+      const healthyServices = [upToDate, behindPatch]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    } catch (e) {
+      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
+    }
   })
 
   it('select from unhealthy if all are unhealthy', async () => {
@@ -213,15 +221,19 @@ describe('test CreatorNodeSelection', () => {
 
     const { primary, secondaries, services } = await cns.select()
 
-    // All unhealthy are bad candidates so just pick whatever if all are unhealthy
-    assert(!primary)
-    assert(secondaries.length === 0)
+    // All unhealthy are bad candidates so don't select anything
+    try {
+      assert(!primary)
+      assert(secondaries.length === 0)
 
-    const returnedHealthyServices = new Set(Object.keys(services))
-    assert(returnedHealthyServices.size === 0)
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 0)
+    } catch (e) {
+      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
+    }
   })
 
-  it('selects the healthiest among the services of different statuses', async () => {
+  it('selects the only healthy service among the services of different statuses', async () => {
     // the cream of the crop -- up to date version, slow. you want this
     const shouldBePrimary = 'https://shouldBePrimary.audius.co'
     nock(shouldBePrimary)
@@ -266,6 +278,19 @@ describe('test CreatorNodeSelection', () => {
       .get('/version')
       .reply(500, { })
 
+    // your house mate's leftovers from her team outing -- behind by patch, kinda slow. solid
+    const shouldBeSecondary = 'https://secondary.audius.co'
+    nock(shouldBeSecondary)
+      .get('/version')
+      .delay(100)
+      .reply(200, { data: {
+        service: CREATOR_NODE_SERVICE_NAME,
+        version: '1.2.0',
+        country: 'US',
+        latitude: '37.7058',
+        longitude: '-122.4619'
+      } })
+
     const cns = new CreatorNodeSelection({
       // Mock Creator Node
       creatorNode: {
@@ -277,23 +302,35 @@ describe('test CreatorNodeSelection', () => {
         }
       },
       numberOfNodes: 3,
-      ethContracts: mockEthContracts([unhealthy1, shouldBePrimary, unhealthy2, unhealthy3], '1.2.3'),
+      ethContracts: mockEthContracts([unhealthy1, shouldBePrimary, unhealthy2, unhealthy3, shouldBeSecondary], '1.2.3'),
       whitelist: null,
       blacklist: null
     })
 
     const { primary, secondaries, services } = await cns.select()
 
-    assert(primary === shouldBePrimary)
-    assert(secondaries.length === 0)
+    try {
+      assert(primary === shouldBePrimary)
+      assert(secondaries.length === 1)
+      assert(secondaries.includes(shouldBeSecondary))
 
-    const returnedHealthyServices = new Set(Object.keys(services))
-    assert(returnedHealthyServices.size === 1)
-    const healthyServices = [shouldBePrimary]
-    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 2)
+      const healthyServices = [shouldBePrimary, shouldBeSecondary]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    } catch (e) {
+      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
+    }
   })
 
-  it('selects numNodes - 1 number of secondaries (numNodes = 5)', async () => {
+  /**
+   * This test is to ensure that the proper number of services is selected.
+   * If numNodes = n, then (assuming all nodes are healthy):
+   * - 1 primary is selected
+   * - n-1 secondaries are selected
+   * - n services are returned
+   */
+  it('selects numNodes - 1 number of secondaries (starting with numNodes=5->1)', async () => {
     const contentNodes = []
     const numNodes = 5
     for (let i = 0; i < numNodes; i++) {
@@ -329,14 +366,15 @@ describe('test CreatorNodeSelection', () => {
         blacklist: null
       })
 
-      const { primary, secondaries, services } = await cns.select()
-      // Make sure not null
-      assert(primary)
-      // Should be 4, 3, 2, 1
-      assert(secondaries.length === numNodes - i - 1)
-      const returnedHealthyServices = Object.keys(services)
-      // Should always be 5
-      assert(returnedHealthyServices.length === numNodes)
+      try {
+        const { primary, secondaries, services } = await cns.select()
+        assert(primary)
+        assert(secondaries.length === numNodes - i - 1)
+        const returnedHealthyServices = Object.keys(services)
+        assert(returnedHealthyServices.length === numNodes)
+      } catch (e) {
+        throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
+      }
     }
   })
 })
