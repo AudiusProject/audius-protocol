@@ -40,7 +40,7 @@ async function run () {
     reqParam.randomBytes = randomBytesToSign
 
     let sampleTrack = new FormData()
-    sampleTrack.append('file', bufferToStream(await randomBytes(49000000)))
+    sampleTrack.append('file', bufferToStream(await randomBytes(10000000)))
 
     let requestConfig = {
       headers: {
