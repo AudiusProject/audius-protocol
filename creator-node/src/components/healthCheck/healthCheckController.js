@@ -102,6 +102,7 @@ const healthCheckFileUploadController = async (req, res, next) => {
   }
 
   handleTrackContentUpload(req, res, next)
+  return successResponse({ success: true })
 }
 
 // Routes

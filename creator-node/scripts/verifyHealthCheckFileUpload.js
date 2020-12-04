@@ -40,7 +40,7 @@ async function run () {
     reqParam.randomBytes = randomBytesToSign
 
     let sampleTrack = new FormData()
-    sampleTrack.append('file', bufferToStream(await randomBytes(10000000)))
+    sampleTrack.append('file', bufferToStream(await randomBytes(100000000))) // 100 MB
 
     let requestConfig = {
       headers: {
@@ -50,7 +50,9 @@ async function run () {
       method: 'post',
       params: reqParam,
       responseType: 'json',
-      data: sampleTrack
+      data: sampleTrack,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     }
     let resp = await axios(requestConfig)
     let data = resp.data
