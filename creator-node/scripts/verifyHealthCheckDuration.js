@@ -16,7 +16,7 @@ async function run () {
     parseEnvVarsAndArgs()
   } catch (e) {
     console.error(`\nIncorrect script usage: ${e.message}`)
-    console.error(`Script usage: node verifyHealthcheckDuration.js`)
+    console.error(`Script usage: node verifyHealthCheckDuration.js`)
     return
   }
 
