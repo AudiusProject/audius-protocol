@@ -1,7 +1,8 @@
 const axios = require('axios')
+const FormData = require('form-data')
+
 const crypto = require('crypto')
 const stream = require('stream')
-const FormData = require('form-data')
 
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
