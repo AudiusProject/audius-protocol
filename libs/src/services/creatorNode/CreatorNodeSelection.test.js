@@ -81,19 +81,15 @@ describe('test CreatorNodeSelection', () => {
 
     const { primary, secondaries, services } = await cns.select()
 
-    try {
-      assert(primary === healthy)
-      assert(secondaries.length === 2)
-      assert(secondaries.includes(healthyButSlow))
-      assert(secondaries.includes(healthyButSlowest))
+    assert(primary === healthy)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(healthyButSlow))
+    assert(secondaries.includes(healthyButSlowest))
 
-      const returnedHealthyServices = new Set(Object.keys(services))
-      assert(returnedHealthyServices.size === 3)
-      const healthyServices = [healthy, healthyButSlow, healthyButSlowest]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
-    } catch (e) {
-      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
-    }
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [healthy, healthyButSlow, healthyButSlowest]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
   it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
@@ -159,18 +155,14 @@ describe('test CreatorNodeSelection', () => {
 
     const { primary, secondaries, services } = await cns.select()
 
-    try {
-      assert(primary === upToDate)
-      assert(secondaries.length === 1)
-      assert(secondaries.includes(behindPatch))
+    assert(primary === upToDate)
+    assert(secondaries.length === 1)
+    assert(secondaries.includes(behindPatch))
 
-      const returnedHealthyServices = new Set(Object.keys(services))
-      assert(returnedHealthyServices.size === 2)
-      const healthyServices = [upToDate, behindPatch]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
-    } catch (e) {
-      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
-    }
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 2)
+    const healthyServices = [upToDate, behindPatch]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
   it('select from unhealthy if all are unhealthy', async () => {
@@ -222,15 +214,11 @@ describe('test CreatorNodeSelection', () => {
     const { primary, secondaries, services } = await cns.select()
 
     // All unhealthy are bad candidates so don't select anything
-    try {
-      assert(!primary)
-      assert(secondaries.length === 0)
+    assert(!primary)
+    assert(secondaries.length === 0)
 
-      const returnedHealthyServices = new Set(Object.keys(services))
-      assert(returnedHealthyServices.size === 0)
-    } catch (e) {
-      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
-    }
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 0)
   })
 
   it('selects the only healthy service among the services of different statuses', async () => {
@@ -309,18 +297,14 @@ describe('test CreatorNodeSelection', () => {
 
     const { primary, secondaries, services } = await cns.select()
 
-    try {
-      assert(primary === shouldBePrimary)
-      assert(secondaries.length === 1)
-      assert(secondaries.includes(shouldBeSecondary))
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 1)
+    assert(secondaries.includes(shouldBeSecondary))
 
-      const returnedHealthyServices = new Set(Object.keys(services))
-      assert(returnedHealthyServices.size === 2)
-      const healthyServices = [shouldBePrimary, shouldBeSecondary]
-      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
-    } catch (e) {
-      throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
-    }
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 2)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
   /**
@@ -366,15 +350,11 @@ describe('test CreatorNodeSelection', () => {
         blacklist: null
       })
 
-      try {
-        const { primary, secondaries, services } = await cns.select()
-        assert(primary)
-        assert(secondaries.length === numNodes - i - 1)
-        const returnedHealthyServices = Object.keys(services)
-        assert(returnedHealthyServices.length === numNodes)
-      } catch (e) {
-        throw new Error(`Ensure only current version and patch mismatched versions are selected in replicaset and in healthy services list: ${e}`)
-      }
+      const { primary, secondaries, services } = await cns.select()
+      assert(primary)
+      assert(secondaries.length === numNodes - i - 1)
+      const returnedHealthyServices = Object.keys(services)
+      assert(returnedHealthyServices.length === numNodes)
     }
   })
 })
