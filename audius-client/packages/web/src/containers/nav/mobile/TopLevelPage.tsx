@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 
 import { AppState } from 'store/types'
 import { getIsOpen as getIsCreatePlaylistModalOpen } from 'store/application/ui/createPlaylistModal/selectors'
@@ -12,6 +11,7 @@ import EditPlaylistPage from 'containers/edit-playlist/mobile/EditPlaylistPage'
 import AddToPlaylistPage from 'containers/add-to-playlist/mobile/AddToPlaylist'
 
 import styles from './TopLevelPage.module.css'
+import useScrollLock from 'hooks/useScrollLock'
 
 type TopLevelPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
@@ -23,15 +23,8 @@ const TopLevelPage = ({
   showAddToPlaylist
 }: TopLevelPageProps) => {
   const showPage = showCreatePlaylist || showAddToPlaylist
-
-  useEffect(() => {
-    if (showPage && rootElement) {
-      disableBodyScroll(rootElement)
-    }
-    if (!showPage) {
-      clearAllBodyScrollLocks()
-    }
-  }, [showPage])
+  const isLocked = !!(showPage && rootElement)
+  useScrollLock(isLocked)
 
   let page = null
   if (showCreatePlaylist) {
