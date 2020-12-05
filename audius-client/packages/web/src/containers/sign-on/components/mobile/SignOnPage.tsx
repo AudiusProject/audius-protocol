@@ -23,6 +23,7 @@ import styles from './SignOnPage.module.css'
 import { PushNotificationSetting } from 'containers/settings-page/store/types'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 import cn from 'classnames'
+import { show as showEnablePushNotificationsDrawer } from 'containers/enable-push-notifications-drawer/store/slice'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export type SignOnProps = {
@@ -96,7 +97,8 @@ const SignOnPage = ({
   onSelectArtistCategory,
   onNextPage,
   suggestedFollows: suggestedFollowEntries,
-  togglePushNotificationSetting
+  togglePushNotificationSetting,
+  showEnablePushNotificationsDrawer
 }: SignOnProps & ReturnType<typeof mapDispatchToProps>) => {
   const {
     email,
@@ -119,11 +121,22 @@ const SignOnPage = ({
 
   const onAllowNotifications = useCallback(() => {
     if (NATIVE_MOBILE) {
-      // Enable push notifications (will trigger device popup)
-      togglePushNotificationSetting(PushNotificationSetting.MobilePush, true)
-      onNextPage()
+      if (page === Pages.SIGNIN) {
+        // Trigger enable push notifs drawer
+        showEnablePushNotificationsDrawer()
+      } else {
+        // Sign up flow
+        // Enable push notifications (will trigger device popup)
+        togglePushNotificationSetting(PushNotificationSetting.MobilePush, true)
+        onNextPage()
+      }
     }
-  }, [togglePushNotificationSetting, onNextPage])
+  }, [
+    togglePushNotificationSetting,
+    onNextPage,
+    page,
+    showEnablePushNotificationsDrawer
+  ])
 
   const pages = {
     // Captures Pages.EMAIL and Pages.SIGNIN
@@ -323,7 +336,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     ) =>
       dispatch(
         settingPageActions.togglePushNotificationSetting(notificationType, isOn)
-      )
+      ),
+    showEnablePushNotificationsDrawer: () =>
+      dispatch(showEnablePushNotificationsDrawer())
   }
 }
 
