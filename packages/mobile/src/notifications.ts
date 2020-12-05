@@ -128,7 +128,7 @@ class PushNotifications {
     PushNotification.requestPermissions()
   }
 
-  checkPermission (callback: () => void) {
+  checkPermission (callback: (permissions: { alert: 0 | 1 }) => void) {
     return PushNotification.checkPermissions(callback)
   }
 

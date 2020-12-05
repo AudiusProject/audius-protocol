@@ -51,6 +51,7 @@ export enum MessageType {
   ENABLE_PUSH_NOTIFICATIONS = 'enable-push-notifications',
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
   RESET_NOTIFICATIONS_BADGE_COUNT = 'reset-notifications-badge-count',
+  ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
@@ -69,6 +70,7 @@ export enum MessageType {
   BACKEND_SETUP = 'backend-setup',
   REQUEST_NETWORK_CONNECTED = 'request-network-connected',
   IS_NETWORK_CONNECTED = 'is-network-connected',
+  SIGNED_IN = 'signed-in',
 
   KEYBOARD_VISIBLE = 'keyboard-visible',
   KEYBOARD_HIDDEN = 'keyboard-hidden',
@@ -190,6 +192,8 @@ export const handleMessage = async (
     // Lifecycle
     case MessageType.BACKEND_SETUP:
       return dispatch(lifecycleActions.backendLoaded())
+    case MessageType.SIGNED_IN:
+      return dispatch(lifecycleActions.signedIn())
     case MessageType.REQUEST_NETWORK_CONNECTED:
       const isConnected = checkConnectivity(Connectivity.netInfo)
       postMessage(JSON.stringify({

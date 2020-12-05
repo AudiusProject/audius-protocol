@@ -4,16 +4,19 @@ import {
   BACKEND_TEAR_DOWN,
   ON_FIRST_PAGE,
   NOT_ON_FIRST_PAGE,
+  SIGNED_IN,
 } from "./actions"
 
 export type LifecycleState = {
   dappLoaded: boolean,
-  onFirstPage: boolean
+  onFirstPage: boolean,
+  signedIn: boolean
 }
 
 const initialState = {
   dappLoaded: false,
-  onFirstPage: true
+  onFirstPage: true,
+  signedIn: false
 }
 
 const reducer = (
@@ -39,6 +42,11 @@ const reducer = (
         return {
           ...state,
           onFirstPage: false
+        }
+      case SIGNED_IN:
+        return {
+          ...state,
+          signedIn: true
         }
       default:
         return state

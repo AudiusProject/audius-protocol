@@ -9,6 +9,9 @@ project 'AudiusReactNative',
 'Prod.Release' => :release
 
 target 'AudiusReactNative' do
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+
   # Pods for AudiusReactNative
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"
