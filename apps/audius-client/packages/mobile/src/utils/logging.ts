@@ -18,3 +18,4 @@ export const handleWebAppLog = (level: LOG_LEVEL, message: string) => {
       console.error(formatted)
       break
   }
+}

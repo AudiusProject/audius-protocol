@@ -23,12 +23,13 @@ import { Message, handleMessage, MessageType } from '../../message'
 import { WebViewMessage, WebViewNavigation } from 'react-native-webview/lib/WebViewTypes'
 import { AppState } from '../../store'
 import { getTrack, getIndex } from '../../store/audio/selectors'
-import { getIsOnFirstPage } from '../../store/lifecycle/selectors'
+import { getIsOnFirstPage, getIsSignedIn } from '../../store/lifecycle/selectors'
 import SplashScreen from '../splash-screen/SplashScreen'
 import { postMessage } from '../../utils/postMessage'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import useAppState from '../../utils/useAppState'
 import useKeyboardListeners from '../../utils/useKeyboardListeners'
+import NotificationReminder from '../notification-reminder/NotificationReminder'
 
 const USE_LOCALHOST_APP = Config.USE_LOCALHOST_APP
 const LOCALHOST_APP_URL = 'http://localhost:3000/feed'
@@ -118,6 +119,7 @@ const WebApp = ({
   trackInfo,
   trackIndex,
   isOnFirstPage,
+  isSignedIn,
   state: { lifecycle: { dappLoaded } }
 }: Props) => {
   // Start the local static asset server
@@ -481,6 +483,9 @@ const WebApp = ({
         dappLoaded={dappLoaded}
         key={`splash-${splashKey}`}
       />
+      {
+        hasLoaded && <NotificationReminder isSignedIn={isSignedIn} webRef={webRef} />
+      }
     </>
   )
 }
@@ -501,7 +506,8 @@ const mapStateToProps = (state: AppState) => ({
   state,
   trackInfo: getTrack(state),
   trackIndex: getIndex(state),
-  isOnFirstPage: getIsOnFirstPage(state)
+  isOnFirstPage: getIsOnFirstPage(state),
+  isSignedIn: getIsSignedIn(state)
 })
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onMessage: (
