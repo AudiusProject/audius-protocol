@@ -24,3 +24,9 @@ export class NotOnFirstPage extends NativeMobileMessage {
     super(MessageType.NOT_ON_FIRST_PAGE, {})
   }
 }
+
+export class SignedIn extends NativeMobileMessage {
+  constructor() {
+    super(MessageType.SIGNED_IN, {})
+  }
+}

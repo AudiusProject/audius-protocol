@@ -48,6 +48,7 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -63,6 +64,9 @@ function* onFetchAccount(account) {
   yield fork(AudiusBackend.updateUserEvent, {
     hasSignedInNativeMobile: !!NATIVE_MOBILE
   })
+  if (NATIVE_MOBILE) {
+    new SignedIn().send()
+  }
 }
 
 export function* fetchAccountAsync(action) {

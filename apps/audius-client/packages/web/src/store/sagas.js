@@ -33,6 +33,7 @@ import firstUploadModalSagas from 'containers/first-upload-modal/store/sagas'
 import addToPlaylistSagas from 'containers/add-to-playlist/store/sagas'
 import remixSettingsModalSagas from 'containers/remix-settings-modal/store/sagas'
 import remoteConfigSagas from 'containers/remote-config/sagas'
+import enablePushNotificationsSagas from 'containers/enable-push-notifications-drawer/store/sagas'
 
 import analyticsSagas from 'store/analytics/sagas'
 import accountSagas from 'store/account/sagas'
@@ -123,6 +124,7 @@ export default function* rootSaga() {
     remixesSagas(),
     deletedSagas(),
     tokenDashboardSagas(),
+    enablePushNotificationsSagas(),
 
     // Remote config
     remoteConfigSagas(),
