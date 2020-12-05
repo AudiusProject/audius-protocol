@@ -42,6 +42,7 @@
     "react-native-google-cast": "^3.2.2",
     "react-native-haptic-feedback": "^1.8.2",
     "react-native-music-control": "^0.11.0",
+    "react-native-permissions": "^3.0.0",
     "react-native-push-notification": "^3.1.9",
     "react-native-static-server": "^0.4.2",
     "react-native-version-number": "^0.3.6",
