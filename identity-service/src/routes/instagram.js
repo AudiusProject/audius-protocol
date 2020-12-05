@@ -79,7 +79,7 @@ module.exports = function (app) {
         const igUser = await models.InstagramUser.findOne({ where: {
           uuid: profile.username
         } })
-        if (!igUser) throw new Error('User must first be verified')
+        if (!igUser) throw new Error(`Could not find matching ig user in the db: ${profile.username}`)
         igUser.profile = profile
         igUser.verified = profile.is_verified
         await igUser.save()
