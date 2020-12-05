@@ -1,8 +1,6 @@
+const crypto = require('crypto')
 const axios = require('axios')
 const FormData = require('form-data')
-
-const crypto = require('crypto')
-const stream = require('stream')
 
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
@@ -10,15 +8,6 @@ const { promisify } = require('util')
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 const randomBytes = promisify(crypto.randomBytes)
-
-function bufferToStream (buffer) {
-  return new stream.Readable({
-    read () {
-      this.push(buffer)
-      this.push(null)
-    }
-  })
-}
 
 /**
  * Process command line args and issue file upload health check
@@ -41,7 +30,11 @@ async function run () {
     reqParam.randomBytes = randomBytesToSign
 
     let sampleTrack = new FormData()
-    sampleTrack.append('file', bufferToStream(await randomBytes(100000000))) // 100 MB
+    sampleTrack.append('file', (await axios({
+      method: 'get',
+      url: 'https://s3-us-west-1.amazonaws.com/cheran.audius.co/97mb_music.mp3', // 97 MB
+      responseType: 'stream'
+    })).data)
 
     let requestConfig = {
       headers: {
