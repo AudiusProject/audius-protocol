@@ -49,7 +49,7 @@ module.exports = function (app) {
       // Store the access token, user id, and current profile for user in db
       try {
         await models.InstagramUser.upsert({
-          uuid: igUser.id,
+          uuid: igUser.username,
           profile: igUser,
           accessToken
         })
@@ -77,7 +77,7 @@ module.exports = function (app) {
       try {
         // Verify the user user id exists in the DB before updating it
         const igUser = await models.InstagramUser.findOne({ where: {
-          uuid: profile.id
+          uuid: profile.username
         } })
         if (!igUser) throw new Error('User must first be verified')
         igUser.profile = profile
