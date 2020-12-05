@@ -1,14 +1,15 @@
 const express = require('express')
+const { promisify } = require('util')
+
+const config = require('../../config')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
-const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
-const { syncHealthCheck } = require('./syncHealthCheckComponentService')
+const { trackFileUpload } = require('../../fileManager')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 
+const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
+const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { recoverWallet } = require('../../apiSigning')
-const { handleTrackContentUpload } = require('../../fileManager')
-
-const config = require('../../config')
 
 const router = express.Router()
 
@@ -101,8 +102,14 @@ const healthCheckFileUploadController = async (req, res, next) => {
     throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
   }
 
-  handleTrackContentUpload(req, res, next)
-  return successResponse({ success: true })
+  try {
+    await promisify(trackFileUpload.single('file'))(req, res)
+    return successResponse({ success: true })
+  } catch (err) {
+    return successResponse({ success: false })
+  }
+
+  // return successResponse({ success: true })
 }
 
 // Routes
