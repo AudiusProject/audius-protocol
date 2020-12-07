@@ -108,8 +108,6 @@ const healthCheckFileUploadController = async (req, res, next) => {
   } catch (err) {
     return successResponse({ success: false })
   }
-
-  // return successResponse({ success: true })
 }
 
 // Routes
@@ -119,6 +117,6 @@ router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get('/health_check/duration', handleResponse(healthCheckDurationController))
 router.get('/health_check/duration/heartbeat', handleResponseWithHeartbeat(healthCheckDurationController))
 router.get('/health_check/verbose', handleResponse(healthCheckVerboseController))
-router.post('/health_check/fileupload', handleResponse(healthCheckFileUploadController))
+router.post('/health_check/fileupload', handleResponseWithHeartbeat(healthCheckFileUploadController))
 
 module.exports = router
