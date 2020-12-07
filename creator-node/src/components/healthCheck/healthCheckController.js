@@ -6,7 +6,7 @@ const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 
 const { recoverWallet } = require('../../apiSigning')
-const { handleTrackContentUpload } = require('../../fileManager')
+const { handleTrackContentUpload, removeTrackFolder } = require('../../fileManager')
 
 const config = require('../../config')
 
@@ -97,6 +97,7 @@ const healthCheckFileUploadController = async (req) => {
   if (req.fileFilterError) {
     throw new Error(req.fileFilterError)
   } else {
+    removeTrackFolder(req, req.fileDir)
     return successResponse({ success: true })
   }
 }
