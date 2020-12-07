@@ -32,7 +32,7 @@ async function run () {
     let sampleTrack = new FormData()
     sampleTrack.append('file', (await axios({
       method: 'get',
-      url: 'https://s3-us-west-1.amazonaws.com/cheran.audius.co/97mb_music.mp3', // 97 MB
+      url: 'https://s3-us-west-1.amazonaws.com/download.audius.co/sp-health-check-files/97mb_music.mp3', // 97 MB
       responseType: 'stream'
     })).data)
 
