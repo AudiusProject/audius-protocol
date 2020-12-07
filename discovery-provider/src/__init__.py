@@ -22,7 +22,6 @@ import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
 from src.queries import queries, search, search_queries, health_check, trending, notifications
-from src.queries.search_config import set_search_similarity
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
 from src.utils.session_manager import SessionManager
@@ -224,7 +223,7 @@ def configure_flask(test_config, app, mode="app"):
         except exc.OperationalError as e:
             if "could not connect to server" in str(e):
                 logger.warning(
-                    "DB connection isn't up yet...setting a teporary timeout and trying again"
+                    "DB connection isn't up yet...setting a temporary timeout and trying again"
                 )
                 time.sleep(10)
             else:
@@ -249,15 +248,11 @@ def configure_flask(test_config, app, mode="app"):
         app.config["db"]["url"],
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
-    with app.db_session_manager.scoped_session() as session:
-        set_search_similarity(session)
 
     app.db_read_replica_session_manager = SessionManager(
         app.config["db"]["url_read_replica"],
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
-    with app.db_read_replica_session_manager.scoped_session() as session:
-        set_search_similarity(session)
 
 
     exceptions.register_exception_handlers(app)
