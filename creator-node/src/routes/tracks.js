@@ -31,11 +31,17 @@ module.exports = function (app) {
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
-    const err = req.fileSizeError || req.fileFilterError
-    if (err) {
+    if (req.fileSizeError) {
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
-      return errorResponseBadRequest(err)
+
+      return errorResponseBadRequest(req.fileSizeError)
+    }
+    if (req.fileFilterError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileFilterError)
     }
 
     const routeTimeStart = Date.now()

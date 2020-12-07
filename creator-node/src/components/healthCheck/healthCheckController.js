@@ -1,14 +1,14 @@
 const express = require('express')
-
-const config = require('../../config')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
-const { handleTrackContentUpload } = require('../../fileManager')
+const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
+const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 
-const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
-const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { recoverWallet } = require('../../apiSigning')
+const { handleTrackContentUpload } = require('../../fileManager')
+
+const config = require('../../config')
 
 const router = express.Router()
 
