@@ -1,8 +1,8 @@
 const axios = require('axios')
-const crypto = require('crypto')
-
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
+
+const crypto = require('crypto')
 
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
@@ -16,7 +16,7 @@ async function run () {
     parseEnvVarsAndArgs()
   } catch (e) {
     console.error(`\nIncorrect script usage: ${e.message}`)
-    console.error(`Script usage: node verifyHealthCheckDuration.js`)
+    console.error(`Script usage: node verifyHealthcheckDuration.js`)
     return
   }
 

@@ -34,8 +34,8 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
 }
 
 /**
- * Perform a duration health check limited to configured delegateOwnerWallet
- * Used to validate availability prior to joining the network
+ * Perform a duration health check limited to configured delegateOwnerWalet
+ * Used to validate availability prior to joiing the network
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
