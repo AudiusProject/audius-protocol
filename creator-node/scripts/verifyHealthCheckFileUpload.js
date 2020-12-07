@@ -1,9 +1,9 @@
-const crypto = require('crypto')
 const axios = require('axios')
 const FormData = require('form-data')
-
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
+
+const crypto = require('crypto')
 
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
