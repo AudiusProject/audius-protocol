@@ -294,7 +294,10 @@ class App extends Component {
     ) {
       if (prevProps.accountStatus === Status.LOADING) {
         this.pushWithToken(TRENDING_PAGE)
-        this.props.openSignOn(true, SignOnPages.SIGNIN)
+        // If native mobile, a saga watches for fetch account failure to push route
+        if (!NATIVE_MOBILE) {
+          this.props.openSignOn(true, SignOnPages.SIGNIN)
+        }
         this.props.updateRouteOnSignUpCompletion(this.state.entryRoute)
       } else {
         this.pushWithToken(TRENDING_PAGE)
