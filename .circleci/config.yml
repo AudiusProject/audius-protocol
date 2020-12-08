@@ -131,6 +131,7 @@ jobs:
     docker:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
+        command: ["--port=8555", "-a", "100", "-l", "8000000"]
     parameters:
       force:
         type: boolean
