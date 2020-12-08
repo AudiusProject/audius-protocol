@@ -59,27 +59,6 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
     );
 
-    // constructor(
-    //     address _registryAddress,
-    //     bytes32 _userFactoryRegistryKey,
-    //     address _userReplicaSetBootstrapAddress,
-    //     uint[] memory _bootstrapSPIds,
-    //     address[] memory _bootstrapNodeDelegateWallets,
-    //     uint _networkId
-    // ) SigningLogic("User Replica Set Manager", "1", _networkId) public
-    // {
-    //     require(
-    //         _registryAddress != address(0x00) &&
-    //         _userFactoryRegistryKey.length != 0,
-    //         "Requires non-zero _registryAddress and registryKey"
-    //     );
-    //     registry = RegistryInterface(_registryAddress);
-    //     userFactoryRegistryKey = _userFactoryRegistryKey;
-    //     userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
-    //     _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
-    // }
-
-    // TODO does this have to be marked as initializer?
     function initialize(
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
