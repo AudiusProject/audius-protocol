@@ -42,11 +42,11 @@ class Account extends Base {
   async login (email, password) {
     const phases = {
       FIND_WALLET: 'FIND_WALLET',
-      FIND_USER: 'FIND_USER'
+      FIND_USER: 'FIND_USER',
+      ASSIGN_REPLICA_SET: 'ASSIGN_REPLICA_SET'
     }
-    let phase = ''
 
-    phase = phases.FIND_WALLET
+    let phase = phases.FIND_WALLET
     if (!this.web3Manager.web3IsExternal()) {
       this.REQUIRES(Services.HEDGEHOG)
 
@@ -62,10 +62,20 @@ class Account extends Base {
     const userAccount = await this.discoveryProvider.getUserAccount(this.web3Manager.getWalletAddress())
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
-      const creatorNodeEndpoint = userAccount.creator_node_endpoint
-      if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
+      if (!userAccount.creator_node_endpoint) {
+        phase = phases.ASSIGN_REPLICA_SET
+        try {
+          await this.User.assignReplicaSet()
+        } catch (e) {
+          // Log error if cannot find replica set -- do not stop login flow
+          // If assignment fails, user metadata should not be updated and can
+          // perhaps retry assignment at re-login or with UserReplicaSetContract
+          console.error(`Could not assign replica set to user: ${e}`)
+        }
+      } else {
+        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(userAccount.creator_node_endpoint))
       }
+
       return { user: userAccount, error: false, phase }
     }
     return { error: 'No user found', phase }
@@ -100,86 +110,51 @@ class Account extends Base {
     email,
     password,
     metadata,
-    isCreator = false,
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null
   ) {
-    let userId
-
     const phases = {
-      ADD_CREATOR: 'ADD_CREATOR',
+      ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
-
     let phase = ''
+    let userId
+
     try {
-      if (isCreator) {
-        if (this.web3Manager.web3IsExternal()) {
-          // Creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+      if (this.web3Manager.web3IsExternal()) {
+        this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Creator and identity service web3
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-        }
+        phase = phases.CREATE_USER_RECORD
+        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
-        if (this.web3Manager.web3IsExternal()) {
-          // Non-creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.IDENTITY_SERVICE)
+        this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
 
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Non-creator and identity service web3
-          this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
+        // If an owner wallet already exists, don't try to recreate it
+        if (!hasWallet) {
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          await this.web3Manager.setOwnerWallet(ownerWallet)
+          await this.generateRecoveryLink({ handle: metadata.handle, host })
         }
       }
-    } catch (err) {
-      return { error: err.message, phase }
+      // upload profile pic to initial content node (for now, user metadata node)
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+
+      // add user to chain
+      phase = phases.ADD_USER
+      userId = await this.User.addUser(metadata)
+
+      // assign replica set to user and sync across new replica set from initial content node (for now, user metadata node)
+      phase = phases.ADD_REPLICA_SET
+      await this.User.assignReplicaSet()
+    } catch (e) {
+      return { error: e.message, phase }
     }
 
     metadata.user_id = userId

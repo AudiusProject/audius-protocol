@@ -49,6 +49,7 @@ class CreatorNode {
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
     this.web3Manager = web3Manager
+    // This is just 1 endpoint, unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
     this.userStateManager = userStateManager
@@ -138,12 +139,12 @@ class CreatorNode {
   }
 
   /**
-   * Creates a creator on the creator node, associating user id with file content
+   * Creates an AudiusUser on the Content Node, associating user id with file content
    * @param {number} audiusUserId returned by user creation on-blockchain
    * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
    */
-  async associateCreator (audiusUserId, metadataFileUUID, blockNumber) {
+  async associateUser (audiusUserId, metadataFileUUID, blockNumber) {
     this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
     await this._makeRequest({
       url: `/audius_users`,

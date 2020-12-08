@@ -62,7 +62,8 @@ const isCreator = async (libs) => {
   if (correctNode) {
     try {
       console.debug('Sanity Check - isCreator - Upgrading to Creator')
-      await libs.User.upgradeToCreator(null, correctNode.endpoint)
+      // todo: vicky -- might need to update this
+      await libs.User.assignReplicaSet(correctNode.endpoint)
     } catch (e) {
       console.error(e)
       // We were actually a creator the whole time O_O
