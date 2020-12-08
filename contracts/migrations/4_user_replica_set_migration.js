@@ -3,7 +3,8 @@ const Registry = artifacts.require('Registry')
 const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
 const AudiusAdminUpgradeabilityProxy2 = artifacts.require('AudiusAdminUpgradeabilityProxy2')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
-const userReplicaSetManagerKey = web3.utils.utf8ToHex('UserReplicaSetManager')
+const userReplicaSetManagerKeyString = 'UserReplicaSetManager'
+const userReplicaSetManagerKey = web3.utils.utf8ToHex(userReplicaSetManagerKeyString)
 const abi = require('ethereumjs-abi')
 
 // Generate encoded arguments for proxy initialization
@@ -21,6 +22,7 @@ module.exports = (deployer, network, accounts) => {
     let registry = await Registry.deployed()
     const networkId = Registry.network_id
     const registryAddress = registry.address
+    console.log(`Deploying UserReplicaSetManager to ${network}`)
     const config = contractConfig[network]
     // This is the blacklist's veriferAddress
     const blacklisterAddress = config.blacklisterAddress || accounts[0]
@@ -28,11 +30,13 @@ module.exports = (deployer, network, accounts) => {
     const proxyAdminAddress = blacklisterAddress
     const userReplicaSetBootstrapAddress = config.userReplicaSetBootstrapAddress || accounts[9]
 
-    // TODO: FIGURE THIS OUT FOR LOCAL DEV
-    //       Must be migrated separately after rest of contracts
-    //       Bootstrap values must also reflect local wallets
-    const bootstrapSPIds = []
-    const bootstrapNodeDelegateWallets = []
+    const bootstrapSPIds = config.bootstrapSPIds
+    const bootstrapNodeDelegateWallets = config.bootstrapSPDelegateWallets
+    if (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length == 0) {
+      throw new Error(`Invalid configuration provided. Received ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
+    }
+    console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
+
     // Deploy logic contract
     let deployLogicTx = await deployer.deploy(UserReplicaSetManager)
     let logicContractAddress = deployLogicTx.address
@@ -70,6 +74,6 @@ module.exports = (deployer, network, accounts) => {
 
     // Confirm registered address matches proxy
     let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
-    console.log(`Registered ${retrievedAddressFromRegistry} under key ${userReplicaSetManagerKey}`)
+    console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)
   })
 }

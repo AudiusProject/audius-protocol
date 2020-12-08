@@ -105,7 +105,8 @@ const SetupCommand = Object.freeze({
   DOWN: 'down',
   REGISTER: 'register',
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
-  HEALTH_CHECK: 'health-check'
+  HEALTH_CHECK: 'health-check',
+  CONFIGURE: 'configure'
 })
 
 /**
@@ -132,7 +133,8 @@ const Service = Object.freeze({
   CREATOR_NODE: 'creator-node',
   IDENTITY_SERVICE: 'identity-service',
   DISTRIBUTE: 'distribute',
-  INIT_REPOS: 'init-repos'
+  INIT_REPOS: 'init-repos',
+  USER_REPLICA_SET_MANAGER: 'user-replica-set-manager'
 })
 
 // gets a service command, interpolating service names
@@ -323,7 +325,8 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.CONFIGURE]
   ]
 
   const start = Date.now()
