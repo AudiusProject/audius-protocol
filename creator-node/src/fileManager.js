@@ -350,7 +350,7 @@ const trackFileUpload = multer({
       cb(null, true)
     } else {
       req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${file.mimetype}`
-      cb(req.fileFilterError, false)
+      cb(null, false)
     }
   }
 })
