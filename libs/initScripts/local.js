@@ -281,7 +281,7 @@ const _updateUserReplicaSetAddresses = async (ethAccounts) => {
     crlfDelay: Infinity
   })
   const bootstrapSPIds = [1, 2, 3]
-  const bootstrapSPDelegateWallets = bootstrapSPIds.map((id)=>{
+  const bootstrapSPDelegateWallets = bootstrapSPIds.map((id) => {
     return ethAccounts[id]
   })
   const bootstrapSPIdsString = `    bootstrapSPIds: [${bootstrapSPIds}],`
@@ -293,17 +293,14 @@ const _updateUserReplicaSetAddresses = async (ethAccounts) => {
     if (line.includes('development')) {
       traversingDevelopmentConfigBlock = true
       output.push(line)
-    }
-    else if (line.includes('test_local')) {
+    } else if (line.includes('test_local')) {
       traversingDevelopmentConfigBlock = false
       output.push(line)
-    }
-    else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPIds')) {
+    } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPIds')) {
       output.push(bootstrapSPIdsString)
     } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPDelegateWallets')) {
       output.push(bootstrapSPDelegateWalletsString)
-    }
-    else {
+    } else {
       output.push(line)
     }
   }
