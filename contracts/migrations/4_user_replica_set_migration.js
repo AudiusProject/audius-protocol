@@ -32,7 +32,7 @@ module.exports = (deployer, network, accounts) => {
 
     const bootstrapSPIds = config.bootstrapSPIds
     const bootstrapNodeDelegateWallets = config.bootstrapSPDelegateWallets
-    if (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length == 0) {
+    if (network !== 'test_local' && (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length == 0)) {
       throw new Error(`Invalid configuration provided. Received ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
     }
     console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
