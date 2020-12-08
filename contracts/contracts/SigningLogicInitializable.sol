@@ -3,6 +3,7 @@ pragma solidity ^0.5.0;
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
+
 /**
 * @title SigningLogic is contract implementing signature recovery from typed data signatures
 * @notice Recovers signatures based on the SignTypedData implementation provided by ethSigUtil
@@ -27,7 +28,12 @@ contract SigningLogicInitializable is Initializable {
         address verifyingContract;
     }
 
-    function initialize (string memory name, string memory version, uint256 chainId) public initializer {
+    function initialize (
+        string memory name,
+        string memory version,
+        uint256 chainId
+    ) public initializer
+    {
         domainSeparator = hash(
             EIP712Domain({
                 name: name,
