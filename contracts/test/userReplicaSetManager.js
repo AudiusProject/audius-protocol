@@ -4,6 +4,7 @@ import {
     UserStorage,
     UserFactory,
     UserReplicaSetManager,
+    TestUserReplicaSetManager,
     AudiusAdminUpgradeabilityProxy2
 } from './_lib/artifacts.js'
 
@@ -97,11 +98,15 @@ contract('UserReplicaSetManager', async (accounts) => {
 
     // Confirm constructor arguments are respected on chain
     const validateBootstrapNodes = async () => {
+        await validateBootstrapNodesInternal(userReplicaSetManager)
+    }
+
+    const validateBootstrapNodesInternal = async (contractInstance) => {
         // Manually query every constructor spID and confirm matching wallet on chain
         for (var i = 0; i < bootstrapSPIds.length; i++) {
             let spID = bootstrapSPIds[i]
             let cnodeWallet = bootstrapDelegateWallets[i]
-            let walletFromChain = await userReplicaSetManager.getContentNodeWallet(spID)
+            let walletFromChain = await contractInstance.getContentNodeWallet(spID)
             assert.isTrue(
                 cnodeWallet === walletFromChain,
                 `Mismatched spID wallet: Expected ${spID} w/wallet ${cnodeWallet}, found ${walletFromChain}`
@@ -109,8 +114,8 @@ contract('UserReplicaSetManager', async (accounts) => {
         }
 
         // Validate returned arguments from chain match constructor arguments
-        let bootstrapIDsFromChain = await userReplicaSetManager.getBootstrapServiceProviderIDs()
-        let bootstrapWalletsFromChain = await userReplicaSetManager.getBootstrapServiceProviderDelegateWallets()
+        let bootstrapIDsFromChain = await contractInstance.getBootstrapServiceProviderIDs()
+        let bootstrapWalletsFromChain = await contractInstance.getBootstrapServiceProviderDelegateWallets()
         assert.isTrue(
             (bootstrapIDsFromChain.length === bootstrapWalletsFromChain.length) &&
             (bootstrapIDsFromChain.length === bootstrapSPIds.length) &&
@@ -388,6 +393,37 @@ contract('UserReplicaSetManager', async (accounts) => {
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3Account)
     })
 
-    // TODO: Proxy upgrade test
-    // TODO: Variants of failed proxy upgrade etc
+    it('UserReplicaSetManager Proxy upgrade validation', async () => {
+        // Confirm constructor arguments validated
+        await validateBootstrapNodes()
+        // Confirm upgrade function does not yet exist on deployed UserReplicaSetManager
+        let newFunctionFailure = false
+        try {
+            // Note that this fails prior to reaching chain
+            await userReplicaSetManager.newFunction()
+        } catch (e) {
+            if (e.message.includes('not a function')) {
+                newFunctionFailure = true
+            }
+        }
+        assert.isTrue(newFunctionFailure, "Unexpected success")
+        // Confirm that newFunction does not exist
+        let deployUpgradedLogicContract = await TestUserReplicaSetManager.new({ from: deployer })
+        let upgradedLogicAddress = deployUpgradedLogicContract.address
+        let proxyAddress = userReplicaSetManager.address
+        let proxyInstance = await AudiusAdminUpgradeabilityProxy2.at(proxyAddress)
+        // Attempt to upgrade from an invalid address (the initial deployer)
+        await expectRevert(
+            proxyInstance.upgradeTo(upgradedLogicAddress, { from: deployer }),
+            'revert'
+        )
+        // Perform upgrade from known admin
+        await proxyInstance.upgradeTo(upgradedLogicAddress, { from: proxyAdminAddress })
+        let testUserReplicaSetManager = await TestUserReplicaSetManager.at(proxyAddress)
+        // Confirm bootstrap node information still exists after upgrade
+        await validateBootstrapNodesInternal(testUserReplicaSetManager)
+        // Validate upgraded function
+        let newFunctionReturnValue = await testUserReplicaSetManager.newFunction()
+        assert.isTrue(newFunctionReturnValue.eq(toBN(5)), "New function returned unexpected value")
+    })
 })

@@ -30,3 +30,4 @@ export const AudiusAdminUpgradeabilityProxy2 = artifacts.require('./contract/Aud
 export const TestStorage = artifacts.require('./contract/storage/test/TestStorage')
 export const TestContract = artifacts.require('./contract/test/TestContract')
 export const TestContractWithStorage = artifacts.require('./contract/test/TestContractWithStorage')
+export const TestUserReplicaSetManager = artifacts.require('./contract/test/TestUserReplicaSetManager')
