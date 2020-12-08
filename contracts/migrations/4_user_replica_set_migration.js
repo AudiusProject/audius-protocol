@@ -4,7 +4,14 @@ const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
 const AudiusAdminUpgradeabilityProxy2 = artifacts.require('AudiusAdminUpgradeabilityProxy2')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
 const userReplicaSetManagerKey = web3.utils.utf8ToHex('UserReplicaSetManager')
-const _lib = require('../test/_lib/lib')
+const abi = require('ethereumjs-abi')
+
+// Generate encoded arguments for proxy initialization
+const encodeCall = (name, args, values) => {
+  const methodId = abi.methodID(name, args).toString('hex')
+  const params = abi.rawEncode(args, values).toString('hex')
+  return '0x' + methodId + params
+}
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -29,7 +36,7 @@ module.exports = (deployer, network, accounts) => {
     // Deploy logic contract
     let deployLogicTx = await deployer.deploy(UserReplicaSetManager)
     let logicContractAddress = deployLogicTx.address
-    const initializeUserReplicaSetManagerCalldata = _lib.encodeCall(
+    const initializeUserReplicaSetManagerCalldata = encodeCall(
         'initialize',
         [
             'address',

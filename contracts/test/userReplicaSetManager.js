@@ -12,7 +12,14 @@ import { eth_signTypedData } from './utils/util'
 import { getNetworkIdForContractInstance } from './utils/getters'
 
 const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
+const abi = require('ethereumjs-abi')
 const signatureSchemas = require('../signature_schemas/signatureSchemas')
+
+const encodeCall = (name, args, values) => {
+    const methodId = abi.methodID(name, args).toString('hex')
+    const params = abi.rawEncode(args, values).toString('hex')
+    return '0x' + methodId + params
+}
 
 contract('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
@@ -60,7 +67,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Deploy logic contract
         let deployLogicTx = await UserReplicaSetManager.new({ from: deployer })
         let logicAddress = deployLogicTx.address
-        let initializeUserReplicaSetManagerCalldata = _lib.encodeCall(
+        let initializeUserReplicaSetManagerCalldata = encodeCall(
            'initialize',
            [
                'address',
@@ -184,7 +191,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         let logicAddress = deployLogicTx.address
 
         // Encode the arguments to the 'initialize' function
-        let userReplicaSetManagerInitData = _lib.encodeCall(
+        let userReplicaSetManagerInitData = encodeCall(
            'initialize',
            [
                'address',
