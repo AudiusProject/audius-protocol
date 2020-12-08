@@ -19,7 +19,7 @@ const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
 /**
  * Verifies that the request is made by the delegate Owner
  */
-const healthCheckVerifySignature = (req, _, next) => {
+const healthCheckVerifySignature = (req, res, next) => {
   let { timestamp, randomBytes, signature } = req.query
   if (!timestamp || !randomBytes || !signature) return errorResponseBadRequest('Missing required query parameters')
 
@@ -94,8 +94,9 @@ const healthCheckVerboseController = async (req) => {
  * Calls `healthCheckFileUploadService`.
  */
 const healthCheckFileUploadController = async (req) => {
-  if (req.fileFilterError) {
-    throw new Error(req.fileFilterError)
+  const err = req.fileFilterError || req.fileSizeError
+  if (err) {
+    throw new Error(err)
   } else {
     removeTrackFolder(req, req.fileDir)
     return successResponse({ success: true })
