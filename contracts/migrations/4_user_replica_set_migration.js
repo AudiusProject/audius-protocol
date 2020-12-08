@@ -18,7 +18,6 @@ module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     // TODO: Consider how this migration will be run against prod
     //       Registry.deployed() may not be the cleanest way to do this
-    //       A separate migration or some added logic here should handle the requirements
     let registry = await Registry.deployed()
     const networkId = Registry.network_id
     const registryAddress = registry.address
@@ -33,7 +32,9 @@ module.exports = (deployer, network, accounts) => {
     const bootstrapSPIds = config.bootstrapSPIds
     const bootstrapNodeDelegateWallets = config.bootstrapSPDelegateWallets
     if (network !== 'test_local' && (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length == 0)) {
-      throw new Error(`Invalid configuration provided. Received ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
+      throw new Error(
+        `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds} and bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}`
+      )
     }
     console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
 
