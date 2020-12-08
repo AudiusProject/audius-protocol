@@ -1,5 +1,5 @@
 const express = require('express')
-const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse } = require('../../apiHelpers')
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
@@ -21,7 +21,7 @@ const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
  */
 const healthCheckVerifySignature = (req, res, next) => {
   let { timestamp, randomBytes, signature } = req.query
-  if (!timestamp || !randomBytes || !signature) return errorResponseBadRequest('Missing required query parameters')
+  if (!timestamp || !randomBytes || !signature) return sendResponse(req, res, errorResponseBadRequest(('Missing required query parameters')))
 
   const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
   const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
@@ -29,11 +29,13 @@ const healthCheckVerifySignature = (req, res, next) => {
   const currentTimestampDate = new Date()
   const requestAge = currentTimestampDate - recoveredTimestampDate
   if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-    throw new Error(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`)
+    req.logger.debug('here')
+    return sendResponse(req, res, errorResponseBadRequest(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`))
   }
   const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
   if (recoveredPublicWallet !== delegateOwnerWallet) {
-    throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
+    req.logger.debug('here')
+    return sendResponse(req, res, errorResponseBadRequest("Requester's public key does does not match Creator Node's delegate owner wallet."))
   }
 
   next()
