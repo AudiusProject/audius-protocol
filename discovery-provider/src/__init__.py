@@ -313,7 +313,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_karma": {
                 "task": "update_karma",
-                "schedule": timedelta(minute=0, hour="*")
+                "schedule": crontab(minute=0, hour="*")
             }
         },
         task_serializer="json",

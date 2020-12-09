@@ -6,9 +6,10 @@ from src.queries.get_trending_tracks import z, make_trending_cache_key, generate
 from src.utils.redis_cache import pickle_and_set
 
 logger = logging.getLogger(__name__)
+time_ranges = ["week", "month", "year"]
 
 def get_genres(session):
-    """Returns all genres, in lowercase"""
+    """Returns all genres"""
     genres = (
         session.query(
             Track.genre
@@ -18,14 +19,16 @@ def get_genres(session):
     genres = filter(lambda x: x[0] is not None and x[0] != "", genres)
     return list(map(lambda x: x[0], genres))
 
-time_ranges = ["week", "month", "year"]
 
 def update_karma(self, db, redis):
     logger.info('Running update karma')
     update_start = time.time()
     with db.scoped_session() as session:
         genres = get_genres(session)
+
+        # Make sure to cache empty genre
         genres.append(None)
+
         for genre in genres:
             for time_range in time_ranges:
                 cache_start_time = time.time()
@@ -42,6 +45,7 @@ def update_karma(self, db, redis):
 ######## CELERY TASKS ########
 @celery.task(name="update_karma", bind=True)
 def update_karma_task(self):
+    """Caches all trending combination of time-range and genre (including no genre)."""
     db = update_karma_task.db
     redis = update_karma_task.redis
     have_lock = False
