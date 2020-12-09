@@ -157,7 +157,7 @@
     ]
   },
   "user-replica-set-manager": {
-    "configure": [
+    "up": [
       "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
       "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4"
     ]
