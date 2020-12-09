@@ -1,5 +1,4 @@
 import logging
-import sqlalchemy
 
 trackTitleWeight = 0.7
 userNameWeight = 0.7
