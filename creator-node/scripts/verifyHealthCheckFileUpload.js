@@ -1,5 +1,5 @@
 /**
- * Verifies a file upload limited to configured delegateOwnerWalet.
+ * Verifies a file upload limited to configured delegateOwnerWallet.
  * Used to validate availability prior to joining the network
  *
  * Script usage: node verifyHealthCheckFileUpload.js

@@ -91,7 +91,7 @@ const healthCheckVerboseController = async (req) => {
 
 /**
  * Controller for `health_check/fileupload` route *
- * Perform a file upload health check limited to configured delegateOwnerWalet.
+ * Perform a file upload health check limited to configured delegateOwnerWallet.
  * This prunes the disc artifacts created by the process after.
  */
 const healthCheckFileUploadController = async (req) => {

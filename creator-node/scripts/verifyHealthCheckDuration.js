@@ -1,5 +1,5 @@
 /**
- * Verify sufficient connection duration limited to configured delegateOwnerWalet
+ * Verify sufficient connection duration limited to configured delegateOwnerWallet
  * Used to validate availability prior to joining the network
  *
  * Script usage: node verifyHealthCheckDuration.js
