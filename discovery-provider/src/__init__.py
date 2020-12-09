@@ -283,9 +283,9 @@ def configure_celery(flask_app, celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
-                 "src.tasks.index_cache", "src.tasks.index_plays",
-                 "src.tasks.index_metrics", "src.tasks.index_materialized_views",
-                 "src.tasks.index_network_peers"],
+                 "src.tasks.index_plays", "src.tasks.index_metrics",
+                 "src.tasks.index_materialized_views",
+                 "src.tasks.index_network_peers", "src.tasks.index_trending"],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -294,10 +294,6 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
                 "schedule": timedelta(seconds=60),
-            },
-            "update_cache": {
-                "task": "update_discovery_cache",
-                "schedule": timedelta(seconds=60)
             },
             "update_play_count": {
                 "task": "update_play_count",
@@ -314,6 +310,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_network_peers": {
                 "task": "update_network_peers",
                 "schedule": timedelta(seconds=30)
+            },
+            "index_trending": {
+                "task": "index_trending",
+                "schedule": crontab(minute=0, hour="*")
             }
         },
         task_serializer="json",
