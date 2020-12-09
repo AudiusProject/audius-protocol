@@ -90,8 +90,9 @@ const healthCheckVerboseController = async (req) => {
 }
 
 /**
- * Controller for `health_check/fileupload` route
- * Calls `healthCheckFileUploadService`.
+ * Controller for `health_check/fileupload` route *
+ * Perform a file upload health check limited to configured delegateOwnerWalet.
+ * This prunes the disc artifacts created by the process after.
  */
 const healthCheckFileUploadController = async (req) => {
   const err = req.fileFilterError || req.fileSizeError

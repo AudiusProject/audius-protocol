@@ -1,3 +1,9 @@
+/**
+ * Verify sufficient connection duration limited to configured delegateOwnerWalet
+ * Used to validate availability prior to joining the network
+ *
+ * Script usage: node verifyHealthCheckDuration.js
+*/
 const axios = require('axios')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
@@ -16,7 +22,7 @@ async function run () {
     parseEnvVarsAndArgs()
   } catch (e) {
     console.error(`\nIncorrect script usage: ${e.message}`)
-    console.error(`Script usage: node verifyHealthcheckDuration.js`)
+    console.error(`Script usage: node verifyHealthCheckDuration.js`)
     return
   }
 
