@@ -1,4 +1,5 @@
 const AudiusLibs = require('@audius/libs')
+const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const Utils = require('@audius/libs/src/utils')
 const config = require('../config/config')
 const untildify = require('untildify')
@@ -44,7 +45,7 @@ loadLibsVars()
  * Each method may throw.
  * @param {int} walletIndex Ganache can be setup with multiple pre-created wallets. WalletIndex lets you pick which wallet to use for libs.
  */
-function LibsWrapper(walletIndex = 0) {
+function LibsWrapper (walletIndex = 0) {
   this.libsInstance = null
 
   const assertLibsDidInit = () => {
@@ -238,6 +239,31 @@ function LibsWrapper(walletIndex = 0) {
   }
 
   /**
+   * Fetch user account from /user/account with wallet param
+   * @param {string} wallet wallet address
+   */
+  this.getUserAccount = async wallet => {
+    assertLibsDidInit()
+    const userAccount = await this.libsInstance.discoveryProvider.getUserAccount(wallet)
+
+    if (!userAccount) {
+      throw new Error('No user account found.')
+    }
+
+    return userAccount
+  }
+
+  this.setCurrentUser = async userAccount => {
+    assertLibsDidInit()
+    this.libsInstance.userStateManager.setCurrentUser(userAccount)
+    const creatorNodeEndpoints = userAccount.creator_node_endpoint
+    if (creatorNodeEndpoints) {
+      const primary = CreatorNode.getPrimary(creatorNodeEndpoints)
+      this.creatorNode.setEndpoint(primary)
+    }
+  }
+
+  /**
    * Gets the user associated with the wallet set in libs
    */
   this.getLibsUserInfo = async () => {
@@ -246,7 +272,7 @@ function LibsWrapper(walletIndex = 0) {
       1,
       0,
       null,
-      this.libsInstance.web3Manager.getWalletAddress()
+      this.getWalletAddress()
     )
 
     if (!users.length) {
@@ -414,6 +440,10 @@ function LibsWrapper(walletIndex = 0) {
     }
 
     return playlists
+  }
+
+  this.getWalletAddress = () => {
+    return this.libsInstance.web3Manager.getWalletAddress()
   }
 }
 
