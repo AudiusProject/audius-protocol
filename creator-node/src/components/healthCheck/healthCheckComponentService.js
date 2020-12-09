@@ -12,11 +12,12 @@ const utils = require('../../utils.js')
 const healthCheck = async ({ libs } = {}, logger, sequelize) => {
   let response = {
     ...versionInfo,
-    'healthy': true,
-    'git': process.env.GIT_SHA,
-    'selectedDiscoveryProvider': 'none',
-    'creatorNodeEndpoint': config.get('creatorNodeEndpoint'),
-    'spID': config.get('spID')
+    healthy: true,
+    git: process.env.GIT_SHA,
+    selectedDiscoveryProvider: 'none',
+    creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
+    spID: config.get('spID'),
+    spOwnerWallet: config.get('spOwnerWallet')
   }
 
   if (libs) {
