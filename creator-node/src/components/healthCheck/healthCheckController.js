@@ -95,17 +95,11 @@ const healthCheckVerboseController = async (req) => {
  * This prunes the disc artifacts created by the process after.
  */
 const healthCheckFileUploadController = async (req) => {
-  const err = req.fileFilterError || req.fileSizeError
-  try {
-    await removeTrackFolder(req, req.fileDir)
-  } catch (e) {
-    throw new Error(e)
-  };
+  const err = req.fileFilterError || req.fileSizeError || await removeTrackFolder(req, req.fileDir)
   if (err) {
     throw new Error(err)
-  } else {
-    return successResponse({ success: true })
   }
+  return successResponse({ success: true })
 }
 
 // Routes
