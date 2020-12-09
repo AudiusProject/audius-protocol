@@ -20,7 +20,8 @@ def make_trending_cache_key(time_range, genre):
 def generate_unpopulated_trending(session, genre, time_range):
     trending_tracks = generate_trending(
         session, time_range, genre,
-        TRENDING_LIMIT, 0)
+        TRENDING_LIMIT, 0
+    )
 
     track_scores = [z(time_range, track) for track in trending_tracks['listen_counts']]
     sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
@@ -31,6 +32,8 @@ def generate_unpopulated_trending(session, genre, time_range):
     return (tracks, track_ids)
 
 def make_generate_unpopulated_trending(session, genre, time_range):
+    """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
+       expects to be passed a function with no arguments."""
     def wrapped():
         return generate_unpopulated_trending(session, genre, time_range)
     return wrapped

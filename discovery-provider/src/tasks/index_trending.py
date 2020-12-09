@@ -20,8 +20,8 @@ def get_genres(session):
     return list(map(lambda x: x[0], genres))
 
 
-def update_karma(self, db, redis):
-    logger.info('Running update karma')
+def index_trending(self, db, redis):
+    logger.info('index_trending.py | starting indexing')
     update_start = time.time()
     with db.scoped_session() as session:
         genres = get_genres(session)
@@ -37,27 +37,27 @@ def update_karma(self, db, redis):
                 pickle_and_set(redis, key, res)
                 cache_end_time = time.time()
                 total_time = cache_end_time - cache_start_time
-                logger.info(f"Cached trending for {genre}-{time_range} in {total_time} seconds")
+                logger.info(f"index_trending.py | Cached trending for {genre}-{time_range} in {total_time} seconds")
     update_end = time.time()
     update_total = update_end - update_start
-    logger.info(f"Finished update karma in {update_total} seconds")
+    logger.info(f"index_trending.py | Finished indexing trending in {update_total} seconds")
 
 ######## CELERY TASKS ########
-@celery.task(name="update_karma", bind=True)
-def update_karma_task(self):
+@celery.task(name="index_trending", bind=True)
+def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
-    db = update_karma_task.db
-    redis = update_karma_task.redis
+    db = index_trending_task.db
+    redis = index_trending_task.redis
     have_lock = False
-    update_lock = redis.lock("karma_lock", timeout=7200)
+    update_lock = redis.lock("index_trending_lock", timeout=7200)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            update_karma(self, db, redis)
+            index_trending(self, db, redis)
         else:
-            logger.info("karma.py | Failed to acquire karma lock")
+            logger.info("index_trending.py | Failed to acquire index trending lock")
     except Exception as e:
-        logger.error("karma.py | Fatal error in main loop", exc_info=True)
+        logger.error("index_trending.py | Fatal error in main loop", exc_info=True)
         raise e
     finally:
         if have_lock:
