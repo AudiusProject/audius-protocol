@@ -13,10 +13,10 @@ from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.queries.query_helpers import get_current_user_id, populate_playlist_repost_counts, populate_track_repost_counts, \
+from src.queries.query_helpers import get_current_user_id, populate_playlist_repost_counts, \
     populate_user_follower_counts, get_users_by_id, get_users_ids, populate_user_metadata, \
     populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
-    get_track_play_counts
+    get_track_play_counts, populate_track_repost_counts
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_tags", __name__)

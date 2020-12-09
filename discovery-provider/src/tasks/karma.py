@@ -2,7 +2,7 @@ import logging
 import time
 from src.models import Track
 from src.tasks.celery_app import celery
-from src.queries.get_trending_tracks import z, make_trending_cache_key, generate_unpopulated_trending
+from src.queries.get_trending_tracks import make_trending_cache_key, generate_unpopulated_trending
 from src.utils.redis_cache import pickle_and_set
 
 logger = logging.getLogger(__name__)
