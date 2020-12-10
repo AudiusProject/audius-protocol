@@ -2,10 +2,7 @@ import {
   Platform,
   NativeSyntheticEvent,
   AppState as RNState,
-  AppStateStatus,
   Linking,
-  Keyboard,
-  View,
   BackHandler
 } from 'react-native'
 import React, { useRef, useState, useEffect, RefObject, useCallback } from 'react'
@@ -30,6 +27,7 @@ import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import useAppState from '../../utils/useAppState'
 import useKeyboardListeners from '../../utils/useKeyboardListeners'
 import NotificationReminder from '../notification-reminder/NotificationReminder'
+import {postMessage as postMessageUtil} from '../../utils/postMessage'
 
 const USE_LOCALHOST_APP = Config.USE_LOCALHOST_APP
 const LOCALHOST_APP_URL = 'http://localhost:3000/feed'
@@ -247,7 +245,7 @@ const WebApp = ({
         } else {
           webRef.current.goBack()
         }
-      } 
+      }
       // Prevent default (exit app)
       return true
     }
@@ -376,7 +374,7 @@ const WebApp = ({
       onMessage(
         message,
         // @ts-ignore
-        webRef.current.postMessage,
+        (message: Message) => postMessageUtil(webRef.current, message),
         // @ts-ignore
         reload,
         // @ts-ignore
@@ -476,7 +474,6 @@ const WebApp = ({
             const { title, url } = nativeEvent
             if (url === '' || title === '') reloadViewOnServerError()
           }}
-          
         />
       </PullToRefresh>
       <SplashScreen
@@ -512,7 +509,7 @@ const mapStateToProps = (state: AppState) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onMessage: (
     message: Message,
-    postMessage: (message: string) => void,
+    postMessage: (message: Message) => void,
     reload: () => void,
     state: AppState
   ) => {

@@ -22,6 +22,7 @@ import { Identify, Track, Screen, AnalyticsMessage } from './types/analytics'
 import { checkConnectivity, Connectivity } from './utils/connectivity'
 import { Provider } from './store/oauth/reducer'
 import { handleWebAppLog } from './utils/logging'
+import { remindUserToTurnOnNotifications } from './components/notification-reminder/NotificationReminder'
 
 let sentInitialTheme = false
 
@@ -52,6 +53,7 @@ export enum MessageType {
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
   RESET_NOTIFICATIONS_BADGE_COUNT = 'reset-notifications-badge-count',
   ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
+  PROMPT_PUSH_NOTIFICATION_REMINDER = 'prompt-push-notifications-reminder',
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
@@ -108,7 +110,7 @@ const isIos = Platform.OS === 'ios'
 export const handleMessage = async (
   message: Message | AnalyticsMessage,
   dispatch: Dispatch,
-  postMessage: (message: string) => void,
+  postMessage: (message: Message) => void,
   reload: () => void,
   state: AppState
 ) => {
@@ -121,12 +123,12 @@ export const handleMessage = async (
     case MessageType.SEEK_TRACK:
       return dispatch(audioActions.seek(message))
     case MessageType.GET_POSITION:
-      postMessage(JSON.stringify({
+      postMessage({
         type: message.type,
         id: message.id,
         // @ts-ignore
         ...global.progress
-      }))
+      })
       break
     case MessageType.PERSIST_QUEUE:
       return dispatch(audioActions.persistQueue(message))
@@ -159,27 +161,32 @@ export const handleMessage = async (
       {
         PushNotifications.requestPermission()
         const info = await PushNotifications.getToken()
-        postMessage(JSON.stringify({
+        postMessage({
           type: message.type,
           id: message.id,
           ...info
-        }))
+        })
         break
       }
     case MessageType.DISABLE_PUSH_NOTIFICATIONS:
       {
         const info = await PushNotifications.getToken()
         PushNotifications.deregister()
-        postMessage(JSON.stringify({
+        postMessage({
           type: message.type,
           id: message.id,
           ...info
-        }))
+        })
         break
       }
     case MessageType.RESET_NOTIFICATIONS_BADGE_COUNT:
       {
         PushNotifications.setBadgeCount(0)
+        break
+      }
+    case MessageType.PROMPT_PUSH_NOTIFICATION_REMINDER:
+      {
+        remindUserToTurnOnNotifications(postMessage)
         break
       }
 
@@ -196,21 +203,21 @@ export const handleMessage = async (
       return dispatch(lifecycleActions.signedIn())
     case MessageType.REQUEST_NETWORK_CONNECTED:
       const isConnected = checkConnectivity(Connectivity.netInfo)
-      postMessage(JSON.stringify({
+      postMessage({
         type: MessageType.IS_NETWORK_CONNECTED,
         isConnected,
         isAction: true
-      }))
+      })
       break
 
     // Version
     case MessageType.GET_VERSION:
       const version = VersionNumber.appVersion
-      postMessage(JSON.stringify({
+      postMessage({
         type: message.type,
         id: message.id,
         version
-      }))
+      })
       break
 
     // Android specific
@@ -229,11 +236,11 @@ export const handleMessage = async (
       } else {
         prefers = await getPrefersDarkModeChange()
       }
-      postMessage(JSON.stringify({
+      postMessage({
         type: message.type,
         id: message.id,
         prefersDarkMode: prefers
-      }))
+      })
       break
 
     case MessageType.SHARE:
