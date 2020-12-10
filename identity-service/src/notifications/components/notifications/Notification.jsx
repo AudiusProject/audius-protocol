@@ -1,4 +1,5 @@
 import React from 'react'
+import { getRankSuffix } from '../../formatNotificationMetadata'
 
 import NotificationBody from './NotificationBody'
 
@@ -12,7 +13,8 @@ export const NotificationType = Object.freeze({
   UserSubscription: 'UserSubscription',
   Announcement: 'Announcement',
   RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign'
+  RemixCosign: 'RemixCosign',
+  TrendingTrack: 'TrendingTrack'
 })
 
 const EntityType = Object.freeze({
@@ -125,6 +127,18 @@ const notificationMap = {
       )
     }
   },
+  [NotificationType.TrendingTrack] (notification) {
+    const highlight = notification.entity.title
+    const rank = notification.rank
+    const rankSuffix = getRankSuffix(rank)
+    return (
+      <span className={'notificationText'}>
+        <BodyText text={`Your Track `} />
+        <HighlightText text={highlight} />
+        <BodyText text={` is ${rank}${rankSuffix} on Trending Right Now!`} />
+      </span>
+    )
+  },
   [NotificationType.UserSubscription] (notification) {
     const [user] = notification.users
     if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
@@ -232,6 +246,17 @@ const getTwitter = (notification) => {
       const text = `My remix of ${parentTrack.title} was Co-Signed by ${twitterHandle} on @AudiusProject #Audius`
       return {
         message: 'Share With Your Friends',
+        href: `http://twitter.com/share?url=${encodeURIComponent(url)
+          }&text=${encodeURIComponent(text)}`
+      }
+    }
+    case NotificationType.TrendingTrack: {
+      const { rank, entity } = notification
+      const url = getTrackLink(entity)
+      const rankSuffix = getRankSuffix(rank)
+      const text = `My Track ${entity.title} is trending ${rank}${rankSuffix} on @AudiusProject! #AudiusTrending #Audius`
+      return {
+        message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(url)
           }&text=${encodeURIComponent(text)}`
       }
