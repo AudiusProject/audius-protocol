@@ -12,13 +12,14 @@ import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getTracks } from 'store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { AppState } from 'store/types'
+import { Nullable } from 'utils/typeUtils'
 
 type RetrieveTrendingArgs = {
   timeRange: TimeRange
-  genre?: string
+  genre: Nullable<string>
   offset: number
   limit: number
-  currentUserId: ID | null
+  currentUserId: Nullable<ID>
 }
 
 export function* retrieveTrending({
