@@ -14,7 +14,7 @@ const NUM_USERS = 2
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
-let accountOffset = commandLineOffset ? commandLineOffset : 0
+let accountOffset = commandLineOffset || 0
 
 const {
   runSetupCommand,
@@ -24,13 +24,13 @@ const {
   allUp
 } = ServiceCommands
 
-async function setupAllServices() {
+async function setupAllServices () {
   logger.info('Setting up all services!')
   await allUp({ numCreatorNodes: NUM_CREATOR_NODES })
   logger.info('All services set up!')
 }
 
-async function tearDownAllServices() {
+async function tearDownAllServices () {
   logger.info('Downing services.')
   await runSetupCommand(Service.ALL, SetupCommand.DOWN)
   logger.info('All services downed.')
@@ -118,7 +118,7 @@ const testRunner = async tests => {
 // in the same run as running the tests
 // causes libs init failures, so we stand up services
 // with a separate command.
-async function main() {
+async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
   const cmd = process.argv[3]
 
@@ -140,7 +140,7 @@ async function main() {
       break
     }
     case 'test-snapback': {
-      let snapbackNumUsers = 40
+      const snapbackNumUsers = 40
       const test = makeTest(
         'snapback',
         snapbackSMParallelSyncTest,

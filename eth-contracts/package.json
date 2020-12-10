@@ -32,9 +32,9 @@
     "@openzeppelin/upgrades": "2.8.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "ethereumjs-abi": "^0.6.7",
-    "ethers": "^4.0.0-beta.3",
-    "ethers-latest": "npm:ethers@^5.0.7",
+    "ethereumjs-abi": "0.6.7",
+    "ethers": "4.0.0-beta.3",
+    "ethers-latest": "npm:ethers@5.0.19",
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "lodash": "^4.17.15",
@@ -42,7 +42,7 @@
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
-    "@openzeppelin/test-helpers": "^0.5.5",
+    "@openzeppelin/test-helpers": "0.5.5",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "bignumber.js": "8.0.1",
