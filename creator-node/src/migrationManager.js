@@ -3,7 +3,7 @@ const path = require('path')
 
 const { sequelize } = require('./models')
 
-function runMigrations () {
+async function runMigrations () {
   const umzug = new Umzug({
     storage: 'sequelize',
 

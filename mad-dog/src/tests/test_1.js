@@ -37,7 +37,7 @@ module.exports = consistency1 = async ({
   enableFaultInjection
 }) => {
   // Begin: Test Setup
-  
+
   // create tmp storage dir
   await fs.ensureDir(TEMP_STORAGE_PATH)
 
@@ -133,12 +133,17 @@ module.exports = consistency1 = async ({
   })
 
   // Create users, upgrade them to creators
-  const walletIdMap = await addAndUpgradeUsers(
-    numUsers,
-    numCreatorNodes,
-    executeAll,
-    executeOne
-  )
+  let walletIdMap
+  try {
+    walletIdMap = await addAndUpgradeUsers(
+      numUsers,
+      numCreatorNodes,
+      executeAll,
+      executeOne
+    )
+  } catch (e) {
+    return { error: `Issue with creating and upgrading users: ${e}` }
+  }
 
   if (enableFaultInjection) {
     // Create a MadDog instance, responsible for taking down nodes
@@ -208,7 +213,7 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
   const userIds = trackUploads.map(u => u.userId)
   for (const userId of userIds) {
     const user = await executeOne(0, l => getUser(l, userId))
-    userIdRSetMap[userId] = user.creator_node_endpoint.split(",")
+    userIdRSetMap[userId] = user.creator_node_endpoint.split(',')
   }
 
   // Now, confirm each of these CIDs are on the file
@@ -224,10 +229,10 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
     if (!cids) continue
     for (const cid of cids) {
       logger.info(`Verifying CID ${cid} for userID ${userId} on primary: [${endpoint}]`)
-      
+
       // TODO: add `fromFS` option when this is merged back into CN.
       const exists = await verifyCIDExistsOnCreatorNode(cid, endpoint)
-      
+
       logger.info(`Verified CID ${cid} for userID ${userId} on primary: [${endpoint}]!`)
       if (!exists) {
         logger.warn('Found a non-existent cid!')

@@ -19,11 +19,8 @@ def extract_key(path, arg_items):
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
-def use_redis_cache(key, ttl_sec, work_func):
-    """Attemps to return value by key, otherwise caches and returns `work_func`"""
-    redis = redis_connection.get_redis()
+def get_pickled_key(redis, key):
     cached_value = redis.get(key)
-
     if cached_value:
         logger.info(f"Redis Cache - hit {key}")
         try:
@@ -31,11 +28,22 @@ def use_redis_cache(key, ttl_sec, work_func):
             return deserialized
         except Exception as e:
             logger.warning(f"Unable to deserialize cached response: {e}")
-
+            return None
     logger.info(f"Redis Cache - miss {key}")
+    return None
+
+def pickle_and_set(redis, key, obj, ttl=None):
+    serialized = pickle.dumps(obj)
+    redis.set(key, serialized, ttl)
+
+def use_redis_cache(key, ttl_sec, work_func):
+    """Attemps to return value by key, otherwise caches and returns `work_func`"""
+    redis = redis_connection.get_redis()
+    cached_value = get_pickled_key(redis, key)
+    if cached_value:
+        return cached_value
     to_cache = work_func()
-    serialized = pickle.dumps(to_cache)
-    redis.set(key, serialized, ttl_sec)
+    pickle_and_set(redis, key, to_cache, ttl_sec)
     return to_cache
 
 def cache(**kwargs):

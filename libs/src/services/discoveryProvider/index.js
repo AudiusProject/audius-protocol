@@ -472,7 +472,7 @@ class DiscoveryProvider {
   // endpoint - base route
   // urlParams - string of url params to be appended after base route
   // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, attemptedRetries = 0) {
+  async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
 
@@ -497,8 +497,11 @@ class DiscoveryProvider {
       parsedResponse = Utils.parseDataFromResponse(response)
     } catch (e) {
       const errMsg = e.response && e.response.data ? e.response.data : e
-      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${errMsg}`)
-      return this._makeRequest(requestObj, attemptedRetries + 1)
+      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(errMsg)}`)
+      if (retry) {
+        return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+      }
+      return null
     }
 
     if (
@@ -517,10 +520,13 @@ class DiscoveryProvider {
         !indexedBlock ||
         (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
       ) {
-        // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-        // hopes it will catch up
-        console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries}...`)
-        return this._makeRequest(requestObj, attemptedRetries + 1)
+        if (retry) {
+          // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
+          // hopes it will catch up
+          console.info(`${this.discoveryProviderEndpoint} is too far behind. Retrying request at attempt #${attemptedRetries}...`)
+          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        }
+        return null
       }
     }
 

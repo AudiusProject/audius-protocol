@@ -14,7 +14,7 @@ def test_ipfs(app):
     ipfs_peer_port = app.config["ipfs"]["port"]
 
     # Instantiate IPFS client from src lib
-    ipfsclient = IPFSClient(ipfs_peer_host, ipfs_peer_port, [])
+    ipfsclient = IPFSClient(ipfs_peer_host, ipfs_peer_port)
 
     remove_test_file(json_file)
     api = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")

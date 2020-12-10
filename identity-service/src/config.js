@@ -81,6 +81,12 @@ const config = convict({
     env: 'instagramAPISecret',
     default: null
   },
+  instagramRedirectUrl: {
+    doc: 'Instagram API Redirect url',
+    format: String,
+    env: 'instagramRedirectUrl',
+    default: null
+  },
   relayerPrivateKey: {
     doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,

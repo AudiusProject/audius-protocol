@@ -81,6 +81,10 @@ class SnapbackSM {
         redis: {
           port: config.get('redisPort'),
           host: config.get('redisHost')
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true
         }
       }
     )

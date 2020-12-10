@@ -1,6 +1,7 @@
 const { ipfs } = require('../src/ipfsClient')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
+const DiskManager = require('../src/diskManager')
 
 const fs = require('fs')
 const path = require('path')
@@ -156,7 +157,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = path.join(storagePath, DIR_CID_SQUARE)
+    const dirPath = DiskManager.computeFilePath(DIR_CID_SQUARE)
     assert.ok(fs.existsSync(dirPath))
 
     const dirContentCIDs = new Set([CID_150, CID_480, CID_1000, CID_ORIGINAL])
@@ -228,7 +229,7 @@ describe('test resizeImage', () => {
 
     // If hash found in ipfs is not found in file_storage, fail
     ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = path.join(storagePath, DIR_CID_SQUARE, ipfsFile.hash)
+      const fsPathForIpfsFile = DiskManager.computeFilePathInDir(DIR_CID_SQUARE, ipfsFile.hash)
       if (!fs.existsSync(fsPathForIpfsFile)) {
         assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
       }
@@ -266,7 +267,7 @@ describe('test resizeImage', () => {
     }
 
     // Check fs contains the dir for square cids
-    const dirPath = path.join(storagePath, DIR_CID_NOT_SQUARE)
+    const dirPath = DiskManager.computeFilePath(DIR_CID_NOT_SQUARE)
     assert.ok(fs.existsSync(dirPath))
 
     const dirContentCIDs = new Set([CID_640, CID_2000, CID_ORIGINAL])
@@ -335,7 +336,7 @@ describe('test resizeImage', () => {
 
     // If hash found in ipfs is not found in file_storage, fail
     ipfsDirContents.map(ipfsFile => {
-      const fsPathForIpfsFile = path.join(storagePath, DIR_CID_NOT_SQUARE, ipfsFile.hash)
+      const fsPathForIpfsFile = DiskManager.computeFilePathInDir(DIR_CID_NOT_SQUARE, ipfsFile.hash)
       if (!fs.existsSync(fsPathForIpfsFile)) {
         assert.fail(`File in ipfs not found in file_storage for size ${ipfsFile.name}`)
       }

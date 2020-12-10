@@ -285,7 +285,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
           // Spread + set uniq's the array
           userReplicaSet = [...new Set(userReplicaSet)]
         } catch (e) {
-          req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash`)
+          req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihash - ${e.message}`)
         }
       }
 
