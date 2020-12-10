@@ -24,6 +24,7 @@ export enum MessageType {
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
   RESET_NOTIFICATIONS_BADGE_COUNT = 'reset-notifications-badge-count',
   ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
+  PROMPT_PUSH_NOTIFICATION_REMINDER = 'prompt-push-notifications-reminder',
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
