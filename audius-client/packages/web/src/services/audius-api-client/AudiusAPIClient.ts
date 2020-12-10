@@ -71,7 +71,7 @@ type GetTrendingArgs = {
   offset?: number
   limit?: number
   currentUserId: Nullable<ID>
-  genre?: string
+  genre: Nullable<string>
 }
 
 type GetFollowingArgs = {
@@ -238,7 +238,7 @@ class AudiusAPIClient {
       limit,
       offset,
       user_id: encodedCurrentUserId || undefined,
-      genre
+      genre: genre || undefined
     }
 
     const trendingResponse: Nullable<APIResponse<
