@@ -157,7 +157,7 @@ class Account extends Base {
       console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
       await this.User.updateUserMetadata(userId, metadata)
     } catch (e) {
-      console.log(`I AM NOT HAVING FUN at PHASE ${phase}: ${e} `)
+      console.log(`signUp() flow failed at ${phase}: ${e} `)
       return { error: e.message, phase }
     }
 
