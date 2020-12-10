@@ -3,6 +3,13 @@ const Entity = require('../routes/notifications').Entity
 const mapMilestone = require('../routes/notifications').mapMilestone
 const { actionEntityTypes, notificationTypes } = require('./constants')
 
+const getRankSuffix = (num) => {
+  if (num === 1) return 'st'
+  else if (num === 2) return 'nd'
+  else if (num === 3) return 'rd'
+  return 'th'
+}
+
 const formatFavorite = (notification, metadata, entity) => {
   return {
     type: NotificationType.Favorite,
@@ -44,6 +51,22 @@ const formatMilestone = (achievement) => (notification, metadata) => {
     entity: getMilestoneEntity(notification, metadata),
     value: notification.actions[0].actionEntityId,
     achievement
+  }
+}
+
+function formatTrendingTrack (notification, metadata) {
+  const trackId = notification.entityId
+  const track = metadata.tracks[trackId]
+  if (!notification.actions.length === 1) return null
+  const rank = notification.actions[0].actionEntityId
+  const type = notification.actions[0].actionEntityType
+  const [time, genre] = type.split(':')
+  return {
+    type: NotificationType.TrendingTrack,
+    entity: track,
+    rank,
+    time,
+    genre
   }
 }
 
@@ -171,6 +194,9 @@ const notificationResponseMap = {
   [NotificationType.RemixCosign]: (notification, metadata) => {
     return formatRemixCosign(notification, metadata)
   },
+  [NotificationType.TrendingTrack]: (notification, metadata) => {
+    return formatTrendingTrack(notification, metadata)
+  },
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
@@ -184,7 +210,7 @@ const NewFollowerTitle = 'New Follower'
 const NewMilestoneTitle = 'Congratulations! 🎉'
 const NewSubscriptionUpdateTitle = 'New Artist Update'
 
-// TODO verify these...
+const TrendingTrackTitle = 'Congrats - You’re Trending! 🍾'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 
@@ -200,6 +226,7 @@ const notificationResponseTitleMap = {
   [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
   [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
   [NotificationType.Milestone]: NewMilestoneTitle,
+  [NotificationType.TrendingTrack]: TrendingTrackTitle,
   [NotificationType.RemixCreate]: RemixCreateTitle,
   [NotificationType.RemixCosign]: RemixCosignTitle
 }
@@ -250,10 +277,16 @@ const pushNotificationMessagesMap = {
   },
   [notificationTypes.RemixCosign] (notification) {
     return `${notification.parentTrackUser.name} Co-Signed your Remix of ${notification.remixTrack.title}`
+  },
+  [notificationTypes.TrendingTrack] (notification) {
+    const rank = notification.rank
+    const rankSuffix = getRankSuffix(rank)
+    return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now!`
   }
 }
 
 module.exports = {
+  getRankSuffix,
   formatNotificationProps,
   notificationResponseMap,
   notificationResponseTitleMap,
