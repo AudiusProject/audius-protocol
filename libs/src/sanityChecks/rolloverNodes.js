@@ -47,12 +47,12 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
     // Get new secondaries and backfill up to 2
     let newSecondaries = [...secondaries]
     newSecondaries.splice(index, 1)
-    const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes(
-      2 - newSecondaries.length,
-      creatorNodeWhitelist,
+    const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes({
+      numberOfNodes: 2 - newSecondaries.length,
+      whitelist: creatorNodeWhitelist,
       // Exclude ones we currently have
-      new Set([newPrimary, ...newSecondaries])
-    )
+      blacklist: new Set([newPrimary, ...newSecondaries])
+    })
     newSecondaries = newSecondaries.concat([autoselect.primary, ...autoselect.secondaries])
 
     // Set the new endpoint and connect to it

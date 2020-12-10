@@ -66,11 +66,12 @@ class ServiceProvider extends Base {
    * // secondaries: Array<string>
    * // services: { creatorNodeEndpoint: versionInfo }
    */
-  async autoSelectCreatorNodes (
+  async autoSelectCreatorNodes ({
     numberOfNodes = 3,
     whitelist = null,
-    blacklist = null
-  ) {
+    blacklist = null,
+    performSyncCheck = true
+  }) {
     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
@@ -79,7 +80,7 @@ class ServiceProvider extends Base {
       blacklist
     })
 
-    const { primary, secondaries, services } = await creatorNodeSelection.select()
+    const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck)
     return { primary, secondaries, services }
   }
 

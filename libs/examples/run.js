@@ -273,7 +273,7 @@ async function addCreator (audius, handle) {
 
   try {
     console.log('adding creator')
-    const creatorId = await audius.User.addCreator(creatorArgs)
+    const creatorId = await audius.User.upgradeToCreator(creatorArgs)
     creatorArgs.user_id = creatorId
     audius.userStateManager.setCurrentUser(creatorArgs)
     console.log(`added creator with id ${creatorId}!`)

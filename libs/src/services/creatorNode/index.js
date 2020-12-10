@@ -26,6 +26,16 @@ class CreatorNode {
   static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
 
   /**
+   * Builds the creator_node_endpoint value off of a primary and secondaries list. Best used
+   * with return values from autoSelectCreatorNodes() in ServiceProvider
+   * @param {string} primary the primary endpoint
+   * @param {string[]} secondaries a list of secondary endpoints
+   */
+  static buildEndpoint (primary, secondaries) {
+    return [primary, ...secondaries].join()
+  }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId

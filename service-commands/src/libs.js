@@ -169,11 +169,11 @@ function LibsWrapper (walletIndex = 0) {
     blacklist
   }) => {
     assertLibsDidInit()
-    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes(
+    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes({
       numberOfNodes,
       whitelist,
       blacklist
-    )
+    })
   }
 
   /**

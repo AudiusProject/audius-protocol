@@ -42,11 +42,11 @@ class Account extends Base {
   async login (email, password) {
     const phases = {
       FIND_WALLET: 'FIND_WALLET',
-      FIND_USER: 'FIND_USER',
-      ASSIGN_REPLICA_SET: 'ASSIGN_REPLICA_SET'
+      FIND_USER: 'FIND_USER'
     }
+    let phase = ''
 
-    let phase = phases.FIND_WALLET
+    phase = phases.FIND_WALLET
     if (!this.web3Manager.web3IsExternal()) {
       this.REQUIRES(Services.HEDGEHOG)
 
@@ -62,20 +62,10 @@ class Account extends Base {
     const userAccount = await this.discoveryProvider.getUserAccount(this.web3Manager.getWalletAddress())
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
-      if (!userAccount.creator_node_endpoint) {
-        phase = phases.ASSIGN_REPLICA_SET
-        try {
-          await this.User.assignReplicaSet()
-        } catch (e) {
-          // Log error if cannot find replica set -- do not stop login flow
-          // If assignment fails, user metadata should not be updated and can
-          // perhaps retry assignment at re-login or with UserReplicaSetContract
-          console.error(`Could not assign replica set to user: ${e}`)
-        }
-      } else {
-        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(userAccount.creator_node_endpoint))
+      const creatorNodeEndpoint = userAccount.creator_node_endpoint
+      if (creatorNodeEndpoint) {
+        this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
       }
-
       return { user: userAccount, error: false, phase }
     }
     return { error: 'No user found', phase }
@@ -100,7 +90,6 @@ class Account extends Base {
    * @param {string} email
    * @param {string} password
    * @param {Object} metadata
-   * @param {?boolean} [isCreator] whether or not the user is a content creator.
    * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
@@ -110,6 +99,7 @@ class Account extends Base {
     email,
     password,
     metadata,
+    serviceProvider,
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
@@ -120,7 +110,8 @@ class Account extends Base {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
-      ADD_USER: 'ADD_USER'
+      ADD_USER: 'ADD_USER',
+      UPLOAD_METADATA_AND_UPDATE_ON_CHAIN: 'UPLOAD_METADATA_AND_UPDATE_ON_CHAIN'
     }
     let phase = ''
     let userId
@@ -137,29 +128,38 @@ class Account extends Base {
         // If an owner wallet already exists, don't try to recreate it
         if (!hasWallet) {
           phase = phases.HEDGEHOG_SIGNUP
+          console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
           await this.generateRecoveryLink({ handle: metadata.handle, host })
         }
       }
-      // upload profile pic to initial content node (for now, user metadata node)
+
+      // Add user to chain
+      phase = phases.ADD_USER
+      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
+      metadata = await this.User.addUser(metadata)
+
+      userId = metadata.user_id
+
+      // Assign replica set to user and update metadata object
+      phase = phases.ADD_REPLICA_SET
+      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
+      metadata = await this.User.assignReplicaSet(serviceProvider, userId)
+
+      // Upload profile pic to primary Content Node and sync across secondaries
       phase = phases.UPLOAD_PROFILE_IMAGES
+      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
       metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
 
-      // add user to chain
-      phase = phases.ADD_USER
-      userId = await this.User.addUser(metadata)
-
-      // assign replica set to user and sync across new replica set from initial content node (for now, user metadata node)
-      phase = phases.ADD_REPLICA_SET
-      await this.User.assignReplicaSet()
+      // Update metadata on chain and upload metadata to Content Nodes
+      phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
+      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
+      await this.User.updateUserMetadata(userId, metadata)
     } catch (e) {
+      console.log(`I AM NOT HAVING FUN at PHASE ${phase}: ${e} `)
       return { error: e.message, phase }
     }
-
-    metadata.user_id = userId
-    metadata.wallet = this.web3Manager.getWalletAddress()
-    this.userStateManager.setCurrentUser(metadata)
 
     return { userId, error: false }
   }
