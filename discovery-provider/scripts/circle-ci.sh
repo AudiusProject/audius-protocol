@@ -8,7 +8,7 @@ function main {
   echo 'Migrating contracts'
   node_modules/.bin/truffle migrate --network test_local
   echo 'Writing flask config'
-  node_modules/.bin/truffle exec --network test_local scripts/_contractsLocalSetup.js -run
+  node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run --network test_local
   cd_discprov_repo
   pytest -s -v --fulltrace
 }
