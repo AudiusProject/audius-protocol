@@ -33,16 +33,18 @@ class Users extends Base {
     this.getTopCreatorsByGenres = this.getTopCreatorsByGenres.bind(this)
     this.uploadProfileImages = this.uploadProfileImages.bind(this)
     this.addUser = this.addUser.bind(this)
+    this.upgradeToCreator = this.upgradeToCreator.bind(this)
     this.updateUserMetadata = this.updateUserMetadata.bind(this)
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
-    this._waitForCreatorNodeUpdate = this._waitForContentNodeEndpointUpdate.bind(this)
+    this._waitForContentNodeEndpointUpdate = this._waitForContentNodeEndpointUpdate.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
     this._cleanUserMetadata = this._cleanUserMetadata.bind(this)
+    this._handleMetadata = this._handleMetadata.bind(this)
   }
 
   /* ----------- GETTERS ---------- */
