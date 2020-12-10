@@ -30,6 +30,8 @@ const getResponse = async (id: string): Promise<Message> => {
   return response
 }
 
+const SPAMMY_MESSAGES = new Set([MessageType.GET_POSITION])
+
 export function* initInterface() {
   const globalWindow = getIsIOS() ? window : document
   const channel = eventChannel(emitter => {
@@ -53,6 +55,12 @@ export function* initInterface() {
 
   while (true) {
     const message = yield take(channel)
+
+    // Log it if it isn't spammy
+    if (!SPAMMY_MESSAGES.has(message.type)) {
+      console.debug(`Got native mobile message: ${JSON.stringify(message)}`)
+    }
+
     if (message.isAction) {
       yield put({
         // Action type = Message type
@@ -81,7 +89,7 @@ export class NativeMobileMessage {
   public payload: object
   private id: string
 
-  constructor(type: MessageType, message: object) {
+  constructor(type: MessageType, message: object = {}) {
     this.type = type
     this.payload = message
     this.id = uuid()

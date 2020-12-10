@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import cn from 'classnames'
 
 import Page from 'components/general/Page'
@@ -17,6 +17,7 @@ import {
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 
 import styles from './NotificationsSettingsPage.module.css'
+import { PromptPushNotificationPermissions } from 'services/native-mobile-interface/notifications'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -76,6 +77,15 @@ const emailOptions = [
   { key: EmailFrequency.Off, text: 'Off' }
 ]
 
+// Prompts the native layer to check if push notifications are
+// enabled, presenting a push notifications reminder if not
+const usePromptForPushNotifications = () => {
+  useEffect(() => {
+    const msg = new PromptPushNotificationPermissions()
+    msg.send()
+  }, [])
+}
+
 const NotificationsSettingsPage = ({
   notificationSettings,
   emailFrequency,
@@ -83,6 +93,8 @@ const NotificationsSettingsPage = ({
   togglePushNotificationSetting,
   updateEmailFrequency
 }: SettingsPageProps) => {
+  usePromptForPushNotifications()
+
   const notificationToggles = [
     {
       text: messages.enablePn,
