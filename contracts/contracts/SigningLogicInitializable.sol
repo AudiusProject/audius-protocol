@@ -5,7 +5,8 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
 
 
 /**
-* @title SigningLogic is contract implementing signature recovery from typed data signatures
+* @title SigningLogicInitializable is a contract implementing signature recovery from typed data signatures
+* @notice Ported from SigningLogic.sol into initializable format
 * @notice Recovers signatures based on the SignTypedData implementation provided by ethSigUtil
 * @dev This contract is inherited by other contracts.
 */
