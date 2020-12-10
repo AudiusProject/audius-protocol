@@ -29,17 +29,20 @@ function* watchTrackBadge() {
       call(retrieveTrending, {
         timeRange: TimeRange.WEEK,
         offset: 0,
-        limit: TRENDING_LIMIT
+        limit: TRENDING_LIMIT,
+        genre: null
       }),
       call(retrieveTrending, {
         timeRange: TimeRange.MONTH,
         offset: 0,
-        limit: TRENDING_LIMIT
+        limit: TRENDING_LIMIT,
+        genre: null
       }),
       call(retrieveTrending, {
         timeRange: TimeRange.YEAR,
         offset: 0,
-        limit: TRENDING_LIMIT
+        limit: TRENDING_LIMIT,
+        genre: null
       })
     ])
 
