@@ -29,12 +29,10 @@ const healthCheckVerifySignature = (req, res, next) => {
   const currentTimestampDate = new Date()
   const requestAge = currentTimestampDate - recoveredTimestampDate
   if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-    req.logger.debug('here')
     return sendResponse(req, res, errorResponseBadRequest(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`))
   }
   const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
   if (recoveredPublicWallet !== delegateOwnerWallet) {
-    req.logger.debug('here')
     return sendResponse(req, res, errorResponseBadRequest("Requester's public key does does not match Creator Node's delegate owner wallet."))
   }
 
@@ -92,17 +90,16 @@ const healthCheckVerboseController = async (req) => {
 }
 
 /**
- * Controller for `health_check/fileupload` route
- * Calls `healthCheckFileUploadService`.
+ * Controller for `health_check/fileupload` route *
+ * Perform a file upload health check limited to configured delegateOwnerWallet.
+ * This prunes the disc artifacts created by the process after.
  */
 const healthCheckFileUploadController = async (req) => {
-  const err = req.fileFilterError || req.fileSizeError
+  const err = req.fileFilterError || req.fileSizeError || await removeTrackFolder(req, req.fileDir)
   if (err) {
     throw new Error(err)
-  } else {
-    removeTrackFolder(req, req.fileDir)
-    return successResponse({ success: true })
   }
+  return successResponse({ success: true })
 }
 
 // Routes

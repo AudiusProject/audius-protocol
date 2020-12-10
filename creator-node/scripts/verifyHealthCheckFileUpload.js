@@ -1,3 +1,9 @@
+/**
+ * Verifies a file upload limited to configured delegateOwnerWallet.
+ * Used to validate availability prior to joining the network
+ *
+ * Script usage: node verifyHealthCheckFileUpload.js
+*/
 const axios = require('axios')
 const FormData = require('form-data')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
