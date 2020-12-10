@@ -7,6 +7,8 @@ exports["default"] = exports.getTrackLink = exports.getEntity = exports.getUsers
 
 var _react = _interopRequireDefault(require("react"));
 
+var _formatNotificationMetadata = require("../../formatNotificationMetadata");
+
 var _NotificationBody = _interopRequireDefault(require("./NotificationBody"));
 
 var _utils = require("./utils");
@@ -35,7 +37,8 @@ var NotificationType = Object.freeze({
   UserSubscription: 'UserSubscription',
   Announcement: 'Announcement',
   RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign'
+  RemixCosign: 'RemixCosign',
+  TrendingTrack: 'TrendingTrack'
 });
 exports.NotificationType = NotificationType;
 var EntityType = Object.freeze({
@@ -160,6 +163,19 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
       text: "You have reached over ".concat(notification.value, " Followers ")
     });
   }
+}), _defineProperty(_notificationMap, NotificationType.TrendingTrack, function (notification) {
+  var highlight = notification.entity.title;
+  var rank = notification.rank;
+  var rankSuffix = (0, _formatNotificationMetadata.getRankSuffix)(rank);
+  return _react["default"].createElement("span", {
+    className: 'notificationText'
+  }, _react["default"].createElement(BodyText, {
+    text: "Your Track "
+  }), _react["default"].createElement(HighlightText, {
+    text: highlight
+  }), _react["default"].createElement(BodyText, {
+    text: " is ".concat(rank).concat(rankSuffix, " on Trending Right Now!")
+  }));
 }), _defineProperty(_notificationMap, NotificationType.UserSubscription, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
@@ -296,6 +312,23 @@ var getTwitter = function getTwitter(notification) {
         return {
           message: 'Share With Your Friends',
           href: "http://twitter.com/share?url=".concat(encodeURIComponent(_url), "&text=").concat(encodeURIComponent(_text))
+        };
+      }
+
+    case NotificationType.TrendingTrack:
+      {
+        var rank = notification.rank,
+            entity = notification.entity;
+
+        var _url2 = getTrackLink(entity);
+
+        var rankSuffix = (0, _formatNotificationMetadata.getRankSuffix)(rank);
+
+        var _text2 = "My Track ".concat(entity.title, " is trending ").concat(rank).concat(rankSuffix, " on @AudiusProject! #AudiusTrending #Audius");
+
+        return {
+          message: 'Share this Milestone',
+          href: "http://twitter.com/share?url=".concat(encodeURIComponent(_url2), "&text=").concat(encodeURIComponent(_text2))
         };
       }
 
