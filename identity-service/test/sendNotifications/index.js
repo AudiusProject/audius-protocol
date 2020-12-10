@@ -3,6 +3,7 @@ const assert = require('assert')
 const models = require('../../src/models')
 const processNotifications = require('../../src/notifications/processNotifications/index.js')
 const sendNotifications = require('../../src/notifications/sendNotifications/index.js')
+const { processTrendingTracks } = require('../../src/notifications/trendingTrackProcessing')
 const { pushNotificationQueue } = require('../../src/notifications/notificationQueue')
 const { clearDatabase, runMigrations } = require('../lib/app')
 
@@ -13,6 +14,7 @@ const follow = require('./mockNotifications/follow.json')
 const repost = require('./mockNotifications/repost.json')
 const favorite = require('./mockNotifications/favorite.json')
 const create = require('./mockNotifications/create.json')
+const trendingTrack = require('./mockNotifications/trendingTrack.json')
 
 const mockAudiusLibs = require('./mockLibs')
 
@@ -166,6 +168,37 @@ describe('Test Send Notifications', function () {
     assert.deepStrictEqual(user7Notifs[0].notificationParams.message, 'user 4 favorited your album PLaylist id: 104')
 
     // NOTE: No notifications for user 4 who has no settings set.
+  })
+
+  it('should have the correct trending track notifications', async function () {
+    await models.UserNotificationMobileSettings.bulkCreate([1, 2, 3].map(userId => ({ userId })))
+    await models.UserNotificationMobileSettings.update(
+      { milestonesAndAchievements: false },
+      { where: { userId: 3 } }
+    )
+
+    const tx1 = await models.sequelize.transaction()
+    await processTrendingTracks(mockAudiusLibs, 1, trendingTrack, tx1)
+    await tx1.commit()
+
+    const pushNotifications = pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER
+    console.log(pushNotifications.length)
+
+    assert.deepStrictEqual(pushNotifications.length, 3)
+
+    for (const notification of pushNotifications) {
+      assert.deepStrictEqual(notification.notificationParams.title, 'Congrats - You’re Trending! 🍾')
+      assert.deepStrictEqual(notification.types, ['mobile'])
+    }
+
+    const user1Notifs = pushNotifications.filter(n => n.userId === 1)
+    assert.deepStrictEqual(user1Notifs.length, 2)
+    assert.deepStrictEqual(user1Notifs[0].notificationParams.message, `Your Track Title, Track id: 100 is 1st on Trending Right Now!`)
+    assert.deepStrictEqual(user1Notifs[1].notificationParams.message, `Your Track Title, Track id: 101 is 2nd on Trending Right Now!`)
+
+    const user2Notifs = pushNotifications.filter(n => n.userId === 2)
+    assert.deepStrictEqual(user2Notifs.length, 1)
+    assert.deepStrictEqual(user2Notifs[0].notificationParams.message, `Your Track Title, Track id: 102 is 3rd on Trending Right Now!`)
   })
 
   it('should have the correct create notifications', async function () {
