@@ -20,7 +20,7 @@ export const incrementSessionCount = async () => {
  * @param startAt which session to start at
  */
 const useSessionCount = (
-  callback: (count?: number) => void,
+  callback: () => void,
   frequency: number,
   startAt: number = 1
 ) => {
@@ -37,7 +37,7 @@ const useSessionCount = (
         count % frequency === 0 &&
         count !== calledAtCount
       ) {
-        callback(count)
+        callback()
         setCalledAtCount(count)
       }
     }
