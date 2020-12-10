@@ -154,6 +154,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     const toBNArray = (bnArray) => { return bnArray.map(x => toBN(x)) }
 
     let updateReplicaSet = async (userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries, senderAcct) => {
+        // console.log(`Updating user=${userId} from ${oldPrimary},${oldSecondaries} to ${newPrimary},${newSecondaries} from ${senderAcct}`)
         await _lib.updateReplicaSet(
             userReplicaSetManager,
             userId,
@@ -161,7 +162,8 @@ contract('UserReplicaSetManager', async (accounts) => {
             newSecondaries,
             oldPrimary,
             oldSecondaries,
-            senderAcct)
+            senderAcct
+        )
         let replicaSetFromChain = await userReplicaSetManager.getUserReplicaSet(userId)
         assert.isTrue(replicaSetFromChain.primary.eq(newPrimary), 'Primary mismatch')
         assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(newSecondaries[i])), 'Secondary mismatch')
@@ -303,6 +305,20 @@ contract('UserReplicaSetManager', async (accounts) => {
         for (var i = 0; i < proposerSpIdsBn.length; i++){
             assert.isTrue(eventProposerSpIds[i].eq(proposerSpIdsBn[i]))
         }
+
+        // Reuse same nonce and signature from above and confirm failure
+        await expectRevert(
+            userReplicaSetManager.addOrUpdateContentNode(
+                newCNodeSPId,
+                newCnodeDelegateWallet,
+                proposerSpIds,
+                proposerNonces,
+                cn1Info.sig,
+                cn2Info.sig,
+                cn3Info.sig
+            ),
+            'Signature not unique'
+        )
     })
 
     it('Fail to register additional nodes w/duplicate bootstrap signers', async () => {
@@ -354,13 +370,10 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
     })
 
-    // TODO: Invalid nonce test case
-
     it('Configure + update user replica set', async () => {
         let user1Primary = toBN(1)
         let user1Secondaries = toBNArray([2, 3])
-        let oldPrimary = user1Primary
-        let oldSecondaries = user1Secondaries
+        // Issue initial replica set selection from 1
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1)
         // Fail with out of date prior configuration
         await expectRevert(
@@ -371,10 +384,13 @@ contract('UserReplicaSetManager', async (accounts) => {
           updateReplicaSet(userId1, user1Primary, user1Secondaries, user1Primary, [], userAcct1),
           'Invalid prior secondary configuration'
         )
-        // Now issue update from userAcct1
+        // Move cn1 from primary to secondary from userAcct directly
+        let oldPrimary = user1Primary
+        let oldSecondaries = user1Secondaries
         user1Primary = toBN(2)
         user1Secondaries = toBNArray([3, 1])
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, userAcct1)
+
         // Swap out secondary cn1 for cn4 from cn3
         oldPrimary = user1Primary
         oldSecondaries = user1Secondaries
@@ -384,6 +400,8 @@ contract('UserReplicaSetManager', async (accounts) => {
           updateReplicaSet(userId1, user1Primary, invalidUser1Secondaries, oldPrimary, oldSecondaries, cnode3Account),
           'Secondary must exist'
         )
+        // Perform secondary update from another valid secondary, cn3
+        // Update secondaries to include cn4 and exclude cn5
         user1Secondaries = toBNArray([3, 4])
         // Try to issue an update from the incoming secondary account, confirm failure
         await expectRevert(
@@ -391,6 +409,13 @@ contract('UserReplicaSetManager', async (accounts) => {
           'Invalid update operation'
         )
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3Account)
+
+        // Next, remove cn3 and add cn5 as a secondary from the PRIMARY account cn2
+        oldPrimary = user1Primary
+        oldSecondaries = user1Secondaries
+        user1Primary = oldPrimary // No primary change
+        user1Secondaries = toBNArray([4, 1])
+        await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode2Account)
     })
 
     it('UserReplicaSetManager Proxy upgrade validation', async () => {
