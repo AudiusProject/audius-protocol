@@ -2,7 +2,7 @@ import { Address } from 'types'
 
 const api3Box = 'https://ipfs.3box.io'
 const ipfsGateway = 'https://ipfs.infura.io/ipfs/'
-const getProfileUrl = (wallet: string) => `${api3Box}/profile?wallet=${wallet}`
+const getProfileUrl = (wallet: string) => `${api3Box}/profile?address=${wallet}`
 
 type User = {
   name?: string
