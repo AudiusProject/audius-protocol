@@ -14,11 +14,11 @@ const {
 const { clearDatabase, runMigrations } = require('../lib/app')
 
 /**
- * User id 1 reposts track 10 owned by user id 20
- * User id 2 reposts track 10 owned by user id 20
- * User id 2 reposts track 11 owned by user id 20
- * User id 3 reposts playlist 14 owned by user id 23
- * User id 4 reposts album 10 owned by user id 25
+ * Track id 100 owned by user id 1 is #1 trending
+ * Track id 101 owned by user id 1 is #2 trending
+ * Track id 102 owned by user id 2 is #3 trending
+ * Track id 103 owned by user id 3 is #4 trending
+ * Track id 104 owned by user id 4 is #5 trending
  */
 const initialNotifications = [
   {
@@ -50,8 +50,11 @@ const initialNotifications = [
 ]
 
 /**
- * User id 5 reposts track 10 owned by user id 20
- * User id 5 reposts album 11 owned by user id 20
+ * Track id 103 owned by user id 3 is #1 trending <= increase 
+ * Track id 104 owned by user id 4 is #2 trending <= increase
+ * Track id 100 owned by user id 1 is #3 trending <= decrease
+ * Track id 110 owned by user id 10 is #4 trending <= new
+ * Track id 101 owned by user id 1 is #5 trending <= decrease 
  */
 const additionalNotifications = [
   {
@@ -136,7 +139,7 @@ describe('Test Trending Track Notification', function () {
     assert.deepStrictEqual(allNotifActionsAfter.length, 5)
 
     // Do some more checks
-    const threeHrsAgo = moment(Date.now()).subtract(3, 'h')
+    const threeHrsAgo = moment(Date.now()).subtract(1, 'h')
     await models.Notification.update({ timestamp: threeHrsAgo }, { where: {} })
 
     // ======================================= Process the new trending tracks =======================================
@@ -165,7 +168,6 @@ describe('Test Trending Track Notification', function () {
 
     // Check that there is one more notification
     const allNotifsAfterAll = await models.Notification.findAll()
-    console.log({ allNotifsAfterAll: allNotifsAfterAll.map(n => ({ userId: n.userId, track: n.entityId, timestamp: n.timestamp, now: moment() })) })
     assert.deepStrictEqual(allNotifsAfterAll.length, 8)
 
     const user4Notifs = await models.Notification.findAll({ where: { userId: 4 } })
