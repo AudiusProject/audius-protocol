@@ -508,6 +508,8 @@ class CreatorNode {
       onProgress(total, total)
       return resp.data
     } catch (e) {
+      console.log('there is something wrong in uploading image/track')
+      console.log(e)
       _handleErrorHelper(e, url)
     }
   }
