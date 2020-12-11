@@ -1,5 +1,5 @@
 const Redis = require('ioredis')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
@@ -14,7 +14,8 @@ const {
   errorResponseNotFound,
   errorResponseForbidden,
   errorResponseRangeNotSatisfiable,
-  errorResponseUnauthorized
+  errorResponseUnauthorized,
+  handleResponseWithHeartbeat
 } = require('../apiHelpers')
 const { recoverWallet } = require('../apiSigning')
 
@@ -26,13 +27,9 @@ const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, find
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+const DiskManager = require('../diskManager')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
-
-// regex to validate storagePath format passed in for /file_lookup route
-// this will either be of the format /file_storage/<cid> for a file or /file_storage/<cid1>/<cid2> for an dir image
-// there are two named match groups, outer and inner. outer is for file or dirname for dir image. inner is only image cid in dir
-const FILE_SYSTEM_REGEX = /\/file_storage\/(?<outer>Qm[a-zA-Z0-9]{44})\/?(?<inner>Qm[a-zA-Z0-9]{44})?/
 
 /**
  * Helper method to stream file from file system on creator node
@@ -305,7 +302,7 @@ module.exports = function (app) {
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */
-  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponse(async (req, res) => {
+  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
@@ -325,7 +322,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '150x150.jpg': 150,
             '480x480.jpg': 480,
@@ -338,7 +334,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '640x.jpg': 640,
             '2000x.jpg': 2000
@@ -351,6 +346,54 @@ module.exports = function (app) {
       req.logger.debug('ipfs add resp', resizeResp)
     } catch (e) {
       return errorResponseServerError(e)
+    }
+
+    /**
+     * Ensure image files written to disk match dirCID returned from resizeImage
+     */
+
+    const ipfs = req.app.get('ipfsLatestAPI')
+
+    const dirCID = resizeResp.dir.dirCID
+
+    // build ipfs add array
+    let ipfsAddArray = []
+    try {
+      await Promise.all(resizeResp.files.map(async function (file) {
+        const fileBuffer = await fs.readFile(file.storagePath)
+        ipfsAddArray.push({
+          path: file.sourceFile,
+          content: fileBuffer
+        })
+      }))
+    } catch (e) {
+      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+    }
+
+    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+    let ipfsAddRespArr
+    try {
+      const ipfsAddResp = await ipfs.add(
+        ipfsAddArray,
+        {
+          pin: false,
+          onlyHash: true,
+          timeout: 1000
+        }
+      )
+      ipfsAddRespArr = []
+      for await (const resp of ipfsAddResp) {
+        ipfsAddRespArr.push(resp)
+      }
+    } catch (e) {
+      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
+      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+    }
+
+    // Ensure actual and expected dirCIDs match
+    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+    if (expectedDirCID !== dirCID) {
+      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID ${dirCID}`)
     }
 
     // Record image file entries in DB
@@ -373,7 +416,7 @@ module.exports = function (app) {
           sourceFile: file.sourceFile,
           storagePath: file.storagePath,
           type: 'image', // TODO - replace with models enum
-          dirMultihash: resizeResp.dir.dirCID,
+          dirMultihash: dirCID,
           fileName: file.sourceFile.split('/').slice(-1)[0]
         }
         await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
@@ -381,12 +424,13 @@ module.exports = function (app) {
 
       req.logger.info(`route time = ${Date.now() - routestart}`)
       await transaction.commit()
-      triggerSecondarySyncs(req)
-      return successResponse({ dirCID: resizeResp.dir.dirCID })
     } catch (e) {
       await transaction.rollback()
       return errorResponseServerError(e)
     }
+
+    triggerSecondarySyncs(req)
+    return successResponse({ dirCID })
   }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
@@ -460,10 +504,10 @@ module.exports = function (app) {
     const filePathNormalized = path.normalize(filePath)
 
     // check that the regex works and verify it's not blacklisted
-    const match = FILE_SYSTEM_REGEX.exec(filePathNormalized)
-    if (!match) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
+    const matchObj = DiskManager.extractCIDsFromFSPath(filePathNormalized)
+    if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
-    const { outer, inner } = match.groups
+    const { outer, inner } = matchObj
     if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
       return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
     }

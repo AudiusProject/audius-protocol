@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
+const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
@@ -12,7 +13,7 @@ const {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
-  rateLimiterMiddleware
+  getRateLimiterMiddleware
 } = require('./reqLimiter')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
@@ -33,7 +34,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
-app.use('/', rateLimiterMiddleware)
+app.use(getRateLimiterMiddleware())
 
 // import routes
 require('./routes')(app)
@@ -47,11 +48,12 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, serviceRegistry) => {
+const initializeApp = (port, serviceRegistry) => {
+  const storagePath = DiskManager.getConfigStoragePath()
   // TODO: Can remove these when all routes
   // consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
-  app.set('storagePath', storageDir)
+  app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)

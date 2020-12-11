@@ -17,6 +17,22 @@ class ServiceTypeManagerClient extends GovernedContractClient {
     )
   }
 
+  async addServiceType (serviceType, serviceTypeMin, serviceTypeMax, privateKey = null) {
+    const method = await this.getGovernedMethod(
+      'addServiceType',
+      Utils.utf8ToHex(serviceType),
+      serviceTypeMin,
+      serviceTypeMax
+    )
+
+    return this.web3Manager.sendTransaction(
+      method,
+      DEFAULT_GAS_AMOUNT,
+      (await this.governanceClient.getAddress()),
+      privateKey
+    )
+  }
+
   async getValidServiceTypes () {
     const method = await this.getMethod('getValidServiceTypes')
     const types = await method.call()

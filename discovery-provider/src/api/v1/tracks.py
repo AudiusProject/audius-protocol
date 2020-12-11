@@ -10,7 +10,7 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     format_offset, format_limit, decode_string_id, stem_from_track, \
     get_current_user_id
 
-from .models.tracks import track, track_full, stem_full, remixes_response
+from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
@@ -303,7 +303,7 @@ track_favorites_route_parser.add_argument('user_id', required=False)
 track_favorites_route_parser.add_argument('limit', required=False, type=int)
 track_favorites_route_parser.add_argument('offset', required=False, type=int)
 track_favorites_response = make_full_response(
-    "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+    "track_favorites_response_full", full_ns, fields.List(fields.Nested(user_model_full)))
 
 
 @full_ns.route("/<string:track_id>/favorites")
@@ -348,7 +348,7 @@ track_reposts_route_parser.add_argument('user_id', required=False)
 track_reposts_route_parser.add_argument('limit', required=False, type=int)
 track_reposts_route_parser.add_argument('offset', required=False, type=int)
 track_reposts_response = make_full_response(
-    "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+    "track_reposts_response_full", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:track_id>/reposts")
 class FullTrackReposts(Resource):
     @full_ns.expect(track_reposts_route_parser)
@@ -399,7 +399,7 @@ class FullTrackStems(Resource):
 
 
 remixes_response = make_full_response(
-    "remixes_response", full_ns, fields.Nested(remixes_response))
+    "remixes_response_full", full_ns, fields.Nested(remixes_response_model))
 remixes_parser = reqparse.RequestParser()
 remixes_parser.add_argument('user_id', required=False)
 remixes_parser.add_argument('limit', required=False, default=10)
@@ -438,7 +438,7 @@ class FullRemixingRoute(Resource):
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
-        request_args = remixes_parser.parse_args()
+        request_args = remixing_parser.parse_args()
         current_user_id = get_current_user_id(request_args)
 
         args = {
