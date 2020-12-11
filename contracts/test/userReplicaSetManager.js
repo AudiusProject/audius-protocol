@@ -112,20 +112,6 @@ contract('UserReplicaSetManager', async (accounts) => {
                 `Mismatched spID wallet: Expected ${spID} w/wallet ${cnodeWallet}, found ${walletFromChain}`
             )
         }
-
-        // Validate returned arguments from chain match constructor arguments
-        let bootstrapIDsFromChain = await contractInstance.getBootstrapServiceProviderIDs()
-        let bootstrapWalletsFromChain = await contractInstance.getBootstrapServiceProviderDelegateWallets()
-        assert.isTrue(
-            (bootstrapIDsFromChain.length === bootstrapWalletsFromChain.length) &&
-            (bootstrapIDsFromChain.length === bootstrapSPIds.length) &&
-            (bootstrapSPIds.length === bootstrapDelegateWallets.length),
-            "Unexpected bootstrap constructor argument length returned"
-        )
-         for (var i = 0; i < bootstrapIDsFromChain.length; i++) {
-            assert.isTrue(bootstrapIDsFromChain[i] == bootstrapSPIds[i])
-            assert.isTrue(bootstrapWalletsFromChain[i] == bootstrapDelegateWallets[i])
-        }
     }
 
     // Helper Functions
@@ -416,6 +402,51 @@ contract('UserReplicaSetManager', async (accounts) => {
         user1Primary = oldPrimary // No primary change
         user1Secondaries = toBNArray([4, 1])
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode2Account)
+    })
+
+    it('userReplicaBootstrapAddress functionality', async () => {
+        let user1Primary = toBN(1)
+        let user1Secondaries = toBNArray([2, 3])
+        // Issue initial replica set selection from userReplicaBootstrapAddress
+        await updateReplicaSet(
+            userId1,
+            user1Primary,
+            user1Secondaries,
+            0,
+            [],
+            userReplicaBootstrapAddress
+        )
+        let userReplicaBootstrapAddressOnChain = await userReplicaSetManager.getUserReplicaSetBootstrapAddress()
+        assert.equal(
+            userReplicaBootstrapAddressOnChain,
+            userReplicaBootstrapAddress,
+            `Expected ${userReplicaBootstrapAddress}, found ${userReplicaBootstrapAddressOnChain}`
+        )
+        const addressZero = '0x0000000000000000000000000000000000000000'
+        // Confirm failure if update function sent from wrong address
+        await expectRevert(
+            userReplicaSetManager.updateUserReplicaBootstrapAddress(addressZero),
+            'Invalid sender, expect current userReplicaSetBootstrapAddress'
+        )
+        // Confirm address update to zero works as expected, effectively relinquishing control
+        await userReplicaSetManager.updateUserReplicaBootstrapAddress(addressZero, { from: userReplicaBootstrapAddress })
+        userReplicaBootstrapAddressOnChain = await userReplicaSetManager.getUserReplicaSetBootstrapAddress()
+        assert.equal(
+            userReplicaBootstrapAddressOnChain,
+            addressZero,
+            `Expected ${addressZero}, found ${userReplicaBootstrapAddressOnChain}`
+        )
+    })
+
+    it('Fail to register replica set for non-existent user', async () => {
+        const nonExistentUserID = 5
+        let user1Primary = toBN(1)
+        let user1Secondaries = toBNArray([2, 3])
+        // Issue initial replica set selection from 1
+        await expectRevert(
+            updateReplicaSet(nonExistentUserID, user1Primary, user1Secondaries, 0, [], userAcct1),
+            'Valid user required'
+        )
     })
 
     it('UserReplicaSetManager Proxy upgrade validation', async () => {
