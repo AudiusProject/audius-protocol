@@ -1,5 +1,5 @@
 const express = require('express')
-const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse } = require('../../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse, errorResponseServerError } = require('../../apiHelpers')
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
@@ -97,7 +97,7 @@ const healthCheckVerboseController = async (req) => {
 const healthCheckFileUploadController = async (req) => {
   const err = req.fileFilterError || req.fileSizeError || await removeTrackFolder(req, req.fileDir)
   if (err) {
-    throw new Error(err)
+    return errorResponseServerError(err)
   }
   return successResponse({ success: true })
 }
