@@ -30,6 +30,16 @@ datetime_format = "%Y/%m/%d:%H"
 def get_rounded_date_time():
     return datetime.utcnow().replace(minute=0, second=0, microsecond=0)
 
+def format_ip(ip):
+    # Replace the `:` character with an `_`  because we use : as the redis key delimiter
+    return ip.strip().replace(":", "_")
+
+def get_request_ip(request):
+    header_ips = request.headers.get('X-Forwarded-For', request.remote_addr)
+    # Use the left most IP, representing the user's IP
+    first_ip = header_ips.split(',')[0]
+    return format_ip(first_ip)
+
 def parse_metrics_key(key):
     """
     Validates that a key is correctly formatted and returns
@@ -65,12 +75,10 @@ def extract_app_name_key():
         ie: "audius_dapp"
     """
     application_name = request.args.get(app_name_param, type=str, default=None)
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    # Replace the `:` character with an `_`  because we use : as the redis key delimiter
-    ip = ip.split(',')[0].strip().replace(":", "_")
+    ip = get_request_ip(request)
     date_time = get_rounded_date_time().strftime(datetime_format)
 
-    application_key = f"{metrics_prefix}_{metrics_application}:{ip}:{date_time}"
+    application_key = f"{metrics_prefix}:{metrics_application}:{ip}:{date_time}"
     return (application_key, application_name)
 
 def extract_route_key():
@@ -87,8 +95,7 @@ def extract_route_key():
     req_args = request.args.items()
     req_args = stringify_query_params(req_args)
     route = f"{path}?{req_args}" if req_args else path
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    ip = ip.split(',')[0].strip().replace(":", "_")
+    ip = get_request_ip(request)
     date_time = get_rounded_date_time().strftime(datetime_format)
 
     route_key = f"{metrics_prefix}:{metrics_routes}:{ip}:{date_time}"
