@@ -47,11 +47,11 @@ const UnreadNotifications = ({ message }) => (
 const snippetMap = {
   [NotificationType.Favorite] (notification) {
     const [user] = notification.users
-    return `${user.name} favorited your ${notification.entity.name}`
+    return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   [NotificationType.Repost] (notification) {
     const [user] = notification.users
-    return `${user.name} reposted your ${notification.entity.name}`
+    return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   [NotificationType.Follow] (notification) {
     const [user] = notification.users
@@ -65,7 +65,7 @@ const snippetMap = {
       const entity = notification.entity.type.toLowerCase()
       return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
     } else {
-      return `You have reached over ${notification.value} Followers `
+      return `You have reached over ${notification.value} Followers`
     }
   },
   [NotificationType.UserSubscription] (notification) {
@@ -73,7 +73,7 @@ const snippetMap = {
     if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
-    return `${user.name} released a new ${notification.entity.type}  ${notification.entity.name}`
+    return `${user.name} released a new ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   [NotificationType.RemixCreate] (notification) {
     const { parentTrack } = notification
