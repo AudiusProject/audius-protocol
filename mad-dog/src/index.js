@@ -59,7 +59,7 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
 }
 
 const testRunner = async tests => {
-  const failedTests = []
+  let failedTests = []
   // Run each test
   for (let { testName, test, numUsers } of tests) {
     const date = new Date().toISOString()

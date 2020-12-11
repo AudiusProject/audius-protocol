@@ -2,18 +2,13 @@ const config = require('../../config/config')
 const fs = require('fs')
 
 const addUser = async (libsWrapper, metadata, userPicturePath) => {
-  try {
-    const userPicFile = fs.createReadStream(userPicturePath)
-    const resp = await libsWrapper.libsInstance.File.uploadImage(
-      userPicFile,
-      'true' // square, this weirdly has to be a boolean string
-    )
-    metadata.profile_picture_sizes = resp.dirCID
-    metadata.cover_photo_sizes = resp.dirCID
-  } catch (e) {
-    console.error(`Error with uploading image: ${e}`)
-    throw e
-  }
+  const userPicFile = fs.createReadStream(userPicturePath)
+  const resp = await libsWrapper.libsInstance.File.uploadImage(
+    userPicFile,
+    'true' // square, this weirdly has to be a boolean string
+  )
+  metadata.profile_picture_sizes = resp.dirCID
+  metadata.cover_photo_sizes = resp.dirCID
 
   const { error, phase, userId } = await libsWrapper.signUp({ metadata })
 
