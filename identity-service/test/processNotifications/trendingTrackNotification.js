@@ -50,11 +50,11 @@ const initialNotifications = [
 ]
 
 /**
- * Track id 103 owned by user id 3 is #1 trending <= increase 
+ * Track id 103 owned by user id 3 is #1 trending <= increase
  * Track id 104 owned by user id 4 is #2 trending <= increase
  * Track id 100 owned by user id 1 is #3 trending <= decrease
  * Track id 110 owned by user id 10 is #4 trending <= new
- * Track id 101 owned by user id 1 is #5 trending <= decrease 
+ * Track id 101 owned by user id 1 is #5 trending <= decrease
  */
 const additionalNotifications = [
   {
