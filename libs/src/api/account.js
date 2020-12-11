@@ -38,8 +38,9 @@ class Account extends Base {
    * Logs a user into Audius
    * @param {string} email
    * @param {string} password
+   * @param {Object} serviceProvider instance of the serviceProvider class
    */
-  async login (email, password) {
+  async login (email, password, serviceProvider) {
     const phases = {
       FIND_WALLET: 'FIND_WALLET',
       FIND_USER: 'FIND_USER'
@@ -65,6 +66,15 @@ class Account extends Base {
       const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
         this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
+      } else {
+        try {
+          // If user does not have Content Node endpoints, assign primary/secondaries
+          await this.User.assignReplicaSet(serviceProvider, userAccount.user_id)
+        } catch (e) {
+          // If assignment fails, log error and reset state as that the next time the user
+          // logs in, try assigning again. Do not block logins.
+          console.warn(e)
+        }
       }
       return { user: userAccount, error: false, phase }
     }
