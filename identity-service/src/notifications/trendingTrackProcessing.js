@@ -26,7 +26,7 @@ const TRENDING_TIME = Object.freeze({
   DAY: 'day',
   WEEK: 'week',
   MONTH: 'month',
-  YEAR: 'YEAR'
+  YEAR: 'year'
 })
 
 const TRENDING_GENRE = Object.freeze({
@@ -36,7 +36,7 @@ const TRENDING_GENRE = Object.freeze({
 const getTimeGenreActionType = (time, genre) => `${time}:${genre}`
 
 // The minimum time in hrs between notifications
-const TRENDING_INTERVAL = 3
+const TRENDING_INTERVAL_HOURS = 3
 
 // The highest rank for which a notification will be sent
 const MAX_TOP_TRACK_RANK = 10
@@ -62,11 +62,23 @@ async function getTrendingTracks () {
     const blocknumber = trendingTracksResponse.data.latest_indexed_block
     return { trendingTracks, blocknumber }
   } catch (err) {
-    console.log(err)
+    logger.error(`Unable to fetch trending tracks: ${err}`)
     return null
   }
 }
 
+/**
+ * For each of the trending tracks
+ * check if the track meets the constraints to become a notification
+ *   - If the trending track was not already created in the past 3 hrs
+ *   - The trending track should be new or move up in rank ie. from rank 4 => rank 1
+ * Insert the notification and notificationAction into the DB
+ * Check the user's notification settings, and if enabled, send a push notification
+ * @param {AudiusLibs} audiusLibs Audius Libs instance
+ * @param {number} blocknumber Blocknumber of the discovery provider
+ * @param {Array<{ trackId: number, rank: number, userId: number }>} trendingTracks Array of the trending tracks
+ * @param {*} tx DB transaction
+ */
 async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, tx) {
   const now = moment()
   for (let idx = 0; idx < trendingTracks.length; idx += 1) {
@@ -92,7 +104,10 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
       const previousRank = existingTrendingTracks[0].actions[0].actionEntityId
       const previousCreated = moment(existingTrendingTracks[0].timestamp)
       const duration = moment.duration(now.diff(previousCreated)).asHours()
-      if (duration < TRENDING_INTERVAL || previousRank <= rank) {
+      // If the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS skip
+      // If the new rank is not less than the old rank, skip
+      //   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
+      if (duration < TRENDING_INTERVAL_HOURS || previousRank <= rank) {
         // Skip the insertion of the notification into the DB
         // This trending track does not meet the constraints
         continue
@@ -148,7 +163,7 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
         await publish(msg, userId, tx, true, title, types)
       } catch (e) {
         // Log on error instead of failing
-        logger.info(`Error adding push notification to buffer: ${e}. notifStub ${JSON.stringify(notifStub)}`)
+        logger.error(`Error adding trending track push notification to buffer: ${e}. ${JSON.stringify({ rank, trackId, userId })}`)
       }
     }
   }
