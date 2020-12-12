@@ -20,6 +20,12 @@ import {
 } from 'containers/notification/store/types'
 
 const getEntityName = (entity: any) => entity.title || entity.playlist_name
+export const getRankSuffix = (rank: number) => {
+  if (rank === 1) return 'st'
+  if (rank === 2) return 'nd'
+  if (rank === 3) return 'rd'
+  return 'th'
+}
 
 const formatAchievementText = (
   type: string,
@@ -286,6 +292,22 @@ export const formatBody = (
           </span>
         )
       }
+    }
+    case NotificationType.TrendingTrack: {
+      const { entity, rank } = notification
+      const rankSuffix = getRankSuffix(rank)
+      return (
+        <span
+          className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
+        >
+          {`Your Track `}
+          <span onClick={getEntityClick(entity)} className={styles.headerLink}>
+            {getEntityName(entity)}
+          </span>
+          {` is ${rank}${rankSuffix} on Trending Right Now! `}
+          <i className='emoji bottle-with-popping-cork' />
+        </span>
+      )
     }
     case NotificationType.RemixCreate: {
       const user = notification.user
