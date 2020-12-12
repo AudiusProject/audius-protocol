@@ -4,7 +4,8 @@ import {
   NotificationType,
   Achievement,
   RemixCosign,
-  RemixCreate
+  RemixCreate,
+  TrendingTrack
 } from 'containers/notification/store/types'
 import {
   fullTrackPage,
@@ -24,6 +25,7 @@ import AudiusBackend from 'services/AudiusBackend'
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
 import styles from './TwitterShare.module.css'
 import { openTwitterLink } from 'utils/tweet'
+import { getRankSuffix } from './formatText'
 
 export const getEntityLink = (
   entity: (Track & { user: User }) | (Collection & { user: User }),
@@ -83,6 +85,16 @@ const getAchievementText = (notification: any) => {
   }
 }
 
+const getTrendingTrackText = (notification: TrendingTrack) => {
+  const link = getEntityLink(notification.entity, true)
+  const text = `My track ${notification.entity.title} is trending ${
+    notification.rank
+  }${getRankSuffix(
+    notification.rank
+  )} on @AudiusProject! #AudiusTrending #Audius`
+  return { link, text }
+}
+
 const getTwitterHandleByUserHandle = async (userHandle: string) => {
   const { twitterHandle } = await AudiusBackend.getCreatorSocialHandle(
     userHandle
@@ -140,6 +152,8 @@ export const getRemixCosignText = async (
 export const getNotificationTwitterText = async (notification: any) => {
   if (notification.type === NotificationType.Milestone) {
     return getAchievementText(notification)
+  } else if (notification.type === NotificationType.TrendingTrack) {
+    return getTrendingTrackText(notification)
   } else if (notification.type === NotificationType.RemixCreate) {
     return getRemixCreateText(notification)
   } else if (notification.type === NotificationType.RemixCosign) {
@@ -149,6 +163,7 @@ export const getNotificationTwitterText = async (notification: any) => {
 
 export const getTwitterButtonText = (notification: any) => {
   switch (notification.type) {
+    case NotificationType.TrendingTrack:
     case NotificationType.Milestone:
       return 'Share this Milestone'
     case NotificationType.RemixCreate:
@@ -166,6 +181,12 @@ const recordTwitterShareEvent = (
 ) => {
   switch (type) {
     case NotificationType.Milestone:
+      return record(
+        make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
+          milestone: text
+        })
+      )
+    case NotificationType.TrendingTrack:
       return record(
         make(Name.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE, {
           milestone: text
@@ -207,6 +228,7 @@ export const TwitterShare = ({
   )
   if (
     notification.type !== NotificationType.Milestone &&
+    notification.type !== NotificationType.TrendingTrack &&
     notification.type !== NotificationType.RemixCosign &&
     notification.type !== NotificationType.RemixCreate
   )
