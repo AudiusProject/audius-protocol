@@ -70,6 +70,11 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
   }, message);
 };
 
+var getNumberSuffix = function getNumberSuffix(num) {
+  if (num === 1) return 'st';else if (num === 2) return 'nd';else if (num === 3) return 'rd';
+  return 'th';
+};
+
 var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.NotificationType.Favorite, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
@@ -94,6 +99,10 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
   } else {
     return "You have reached over ".concat(notification.value, " Followers");
   }
+}), _defineProperty(_snippetMap, _Notification.NotificationType.TrendingTrack, function (notification) {
+  var rank = notification.rank;
+  var suffix = getNumberSuffix(rank);
+  return "Your Track ".concat(notification.entity.title, " is ").concat(notification.rank).concat(suffix, " on Trending Right Now!");
 }), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
   var _notification$users4 = _slicedToArray(notification.users, 1),
       user = _notification$users4[0];
