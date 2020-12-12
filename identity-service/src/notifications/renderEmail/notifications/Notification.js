@@ -174,7 +174,7 @@ var notificationMap = (_notificationMap = {}, _defineProperty(_notificationMap, 
   }), _react["default"].createElement(HighlightText, {
     text: highlight
   }), _react["default"].createElement(BodyText, {
-    text: " is ".concat(rank).concat(rankSuffix, " on Trending Right Now!")
+    text: " is ".concat(rank).concat(rankSuffix, " on Trending Right Now! \uD83C\uDF7E")
   }));
 }), _defineProperty(_notificationMap, NotificationType.UserSubscription, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
@@ -324,7 +324,7 @@ var getTwitter = function getTwitter(notification) {
 
         var rankSuffix = (0, _formatNotificationMetadata.getRankSuffix)(rank);
 
-        var _text2 = "My Track ".concat(entity.title, " is trending ").concat(rank).concat(rankSuffix, " on @AudiusProject! #AudiusTrending #Audius");
+        var _text2 = "My track ".concat(entity.title, " is trending ").concat(rank).concat(rankSuffix, " on @AudiusProject! #AudiusTrending #Audius");
 
         return {
           message: 'Share this Milestone',

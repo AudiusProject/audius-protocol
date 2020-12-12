@@ -135,7 +135,7 @@ const notificationMap = {
       <span className={'notificationText'}>
         <BodyText text={`Your Track `} />
         <HighlightText text={highlight} />
-        <BodyText text={` is ${rank}${rankSuffix} on Trending Right Now!`} />
+        <BodyText text={` is ${rank}${rankSuffix} on Trending Right Now! 🍾`} />
       </span>
     )
   },
@@ -254,7 +254,7 @@ const getTwitter = (notification) => {
       const { rank, entity } = notification
       const url = getTrackLink(entity)
       const rankSuffix = getRankSuffix(rank)
-      const text = `My Track ${entity.title} is trending ${rank}${rankSuffix} on @AudiusProject! #AudiusTrending #Audius`
+      const text = `My track ${entity.title} is trending ${rank}${rankSuffix} on @AudiusProject! #AudiusTrending #Audius`
       return {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(url)

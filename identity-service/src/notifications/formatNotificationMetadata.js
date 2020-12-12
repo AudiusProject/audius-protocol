@@ -210,7 +210,7 @@ const NewFollowerTitle = 'New Follower'
 const NewMilestoneTitle = 'Congratulations! 🎉'
 const NewSubscriptionUpdateTitle = 'New Artist Update'
 
-const TrendingTrackTitle = 'Congrats - You’re Trending! 🍾'
+const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 
@@ -281,7 +281,7 @@ const pushNotificationMessagesMap = {
   [notificationTypes.TrendingTrack] (notification) {
     const rank = notification.rank
     const rankSuffix = getRankSuffix(rank)
-    return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now!`
+    return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now! 🍾`
   }
 }
 

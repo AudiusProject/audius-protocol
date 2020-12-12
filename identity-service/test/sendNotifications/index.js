@@ -187,18 +187,18 @@ describe('Test Send Notifications', function () {
     assert.deepStrictEqual(pushNotifications.length, 3)
 
     for (const notification of pushNotifications) {
-      assert.deepStrictEqual(notification.notificationParams.title, 'Congrats - You’re Trending! 🍾')
+      assert.deepStrictEqual(notification.notificationParams.title, 'Congrats - You’re Trending! 📈')
       assert.deepStrictEqual(notification.types, ['mobile'])
     }
 
     const user1Notifs = pushNotifications.filter(n => n.userId === 1)
     assert.deepStrictEqual(user1Notifs.length, 2)
-    assert.deepStrictEqual(user1Notifs[0].notificationParams.message, `Your Track Title, Track id: 100 is 1st on Trending Right Now!`)
-    assert.deepStrictEqual(user1Notifs[1].notificationParams.message, `Your Track Title, Track id: 101 is 2nd on Trending Right Now!`)
+    assert.deepStrictEqual(user1Notifs[0].notificationParams.message, `Your Track Title, Track id: 100 is 1st on Trending Right Now! 🍾`)
+    assert.deepStrictEqual(user1Notifs[1].notificationParams.message, `Your Track Title, Track id: 101 is 2nd on Trending Right Now! 🍾`)
 
     const user2Notifs = pushNotifications.filter(n => n.userId === 2)
     assert.deepStrictEqual(user2Notifs.length, 1)
-    assert.deepStrictEqual(user2Notifs[0].notificationParams.message, `Your Track Title, Track id: 102 is 3rd on Trending Right Now!`)
+    assert.deepStrictEqual(user2Notifs[0].notificationParams.message, `Your Track Title, Track id: 102 is 3rd on Trending Right Now! 🍾`)
   })
 
   it('should have the correct create notifications', async function () {
