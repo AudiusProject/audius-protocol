@@ -12,7 +12,8 @@ export enum NotificationType {
   Repost = 'Repost',
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
-  RemixCosign = 'RemixCosign'
+  RemixCosign = 'RemixCosign',
+  TrendingTrack = 'TrendingTrack'
 }
 
 export enum Entity {
@@ -138,6 +139,16 @@ export type RemixCosign = BaseNotification & {
   entities: Array<Track & { user: User }>
 }
 
+export type TrendingTrack = BaseNotification & {
+  type: NotificationType.TrendingTrack
+  rank: number
+  genre: string
+  time: 'week' | 'month' | 'year'
+  entityType: Entity.Track
+  entityId: ID
+  entity: Track & { user: User }
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -147,6 +158,7 @@ export type Notification =
   | Milestone
   | RemixCreate
   | RemixCosign
+  | TrendingTrack
 
 export default interface NotificationState {
   notifications: {

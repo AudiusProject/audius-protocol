@@ -147,6 +147,10 @@ const NotificationItem = (props: NotificationItemProps) => {
         }
         break
       }
+      case NotificationType.TrendingTrack: {
+        goToEntityPage(entity)
+        break
+      }
       case NotificationType.RemixCreate:
       case NotificationType.RemixCosign: {
         const childTrack = notification.entities.find(
@@ -172,7 +176,8 @@ const NotificationItem = (props: NotificationItemProps) => {
     !(
       type === NotificationType.Milestone &&
       props.notification.achievement === Achievement.Followers
-    )
+    ) &&
+    !(type === NotificationType.TrendingTrack)
   return (
     <div
       className={cn(styles.container, { [styles.unRead]: !isRead })}
@@ -219,6 +224,7 @@ const NotificationItem = (props: NotificationItemProps) => {
       </div>
       {trackContent}
       {(type === NotificationType.Milestone ||
+        type === NotificationType.TrendingTrack ||
         type === NotificationType.RemixCosign ||
         type === NotificationType.RemixCreate) && (
         <TwitterShare

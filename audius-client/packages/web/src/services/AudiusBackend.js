@@ -1491,8 +1491,8 @@ class AudiusBackend {
         : ''
       const limitQuery = `&limit=${limit}`
       const handleQuery = `&handle=${account.handle}`
-      return fetch(
-        `${IDENTITY_SERVICE}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}&withRemix=true`,
+      const notifications = await fetch(
+        `${IDENTITY_SERVICE}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}&withRemix=true&withTrendingTrack=true`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -1501,6 +1501,7 @@ class AudiusBackend {
           }
         }
       ).then(res => res.json())
+      return notifications
     } catch (e) {
       console.error(e)
       return { success: false, error: e }

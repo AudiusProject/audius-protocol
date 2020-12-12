@@ -194,6 +194,9 @@ export function* parseAndProcessNotifications(
       notification.entityIds = [notification.childTrackId]
       notification.userId = notification.parentTrackUserId
     }
+    if (notification.type === NotificationType.TrendingTrack) {
+      trackIdsToFetch.push(notification.entityId)
+    }
   })
 
   const [tracks]: [Track[]] = yield all([
@@ -213,21 +216,20 @@ export function* parseAndProcessNotifications(
   ])
 
   /**
-   * For Milestone and Followsers, update the notification entityId as the userId
+   * For Milestone and Followers, update the notification entityId as the userId
    * For Remix Create, add the userId as the track owner id of the fetched child track
    * Attach a `timeLabel` to each notification as well to be displayed ie. 2 Hours Ago
    */
   const now = moment()
   const userId = yield select(getUserId)
   const remixTrackParents: Array<ID> = []
-  const preocessedNotifications = notifications.map(notif => {
+  const processedNotifications = notifications.map(notif => {
     if (
       notif.type === NotificationType.Milestone &&
       notif.achievement === Achievement.Followers
     ) {
       notif.entityId = userId
-    }
-    if (notif.type === NotificationType.RemixCreate) {
+    } else if (notif.type === NotificationType.RemixCreate) {
       const childTrack = tracks.find(
         (track: Track) => track.track_id === notif.childTrackId
       )
@@ -251,7 +253,7 @@ export function* parseAndProcessNotifications(
   })
   if (remixTrackParents.length > 0)
     yield call(retrieveTracks, { trackIds: remixTrackParents })
-  return preocessedNotifications
+  return processedNotifications
 }
 
 export function* fetchNotificationUsers(
