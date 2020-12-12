@@ -70,14 +70,19 @@ async function deregisterLocalService (audiusLibs, serviceType, serviceEndpoint)
  * Local only
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  */
-async function queryLocalServices (audiusLibs, serviceTypeList) {
+async function queryLocalServices (audiusLibs, serviceTypeList, usrmLibs = null) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
+  console.log('\n----querying service providers')
   const { ethAccounts } = await getEthWeb3AndAccounts(audiusLibs)
+  let cnodesInfoList = null
 
   for (const spType of serviceTypeList) {
-    console.log(`\n${spType}`)
+    console.log(`${spType}`)
     let spList = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(spType)
+    if (spType === 'content-node') {
+      cnodesInfoList = spList
+    }
     for (const sp of spList) {
       console.log(sp)
       const { spID, type, endpoint } = sp
@@ -94,10 +99,20 @@ async function queryLocalServices (audiusLibs, serviceTypeList) {
           type)
       console.log(`SP IDs from owner wallet ${ethAccounts[0]}: ${idsFromAddress}`)
     }
+
     let numProvs = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getTotalServiceTypeProviders(spType)
-    console.log(`num ${spType}: ${numProvs}`)
+    console.log(`${numProvs} instances of ${spType}`)
   }
-  console.log('----querying service providers done')
+  console.log('----done querying service providers')
+  if (usrmLibs) {
+    console.log('\n----querying UserReplicaSetManager on data-contracts')
+   for (const cnode of cnodesInfoList) {
+      let delegateWalletFromUsrmContract = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(cnode.spID)
+      console.log(`spID ${cnode.spID} | \
+eth-contracts delegateWallet=${cnode.delegateOwnerWallet}, data-contracts delegateWallet=${delegateWalletFromUsrmContract}`)
+    }
+    console.log('----done querying UserReplicaSetManager on data-contracts\n')
+  }
 }
 
 module.exports = { getStakingParameters, registerLocalService, deregisterLocalService, queryLocalServices }

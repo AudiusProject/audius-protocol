@@ -70,7 +70,7 @@ class ContractClient {
     } catch (e) {
       // If using ethWeb3Manager or useExternalWeb3 is true, do not do reselect provider logic and fail
       if (!this.providerSelector) {
-        console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+        console.error(`Failed to initialize ${this.contractRegistryKey} contract ${JSON.stringify(this.contractABI)}`, e)
         return
       }
 

@@ -8,6 +8,7 @@ const SocialFeatureFactoryClient = require('./socialFeatureFactoryClient')
 const PlaylistFactoryClient = require('./playlistFactoryClient')
 const UserLibraryFactoryClient = require('./userLibraryFactoryClient')
 const IPLDBlacklistFactoryClient = require('./IPLDBlacklistFactoryClient')
+const UserReplicaSetManagerClient = require('./userReplicaSetManagerClient')
 
 // Make sure the json file exists before importing because it could silently fail
 // import data contract ABI's
@@ -18,6 +19,7 @@ const SocialFeatureFactoryABI = Utils.importDataContractABI('SocialFeatureFactor
 const PlaylistFactoryABI = Utils.importDataContractABI('PlaylistFactory.json').abi
 const UserLibraryFactoryABI = Utils.importDataContractABI('UserLibraryFactory.json').abi
 const IPLDBlacklistFactoryABI = Utils.importDataContractABI('IPLDBlacklistFactory.json').abi
+const UserReplicaSetManagerABI = Utils.importDataContractABI('UserReplicaSetManager.json').abi
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -26,6 +28,7 @@ const SocialFeatureFactoryRegistryKey = 'SocialFeatureFactory'
 const PlaylistFactoryRegistryKey = 'PlaylistFactory'
 const UserLibraryFactoryRegistryKey = 'UserLibraryFactory'
 const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
+const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 
 class AudiusContracts {
   constructor (web3Manager, registryAddress, isServer) {
@@ -82,13 +85,21 @@ class AudiusContracts {
       this.getRegistryAddressForContract
     )
 
+    this.UserReplicaSetManagerClient = new UserReplicaSetManagerClient(
+      this.web3Manager,
+      UserReplicaSetManagerABI,
+      UserReplicaSetManagerRegistryKey,
+      this.getRegistryAddressForContract
+    )
+
     this.contractClients = [
       this.UserFactoryClient,
       this.TrackFactoryClient,
       this.SocialFeatureFactoryClient,
       this.PlaylistFactoryClient,
       this.UserLibraryFactoryClient,
-      this.IPLDBlacklistFactoryClient
+      this.IPLDBlacklistFactoryClient,
+      this.UserReplicaSetManagerClient
     ]
   }
 

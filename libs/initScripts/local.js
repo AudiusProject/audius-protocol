@@ -119,6 +119,11 @@ const run = async () => {
         await queryLocalServices(audiusLibs, serviceTypesList)
         break
 
+      case 'query-sps-usrm':
+        let usrmLibs = await getUsrmLibs(audiusLibs)
+        await queryLocalServices(audiusLibs, serviceTypesList, usrmLibs)
+        break
+
       case 'update-cnode-config': {
         // Update arbitrary cnode
         const serviceCount = args[3]
@@ -137,6 +142,11 @@ const run = async () => {
       case 'update-userreplicasetmanager-init-config':
         await _updateUserReplicaSetAddresses(ethAccounts)
         break
+
+      // TODO: REMOVE SANDBOX
+      case 'sandbox':
+        await sandbox(audiusLibs)
+        break
       default:
         throwArgError()
     }
@@ -148,6 +158,36 @@ const run = async () => {
 }
 
 run()
+
+// In order to issue operations we need a libs account initialized from a different address than
+// the 0th account on local data-contracts
+// This function explicitly queries the 20th account from data-contracts ganache
+// Returns libs instance logged in as said account
+const getUsrmLibs = async (defaultAudiusLibs) => {
+  let dataWeb3 = defaultAudiusLibs.web3Manager.getWeb3()
+  let dataWeb3Accounts = await dataWeb3.eth.getAccounts()
+  let localQueryAccount = dataWeb3Accounts[20]
+  let usrmLibs = await initAudiusLibs(true, localQueryAccount)
+  return usrmLibs
+}
+
+const sandbox = async (defaultAudiusLibs) => {
+  let dataWeb3 = defaultAudiusLibs.web3Manager.getWeb3()
+  let dataWeb3Accounts = await dataWeb3.eth.getAccounts()
+  let localQueryAccount = dataWeb3Accounts[20]
+  // In order to issue operations we need a libs account initialized from a different address than
+  // the 0th account on local data-contracts
+  let usrmLibs = await initAudiusLibs(true, localQueryAccount)
+  let sp1Id = 1
+  let sp1DelWal = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp1Id)
+  console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`)
+  let sp2Id = 2
+  let sp2DelWal = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp2Id)
+  console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp2Id} - ${sp2DelWal}`)
+  let sp3Id = 3
+  let sp3DelWal = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp3Id)
+  console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`)
+}
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)
