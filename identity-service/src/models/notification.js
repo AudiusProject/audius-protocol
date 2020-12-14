@@ -26,7 +26,8 @@ module.exports = (sequelize, DataTypes) => {
           'MilestoneFavorite',
           'MilestoneFollow',
           'RemixCreate',
-          'RemixCosign'
+          'RemixCosign',
+          'TrendingTrack'
         ]
       }),
       allowNull: false
