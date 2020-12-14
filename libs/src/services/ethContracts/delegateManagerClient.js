@@ -250,6 +250,15 @@ class DelegateManagerClient extends GovernedContractClient {
     return Utils.toBN(info)
   }
 
+  async getTotalDelegatorStake (delegator) {
+    const method = await this.getMethod(
+      'getTotalDelegatorStake',
+      delegator
+    )
+    const info = await method.call()
+    return Utils.toBN(info)
+  }
+
   async getTotalLockedDelegationForServiceProvider (serviceProvider) {
     const method = await this.getMethod(
       'getTotalLockedDelegationForServiceProvider',
