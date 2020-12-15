@@ -38,9 +38,8 @@ class Account extends Base {
    * Logs a user into Audius
    * @param {string} email
    * @param {string} password
-   * @param {Object} serviceProvider instance of the serviceProvider class
    */
-  async login (email, password, serviceProvider) {
+  async login (email, password) {
     const phases = {
       FIND_WALLET: 'FIND_WALLET',
       FIND_USER: 'FIND_USER'
@@ -66,15 +65,6 @@ class Account extends Base {
       const creatorNodeEndpoint = userAccount.creator_node_endpoint
       if (creatorNodeEndpoint) {
         this.creatorNode.setEndpoint(CreatorNodeService.getPrimary(creatorNodeEndpoint))
-      } else {
-        try {
-          // If user does not have Content Node endpoints, assign primary/secondaries
-          await this.User.assignReplicaSet(serviceProvider, userAccount.user_id)
-        } catch (e) {
-          // If assignment fails, log error and reset state as that the next time the user
-          // logs in, try assigning again. Do not block logins.
-          console.warn(e)
-        }
       }
       return { user: userAccount, error: false, phase }
     }
@@ -138,7 +128,6 @@ class Account extends Base {
         // If an owner wallet already exists, don't try to recreate it
         if (!hasWallet) {
           phase = phases.HEDGEHOG_SIGNUP
-          console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
           await this.generateRecoveryLink({ handle: metadata.handle, host })
@@ -147,27 +136,22 @@ class Account extends Base {
 
       // Add user to chain
       phase = phases.ADD_USER
-      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
       metadata = await this.User.addUser(metadata)
 
       userId = metadata.user_id
 
       // Assign replica set to user and update metadata object
       phase = phases.ADD_REPLICA_SET
-      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
       metadata = await this.User.assignReplicaSet(serviceProvider, userId)
 
       // Upload profile pic to primary Content Node and sync across secondaries
       phase = phases.UPLOAD_PROFILE_IMAGES
-      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
       metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
 
       // Update metadata on chain and upload metadata to Content Nodes
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
-      console.log(`phase ${phase} | metadata: ${JSON.stringify(metadata, null, 2)}`)
       await this.User.updateUserMetadata(userId, metadata)
     } catch (e) {
-      console.log(`signUp() flow failed at ${phase}: ${e} `)
       return { error: e.message, phase }
     }
 

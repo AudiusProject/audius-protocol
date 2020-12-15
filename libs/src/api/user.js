@@ -259,7 +259,6 @@ class Users extends Base {
         userId
       })
     } catch (e) {
-      console.log(`assignReplicaSet error ${phase}: ${e}`)
       throw new Error(`assignReplicaSet() Error -- Phase ${phase}: ${e}`)
     }
 
@@ -300,11 +299,8 @@ class Users extends Base {
   }
 
   // Set is_creator field in metadata to true
-  async upgradeToCreator (userMetadata, newContentNodeEndpoints = '') {
+  async upgradeToCreator (userMetadata) {
     userMetadata.is_creator = true
-    if (typeof newContentNodeEndpoints === 'string' && newContentNodeEndpoints.length > 0) {
-      userMetadata.creator_node_endpoint = newContentNodeEndpoints
-    }
     await this._handleMetadata({
       newMetadata: userMetadata,
       userId: userMetadata.user_id
@@ -410,9 +406,7 @@ class Users extends Base {
   async _waitForContentNodeEndpointUpdate (userId, creatorNodeEndpoint) {
     let isUpdated = false
     while (!isUpdated) {
-      console.log(`userid: ${userId} creatorNodeendpint: ${creatorNodeEndpoint}`)
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]
-      console.log(user)
       if (user && user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
       await Utils.wait(500)
     }

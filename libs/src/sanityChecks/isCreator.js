@@ -62,8 +62,9 @@ const isCreator = async (libs) => {
   if (correctNode) {
     try {
       console.debug('Sanity Check - isCreator - Upgrading to Creator')
-      // todo: vicky -- might need to update this
-      await libs.User.assignReplicaSet(correctNode.endpoint)
+      // No need to actually pass in ServiceProvider since we are passing in the
+      // Content Node endpoint value
+      await libs.User.assignReplicaSet(null, user.user_id, correctNode.endpoint)
     } catch (e) {
       console.error(e)
       // We were actually a creator the whole time O_O
