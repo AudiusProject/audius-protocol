@@ -13,7 +13,7 @@ import { Operator, User } from 'types'
 
 export const getActiveStake = (user: User | Operator) => {
   let activeDeployerStake = Utils.toBN('0')
-  let activeDelegator = Utils.toBN('0')
+  let activeDelegatorStake = Utils.toBN('0')
   if ('serviceProvider' in user) {
     const { deployerStake } = user.serviceProvider
     const {
@@ -28,13 +28,13 @@ export const getActiveStake = (user: User | Operator) => {
   }
 
   if (user.pendingUndelegateRequest.lockupExpiryBlock !== 0) {
-    activeDelegator = user.totalDelegatorStake.sub(
+    activeDelegatorStake = user.totalDelegatorStake.sub(
       user.pendingUndelegateRequest.amount
     )
   } else {
-    activeDelegator = user.totalDelegatorStake
+    activeDelegatorStake = user.totalDelegatorStake
   }
-  return activeDelegator.add(activeDeployerStake)
+  return activeDelegatorStake.add(activeDeployerStake)
 }
 
 export default getActiveStake
