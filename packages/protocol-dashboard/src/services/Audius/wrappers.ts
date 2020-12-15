@@ -19,6 +19,9 @@ export async function getUserDelegates(this: AudiusClient, delegator: Address) {
   const increaseDelegateStakeEvents = await this.Delegate.getIncreaseDelegateStakeEvents(
     delegator
   )
+  const pendingUndelegateRequest = await this.Delegate.getPendingUndelegateRequest(
+    delegator
+  )
   let serviceProviders = increaseDelegateStakeEvents.map(e => e.serviceProvider)
   // @ts-ignore
   serviceProviders = [...new Set(serviceProviders)]
@@ -29,6 +32,14 @@ export async function getUserDelegates(this: AudiusClient, delegator: Address) {
         delegator,
         sp
       )
+      let activeAmount = amountDelegated
+
+      if (
+        pendingUndelegateRequest.lockupExpiryBlock !== 0 &&
+        pendingUndelegateRequest.target === sp
+      ) {
+        activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
+      }
 
       const profile = await get3BoxProfile(sp)
       let img = profile.image || getRandomDefaultImage(sp)
@@ -36,6 +47,7 @@ export async function getUserDelegates(this: AudiusClient, delegator: Address) {
       delegates.push({
         wallet: sp,
         amount: amountDelegated,
+        activeAmount,
         img,
         name: profile.name
       })

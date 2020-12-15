@@ -13,6 +13,7 @@ import { useTotalStaked } from 'store/cache/protocol/hooks'
 import { Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
+import getActiveStake from 'utils/activeStake'
 
 const messages = {
   topAddresses: 'Top Addresses by Voting Weight',
@@ -61,23 +62,22 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
-      { title: 'Total Staked', className: styles.totalStakedColumn },
+      { title: 'Staked', className: styles.totalStakedColumn },
       { title: 'Vote Weight', className: styles.voteWeightColumn },
       { title: 'Proposals Voted', className: styles.proposalVotedColumn }
     ])
   }
 
   const data = users.map((user, idx) => {
-    const stakedAmount = user.delegatedTotal.add(
-      user.serviceProvider.deployerStake
-    )
-    const voteWeight = Audius.getBNPercentage(stakedAmount, totalStaked)
+    const activeStake = getActiveStake(user)
+
+    const voteWeight = Audius.getBNPercentage(activeStake, totalStaked)
     return {
       rank: idx + 1,
       img: user.image,
       name: user.name,
       wallet: user.wallet,
-      staked: stakedAmount,
+      staked: activeStake,
       voteWeight,
       proposedVotes: user.voteHistory.length
     }
