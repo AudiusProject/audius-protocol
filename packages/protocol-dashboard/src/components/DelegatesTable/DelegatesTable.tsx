@@ -25,6 +25,7 @@ type Delegator = {
   name?: string
   address: Address
   amount: BN
+  activeAmount: BN
 }
 
 type OwnProps = {
@@ -46,7 +47,8 @@ const DelegatesTable: React.FC<DelegatesTableProps> = ({
     return {
       img: delegate.img,
       address: delegate.wallet,
-      amount: delegate.amount
+      amount: delegate.amount,
+      activeAmount: delegate.activeAmount
     }
   })
   const columns = [
@@ -66,9 +68,9 @@ const DelegatesTable: React.FC<DelegatesTableProps> = ({
         </div>
         <Tooltip
           className={clsx(styles.rowCol, styles.colAmount)}
-          text={formatWei(data.amount)}
+          text={formatWei(data.activeAmount)}
         >
-          {AudiusClient.displayShortAud(data.amount)}
+          {AudiusClient.displayShortAud(data.activeAmount)}
         </Tooltip>
       </div>
     )

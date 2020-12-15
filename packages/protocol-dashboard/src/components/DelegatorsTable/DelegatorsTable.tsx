@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
+import BN from 'bn.js'
+
 import { usePushRoute } from 'utils/effects'
 import { useModalControls } from 'utils/hooks'
-
 import { accountPage } from 'utils/routes'
 import { useUser, useDelegators } from 'store/cache/user/hooks'
 
@@ -27,7 +28,8 @@ type Delegator = {
   img: string
   address: Address
   name: string | undefined
-  amount: string
+  amount: BN
+  activeAmount: BN
 }
 
 type OwnProps = {
@@ -49,7 +51,8 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
       img: delegator.img,
       name: delegator.name,
       address: delegator.wallet,
-      amount: delegator.amount
+      amount: delegator.amount,
+      activeAmount: delegator.activeAmount
     }
   })
 
@@ -70,9 +73,9 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
         </div>
         <Tooltip
           className={clsx(styles.rowCol, styles.colAmount)}
-          text={formatWei(data.amount)}
+          text={formatWei(data.activeAmount)}
         >
-          {AudiusClient.displayShortAud(data.amount)}
+          {AudiusClient.displayShortAud(data.activeAmount)}
         </Tooltip>
       </div>
     )

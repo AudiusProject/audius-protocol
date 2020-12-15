@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import clsx from 'clsx'
+import { Utils } from '@audius/libs'
 
 import { useProposals } from 'store/cache/proposals/hooks'
 import Paper from 'components/Paper'
@@ -11,6 +12,7 @@ import Proposal from 'components/Proposal/Proposal'
 import Loading from 'components/Loading'
 import { useAccountUser } from 'store/account/hooks'
 import { Status } from 'types'
+import getActiveStake from 'utils/activeStake'
 
 const messages = {
   newProposal: 'New Proposal',
@@ -50,10 +52,10 @@ export const NoProposals = ({ text }: { text: string }) => {
 const Proposals: React.FC<ProposalsProps> = () => {
   const { activeProposals, resolvedProposals } = useProposals()
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const isUserStaker =
-    userStatus === Status.Success &&
-    'totalStakedFor' in accountUser &&
-    !accountUser.totalStakedFor.isZero()
+  const activeStake = accountUser
+    ? getActiveStake(accountUser)
+    : Utils.toBN('0')
+  const isUserStaker = userStatus === Status.Success && !activeStake.isZero()
 
   return (
     <>

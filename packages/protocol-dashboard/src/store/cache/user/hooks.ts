@@ -30,6 +30,7 @@ import {
   fetchContentNodes
 } from '../contentNode/hooks'
 import { useAccountUser } from 'store/account/hooks'
+import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/serviceProviderClient'
 
 type UseUsersProp = {
   sortBy?: SortUser
@@ -71,11 +72,17 @@ const getUserMetadata = async (wallet: Address, aud: Audius): Promise<User> => {
   const audToken = await aud.AudiusToken.balanceOf(wallet)
   const profile = await get3BoxProfile(wallet)
   const delegates = await aud.getUserDelegates(wallet)
+  const totalDelegatorStake = await aud.Delegate.getTotalDelegatorStake(wallet)
+  const pendingUndelegateRequest = await aud.Delegate.getPendingUndelegateRequest(
+    wallet
+  )
 
   const user = {
     wallet,
     image: getRandomDefaultImage(wallet),
     ...profile,
+    totalDelegatorStake,
+    pendingUndelegateRequest,
     audToken,
     delegates,
     events: []
@@ -90,6 +97,7 @@ const getServiceProviderMetadata = async (
 ): Promise<{
   serviceProvider: ServiceProvider
   discoveryProviders: Array<number>
+  pendingDecreaseStakeRequest: GetPendingDecreaseStakeRequestResponse
   contentNodes: Array<number>
   delegators: Array<Delegate>
   delegatedTotal: BN
@@ -112,10 +120,15 @@ const getServiceProviderMetadata = async (
     wallet,
     ServiceType.ContentNode
   )
+  const pendingDecreaseStakeRequest = await aud.ServiceProviderClient.getPendingDecreaseStakeRequest(
+    wallet
+  )
+
   const voteHistory = await aud.Governance.getVotesByAddress([wallet])
   return {
     serviceProvider,
     discoveryProviders,
+    pendingDecreaseStakeRequest,
     contentNodes,
     totalStakedFor,
     delegatedTotal,
@@ -130,6 +143,7 @@ const getDelegatorAmounts = async (
 ): Promise<Array<{
   wallet: Address
   amount: BN
+  activeAmount: BN
   name?: string
   img: string
 }>> => {
@@ -140,12 +154,25 @@ const getDelegatorAmounts = async (
       delegatorWallet,
       wallet
     )
+    let activeAmount = amountDelegated
+    const pendingUndelegateRequest = await aud.Delegate.getPendingUndelegateRequest(
+      delegatorWallet
+    )
+
+    if (
+      pendingUndelegateRequest.lockupExpiryBlock !== 0 &&
+      pendingUndelegateRequest.target === wallet
+    ) {
+      activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
+    }
+
     const profile = await get3BoxProfile(wallet)
     let img = profile.image || getRandomDefaultImage(delegatorWallet)
 
     delegatorAmounts.push({
       wallet: delegatorWallet,
       amount: amountDelegated,
+      activeAmount,
       name: profile.name,
       img
     })

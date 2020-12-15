@@ -1,4 +1,6 @@
 import BN from 'bn.js'
+import { GetPendingUndelegateRequestResponse } from 'services/Audius/delegate'
+import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/serviceProviderClient'
 
 // TODO: Type BigNumber
 export type BigNumber = any // BN
@@ -57,6 +59,7 @@ export type ServiceProvider = {
 export type Delegate = {
   wallet: Address
   amount: BN
+  activeAmount: BN
   name?: string
   img: string
 }
@@ -70,6 +73,8 @@ export type User = {
   name?: string
   image: string
   audToken: BigNumber
+  totalDelegatorStake: BigNumber
+  pendingUndelegateRequest: GetPendingUndelegateRequestResponse
   events: Array<EventID>
   delegates: Array<Delegate>
 }
@@ -77,6 +82,7 @@ export type User = {
 export type Operator = {
   serviceProvider: ServiceProvider
   discoveryProviders: Array<number>
+  pendingDecreaseStakeRequest: GetPendingDecreaseStakeRequestResponse
   contentNodes: Array<number>
   delegators: Array<Delegate>
   delegatedTotal: BN

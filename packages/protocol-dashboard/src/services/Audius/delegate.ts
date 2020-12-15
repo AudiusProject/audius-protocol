@@ -82,6 +82,12 @@ export default class Delegate {
     return info
   }
 
+  async getTotalDelegatorStake(delegator: Address): Promise<BigNumber> {
+    await this.aud.hasPermissions()
+    const info = await this.getContract().getTotalDelegatorStake(delegator)
+    return info
+  }
+
   async getTotalLockedDelegationForServiceProvider(
     serviceProvider: Address
   ): Promise<BigNumber> {
