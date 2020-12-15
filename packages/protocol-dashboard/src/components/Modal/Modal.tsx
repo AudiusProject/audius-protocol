@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react'
 import clsx from 'clsx'
 import styles from './Modal.module.css'
-import { useModalScrollCount } from 'store/modal/hooks'
 
 import { IconRemove, Modal as StemsModal } from '@audius/stems'
 
@@ -29,8 +28,6 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   children
 }) => {
-  const { incrementScrollCount, decrementScrollCount } = useModalScrollCount()
-
   return (
     <StemsModal
       wrapperClassName={clsx(styles.container, {
@@ -38,8 +35,6 @@ const Modal: React.FC<ModalProps> = ({
       })}
       bodyClassName={clsx(styles.bodyClassName, { [className!]: !!className })}
       dismissOnClickOutside={dismissOnClickOutside}
-      incrementScrollCount={incrementScrollCount}
-      decrementScrollCount={decrementScrollCount}
       onClose={onClose}
       isOpen={isOpen}
     >
