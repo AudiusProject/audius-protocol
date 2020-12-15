@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
+import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { useTransition, animated } from 'react-spring'
@@ -24,6 +25,21 @@ const Popup = ({
   title,
   children
 }) => {
+  const wrapper = useRef()
+  const placeholder = useRef()
+
+  useEffect(() => {
+    if (isVisible) {
+      // When the popup becomes visible, set the position based on the placeholder
+      const rect = placeholder.current.getBoundingClientRect()
+      const wrapperRect = wrapper.current.getBoundingClientRect()
+      wrapper.current.style.left = `${
+        rect.x - wrapperRect.width / 2 + rect.width / 2
+      }px`
+      wrapper.current.style.top = `${rect.y}px`
+    }
+  }, [isVisible, wrapper, placeholder])
+
   const handleClose = useCallback(() => {
     onClose()
     setTimeout(() => {
@@ -42,24 +58,34 @@ const Popup = ({
   })
 
   return (
-    <div className={styles.wrapper}>
-      {transitions.map(({ item, key, props }) =>
-        item ? (
-          <animated.div
-            className={cn(styles.popup, className)}
-            ref={ref}
-            key={key}
-            style={props}
-          >
-            <div className={styles.header}>
-              <IconRemove className={styles.iconRemove} onClick={handleClose} />
-              <div className={styles.title}>{title}</div>
-            </div>
-            {children}
-          </animated.div>
-        ) : null
+    <>
+      <div ref={placeholder} className={cn(styles.placeholder, className)} />
+      {/* Portal the actual popup out of this dom structure so that it can break out of overflows */}
+      {ReactDOM.createPortal(
+        <div ref={wrapper} className={styles.wrapper}>
+          {transitions.map(({ item, key, props }) =>
+            item ? (
+              <animated.div
+                className={cn(styles.popup, className)}
+                ref={ref}
+                key={key}
+                style={props}
+              >
+                <div className={styles.header}>
+                  <IconRemove
+                    className={styles.iconRemove}
+                    onClick={handleClose}
+                  />
+                  <div className={styles.title}>{title}</div>
+                </div>
+                {children}
+              </animated.div>
+            ) : null
+          )}
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   )
 }
 

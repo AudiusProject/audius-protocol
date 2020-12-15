@@ -64,3 +64,20 @@
 .selectedServices > * {
   justify-content: center;
 }
+
+.modalBody {
+  max-width: 500px;
+  width: 100%;
+}
+
+.modalHeader {
+  margin: 0 16px;
+}
+
+.modalTitle {
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

@@ -3,9 +3,8 @@ import { Dispatch } from 'redux'
 import { ID } from 'models/common/Identifiers'
 import { connect } from 'react-redux'
 import { AppState } from 'store/types'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 
-import Modal from 'components/general/Modal'
 import styles from './PinTrackConfirmation.module.css'
 import { setArtistPick, unsetArtistPick } from 'store/social/tracks/actions'
 import { getAccountUser } from 'store/account/selectors'
@@ -67,8 +66,12 @@ const PinTrackConfirmation = (props: PinTrackConfirmationProps) => {
   return (
     <Modal
       title={messages.title}
-      width={400}
-      visible={props.pinTrack.isVisible}
+      showTitleHeader
+      showDismissButton
+      bodyClassName={styles.modalBody}
+      headerContainerClassName={styles.modalHeader}
+      titleClassName={styles.modalTitle}
+      isOpen={props.pinTrack.isVisible}
       onClose={props.onCancel}
     >
       <div className={styles.container}>

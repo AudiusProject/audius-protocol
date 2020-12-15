@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react'
+import { Modal } from '@audius/stems'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
 
 import { AppState } from 'store/types'
-import AudiusModal from 'components/general/AudiusModal'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TwitterButton from 'components/general/TwitterButton'
 import MusicConfetti from 'components/background-animations/MusicConfetti'
@@ -66,7 +66,7 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
 
   return (
     <>
-      <AudiusModal
+      <Modal
         isOpen={isOpen}
         onClose={close}
         bodyClassName={styles.modalBody}
@@ -99,7 +99,7 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
             />
           </div>
         </div>
-      </AudiusModal>
+      </Modal>
       {isOpen && <MusicConfetti />}
     </>
   )

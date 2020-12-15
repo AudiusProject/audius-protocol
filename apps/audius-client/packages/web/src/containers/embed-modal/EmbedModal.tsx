@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import { Modal, Button, ButtonType } from '@audius/stems'
 import { connect } from 'react-redux'
 import cn from 'classnames'
-import { Button, ButtonType } from '@audius/stems'
 
 import { close } from './store/actions'
 import { getIsOpen, getId, getKind, getMetadata } from './store/selectors'
@@ -12,7 +12,6 @@ import { Size } from './types'
 import { Dispatch } from 'redux'
 import { PlayableType, ID } from 'models/common/Identifiers'
 
-import AudiusModal from 'components/general/AudiusModal'
 import TabSlider from 'components/data-entry/TabSlider'
 import EmbedCopy from './components/EmbedCopy'
 import EmbedFrame from './components/EmbedFrame'
@@ -117,7 +116,7 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
   }, [kind, id, metadata])
 
   return (
-    <AudiusModal
+    <Modal
       isOpen={isOpen}
       onClose={close}
       showDismissButton
@@ -187,7 +186,7 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
           </div>
         </div>
       </div>
-    </AudiusModal>
+    </Modal>
   )
 }
 

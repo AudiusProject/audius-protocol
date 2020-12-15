@@ -1,3 +1,25 @@
+.modalBody {
+  max-width: 480px;
+  width: 100%;
+}
+
+.modalHeader {
+  margin: 0px 16px;
+}
+
+.modalTitle {
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  justify-self: center;
+}
+
+.container {
+  padding: 16px;
+}
+
 .header {
   width: 452px;
   color: var(--neutral);
@@ -5,7 +27,7 @@
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   text-align: center;
-  margin: 24px auto 8px;
+  margin: 8px auto;
 }
 
 .description {

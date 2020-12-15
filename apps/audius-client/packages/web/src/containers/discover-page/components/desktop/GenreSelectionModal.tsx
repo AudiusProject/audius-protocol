@@ -1,5 +1,5 @@
 import React from 'react'
-import AudiusModal from 'components/general/AudiusModal'
+import { Modal } from '@audius/stems'
 import SimpleBar from 'simplebar-react'
 import GenreSelectionList from 'containers/discover-page/components/GenreSelectionList'
 
@@ -27,7 +27,7 @@ const GenreSelectionModal = ({
   isOpen
 }: GenreSelectionModalProps) => {
   return (
-    <AudiusModal
+    <Modal
       isOpen={isOpen}
       showTitleHeader
       showDismissButton
@@ -43,7 +43,7 @@ const GenreSelectionModal = ({
           selectedGenre={selectedGenre}
         />
       </SimpleBar>
-    </AudiusModal>
+    </Modal>
   )
 }
 

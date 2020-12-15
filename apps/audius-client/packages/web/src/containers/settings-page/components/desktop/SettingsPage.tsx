@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import {
+  Modal,
   Button,
   ButtonType,
   IconMail,
@@ -15,7 +16,6 @@ import SelectedServices from 'containers/service-selection/SelectedServices'
 import ConfirmationBox from 'components/general/ConfirmationBox'
 import Header from 'components/general/header/desktop/Header'
 import Page from 'components/general/Page'
-import Modal from 'components/general/Modal'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
 import {
@@ -281,9 +281,13 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
               Hold Up! <i className='emoji waving-hand-sign' />
             </>
           }
-          visible={this.state.showModalSignOut}
+          isOpen={this.state.showModalSignOut}
           onClose={this.closeModalSignOut}
-          width={500}
+          showTitleHeader
+          showDismissButton
+          bodyClassName={styles.modalBody}
+          headerContainerClassName={styles.modalHeader}
+          titleClassName={styles.modalTitle}
         >
           <ConfirmationBox
             text={SIGN_OUT_MODAL_TEXT}
