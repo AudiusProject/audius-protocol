@@ -92,6 +92,7 @@
 }
 
 .btnContainer .redText {
+  color: var(--static-white) !important;
 }
 
 /* GREEN */
@@ -129,6 +130,10 @@
   transform: scale3d(1, 1, 1) !important;
   opacity: 0.6;
   cursor: default;
+}
+
+.btnContainer .greenText {
+  color: var(--static-white) !important;
 }
 
 

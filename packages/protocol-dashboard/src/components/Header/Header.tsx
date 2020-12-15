@@ -4,7 +4,6 @@ import clsx from 'clsx'
 import AppBar from 'components/AppBar'
 import Nav from 'components/Nav'
 import { useInit } from 'store/cache/protocol/hooks'
-import { useModalCount } from 'store/modal/hooks'
 import { useIsMobile } from 'utils/hooks'
 import { IconKebabHorizontal } from '@audius/stems'
 
@@ -21,7 +20,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
   useInit()
-  useModalCount()
   const isMobile = useIsMobile()
   const [showMobileNav, setShowMobileNav] = useState(false)
 

@@ -20,7 +20,6 @@ import claims from 'store/cache/claims/slice'
 import analytics from 'store/cache/analytics/slice'
 import music from 'store/cache/music/slice'
 import account from 'store/account/slice'
-import modal from 'store/modal/slice'
 import pageHistory from 'store/pageHistory/slice'
 
 declare global {
@@ -38,7 +37,6 @@ const getReducer = (history: History) => {
     router: connectRouter(history),
     pageHistory,
     account,
-    modal,
     cache: combineReducers({
       discoveryProvider,
       contentNode,
