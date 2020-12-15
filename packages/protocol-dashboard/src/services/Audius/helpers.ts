@@ -2,6 +2,7 @@ import { Utils } from '@audius/libs'
 import { formatNumber, formatAudString } from 'utils/format'
 import AudiusClient from './AudiusClient'
 import { Permission, BigNumber } from 'types'
+import { fetchWithTimeout } from 'utils/fetch'
 
 // Helpers
 export async function hasPermissions(
@@ -113,9 +114,9 @@ export function getWei(amount: BigNumber) {
 
 export async function getNodeVersion(endpoint: string): Promise<string> {
   try {
-    const version = await fetch(`${endpoint}/health_check`)
-      .then(res => res.json())
-      .then(r => r.data.version)
+    const version = await fetchWithTimeout(`${endpoint}/health_check`).then(
+      r => r.data.version
+    )
     return version
   } catch (e) {
     console.error(e)

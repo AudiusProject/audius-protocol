@@ -283,7 +283,7 @@ const LineChart: React.FC<LineChartProps> = ({
       </div>
       <div className={styles.chart}>
         {error ? (
-          <Error text="Incomplete Data" />
+          <Error />
         ) : data && labels ? (
           <Line
             data={getData(data, labels, showLeadingDay)}

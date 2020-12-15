@@ -18,7 +18,7 @@ const Stat: React.FC<StatProps> = ({ stat, label, error }) => {
     <Paper className={styles.container}>
       {error ? (
         <div className={styles.stat}>
-          <Error text="Incomplete Data" />
+          <Error />
         </div>
       ) : stat !== null ? (
         <div className={styles.stat}>{stat}</div>

@@ -95,7 +95,7 @@ const RadarChart: React.FC<RadarChartProps> = ({
       </div>
       <div className={styles.chart}>
         {error ? (
-          <Error text="Incomplete Data" />
+          <Error />
         ) : data && labels ? (
           <Radar data={getData(data, labels)} options={getOptions()} />
         ) : (

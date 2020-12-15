@@ -25,7 +25,7 @@ import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
 import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
 import { performWithFallback } from 'utils/performWithFallback'
-
+import { fetchWithTimeout } from '../../../utils/fetch'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -187,7 +187,7 @@ async function fetchTimeSeries(
         try {
           const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
           const url = `${node.endpoint}/v1/metrics/${route}?bucket_size=${bucket_size}&start_time=${startTime}`
-          const res = await (await fetch(url)).json()
+          const res = await fetchWithTimeout(url)
           return res.data
         } catch (e) {
           console.error(e)
@@ -291,9 +291,7 @@ export function fetchTotalStaked(
 
 const getTrailingAPI = (endpoint: string) => async () => {
   const url = `${endpoint}/v1/metrics/routes/trailing/month`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(res.statusText)
-  const json = await res.json()
+  const json = await fetchWithTimeout(url)
   return {
     count: json?.data?.count ?? 0,
     unique_count: json?.data?.unique_count ?? 0
@@ -305,11 +303,7 @@ const getTrailingAPILegacy = (
   startTime: number
 ) => async () => {
   const url = `${endpoint}/v1/metrics/routes?bucket_size=century&start_time=${startTime}`
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(res.statusText)
-  }
-  const json = await res.json()
+  const json = await fetchWithTimeout(url)
   return {
     count: json?.data?.[0]?.count ?? 0,
     unique_count: json?.data?.[0]?.unique_count ?? 0
@@ -363,11 +357,7 @@ const getTrailingTopApps = (
   const bucketPath = bucketPaths[bucket]
   if (!bucketPath) throw new Error('Invalid bucket')
   const url = `${endpoint}/v1/metrics/app_name/trailing/${bucketPath}?limit=${limit}`
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(res.statusText)
-  }
-  const json = await res.json()
+  const json = await fetchWithTimeout(url)
   if (!json.data) return {}
   return json
 }
@@ -378,11 +368,7 @@ const getTopAppsLegacy = (
   limit: number
 ) => async () => {
   const url = `${endpoint}/v1/metrics/app_name?start_time=${startTime}&limit=${limit}&include_unknown=true`
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(res.statusText)
-  }
-  const json = await res.json()
+  const json = await fetchWithTimeout(url)
   if (!json.data) return {}
   return json
 }
@@ -452,7 +438,7 @@ export function fetchTrailingTopGenres(
     try {
       const startTime = getStartTime(bucket)
       const url = `${node.endpoint}/v1/metrics/genres?start_time=${startTime}`
-      const res = await (await fetch(url)).json()
+      const res = await fetchWithTimeout(url)
 
       const agg: CountRecord = {
         Electronic: 0

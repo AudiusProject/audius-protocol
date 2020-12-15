@@ -167,7 +167,7 @@ const BarChart: React.FC<BarChartProps> = ({
       </div>
       <div className={styles.chart}>
         {error ? (
-          <Error text="Incomplete Data" />
+          <Error />
         ) : data && labels ? (
           <>
             <div className={styles.columns}>

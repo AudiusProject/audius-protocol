@@ -4,7 +4,9 @@ import { ReactComponent as IconUhOh } from 'assets/img/uhOh.svg'
 
 import styles from './Error.module.css'
 
-const Error = ({ text }: { text: string }) => {
+const DEFAULT_ERROR_TEXT = 'Incomplete Data'
+
+const Error = ({ text = DEFAULT_ERROR_TEXT }: { text?: string }) => {
   return (
     <div className={styles.error}>
       <Tooltip text={text}>
