@@ -159,10 +159,13 @@ const getDelegatorAmounts = async (
       delegatorWallet
     )
 
-    if (pendingUndelegateRequest.lockupExpiryBlock !==0 && pendingUndelegateRequest.target === wallet) {
+    if (
+      pendingUndelegateRequest.lockupExpiryBlock !== 0 &&
+      pendingUndelegateRequest.target === wallet
+    ) {
       activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
     }
-  
+
     const profile = await get3BoxProfile(wallet)
     let img = profile.image || getRandomDefaultImage(delegatorWallet)
 

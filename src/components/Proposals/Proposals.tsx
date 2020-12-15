@@ -52,10 +52,10 @@ export const NoProposals = ({ text }: { text: string }) => {
 const Proposals: React.FC<ProposalsProps> = () => {
   const { activeProposals, resolvedProposals } = useProposals()
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const activeStake = accountUser ? getActiveStake(accountUser) : Utils.toBN('0')
-  const isUserStaker =
-    userStatus === Status.Success &&
-    !activeStake.isZero()
+  const activeStake = accountUser
+    ? getActiveStake(accountUser)
+    : Utils.toBN('0')
+  const isUserStaker = userStatus === Status.Success && !activeStake.isZero()
 
   return (
     <>

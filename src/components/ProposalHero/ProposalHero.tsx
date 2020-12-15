@@ -60,10 +60,10 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
   )
 
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const activeStake = accountUser ? getActiveStake(accountUser) : Utils.toBN('0')
-  const isUserStaker =
-    userStatus === Status.Success &&
-    !activeStake.isZero()
+  const activeStake = accountUser
+    ? getActiveStake(accountUser)
+    : Utils.toBN('0')
+  const isUserStaker = userStatus === Status.Success && !activeStake.isZero()
 
   return (
     <div className={styles.voteCTA}>

@@ -34,7 +34,10 @@ export async function getUserDelegates(this: AudiusClient, delegator: Address) {
       )
       let activeAmount = amountDelegated
 
-      if (pendingUndelegateRequest.lockupExpiryBlock !==0 && pendingUndelegateRequest.target === sp) {
+      if (
+        pendingUndelegateRequest.lockupExpiryBlock !== 0 &&
+        pendingUndelegateRequest.target === sp
+      ) {
         activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
       }
 

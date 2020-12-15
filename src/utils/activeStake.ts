@@ -1,5 +1,5 @@
 import { Utils } from '@audius/libs'
-import { Operator, User } from "types"
+import { Operator, User } from 'types'
 
 /**
  * Calculates and returns active stake for address
@@ -16,7 +16,10 @@ export const getActiveStake = (user: User | Operator) => {
   let activeDelegator = Utils.toBN('0')
   if ('serviceProvider' in user) {
     const { deployerStake } = user.serviceProvider
-    const { amount: pendingDecreaseStakeAmount, lockupExpiryBlock } = user.pendingDecreaseStakeRequest
+    const {
+      amount: pendingDecreaseStakeAmount,
+      lockupExpiryBlock
+    } = user.pendingDecreaseStakeRequest
     if (lockupExpiryBlock !== 0) {
       activeDeployerStake = deployerStake.sub(pendingDecreaseStakeAmount)
     } else {
@@ -25,9 +28,11 @@ export const getActiveStake = (user: User | Operator) => {
   }
 
   if (user.pendingUndelegateRequest.lockupExpiryBlock !== 0) {
-    activeDelegator =  user.totalDelegatorStake.sub(user.pendingUndelegateRequest.amount)
+    activeDelegator = user.totalDelegatorStake.sub(
+      user.pendingUndelegateRequest.amount
+    )
   } else {
-    activeDelegator =  user.totalDelegatorStake
+    activeDelegator = user.totalDelegatorStake
   }
   return activeDelegator.add(activeDeployerStake)
 }
