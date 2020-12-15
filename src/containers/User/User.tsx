@@ -2,9 +2,10 @@ import React, { useEffect } from 'react'
 import clsx from 'clsx'
 import { RouteComponentProps } from 'react-router'
 import { matchPath } from 'react-router-dom'
+import { Utils } from '@audius/libs'
+
 import Page from 'components/Page'
 import Delegate from 'components/Delegate'
-
 import Timeline from 'components/Timeline'
 import UserStat from 'components/UserStat'
 import UserStakedStat from 'components/UserStakedStat'
@@ -34,6 +35,7 @@ import { useReplaceRoute } from 'utils/effects'
 import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
 import { createStyles } from 'utils/mobile'
+import getActiveStake from 'utils/activeStake'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -86,6 +88,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
   const services =
     ((user as Operator)?.discoveryProviders?.length ?? 0) +
     ((user as Operator)?.contentNodes?.length ?? 0)
+  const activeStake = user ? getActiveStake(user) : Utils.toBN('0')
 
   return (
     <Page
@@ -104,7 +107,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
         />
         {isServiceProvider ? (
           <UserStat
-            staked={(user as Operator).totalStakedFor}
+            staked={activeStake}
             deployerCut={(user as Operator).serviceProvider.deployerCut}
             delegators={(user as Operator).delegators.length}
             totalDelegates={totalDelegates}
