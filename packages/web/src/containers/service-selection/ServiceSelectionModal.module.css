@@ -4,13 +4,15 @@
 
 /** Modal **/
 
-.modal {
+.modalBody {
   background-color: var(--neutral-light-8);
   padding-bottom: 0;
+  max-width: 480px;
+  width: 100%;
 }
 
 .modalHeader {
-  margin-bottom: 0;
+  margin: 0 16px 0;
 }
 
 .title {
@@ -27,6 +29,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
+  padding: 0 16px;
 }
 
 .scrollable :global(.simplebar-scrollbar) {
@@ -112,6 +115,9 @@
 
 .searchBar {
   margin-bottom: 8px;
+}
+.searchIcon {
+  position: absolute;
 }
 
 /* Bottom text */

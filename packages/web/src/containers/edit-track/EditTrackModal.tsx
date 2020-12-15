@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { push as pushRoute } from 'connected-react-router'
@@ -53,6 +53,17 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  useEffect(() => {
+    // Delay opening the modal until after we have track metadata as well
+    if (isOpen && metadata) {
+      setIsModalOpen(true)
+    }
+    if (!isOpen && isModalOpen) {
+      setIsModalOpen(false)
+    }
+  }, [isOpen, metadata, isModalOpen])
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
   const [pendingUploads, setPendingUploads] = useState<StemUploadWithFile[]>([])
@@ -177,8 +188,7 @@ const EditTrackModal = ({
   return (
     <>
       <EditTrackModalComponent
-        key={metadata ? metadata.track_id : 'null_key'}
-        visible={isOpen}
+        visible={isModalOpen}
         metadata={metadata}
         onSave={onSaveEdit}
         onDelete={onSelectDelete}

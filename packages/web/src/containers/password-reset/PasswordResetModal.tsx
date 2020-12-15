@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
+import { Modal } from '@audius/stems'
 
 import { isMobile } from 'utils/clientUtil'
 import { AppState, Status } from 'store/types'
@@ -8,7 +9,6 @@ import { changePassword } from './store/actions'
 import { getStatus } from './store/selectors'
 import { getNeedsAccountRecovery } from 'store/account/selectors'
 
-import Modal from 'components/general/Modal'
 import EnterPassword from 'components/sign-on/EnterPassword'
 
 import styles from './PasswordResetModal.module.css'
@@ -77,17 +77,23 @@ const PasswordResetModal = ({
   return (
     <Modal
       title={messages.title}
-      width={480}
-      closeable={false}
-      visible={showModal}
+      dismissOnClickOutside={false}
+      isOpen={showModal}
+      onClose={() => {}}
+      showTitleHeader
+      bodyClassName={styles.modalBody}
+      headerContainerClassName={styles.modalHeader}
+      titleClassName={styles.modalTitle}
     >
-      <div className={styles.helpText}>{messages.helpText}</div>
-      <EnterPassword
-        continueLabel={messages.continueLabel}
-        onSubmit={onSubmit}
-        isMobile={isMobile}
-        isLoading={isLoading}
-      />
+      <div className={styles.content}>
+        <div className={styles.helpText}>{messages.helpText}</div>
+        <EnterPassword
+          continueLabel={messages.continueLabel}
+          onSubmit={onSubmit}
+          isMobile={isMobile}
+          isLoading={isLoading}
+        />
+      </div>
     </Modal>
   )
 }

@@ -1,6 +1,6 @@
 import React, { useState, useContext, useCallback } from 'react'
 import { debounce } from 'lodash'
-import { Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
+import { Modal, Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
 
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -15,7 +15,6 @@ import { SquareSizes } from 'models/common/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SettingsPageProps } from './SettingsPage'
 import AudiusBackend from 'services/AudiusBackend'
-import AudiusModal from 'components/general/AudiusModal'
 import SignOutPage from 'containers/nav/mobile/SignOut'
 import { ToastContext } from 'components/toast/ToastContext'
 import { make, useRecord } from 'store/analytics/actions'
@@ -138,7 +137,7 @@ const AccountSettingsPage = ({
             </Row>
           </Grouping>
         </GroupableList>
-        <AudiusModal
+        <Modal
           showTitleHeader
           showDismissButton
           title={messages.holdUp}
@@ -148,7 +147,7 @@ const AccountSettingsPage = ({
           onClose={() => setShowModalSignOut(false)}
         >
           <SignOutPage onClickBack={() => setShowModalSignOut(false)} />
-        </AudiusModal>
+        </Modal>
       </div>
     </MobilePageContainer>
   )

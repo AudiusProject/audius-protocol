@@ -16,11 +16,6 @@ import IconButton from 'components/general/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Switch from 'components/general/Switch'
 import cn from 'classnames'
-import {
-  incrementScrollCount,
-  decrementScrollCount
-} from 'store/application/ui/scrollLock/actions'
-import { useDispatch } from 'react-redux'
 
 const MAX_ROWS = 5
 
@@ -273,14 +268,6 @@ const SourceFilesModal = ({
   onSelectCategory,
   onDeleteStem
 }: SourceFilesModalProps) => {
-  const dispatch = useDispatch()
-  const incrementScroll = useCallback(() => dispatch(incrementScrollCount()), [
-    dispatch
-  ])
-  const decrementScroll = useCallback(() => dispatch(decrementScrollCount()), [
-    dispatch
-  ])
-
   return (
     <Modal
       isOpen={isOpen}
@@ -290,13 +277,13 @@ const SourceFilesModal = ({
       subtitle={messages.subtitle}
       dismissOnClickOutside
       showDismissButton
+      // Since this can be nested in the edit track modal
+      // Appear on top of it
+      zIndex={1002}
       bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
       subtitleClassName={styles.modalSubtitle}
-      zIndex={12000}
-      incrementScrollCount={incrementScroll}
-      decrementScrollCount={decrementScroll}
     >
       <SourceFilesView
         downloadSettings={downloadSettings}

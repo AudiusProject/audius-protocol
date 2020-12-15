@@ -1,6 +1,7 @@
 .modalBody {
   max-width: 720px;
   min-height: 320px;
+  width: 100%;
 }
 
 .modalContainer {
