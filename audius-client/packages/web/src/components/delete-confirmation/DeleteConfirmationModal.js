@@ -1,8 +1,7 @@
 import React, { memo } from 'react'
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 
-import Modal from 'components/general/Modal'
 import styles from './DeleteConfirmationModal.module.css'
 
 const DeleteConfirmationModal = props => {
@@ -12,9 +11,13 @@ const DeleteConfirmationModal = props => {
   return (
     <Modal
       title={props.title}
-      width={480}
-      visible={props.visible}
+      isOpen={props.visible}
       onClose={props.onCancel}
+      bodyClassName={styles.modalBody}
+      titleClassName={styles.modalTitle}
+      headerContainerClassName={styles.modalHeader}
+      showDismissButton
+      showTitleHeader
     >
       <div className={styles.container}>
         <div className={styles.text}>

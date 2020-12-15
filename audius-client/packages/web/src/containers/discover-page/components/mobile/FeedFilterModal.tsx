@@ -1,6 +1,6 @@
 import React from 'react'
+import { Modal, Anchor } from '@audius/stems'
 
-import Modal, { Anchor } from 'components/general/AudiusModal'
 import FeedFilter from 'models/FeedFilter'
 
 import styles from './FeedFilterModal.module.css'
@@ -40,6 +40,7 @@ const FeedFilterModal = ({
 
   return (
     <Modal
+      bodyClassName={styles.modalBody}
       onClose={onClose}
       isOpen={isOpen}
       anchor={Anchor.BOTTOM}

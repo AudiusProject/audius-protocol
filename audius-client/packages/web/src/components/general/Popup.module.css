@@ -1,7 +1,17 @@
+.placeholder {
+  width: 100%;
+}
+
+.wrapper {
+  width: 360px;
+  position: absolute;
+  z-index: 10000;
+}
+
 .popup {
   text-align: center;
   height: 240px;
-  width: 360px;
+  width: 100%;
   overflow: hidden;
 
   border-radius: 12px;

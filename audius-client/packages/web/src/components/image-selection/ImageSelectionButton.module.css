@@ -30,8 +30,6 @@
 
 .popup {
   position: absolute;
-  top: 100%;
-  left: calc(-180px + 50%);
 }
 
 .wrapper:hover .noPopup.hide {

@@ -1,6 +1,7 @@
 .modalBodyStyle {
   min-width: 1000px;
   min-height: 608px;
+  width: 100%;
   max-width: 1008px;
   background: var(--neutral-light-10);
 }

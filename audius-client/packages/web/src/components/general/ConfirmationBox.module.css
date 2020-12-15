@@ -1,7 +1,7 @@
 .confirmationBox {
   width: 100%;
   background-color: var(--white);
-  padding: 16px;
+  padding: 24px 32px 32px;
   
   display: flex;
   flex-direction: column;

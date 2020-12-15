@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { connect } from 'react-redux'
+import { Modal } from '@audius/stems'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { each } from 'lodash'
@@ -15,7 +16,6 @@ import {
 } from './store/selectors'
 import { getCountry } from './utils'
 
-import Modal from 'components/general/Modal'
 import Service from './components/Service'
 import SearchBar from 'components/search-bar/SearchBar'
 
@@ -191,12 +191,13 @@ const ServiceSelectionModal = ({
 
   return (
     <Modal
-      className={styles.modal}
-      headerClassName={styles.modalHeader}
+      bodyClassName={styles.modalBody}
+      headerContainerClassName={styles.modalHeader}
       title={<div className={styles.title}>Change Servers (Advanced)</div>}
-      visible={show}
+      showDismissButton
+      showTitleHeader
+      isOpen={show}
       onClose={close}
-      width={480}
     >
       <SimpleBar className={styles.scrollable}>
         <DragDropContext
@@ -299,6 +300,7 @@ const ServiceSelectionModal = ({
                   >
                     <SearchBar
                       className={styles.searchBar}
+                      iconClassname={styles.searchIcon}
                       open={openSearch}
                       onOpen={() => setOpenSearch(true)}
                       onClose={() => setOpenSearch(false)}

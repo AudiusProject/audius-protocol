@@ -65,6 +65,8 @@ const UploadArtwork = props => {
           imageName={messages.imageName}
           hasImage={!!props.artworkUrl}
           error={props.imageProcessingError}
+          onOpenPopup={props.onOpenPopup}
+          onClosePopup={props.onClosePopup}
           onSelect={onDrop}
         />
       </div>
@@ -88,6 +90,8 @@ UploadArtwork.propTypes = {
   error: PropTypes.bool,
   // Whether or not there was an error processing the uploaded image (error message in upload)
   imageProcessingError: PropTypes.bool,
+  onOpenPopup: PropTypes.func,
+  onClosePopup: PropTypes.func,
   mount: PropTypes.oneOf(['parent', 'page', 'body'])
 }
 

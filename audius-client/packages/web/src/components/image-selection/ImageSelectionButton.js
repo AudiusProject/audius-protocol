@@ -23,14 +23,22 @@ const ImageSelectionButton = ({
   imageName,
   error,
   includePopup,
+  onOpenPopup,
+  onClosePopup,
   onClick,
   onAfterClose,
   onSelect
 }) => {
   const [showModal, setShowModal] = useState(false)
 
-  const closeModal = () => setShowModal(false)
-  const openModal = () => setShowModal(true)
+  const closeModal = () => {
+    setShowModal(false)
+    if (onClosePopup) onClosePopup()
+  }
+  const openModal = () => {
+    setShowModal(true)
+    if (onOpenPopup) onOpenPopup()
+  }
 
   const handleClick = () => {
     if (!showModal) {
@@ -99,6 +107,8 @@ ImageSelectionButton.propTypes = {
   // Whether or not to show the image selection modal. Otherwise, the
   // button itself is the dropzone.
   includePopup: PropTypes.bool,
+  onOpenPopup: PropTypes.func,
+  onClosePopup: PropTypes.func,
   onClick: PropTypes.func,
   ...ImageSelectionProps
 }

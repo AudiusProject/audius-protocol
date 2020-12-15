@@ -1,5 +1,5 @@
 import React from 'react'
-import AudiusModal from '../AudiusModal'
+import { Modal } from '@audius/stems'
 
 import styles from './UnlistedTrackModal.module.css'
 import cn from 'classnames'
@@ -110,7 +110,7 @@ const UnlistedTrackModal = ({
     `Show ${metadataTitleMap[metadata]}`
 
   return (
-    <AudiusModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       showDismissButton
@@ -144,7 +144,7 @@ const UnlistedTrackModal = ({
           )
         })}
       </div>
-    </AudiusModal>
+    </Modal>
   )
 }
 

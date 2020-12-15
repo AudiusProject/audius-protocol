@@ -1,8 +1,7 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react'
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { debounce } from 'lodash'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
 
-import AudiusModal from 'components/general/AudiusModal'
 import Input from 'components/data-entry/Input'
 import Track from 'models/Track'
 import User from 'models/User'
@@ -110,7 +109,7 @@ const RemixSettingsModal = ({
   }, [onClose, track, isInvalidTrack, url])
 
   return (
-    <AudiusModal
+    <Modal
       isOpen={isOpen}
       onClose={onCloseModal}
       showTitleHeader
@@ -118,6 +117,9 @@ const RemixSettingsModal = ({
       subtitle={messages.subtitle}
       dismissOnClickOutside
       showDismissButton
+      // Since this can be nested in the edit track modal
+      // Appear on top of it
+      zIndex={1002}
       bodyClassName={styles.modalContainer}
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
@@ -149,7 +151,7 @@ const RemixSettingsModal = ({
         type={ButtonType.SECONDARY}
         onClick={onCloseModal}
       />
-    </AudiusModal>
+    </Modal>
   )
 }
 

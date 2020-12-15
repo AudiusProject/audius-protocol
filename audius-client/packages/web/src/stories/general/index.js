@@ -11,7 +11,6 @@ import CoverPhoto from 'components/general/CoverPhoto'
 import StatBanner from 'components/general/StatBanner'
 import NavBanner from 'components/general/NavBanner'
 import Mask from 'components/general/Mask'
-import Modal from 'components/general/Modal'
 import ConfirmationBox from 'components/general/ConfirmationBox'
 import Toast from 'components/toast/Toast'
 
@@ -36,7 +35,6 @@ export default () => {
       </Mask>
     ))
     .add('ConfirmationBox', () => <ConfirmationBox />)
-    .add('Modal', () => <Modal />)
     .add('Toast', () => (
       <Toast
         text={'Reposted!'}

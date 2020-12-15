@@ -1,6 +1,6 @@
 import React from 'react'
+import { Anchor, Modal } from '@audius/stems'
 
-import Modal, { Anchor } from 'components/general/AudiusModal'
 import cn from 'classnames'
 
 import styles from './ActionSheetModal.module.css'
@@ -35,6 +35,7 @@ const ActionSheetModal = ({
 
   return (
     <Modal
+      bodyClassName={styles.modalBodyStyle}
       onClose={onClose}
       isOpen={isOpen}
       anchor={Anchor.BOTTOM}

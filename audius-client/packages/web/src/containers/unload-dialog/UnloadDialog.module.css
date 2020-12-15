@@ -1,14 +1,10 @@
-.modalHeader {
-  margin: 0px 16px;
-}
-
 .modalBody {
   max-width: 480px;
   width: 100%;
 }
 
-.content {
-  padding: 16px;
+.modalHeader {
+  margin: 0px 16px;
 }
 
 .modalTitle {
@@ -17,11 +13,9 @@
   font-weight: var(--font-heavy);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  justify-self: center;
 }
 
-.helpText {
-  font-size: var(--font-m);
-  line-height: 20px;
-  margin: 0 auto 20px;
-  text-align: center;
+.modalTitle i {
+  margin-left: 4px;
 }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Modal } from '@audius/stems'
 import { UserListType } from 'store/application/ui/userListModal/types'
 import { USER_LIST_TAG as REPOST_TAG } from 'containers/reposts-page/RepostsPage'
 import { USER_LIST_TAG as FAVORITES_TAG } from 'containers/favorites-page/FavoritesPage'
@@ -11,7 +12,6 @@ import { getUserList as followersSelector } from 'containers/followers-page/stor
 import SimpleBar from 'simplebar-react-legacy'
 
 import styles from './UserListModal.module.css'
-import Modal from 'components/general/Modal'
 import { AppState } from 'store/types'
 import { UserListStoreState } from 'containers/user-list/store/types'
 
@@ -70,7 +70,16 @@ const UserListModal = ({
   }
 
   return (
-    <Modal title={title} width={360} visible={isOpen} onClose={onClose}>
+    <Modal
+      title={title}
+      isOpen={isOpen}
+      onClose={onClose}
+      showTitleHeader
+      bodyClassName={styles.modalBody}
+      titleClassName={styles.modalTitle}
+      headerContainerClassName={styles.modalHeader}
+      showDismissButton
+    >
       {/* Typescript complains about no valid constructor, possibly
         due to the two simplebar packages we maintain.
       // @ts-ignore */}

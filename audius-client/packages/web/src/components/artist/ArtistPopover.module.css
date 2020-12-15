@@ -1,3 +1,7 @@
+.overlayStyle {
+  z-index: 20000;
+}
+
 /* Remove the default antd popover arrow */
 .overlayStyle > :global(.ant-popover-content) > :global(.ant-popover-arrow) {
   display: none;

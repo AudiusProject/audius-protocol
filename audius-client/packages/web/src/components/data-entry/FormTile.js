@@ -72,6 +72,8 @@ const BasicForm = props => {
             onDropArtwork={props.onDropArtwork}
             error={props.invalidFields.artwork}
             imageProcessingError={props.imageProcessingError}
+            onOpenPopup={props.onOpenArtworkPopup}
+            onClosePopup={props.onCloseArtworkPopup}
           />
         </div>
         <div className={styles.form}>
@@ -742,7 +744,13 @@ FormTile.propTypes = {
   onSelectStemCategory: PropTypes.func,
 
   /** function of type (index) => void */
-  onDeleteStem: PropTypes.func
+  onDeleteStem: PropTypes.func,
+
+  /** callback when artwork popup is opened */
+  onOpenArtworkPopup: PropTypes.func,
+
+  /** callback when artwork popup is closed */
+  onCloseArtworkPopup: PropTypes.func
 }
 
 FormTile.defaultProps = {

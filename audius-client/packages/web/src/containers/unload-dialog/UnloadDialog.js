@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 
 import { getIsConfirming } from 'store/confirmer/selectors'
 
-import Modal from 'components/general/Modal'
 import ConfirmationBox from 'components/general/ConfirmationBox'
 
 import { setupHotkeys, removeHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 import { isElectron } from 'utils/clientUtil'
+import styles from './UnloadDialog.module.css'
 
 const MESSAGE_TEXT = `
   We're working on syncing your
@@ -96,9 +97,14 @@ const UnloadDialog = props => {
           Hang tight! <i className='emoji woman-surfing' />
         </>
       }
-      visible={showModal}
+      isOpen={showModal}
+      showTitleHeader
       onClose={onModalClose}
-      width={480}
+      bodyClassName={styles.modalBody}
+      wrapperClassName={styles.modalWrapper}
+      titleClassName={styles.modalTitle}
+      headerContainerClassName={styles.modalHeader}
+      showDismissButton
     >
       <ConfirmationBox
         text={MESSAGE_TEXT}

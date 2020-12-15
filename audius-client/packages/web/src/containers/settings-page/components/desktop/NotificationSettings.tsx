@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import cn from 'classnames'
+import { Modal } from '@audius/stems'
 
-import Modal from 'components/general/AudiusModal'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 
 import styles from './NotificationSettings.module.css'

@@ -1,3 +1,20 @@
+.modalBody {
+  max-width: 360px;
+  width: 100%;
+}
+
+.modalHeader {
+  margin: 0px 16px;
+}
+
+.modalTitle {
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .modalTitle {
   font-weight: var(--font-heavy);
   letter-spacing: .5px;
@@ -6,6 +23,7 @@
 }
 
 .scrollable {
+  margin: 16px;
   min-height: 0;
   max-height: 690px;
   height: 100%;

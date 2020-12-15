@@ -1,30 +1,29 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { mapValues } from 'lodash'
-import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 
 import * as schemas from 'schemas'
 
-import Modal from 'components/general/Modal'
 import FormTile from 'components/data-entry/FormTile'
 
 import styles from './EditTrackModal.module.css'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { SquareSizes } from 'models/common/ImageSizes'
 
-const EditTrackModal = props => {
-  const {
-    visible,
-    title,
-    onCancel,
-    onSave,
-    metadata,
-    showUnlistedToggle,
-    stems,
-    onAddStems,
-    onSelectStemCategory,
-    onDeleteStem
-  } = props
+const EditTrackModal = ({
+  visible,
+  title,
+  onCancel,
+  onSave,
+  metadata,
+  showUnlistedToggle,
+  stems,
+  onAddStems,
+  onSelectStemCategory,
+  onDeleteStem,
+  onDelete
+}) => {
   const initialForm = schemas.newTrackMetadata(metadata)
   const [formFields, setFormFields] = useState(initialForm)
   const [invalidFields, setInvalidFields] = useState(
@@ -83,14 +82,28 @@ const EditTrackModal = props => {
     return Object.values(newInvalidFields).every(f => !f)
   }
 
+  const [isArtworkPopupOpen, setIsArtworkPopupOpen] = useState(false)
+  const onOpenArtworkPopup = useCallback(() => {
+    setIsArtworkPopupOpen(true)
+  }, [setIsArtworkPopupOpen])
+
+  const onCloseArtworkPopup = useCallback(() => {
+    setIsArtworkPopupOpen(false)
+  }, [setIsArtworkPopupOpen])
+
   return (
     <Modal
       title={title}
-      width={1080}
-      visible={visible}
+      isOpen={visible}
       onClose={onClose}
-      // Antd modal default value, behind DropdownInput
+      // Antd modal default value, behind antd DropdownInput
       zIndex={1000}
+      bodyClassName={styles.modalBody}
+      titleClassName={styles.modalTitle}
+      headerContainerClassName={styles.modalHeader}
+      showDismissButton
+      showTitleHeader
+      dismissOnClickOutside={!isArtworkPopupOpen}
     >
       <div className={styles.editTrack}>
         <FormTile
@@ -111,15 +124,17 @@ const EditTrackModal = props => {
           onSelectStemCategory={onSelectStemCategory}
           showUnlistedToggle={showUnlistedToggle}
           showHideTrackSectionInModal={false}
+          onOpenArtworkPopup={onOpenArtworkPopup}
+          onCloseArtworkPopup={onCloseArtworkPopup}
         />
         <div className={styles.buttons}>
           <div className={styles.buttonsLeft}>
-            {props.onDelete ? (
+            {onDelete ? (
               <Button
                 text='DELETE TRACK'
                 size={ButtonSize.TINY}
                 type={ButtonType.SECONDARY}
-                onClick={props.onDelete}
+                onClick={onDelete}
                 textClassName={styles.deleteButtonText}
                 className={styles.deleteButton}
               />

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import AudiusModal from 'components/general/AudiusModal'
+import { Modal, IconDiscord } from '@audius/stems'
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { useDispatch } from 'react-redux'
@@ -36,7 +36,6 @@ import ErrorBody from './components/ErrorBody'
 import styles from './WalletModal.module.css'
 import SendingModalBody from './components/SendingModalBody'
 import DiscordModalBody from './components/DiscordModalBody'
-import { IconDiscord } from '@audius/stems'
 
 const DISCORD_URL = 'https://discord.com/invite/kZkT9ZK'
 
@@ -292,7 +291,7 @@ const WalletModal = () => {
   const allowDismiss = shouldAllowDismiss(modalState)
 
   return (
-    <AudiusModal
+    <Modal
       isOpen={modalVisible}
       onClose={onClose}
       bodyClassName={styles.modalBody}
@@ -311,7 +310,7 @@ const WalletModal = () => {
           onLaunchDiscord={onLaunchDiscord}
         />
       </div>
-    </AudiusModal>
+    </Modal>
   )
 }
 

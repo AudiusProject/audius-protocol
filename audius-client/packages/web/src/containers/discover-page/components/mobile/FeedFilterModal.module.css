@@ -1,3 +1,7 @@
+.modalBody {
+  width: 100%;
+}
+
 .container > div {
   height: 56px;
   display: flex;
