@@ -7,7 +7,6 @@ import { State as AccountState } from 'store/account/slice'
 import { State as ProposalsState } from 'store/cache/proposals/slice'
 import { State as VotesState } from 'store/cache/votes/slice'
 import { State as TimelineState } from 'store/cache/timeline/slice'
-import { State as ModalState } from 'store/modal/slice'
 import { State as PageHistoryState } from 'store/pageHistory/slice'
 import { State as ClaimsState } from 'store/cache/claims/slice'
 import { State as AnalyticsState } from 'store/cache/analytics/slice'
@@ -17,7 +16,6 @@ export type AppState = {
   router: RouterState
   pageHistory: PageHistoryState
   account: AccountState
-  modal: ModalState
   cache: {
     discoveryProvider: DiscoveryProviderState
     contentNode: ContentNodeState
