@@ -6,7 +6,13 @@ import AppState from 'store/types'
 import { DiscoveryProvider, Playlist, Track } from 'types'
 import { useDiscoveryProviders } from '../discoveryProvider/hooks'
 import { useEffect, useState } from 'react'
-import { setTopAlbums, setTopPlaylists, setTopTracks } from './slice'
+import {
+  MusicError,
+  setTopAlbums,
+  setTopPlaylists,
+  setTopTracks
+} from './slice'
+import { fetchWithTimeout } from '../../../utils/fetch'
 
 const AUDIUS_URL = process.env.REACT_APP_AUDIUS_URL
 
@@ -25,7 +31,7 @@ export function fetchTopTracks(
   return async (dispatch, getState, aud) => {
     try {
       const url = `${node.endpoint}/v1/tracks/trending?limit=4`
-      const res = await (await fetch(url)).json()
+      const res = await fetchWithTimeout(url)
       const tracks: Track[] = res.data.slice(0, 4).map((d: any) => ({
         title: d.title,
         handle: d.user.handle,
@@ -35,6 +41,7 @@ export function fetchTopTracks(
       }))
       dispatch(setTopTracks({ tracks }))
     } catch (e) {
+      dispatch(setTopTracks({ tracks: MusicError.ERROR }))
       console.error(e)
     }
   }
@@ -46,7 +53,7 @@ export function fetchTopPlaylists(
   return async (dispatch, getState, aud) => {
     try {
       const url = `${node.endpoint}/v1/playlists/top?type=playlist&limit=5`
-      const res = await (await fetch(url)).json()
+      const res = await fetchWithTimeout(url)
       const playlists: Playlist[] = res.data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
@@ -57,6 +64,7 @@ export function fetchTopPlaylists(
       dispatch(setTopPlaylists({ playlists }))
     } catch (e) {
       console.error(e)
+      dispatch(setTopPlaylists({ playlists: MusicError.ERROR }))
     }
   }
 }
@@ -67,7 +75,7 @@ export function fetchTopAlbums(
   return async (dispatch, getState, aud) => {
     try {
       const url = `${node.endpoint}/v1/playlists/top?type=album&limit=5`
-      const res = await (await fetch(url)).json()
+      const res = await fetchWithTimeout(url)
       const albums: Playlist[] = res.data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
@@ -78,6 +86,7 @@ export function fetchTopAlbums(
       dispatch(setTopAlbums({ albums }))
     } catch (e) {
       console.error(e)
+      dispatch(setTopAlbums({ albums: MusicError.ERROR }))
     }
   }
 }
