@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import { Utils } from '@audius/libs'
 
 import Paper from 'components/Paper'
 import VoteMeter from 'components/VoteMeter'
@@ -29,6 +30,7 @@ import { createStyles } from 'utils/mobile'
 import desktopStyles from './ProposalHero.module.css'
 import mobileStyles from './ProposalHeroMobile.module.css'
 import Loading from 'components/Loading'
+import getActiveStake from 'utils/activeStake'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -58,10 +60,10 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
   )
 
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const isUserStaker =
-    userStatus === Status.Success &&
-    'totalStakedFor' in accountUser &&
-    !accountUser.totalStakedFor.isZero()
+  const activeStake = accountUser
+    ? getActiveStake(accountUser)
+    : Utils.toBN('0')
+  const isUserStaker = userStatus === Status.Success && !activeStake.isZero()
 
   return (
     <div className={styles.voteCTA}>
