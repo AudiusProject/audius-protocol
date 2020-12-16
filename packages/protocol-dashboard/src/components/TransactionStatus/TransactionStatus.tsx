@@ -72,7 +72,19 @@ type WaitingTransactionProps = {
 
 const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
   const { isOpen, onClick, onClose } = useModalControls()
-  const { status, error, cancelTransaction } = useCancelTransaction(props.name)
+  const {
+    status,
+    error,
+    setError,
+    setStatus,
+    cancelTransaction
+  } = useCancelTransaction(props.name)
+
+  const onCloseModal = useCallback(() => {
+    setStatus(undefined)
+    setError('')
+    onClose()
+  }, [onClose, setStatus, setError])
 
   const cancelTransactionBox = (
     <StandaloneBox> {getMessage(props, true)} </StandaloneBox>
@@ -80,9 +92,9 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
 
   useEffect(() => {
     if (status === Status.Success) {
-      onClose()
+      onCloseModal()
     }
-  }, [status, onClose])
+  }, [status, onCloseModal])
 
   // @ts-ignore
   const { name, target } = props
@@ -124,7 +136,7 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
       />
       <ConfirmTransactionModal
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={onCloseModal}
         withArrow={false}
         topBox={cancelTransactionBox}
         onConfirm={onCancelSubmit}

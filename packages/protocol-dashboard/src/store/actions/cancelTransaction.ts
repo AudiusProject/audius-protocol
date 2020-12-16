@@ -128,5 +128,5 @@ export const useCancelTransaction = (name: PendingTransactionName) => {
     },
     [dispatch, name, status, setStatus, setError]
   )
-  return { status, error, cancelTransaction }
+  return { status, error, setError, setStatus, cancelTransaction }
 }
