@@ -17,7 +17,9 @@ async function run() {
 }
 
 /**
- * Process command line args, defaults to 1 KiB file size, and unix timestamp for filename
+ * Process two command line args for filesize and filename.
+ *
+ * Defaults to 1 KiB file size, and unix timestamp for filename if args are not provided.
  */
 function parseArgs() {
   const args = process.argv.slice(2)
@@ -34,7 +36,12 @@ function parseArgs() {
 }
 
 /**
- * Generate mp3 file using ffmpeg from given filesize in KiB
+ * Generates mp3 file using ffmpeg from given filesize in KiB
+ *
+ * The generated mp3 file is guaranteed to be the same duration for same size.
+ * It is also guaranteed to be random and unique across multiple runs.
+ *
+ * The output file is stored at the directory from which the script was called.
  */
 function whitenoise(size, outFile) {
   return new Promise((resolve, reject) => {
@@ -45,7 +52,7 @@ function whitenoise(size, outFile) {
       `anoisesrc=d=${(1024 * size) / 8064}`,
       outFile,
       '-y'
-    ])
+    ]) // See https://ffmpeg.org/ffmpeg-filters.html#anoisesrc for more information.
 
     process.stderr.on('data', data => {
       console.log(data.toString('utf8'))
