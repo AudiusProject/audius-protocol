@@ -15,8 +15,14 @@ import { retrieveCollections } from 'store/cache/collections/utils'
 import { retrieve } from 'store/cache/sagas'
 import { DefaultSizes } from 'models/common/ImageSizes'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getUserId } from 'store/account/selectors'
+import { getAccountUser, getUserId } from 'store/account/selectors'
 import { reformat } from './utils'
+import {
+  getAudiusAccountUser,
+  setAudiusAccountUser
+} from 'services/LocalStorage'
+import { mergeWith } from 'lodash'
+import { mergeCustomizer } from 'store/cache/reducer'
 
 /**
  * @param {Array<number>} userIds array of user ids to fetch
@@ -121,6 +127,29 @@ function* watchAdd() {
       )
     }
   })
+}
+
+// For updates and adds, sync the account user to local storage.
+// We use the same mergeCustomizer we use in cacheSagas to merge
+// with the local state.
+function* watchSyncLocalStorageUser() {
+  function* syncLocalStorageUser(action) {
+    const currentUser = yield select(getAccountUser)
+    if (!currentUser) return
+    const currentId = currentUser.user_id
+    if (
+      action.kind === Kind.USERS &&
+      action.entries[0] &&
+      action.entries[0].id === currentId
+    ) {
+      const addedUser = action.entries[0].metadata
+      const existing = getAudiusAccountUser()
+      const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
+      setAudiusAccountUser(merged)
+    }
+  }
+  yield takeEvery(cacheActions.ADD_SUCCEEDED, syncLocalStorageUser)
+  yield takeEvery(cacheActions.UPDATE, syncLocalStorageUser)
 }
 
 export function* adjustUserField({ user, fieldName, delta }) {
@@ -268,7 +297,12 @@ function* watchFetchCoverPhoto() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchFetchProfilePicture, watchFetchCoverPhoto]
+  return [
+    watchAdd,
+    watchFetchProfilePicture,
+    watchFetchCoverPhoto,
+    watchSyncLocalStorageUser
+  ]
 }
 
 export default sagas
