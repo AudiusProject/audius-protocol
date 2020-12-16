@@ -196,7 +196,7 @@ class Users extends Base {
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
-    this.userStateManager.setCurrentUser({ ...newMetadata })
+    this.userStateManager.updateCurrentUser(newMetadata)
     return newMetadata
   }
 
@@ -287,14 +287,18 @@ class Users extends Base {
    * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
+    let updateUserStateManager = false
     if (profilePictureFile) {
+      updateUserStateManager = true
       const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
       metadata.profile_picture_sizes = resp.dirCID
     }
     if (coverPhotoFile) {
+      updateUserStateManager = true
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
       metadata.cover_photo_sizes = resp.dirCID
     }
+    if (updateUserStateManager) this.userStateManager.updateCurrentUser(metadata)
     return metadata
   }
 
@@ -361,11 +365,11 @@ class Users extends Base {
     this._validateUserMetadata(newMetadata)
 
     // If the new metadata is the same as the original, it is a no-op and exit early
-    const shouldUpdate = this._shouldUpdateMetadata({ originalMetadata, newMetadata })
+    const shouldUpdate = this._shouldUpdateUserStateManager(newMetadata)
     if (!shouldUpdate) { return }
 
     try {
-    // Upload new metadata
+      // Upload new metadata
       phase = phases.UPLOAD_METADATA
       const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
         newMetadata
@@ -380,11 +384,9 @@ class Users extends Base {
 
       // Re-associate the user id with the metadata and block number
       phase = phases.ASSOCIATE_USER
-
-      // force error see what happens
       await this.creatorNode.associateUser(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
-      this.userStateManager.setCurrentUser({ ...originalMetadata, ...newMetadata })
+      this.userStateManager.updateCurrentUser(newMetadata)
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
       throw new Error(`_handleMetadata() Error -- Phase ${phase}: ${e}`)
@@ -392,14 +394,13 @@ class Users extends Base {
   }
 
   /**
-   * Compares the original and new metadata to see if metadata should be updated.
-   * @param {Object}
-   */
-  _shouldUpdateMetadata ({ originalMetadata, newMetadata }) {
-    for (const key of USER_PROPS) {
-      if (originalMetadata[key] !== newMetadata[key]) return true
-    }
-    return false
+ * Compares the original user state to an updated state. Determines if an update is necessary.
+ * @param {Object} newMetadata fields to update in the current user state
+ */
+  _shouldUpdateUserStateManager (newMetadata) {
+    const originalMetadata = this.userStateManager.getCurrentUser()
+    const updatedMetadata = { ...originalMetadata, newMetadata }
+    return JSON.stringify(originalMetadata) === JSON.stringify(updatedMetadata)
   }
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */

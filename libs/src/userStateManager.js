@@ -9,12 +9,27 @@ const supportsLocalStorage = () => typeof window !== 'undefined' && window && wi
  */
 class UserStateManager {
   constructor () {
+    // Should reflect the same fields as discovery node's /users?handle=<handle>
     this.currentUser = null
+
     if (supportsLocalStorage()) {
       window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
     }
   }
 
+  /**
+   * Updates this.currentUser with new fields in the input currentUser
+   * @param {Object} currentUser fields to update this.currentUser with
+   */
+  updateCurrentUser (currentUser) {
+    const updatedCurrentUser = { ...this.currentUser, ...currentUser }
+    this.setCurrentUser(updatedCurrentUser)
+  }
+
+  /**
+   * Sets this.currentUser with currentUser
+   * @param {Object} currentUser fields to override this.currentUser with
+   */
   setCurrentUser (currentUser) {
     this.currentUser = currentUser
     if (supportsLocalStorage()) {
