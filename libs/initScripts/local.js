@@ -176,7 +176,6 @@ const getUsrmLibs = async (defaultAudiusLibs, acctIndex = 20) => {
 const updateUserReplicaSet = async (defaultAudiusLibs) => {
   // UserReplicaBootstrapLibs
   let userReplicaBootstrapAddressLibs = await getUsrmLibs(defaultAudiusLibs, 9)
-
   let sp1Id = 1
   let sp1DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp1Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`)
@@ -186,7 +185,6 @@ const updateUserReplicaSet = async (defaultAudiusLibs) => {
   let sp3Id = 3
   let sp3DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp3Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`)
-
   let userId = 1
   let user1ReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   console.log(`User ${userId} replica set prior to update: ${JSON.stringify(user1ReplicaSet)}`)
