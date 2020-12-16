@@ -144,8 +144,8 @@ const run = async () => {
         break
 
       // TODO: REMOVE SANDBOX
-      case 'sandbox':
-        await sandbox(audiusLibs)
+      case 'update-user-replica-set':
+        await updateUserReplicaSet(audiusLibs)
         break
       default:
         throwArgError()
@@ -163,30 +163,43 @@ run()
 // the 0th account on local data-contracts
 // This function explicitly queries the 20th account from data-contracts ganache
 // Returns libs instance logged in as said account
-const getUsrmLibs = async (defaultAudiusLibs) => {
+const getUsrmLibs = async (defaultAudiusLibs, acctIndex = 20) => {
   let dataWeb3 = defaultAudiusLibs.web3Manager.getWeb3()
   let dataWeb3Accounts = await dataWeb3.eth.getAccounts()
-  let localQueryAccount = dataWeb3Accounts[20]
+  let localQueryAccount = dataWeb3Accounts[acctIndex]
   let usrmLibs = await initAudiusLibs(true, localQueryAccount)
   return usrmLibs
 }
 
-const sandbox = async (defaultAudiusLibs) => {
-  let dataWeb3 = defaultAudiusLibs.web3Manager.getWeb3()
-  let dataWeb3Accounts = await dataWeb3.eth.getAccounts()
-  let localQueryAccount = dataWeb3Accounts[20]
-  // In order to issue operations we need a libs account initialized from a different address than
-  // the 0th account on local data-contracts
-  let usrmLibs = await initAudiusLibs(true, localQueryAccount)
+// Update a user's replica set on chain
+// Using the bootstrap address configured for local development (accounts[9])
+const updateUserReplicaSet = async (defaultAudiusLibs) => {
+  // UserReplicaBootstrapLibs
+  let userReplicaBootstrapAddressLibs = await getUsrmLibs(defaultAudiusLibs, 9)
+
   let sp1Id = 1
-  let sp1DelWal = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp1Id)
+  let sp1DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp1Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`)
   let sp2Id = 2
-  let sp2DelWal = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp2Id)
+  let sp2DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp2Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp2Id} - ${sp2DelWal}`)
   let sp3Id = 3
-  let sp3DelWal = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp3Id)
+  let sp3DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp3Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`)
+
+  let userId = 1
+  let user1ReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  console.log(`User ${userId} replica set prior to update: ${JSON.stringify(user1ReplicaSet)}`)
+  // Uncomment to perform update operation
+  await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+    userId,
+    sp1Id,
+    [sp2Id, sp3Id],
+    user1ReplicaSet.primary,
+    user1ReplicaSet.secondaries
+  )
+  let user1ReplicaSetAfterUpdate = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  console.log(`User ${userId} replica set after to update: ${JSON.stringify(user1ReplicaSet)}`)
 }
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
