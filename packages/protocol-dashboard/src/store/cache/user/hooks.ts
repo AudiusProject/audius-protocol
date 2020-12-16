@@ -166,7 +166,7 @@ const getDelegatorAmounts = async (
       activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
     }
 
-    const profile = await get3BoxProfile(wallet)
+    const profile = await get3BoxProfile(delegatorWallet)
     let img = profile.image || getRandomDefaultImage(delegatorWallet)
 
     delegatorAmounts.push({

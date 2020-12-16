@@ -48,6 +48,7 @@ const DelegatesTable: React.FC<DelegatesTableProps> = ({
       img: delegate.img,
       address: delegate.wallet,
       amount: delegate.amount,
+      name: delegate.name,
       activeAmount: delegate.activeAmount
     }
   })
