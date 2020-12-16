@@ -67,21 +67,86 @@ class DelegateManagerClient extends GovernedContractClient {
     }))
   }
 
+  /* Pass either delegator or serviceProvider filters */
   async getDecreaseDelegateStakeEvents ({
     delegator,
+    serviceProvider,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
-    let events = await contract.getPastEvents('UndelegateStakeRequestEvaluated', {
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    }
+    if (serviceProvider) {
+      filter._serviceProvider = serviceProvider
+    }
+
+    const events = await contract.getPastEvents('UndelegateStakeRequestEvaluated', {
       fromBlock: queryStartBlock,
-      filter: {
-        _delegator: delegator
-      }
+      filter
     })
     return events.map(event => ({
       blockNumber: parseInt(event.blockNumber),
       delegator: event.returnValues._delegator,
-      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
+    }))
+  }
+
+  async getUndelegateStakeRequestedEvents ({
+    delegator,
+    serviceProvider,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    }
+
+    if (serviceProvider) {
+      filter._serviceProvider = serviceProvider
+    }
+
+    const events = await contract.getPastEvents('UndelegateStakeRequested', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock),
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
+    }))
+  }
+
+  async getUndelegateStakeCancelledEvents ({
+    delegator,
+    serviceProvider,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    }
+
+    if (serviceProvider) {
+      filter._serviceProvider = serviceProvider
+    }
+
+    const events = await contract.getPastEvents('UndelegateStakeRequestCancelled', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
       serviceProvider: event.returnValues._serviceProvider
     }))
   }

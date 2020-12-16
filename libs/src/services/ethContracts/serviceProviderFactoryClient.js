@@ -85,6 +85,104 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       this.web3Manager.getWalletAddress())
   }
 
+  async getRegisteredServiceProviderEvents ({
+    serviceType,
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (owner) {
+      filter._owner = owner
+    }
+    if (serviceType) {
+      filter._serviceType = serviceType
+    }
+    const events = await contract.getPastEvents('RegisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      serviceType: event.returnValues._serviceType,
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
+    }))
+  }
+
+  async getIncreasedStakeEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const events = await contract.getPastEvents('IncreasedStake', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
+    }))
+  }
+
+  async getDecreasedStakeEvaluatedEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const events = await contract.getPastEvents('DecreaseStakeRequestEvaluated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
+    }))
+  }
+
+  async getDecreasedStakeRequestedEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const events = await contract.getPastEvents('DecreaseStakeRequested', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
+    }))
+  }
+
+  async getDecreasedStakeCancelledEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const events = await contract.getPastEvents('DecreaseStakeRequestCancelled', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
+    }))
+  }
+
   // Get the deregistered service's most recent endpoint and delegate owner wallet
   async getDeregisteredService ({
     serviceType,
