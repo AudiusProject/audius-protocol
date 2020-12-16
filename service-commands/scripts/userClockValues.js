@@ -4,8 +4,17 @@
  * Script usage: node userClockValues.js <size> <outFile>
  */
 const axios = require('axios')
+const CreatorNode = require('@audius/libs/src/services/creatorNode')
 
 const discoveryProvider = 'https://discoveryprovider.audius.co'
+
+function getClockValue(wallet, creatorNodeBaseURL) {
+  return axios({
+    url: `/users/clock_status/${wallet}`,
+    method: 'get',
+    baseURL: creatorNodeBaseURL
+  })
+}
 
 async function run() {
   try {
@@ -19,20 +28,21 @@ async function run() {
       })
     ).data.data[0]
 
-    const creatorNodes = creatorNodeEndpoint
-      ? creatorNodeEndpoint.split(',')
-      : []
+    primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
+    secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
+    console.log('Primary')
+    const { clockValue } = (
+      await getClockValue(wallet, primaryCreatorNode)
+    ).data
+    console.log(primaryCreatorNode, clockValue)
 
-    creatorNodes.forEach(async creatorNode => {
+    console.log('\nSecondaries')
+    secondaryCreatorNodes.forEach(async secondaryCreatorNode => {
       const { clockValue } = (
-        await axios({
-          url: `/users/clock_status/${wallet}`,
-          method: 'get',
-          baseURL: creatorNode
-        })
+        await getClockValue(wallet, secondaryCreatorNode)
       ).data
 
-      console.log(creatorNode, clockValue)
+      console.log(secondaryCreatorNode, clockValue)
     })
   } catch (err) {
     console.error(err.message)
