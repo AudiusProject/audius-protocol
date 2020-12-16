@@ -22,6 +22,12 @@ const config = convict({
     env: 'dbUrl',
     default: null
   },
+  dbConnectionPoolMax: {
+    doc: 'Max connections in database pool',
+    format: 'nat',
+    env: 'dbConnectionPoolMax',
+    default: 100
+  },
   ipfsHost: {
     doc: 'IPFS host address',
     format: String,
@@ -33,18 +39,6 @@ const config = convict({
     format: 'port',
     env: 'ipfsPort',
     default: null
-  },
-  ipfsClusterIP: {
-    doc: 'The IP address of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'ipaddress',
-    env: 'ipfsClusterIP',
-    default: '127.0.0.1' // somewhat of a hack because convict requires non-null values, will check for this value when used
-  },
-  ipfsClusterPort: {
-    doc: 'The port of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'port',
-    env: 'ipfsClusterPort',
-    default: 0
   },
   storagePath: {
     doc: 'File system path to store raw files that are uploaded',
@@ -130,6 +124,25 @@ const config = convict({
     format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
     env: 'logLevel',
     default: null
+  },
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
   },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',

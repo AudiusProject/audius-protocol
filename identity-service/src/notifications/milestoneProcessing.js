@@ -374,7 +374,7 @@ async function _processMilestone (milestoneType, userId, entityId, entityType, m
       }]
     }
 
-    const metadata = await fetchNotificationMetadata(audiusLibs, milestoneValue, [notifStub])
+    const metadata = await fetchNotificationMetadata(audiusLibs, [milestoneValue], [notifStub])
     const mapNotification = notificationResponseMap[milestoneType]
     try {
       let msgGenNotif = {

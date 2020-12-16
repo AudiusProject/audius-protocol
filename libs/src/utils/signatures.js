@@ -57,7 +57,7 @@ function getDomainSeparator (web3, name, contractAddress, chainId) {
   return Utils.keccak256(encoded)
 }
 
-module.expots = {
+module.exports = {
   sign,
   getPermitDigest
 }

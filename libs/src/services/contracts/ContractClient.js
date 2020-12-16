@@ -132,7 +132,7 @@ class ContractClient {
         retries: METHOD_CALL_MAX_RETRIES,
         onRetry: (err, i) => {
           if (err) {
-            console.log(`Retry error : ${err}`)
+            console.log(`Retry error for ${methodName} : ${err}`)
           }
         }
       })

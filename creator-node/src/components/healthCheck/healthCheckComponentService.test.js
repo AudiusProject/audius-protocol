@@ -25,14 +25,16 @@ describe('Test Health Check', function () {
     config.set('spID', 10)
     let expectedEndpoint = config.get('creatorNodeEndpoint')
     let expectedSpID = config.get('spID')
+    let expectedSpOwnerWallet = config.get('spOwnerWallet')
     const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
-      service: 'creator-node',
+      service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: TEST_ENDPOINT,
       spID: expectedSpID,
+      spOwnerWallet: expectedSpOwnerWallet,
       creatorNodeEndpoint: expectedEndpoint
     })
   })
@@ -41,11 +43,12 @@ describe('Test Health Check', function () {
     const res = await healthCheck({}, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
-      service: 'creator-node',
+      service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: 'none',
       spID: config.get('spID'),
+      spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint')
     })
   })

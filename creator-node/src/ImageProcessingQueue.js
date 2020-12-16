@@ -23,6 +23,10 @@ class ImageProcessingQueue {
         redis: {
           port: config.get('redisPort'),
           host: config.get('redisHost')
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true
         }
       }
     )
@@ -54,7 +58,6 @@ class ImageProcessingQueue {
    * writes the results to file storage
    * @param {string} path to the image file
    * @param {string} fileName name of the original file
-   * @param {string} storagePath app storage path to save files to
    * @param {object<string, number>} sizes
    * @param {string} sizes.key the name of the sized file e.g. 150x150.jpg
    * @param {number} sizes.value the maxWidth resize the image to, e.g. 1000
@@ -77,14 +80,13 @@ class ImageProcessingQueue {
   async resizeImage ({
     file,
     fileName,
-    storagePath,
     sizes,
     square,
     logContext
   }) {
     const job = await this.queue.add(
       PROCESS_NAMES.resizeImage,
-      { file, fileName, storagePath, sizes, square, logContext }
+      { file, fileName, sizes, square, logContext }
     )
     const result = await job.finished()
     return result

@@ -493,3 +493,113 @@ ip={self.ip},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
+
+class RouteMetricsDayMatview(Base):
+    __tablename__ = "route_metrics_day_bucket"
+
+    time = Column(DateTime, nullable=False, primary_key=True)
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<RouteMetricsDayMatview(\
+unique_count={self.unique_count},\
+count={self.count},\
+time={self.time}>"
+
+class RouteMetricsMonthMatview(Base):
+    __tablename__ = "route_metrics_month_bucket"
+
+    time = Column(DateTime, nullable=False, primary_key=True)
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<RouteMetricsMonthMatview(\
+unique_count={self.unique_count},\
+count={self.count},\
+time={self.time}>"
+
+class RouteMetricsTrailingWeek(Base):
+    __tablename__ = "route_metrics_trailing_week"
+
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    PrimaryKeyConstraint(unique_count, count)
+
+    def __repr__(self):
+        return f"<RouteMetricsTrailingWeek(\
+unique_count={self.unique_count},\
+count={self.count}>"
+
+class RouteMetricsTrailingMonth(Base):
+    __tablename__ = "route_metrics_trailing_month"
+
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    PrimaryKeyConstraint(unique_count, count)
+
+    def __repr__(self):
+        return f"<RouteMetricsTrailingMonth(\
+unique_count={self.unique_count},\
+count={self.count}>"
+
+class RouteMetricsAllTime(Base):
+    __tablename__ = "route_metrics_all_time"
+
+    unique_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    PrimaryKeyConstraint(unique_count, count)
+
+    def __repr__(self):
+        return f"<RouteMetricsTrailingAllTime(\
+unique_count={self.unique_count},\
+count={self.count}>"
+
+class AppMetricsTrailingWeek(Base):
+    __tablename__ = "app_name_metrics_trailing_week"
+
+    count = Column(Integer, nullable=False)
+    name = Column(String, nullable=False, primary_key=True)
+
+    def __repr__(self):
+        return f"<AppMetricsTrailingWeek(\
+name={self.name},\
+count={self.count}>"
+
+class AppMetricsTrailingMonth(Base):
+    __tablename__ = "app_name_metrics_trailing_month"
+
+    count = Column(Integer, nullable=False)
+    name = Column(String, nullable=False, primary_key=True)
+
+    def __repr__(self):
+        return f"<AppMetricsTrailingMonth(\
+name={self.name},\
+count={self.count}>"
+
+class AppMetricsAllTime(Base):
+    __tablename__ = "app_name_metrics_all_time"
+
+    count = Column(Integer, nullable=False)
+    name = Column(String, nullable=False, primary_key=True)
+
+    def __repr__(self):
+        return f"<AppMetricsAllTime(\
+name={self.name},\
+count={self.count}>"
+
+class TagTrackUserMatview(Base):
+    __tablename__ = "tag_track_user"
+
+    tag = Column(String, nullable=False)
+    track_id = Column(Integer, nullable=False)
+    owner_id = Column(Integer, nullable=False)
+
+    PrimaryKeyConstraint(tag, track_id, owner_id)
+
+    def __repr__(self):
+        return f"<TagTrackUserMatview(\
+tag={self.tag},\
+track_id={self.track_id},\
+owner_id={self.owner_id}>"

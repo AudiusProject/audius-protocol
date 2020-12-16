@@ -8,7 +8,7 @@ const PROCESS_NAMES = Object.freeze({
   rehydrate_file: 'rehydrate_file'
 })
 
-const MAX_COUNT = 50000
+const MAX_COUNT = 10000
 
 class RehydrateIpfsQueue {
   constructor () {
@@ -18,6 +18,10 @@ class RehydrateIpfsQueue {
         redis: {
           host: config.get('redisHost'),
           port: config.get('redisPort')
+        },
+        defaultJobOptions: {
+          removeOnComplete: true,
+          removeOnFail: true
         }
       }
     )

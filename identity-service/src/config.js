@@ -81,6 +81,12 @@ const config = convict({
     env: 'instagramAPISecret',
     default: null
   },
+  instagramRedirectUrl: {
+    doc: 'Instagram API Redirect url',
+    format: String,
+    env: 'instagramRedirectUrl',
+    default: null
+  },
   relayerPrivateKey: {
     doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
@@ -203,6 +209,25 @@ const config = convict({
     format: String,
     env: 'rateLimitingListensIPWhitelist',
     default: null
+  },
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
   },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
@@ -436,6 +461,12 @@ const config = convict({
     format: String,
     env: 'defiPulseApiKey',
     default: ''
+  },
+  ethRelayerProdGasTier: {
+    doc: 'One of averageGweiHex/fastGweiHex/fastestGweiHex',
+    format: String,
+    env: 'ethRelayerProdGasTier',
+    default: 'fastGweiHex'
   }
 })
 

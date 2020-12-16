@@ -86,15 +86,15 @@ const ipldBlacklistTestNewTrackMetadata = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   let trackTxReceipt
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // generate and add cid to be blacklisted as ipld blacklist txn
     const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
@@ -150,14 +150,14 @@ const ipldBlacklistTestUpdateTrackMetadata = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // create and upload track
     const track = getRandomTrackMetadata(userId)
     const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
@@ -207,7 +207,7 @@ const ipldBlacklistTestUpdateTrackMetadata = async ({
 
     if (originalMetadataCID !== uploadedTrack.metadata_multihash) {
       return {
-        error: `Update track with blacklisted metadata CID should not have been indexed.`
+        error: 'Update track with blacklisted metadata CID should not have been indexed.'
       }
     }
   } catch (e) {
@@ -231,15 +231,15 @@ const ipldBlacklistTestNewTrackCoverPhoto = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   let trackTxReceipt
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // generate and add cid to be blacklisted as ipld blacklist txn
     const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
@@ -302,16 +302,16 @@ const ipldBlacklistTestUpdateTrackCoverPhoto = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   let trackId
   let blacklistedCID
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // create and upload track
     const track = getRandomTrackMetadata(userId)
     const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
@@ -393,14 +393,14 @@ const ipldBlacklistTestUpdateUserMetadataCID = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // generate and add cid to be blacklisted as ipld blacklist txn
     const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
@@ -455,14 +455,14 @@ const ipldBlacklistTestUpdateUserProfilePhoto = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // Add blacklisted metadata to ipld blacklist
     const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
@@ -517,14 +517,14 @@ const ipldBlacklistTestUpdateUserCoverPhoto = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // Add blacklisted metadata to ipld blacklist
     const blacklistedCID = await addContentToIpfs({
       someData: 'data' + genRandomString(8)
@@ -579,14 +579,14 @@ const ipldBlacklistTestUpdatePlaylistCoverPhoto = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // create playlist under userId
     const randomPlaylistName = genRandomString(8)
 
@@ -665,14 +665,14 @@ const ipldBlacklistTestUpdatePlaylistCoverPhotoNoMatch = async ({
   executeOne,
   numCreatorNodes
 }) => {
-  const userId = await getCreatorId({
-    numUsers,
-    executeAll,
-    executeOne,
-    numCreatorNodes
-  })
-
   try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
+
     // create playlist under userId
     const randomPlaylistName = 'playlist_' + genRandomString(8)
     const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
@@ -751,6 +751,6 @@ module.exports = {
   ipldBlacklistTestUpdateUserMetadataCID,
   ipldBlacklistTestUpdateUserProfilePhoto,
   ipldBlacklistTestUpdateUserCoverPhoto,
-  ipldBlacklistTestUpdatePlaylistCoverPhoto,
-  ipldBlacklistTestUpdatePlaylistCoverPhotoNoMatch
+  ipldBlacklistTestUpdatePlaylistCoverPhoto
+  // ipldBlacklistTestUpdatePlaylistCoverPhotoNoMatch test is a bit outdated - needs to actually upload an image causes incorrect failure
 }

@@ -25,7 +25,8 @@ const notificationTypes = Object.freeze({
   MilestoneRepost: 'MilestoneRepost',
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
-  Announcement: 'Announcement'
+  Announcement: 'Announcement',
+  TrendingTrack: 'TrendingTrack'
 })
 
 const actionEntityTypes = Object.freeze({

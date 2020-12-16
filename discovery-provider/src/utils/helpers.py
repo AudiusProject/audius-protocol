@@ -31,6 +31,16 @@ def bytes32_to_str(bytes32input):
     bytes32_stripped = bytes32input.rstrip(b"\x00")
     return bytes32_stripped.decode("utf8")
 
+# Regex used to verify valid FQDN
+fqdn_regex = re.compile(r'^(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$')
+
+# Helper function to check if a given string is a valid FQDN
+def is_fqdn(endpoint_str):
+    # Regex used to verify valid FQDN
+    valid_endpoint = fqdn_regex.match(endpoint_str)
+    if valid_endpoint:
+        return True
+    return False
 
 # relationships_to_include is a list of table names that have relationships to be added
 # and returned in the model_dict
@@ -132,6 +142,7 @@ def configure_flask_app_logging(app, loglevel_str):
         now = time.time()
         duration = int((now - g.start) * 1000)
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        ip = ip.split(',')[0].strip()
         host = request.host.split(':', 1)[0]
         args = request.query_string.decode("utf-8")
 
@@ -158,7 +169,7 @@ def configure_flask_app_logging(app, loglevel_str):
         return response
 
 
-def loadAbiValues():
+def load_abi_values():
     abiDir = os.path.join(os.getcwd(), "build", "contracts")
     jsonFiles = os.listdir(abiDir)
     loaded_abi_values = {}
@@ -169,6 +180,17 @@ def loadAbiValues():
             loaded_abi_values[data["contractName"]] = data
     return loaded_abi_values
 
+# Load Ethereum ABI values
+def load_eth_abi_values():
+    abiDir = os.path.join(os.getcwd(), "build", "eth-contracts")
+    jsonFiles = os.listdir(abiDir)
+    loaded_abi_values = {}
+    for contractJsonFile in jsonFiles:
+        fullPath = os.path.join(abiDir, contractJsonFile)
+        with open(fullPath) as f:
+            data = json.load(f)
+            loaded_abi_values[data["contractName"]] = data
+    return loaded_abi_values
 
 def remove_test_file(filepath):
     """ Try and remove a file, no-op if not present """

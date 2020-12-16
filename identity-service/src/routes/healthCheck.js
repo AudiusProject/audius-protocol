@@ -14,11 +14,8 @@ let notifDiscProv = config.get('notificationDiscoveryProvider')
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
-const RELAY_HEALTH_MIN_NUM_USERS = 3 // min number of users affected to qualify for error
 const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
-// if (txs on blockchain / attempted) is less than this percent, health check will error
-// eg. 10 transactions on chain but 120 attempts should error
-const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
+const RELAY_HEALTH_MIN_TRANSACTIONS = 5 // min number of tx's that must have happened within block diff
 const RELAY_HEALTH_ACCOUNTS = new Set(config.get('relayerWallets').map(wallet => wallet.publicKey))
 const ETH_RELAY_HEALTH_ACCOUNTS = new Set(config.get('ethRelayerWallets').map(wallet => wallet.publicKey))
 
@@ -47,7 +44,7 @@ module.exports = function (app) {
     let blockDiff = parseInt(req.query.blockDiff, 10) || RELAY_HEALTH_TEN_MINS_AGO_BLOCKS
     let maxTransactions = parseInt(req.query.maxTransactions, 10) || RELAY_HEALTH_MAX_TRANSACTIONS
     let maxErrors = parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
-    let sentVsAttemptThreshold = parseFloat(req.query.sentVsAttemptThreshold) || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
+    let minTransactions = parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
     let isVerbose = req.query.verbose || false
 
     // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
@@ -121,8 +118,6 @@ module.exports = function (app) {
     }
 
     let isError = false
-    if (Object.keys(failureTxs).length >= RELAY_HEALTH_MIN_NUM_USERS &&
-      flatten(Object.values(failureTxs)).length > maxErrors) isError = true
 
     // delete old entries from set in redis
     const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
@@ -134,11 +129,12 @@ module.exports = function (app) {
     const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, maxBlockTime)
     const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, maxBlockTime)
     const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, maxBlockTime)
-    if ((txCounter / attemptedTxsInRedis.length) < sentVsAttemptThreshold) isError = true
+    if (txCounter < minTransactions) isError = true
 
     const serverResponse = {
       blockchain: {
         numberOfTransactions: txCounter,
+        minTransactions,
         numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
         failedTransactionHashes: failureTxs,
         startBlock: startBlockNumber,
@@ -278,13 +274,13 @@ module.exports = function (app) {
     let idleConnections = null
 
     // Get number of open DB connections
-    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_identity_service'")
+    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_centralized_service'")
     if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
       numConnections = numConnectionsQuery[0][0].numbackends
     }
 
     // Get detailed connection info
-    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_identity_service'"))
+    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_centralized_service'"))
     if (connectionInfoQuery && connectionInfoQuery[0]) {
       connectionInfo = connectionInfoQuery[0]
       activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length

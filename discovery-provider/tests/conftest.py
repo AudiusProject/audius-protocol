@@ -76,7 +76,7 @@ def contracts(app):  # pylint: disable=redefined-outer-name
 
     registry_address = web3.toChecksumAddress(app.config["contracts"]["registry"])
 
-    abi_values = helpers.loadAbiValues()
+    abi_values = helpers.load_abi_values()
     registry_return_val = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )

@@ -99,7 +99,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   }
 
   try {
-    req.logger.info('relayTx - selected wallet', wallet.publicKey)
+    req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`)
     const { receipt, txParams } = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, req.logger, gasLimit, encodedABI)
     txReceipt = receipt
 
@@ -111,19 +111,19 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       nonce: txParams.nonce
     }
     await redis.zadd('relayTxAttempts', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
-    req.logger.info(`txRelay - sending a transaction for wallet ${wallet.publicKey} to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(txParams.gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${txParams.nonce}`)
+    req.logger.info(`L2 - txRelay - sending a transaction for wallet ${wallet.publicKey} to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(txParams.gasPrice, 16)}, gasLimit ${gasLimit}, nonce ${txParams.nonce}`)
 
     await redis.zadd('relayTxSuccesses', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     await redis.hset('txHashToSenderAddress', receipt.transactionHash, senderAddress)
   } catch (e) {
-    req.logger.error('txRelay - Error in relay', e)
+    req.logger.error('L2 - txRelay - Error in relay', e)
     await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     throw e
   } finally {
     wallet.locked = false
   }
 
-  req.logger.info(`txRelay - success, req ${reqBodySHA}`)
+  req.logger.info(`L2 - txRelay - success, req ${reqBodySHA}`)
 
   await models.Transaction.create({
     contractRegistryKey: contractRegistryKey,
@@ -154,9 +154,7 @@ const selectWallet = () => {
   while (count++ < relayerWallets.length) {
     const wallet = relayerWallets[i++ % relayerWallets.length]
 
-    logger.info(`txRelay - trying to select wallet ${wallet.publicKey}`)
     if (!wallet.locked) {
-      logger.info(`txRelay - selected wallet ${wallet.publicKey}`)
       wallet.locked = true
       selectedWallet = wallet
       return selectedWallet

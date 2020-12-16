@@ -70,16 +70,21 @@ var UnreadNotifications = function UnreadNotifications(_ref) {
   }, message);
 };
 
+var getNumberSuffix = function getNumberSuffix(num) {
+  if (num === 1) return 'st';else if (num === 2) return 'nd';else if (num === 3) return 'rd';
+  return 'th';
+};
+
 var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.NotificationType.Favorite, function (notification) {
   var _notification$users = _slicedToArray(notification.users, 1),
       user = _notification$users[0];
 
-  return "".concat(user.name, " favorited your ").concat(notification.entity.name);
+  return "".concat(user.name, " favorited your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Repost, function (notification) {
   var _notification$users2 = _slicedToArray(notification.users, 1),
       user = _notification$users2[0];
 
-  return "".concat(user.name, " reposted your ").concat(notification.entity.name);
+  return "".concat(user.name, " reposted your ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.Follow, function (notification) {
   var _notification$users3 = _slicedToArray(notification.users, 1),
       user = _notification$users3[0];
@@ -92,8 +97,12 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     var entity = notification.entity.type.toLowerCase();
     return "Your ".concat(entity, " ").concat(notification.entity.name, " has reached over ").concat(notification.value, " ").concat(notification.achievement, "s");
   } else {
-    return "You have reached over ".concat(notification.value, " Followers ");
+    return "You have reached over ".concat(notification.value, " Followers");
   }
+}), _defineProperty(_snippetMap, _Notification.NotificationType.TrendingTrack, function (notification) {
+  var rank = notification.rank;
+  var suffix = getNumberSuffix(rank);
+  return "Your Track ".concat(notification.entity.title, " is ").concat(notification.rank).concat(suffix, " on Trending Right Now!");
 }), _defineProperty(_snippetMap, _Notification.NotificationType.UserSubscription, function (notification) {
   var _notification$users4 = _slicedToArray(notification.users, 1),
       user = _notification$users4[0];
@@ -102,7 +111,7 @@ var snippetMap = (_snippetMap = {}, _defineProperty(_snippetMap, _Notification.N
     return "".concat(user.name, " released ").concat(notification.entity.count, " new ").concat(notification.entity.type);
   }
 
-  return "".concat(user.name, " released a new ").concat(notification.entity.type, "  ").concat(notification.entity.name);
+  return "".concat(user.name, " released a new ").concat(notification.entity.type.toLowerCase(), " ").concat(notification.entity.name);
 }), _defineProperty(_snippetMap, _Notification.NotificationType.RemixCreate, function (notification) {
   var parentTrack = notification.parentTrack;
   return "New remix of your track ".concat(parentTrack.title);
