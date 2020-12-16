@@ -117,7 +117,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
         ) : (
           <UserStakedStat
             wallet={user.wallet}
-            totalDelegates={totalDelegates}
+            totalDelegates={activeStake}
             totalDelegatesStatus={totalDelegatesStatus}
           />
         )}
