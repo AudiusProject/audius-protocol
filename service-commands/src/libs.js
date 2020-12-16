@@ -259,7 +259,7 @@ function LibsWrapper (walletIndex = 0) {
     const creatorNodeEndpoints = userAccount.creator_node_endpoint
     if (creatorNodeEndpoints) {
       const primary = CreatorNode.getPrimary(creatorNodeEndpoints)
-      this.creatorNode.setEndpoint(primary)
+      this.libsInstance.creatorNode.setEndpoint(primary)
     }
   }
 
