@@ -46,7 +46,7 @@ class DiscoveryProvider {
   }
 
   /**
-   * get users with all relevant user data
+   * Get users with all relevant user data
    * can be filtered by providing an integer array of ids
    * @param {number} limit
    * @param {number} offset
