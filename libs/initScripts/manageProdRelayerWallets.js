@@ -133,7 +133,9 @@ const fundEthRelayerIfEmpty = async () => {
     // 0.1 eth =           100000000000000000 wei
 
     // 0.25 eth =          250000000000000000
-    const minimumBalance = 250000000000000000
+    // const minimumBalance = 250000000000000000
+    // 0.05 eth
+    const minimumBalance = 50000000000000000
 
     let gasInfo
     let gasPrice
