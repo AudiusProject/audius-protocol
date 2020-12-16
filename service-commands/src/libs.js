@@ -264,14 +264,6 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
-   * Wrapper for libsInstance.creatorNode.getClockValuesFromReplicaSet()
-   */
-  this.getClockValuesFromReplicaSet = async () => {
-    assertLibsDidInit()
-    return this.libsInstance.creatorNode.getClockValuesFromReplicaSet()
-  }
-
-  /**
    * Gets the user associated with the wallet set in libs
    */
   this.getLibsUserInfo = async () => {
