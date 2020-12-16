@@ -12,6 +12,7 @@ import { getBalance } from 'store/wallet/slice'
 import { getRemoteVar, IntKeys } from 'services/remote-config'
 import { DASHBOARD_PAGE } from 'utils/route'
 import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
+import { retrieveTracks } from 'store/cache/tracks/utils'
 
 function* fetchDashboardAsync(action) {
   yield call(waitForBackendSetup)
@@ -52,10 +53,10 @@ function* fetchDashboardAsync(action) {
   // Hit discprov to get the full unlisted tracks
   let fullUnlistedTracks = []
   if (unlistedTracksIdentifiers.length) {
-    fullUnlistedTracks = yield call(
-      AudiusBackend.getTracksIncludingUnlisted,
-      identifiersWithRouteURL
-    )
+    fullUnlistedTracks = yield call(retrieveTracks, {
+      trackIds: identifiersWithRouteURL,
+      canBeUnlisted: true
+    })
   }
 
   if (
