@@ -42,6 +42,8 @@ function parseArgs() {
  * It is also guaranteed to be random and unique across multiple runs.
  *
  * The output file is stored at the directory from which the script was called.
+ *
+ * See https://ffmpeg.org/ffmpeg-filters.html#anoisesrc for more information.
  */
 function whitenoise(size, outFile) {
   return new Promise((resolve, reject) => {
@@ -49,10 +51,10 @@ function whitenoise(size, outFile) {
       '-f',
       'lavfi',
       '-i',
-      `anoisesrc=d=${(1024 * size) / 8064}`,
+      `anoisesrc=d=${(1024 * size) / 8064}`, // generate a noise audio signal for the duration of <size> KiB
       outFile,
       '-y'
-    ]) // See https://ffmpeg.org/ffmpeg-filters.html#anoisesrc for more information.
+    ])
 
     process.stderr.on('data', data => {
       console.log(data.toString('utf8'))
