@@ -8,21 +8,27 @@
     ]
   },
   "network": {
-    "up": ["docker network create -d bridge audius_dev"],
-    "down": ["docker network rm audius_dev"]
+    "up": [
+      "docker network create -d bridge audius_dev"
+    ],
+    "down": [
+      "docker network rm audius_dev"
+    ]
   },
   "contracts": {
     "up": [
       "cd contracts/",
       "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100",
       "echo 'Waiting for ganache to fully come online...'",
-      "sleep 5",
+      "sleep 10",
       "echo 'Migrating contracts'",
       "cd contracts/; node_modules/.bin/truffle migrate",
       "echo 'Writing flask config'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run"
     ],
-    "down": ["cd contracts/; npm run ganache-q"]
+    "down": [
+      "cd contracts/; npm run ganache-q"
+    ]
   },
   "eth-contracts": {
     "path": "eth-contracts",
@@ -34,29 +40,51 @@
       "echo 'Migrating eth contracts'",
       "cd eth-contracts/; node_modules/.bin/truffle migrate"
     ],
-    "down": ["cd eth-contracts/; npm run ganache-q"]
+    "down": [
+      "cd eth-contracts/; npm run ganache-q"
+    ]
   },
   "ipfs": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node"
+    ]
   },
   "ipfs-2": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-2"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-2"
+    ]
   },
   "ipfs-3": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-3"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-3"
+    ]
   },
   "ipfs-4": {
-    "up": ["libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"],
-    "down": ["libs/scripts/ipfs.sh down local-ipfs-node-4"]
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-4"
+    ]
   },
   "init-contracts-info": {
-    "up": ["cd libs/; sh ./scripts/migrate_contracts.sh"]
+    "up": [
+      "cd libs/; sh ./scripts/migrate_contracts.sh"
+    ]
   },
   "init-token-versions": {
-    "up": ["cd libs/; node initScripts/local.js init-all"]
+    "up": [
+      "cd libs/; node initScripts/local.js init-all"
+    ]
   },
   "discovery-provider": {
     "protocol": "http",
@@ -72,7 +100,9 @@
     "down": [
       "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down"
     ],
-    "register": ["cd libs/; node initScripts/local.js register-discprov-1"]
+    "register": [
+      "cd libs/; node initScripts/local.js register-discprov-1"
+    ]
   },
   "content-service": {
     "protocol": "http",
@@ -96,8 +126,12 @@
     "down": [
       "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
-    "register": ["cd libs/; node initScripts/local.js register-cnode #"],
-    "update-delegate-wallet": ["cd libs/; node initScripts/local.js update-cnode-config #"]
+    "register": [
+      "cd libs/; node initScripts/local.js register-cnode #"
+    ],
+    "update-delegate-wallet": [
+      "cd libs/; node initScripts/local.js update-cnode-config #"
+    ]
   },
   "identity-service": {
     "protocol": "http",
@@ -113,9 +147,13 @@
     ]
   },
   "distribute": {
-    "up": ["node libs/initScripts/local.js distribute"]
+    "up": [
+      "node libs/initScripts/local.js distribute"
+    ]
   },
   "init-repos": {
-    "up": [". scripts/init-repos.sh"]
+    "up": [
+      ". scripts/init-repos.sh"
+    ]
   }
 }

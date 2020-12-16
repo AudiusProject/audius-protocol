@@ -51,6 +51,7 @@ type enum values =
   | 'MilestoneFollow'
   | 'RemixCreate'
   | 'RemixCosign'
+  | 'TrendingTrack'
 ```
 \* ___Note that the entityId will vary based on the notification. To be explained in the notification types section___
 
@@ -143,6 +144,18 @@ TODO: Fill out information about the flow & script to automate the process.
 **Milestone**  
 TODO: Fill in this section. 
 Note: Milestones use a different flow from the other notifications.
+
+**TrendingTrack**  
+Scenario: User U1 posts track T1 which breaking into the top 10 weekly trending tracks as number 3  
+DB Entries
+* Notification - userId: U1, entityId: T1, type: 'TrendingTrack'
+  * NotificationAction - actionEntityType: 'weekly-all', entityId: 3
+
+A notification is only created if the track is in the top 10 trending list. 
+These notifications do not stack meaning a new notification with be created if the track moves up 
+the trending list. 
+If a track in the same genre already has a notification and 6 hours has passed and it has moved up the 
+trending list, then another notification is created.  
 
 **RemixCreate**  
 Scenario: User U1 uploads track T1 that remixes track T2 owned by user U2  

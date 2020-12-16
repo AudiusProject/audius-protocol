@@ -18,6 +18,7 @@ const { drainPublishedMessages } = require('./notificationQueue')
 const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
+const { indexTrendingTracks } = require('./trendingTrackProcessing')
 const sendNotifications = require('./sendNotifications/index.js')
 
 class NotificationProcessor {
@@ -198,6 +199,9 @@ class NotificationProcessor {
       await sendNotifications(audiusLibs, notifications, tx)
 
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
+
+      // Fetch trending track milestones
+      await indexTrendingTracks(audiusLibs, tx)
 
       // Commit
       await tx.commit()

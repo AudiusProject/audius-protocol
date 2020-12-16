@@ -10,6 +10,7 @@ def update_views(self, db):
         session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict")
+        session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
         logger.info('index_materialized_views.py | Finished updating materialized views')
 
 ######## CELERY TASKS ########
@@ -23,7 +24,7 @@ def update_materialized_views(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("materialized_view_lock", timeout=7200)
+    update_lock = redis.lock("materialized_view_lock", timeout=60*5)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)

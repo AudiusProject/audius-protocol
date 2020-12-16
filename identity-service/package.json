@@ -33,6 +33,7 @@
     "express": "^4.16.3",
     "express-rate-limit": "^3.4.0",
     "handlebars": "^4.4.3",
+    "hashids": "^2.2.2",
     "ioredis": "^4.9.0",
     "mailgun-js": "^0.22.0",
     "moment": "^2.24.0",
