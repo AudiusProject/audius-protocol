@@ -41,16 +41,22 @@ class DelegateManagerClient extends GovernedContractClient {
     }
   }
 
+  /* Pass either delegator or serviceProvider filters */
   async getIncreaseDelegateStakeEvents ({
     delegator,
+    serviceProvider,
     queryStartBlock = 0
   }) {
     const contract = await this.getContract()
+    const filter = {}
+    if (delegator) {
+      filter._delegator = delegator
+    } else {
+      filter._serviceProvider = serviceProvider
+    }
     let events = await contract.getPastEvents('IncreaseDelegatedStake', {
       fromBlock: queryStartBlock,
-      filter: {
-        _delegator: delegator
-      }
+      filter
     })
 
     return events.map(event => ({
@@ -245,6 +251,15 @@ class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod(
       'getTotalDelegatedToServiceProvider',
       serviceProvider
+    )
+    const info = await method.call()
+    return Utils.toBN(info)
+  }
+
+  async getTotalDelegatorStake (delegator) {
+    const method = await this.getMethod(
+      'getTotalDelegatorStake',
+      delegator
     )
     const info = await method.call()
     return Utils.toBN(info)
