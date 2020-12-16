@@ -199,7 +199,7 @@ const updateUserReplicaSet = async (defaultAudiusLibs) => {
     user1ReplicaSet.secondaries
   )
   let user1ReplicaSetAfterUpdate = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
-  console.log(`User ${userId} replica set after to update: ${JSON.stringify(user1ReplicaSet)}`)
+  console.log(`User ${userId} replica set after to update: ${JSON.stringify(user1ReplicaSetAfterUpdate)}`)
 }
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
