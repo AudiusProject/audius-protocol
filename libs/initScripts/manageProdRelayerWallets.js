@@ -4,9 +4,9 @@ const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
 const axios = require('axios')
 
-// Switch to mainnet eth
-// const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
-const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
+// Switch to mainnet eth - ropsten is enabled by default to prevent accidental prod manipulation
+const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a49d0044e7ddd668'
+// const ethWeb3ProviderEndpoint = 'https://mainnet.infura.io/v3/3a78237a7f4f42e69cf69cf9db7cecd6'
 // const ethWeb3ProviderEndpoint = 'https://eth-mainnet.alchemyapi.io/v2/iSnek4T02BFCUEkcPGKo0eEY1aWLJgxF'
 
 const fs = require('fs')
@@ -14,6 +14,20 @@ const readline = require('readline')
 
 // Length of eth relayer array
 const ModNumber = 51
+
+
+// 0.0001 ETH, 100000000000000 wei
+
+// TBD: Actual target minimum for each relayer
+// const minimumBalance = 100000000000000
+
+// 0.1 eth =           100000000000000000 wei
+
+// 0.25 eth =          250000000000000000
+// const minimumBalance = 250000000000000000
+// 0.075 eth
+const minimumBalance = 75000000000000000
+
 
 const ethWeb3 = new Web3(new Web3.providers.HttpProvider(ethWeb3ProviderEndpoint))
 
@@ -30,7 +44,16 @@ Expected format of prod-relayer-config.json
     }
 */
 
-const prodRelayerInfo = require('./prod-relayer-config.json')
+/**
+ * Make sure you save the `prod-relayer-config.json` file from LastPass to libs/initScripts
+ */
+
+const configFilePath = './prod-relayer-config.json'
+if (!fs.existsSync(configFilePath)) {
+  throw new Error('Please ensure you have prod-relayer-config.json saved locally and have set the path')
+}
+
+const prodRelayerInfo = require(configFilePath)
 
 const generateNewAccounts = async () => {
     let numWallets = 1
@@ -53,16 +76,16 @@ const queryAccountBalances = async (wallets) => {
     for (let i = 0; i < wallets.length; i++) {
         let pubKey = wallets[i].publicKey
         let balance = await ethWeb3.eth.getBalance(pubKey)
-        console.log(`Found balance ${balance} for ${pubKey}`)
+        console.log(`Found balance ${ethWeb3.utils.fromWei(balance)} eth (${balance} wei) for ${pubKey}`)
     }
-    console.log(`Queried ${wallets.length} wallets`)
+    console.log(`\n\nQueried ${wallets.length} wallets`)
 }
 
 const queryRelayerBalances = async () => {
     let gasInfo = await getGasPrice() 
     let walletInfo = await loadProdRelayerWallets()
     await queryAccountBalances(walletInfo.relayerWallets)
-    console.log(gasInfo)
+    console.log(gasInfo, '\n')
 }
 
 const loadProdRelayerWallets = async () => {
@@ -74,7 +97,9 @@ const loadProdRelayerWallets = async () => {
     let relayerWallets = prodRelayerInfo.relayerWallets
     // console.log(relayerWallets)
     let funderbalance = await ethWeb3.eth.getBalance(funder.publicKey)
-    console.log(`Funder ${funder.publicKey} balance: ${funderbalance.toString()}`)
+    console.log(`\nFunder ${funder.publicKey} balance: ${ethWeb3.utils.fromWei(funderbalance)} eth (${funderbalance} wei)`)
+    
+    console.log(`Minimum relayer balance: ${ethWeb3.utils.fromWei(minimumBalance.toString())} eth (${minimumBalance.toString()} wei)\n\n`)
 
     return { funder, relayerWallets }
 }
@@ -121,21 +146,8 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, ga
 
 const fundEthRelayerIfEmpty = async () => {
     let walletInfo = await loadProdRelayerWallets()
-    let funderbalance = await ethWeb3.eth.getBalance(walletInfo.funder.publicKey)
-    console.log(`Funder balance: ${funderbalance.toString()}`)
+
     let relayerWallets = walletInfo.relayerWallets
-
-    // 0.0001 ETH, 100000000000000 wei
-
-    // TBD: Actual target minimum for each relayer
-    // const minimumBalance = 100000000000000
-
-    // 0.1 eth =           100000000000000000 wei
-
-    // 0.25 eth =          250000000000000000
-    // const minimumBalance = 250000000000000000
-    // 0.05 eth
-    const minimumBalance = 50000000000000000
 
     let gasInfo
     let gasPrice
