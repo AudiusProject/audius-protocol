@@ -4,4 +4,3 @@
 *.swn
 .vscode
 node_modules/
-*/prod-relayer-config.json

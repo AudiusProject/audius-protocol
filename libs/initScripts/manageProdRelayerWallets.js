@@ -10,7 +10,6 @@ const ethWeb3ProviderEndpoint = 'https://ropsten.infura.io/v3/c569c6faf4f14d15a4
 // const ethWeb3ProviderEndpoint = 'https://eth-mainnet.alchemyapi.io/v2/iSnek4T02BFCUEkcPGKo0eEY1aWLJgxF'
 
 const fs = require('fs')
-const readline = require('readline')
 
 // Length of eth relayer array
 const ModNumber = 51
@@ -195,38 +194,3 @@ const run = async () => {
 }
 
 run()
-
-/*
-const calculateProdRelayDistribution = async () => {
-    const fileStream = fs.createReadStream('prod-wallets.txt')
-    const rl = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-    })
-
-    let numLines = 0
-    let maxLines = 100000
-    // { calculatedIndex: NumHits }
-    let indexCounts = {}
-
-    let output = []
-
-    for await (const line of rl) {
-        let parsedInt = parseInt(line, 16)
-        let calculatedIndex = parsedInt % ModNumber
-
-        output.push(`${line} - int=${parsedInt}, index=${calculatedIndex}`)
-        if(!indexCounts[calculatedIndex]) indexCounts[calculatedIndex] = 0
-
-        indexCounts[calculatedIndex] += 1
-
-        numLines+=1
-
-        if (numLines >= maxLines) {
-            break
-        }
-    }
-    console.dir(indexCounts)
-    fs.writeFileSync(`${Date.now()}_output.txt`, output.join('\n'))
-}
-*/
