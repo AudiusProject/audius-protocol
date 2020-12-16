@@ -57,7 +57,8 @@ export function fetchTimeline(
       aud.Governance.getProposalsForAddresses([wallet]),
       aud.Delegate.getIncreaseDelegateStakeEvents(wallet),
       aud.Delegate.getDecreaseDelegateStakeEvents(wallet),
-      aud.Delegate.getClaimEvents(wallet)
+      aud.Delegate.getClaimEvents(wallet),
+      aud.Delegate.getReceiveDelegationIncreaseEvents(wallet)
     ])
 
     const timeline = combineEvents(...events).reverse()

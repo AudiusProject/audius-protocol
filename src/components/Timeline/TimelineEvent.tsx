@@ -140,15 +140,22 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     )
   }
 
-  if ('delegator' in event && 'increaseAmount' in event) {
+  if (
+    'delegator' in event &&
+    'increaseAmount' in event &&
+    'direction' in event
+  ) {
+    const received = event.direction === 'RECEIVED'
+
     const onClick = () => {
       if (parentOnClick) parentOnClick()
-      pushRoute(accountPage(event.serviceProvider))
+      pushRoute(accountPage(received ? event.delegator : event.serviceProvider))
     }
-    const header = 'DELEGATED'
+
+    const header = received ? 'DELEGATION' : 'DELEGATED'
     const title = (
       <span className={styles.titleContainer}>
-        {`Delegated`}
+        {received ? `Received` : `Delegated`}
         <Tooltip
           position={Position.TOP}
           text={formatWei(event.increaseAmount)}
@@ -156,9 +163,11 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
         >
           {formatAud(event.increaseAmount)}
         </Tooltip>
-        {`${TICKER} to `}
+        {`${TICKER} ${received ? 'from' : 'to'} `}
         <span className={styles.titleSpacingLeft}>
-          {formatShortWallet(event.serviceProvider)}
+          {formatShortWallet(
+            received ? event.delegator : event.serviceProvider
+          )}
         </span>
       </span>
     )
