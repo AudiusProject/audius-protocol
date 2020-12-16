@@ -185,7 +185,17 @@ export default class Delegate {
     const info = await this.getContract().getIncreaseDelegateStakeEvents({
       delegator
     })
-    return info
+    return info.map((i: any) => ({ ...i, direction: 'SENT' }))
+  }
+
+  async getReceiveDelegationIncreaseEvents(
+    serviceProvider: Address
+  ): Promise<Array<IncreaseDelegateStakeEvent>> {
+    await this.aud.hasPermissions()
+    const info = await this.getContract().getIncreaseDelegateStakeEvents({
+      serviceProvider
+    })
+    return info.map((i: any) => ({ ...i, direction: 'RECEIVED' }))
   }
 
   async getDecreaseDelegateStakeEvents(
