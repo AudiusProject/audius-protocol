@@ -104,17 +104,47 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     })
     return events.map(event => ({
       blockNumber: parseInt(event.blockNumber),
-      serviceType: event.returnValues._serviceType,
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
       owner: event.returnValues._owner,
       endpoint: event.returnValues._endpoint,
       stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
     }))
   }
 
+  async getDeregisteredServiceProviderEvents ({
+    serviceType,
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (owner) {
+      filter._owner = owner
+    }
+    if (serviceType) {
+      filter._serviceType = serviceType
+    }
+    const events = await contract.getPastEvents('DeregisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
+    }))
+  }
+
+
   async getIncreasedStakeEvents ({
     owner,
     queryStartBlock = 0
   }) {
+    const contract = await this.getContract()
     const events = await contract.getPastEvents('IncreasedStake', {
       fromBlock: queryStartBlock,
       filter: {
@@ -133,6 +163,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     owner,
     queryStartBlock = 0
   }) {
+    const contract = await this.getContract()
     const events = await contract.getPastEvents('DecreaseStakeRequestEvaluated', {
       fromBlock: queryStartBlock,
       filter: {
@@ -151,6 +182,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     owner,
     queryStartBlock = 0
   }) {
+    const contract = await this.getContract()
     const events = await contract.getPastEvents('DecreaseStakeRequested', {
       fromBlock: queryStartBlock,
       filter: {
@@ -169,6 +201,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     owner,
     queryStartBlock = 0
   }) {
+    const contract = await this.getContract()
     const events = await contract.getPastEvents('DecreaseStakeRequestCancelled', {
       fromBlock: queryStartBlock,
       filter: {
