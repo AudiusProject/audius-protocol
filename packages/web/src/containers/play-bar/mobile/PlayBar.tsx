@@ -13,7 +13,12 @@ import {
 import { AppState } from 'store/types'
 
 import PlayButton from 'components/play-bar/PlayButton'
-import { getAudio, getCounter, getPlaying } from 'store/player/selectors'
+import {
+  getAudio,
+  getBuffering,
+  getCounter,
+  getPlaying
+} from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 
 import styles from './PlayBar.module.css'
@@ -33,7 +38,6 @@ const SEEK_INTERVAL = 200
 
 type OwnProps = {
   audio: AudioState
-  playing: boolean
   onClickInfo: () => void
 }
 
@@ -44,7 +48,8 @@ type PlayBarProps = OwnProps &
 const PlayBar = ({
   currentQueueItem,
   audio,
-  playing,
+  isPlaying,
+  isBuffering,
   play,
   pause,
   save,
@@ -81,16 +86,16 @@ const PlayBar = ({
   const { name } = user
 
   let playButtonStatus
-  if (audio.isBuffering()) {
+  if (isBuffering) {
     playButtonStatus = PlayButtonStatus.LOAD
-  } else if (playing) {
+  } else if (isPlaying) {
     playButtonStatus = PlayButtonStatus.PAUSE
   } else {
     playButtonStatus = PlayButtonStatus.PLAY
   }
 
   const togglePlay = () => {
-    if (playing) {
+    if (isPlaying) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -175,7 +180,8 @@ function makeMapStateToProps() {
     currentQueueItem: getCurrentQueueItem(state),
     playCounter: getCounter(state),
     audio: getAudio(state),
-    playing: getPlaying(state)
+    isPlaying: getPlaying(state),
+    isBuffering: getBuffering(state)
   })
   return mapStateToProps
 }
