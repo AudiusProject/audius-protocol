@@ -28,6 +28,8 @@ async function run() {
 
     primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
     secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
+
+    console.log('Primary')
     console.log(
       primaryCreatorNode,
       await CreatorNode.getClockValue(primaryCreatorNode, wallet)
@@ -41,7 +43,19 @@ async function run() {
       )
     })
   } catch (err) {
-    console.error(err)
+    if (err instanceof axios.AxiosError) {
+      if (error.request.baseURL === discoveryProvider) {
+        console.error(
+          `Could not get wallet and endpoint from discovery node ${discoveryProvider}: ${err}`
+        )
+      } else {
+        console.error(
+          `Could not fetch clock values at endpoint ${creatorNode}: ${err}`
+        )
+      }
+    } else {
+      console.error(err)
+    }
   }
 }
 
