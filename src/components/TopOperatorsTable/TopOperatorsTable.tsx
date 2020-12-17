@@ -9,7 +9,7 @@ import Tooltip from 'components/Tooltip'
 import { formatShortWallet, formatWei } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { Status } from 'types'
+import { Operator, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake from 'utils/activeStake'
@@ -60,11 +60,11 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
-      { title: 'Staked', className: styles.totalStakedColumn }
+      { title: 'Staked + Delegated', className: styles.totalStakedColumn }
     ])
   }
 
-  const data = users
+  const data = (users as Operator[])
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
       const totalCurrentStake = activeStake.add(user.delegatedTotal)

@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
+import BN from 'bn.js'
 import Audius from 'services/Audius'
 import { SERVICES_USERS, accountPage } from 'utils/routes'
 
@@ -9,7 +10,6 @@ import Tooltip from 'components/Tooltip'
 import { formatShortWallet, formatWeight, formatWei } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { useTotalStaked } from 'store/cache/protocol/hooks'
 import { Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
@@ -57,8 +57,6 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   )
 
   const { status, users } = useUsers({ limit })
-  const totalStaked = useTotalStaked()
-
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
@@ -67,12 +65,18 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
       { title: 'Proposals Voted', className: styles.proposalVotedColumn }
     ])
   }
+  const totalVotingPowerStake = users.reduce((total, user) => {
+    const activeStake = getActiveStake(user)
+    return total.add(activeStake)
+  }, new BN('0'))
 
   const data = users
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
-
-      const voteWeight = Audius.getBNPercentage(activeStake, totalStaked)
+      const voteWeight = Audius.getBNPercentage(
+        activeStake,
+        totalVotingPowerStake
+      )
       return {
         rank: idx + 1,
         img: user.image,

@@ -54,13 +54,13 @@ export const getUsers = ({ sortBy, limit, filter }: UseUsersProp) => (
     return true
   }
 
-  const sortFunc = (u1: Operator, u2: Operator) => {
+  const sortFunc = (u1: User | Operator, u2: User | Operator) => {
     let u1Total = getActiveStake(u1)
     let u2Total = getActiveStake(u2)
     return u2Total.cmp(u1Total)
   }
 
-  let serviceProviders: Operator[] = accounts.filter(filterFunc) as any
+  let serviceProviders: (User | Operator)[] = accounts.filter(filterFunc) as any
   serviceProviders = serviceProviders.sort(sortFunc)
   if (limit) serviceProviders = serviceProviders.slice(0, limit)
 

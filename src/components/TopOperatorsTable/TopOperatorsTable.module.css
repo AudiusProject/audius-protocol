@@ -5,8 +5,8 @@
   flex: 1;
 }
 .totalStakedColumn {
-  width: 116px;
-  min-width: 116px;
+  width: 200px;
+  min-width: 200px;
   text-align: right;
   margin-right: 32px;
   justify-content: flex-end;
