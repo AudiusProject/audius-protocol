@@ -305,9 +305,9 @@ export default class Delegate {
     return info
   }
 
-  async cancelUndelegateStake(): Promise<TxReceipt> {
+  async cancelUndelegateStakeRequest(): Promise<TxReceipt> {
     await this.aud.hasPermissions(Permission.WRITE)
-    const info = await this.getContract().cancelUndelegateStake()
+    const info = await this.getContract().cancelUndelegateStakeRequest()
     return info
   }
 
@@ -335,12 +335,12 @@ export default class Delegate {
     return info
   }
 
-  async cancelRemoveDelegator(
+  async cancelRemoveDelegatorRequest(
     serviceProvider: Address,
     delegator: Address
   ): Promise<TxReceipt> {
     await this.aud.hasPermissions(Permission.WRITE)
-    const info = await this.getContract().cancelRemoveDelegator(
+    const info = await this.getContract().cancelRemoveDelegatorRequest(
       serviceProvider,
       delegator
     )
