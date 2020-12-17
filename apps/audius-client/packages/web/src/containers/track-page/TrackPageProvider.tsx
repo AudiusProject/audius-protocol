@@ -41,6 +41,7 @@ import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 
 import * as trackPageActions from './store/actions'
+import { TRENDING_BADGE_LIMIT } from './store/sagas'
 
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
@@ -375,11 +376,11 @@ class TrackPageProvider extends Component<
       !!currentQueueItem.track &&
       currentQueueItem.track.track_id === track.track_id
     const badge =
-      trackRank.year && trackRank.year <= 5
+      trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.year} This Year`
-        : trackRank.month && trackRank.month <= 5
+        : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.month} This Month`
-        : trackRank.week && trackRank.week <= 5
+        : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.week} This Week`
         : null
 
