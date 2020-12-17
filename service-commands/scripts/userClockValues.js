@@ -13,16 +13,17 @@ program
   .option('-h, --handle <handle>', 'Audius handle')
   .option('-i, --user-id <userId>', 'Audius user id')
 
-const discoveryProvider = 'https://discoveryprovider.audius.co'
+// export DISCOVERY_PROVIDER_ENDPOINT="https://discoveryprovider.audius.co"
+const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
 async function run() {
   try {
-    const { handle, userId } = parseArgs()
+    const { handle, userId } = parseArgsAndEnv()
     const { wallet, creator_node_endpoint: creatorNodeEndpoint } = (
       await axios({
         url: handle ? `/v1/full/users/handle/${handle}` : `/users?id=${userId}`,
         method: 'get',
-        baseURL: discoveryProvider
+        baseURL: discoveryProviderEndpoint
       })
     ).data.data[0]
 
@@ -43,10 +44,10 @@ async function run() {
       )
     })
   } catch (err) {
-    if (err instanceof axios.AxiosError) {
-      if (error.request.baseURL === discoveryProvider) {
+    if (err.isAxiosError) {
+      if (error.request.baseURL === discoveryProviderEndpoint) {
         console.error(
-          `Could not get wallet and endpoint from discovery node ${discoveryProvider}: ${err}`
+          `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint}: ${err}`
         )
       } else {
         console.error(
@@ -62,8 +63,13 @@ async function run() {
 /**
  * Process command line args, expects user handle as command line input.
  */
-function parseArgs() {
+function parseArgsAndEnv() {
   program.parse(process.argv)
+  if (!discoveryProviderEndpoint) {
+    const errorMessage =
+      'Incorrect script usage, expected DISCOVERY_PROVIDER_ENDPOINT in env.\ntry `export DISCOVERY_PROVIDER_ENDPOINT="https://discoveryprovider.audius.co"`'
+    throw new Error(errorMessage)
+  }
 
   // check appropriate CLI usage
   if (program.handle && program.userId) {
