@@ -27,8 +27,10 @@ async function run() {
       })
     ).data.data[0]
 
-    primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
-    secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
+    const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
+    const secondaryCreatorNodes = CreatorNode.getSecondaries(
+      creatorNodeEndpoint
+    )
 
     console.log('Primary')
     console.log(
