@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import clsx from 'clsx'
+import BN from 'bn.js'
 import { Utils } from '@audius/libs'
 import { TabSlider, ButtonType } from '@audius/stems'
 
@@ -21,6 +22,7 @@ import { useAccountUser, useAccount } from 'store/account/hooks'
 import { formatShortWallet } from 'utils/format'
 import { TICKER } from 'utils/consts'
 import { useModalControls } from 'utils/hooks'
+import getActiveStake from 'utils/activeStake'
 
 const messages = {
   staking: `Staking Amount ${TICKER}`,
@@ -52,18 +54,61 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   const [selectedTab, setSelectedTab] = useState(ServiceType.DiscoveryProvider)
   const { wallet } = useAccount()
   const serviceInfo = useServiceInfo()
+  const { user } = useAccountUser()
+  const calculatedMinStakeRef = useRef<BN>()
+
+  // Check how much available stake the SP can use for registration
+  // This computation is as follows:
+  //
+  // AVAILABLE_STAKE = ACTIVE_STAKE - USED_STAKE
+  //   where
+  //    ACTIVE_STAKE = amount that we have staked in audius
+  //    USED_STAKE = # of services we have * minstake for each service
+  let availableStake = new BN('0')
+  if (
+    user &&
+    'serviceProvider' in user &&
+    serviceInfo.contentNode &&
+    serviceInfo.discoveryProvider
+  ) {
+    let usedStake = new BN('0')
+
+    if ('contentNodes' in user) {
+      const numContentNodes = new BN(user.contentNodes.length)
+      usedStake = usedStake.add(
+        numContentNodes.mul(serviceInfo.contentNode.minStake)
+      )
+    }
+    if ('discoveryProviders' in user) {
+      const numDiscoveryNodes = new BN(user.discoveryProviders.length)
+      usedStake = usedStake.add(
+        numDiscoveryNodes.mul(serviceInfo.discoveryProvider.minStake)
+      )
+    }
+
+    const activeStake = getActiveStake(user)
+    availableStake = activeStake.sub(usedStake)
+  }
+
   const selectedServiceInfo =
     selectedTab === ServiceType.DiscoveryProvider
       ? serviceInfo.discoveryProvider
       : serviceInfo.contentNode
-  const [stakingBN, setStakingBN] = useState(
-    selectedServiceInfo?.minStake ?? Utils.toBN('0')
-  )
+
+  // Our calculated min stake is the service type min stake MINUS
+  // the "unused/available" stake we have in the system already.
+  const calculatedMinStake = selectedServiceInfo
+    ? BN.max(selectedServiceInfo.minStake.sub(availableStake), new BN('0'))
+    : new BN('0')
+  useEffect(() => {
+    calculatedMinStakeRef.current = calculatedMinStake
+  }, [calculatedMinStake])
+
+  const [stakingBN, setStakingBN] = useState(calculatedMinStake)
   const [stakingAmount, setStakingAmount] = useState('')
   const [endpoint, setEndpoint] = useState('')
   const [delegateOwnerWallet, setDelegateOwnerWallet] = useState(wallet || '')
 
-  const { user } = useAccountUser()
   useEffect(() => {
     if (isOpen && wallet) {
       setDelegateOwnerWallet(wallet)
@@ -71,14 +116,21 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   }, [isOpen, setDelegateOwnerWallet, wallet])
 
   useEffect(() => {
-    if (isOpen && selectedServiceInfo) {
-      setStakingBN(selectedServiceInfo.minStake)
+    if (isOpen && selectedServiceInfo && calculatedMinStakeRef.current) {
+      setStakingBN(calculatedMinStakeRef.current)
       const amount = AudiusClient.getAud(
-        Utils.toBN(selectedServiceInfo.minStake)
+        Utils.toBN(calculatedMinStakeRef.current)
       )
       setStakingAmount(amount.toString())
     }
-  }, [isOpen, selectedTab, selectedServiceInfo, setStakingBN, setStakingAmount])
+  }, [
+    isOpen,
+    selectedTab,
+    selectedServiceInfo,
+    setStakingBN,
+    setStakingAmount,
+    calculatedMinStakeRef
+  ])
 
   const onSelectTab = useCallback(
     selectedKey => {
@@ -145,7 +197,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
     />
   )
 
-  const min = selectedServiceInfo?.minStake
+  const min = calculatedMinStake
   const max = selectedServiceInfo?.maxStake
 
   return (

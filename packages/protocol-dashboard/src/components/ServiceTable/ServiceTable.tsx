@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { NodeService, ContentNode, DiscoveryProvider } from 'types'
 import styles from './ServiceTable.module.css'
 import Table from 'components/Table'
+import Error from 'components/Error'
 
 export type ServiceRow = {
   endpoint: string
@@ -54,7 +55,7 @@ const ServiceTable: React.FC<ServiceTableProps> = ({
           {data.endpoint}
         </div>
         <div className={clsx(styles.rowCol, styles.colVersion)}>
-          {data.version}
+          {data.version ? data.version : <Error className={styles.error} />}
         </div>
       </div>
     )
