@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.1.2",
+    "@audius/libs": "1.1.3",
     "@audius/stems": "^0.3.3",
     "@reduxjs/toolkit": "^1.4.0",
     "chart.js": "^2.9.3",

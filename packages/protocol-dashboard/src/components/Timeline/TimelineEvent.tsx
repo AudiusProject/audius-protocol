@@ -7,7 +7,7 @@ import Proposal from 'components/Proposal'
 import { useBlock } from 'store/cache/protocol/hooks'
 import { getDate, formatWei, formatAud, formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
-import { accountPage } from 'utils/routes'
+import { accountPage, contentNodePage, discoveryNodePage } from 'utils/routes'
 import { TICKER } from 'utils/consts'
 import Tooltip, { Position } from 'components/Tooltip'
 
@@ -202,6 +202,110 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
         <span className={styles.titleSpacingLeft}>
           {formatShortWallet(event.serviceProvider)}
         </span>
+      </span>
+    )
+    return (
+      <GenericTimelineEvent
+        onClick={onClick}
+        className={className}
+        header={header}
+        title={title}
+        blockNumber={event.blockNumber}
+      />
+    )
+  }
+
+  if ('registrationAction' in event) {
+    // did it register or deregister?
+    const didRegister = event.registrationAction === 'register'
+
+    // is it discovery-node or creator-node
+    const isDiscovery =
+      event.serviceType in ['discovery-node', 'discovery-provider']
+    const onClick = () => {
+      if (parentOnClick) parentOnClick()
+      const route = isDiscovery
+        ? discoveryNodePage(event.spID)
+        : contentNodePage(event.spID)
+      pushRoute(route)
+    }
+    const header = didRegister ? 'REGISTERED SERVICE' : 'DEREGISTERED SERVICE'
+    const title = (
+      <span className={styles.titleContainer}>
+        {`${didRegister ? 'Registered' : 'Deregistered'} ${
+          event.serviceType
+        } at ${event.endpoint}`}
+      </span>
+    )
+    return (
+      <GenericTimelineEvent
+        onClick={onClick}
+        className={className}
+        header={header}
+        title={title}
+        blockNumber={event.blockNumber}
+      />
+    )
+  }
+
+  // stake actions can be
+  // increases, decreases requested/evaluated/(eventually cancelled)
+  if ('stakeAction' in event) {
+    // TODO: need to handle cancel still
+
+    const INCREASE = 'increase'
+    const DECREASE_REQUESTED = 'decreaseRequested'
+    const DECREASE_EVALUATED = 'decreaseEvaluated'
+    const action = event.stakeAction
+
+    const onClick = () => {
+      if (parentOnClick) parentOnClick()
+      // do nothing for stake actions
+    }
+    const header =
+      action === INCREASE
+        ? 'INCREASED STAKE'
+        : action === DECREASE_REQUESTED
+        ? 'REQUESTED STAKE DECREASE'
+        : 'DECREASED STAKE'
+    const title = (
+      <span className={styles.titleContainer}>
+        {`${
+          action === INCREASE
+            ? 'Increased'
+            : action === DECREASE_REQUESTED
+            ? 'Requested to decrease'
+            : 'Decreased'
+        } stake by`}
+        <Tooltip
+          position={Position.TOP}
+          text={formatWei(
+            action === INCREASE ? event.increaseAmount : event.decreaseAmount
+          )}
+          className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
+        >
+          {formatAud(
+            action === INCREASE ? event.increaseAmount : event.decreaseAmount
+          )}
+        </Tooltip>
+        {action === INCREASE || action === DECREASE_EVALUATED ? (
+          <>
+            {'to'}
+            <Tooltip
+              position={Position.TOP}
+              text={formatWei(event.newStakeAmount)}
+              className={clsx(
+                styles.titleSpacingLeft,
+                styles.titleSpacingRight
+              )}
+            >
+              {formatAud(event.newStakeAmount)}
+            </Tooltip>
+            {TICKER}
+          </>
+        ) : (
+          TICKER
+        )}
       </span>
     )
     return (

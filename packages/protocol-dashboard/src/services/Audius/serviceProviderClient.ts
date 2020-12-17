@@ -208,6 +208,63 @@ export default class ServiceProviderClient {
     return info
   }
 
+  async getRegisteredServiceProviderEvents(wallet: Address): Promise<any> {
+    await this.aud.hasPermissions()
+    const events = await this.getContract().getRegisteredServiceProviderEvents({
+      owner: wallet
+    })
+    return events.map((event: any) => ({
+      ...event,
+      registrationAction: 'register'
+    }))
+  }
+
+  async getDeregisteredServiceProviderEvents(wallet: Address): Promise<any> {
+    await this.aud.hasPermissions()
+    const events = await this.getContract().getDeregisteredServiceProviderEvents(
+      {
+        owner: wallet
+      }
+    )
+    return events.map((event: any) => ({
+      ...event,
+      registrationAction: 'deregister'
+    }))
+  }
+
+  async getIncreasedStakeEvents(wallet: Address): Promise<any> {
+    await this.aud.hasPermissions()
+    const events = await this.getContract().getIncreasedStakeEvents({
+      owner: wallet
+    })
+    return events.map((event: any) => ({
+      ...event,
+      stakeAction: 'increase'
+    }))
+  }
+
+  async getDecreasedStakeEvaluatedEvents(wallet: Address): Promise<any> {
+    await this.aud.hasPermissions()
+    const events = await this.getContract().getDecreasedStakeEvaluatedEvents({
+      owner: wallet
+    })
+    return events.map((event: any) => ({
+      ...event,
+      stakeAction: 'decreaseEvaluated'
+    }))
+  }
+
+  async getDecreasedStakeRequestedEvents(wallet: Address): Promise<any> {
+    await this.aud.hasPermissions()
+    const events = await this.getContract().getDecreasedStakeRequestedEvents({
+      owner: wallet
+    })
+    return events.map((event: any) => ({
+      ...event,
+      stakeAction: 'decreaseRequested'
+    }))
+  }
+
   /* -------------------- Service Provider Write -------------------- */
 
   async registerWithDelegate(
