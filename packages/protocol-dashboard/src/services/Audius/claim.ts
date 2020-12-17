@@ -77,4 +77,22 @@ export default class Claim {
     const info = await this.getContract().claimPending(address)
     return info
   }
+
+  async getClaimProcessedEvents(
+    claimer: Address
+  ): Promise<
+    Array<{
+      blockNumber: number
+      claimer: Address
+      rewards: BN
+      oldTotal: BN
+      newTotal: BN
+    }>
+  > {
+    await this.aud.hasPermissions()
+    const info = await this.getContract().getClaimProcessedEvents({
+      claimer
+    })
+    return info
+  }
 }
