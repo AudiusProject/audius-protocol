@@ -67,7 +67,6 @@ class DelegateManagerClient extends GovernedContractClient {
     }))
   }
 
-  /* Pass either delegator or serviceProvider filters */
   async getDecreaseDelegateStakeEvents ({
     delegator,
     serviceProvider,
@@ -104,7 +103,6 @@ class DelegateManagerClient extends GovernedContractClient {
     if (delegator) {
       filter._delegator = delegator
     }
-
     if (serviceProvider) {
       filter._serviceProvider = serviceProvider
     }
@@ -133,7 +131,6 @@ class DelegateManagerClient extends GovernedContractClient {
     if (delegator) {
       filter._delegator = delegator
     }
-
     if (serviceProvider) {
       filter._serviceProvider = serviceProvider
     }
