@@ -132,7 +132,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           />
           <div
             className={cn(styles.titles, {
-              [styles.titlesActive]: props.isPlaying
+              [styles.titlesActive]: props.isPlaying,
+              [styles.titlesSkeleton]: props.showSkeleton
             })}
           >
             <div className={styles.title} onClick={props.goToTrackPage}>
