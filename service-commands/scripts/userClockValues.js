@@ -45,13 +45,13 @@ async function run() {
     })
   } catch (err) {
     if (err.isAxiosError) {
-      if (error.request.baseURL === discoveryProviderEndpoint) {
+      if (err.config.baseURL === discoveryProviderEndpoint) {
         console.error(
-          `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint}: ${err}`
+          `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint} with ${err}`
         )
       } else {
         console.error(
-          `Could not fetch clock values at endpoint ${creatorNode}: ${err}`
+          `Could not fetch clock values at endpoint ${err.config.baseURL} with ${err}`
         )
       }
     } else {
