@@ -8,7 +8,7 @@ import Table from 'components/Table'
 import Tooltip from 'components/Tooltip'
 import { formatShortWallet, formatWeight, formatWei } from 'utils/format'
 
-import { useServiceProviders } from 'store/cache/user/hooks'
+import { useUsers } from 'store/cache/user/hooks'
 import { useTotalStaked } from 'store/cache/protocol/hooks'
 import { Status } from 'types'
 import { usePushRoute } from 'utils/effects'
@@ -56,7 +56,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     [pushRoute]
   )
 
-  const { status, users } = useServiceProviders({ limit })
+  const { status, users } = useUsers({ limit })
   const totalStaked = useTotalStaked()
 
   let columns = [{ title: 'Rank', className: styles.rankColumn }]

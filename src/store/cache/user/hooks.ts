@@ -14,8 +14,7 @@ import {
   ServiceType,
   Operator,
   Delegate,
-  ServiceProvider,
-  VoteEvent
+  ServiceProvider
 } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
@@ -31,6 +30,7 @@ import {
 } from '../contentNode/hooks'
 import { useAccountUser } from 'store/account/hooks'
 import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/serviceProviderClient'
+import getActiveStake from 'utils/activeStake'
 
 type UseUsersProp = {
   sortBy?: SortUser
@@ -42,20 +42,19 @@ export const getStatus = (state: AppState) => state.cache.user.status
 export const getUser = (wallet: Address) => (state: AppState) =>
   state.cache.user.accounts[wallet]
 
-export const getServiceProviders = ({ sortBy, limit }: UseUsersProp) => (
+export const getUsers = ({ sortBy, limit }: UseUsersProp) => (
   state: AppState
 ) => {
   const userAccounts = state.cache.user.accounts
   let accounts: (User | Operator)[] = Object.values(userAccounts)
 
   const filterFunc = (user: User | Operator) => {
-    if ('serviceProvider' in user) return true
-    return false
+    return true
   }
 
   const sortFunc = (u1: Operator, u2: Operator) => {
-    let u1Total = u1.delegatedTotal.add(u1.serviceProvider.deployerStake)
-    let u2Total = u2.delegatedTotal.add(u2.serviceProvider.deployerStake)
+    let u1Total = getActiveStake(u1)
+    let u2Total = getActiveStake(u2)
     return u2Total.cmp(u1Total)
   }
 
@@ -76,6 +75,7 @@ const getUserMetadata = async (wallet: Address, aud: Audius): Promise<User> => {
   const pendingUndelegateRequest = await aud.Delegate.getPendingUndelegateRequest(
     wallet
   )
+  const voteHistory = await aud.Governance.getVotesByAddress([wallet])
 
   const user = {
     wallet,
@@ -85,6 +85,7 @@ const getUserMetadata = async (wallet: Address, aud: Audius): Promise<User> => {
     pendingUndelegateRequest,
     audToken,
     delegates,
+    voteHistory,
     events: []
   }
 
@@ -102,7 +103,6 @@ const getServiceProviderMetadata = async (
   delegators: Array<Delegate>
   delegatedTotal: BN
   totalStakedFor: BN
-  voteHistory: Array<VoteEvent>
 }> => {
   const totalStakedFor = await aud.Staking.totalStakedFor(wallet)
   const delegatedTotal = await aud.Delegate.getTotalDelegatedToServiceProvider(
@@ -124,7 +124,6 @@ const getServiceProviderMetadata = async (
     wallet
   )
 
-  const voteHistory = await aud.Governance.getVotesByAddress([wallet])
   return {
     serviceProvider,
     discoveryProviders,
@@ -132,8 +131,7 @@ const getServiceProviderMetadata = async (
     contentNodes,
     totalStakedFor,
     delegatedTotal,
-    delegators,
-    voteHistory
+    delegators
   }
 }
 
@@ -199,7 +197,7 @@ function fetchUsers(): ThunkAction<void, AppState, Audius, Action<string>> {
     // @ts-ignore
     serviceProviderWallets = [...new Set(serviceProviderWallets)]
 
-    const users: { [wallet: string]: Operator } = {}
+    const users: { [wallet: string]: User | Operator } = {}
     await Promise.all(
       serviceProviderWallets.map(async wallet => {
         const user = await getUserMetadata(wallet, aud)
@@ -210,6 +208,28 @@ function fetchUsers(): ThunkAction<void, AppState, Audius, Action<string>> {
         }
       })
     )
+
+    // Get all delegators that are not service operators
+    let delegators = Object.keys(users).reduce(
+      (delgators: string[], operatorWallet) => {
+        const operator = users[operatorWallet]
+        const operatorDelegators = (operator as Operator).delegators
+          .map(delegator => delegator.wallet)
+          .filter(wallet => !(wallet in users))
+        return delgators.concat(operatorDelegators)
+      },
+      []
+    )
+    // @ts-ignore
+    delegators = [...new Set(delegators)]
+
+    await Promise.all(
+      delegators.map(async wallet => {
+        const user = await getUserMetadata(wallet, aud)
+        users[wallet] = user
+      })
+    )
+
     dispatch(
       setUsers({
         users,
@@ -252,9 +272,9 @@ export function fetchUser(
 }
 
 // -------------------------------- Hooks  --------------------------------
-export const useServiceProviders = ({ limit, sortBy }: UseUsersProp = {}) => {
+export const useUsers = ({ limit, sortBy }: UseUsersProp = {}) => {
   const status = useSelector(getStatus)
-  const users = useSelector(getServiceProviders({ limit, sortBy }))
+  const users = useSelector(getUsers({ limit, sortBy }))
 
   const dispatch = useDispatch()
   useEffect(() => {
