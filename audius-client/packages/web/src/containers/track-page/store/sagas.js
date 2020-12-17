@@ -16,7 +16,7 @@ import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 import { getUsers } from 'store/cache/users/selectors'
 import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
 
-const TRENDING_LIMIT = 10
+export const TRENDING_BADGE_LIMIT = 10
 
 function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
@@ -29,19 +29,19 @@ function* watchTrackBadge() {
       call(retrieveTrending, {
         timeRange: TimeRange.WEEK,
         offset: 0,
-        limit: TRENDING_LIMIT,
+        limit: TRENDING_BADGE_LIMIT,
         genre: null
       }),
       call(retrieveTrending, {
         timeRange: TimeRange.MONTH,
         offset: 0,
-        limit: TRENDING_LIMIT,
+        limit: TRENDING_BADGE_LIMIT,
         genre: null
       }),
       call(retrieveTrending, {
         timeRange: TimeRange.YEAR,
         offset: 0,
-        limit: TRENDING_LIMIT,
+        limit: TRENDING_BADGE_LIMIT,
         genre: null
       })
     ])
