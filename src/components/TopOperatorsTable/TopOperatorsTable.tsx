@@ -104,20 +104,20 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
         </div>
         {!isMobile && (
           <>
-          <Tooltip
-            className={clsx(styles.rowCol, styles.totalStakedColumn)}
-            text={formatWei(data.staked)}
-          >
-            {Audius.displayShortAud(data.staked)}
-          </Tooltip>
-          <div className={clsx(styles.rowCol, styles.voteWeightColumn)}>
-            {`${formatWeight(data.voteWeight)}%`}
-          </div>
-          <div className={clsx(styles.rowCol, styles.proposalVotedColumn)}>
-            {data.proposedVotes}
-          </div>
-        </>
-      )}
+            <Tooltip
+              className={clsx(styles.rowCol, styles.totalStakedColumn)}
+              text={formatWei(data.staked)}
+            >
+              {Audius.displayShortAud(data.staked)}
+            </Tooltip>
+            <div className={clsx(styles.rowCol, styles.voteWeightColumn)}>
+              {`${formatWeight(data.voteWeight)}%`}
+            </div>
+            <div className={clsx(styles.rowCol, styles.proposalVotedColumn)}>
+              {data.proposedVotes}
+            </div>
+          </>
+        )}
       </div>
     )
   }
