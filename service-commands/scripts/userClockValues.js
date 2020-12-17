@@ -8,14 +8,6 @@ const CreatorNode = require('@audius/libs/src/services/creatorNode')
 
 const discoveryProvider = 'https://discoveryprovider.audius.co'
 
-function getClockValue(wallet, creatorNodeBaseURL) {
-  return axios({
-    url: `/users/clock_status/${wallet}`,
-    method: 'get',
-    baseURL: creatorNodeBaseURL
-  })
-}
-
 async function run() {
   try {
     const { handle } = parseArgs()
@@ -30,22 +22,20 @@ async function run() {
 
     primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
     secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
-    console.log('Primary')
-    const { clockValue } = (
-      await getClockValue(wallet, primaryCreatorNode)
-    ).data
-    console.log(primaryCreatorNode, clockValue)
+    console.log(
+      primaryCreatorNode,
+      await CreatorNode.getClockValue(primaryCreatorNode, wallet)
+    )
 
     console.log('\nSecondaries')
     secondaryCreatorNodes.forEach(async secondaryCreatorNode => {
-      const { clockValue } = (
-        await getClockValue(wallet, secondaryCreatorNode)
-      ).data
-
-      console.log(secondaryCreatorNode, clockValue)
+      console.log(
+        secondaryCreatorNode,
+        await CreatorNode.getClockValue(secondaryCreatorNode, wallet)
+      )
     })
   } catch (err) {
-    console.error(err.message)
+    console.error(err)
   }
 }
 

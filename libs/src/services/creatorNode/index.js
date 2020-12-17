@@ -20,6 +20,19 @@ class CreatorNode {
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
   /**
+   * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
+   * @param {string} endpoint creator node endpoint
+   * @param {string} wallet user wallet address
+   */
+  static async getClockValue (endpoint, wallet) {
+    return (await axios({
+      url: `/users/clock_status/${wallet}`,
+      method: 'get',
+      baseURL: endpoint
+    })).data.clockValue
+  }
+
+  /**
    * Pulls the user's creator nodes out of the list
    * @param {string} endpoints user.creator_node_endpoint
    */
