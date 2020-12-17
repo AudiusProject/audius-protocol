@@ -57,10 +57,14 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   )
 
   const { status, users } = useUsers({ limit, filter: 'isOperator' })
+  const totalStaked = useTotalStaked()
+
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
-      { title: 'Staked', className: styles.totalStakedColumn }
+      { title: 'Staked', className: styles.totalStakedColumn },
+      { title: 'Vote Weight', className: styles.voteWeightColumn },
+      { title: 'Proposals Voted', className: styles.proposalVotedColumn }
     ])
   }
 
@@ -68,13 +72,15 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
       const totalCurrentStake = activeStake.add(user.delegatedTotal)
-
+      const voteWeight = Audius.getBNPercentage(activeStake, totalStaked)
       return {
         rank: idx + 1,
         img: user.image,
         name: user.name,
         wallet: user.wallet,
         staked: totalCurrentStake,
+        voteWeight,
+        proposedVotes: user.voteHistory.length
       }
     })
     .sort((a, b) => {
@@ -98,14 +104,20 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
         </div>
         {!isMobile && (
           <>
-            <Tooltip
-              className={clsx(styles.rowCol, styles.totalStakedColumn)}
-              text={formatWei(data.staked)}
-            >
-              {Audius.displayShortAud(data.staked)}
-            </Tooltip>
-          </>
-        )}
+          <Tooltip
+            className={clsx(styles.rowCol, styles.totalStakedColumn)}
+            text={formatWei(data.staked)}
+          >
+            {Audius.displayShortAud(data.staked)}
+          </Tooltip>
+          <div className={clsx(styles.rowCol, styles.voteWeightColumn)}>
+            {`${formatWeight(data.voteWeight)}%`}
+          </div>
+          <div className={clsx(styles.rowCol, styles.proposalVotedColumn)}>
+            {data.proposedVotes}
+          </div>
+        </>
+      )}
       </div>
     )
   }

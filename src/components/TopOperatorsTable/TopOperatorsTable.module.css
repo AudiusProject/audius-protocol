@@ -1,4 +1,4 @@
-/* ----- Top Addresses Table ----- */
+/* ----- Top Operators Table ----- */
 /* Columns */
 .rankColumn {
   min-width: 100px;
@@ -54,14 +54,3 @@
   flex: 1;
 }
 
-.colStaked {
-
-}
-
-.colVoteWeight {
-
-}
-
-.colProposedVotes {
-
-}
