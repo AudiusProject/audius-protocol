@@ -437,7 +437,7 @@ class CreatorNode {
    *  type: 'primary' or 'secondary',
    *  endpoint: <Content Node endpoint>,
    *  wallet: wallet in userStateManager
-   *  clockStatus: /users/clock_status/:wallet response OR null
+   *  clockValue: /users/clock_status/:wallet response OR null
    * }
    */
   async getClockValuesFromReplicaSet () {
@@ -466,7 +466,7 @@ class CreatorNode {
           type,
           endpoint,
           wallet: user.wallet,
-          clockStatus: resp.data.data
+          clockValue: resp.data.data.clockValue
         }
       } catch (e) {
         console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
@@ -474,7 +474,7 @@ class CreatorNode {
           type,
           endpoint,
           wallet: user.wallet,
-          clockStatus: null
+          clockValue: null
         }
       }
     }
