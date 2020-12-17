@@ -17,16 +17,33 @@ program
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
 async function run() {
+  let handle = null
+  let userId = null
   try {
-    const { handle, userId } = parseArgsAndEnv()
-    const { wallet, creator_node_endpoint: creatorNodeEndpoint } = (
+    ;({ handle, userId } = parseArgsAndEnv())
+  } catch (err) {
+    console.log(err)
+    return
+  }
+
+  let wallet = null
+  let creatorNodeEndpoint = null
+  try {
+    ;({ wallet, creator_node_endpoint: creatorNodeEndpoint } = (
       await axios({
         url: handle ? `/v1/full/users/handle/${handle}` : `/users?id=${userId}`,
         method: 'get',
         baseURL: discoveryProviderEndpoint
       })
-    ).data.data[0]
+    ).data.data[0])
+  } catch (err) {
+    console.error(
+      `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint} with ${err}`
+    )
+    return
+  }
 
+  try {
     const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
     const secondaryCreatorNodes = CreatorNode.getSecondaries(
       creatorNodeEndpoint
@@ -46,19 +63,7 @@ async function run() {
       )
     })
   } catch (err) {
-    if (err.isAxiosError) {
-      if (err.config.baseURL === discoveryProviderEndpoint) {
-        console.error(
-          `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint} with ${err}`
-        )
-      } else {
-        console.error(
-          `Could not fetch clock values at endpoint ${err.config.baseURL} with ${err}`
-        )
-      }
-    } else {
-      console.error(err)
-    }
+    console.error(`Could not fetch clock values from creator node with ${err}`)
   }
 }
 
