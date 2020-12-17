@@ -57,7 +57,7 @@ export function fetchTimeline(
       aud.Governance.getProposalsForAddresses([wallet]),
       aud.Delegate.getIncreaseDelegateStakeEvents(wallet),
       aud.Delegate.getDecreaseDelegateStakeEvents(wallet),
-      aud.Delegate.getClaimEvents(wallet),
+      aud.Claim.getClaimProcessedEvents(wallet),
       aud.Delegate.getReceiveDelegationIncreaseEvents(wallet),
       aud.ServiceProviderClient.getRegisteredServiceProviderEvents(wallet),
       aud.ServiceProviderClient.getDeregisteredServiceProviderEvents(wallet),
