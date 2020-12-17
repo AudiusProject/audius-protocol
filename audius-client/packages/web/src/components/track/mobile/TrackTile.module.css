@@ -148,6 +148,10 @@
   white-space: nowrap;
 }
 
+.titlesSkeleton div {
+  width: 100%
+}
+
 .title {
   margin-top: auto;
   font-weight: var(--font-bold);
@@ -192,6 +196,9 @@
 .skeleton {
   position: absolute;
   top: 0;
+}
+.skeleton div {
+  width: 100%;
 }
 
 .coSignLabel {
