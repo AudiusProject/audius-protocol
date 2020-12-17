@@ -17,6 +17,7 @@ import useUndelegateStake from 'store/actions/undelegateStake'
 import { useModalControls } from 'utils/hooks'
 import { TICKER } from 'utils/consts'
 import { formatAud } from 'utils/format'
+import Loading from 'components/Loading'
 
 import desktopStyles from './UserInfo.module.css'
 import mobileStyles from './UserInfoMobile.module.css'
@@ -38,8 +39,10 @@ type UserInfoProps = {
   isOwner: boolean
   delegates: BN
   services: number
+  status: Status
   delegatesStatus: Status
 }
+
 const UserInfo = ({
   className,
   user,
@@ -119,7 +122,7 @@ const UserInfo = ({
   const showClaim =
     isLoggedIn && !isOwner && claimStatus === Status.Success && hasClaim
   return (
-    <Paper className={clsx(styles.userInfo, { [className!]: !!className })}>
+    <>
       {showDelegate && (
         <div className={styles.buttonContainer}>
           <Button
@@ -179,8 +182,20 @@ const UserInfo = ({
       <img className={styles.userImg} src={image} alt={'User Profile'} />
       <div className={styles.userName}>{name}</div>
       <div className={styles.userWallet}>{wallet}</div>
+    </>
+  )
+}
+
+const UserInfoContainer = (props: UserInfoProps) => {
+  return (
+    <Paper
+      className={clsx(styles.userInfo, {
+        [props.className!]: !!props.className
+      })}
+    >
+      {props.status !== Status.Success ? <Loading /> : <UserInfo {...props} />}
     </Paper>
   )
 }
 
-export default UserInfo
+export default UserInfoContainer

@@ -7,6 +7,8 @@
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
+  min-height: 202px;
+  justify-content: center;
 }
 
 /* Rank */

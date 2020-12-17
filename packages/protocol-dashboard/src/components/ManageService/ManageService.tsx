@@ -26,6 +26,7 @@ import ConfirmTransactionModal, {
 } from 'components/ConfirmTransactionModal'
 import DelegatesModal from 'components/DelegatesModal'
 import DelegatorsModal from 'components/DelegatorsModal'
+import Loading from 'components/Loading'
 
 const messages = {
   title: 'Manage Your Account & Services',
@@ -251,76 +252,84 @@ const ManageService: React.FC<ManageServiceProps> = (
       })}
     >
       <h3 className={styles.title}>{messages.title}</h3>
-      <div className={styles.manageBtns}>
-        {pendingClaim.status !==
-        Status.Success ? null : pendingClaim.hasClaim ? (
-          <div>
-            <Button
-              className={styles.btn}
-              onClick={onClick}
-              textClassName={styles.btnText}
-              iconClassName={styles.btnIcon}
-              text={messages.claim}
-              type={ButtonType.GREEN}
-            />
-            <ConfirmTransactionModal
-              isOpen={isOpen}
-              onClose={onClose}
-              withArrow={false}
-              topBox={makeClaimBox}
-              onConfirm={onConfirm}
-              status={status}
-              error={error}
-            />
+      {accountUser ? (
+        <>
+          <div className={styles.manageBtns}>
+            {pendingClaim.status !==
+            Status.Success ? null : pendingClaim.hasClaim ? (
+              <div>
+                <Button
+                  className={styles.btn}
+                  onClick={onClick}
+                  textClassName={styles.btnText}
+                  iconClassName={styles.btnIcon}
+                  text={messages.claim}
+                  type={ButtonType.GREEN}
+                />
+                <ConfirmTransactionModal
+                  isOpen={isOpen}
+                  onClose={onClose}
+                  withArrow={false}
+                  topBox={makeClaimBox}
+                  onConfirm={onConfirm}
+                  status={status}
+                  error={error}
+                />
+              </div>
+            ) : (
+              <div className={styles.btnContainer}>
+                <RegisterNewServiceBtn />
+                <div>
+                  <IncreaseStake isDisabled={increaseStakeDisabled} />
+                  <DecreaseStake isDisabled={decreaseStakeDisabled} />
+                </div>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className={styles.btnContainer}>
-            <RegisterNewServiceBtn />
-            <div>
-              <IncreaseStake isDisabled={increaseStakeDisabled} />
-              <DecreaseStake isDisabled={decreaseStakeDisabled} />
+          {isServiceProvider && (
+            <div className={styles.actionsContainer}>
+              <ActiveServices
+                className={styles.accountAction}
+                showView={props.showViewActiveServices}
+                numberServices={
+                  (accountUser as Operator).serviceProvider.numberOfEndpoints
+                }
+              />
+              <DeployerCut
+                className={styles.accountAction}
+                cut={(accountUser as Operator).serviceProvider.deployerCut}
+              />
+              {(accountUser as Operator).delegators.length > 0 && (
+                <Delegators
+                  className={styles.accountAction}
+                  wallet={accountUser.wallet}
+                  moreText={messages.view}
+                  numberDelegators={(accountUser as Operator).delegators.length}
+                />
+              )}
             </div>
-          </div>
-        )}
-      </div>
-      {isServiceProvider && (
-        <div className={styles.actionsContainer}>
-          <ActiveServices
-            className={styles.accountAction}
-            showView={props.showViewActiveServices}
-            numberServices={
-              (accountUser as Operator).serviceProvider.numberOfEndpoints
-            }
-          />
-          <DeployerCut
-            className={styles.accountAction}
-            cut={(accountUser as Operator).serviceProvider.deployerCut}
-          />
-          {(accountUser as Operator).delegators.length > 0 && (
-            <Delegators
-              className={styles.accountAction}
-              wallet={accountUser.wallet}
-              moreText={messages.view}
-              numberDelegators={(accountUser as Operator).delegators.length}
-            />
           )}
+          {isDelegator && accountUser.delegates.length > 0 && (
+            <div
+              className={clsx(styles.actionsContainer, {
+                [styles.isSPDelegate]: isServiceProvider
+              })}
+            >
+              <Delegates
+                className={styles.accountAction}
+                numberDelegates={accountUser.delegates.length}
+                wallet={accountUser.wallet}
+                moreText={messages.view}
+              />
+            </div>
+          )}
+          <TransactionStatus />
+        </>
+      ) : (
+        <div className={styles.loading}>
+          <Loading />
         </div>
       )}
-      {isDelegator && accountUser.delegates.length > 0 && (
-        <div
-          className={clsx(styles.actionsContainer, {
-            [styles.isSPDelegate]: isServiceProvider
-          })}
-        >
-          <Delegates
-            className={styles.accountAction}
-            numberDelegates={accountUser.delegates.length}
-            wallet={accountUser.wallet}
-            moreText={messages.view}
-          />
-        </div>
-      )}
-      <TransactionStatus />
     </Paper>
   )
 }
