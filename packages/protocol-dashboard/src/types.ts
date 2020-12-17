@@ -77,6 +77,7 @@ export type User = {
   pendingUndelegateRequest: GetPendingUndelegateRequestResponse
   events: Array<EventID>
   delegates: Array<Delegate>
+  voteHistory: Array<VoteEvent>
 }
 
 export type Operator = {
@@ -87,7 +88,6 @@ export type Operator = {
   delegators: Array<Delegate>
   delegatedTotal: BN
   totalStakedFor: BN
-  voteHistory: Array<VoteEvent>
 } & User
 
 // Transaction
