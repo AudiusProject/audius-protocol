@@ -4,7 +4,8 @@ const {
   BrowserWindow,
   Menu,
   session,
-  shell
+  shell,
+  globalShortcut
 } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const logger = require('electron-log')
@@ -34,6 +35,7 @@ if (args.length > 0) {
   switch (args[0]) {
     case 'localhost':
       appEnvironment = Environment.LOCALHOST
+      localhostPort = args[1] || '3000'
       break
     case 'staging':
       appEnvironment = Environment.STAGING
@@ -72,7 +74,12 @@ const getPath = async p => {
  */
 const reformatURL = url => {
   if (!url) return `${SCHEME}://-`
-  const path = url.replace(`${SCHEME}://`, '').replace(`${SCHEME}:`, '')
+  let path = url.replace(`${SCHEME}://`, '').replace(`${SCHEME}:`, '')
+  if (path === '--updated') {
+    // This was a deeplink after an "update." We could build some nice
+    // "Thank you for updating feature," but for now, just omit it
+    path = ''
+  }
   return `${SCHEME}://-/${path}`
 }
 
@@ -122,7 +129,7 @@ const createWindow = () => {
   mainWindow.removeMenu()
 
   if (appEnvironment === Environment.LOCALHOST) {
-    mainWindow.loadURL('http://localhost:3000')
+    mainWindow.loadURL(`http://localhost:${localhostPort}`)
   } else {
     let directory
     if (appEnvironment === Environment.STAGING) {
@@ -270,12 +277,19 @@ function initMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
 
+function configureShortcuts() {
+  globalShortcut.register('CmdOrCtrl+Option+I', () => {
+    mainWindow.webContents.openDevTools()
+  })
+}
+
 /* IPC Handlers */
 let canUpdate = false
 
 ipcMain.on('update', async (event, arg) => {
   // eslint-disable-next-line
   while (!canUpdate) {
+    console.log('cannot update')
     await new Promise(resolve => setTimeout(resolve, 100))
   }
   autoUpdater.quitAndInstall()
@@ -286,18 +300,25 @@ ipcMain.on('quit', (event, arg) => {
 })
 
 autoUpdater.on('update-downloaded', info => {
+  console.log('update-downloaded', info)
   canUpdate = true
   info.currentVersion = autoUpdater.currentVersion.version
   if (mainWindow) mainWindow.webContents.send('updateDownloaded', info)
 })
 
 autoUpdater.on('update-available', info => {
+  console.log('update-available', info)
   info.currentVersion = autoUpdater.currentVersion.version
   if (mainWindow) mainWindow.webContents.send('updateAvailable', info)
 })
 
 autoUpdater.on('download-progress', info => {
   if (mainWindow) mainWindow.webContents.send('updateDownloadProgress', info)
+})
+
+autoUpdater.on('error', info => {
+  console.log('update-error', info)
+  if (mainWindow) mainWindow.webContents.send('updateError', info)
 })
 
 /* App Event Handlers */
@@ -314,6 +335,8 @@ app.on('ready', () => {
   } else {
     initMenu()
   }
+  // Configure electron-level global keyboard shortcuts
+  configureShortcuts()
 })
 
 app.on('window-all-closed', () => {
@@ -336,4 +359,8 @@ app.on('open-url', (event, url) => {
   if (mainWindow) {
     mainWindow.loadURL(deepLinkedURL)
   }
+})
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
 })

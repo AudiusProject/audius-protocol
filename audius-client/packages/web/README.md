@@ -47,8 +47,8 @@ To run electron using a static build:
 ```bash
 npm run build:<environment>
 npm run electron:<environment>
-# Or to point at a local service
-npm run electron:localhost
+# Or to point at a local service with an optional port specifier
+npm run electron:localhost # -- <port> 
 ```
 
 To build a desktop binary using a static build (outputs to `./dist`):

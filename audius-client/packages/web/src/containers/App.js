@@ -219,15 +219,22 @@ class App extends Component {
       this.ipc = window.require('electron').ipcRenderer
       // We downloaded an update, the user can safely restart
       this.ipc.on('updateDownloaded', (event, arg) => {
+        console.info('updateDownload', event, arg)
         this.setState({ showUpdateAppBanner: true })
       })
 
       this.ipc.on('updateDownloadProgress', (event, arg) => {
-        console.info(event, arg)
+        console.info('updateDownloadProgress', event, arg)
       })
+
+      this.ipc.on('updateError', (event, arg) => {
+        console.error('updateError', event, arg)
+      })
+
       // There is an update available, the user should update if it's
       // more than a minor version.
       this.ipc.on('updateAvailable', (event, arg) => {
+        console.info('updateAvailable', event, arg)
         const { version, currentVersion } = arg
         if (semver.minor(currentVersion) < semver.minor(version)) {
           this.setState({ showRequiresUpdate: true })
