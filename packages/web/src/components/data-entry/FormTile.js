@@ -111,6 +111,7 @@ const BasicForm = props => {
           <div className={styles.categorization}>
             <DropdownInput
               placeholder='Pick a Genre'
+              mount='parent'
               menu={{ items: GENRES }}
               defaultValue={getCannonicalName(props.defaultFields.genre) || ''}
               isRequired={props.requiredFields.genre}
@@ -125,6 +126,7 @@ const BasicForm = props => {
             />
             <DropdownInput
               placeholder='Pick a Mood'
+              mount='parent'
               menu={{ items: MOODS }}
               defaultValue={props.defaultFields.mood || ''}
               isRequired={props.requiredFields.mood}
