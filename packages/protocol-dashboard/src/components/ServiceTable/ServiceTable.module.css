@@ -22,3 +22,12 @@
   
   color: #BEC5E0;
 }
+
+.error {
+  height: 20px;
+  width: 20px;
+}
+
+.error > * {
+  padding: 0;
+}
