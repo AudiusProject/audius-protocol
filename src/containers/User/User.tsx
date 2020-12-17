@@ -84,7 +84,6 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
       replaceRoute(accountPage(wallet))
   }, [status, wallet, pathname, isServiceProvider, replaceRoute])
 
-  if (status !== Status.Success) return null
   const services =
     ((user as Operator)?.discoveryProviders?.length ?? 0) +
     ((user as Operator)?.contentNodes?.length ?? 0)
@@ -100,6 +99,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
         <UserInfo
           className={styles.userInfoTile}
           user={user}
+          status={status}
           delegates={delegates}
           delegatesStatus={userDelegatesStatus}
           services={services}
@@ -116,7 +116,8 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
           />
         ) : (
           <UserStakedStat
-            wallet={user.wallet}
+            wallet={user?.wallet}
+            isLoading={status !== Status.Success}
             totalDelegates={activeStake}
             totalDelegatesStatus={totalDelegatesStatus}
           />
@@ -135,21 +136,23 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
           className={styles.delegateContainer}
         />
       )}
-      <Timeline className={styles.timeline} wallet={user.wallet} />
+      <Timeline className={styles.timeline} wallet={user?.wallet} />
       {isServiceProvider && (user as Operator).delegators.length > 0 && (
         <DelegatorsTable
           wallet={user.wallet}
           className={styles.delegatorsContainer}
         />
       )}
-      <DelegatesTable
-        wallet={user.wallet}
-        className={styles.delegatesContainer}
-      />
+      {user && (
+        <DelegatesTable
+          wallet={user.wallet}
+          className={styles.delegatesContainer}
+        />
+      )}
       <div className={styles.serviceContainer}>
         {hasDiscoveryProviders && (
           <DiscoveryTable
-            owner={user.wallet}
+            owner={user?.wallet}
             className={clsx(styles.serviceTable, {
               [styles.rightSpacing]: hasContentNodes
             })}
@@ -157,7 +160,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
         )}
         {hasContentNodes && (
           <ContentTable
-            owner={user.wallet}
+            owner={user?.wallet}
             className={clsx(styles.serviceTable, {
               [styles.leftSpacing]: hasDiscoveryProviders
             })}

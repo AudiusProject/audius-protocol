@@ -68,10 +68,14 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
   return (
     <div className={styles.voteCTA}>
       <div className={styles.timeRemaining}>
-        <div className={styles.title}>{messages.timeRemaining}</div>
-        <div className={styles.time}>
-          {timeRemaining !== null && getHumanReadableTime(timeRemaining)}
-        </div>
+        {timeRemaining !== null && (
+          <>
+            <div className={styles.title}>{messages.timeRemaining}</div>
+            <div className={styles.time}>
+              {getHumanReadableTime(timeRemaining)}
+            </div>
+          </>
+        )}
         <div className={styles.blocks}>
           <span>{`${messages.targetBlock}: ${targetBlock}`}</span>
         </div>

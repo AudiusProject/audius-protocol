@@ -190,7 +190,7 @@ export const useBlock = (blockNumber: number) => {
 export const useTimeRemaining = (block: number, period: number | null) => {
   const averageBlockTime = useAverageBlockTime()
   const currentBlock = useEthBlockNumber()
-  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [timeRemaining, setTimeRemaining] = useState<null | number>(null)
 
   const targetBlock = block + (period || 0)
 
@@ -207,11 +207,14 @@ export const useTimeRemaining = (block: number, period: number | null) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeRemaining(timeRemaining => {
-        if (timeRemaining === 0) return 0
-        if (timeRemaining > 1000) {
-          return timeRemaining - 1000
+        if (timeRemaining !== null) {
+          if (timeRemaining === 0) return 0
+          if (timeRemaining > 1000) {
+            return timeRemaining - 1000
+          }
+          return timeRemaining
         }
-        return timeRemaining
+        return null
       })
     }, 1000)
     return () => clearInterval(interval)

@@ -8,6 +8,7 @@ import { Status } from 'types'
 import { TICKER } from 'utils/consts'
 import { Address } from 'types'
 import { formatWei, formatShortAud } from 'utils/format'
+import Loading from 'components/Loading'
 
 const messages = {
   delegated: `DELEGATED`
@@ -17,6 +18,7 @@ type OwnProps = {
   wallet: Address
   totalDelegates: BN
   totalDelegatesStatus: Status
+  isLoading?: boolean
 }
 
 type UserStakedStatProps = OwnProps
@@ -26,17 +28,23 @@ const UserStakedStat: React.FC<UserStakedStatProps> = (
 ) => {
   return (
     <Paper className={styles.stakedContainer}>
-      {props.totalDelegatesStatus !== Status.Success ? null : (
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(props.totalDelegates)}
-          className={styles.stakedAmount}
-        >
-          {formatShortAud(props.totalDelegates)}
-        </Tooltip>
+      {props.isLoading ? (
+        <Loading />
+      ) : (
+        <>
+          {props.totalDelegatesStatus !== Status.Success ? null : (
+            <Tooltip
+              position={Position.TOP}
+              text={formatWei(props.totalDelegates)}
+              className={styles.stakedAmount}
+            >
+              {formatShortAud(props.totalDelegates)}
+            </Tooltip>
+          )}
+          <div className={styles.label}>{TICKER}</div>
+          <div className={styles.description}>{messages.delegated}</div>
+        </>
       )}
-      <div className={styles.label}>{TICKER}</div>
-      <div className={styles.description}>{messages.delegated}</div>
     </Paper>
   )
 }

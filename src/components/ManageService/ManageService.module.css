@@ -7,6 +7,14 @@
   width: 100%;
 }
 
+.loading {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .title {
   font-family: var(--font-family);
   
