@@ -11,6 +11,7 @@ const {
   createPlaylist,
   updatePlaylistCoverPhoto,
   getPlaylists,
+  getUser,
   Utils
 } = ServiceCommands
 const path = require('path')
@@ -23,7 +24,6 @@ const {
   genRandomString
 } = require('../helpers.js')
 const ipfs = require('../ipfsClient')
-const { getUser } = require('@audius/service-commands/src/commands/users')
 const { logger } = require('../logger.js')
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 

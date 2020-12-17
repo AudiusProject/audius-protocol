@@ -39,6 +39,7 @@ class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
+    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
     this._waitForContentNodeEndpointUpdate = this._waitForContentNodeEndpointUpdate.bind(this)
     this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
@@ -288,22 +289,26 @@ class Users extends Base {
    * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
-    let updateUserStateManager = false
     if (profilePictureFile) {
-      updateUserStateManager = true
       const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
       metadata.profile_picture_sizes = resp.dirCID
     }
     if (coverPhotoFile) {
-      updateUserStateManager = true
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
       metadata.cover_photo_sizes = resp.dirCID
     }
-    if (updateUserStateManager) this.userStateManager.updateCurrentUser(metadata)
+
+    await this._handleMetadata({
+      newMetadata: metadata,
+      userId: metadata.user_id
+    })
     return metadata
   }
 
-  // Set is_creator field in metadata to true
+  /**
+   * Set is_creator field in metadata to true
+   * @param {Object} userMetadata current user metadata
+   */
   async upgradeToCreator (userMetadata) {
     userMetadata.is_creator = true
     await this._handleMetadata({
@@ -407,8 +412,8 @@ class Users extends Base {
  */
   _shouldUpdateUserStateManager (newMetadata) {
     const originalMetadata = this.userStateManager.getCurrentUser()
-    const updatedMetadata = { ...originalMetadata, newMetadata }
-    return JSON.stringify(originalMetadata) === JSON.stringify(updatedMetadata)
+    const updatedMetadata = { ...originalMetadata, ...newMetadata }
+    return JSON.stringify(originalMetadata) !== JSON.stringify(updatedMetadata)
   }
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */

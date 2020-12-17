@@ -2,10 +2,14 @@ const ServiceCommands = require('@audius/service-commands')
 const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
-const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
+const {
+  makeExecuteAll,
+  makeExecuteOne
+} = require('./helpers.js')
 const consistency1 = require('./tests/test_1.js')
 const { snapbackSMParallelSyncTest } = require('./tests/test_snapbackSM.js')
 const ipldBlacklistTests = require('./tests/test_ipldBlacklist')
+const replicaSetTests = require('./tests/test_replicaSet')
 
 // Configuration.
 // Should be CLI configurable in the future.
@@ -165,7 +169,16 @@ async function main () {
             numUsers: NUM_USERS
           })
       )
-      const tests = [test, ...blacklistTests]
+
+      const signUpReplicaSetTest = makeTest(
+        'signUpReplicaSetTest',
+        replicaSetTests.assignReplicaSetAndSyncOnSignUp,
+        {
+          numCreatorNodes: 3,
+          numUsers: 1
+        }
+      )
+      const tests = [signUpReplicaSetTest, test, ...blacklistTests]
 
       try {
         await testRunner(tests)
