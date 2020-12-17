@@ -19,7 +19,8 @@ import {
   getAudio,
   getPlaying,
   getCounter,
-  getUid as getPlayingUid
+  getUid as getPlayingUid,
+  getBuffering
 } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
@@ -82,13 +83,13 @@ class PlayBar extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { audio, playing, playCounter } = this.props
-    if (!playing) {
+    const { audio, isPlaying, playCounter } = this.props
+    if (!isPlaying) {
       clearInterval(this.seekInterval)
       this.seekInterval = null
     }
 
-    if (playing && !this.seekInterval) {
+    if (isPlaying && !this.seekInterval) {
       this.seekInterval = setInterval(() => {
         const trackPosition = audio.getPosition()
         this.setState({ trackPosition })
@@ -147,13 +148,13 @@ class PlayBar extends Component {
     const {
       currentQueueItem: { track },
       audio,
-      playing,
+      isPlaying,
       play,
       pause,
       record
     } = this.props
 
-    if (audio && playing) {
+    if (audio && isPlaying) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -238,7 +239,8 @@ class PlayBar extends Component {
       currentQueueItem: { uid, track, user },
       playCounter,
       audio,
-      playing,
+      isPlaying,
+      isBuffering,
       userId,
       theme
     } = this.props
@@ -271,9 +273,9 @@ class PlayBar extends Component {
     }
 
     let playButtonStatus
-    if (audio?.isBuffering()) {
+    if (isBuffering) {
       playButtonStatus = 'load'
-    } else if (playing) {
+    } else if (isPlaying) {
       playButtonStatus = 'pause'
     } else {
       playButtonStatus = 'play'
@@ -301,7 +303,7 @@ class PlayBar extends Component {
             <div className={styles.timeControls}>
               <Scrubber
                 mediaKey={`${uid}${playCounter}`}
-                isPlaying={playing && !audio?.isBuffering()}
+                isPlaying={isPlaying && !isBuffering}
                 isDisabled={!uid}
                 includeTimestamps
                 elapsedSeconds={audio?.getPosition()}
@@ -388,7 +390,8 @@ const makeMapStateToProps = () => {
     currentQueueItem: getCurrentQueueItem(state),
     playCounter: getCounter(state),
     audio: getAudio(state),
-    playing: getPlaying(state),
+    isPlaying: getPlaying(state),
+    isBuffering: getBuffering(state),
     playingUid: getPlayingUid(state),
     lineupHasTracks: getLineupHasTracks(
       getLineupSelectorForRoute(state),
