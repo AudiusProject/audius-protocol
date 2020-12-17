@@ -6,10 +6,9 @@ import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 import styles from './TopOperatorsTable.module.css'
 import Table from 'components/Table'
 import Tooltip from 'components/Tooltip'
-import { formatShortWallet, formatWeight, formatWei } from 'utils/format'
+import { formatShortWallet, formatWei } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { useTotalStaked } from 'store/cache/protocol/hooks'
 import { Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
@@ -57,14 +56,11 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   )
 
   const { status, users } = useUsers({ limit, filter: 'isOperator' })
-  const totalStaked = useTotalStaked()
 
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
-      { title: 'Staked', className: styles.totalStakedColumn },
-      { title: 'Vote Weight', className: styles.voteWeightColumn },
-      { title: 'Proposals Voted', className: styles.proposalVotedColumn }
+      { title: 'Staked', className: styles.totalStakedColumn }
     ])
   }
 
@@ -72,15 +68,12 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
       const totalCurrentStake = activeStake.add(user.delegatedTotal)
-      const voteWeight = Audius.getBNPercentage(activeStake, totalStaked)
       return {
         rank: idx + 1,
         img: user.image,
         name: user.name,
         wallet: user.wallet,
-        staked: totalCurrentStake,
-        voteWeight,
-        proposedVotes: user.voteHistory.length
+        staked: totalCurrentStake
       }
     })
     .sort((a, b) => {
@@ -110,12 +103,6 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
             >
               {Audius.displayShortAud(data.staked)}
             </Tooltip>
-            <div className={clsx(styles.rowCol, styles.voteWeightColumn)}>
-              {`${formatWeight(data.voteWeight)}%`}
-            </div>
-            <div className={clsx(styles.rowCol, styles.proposalVotedColumn)}>
-              {data.proposedVotes}
-            </div>
           </>
         )}
       </div>
