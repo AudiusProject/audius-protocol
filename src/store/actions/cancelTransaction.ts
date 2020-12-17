@@ -61,8 +61,7 @@ function cancelUndelegate(
     try {
       const wallet = getState().account.wallet
       if (!wallet) throw new Error('Not signed in')
-
-      await aud.Delegate.cancelUndelegateStake()
+      await aud.Delegate.cancelUndelegateStakeRequest()
       // Repull pending transactions
       await dispatch(fetchPendingTransactions(wallet))
 
@@ -85,7 +84,7 @@ function cancelRemoveDelegator(
       const accountWallet = getState().account.wallet
       if (!accountWallet) throw new Error('Not signed in')
       if (!wallet) throw new Error('Delegator wallet not provided')
-      await aud.Delegate.cancelRemoveDelegator(accountWallet, wallet)
+      await aud.Delegate.cancelRemoveDelegatorRequest(accountWallet, wallet)
 
       // Repull pending transactions
       await dispatch(fetchPendingTransactions(accountWallet))
