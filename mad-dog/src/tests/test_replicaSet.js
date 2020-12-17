@@ -4,7 +4,7 @@
 // And then: metadata blob should exist in all 3 cnodes
 // And then: disc prov has indexed the user with
 // is_creator = false
-// creator_node_endpoints = blah1, blah2, blah3
+// creator_node_endpoints = cn1, cn2, cn3 (any order)
 // clock values in all 3 cnodes are the same (primary = secondary1, secondary2)
 
 const ServiceCommands = require('@audius/service-commands')
