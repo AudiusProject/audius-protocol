@@ -139,7 +139,6 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }))
   }
 
-
   async getIncreasedStakeEvents ({
     owner,
     queryStartBlock = 0
