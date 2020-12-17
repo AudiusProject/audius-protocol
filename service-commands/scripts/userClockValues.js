@@ -5,16 +5,22 @@
  */
 const axios = require('axios')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
+const { Command } = require('commander')
+
+const program = new Command()
+program
+  .usage('')
+  .option('-h, --handle <handle>', 'Audius handle')
+  .option('-i, --user-id <userId>', 'Audius user id')
 
 const discoveryProvider = 'https://discoveryprovider.audius.co'
 
 async function run() {
   try {
-    const { handle } = parseArgs()
-
+    const { handle, userId } = parseArgs()
     const { wallet, creator_node_endpoint: creatorNodeEndpoint } = (
       await axios({
-        url: `/v1/full/users/handle/${handle}`,
+        url: handle ? `/v1/full/users/handle/${handle}` : `/users?id=${userId}`,
         method: 'get',
         baseURL: discoveryProvider
       })
@@ -43,16 +49,24 @@ async function run() {
  * Process command line args, expects user handle as command line input.
  */
 function parseArgs() {
-  const args = process.argv.slice(2)
-  const handle = args[0]
+  program.parse(process.argv)
 
   // check appropriate CLI usage
-  if (!handle) {
-    const errorMessage = `Incorrect script usage for input handle (${handle})\nPlease follow the structure 'node userClockValues.js <handle>'`
+  if (program.handle && program.userId) {
+    const errorMessage =
+      'Incorrect script usage, expected handle or user id, got both.\nPlease follow the structure: node userClockValues.js -h <handle> or node userClockValues.js -i <userId>'
+    throw new Error(errorMessage)
+  }
+  if (!program.handle && !program.userId) {
+    const errorMessage =
+      'Incorrect script usage, expected handle or user id, got neither.\nPlease follow the structure: node userClockValues.js -h <handle> or node userClockValues.js -i <userId>'
     throw new Error(errorMessage)
   }
 
-  return { handle }
+  return {
+    handle: program.handle,
+    userId: program.userId
+  }
 }
 
 run()
