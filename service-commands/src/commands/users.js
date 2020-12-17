@@ -1,7 +1,17 @@
 const config = require('../../config/config')
 const fs = require('fs')
 
-const addUser = async (libsWrapper, metadata, userPicturePath) => {
+const User = {}
+
+User.addUser = async (libsWrapper, metadata) => {
+  const { error, phase, userId } = await libsWrapper.signUp({ metadata })
+  if (error) {
+    throw new Error(`Adding user error: ${error} in phase: ${phase}`)
+  }
+  return userId
+}
+
+User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePath) => {
   const userPicFile = fs.createReadStream(userPicturePath)
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
@@ -10,23 +20,17 @@ const addUser = async (libsWrapper, metadata, userPicturePath) => {
   metadata.profile_picture_sizes = resp.dirCID
   metadata.cover_photo_sizes = resp.dirCID
 
-  const { error, phase, userId } = await libsWrapper.signUp({ metadata })
-
-  if (error) {
-    throw new Error(`Adding user error: ${error} in phase: ${phase}`)
-  }
-
-  return userId
+  return User.addUser(libsWrapper, metadata)
 }
 
-const upgradeToCreator = async (libsWrapper, endpoint) => {
+User.upgradeToCreator = async (libsWrapper, endpoint) => {
   await libsWrapper.upgradeToCreator({
     endpoint,
     userNode: config.get('user_node')
   })
 }
 
-const autoSelectCreatorNodes = async (
+User.autoSelectCreatorNodes = async (
   libsWrapper,
   numberOfNodes,
   whitelist,
@@ -39,31 +43,31 @@ const autoSelectCreatorNodes = async (
   })
 }
 
-const getUser = async (libs, userId) => {
+User.getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
 
-const getUserAccount = async (libs, wallet) => {
+User.getUserAccount = async (libs, wallet) => {
   return libs.getUserAccount(wallet)
 }
 
-const getLibsWalletAddress = libs => {
+User.getLibsWalletAddress = libs => {
   return libs.getWalletAddress()
 }
 
-const setCurrentUser = async (libs, userAccount) => {
+User.setCurrentUser = async (libs, userAccount) => {
   libs.setCurrentUser(userAccount)
 }
 
-const getLibsUserInfo = async libs => {
+User.getLibsUserInfo = async libs => {
   return libs.getLibsUserInfo()
 }
 
-const updateMultihash = async (libsWrapper, userId, multihashDigest) => {
+User.updateMultihash = async (libsWrapper, userId, multihashDigest) => {
   return libsWrapper.updateMultihash(userId, multihashDigest)
 }
 
-const updateProfilePhoto = async (
+User.updateProfilePhoto = async (
   libsWrapper,
   userId,
   profilePhotoMultihashDigest
@@ -71,7 +75,7 @@ const updateProfilePhoto = async (
   return libsWrapper.updateProfilePhoto(userId, profilePhotoMultihashDigest)
 }
 
-const updateCoverPhoto = async (
+User.updateCoverPhoto = async (
   libsWrapper,
   userId,
   coverPhotoMultihashDigest
@@ -79,16 +83,12 @@ const updateCoverPhoto = async (
   return libsWrapper.updateCoverPhoto(userId, coverPhotoMultihashDigest)
 }
 
-module.exports = {
-  addUser,
-  upgradeToCreator,
-  getUser,
-  getUserAccount,
-  getLibsWalletAddress,
-  setCurrentUser,
-  autoSelectCreatorNodes,
-  getLibsUserInfo,
-  updateMultihash,
-  updateProfilePhoto,
-  updateCoverPhoto
+User.getContentNodeEndpoints = (libsWrapper, contentNodeEndpointField) => {
+  return libsWrapper.getContentNodeEndpoints(contentNodeEndpointField)
 }
+
+User.getClockValuesFromReplicaSet = async libsWrapper => {
+  return libsWrapper.getClockValuesFromReplicaSet()
+}
+
+module.exports = User
