@@ -119,11 +119,15 @@ const WaitingTransaction: React.FC<WaitingTransactionProps> = props => {
       <Loading className={styles.loading} />
       <div className={styles.textContainer}>
         <div className={styles.primaryText}>{`Pending ${props.name}`}</div>
-        <div className={styles.secondaryText}>
-          {`${messages.target} ${
-            props.lockupExpiryBlock
-          } - ${getHumanReadableTime(timeRemaining)} ${messages.timeRemaining}`}
-        </div>
+        {timeRemaining !== null && (
+          <div className={styles.secondaryText}>
+            {`${messages.target} ${
+              props.lockupExpiryBlock
+            } - ${getHumanReadableTime(timeRemaining)} ${
+              messages.timeRemaining
+            }`}
+          </div>
+        )}
       </div>
       <Button
         leftIcon={<IconRemove />}

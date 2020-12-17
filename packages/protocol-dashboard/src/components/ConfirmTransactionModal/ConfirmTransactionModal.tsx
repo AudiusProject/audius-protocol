@@ -15,8 +15,6 @@ const messages = {
   title: 'Confirm Transaction',
   metamask: 'Confirm With MetaMask',
   error: 'An Error Has Occured',
-  errorMessage:
-    'Actions cannot be taken until pending transactions are completed. Please try again.',
   okay: 'OKAY',
   discoveryProvider: 'Discovery Node',
   contentNode: 'Content Node',
@@ -28,7 +26,7 @@ const messages = {
   delegatingAmount: `DELEGATING ${TICKER}`,
   errorTitle: 'An Error Has Occured',
   errorHeader:
-    'Actions cannot be taken until pending transactions are completed. Please try again.',
+    'There was an error in executing the transaction. Please try again.',
   errorBtn: 'OKAY'
 }
 
