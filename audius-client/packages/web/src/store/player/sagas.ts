@@ -8,6 +8,7 @@ import {
   playSucceeded,
   pause,
   stop,
+  setBuffering,
   reset,
   resetSuceeded,
   seek,
@@ -169,6 +170,17 @@ export function* setAudioListeners() {
   }
 }
 
+export function* handleAudioBuffering() {
+  const audioStream = yield call(waitForValue, getAudio)
+  const chan = eventChannel(emitter => {
+    audioStream.onBufferingChange = (isBuffering: boolean) => {
+      emitter(setBuffering({ buffering: isBuffering }))
+    }
+    return () => {}
+  })
+  yield spawn(actionChannelDispatcher, chan)
+}
+
 export function* handleAudioErrors() {
   // Watch for audio errors and emit an error saga dispatching action
   const audioStream = yield call(waitForValue, getAudio)
@@ -242,6 +254,7 @@ const sagas = () => {
     watchSeek,
     setAudioListeners,
     handleAudioErrors,
+    handleAudioBuffering,
     recordListenWorker,
     errorSagas
   ]

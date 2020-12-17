@@ -13,7 +13,12 @@ import { Scrubber } from '@audius/stems'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import { ID } from 'models/common/Identifiers'
 import { seek, reset } from 'store/player/slice'
-import { getAudio, getCounter, getPlaying } from 'store/player/selectors'
+import {
+  getAudio,
+  getBuffering,
+  getCounter,
+  getPlaying
+} from 'store/player/selectors'
 import { next, pause, play, previous, repeat, shuffle } from 'store/queue/slice'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { RepeatMode } from 'store/queue/types'
@@ -67,7 +72,6 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 type OwnProps = {
   onClose: () => void
   audio: AudioState
-  playing: boolean
 }
 
 type NowPlayingProps = OwnProps &
@@ -99,7 +103,8 @@ const NowPlaying = g(
     currentUserId,
     playCounter,
     audio,
-    playing,
+    isPlaying,
+    isBuffering,
     play,
     pause,
     reset,
@@ -194,9 +199,9 @@ const NowPlaying = g(
     )
 
     let playButtonStatus
-    if (audio?.isBuffering()) {
+    if (isBuffering) {
       playButtonStatus = PlayButtonStatus.LOAD
-    } else if (playing) {
+    } else if (isPlaying) {
       playButtonStatus = PlayButtonStatus.PAUSE
     } else {
       playButtonStatus = PlayButtonStatus.PLAY
@@ -205,7 +210,7 @@ const NowPlaying = g(
     const togglePlay = () => {
       const message = new HapticFeedbackMessage()
       message.send()
-      if (playing) {
+      if (isPlaying) {
         pause()
         record(
           make(Name.PLAYBACK_PAUSE, {
@@ -360,7 +365,7 @@ const NowPlaying = g(
             // Include the duration in the media key because the play counter can
             // potentially udpate before the duration coming from the native layer if present
             mediaKey={`${uid}${mediaKey}${timing.duration}`}
-            isPlaying={playing && !audio?.isBuffering()}
+            isPlaying={isPlaying && !isBuffering}
             isDisabled={!uid}
             isMobile
             elapsedSeconds={timing.position}
@@ -432,7 +437,8 @@ function makeMapStateToProps() {
       currentUserId: getUserId(state),
       playCounter: getCounter(state),
       audio: getAudio(state),
-      playing: getPlaying(state),
+      isPlaying: getPlaying(state),
+      isBuffering: getBuffering(state),
       isCasting: getIsCasting(state),
       castMethod: getCastMethod(state)
     }

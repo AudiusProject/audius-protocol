@@ -76,6 +76,7 @@ class AudioStream {
   duration: number
   bufferingTimeout: ReturnType<typeof setTimeout> | null
   buffering: boolean
+  onBufferingChange: (isBuffering: boolean) => void
   concatBufferInterval: ReturnType<typeof setInterval> | null
   nextBufferIndex: number
   loadCounter: number
@@ -101,8 +102,11 @@ class AudioStream {
     // outside source. Audio.duration returns Infinity until all the streams are
     // concatenated together.
     this.duration = 0
+
     this.bufferingTimeout = null
     this.buffering = false
+    // Callback fired when buffering status changes
+    this.onBufferingChange = isBuffering => {}
 
     this.concatBufferInterval = null
     this.nextBufferIndex = 0
@@ -142,6 +146,7 @@ class AudioStream {
 
       clearTimeout(this.bufferingTimeout!)
       this.buffering = false
+      this.onBufferingChange(this.buffering)
     })
 
     this.audio.onerror = e => {
@@ -274,6 +279,7 @@ class AudioStream {
     this.waitingListener = () => {
       this.bufferingTimeout = setTimeout(() => {
         this.buffering = true
+        this.onBufferingChange(this.buffering)
       }, BUFFERING_DELAY_MILLISECONDS)
     }
     this.audio.addEventListener('waiting', this.waitingListener)

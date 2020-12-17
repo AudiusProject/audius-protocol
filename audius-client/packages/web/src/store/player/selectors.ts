@@ -11,8 +11,7 @@ export const getAudio = (state: AppState) => state.player.audio
 export const getPlaying = (state: AppState) => state.player.playing
 export const getPaused = (state: AppState) => !state.player.playing
 export const getCounter = (state: AppState) => state.player.counter
-export const getBuffering = (state: AppState) =>
-  state.player.audio?.isBuffering() ?? false
+export const getBuffering = (state: AppState) => state.player.buffering
 
 export const getCurrentTrack = (state: AppState) =>
   getTrack(state, { id: getTrackId(state) })

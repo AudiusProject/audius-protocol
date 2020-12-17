@@ -16,6 +16,10 @@ type State = {
   // object to allow components to subscribe to changes.
   playing: boolean
 
+  // Keep 'buffering' in the store separately from the audio
+  // object to allow components to subscribe to changes.
+  buffering: boolean
+
   // Unique integer that increments every time something is "played."
   // E.g. replaying a track doesn't change uid or trackId, but counter changes.
   counter: number
@@ -30,6 +34,7 @@ export const initialState: State = {
   audio: NATIVE_MOBILE ? new NativeMobileAudio() : null,
 
   playing: false,
+  buffering: false,
   counter: 0
 }
 
@@ -56,6 +61,10 @@ type PausePayload = {
 }
 
 type StopPayload = {}
+
+type SetBufferingPayload = {
+  buffering: boolean
+}
 
 type SetPayload = {
   uid: UID
@@ -99,6 +108,10 @@ const slice = createSlice({
     pause: (state, action: PayloadAction<PausePayload>) => {
       state.playing = false
     },
+    setBuffering: (state, action: PayloadAction<SetBufferingPayload>) => {
+      const { buffering } = action.payload
+      state.buffering = buffering
+    },
     stop: (state, action: PayloadAction<StopPayload>) => {
       state.playing = false
       state.uid = null
@@ -130,6 +143,7 @@ export const {
   playSucceeded,
   pause,
   stop,
+  setBuffering,
   set,
   reset,
   resetSuceeded,

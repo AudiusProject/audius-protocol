@@ -103,12 +103,16 @@ describe('load native hls', () => {
   it('sets up event listeners', () => {
     const onEnd = jest.fn()
     audioStream.load(segments, onEnd)
+    const onBufferingChange = jest.fn()
+    audioStream.onBufferingChange = onBufferingChange
 
     audioStream.audio.dispatchEvent(new Event('waiting'))
     expect(audioStream.buffering).toEqual(true)
+    expect(onBufferingChange).toBeCalledWith(true)
 
     audioStream.audio.dispatchEvent(new Event('canplay'))
     expect(audioStream.buffering).toEqual(false)
+    expect(onBufferingChange).toBeCalledWith(false)
 
     audioStream.audio.dispatchEvent(new Event('ended'))
     expect(onEnd).toBeCalled()
