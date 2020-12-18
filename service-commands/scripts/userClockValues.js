@@ -17,7 +17,6 @@ program
   .option('-h, --handles <handles>', 'Audius handle', commaSeparatedList, [])
   .option('-i, --user-ids <userIds>', 'Audius user id', commaSeparatedList, [])
 
-// export DISCOVERY_PROVIDER_ENDPOINT="https://discoveryprovider.audius.co"
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
 async function getUserByHandle(handle, discoveryProviderEndpoint) {
