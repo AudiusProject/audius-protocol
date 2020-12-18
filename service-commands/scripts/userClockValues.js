@@ -14,8 +14,8 @@ function commaSeparatedList(value, unusedPrevValue) {
 const program = new Command()
 program
   .usage('')
-  .option('-h, --handles <handles>', 'Audius handle', commaSeparatedList, [])
-  .option('-i, --user-ids <userIds>', 'Audius user id', commaSeparatedList, [])
+  .option('-h, --handles <handles>', 'Audius handles', commaSeparatedList, [])
+  .option('-i, --user-ids <userIds>', 'Audius user ids', commaSeparatedList, [])
 
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
