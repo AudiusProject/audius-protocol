@@ -24,18 +24,28 @@ import walletClient from 'services/wallet-client/WalletClient'
 import { select } from 'redux-saga-test-plan/matchers'
 import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
 import { show as showMusicConfetti } from 'containers/music-confetti/store/slice'
+import { make } from 'store/analytics/actions'
+import { Name } from 'services/analytics'
+import { getAccountUser } from 'store/account/selectors'
 
 // TODO: handle errors
 
 function* sendAsync({
   payload: { recipientWallet, amount }
 }: ReturnType<typeof send>) {
+  const account = yield select(getAccountUser)
   const weiBNAmount = stringWeiToBN(amount)
   const weiBNBalance: ReturnType<typeof getAccountBalance> = yield select(
     getAccountBalance
   )
   if (!weiBNBalance || !weiBNBalance.gte(weiBNAmount)) return
   try {
+    yield put(
+      make(Name.SEND_AUDIO_REQUEST, {
+        from: account?.wallet,
+        recipient: recipientWallet
+      })
+    )
     yield call(() => walletClient.sendTokens(recipientWallet, weiBNAmount))
 
     // Only decrease store balance if we haven't already changed
@@ -47,17 +57,35 @@ function* sendAsync({
     }
 
     yield put(sendSucceeded())
+    yield put(
+      make(Name.SEND_AUDIO_SUCCESS, {
+        from: account?.wallet,
+        recipient: recipientWallet
+      })
+    )
   } catch (e) {
     yield put(sendFailed({ error: e.message }))
+    yield put(
+      make(Name.SEND_AUDIO_FAILURE, {
+        from: account?.wallet,
+        recipient: recipientWallet
+      })
+    )
   }
 }
 
 function* claimAsync() {
+  const account = yield select(getAccountUser)
   const weiBNClaimable: ReturnType<typeof getClaimableBalance> = yield select(
     getClaimableBalance
   )
   if (!weiBNClaimable || weiBNClaimable.isZero()) return
   try {
+    yield put(
+      make(Name.CLAIM_AUDIO_REQUEST, {
+        wallet: account?.wallet
+      })
+    )
     yield call(() => walletClient.claim())
     yield all([
       put(setClaim({ balance: '0' as StringWei })),
@@ -65,8 +93,18 @@ function* claimAsync() {
       put(claimSucceeded()),
       put(showMusicConfetti())
     ])
+    yield put(
+      make(Name.CLAIM_AUDIO_SUCCESS, {
+        wallet: account?.wallet
+      })
+    )
   } catch (e) {
     yield put(claimFailed({ error: e.message }))
+    yield put(
+      make(Name.CLAIM_AUDIO_FAILURE, {
+        wallet: account?.wallet
+      })
+    )
   }
 }
 
