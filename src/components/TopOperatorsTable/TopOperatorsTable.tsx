@@ -12,7 +12,7 @@ import { useUsers } from 'store/cache/user/hooks'
 import { Operator, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
-import getActiveStake from 'utils/activeStake'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 
 const messages = {
   topAddresses: 'Top Service Operators by Active Stake',
@@ -67,7 +67,8 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   const data = (users as Operator[])
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
-      const totalCurrentStake = activeStake.add(user.delegatedTotal)
+      const totalActiveDelegated = getTotalActiveDelegatedStake(user)
+      const totalCurrentStake = activeStake.add(totalActiveDelegated)
       return {
         rank: idx + 1,
         img: user.image,
