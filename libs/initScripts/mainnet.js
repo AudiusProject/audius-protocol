@@ -95,7 +95,7 @@ function getLibsConfig (config, privateKey, ownerWallet) {
       ethWeb3,
       ownerWallet
     ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
+    // discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
     isServer: isServer
   }
   return audiusLibsConfig
