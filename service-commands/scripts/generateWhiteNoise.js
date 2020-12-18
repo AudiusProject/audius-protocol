@@ -1,7 +1,7 @@
 /**
- * Generates a random whitenoise mp3 file of given input size.
+ * Generates a random generateWhiteNoise mp3 file of given input size.
  *
- * Script usage: node whitenoise.js <size> <outFile>
+ * Script usage: node generateWhiteNoise.js <size> <outFile>
  */
 
 const { spawn } = require('child_process')
@@ -10,26 +10,27 @@ const ffmpeg = require('ffmpeg-static')
 async function run() {
   try {
     const { size, outFile } = parseArgs()
-    whitenoise(size, outFile)
+    generateWhiteNoise(size, outFile)
   } catch (err) {
-    console.error(err.message)
+    console.error(err)
   }
 }
 
 /**
  * Process two command line args for filesize and filename.
  *
- * Defaults to 1 KiB file size, and unix timestamp for filename if args are not provided.
+ * Defaults to 1 MB file size, and unix timestamp for filename if args are not provided.
  */
 function parseArgs() {
   const args = process.argv.slice(2)
-  const size = args[0] || 1
+  const size = args[0] || 1000
   const outFile = args[1] || `whitenoise-${new Date().getTime()}.mp3`
 
   // check appropriate CLI usage
   if (!size || !outFile) {
-    const errorMessage = `Incorrect script usage for input size (${size}) and outFile (${outFile}).\nPlease follow the structure 'node whitenoise.js <size> <outFile>'`
-    throw new Error(errorMessage)
+    throw new Error(
+      `Incorrect script usage for input size (${size}) and outFile (${outFile}).\nPlease follow the structure 'node generateWhiteNoise.js <size> <outFile>'`
+    )
   }
 
   return { size, outFile }
@@ -45,7 +46,7 @@ function parseArgs() {
  *
  * See https://ffmpeg.org/ffmpeg-filters.html#anoisesrc for more information.
  */
-function whitenoise(size, outFile) {
+function generateWhiteNoise(size, outFile) {
   return new Promise((resolve, reject) => {
     const process = spawn(ffmpeg, [
       '-f',
