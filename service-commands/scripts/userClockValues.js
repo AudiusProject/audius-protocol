@@ -7,63 +7,131 @@ const axios = require('axios')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const { Command } = require('commander')
 
+function commaSeparatedList(value, dummyPrevious) {
+  return value.split(',')
+}
+
 const program = new Command()
 program
   .usage('')
-  .option('-h, --handle <handle>', 'Audius handle')
-  .option('-i, --user-id <userId>', 'Audius user id')
+  .option('-h, --handles <handles>', 'Audius handle', commaSeparatedList, [])
+  .option('-i, --user-ids <userIds>', 'Audius user id', commaSeparatedList, [])
 
 // export DISCOVERY_PROVIDER_ENDPOINT="https://discoveryprovider.audius.co"
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
-async function run() {
-  let handle = null
-  let userId = null
+async function getUserByHandle(handle, discoveryProviderEndpoint) {
   try {
-    ;({ handle, userId } = parseArgsAndEnv())
-  } catch (err) {
-    console.log(err)
-    return
-  }
-
-  let wallet = null
-  let creatorNodeEndpoint = null
-  try {
-    ;({ wallet, creator_node_endpoint: creatorNodeEndpoint } = (
+    return (
       await axios({
-        url: handle ? `/v1/full/users/handle/${handle}` : `/users?id=${userId}`,
+        url: `/v1/full/users/handle/${handle}`,
         method: 'get',
         baseURL: discoveryProviderEndpoint
       })
-    ).data.data[0])
+    ).data.data[0]
   } catch (err) {
-    console.error(
-      `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint} with ${err}`
+    throw new Error(
+      `Failed to get creator node endpoint and wallet from endpoint: ${discoveryProviderEndpoint} and handle: ${handle} with ${err}`
     )
-    return
+  }
+}
+
+async function getUserById(userId, discoveryProviderEndpoint) {
+  try {
+    const resp = (
+      await axios({
+        url: `/users?id=${userId}`,
+        method: 'get',
+        baseURL: discoveryProviderEndpoint
+      })
+    ).data.data[0]
+
+    if (!resp) {
+      throw new Error(`Failed to find user with userId ${userId}`)
+    }
+
+    return resp
+  } catch (err) {
+    throw new Error(
+      `Failed to get creator node endpoint and wallet from endpoint: ${discoveryProviderEndpoint} and user id: ${userId} with ${err}`
+    )
+  }
+}
+async function getClockValues({
+  wallet,
+  creator_node_endpoint: creatorNodeEndpoint
+}) {
+  const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
+  const secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
+
+  if (!creatorNodeEndpoint) {
+    return {
+      primaryNode: '',
+      primaryClockValue: '',
+      secondaryNodes: [],
+      secondaryClockValues: []
+    }
   }
 
-  try {
-    const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
-    const secondaryCreatorNodes = CreatorNode.getSecondaries(
-      creatorNodeEndpoint
-    )
-
-    console.log('Primary')
-    console.log(
+  return {
+    primaryNode: primaryCreatorNode,
+    primaryClockValue: await CreatorNode.getClockValue(
       primaryCreatorNode,
-      await CreatorNode.getClockValue(primaryCreatorNode, wallet)
-    )
-
-    console.log('\nSecondaries')
-    secondaryCreatorNodes.forEach(async secondaryCreatorNode => {
-      console.log(
-        secondaryCreatorNode,
-        await CreatorNode.getClockValue(secondaryCreatorNode, wallet)
+      wallet
+    ),
+    secondaryNodes: secondaryCreatorNodes,
+    secondaryClockValues: await Promise.all(
+      secondaryCreatorNodes.map(secondaryNode =>
+        CreatorNode.getClockValue(secondaryNode, wallet)
       )
-    })
+    )
+  }
+}
+
+async function run() {
+  try {
+    const { handles, userIds } = parseArgsAndEnv()
+    const userClockValues = await Promise.all([
+      ...handles.map(async handle => {
+        return {
+          ...(await getClockValues(
+            await getUserByHandle(handle, discoveryProviderEndpoint)
+          )),
+          userInfo: `handle: ${handle}`
+        }
+      }),
+      ...userIds.map(async userId => {
+        return {
+          ...(await getClockValues(
+            await getUserById(userId, discoveryProviderEndpoint)
+          )),
+          userInfo: `userId: ${userId}`
+        }
+      })
+    ])
+
+    userClockValues.forEach(
+      ({
+        userInfo,
+        primaryNode,
+        primaryClockValue,
+        secondaryNodes,
+        secondaryClockValues
+      }) => {
+        console.log(userInfo)
+        console.log('Primary')
+        console.log(primaryNode, primaryClockValue)
+
+        console.log('Secondary')
+        secondaryNodes.forEach((secondaryNode, idx) => {
+          console.log(secondaryNode, secondaryClockValues[idx])
+        })
+
+        console.log()
+      }
+    )
   } catch (err) {
-    console.error(`Could not fetch clock values from creator node with ${err}`)
+    console.error(err)
   }
 }
 
@@ -78,21 +146,9 @@ function parseArgsAndEnv() {
     throw new Error(errorMessage)
   }
 
-  // check appropriate CLI usage
-  if (program.handle && program.userId) {
-    const errorMessage =
-      'Incorrect script usage, expected handle or user id, got both.\nPlease follow the structure: node userClockValues.js -h <handle> or node userClockValues.js -i <userId>'
-    throw new Error(errorMessage)
-  }
-  if (!program.handle && !program.userId) {
-    const errorMessage =
-      'Incorrect script usage, expected handle or user id, got neither.\nPlease follow the structure: node userClockValues.js -h <handle> or node userClockValues.js -i <userId>'
-    throw new Error(errorMessage)
-  }
-
   return {
-    handle: program.handle,
-    userId: program.userId
+    handles: program.handles,
+    userIds: program.userIds
   }
 }
 
