@@ -700,7 +700,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 // }
 
 // Get the userId that is a creator with wallet index 1
-const getCreatorId = async ({
+async function getCreatorId ({
   numUsers,
   executeAll,
   executeOne,
@@ -722,7 +722,7 @@ const getCreatorId = async ({
  * Add content to ipfs to generate random CID
  * @param {object} contentObject content in object form to add to ipfs
  */
-const addContentToIpfs = async contentObject => {
+async function addContentToIpfs (contentObject) {
   let buffer
   try {
     buffer = Buffer.from(JSON.stringify(contentObject))
