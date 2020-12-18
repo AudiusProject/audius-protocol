@@ -5,8 +5,7 @@ _What is the purpose of this PR? What is the current behavior? What is the new b
 
 
 ### Tests
-_List the manual tests and repro instructions to verify that this PR works as anticipated. Include log analysis if possible._\
-_:exclamation: If this change impacts clients, make sure that you have tested the clients :exclamation:_
+_List the manual tests and repro instructions to verify that this PR works as anticipated. Include log analysis if possible. :exclamation: If this change impacts clients, make sure that you have tested the clients :exclamation:_
 
 
 1. Test 1
