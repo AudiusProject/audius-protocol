@@ -4,19 +4,19 @@ const { LibsWrapper, Utils } = require('./libs')
 
 // Any method you add in these commands files will be dynamically imported
 // and accessible via ServiceCommands
-const Users = require('./commands/users')
-const Tracks = require('./commands/tracks')
-const Files = require('./commands/files')
+const User = require('./commands/users')
+const Track = require('./commands/tracks')
+const File = require('./commands/files')
 const IpldBlacklist = require('./commands/ipldBlacklist')
-const Playlists = require('./commands/playlists')
+const Playlist = require('./commands/playlists')
 
 module.exports = {
   LibsWrapper,
   Utils,
   ...Setup,
-  ...Users,
-  ...Tracks,
-  ...Files,
+  ...User,
+  ...Track,
+  ...File,
   ...IpldBlacklist,
-  ...Playlists
+  ...Playlist
 }
