@@ -28,6 +28,9 @@ export const SERVICES_CONTENT_NODE_TITLE = 'Service'
 export const SERVICES_SERVICE_PROVIDERS = '/services/service-providers'
 export const SERVICES_SERVICE_PROVIDERS_TITLE = 'All Service Operators'
 
+export const SERVICES_USERS = '/services/users'
+export const SERVICES_USERS_TITLE = 'All Users'
+
 export const SERVICES_ACCOUNT = '/services/user'
 export const SERVICES_ACCOUNT_USER = '/services/user/:wallet'
 export const SERVICES_ACCOUNT_USER_TITLE = 'User'
@@ -77,6 +80,10 @@ const routes = [
   {
     matchParams: { path: GOVERNANCE_PROPOSAL, exact: true },
     title: GOVERNANCE_TITLE
+  },
+  {
+    matchParams: { path: SERVICES_USERS, exact: true },
+    title: SERVICES_USERS_TITLE
   },
   {
     matchParams: { path: SERVICES_ACCOUNT_USER, exact: true },

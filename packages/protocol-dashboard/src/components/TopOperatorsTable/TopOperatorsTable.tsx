@@ -1,22 +1,21 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
-import BN from 'bn.js'
 import Audius from 'services/Audius'
-import { SERVICES_USERS, accountPage } from 'utils/routes'
+import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
-import styles from './TopAddressesTable.module.css'
+import styles from './TopOperatorsTable.module.css'
 import Table from 'components/Table'
 import Tooltip from 'components/Tooltip'
-import { formatShortWallet, formatWeight, formatWei } from 'utils/format'
+import { formatShortWallet, formatWei } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { Status } from 'types'
+import { Operator, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
-import getActiveStake from 'utils/activeStake'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 
 const messages = {
-  topAddresses: 'Top Addresses by Voting Weight',
+  topAddresses: 'Top Service Operators by Active Stake',
   viewMoreAddress: 'View Leaderboard'
 }
 
@@ -36,17 +35,17 @@ type OwnProps = {
   alwaysShowMore?: boolean
 }
 
-type TopAddressesTableProps = OwnProps
+type TopOperatorsTableProps = OwnProps
 
-const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
+const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   className,
   limit,
   alwaysShowMore
-}: TopAddressesTableProps) => {
+}: TopOperatorsTableProps) => {
   const isMobile = useIsMobile()
   const pushRoute = usePushRoute()
   const onClickMore = useCallback(() => {
-    pushRoute(SERVICES_USERS)
+    pushRoute(SERVICES_SERVICE_PROVIDERS)
   }, [pushRoute])
 
   const onRowClick = useCallback(
@@ -56,38 +55,34 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     [pushRoute]
   )
 
-  const { status, users } = useUsers({ limit })
+  const { status, users } = useUsers({ limit, filter: 'isOperator' })
+
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
-      { title: 'Staked', className: styles.totalStakedColumn },
-      { title: 'Vote Weight', className: styles.voteWeightColumn },
-      { title: 'Proposals Voted', className: styles.proposalVotedColumn }
+      { title: 'Staked + Delegated', className: styles.totalStakedColumn }
     ])
   }
-  const totalVotingPowerStake = users.reduce((total, user) => {
-    const activeStake = getActiveStake(user)
-    return total.add(activeStake)
-  }, new BN('0'))
 
-  const data = users
+  const data = (users as Operator[])
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
-      const voteWeight = Audius.getBNPercentage(
-        activeStake,
-        totalVotingPowerStake
-      )
+      const totalActiveDelegated = getTotalActiveDelegatedStake(user)
+      const totalCurrentStake = activeStake.add(totalActiveDelegated)
       return {
         rank: idx + 1,
         img: user.image,
         name: user.name,
         wallet: user.wallet,
-        staked: activeStake,
-        voteWeight,
-        proposedVotes: user.voteHistory.length
+        staked: totalCurrentStake
       }
     })
-    .sort((a, b) => b.voteWeight - a.voteWeight)
+    .sort((a, b) => {
+      const val = b.staked.sub(a.staked)
+      if (val.isZero()) return 0
+      else if (val.isNeg()) return -1
+      return 1
+    })
 
   const renderRow = (data: TableUser) => {
     return (
@@ -109,12 +104,6 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
             >
               {Audius.displayShortAud(data.staked)}
             </Tooltip>
-            <div className={clsx(styles.rowCol, styles.voteWeightColumn)}>
-              {`${formatWeight(data.voteWeight)}%`}
-            </div>
-            <div className={clsx(styles.rowCol, styles.proposalVotedColumn)}>
-              {data.proposedVotes}
-            </div>
           </>
         )}
       </div>
@@ -140,4 +129,4 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   )
 }
 
-export default TopAddressesTable
+export default TopOperatorsTable

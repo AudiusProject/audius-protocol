@@ -35,6 +35,7 @@ import getActiveStake from 'utils/activeStake'
 type UseUsersProp = {
   sortBy?: SortUser
   limit?: number
+  filter?: 'isOperator' | 'isDelegator'
 }
 
 // -------------------------------- Selectors  --------------------------------
@@ -42,23 +43,24 @@ export const getStatus = (state: AppState) => state.cache.user.status
 export const getUser = (wallet: Address) => (state: AppState) =>
   state.cache.user.accounts[wallet]
 
-export const getUsers = ({ sortBy, limit }: UseUsersProp) => (
+export const getUsers = ({ sortBy, limit, filter }: UseUsersProp) => (
   state: AppState
 ) => {
   const userAccounts = state.cache.user.accounts
   let accounts: (User | Operator)[] = Object.values(userAccounts)
 
   const filterFunc = (user: User | Operator) => {
+    if (filter === 'isOperator') return 'serviceProvider' in user
     return true
   }
 
-  const sortFunc = (u1: Operator, u2: Operator) => {
+  const sortFunc = (u1: User | Operator, u2: User | Operator) => {
     let u1Total = getActiveStake(u1)
     let u2Total = getActiveStake(u2)
     return u2Total.cmp(u1Total)
   }
 
-  let serviceProviders: Operator[] = accounts.filter(filterFunc) as any
+  let serviceProviders: (User | Operator)[] = accounts.filter(filterFunc) as any
   serviceProviders = serviceProviders.sort(sortFunc)
   if (limit) serviceProviders = serviceProviders.slice(0, limit)
 
@@ -272,9 +274,9 @@ export function fetchUser(
 }
 
 // -------------------------------- Hooks  --------------------------------
-export const useUsers = ({ limit, sortBy }: UseUsersProp = {}) => {
+export const useUsers = ({ limit, sortBy, filter }: UseUsersProp = {}) => {
   const status = useSelector(getStatus)
-  const users = useSelector(getUsers({ limit, sortBy }))
+  const users = useSelector(getUsers({ limit, sortBy, filter }))
 
   const dispatch = useDispatch()
   useEffect(() => {

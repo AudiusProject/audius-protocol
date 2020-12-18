@@ -37,4 +37,14 @@ export const getActiveStake = (user: User | Operator) => {
   return activeDelegatorStake.add(activeDeployerStake)
 }
 
+export const getTotalActiveDelegatedStake = (user: User | Operator) => {
+  let total = Utils.toBN('0')
+  if ('delegators' in user) {
+    for (const delegator of user.delegators) {
+      total = total.add(delegator.activeAmount)
+    }
+  }
+  return total
+}
+
 export default getActiveStake
