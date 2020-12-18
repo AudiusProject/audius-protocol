@@ -9,7 +9,7 @@ import { AppState } from 'store/types'
 import styles from './Timeline.module.css'
 import Paper from 'components/Paper'
 import TimelineEvent from './TimelineEvent'
-import { useTimeline } from 'store/cache/timeline/hooks'
+import { TimelineType, useTimeline } from 'store/cache/timeline/hooks'
 import { Address } from 'types'
 import Loading from 'components/Loading'
 import { useModalControls } from 'utils/hooks'
@@ -27,6 +27,7 @@ type OwnProps = {
   className?: string
   limit?: number
   wallet: Address
+  timelineType: TimelineType
 }
 
 type TimelineProps = OwnProps &
@@ -35,9 +36,10 @@ type TimelineProps = OwnProps &
 
 const Timeline: React.FC<TimelineProps> = ({
   className,
-  wallet
+  wallet,
+  timelineType
 }: TimelineProps) => {
-  const { timeline } = useTimeline(wallet)
+  const { timeline } = useTimeline(wallet, timelineType)
   const { isOpen, onClick, onClose } = useModalControls()
   return (
     <Paper className={clsx({ [className!]: !!className })}>

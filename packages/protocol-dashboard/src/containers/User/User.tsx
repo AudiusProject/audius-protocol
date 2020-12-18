@@ -136,7 +136,11 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
           className={styles.delegateContainer}
         />
       )}
-      <Timeline className={styles.timeline} wallet={user?.wallet} />
+      <Timeline
+        className={styles.timeline}
+        wallet={user?.wallet}
+        timelineType={isServiceProvider ? 'ServiceProvider' : 'Delegator'}
+      />
       {isServiceProvider && (user as Operator).delegators.length > 0 && (
         <DelegatorsTable
           wallet={user.wallet}
