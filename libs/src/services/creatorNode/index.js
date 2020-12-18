@@ -25,11 +25,15 @@ class CreatorNode {
    * @param {string} wallet user wallet address
    */
   static async getClockValue (endpoint, wallet) {
-    return (await axios({
-      url: `/users/clock_status/${wallet}`,
-      method: 'get',
-      baseURL: endpoint
-    })).data.clockValue
+    try {
+      return (await axios({
+        url: `/users/clock_status/${wallet}`,
+        method: 'get',
+        baseURL: endpoint
+      })).data.clockValue
+    } catch (err) {
+      throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
+    }
   }
 
   /**
