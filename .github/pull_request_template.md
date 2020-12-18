@@ -1,15 +1,16 @@
+## Description
+---
+_What is the current behavior? What is the new behavior?_
 
-**Reminder: Add label(s) for what this PR does.**
+### Current behavior:
 
-**Reminder: If this PR touches a critical flow (such as Indexing, Uploads, Gateway or the Filesystem), make sure to add the `requires-special-attention` label**
+### Updated behavior:
 
-### Description
-> What is the current behavior? What is the new behavior? Include log analysis if possible
+## Tests
+---
+_List the manual tests and repro instructions to verify that this PR works as anticipated. Include log analysis if possible._\
+_:exclamation: If this change impacts clients, ensure that you have tested the clients_
 
 
-### How Has This Been Tested?
 
-> Please describe the tests that you ran to verify your changes.
-> * Provide repro instructions & any configuration
-> * If this change impacts clients, ensure that you have tested the
-
+**Reminder :bulb::** If this PR touches a critical flow (such as Indexing, Uploads, Gateway or the Filesystem), make sure to add the `requires-special-attention` label. Add relevant labels as necessary.
