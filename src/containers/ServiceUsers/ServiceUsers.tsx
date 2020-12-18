@@ -1,26 +1,26 @@
 import React from 'react'
 
 import Page from 'components/Page'
-import TopOperatorsTable from 'components/TopOperatorsTable'
+import TopAddressesTable from 'components/TopAddressesTable'
 import { SERVICES_TITLE, SERVICES } from 'utils/routes'
 
 const messages = {
-  title: 'ALL SERVICE OPERATORS'
+  title: 'ALL USERS'
 }
 
 type OwnProps = {}
 
-type ServiceOperatorsProps = OwnProps
-const ServiceOperators: React.FC<ServiceOperatorsProps> = () => {
+type ServiceUsersProps = OwnProps
+const ServiceUsers: React.FC<ServiceUsersProps> = () => {
   return (
     <Page
       title={messages.title}
       defaultPreviousPage={SERVICES_TITLE}
       defaultPreviousPageRoute={SERVICES}
     >
-      <TopOperatorsTable />
+      <TopAddressesTable />
     </Page>
   )
 }
 
-export default ServiceOperators
+export default ServiceUsers

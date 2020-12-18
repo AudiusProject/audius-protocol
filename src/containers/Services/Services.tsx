@@ -5,7 +5,7 @@ import Page from 'components/Page'
 import ManageService from 'components/ManageService'
 import DiscoveryTable from 'components/DiscoveryTable'
 import ContentTable from 'components/ContentTable'
-import TopAddressesTable from 'components/TopAddressesTable'
+import TopOperatorsTable from 'components/TopOperatorsTable'
 import { useAccount } from 'store/account/hooks'
 
 import desktopStyles from './Services.module.css'
@@ -29,7 +29,7 @@ const Services: React.FC<ServicesProps> = () => {
   return (
     <Page title={messages.title} hidePreviousPage>
       {isLoggedIn && <ManageService />}
-      <TopAddressesTable
+      <TopOperatorsTable
         limit={5}
         className={styles.topAddressesTable}
         alwaysShowMore

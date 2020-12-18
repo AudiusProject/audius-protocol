@@ -13,6 +13,7 @@ import User from 'containers/User'
 import DiscoveryProviders from 'containers/DiscoveryProviders'
 import ContentNodes from 'containers/ContentNodes'
 import ServiceOperators from 'containers/ServiceOperators'
+import ServiceUsers from 'containers/ServiceUsers'
 import Analytics from 'containers/Analytics'
 import * as routes from 'utils/routes'
 
@@ -56,6 +57,11 @@ const Root = () => (
               path={routes.SERVICES_SERVICE_PROVIDERS}
               exact
               component={ServiceOperators}
+            />
+            <Route
+              path={routes.SERVICES_USERS}
+              exact
+              component={ServiceUsers}
             />
             <Route path={routes.SERVICES_ACCOUNT_USER} exact component={User} />
             <Route
