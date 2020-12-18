@@ -33,10 +33,10 @@ const IPLD_CYCLE = 60000 // ms
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 let walletIndexToUserIdMap
 
-let IpldBlacklistTests = {}
+let IpldBlacklistTest = {}
 
 // TEST NEW TRACK FLOW -- METADATA
-IpldBlacklistTests.testNewTrackMetadata = async ({
+IpldBlacklistTest.newTrackMetadata = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -100,7 +100,7 @@ IpldBlacklistTests.testNewTrackMetadata = async ({
 }
 
 // TEST UPDATE TRACK FLOW -- METADATA
-IpldBlacklistTests.testUpdateTrackMetadata = async ({
+IpldBlacklistTest.updateTrackMetadata = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -181,7 +181,7 @@ IpldBlacklistTests.testUpdateTrackMetadata = async ({
 }
 
 // TEST NEW TRACK FLOW -- COVER PHOTO CID
-IpldBlacklistTests.testNewTrackCoverPhoto = async ({
+IpldBlacklistTest.newTrackCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -252,7 +252,7 @@ IpldBlacklistTests.testNewTrackCoverPhoto = async ({
 }
 
 // TEST UPDATE TRACK FLOW -- COVER PHOTO CID
-IpldBlacklistTests.testUpdateTrackCoverPhoto = async ({
+IpldBlacklistTest.updateTrackCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -343,7 +343,7 @@ IpldBlacklistTests.testUpdateTrackCoverPhoto = async ({
 }
 
 // TEST UPDATE USER METADATA CID FLOW
-IpldBlacklistTests.testUpdateUserMetadataCID = async ({
+IpldBlacklistTest.updateUserMetadata = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -405,7 +405,7 @@ IpldBlacklistTests.testUpdateUserMetadataCID = async ({
 }
 
 // TEST UPDATE USER PROFILE PHOTO FLOW
-IpldBlacklistTests.testUpdateUserProfilePhoto = async ({
+IpldBlacklistTest.updateUserProfilePhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -467,7 +467,7 @@ IpldBlacklistTests.testUpdateUserProfilePhoto = async ({
 }
 
 // TEST UPDATE USER COVER PHOTO FLOW
-IpldBlacklistTests.testUpdateUserCoverPhoto = async ({
+IpldBlacklistTest.updateUserCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -529,7 +529,7 @@ IpldBlacklistTests.testUpdateUserCoverPhoto = async ({
 }
 
 // TEST UPDATE PLAYLIST COVER PHOTO FLOW
-IpldBlacklistTests.testUpdatePlaylistCoverPhoto = async ({
+IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -746,4 +746,4 @@ const addContentToIpfs = async contentObject => {
   return ipfsResp[0].hash
 }
 
-module.exports = IpldBlacklistTests
+module.exports = IpldBlacklistTest

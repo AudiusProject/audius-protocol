@@ -3,7 +3,7 @@ const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
-const { consistency1, snapbackSMParallelSyncTest, IpldBlacklistTests } = require('./tests/tests')
+const { consistency1, snapbackSMParallelSyncTest, IpldBlacklistTest } = require('./tests/tests')
 
 // Configuration.
 // Should be CLI configurable in the future.
@@ -146,7 +146,7 @@ async function main () {
       })
 
       // dynamically create ipld tests
-      const blacklistTests = Object.entries(IpldBlacklistTests).map(
+      const blacklistTests = Object.entries(IpldBlacklistTest).map(
         ([testName, testLogic]) =>
           makeTest(testName, testLogic, {
             numCreatorNodes: 1,
