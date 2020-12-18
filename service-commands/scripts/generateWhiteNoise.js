@@ -43,16 +43,18 @@ function parseArgs() {
  * It is also guaranteed to be random and unique across multiple runs.
  *
  * The output file is stored at the directory from which the script was called.
+ *
+ * Docs: https://ffmpeg.org/ffmpeg-all.html
  */
 function generateWhiteNoise(size, outFile) {
   return new Promise((resolve, reject) => {
     const process = spawn(ffmpeg, [
-      '-f', // flag for below
-      'lavfi', // https://ffmpeg.org/ffmpeg-all.html#lavfi
-      '-i', // flag for below
-      `anoisesrc=d=${(1024 * size) / 8064}`, // generate a noise audio signal for the duration of <size> KiB
+      '-f', // audio/video filtering framework
+      'lavfi', // provides generic audio filtering for audio/video signals
+      '-i', // input flag
+      `anoisesrc=d=${(1024 * size) / 8064}`, // generate a noise audio signal for the duration (d) of <size> KiB
       outFile, // output filepath
-      '-y' // overwrites existing files
+      '-y' // overwrite existing file
     ])
 
     process.stderr.on('data', data => {
