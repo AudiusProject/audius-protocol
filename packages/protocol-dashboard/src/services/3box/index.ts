@@ -1,4 +1,5 @@
 import { Address } from 'types'
+import { fetchWithTimeout } from 'utils/fetch'
 
 const api3Box = 'https://ipfs.3box.io'
 const ipfsGateway = 'https://ipfs.infura.io/ipfs/'
@@ -14,7 +15,7 @@ export const get3BoxProfile = async (wallet: Address) => {
     const user: User = {}
 
     // Get the profile from 3box
-    const profile = await fetch(getProfileUrl(wallet)).then(r => r.json())
+    const profile = await fetchWithTimeout(getProfileUrl(wallet), 3000)
     if (profile.status === 'error') return {}
 
     // Extract the name and image url
