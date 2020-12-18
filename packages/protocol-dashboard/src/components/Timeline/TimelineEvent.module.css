@@ -46,6 +46,7 @@
 
 .titleContainer {
   display: inline-flex;
+  flex-wrap: wrap;
 }
 
 .titleSpacingRight {
@@ -54,4 +55,5 @@
 
 .titleSpacingLeft {
   margin-left: 6px;
+  white-space: nowrap;
 }

@@ -198,36 +198,66 @@ export default class Delegate {
     return info.map((i: any) => ({ ...i, direction: 'RECEIVED' }))
   }
 
-  async getDecreaseDelegateStakeEvents(
-    delegator: Address
-  ): Promise<Array<DecreaseDelegateStakeEvent>> {
+  /* Can filter either by delegator or SP */
+  async getDecreaseDelegateStakeEvents({
+    delegator,
+    serviceProvider
+  }: {
+    delegator?: Address
+    serviceProvider?: Address
+  }): Promise<Array<DecreaseDelegateStakeEvent>> {
     await this.aud.hasPermissions()
     const info = await this.getContract().getDecreaseDelegateStakeEvents({
-      delegator
-    })
-    return info
-  }
-
-  async getReceiveDelegateDecreaseStakeEvents(
-    serviceProvider: Address
-  ): Promise<Array<DecreaseDelegateStakeEvent>> {
-    await this.aud.hasPermissions()
-    const info = await this.getContract().getDecreaseDelegateStakeEvents({
-      serviceProvider
-    })
-    return info
-  }
-
-  async getUndelegateStakeRequestedEvents(
-    serviceProvider: Address
-  ): Promise<Array<any>> {
-    await this.aud.hasPermissions()
-    const info = await this.getContract().getUndelegateStakeRequestedEvents({
+      delegator,
       serviceProvider
     })
     return info.map((event: any) => ({
       ...event,
-      undelegationStep: 'requested'
+      decreaseDelegation: true,
+      stage: 'evaluated',
+      userType: delegator ? 'Delegator' : 'ServiceProvider'
+    }))
+  }
+
+  /* Can filter either by delegator or SP */
+  async getUndelegateStakeRequestedEvents({
+    serviceProvider,
+    delegator
+  }: {
+    serviceProvider?: Address
+    delegator?: Address
+  }): Promise<Array<any>> {
+    await this.aud.hasPermissions()
+    const info = await this.getContract().getUndelegateStakeRequestedEvents({
+      serviceProvider,
+      delegator
+    })
+    return info.map((event: any) => ({
+      ...event,
+      decreaseDelegation: true,
+      stage: 'requested',
+      userType: delegator ? 'Delegator' : 'ServiceProvider'
+    }))
+  }
+
+  /* Can filter either by delegator or SP */
+  async getUndelegateStakeCancelledEvents({
+    serviceProvider,
+    delegator
+  }: {
+    serviceProvider?: Address
+    delegator?: Address
+  }): Promise<Array<any>> {
+    await this.aud.hasPermissions()
+    const info = await this.getContract().getUndelegateStakeCancelledEvents({
+      serviceProvider,
+      delegator
+    })
+    return info.map((event: any) => ({
+      ...event,
+      decreaseDelegation: true,
+      stage: 'cancelled',
+      userType: delegator ? 'Delegator' : 'ServiceProvider'
     }))
   }
 
