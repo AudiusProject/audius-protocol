@@ -1,0 +1,7 @@
+{
+  "dataWeb3ProviderEndpoint": "https://poa-gateway.staging.audius.co",
+  "ethWeb3ProviderEndpoint": "https://eth-ropsten.alchemyapi.io/v2/Y-vE_LXNPnKsbnmaXxAre7t_xI-PA6KU",
+  "dataRegistryAddress": "0x793373aBF96583d5eb71a15d86fFE732CD04D452",
+  "ethRegistryAddress": "0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781",
+  "ethTokenAddress": "0x74f24429ec3708fc21381e017194A5711E93B751"
+}
