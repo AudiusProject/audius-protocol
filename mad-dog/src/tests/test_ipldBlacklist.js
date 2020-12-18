@@ -615,7 +615,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 
 // TODO: test is a bit outdated - needs to actually upload an image causes incorrect failure
 // TEST UPDATE PLAYLIST COVER PHOTO FLOW
-// ipldBlacklistTests.testUpdatePlaylistCoverPhotoNoMatch = async ({
+// IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
 //   numUsers,
 //   executeAll,
 //   executeOne,
