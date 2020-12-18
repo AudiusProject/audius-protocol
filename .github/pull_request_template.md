@@ -1,5 +1,5 @@
 ### Description
-_What is the purpose of this PR? What is the current behavior? What is the new behavior? Is there anything else about this PR that we should know about?_
+_What is the purpose of this PR? What is the current behavior? New behavior? Relevant links (e.g. Trello) and/or information pertaining to PR?_
 
 
 
