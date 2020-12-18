@@ -435,6 +435,64 @@ class CreatorNode {
   }
 
   /**
+   * Gets the clock values across the replica set for the wallet in userStateManager.
+   *
+   * Returns clock values across replica set in the structure:
+   *
+   * {
+   *  type: 'primary' or 'secondary',
+   *  endpoint: <Content Node endpoint>,
+   *  wallet: wallet in userStateManager
+   *  clockValue: /users/clock_status/:wallet response OR null
+   * }
+   */
+  async getClockValuesFromReplicaSet () {
+    const user = this.userStateManager.getCurrentUser()
+    if (!user || !user.creator_node_endpoint) {
+      console.error('No user or Content Node endpoint found')
+    }
+
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
+    const replicaSet = CreatorNode.getEndpoints(user.creator_node_endpoint)
+
+    const clockValueRequest = async (endpoint) => {
+      let type = ''
+      if (primary === endpoint) type = 'primary'
+      else if (secondaries.includes(endpoint)) type = 'secondary'
+
+      try {
+        const resp = await axios({
+          method: 'get',
+          baseURL: endpoint,
+          url: `/users/clock_status/${user.wallet}`
+        })
+
+        return {
+          type,
+          endpoint,
+          wallet: user.wallet,
+          clockValue: resp.data.data.clockValue
+        }
+      } catch (e) {
+        console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
+        return {
+          type,
+          endpoint,
+          wallet: user.wallet,
+          clockValue: null
+        }
+      }
+    }
+
+    const clockValueResponses = await Promise.all(
+      replicaSet.map(endpoint => clockValueRequest(endpoint))
+    )
+
+    return clockValueResponses
+  }
+
+  /**
    * Makes an axios request to the connected creator node.
    * @param {Object} axiosRequestObj
    * @param {bool} requiresConnection if set, the currently configured creator node
