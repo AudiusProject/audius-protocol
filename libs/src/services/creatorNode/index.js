@@ -20,6 +20,12 @@ class CreatorNode {
   static getSecondaries (endpoints) { return endpoints ? endpoints.split(',').slice(1) : [] }
 
   /**
+   * Pulls the user's creator nodes out of the list
+   * @param {string} endpoints user.creator_node_endpoint
+   */
+  static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
+
+  /**
    * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
    * @param {string} endpoint creator node endpoint
    * @param {string} wallet user wallet address
@@ -35,12 +41,6 @@ class CreatorNode {
       throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
     }
   }
-
-  /**
-   * Pulls the user's creator nodes out of the list
-   * @param {string} endpoints user.creator_node_endpoint
-   */
-  static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
 
   /**
    * Checks if a download is available from provided creator node endpoints
