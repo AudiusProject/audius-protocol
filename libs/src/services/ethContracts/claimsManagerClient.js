@@ -99,6 +99,27 @@ class ClaimsManagerClient extends ContractClient {
       privateKey
     )
   }
+
+  // Fetches the claim processed events
+  async getClaimProcessedEvents ({
+    claimer,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    let events = await contract.getPastEvents('ClaimProcessed', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _claimer: claimer
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      claimer: event.returnValues._claimer,
+      rewards: Utils.toBN(event.returnValues._rewards),
+      oldTotal: Utils.toBN(event.returnValues._oldTotal),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
+    }))
+  }
 }
 
 module.exports = ClaimsManagerClient

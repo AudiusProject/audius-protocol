@@ -271,7 +271,7 @@ class GovernanceClient extends ContractClient {
     let events = await contract.getPastEvents('ProposalVoteSubmitted', {
       fromBlock: queryStartBlock,
       filter: {
-        proposalId: proposalId
+        _proposalId: proposalId
       }
     })
     return events.map(this.formatVote)

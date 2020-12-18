@@ -6,17 +6,18 @@ import sqlalchemy
 
 from src import api_helpers, exceptions
 from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight
-from src.models import User, Track, RepostType, Save, SaveType, Follow
+from src.models import Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.queries.query_helpers import get_current_user_id, populate_playlist_repost_counts, \
-    populate_user_follower_counts, get_users_by_id, get_users_ids, populate_user_metadata, \
-    populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
-    get_track_play_counts, populate_track_repost_counts
+from src.queries.search_track_tags import search_track_tags
+from src.queries.search_user_tags import search_user_tags
+from src.queries.query_helpers import get_current_user_id, get_users_by_id, get_users_ids, populate_user_metadata, \
+    populate_track_metadata, populate_playlist_metadata, get_pagination_vars, populate_playlist_repost_counts, \
+    populate_user_follower_counts, populate_track_repost_counts
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_tags", __name__)
@@ -93,150 +94,35 @@ def search_tags():
     results = {}
 
     (limit, offset) = get_pagination_vars()
-    like_tags_str = str.format('%{}%', search_str)
     db = get_db_read_replica()
     with db.scoped_session() as session:
         if (searchKind in [SearchKind.all, SearchKind.tracks]):
-            track_res = sqlalchemy.text(
-                f"""
-                select distinct(track_id)
-                from
-                (
-                    select
-                        strip(to_tsvector(tracks.tags)) as tagstrip,
-                        track_id
-                    from
-                        tracks
-                    where
-                        (tags like :like_tags_query)
-                        and (is_current is true)
-                        and (is_delete is false)
-                        and (is_unlisted is false)
-                        and (stem_of is NULL)
-                    order by
-                        updated_at desc
-                ) as t
-                    where
-                    tagstrip @@ to_tsquery(:query);
-                """
-            )
-            track_ids = session.execute(
-                track_res,
-                {
-                    "query": search_str,
-                    "like_tags_query": like_tags_str
-                }
-            ).fetchall()
-
-            # track_ids is list of tuples - simplify to 1-D list
-            track_ids = [i[0] for i in track_ids]
-
-            tracks = (
-                session.query(Track)
-                .filter(
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                    Track.is_unlisted == False,
-                    Track.stem_of == None,
-                    Track.track_id.in_(track_ids),
-                )
-                .all()
-            )
-
-            tracks = helpers.query_result_to_list(tracks)
-            track_play_counts = get_track_play_counts(track_ids)
-
-            tracks = populate_track_metadata(
-                session, track_ids, tracks, current_user_id)
-
-            for track in tracks:
-                track_id = track["track_id"]
-                track[response_name_constants.play_count] = track_play_counts.get(
-                    track_id, 0)
-
-            play_count_sorted_tracks = \
-                sorted(
-                    tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
-
-            # Add pagination parameters to track and user results
-            play_count_sorted_tracks = \
-                play_count_sorted_tracks[slice(offset, offset + limit, 1)]
-
-            results['tracks'] = play_count_sorted_tracks
+            results['tracks'] = search_track_tags(session, {
+                'search_str': search_str,
+                'current_user_id': current_user_id,
+                'limit': limit,
+                'offset': offset
+            })
 
         if (searchKind in [SearchKind.all, SearchKind.users]):
-            user_res = sqlalchemy.text(
-                f"""
-                select * from
-                (
-                    select
-                        count(track_id),
-                        owner_id
-                    from
-                    (
-                        select
-                            strip(to_tsvector(tracks.tags)) as tagstrip,
-                            track_id,
-                            owner_id
-                        from
-                            tracks
-                        where
-                            (tags like :like_tags_query)
-                            and (is_current is true)
-                            and (is_unlisted is false)
-                            and (stem_of is NULL)
-                        order by
-                            updated_at desc
-                    ) as t
-                    where
-                            tagstrip @@ to_tsquery(:query)
-                    group by
-                            owner_id
-                    order by
-                            count desc
-                ) as usr
-                where
-                    usr.count >= :user_tag_count;
-                """
-            )
-            user_ids = session.execute(
-                user_res,
-                {
-                    "query": search_str,
-                    "like_tags_query": like_tags_str,
-                    "user_tag_count": user_tag_count
-                }
-            ).fetchall()
+            results['users'] = search_user_tags(session, {
+                'search_str': search_str,
+                'current_user_id': current_user_id,
+                "user_tag_count": user_tag_count,
+                'limit': limit,
+                'offset': offset
+            })
 
-            # user_ids is list of tuples - simplify to 1-D list
-            user_ids = [i[1] for i in user_ids]
-
-            users = (
-                session.query(User)
-                .filter(
-                    User.is_current == True,
-                    User.user_id.in_(user_ids)
-                )
-                .all()
-            )
-            users = helpers.query_result_to_list(users)
-
-            users = populate_user_metadata(
-                session, user_ids, users, current_user_id)
-
-            followee_sorted_users = \
-                sorted(
-                    users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
-
-            followee_sorted_users = \
-                followee_sorted_users[slice(offset, offset + limit, 1)]
-
-            results['users'] = followee_sorted_users
 
     # Add personalized results for a given user
     if current_user_id:
         if (searchKind in [SearchKind.all, SearchKind.tracks]):
             # Query saved tracks for the current user that contain this tag
+            track_ids = [track['track_id'] for track in results['tracks']]
+            track_play_counts = {
+                track['track_id']: track[response_name_constants.play_count] for track in results['tracks']
+            }
+
             saves_query = (
                 session.query(Save.save_item_id)
                 .filter(
@@ -282,6 +168,7 @@ def search_tags():
 
         if (searchKind in [SearchKind.all, SearchKind.users]):
             # Query followed users that have referenced this tag
+            user_ids = [user['user_id'] for user in results['users']]
             followed_user_query = (
                 session.query(Follow.followee_user_id)
                 .filter(
