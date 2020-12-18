@@ -7,7 +7,7 @@ const axios = require('axios')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const { Command } = require('commander')
 
-function commaSeparatedList(value, dummyPrevious) {
+function commaSeparatedList(value, unusedPrevValue) {
   return value.split(',')
 }
 
