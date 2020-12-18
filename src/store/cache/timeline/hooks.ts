@@ -47,22 +47,34 @@ export const getTimeline = (state: AppState, { wallet }: { wallet: Address }) =>
 
 // -------------------------------- Thunk Actions  --------------------------------
 
+export type TimelineType = 'ServiceProvider' | 'Delegator'
+
 export function fetchTimeline(
-  wallet: Address
+  wallet: Address,
+  timelineType: TimelineType
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
+    // Some delegation methods allow you to either filter
+    // by delegator or service provider
+    const filter =
+      timelineType === 'Delegator'
+        ? { delegator: wallet }
+        : { serviceProvider: wallet }
+
     const events = await Promise.all([
       aud.Governance.getVotesByAddress([wallet]),
       aud.Governance.getVoteUpdatesByAddress([wallet]),
       aud.Governance.getProposalsForAddresses([wallet]),
       aud.Delegate.getIncreaseDelegateStakeEvents(wallet),
-      aud.Delegate.getDecreaseDelegateStakeEvents(wallet),
       aud.Claim.getClaimProcessedEvents(wallet),
       aud.Delegate.getReceiveDelegationIncreaseEvents(wallet),
       aud.ServiceProviderClient.getRegisteredServiceProviderEvents(wallet),
       aud.ServiceProviderClient.getDeregisteredServiceProviderEvents(wallet),
       aud.ServiceProviderClient.getIncreasedStakeEvents(wallet),
-      aud.ServiceProviderClient.getDecreasedStakeRequestedEvents(wallet)
+      aud.ServiceProviderClient.getDecreasedStakeRequestedEvents(wallet),
+      aud.Delegate.getDecreaseDelegateStakeEvents(filter),
+      aud.Delegate.getUndelegateStakeRequestedEvents(filter),
+      aud.Delegate.getUndelegateStakeCancelledEvents(filter)
     ])
 
     const timeline = combineEvents(...events).reverse()
@@ -72,7 +84,7 @@ export function fetchTimeline(
 
 // -------------------------------- Hooks  --------------------------------
 
-export const useTimeline = (wallet: Address) => {
+export const useTimeline = (wallet: Address, timelineType: TimelineType) => {
   const timeline = useSelector(state =>
     getTimeline(state as AppState, { wallet })
   )
@@ -81,11 +93,11 @@ export const useTimeline = (wallet: Address) => {
 
   useEffect(() => {
     if (wallet && !timeline) {
-      dispatch(fetchTimeline(wallet))
+      dispatch(fetchTimeline(wallet, timelineType))
     }
-  }, [dispatch, wallet, timeline])
+  }, [dispatch, wallet, timeline, timelineType])
 
-  useDispatchBasedOnBlockNumber([fetchTimeline(wallet)], 5)
+  useDispatchBasedOnBlockNumber([fetchTimeline(wallet, timelineType)], 5)
 
   return { timeline }
 }

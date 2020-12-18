@@ -265,6 +265,17 @@ export default class ServiceProviderClient {
     }))
   }
 
+  async getDecreasedStakeCancelledEvents(wallet: Address): Promise<any> {
+    await this.aud.hasPermissions()
+    const events = await this.getContract().getDecreasedStakeCancelledEvents({
+      owner: wallet
+    })
+    return events.map((event: any) => ({
+      ...event,
+      stakeAction: 'decreaseCancelled'
+    }))
+  }
+
   /* -------------------- Service Provider Write -------------------- */
 
   async registerWithDelegate(
