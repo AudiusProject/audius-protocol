@@ -1,40 +1,15 @@
-### Trello Card Link
+
+**Reminder: Add label(s) for what this PR does.**
+
+**Reminder: If this PR touches a critical flow (such as Indexing, Uploads, Gateway or the Filesystem), make sure to add the `requires-special-attention` label**
 
 ### Description
+> What is the current behavior? What is the new behavior? Include log analysis if possible
 
-### Services
-
-- [ ] Discovery Provider
-- [ ] Creator Node
-- [ ] Identity Service
-- [ ] Libs
-- [ ] Contracts
-- [ ] Service Commands
-- [ ] Mad Dog
-
-### Does it touch a critical flow like Discovery indexing, Creator Node track upload, Creator Node gateway, or Creator Node file system?
-Delete an option.
-- 🚨 Yes, this touches <flow>
-- ✅ Nope
 
 ### How Has This Been Tested?
 
-Tests Checklist:
+> Please describe the tests that you ran to verify your changes.
+> * Provide repro instructions & any configuration
+> * If this change impacts clients, ensure that you have tested the
 
-- [ ] If new unit tests are written, they pass
-- [ ] Existing unit tests pass
-- [ ] If new mad-dog tests are written, they pass
-- [ ] Existing mad-dog tests pass
-- [ ] Local client works with your change
-
-Please describe the tests that you ran to verify your changes. Provide repro instructions & any configuration.
-Include log analysis if applicable.
-
-1. Test 1
-- Step 1
-- Step 2
-- Step 3
-
-Please list the unit test(s) you added to verify your changes.
-
-1. Unit test 1
