@@ -8,6 +8,7 @@ type OwnProps = {
   header: string
   isOpen: boolean
   dismissOnClickOutside?: boolean
+  allowScroll?: boolean
   onClose: () => void
 }
 
@@ -19,6 +20,7 @@ const ModalTable: React.FC<ModalTableProps> = ({
   isOpen,
   onClose,
   children,
+  allowScroll = true,
   dismissOnClickOutside
 }) => {
   return (
@@ -27,6 +29,7 @@ const ModalTable: React.FC<ModalTableProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       isCloseable
+      allowScroll={allowScroll}
       dismissOnClickOutside={dismissOnClickOutside}
       className={styles.container}
     >
