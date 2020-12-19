@@ -110,7 +110,8 @@ const getServiceProviderMetadata = async (
   const delegatedTotal = await aud.Delegate.getTotalDelegatedToServiceProvider(
     wallet
   )
-  const delegators = await getDelegatorAmounts(wallet, aud)
+  let delegators = await getDelegatorAmounts(wallet, aud)
+  delegators.sort((a, b) => (b.activeAmount.gt(a.activeAmount) ? 1 : -1))
   const serviceProvider: ServiceProvider = await aud.ServiceProviderClient.getServiceProviderDetails(
     wallet
   )

@@ -9,7 +9,7 @@ import { ReactComponent as TrashIcon } from 'assets/img/iconTrash.svg'
 import styles from './DelegatorsModal.module.css'
 import { Address, Delegate, Status } from 'types'
 import ModalTable from 'components/ModalTable'
-import { formatShortWallet } from 'utils/format'
+import { formatShortWallet, formatWei } from 'utils/format'
 import { useAccount } from 'store/account/hooks'
 import { useRemoveDelegator } from 'store/actions/removeDelegator'
 import ConfirmTransactionModal, {
@@ -18,6 +18,8 @@ import ConfirmTransactionModal, {
 import { useUndelegateStake } from 'store/actions/undelegateStake'
 import { accountPage } from 'utils/routes'
 import { usePushRoute } from 'utils/effects'
+import Tooltip from 'components/Tooltip'
+import AudiusClient from 'services/Audius'
 
 const messages = {
   title: 'Delegators',
@@ -131,6 +133,12 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
         <div className={clsx(styles.rowCol, styles.colAddress)}>
           {data.name || formatShortWallet(data.address)}
         </div>
+        <Tooltip
+          className={clsx(styles.rowCol, styles.colAmount)}
+          text={formatWei(data.amount)}
+        >
+          {AudiusClient.displayShortAud(data.amount)}
+        </Tooltip>
         {(isOwner || data.address === accountWallet) && (
           <div
             className={clsx(styles.rowCol, styles.trashIconContainer)}

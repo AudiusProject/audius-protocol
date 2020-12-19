@@ -12,6 +12,7 @@ interface ModalProps {
   titleRightElement?: ReactNode
   isOpen: boolean
   onClose: () => void
+  allowScroll?: boolean
   isCloseable?: boolean
   dismissOnClickOutside?: boolean
 }
@@ -26,6 +27,7 @@ const Modal: React.FC<ModalProps> = ({
   isCloseable,
   dismissOnClickOutside,
   onClose,
+  allowScroll,
   children
 }) => {
   return (
@@ -36,6 +38,7 @@ const Modal: React.FC<ModalProps> = ({
       bodyClassName={clsx(styles.bodyClassName, { [className!]: !!className })}
       dismissOnClickOutside={dismissOnClickOutside}
       onClose={onClose}
+      allowScroll={allowScroll}
       isOpen={isOpen}
     >
       <div className={clsx(styles.header, headerClassName)}>
