@@ -58,7 +58,8 @@ async function getUserById(userId, discoveryProviderEndpoint) {
 }
 async function getClockValues({
   wallet,
-  creator_node_endpoint: creatorNodeEndpoint
+  creator_node_endpoint: creatorNodeEndpoint,
+  user_id: userId
 }) {
   const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
   const secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
@@ -68,7 +69,8 @@ async function getClockValues({
       primaryNode: '',
       primaryClockValue: '',
       secondaryNodes: [],
-      secondaryClockValues: []
+      secondaryClockValues: [],
+      userId: userId
     }
   }
 
@@ -83,55 +85,50 @@ async function getClockValues({
       secondaryCreatorNodes.map(secondaryNode =>
         CreatorNode.getClockValue(secondaryNode, wallet)
       )
-    )
+    ),
+    userId: userId
   }
+}
+// get clock values for all users / some users via userIds / handles
+async function getUserClockValues(handles, userIds) {
+  const usersFromHandles = handles.map(handle =>
+    getUserByHandle(handle, discoveryProviderEndpoint)
+  )
+
+  const usersFromIds = userIds.map(userId =>
+    getUserById(userId, discoveryProviderEndpoint)
+  )
+
+  return (await Promise.all([...usersFromHandles, ...usersFromIds])).map(
+    async user => await getClockValues(user)
+  )
 }
 
 async function run() {
-  try {
-    const { handles, userIds } = parseArgsAndEnv()
-    const userClockValues = await Promise.all([
-      ...handles.map(async handle => {
-        return {
-          ...(await getClockValues(
-            await getUserByHandle(handle, discoveryProviderEndpoint)
-          )),
-          userInfo: `handle: ${handle}`
-        }
-      }),
-      ...userIds.map(async userId => {
-        return {
-          ...(await getClockValues(
-            await getUserById(userId, discoveryProviderEndpoint)
-          )),
-          userInfo: `userId: ${userId}`
-        }
+  const { handles, userIds } = parseArgsAndEnv()
+  const userClockValues = await Promise.all(
+    await getUserClockValues(handles, userIds)
+  )
+  userClockValues.forEach(
+    ({
+      primaryNode,
+      primaryClockValue,
+      secondaryNodes,
+      secondaryClockValues,
+      userId
+    }) => {
+      console.log('UserId:', userId)
+      console.log('Primary')
+      console.log(primaryNode, primaryClockValue)
+
+      console.log('Secondary')
+      secondaryNodes.forEach((secondaryNode, idx) => {
+        console.log(secondaryNode, secondaryClockValues[idx])
       })
-    ])
 
-    userClockValues.forEach(
-      ({
-        userInfo,
-        primaryNode,
-        primaryClockValue,
-        secondaryNodes,
-        secondaryClockValues
-      }) => {
-        console.log(userInfo)
-        console.log('Primary')
-        console.log(primaryNode, primaryClockValue)
-
-        console.log('Secondary')
-        secondaryNodes.forEach((secondaryNode, idx) => {
-          console.log(secondaryNode, secondaryClockValues[idx])
-        })
-
-        console.log()
-      }
-    )
-  } catch (err) {
-    console.error(err)
-  }
+      console.log()
+    }
+  )
 }
 
 /**
