@@ -5,8 +5,12 @@
   margin-bottom: 16px;
 }
 
-.userInfoTile {
+.userInfoRow > div {
   margin-right: 16px;
+}
+
+.userInfoRow > div:last-child {
+  margin-right: 0px;
 }
 
 /* User Info Tile */

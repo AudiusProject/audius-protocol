@@ -356,6 +356,23 @@ export const useTotalDelegates = ({ wallet }: UseTotalDelegatesProps) => {
   return { status, totalDelegates }
 }
 
+/** Returns the total amount delegated inbound to an SP */
+export const useActiveInboundDelegation = ({ wallet }: { wallet: Address }) => {
+  const { status, user } = useUser({ wallet })
+  if (status !== Status.Success || !user) {
+    return { status, amount: Utils.toBN('0') }
+  }
+
+  let totalDelegated = (user as Operator).delegators
+  if (!totalDelegated) return { status, amount: Utils.toBN('0') }
+
+  const totalInboundDelegation = (user as Operator).delegators.reduce(
+    (total, delegator) => total.add(delegator.activeAmount),
+    Utils.toBN('0')
+  )
+  return { status, amount: totalInboundDelegation }
+}
+
 /**
  * Get the amount the signed in user delegates to the wallet address
  */
