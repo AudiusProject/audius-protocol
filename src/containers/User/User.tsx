@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import clsx from 'clsx'
 import { RouteComponentProps } from 'react-router'
 import { matchPath } from 'react-router-dom'
@@ -7,7 +7,7 @@ import { Utils } from '@audius/libs'
 import Page from 'components/Page'
 import Delegate from 'components/Delegate'
 import Timeline from 'components/Timeline'
-import UserStat from 'components/UserStat'
+import StakingStat from 'components/StakingStat'
 import UserStakedStat from 'components/UserStakedStat'
 import DiscoveryTable from 'components/DiscoveryTable'
 import ContentTable from 'components/ContentTable'
@@ -19,7 +19,8 @@ import ManageService from 'components/ManageService'
 import {
   useUser,
   useTotalDelegates,
-  useUserDelegates
+  useUserDelegates,
+  useActiveInboundDelegation
 } from 'store/cache/user/hooks'
 import { Status, User, Operator } from 'types'
 import { useAccount } from 'store/account/hooks'
@@ -36,6 +37,7 @@ import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
 import { createStyles } from 'utils/mobile'
 import getActiveStake from 'utils/activeStake'
+import DelegationStatsChip from 'components/DelegationStatsChip/DelegationStatsChip'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -68,6 +70,18 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
   let user = userAccount as User | Operator
 
   const isServiceProvider = user && 'serviceProvider' in user
+
+  // Prior to user load, use the path to determine if we're on the user or operator page
+  // to determine whether we're using 1 or 2 skeleton tiles
+  //
+  // FIXME: ideally this would just use `isServiceProvider`,
+  // but if that's set to true before the user actually loads
+  // we have type errors everywhere :(
+  const showServiceProviderSkeletonTiles = useMemo(() => {
+    if (isServiceProvider) return true
+    return !matchPath(pathname, { path: SERVICES_ACCOUNT_USER })
+  }, [isServiceProvider, pathname])
+
   const hasDiscoveryProviders =
     isServiceProvider && (user as Operator).discoveryProviders.length > 0
   const hasContentNodes =
@@ -84,10 +98,10 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
       replaceRoute(accountPage(wallet))
   }, [status, wallet, pathname, isServiceProvider, replaceRoute])
 
-  const services =
-    ((user as Operator)?.discoveryProviders?.length ?? 0) +
-    ((user as Operator)?.contentNodes?.length ?? 0)
+  const numDiscoveryNodes = (user as Operator)?.discoveryProviders?.length ?? 0
+  const numContentNodes = (user as Operator)?.contentNodes?.length ?? 0
   const activeStake = user ? getActiveStake(user) : Utils.toBN('0')
+  const inboundDelegation = useActiveInboundDelegation({ wallet })
 
   return (
     <Page
@@ -97,23 +111,34 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
     >
       <div className={styles.userInfoRow}>
         <UserInfo
-          className={styles.userInfoTile}
           user={user}
           status={status}
           delegates={delegates}
           delegatesStatus={userDelegatesStatus}
-          services={services}
+          services={numDiscoveryNodes + numContentNodes}
           isOwner={isOwner}
         />
-        {isServiceProvider ? (
-          <UserStat
-            staked={activeStake}
-            deployerCut={(user as Operator).serviceProvider.deployerCut}
-            delegators={(user as Operator).delegators.length}
-            totalDelegates={totalDelegates}
-            totalDelegatesStatus={totalDelegatesStatus}
-            services={services}
-          />
+        {showServiceProviderSkeletonTiles ? (
+          <>
+            <StakingStat
+              staked={activeStake}
+              totalDelegates={totalDelegates}
+              totalDelegatesStatus={totalDelegatesStatus}
+              numDiscoveryNodes={numDiscoveryNodes}
+              numContentNodes={numContentNodes}
+              isLoading={status === Status.Loading}
+            />
+            <DelegationStatsChip
+              deployerCut={
+                (user as Operator | undefined)?.serviceProvider.deployerCut ?? 0
+              }
+              delegated={inboundDelegation.amount ?? Utils.toBN('0')}
+              delegators={
+                (user as Operator | undefined)?.delegators.length ?? 0
+              }
+              isLoading={status === Status.Loading}
+            />
+          </>
         ) : (
           <UserStakedStat
             wallet={user?.wallet}
