@@ -31,6 +31,24 @@ const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false
 
+/**
+ * Metamask sometimes returns null for window.ethereum.networkVersion,
+ * so if this happens, try a second time after a slight delay
+ */
+const getMetamaskIsOnEthMainnet = async () => {
+  let metamaskWeb3Network = window.ethereum.networkVersion
+  if (metamaskWeb3Network === ethNetworkId) return true
+
+  metamaskWeb3Network = await new Promise(resolve => {
+    console.debug('Metamask network not matching, trying again')
+    setTimeout(() => {
+      resolve(window.ethereum.networkVersion)
+    }, 2000)
+  })
+
+  return metamaskWeb3Network === ethNetworkId
+}
+
 export async function setup(this: AudiusClient): Promise<void> {
   if (!window.web3 || !window.ethereum) {
     // Metamask is not installed
@@ -66,8 +84,8 @@ export async function setup(this: AudiusClient): Promise<void> {
         }, 2000)
       }
 
-      let metamaskWeb3Network = window.ethereum.networkVersion
-      if (metamaskWeb3Network !== ethNetworkId) {
+      const isOnMainnetEth = await getMetamaskIsOnEthMainnet()
+      if (!isOnMainnetEth) {
         this.isMisconfigured = true
         this.libs = await configureReadOnlyLibs()
       } else {
