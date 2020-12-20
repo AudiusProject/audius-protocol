@@ -89,8 +89,9 @@ async function getClockValues({
     userId: userId
   }
 }
+
 // get clock values for all users / some users via userIds / handles
-async function getUserClockValues(handles, userIds) {
+function getUserClockValues(handles, userIds) {
   const usersFromHandles = handles.map(handle =>
     getUserByHandle(handle, discoveryProviderEndpoint)
   )
@@ -99,16 +100,16 @@ async function getUserClockValues(handles, userIds) {
     getUserById(userId, discoveryProviderEndpoint)
   )
 
-  return (await Promise.all([...usersFromHandles, ...usersFromIds])).map(
-    async user => await getClockValues(user)
+  return Promise.all(
+    [...usersFromHandles, ...usersFromIds].map(
+      async user => await getClockValues(await user)
+    )
   )
 }
 
 async function run() {
   const { handles, userIds } = parseArgsAndEnv()
-  const userClockValues = await Promise.all(
-    await getUserClockValues(handles, userIds)
-  )
+  const userClockValues = await getUserClockValues(handles, userIds)
   userClockValues.forEach(
     ({
       primaryNode,
@@ -130,6 +131,27 @@ async function run() {
     }
   )
 }
+
+// function getAllUserClockValues() {
+//   let mainPromise = new Promise(resolve => resolve())
+
+//   Array(100)
+//     .fill(null)
+//     .forEach((_, i) => {
+//       mainPromise = mainPromise.then(async () => {
+//         console.log(
+//           await getUserClockValues(
+//             [],
+//             Array(8)
+//               .fill(null)
+//               .map((_, j) => i * 8 + j + 1)
+//           )
+//         )
+//       })
+//     })
+
+//   return mainPromise
+// }
 
 /**
  * Process command line args, expects user handle as command line input.
