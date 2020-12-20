@@ -205,8 +205,9 @@ class Users extends Base {
   /**
    * Assigns a replica set to the user's metadata and adds new metadata to chain.
    * This creates a record for that user on the connected creator node.
-   * @param {string} existingEndpoint
-   * @param {string} newContentNodeEndpoints comma delineated
+   * @param {Object} serviceProvider instance of ServiceProvider. Used for Content Node selection
+   * @param {number} userId
+   * @param {string[]} newContentNodeEndpoints comma separated list of Content Node endpoints
    */
   async assignReplicaSet (serviceProvider, userId, newContentNodeEndpoints = '') {
     this.REQUIRES(Services.CREATOR_NODE)

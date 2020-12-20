@@ -56,15 +56,16 @@ class ServiceProvider extends Base {
   }
 
   /**
-   * Fetches healthy creator nodes and autoselects a primary
-   * and two secondaries
-   * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
-   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
-   * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
+   * Fetches healthy creator nodes, and then autoselects a primary and two secondaries
+   * @param {Object} param
+   * @param  {number} param.[numberOfNodes=3] total number of nodes to fetch (2 secondaries means 3 total)t
+   * @param  {Set<string>} param.[whitelist=null] whether or not to include only specified nodes
+   * @param  {Set<string>} param.[blacklist=null]  whether or not to exclude any nodes
+   * @param  {boolean} param.[performSyncCheck=true] flag to perform sync check or not
    * @returns { primary, secondaries, services }
    * // primary: string
-   * // secondaries: Array<string>
-   * // services: { creatorNodeEndpoint: versionInfo }
+   * // secondaries: string[]
+   * // services: { creatorNodeEndpoint: healthCheckResponse }
    */
   async autoSelectCreatorNodes ({
     numberOfNodes = 3,
