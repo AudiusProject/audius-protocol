@@ -44,7 +44,7 @@ jobs:
   #         at: ./
   #     - run:
   #         name: run test
-  #         command: npm run test:staging
+  #         command: npm run test:stage
 
   test-production:
     working_directory: ~/general-admission
@@ -56,7 +56,7 @@ jobs:
           at: ./
       - run:
           name: run test
-          command: npm run test:production
+          command: npm run test:prod
 
 workflows:
   version: 2

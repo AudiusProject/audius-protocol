@@ -1,4 +1,4 @@
-# Copied from .env.staging or .env.production
+# Copied from .env.stage or .env.prod
 .env
 
 # build

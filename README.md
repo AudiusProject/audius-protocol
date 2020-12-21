@@ -20,7 +20,7 @@ There are two modes of operation of General Admission
 git clone git@github.com:AudiusProject/general-admission.git
 cd general-admission
 
-cp .env.staging .env # or .env.production
+cp .env.stage .env # or .env.prod
 
 docker-compose up --build
 ```

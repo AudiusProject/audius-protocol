@@ -8,12 +8,12 @@
     "copyfiles": "copyfiles -u 1 src/public/* src/**/*.html build/src",
     "spinup": "npm run tsc && npm run copyfiles && node build/src/index.js",
     "start": "env-cmd -f .env npm run spinup",
-    "start:staging": "env-cmd -f .env.staging npm run spinup",
-    "start:production": "env-cmd -f .env.production npm run spinup",
+    "start:stage": "env-cmd -f .env.stage npm run spinup",
+    "start:prod": "env-cmd -f .env.prod npm run spinup",
     "lint": "./node_modules/.bin/tslint 'src/**/*.ts'",
     "lint-fix": "./node_modules/.bin/tslint 'src/**/*.ts' --fix",
-    "test:staging": "env-cmd -f .env.staging jest",
-    "test:production": "env-cmd -f .env.production jest"
+    "test:stage": "env-cmd -f .env.stage jest",
+    "test:prod": "env-cmd -f .env.prod jest"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
-    "@audius/libs": "1.0.4",
+    "@audius/libs": "1.1.5",
     "ethereumjs-tx": "^2.1.0",
     "express": "^4.17.1",
     "handlebars": "^4.1.2",
