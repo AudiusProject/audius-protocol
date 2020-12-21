@@ -44,6 +44,13 @@ const UnreadNotifications = ({ message }) => (
   </p>
 )
 
+const getNumberSuffix = (num) => {
+  if (num === 1) return 'st'
+  else if (num === 2) return 'nd'
+  else if (num === 3) return 'rd'
+  return 'th'
+}
+
 const snippetMap = {
   [NotificationType.Favorite] (notification) {
     const [user] = notification.users
@@ -67,6 +74,11 @@ const snippetMap = {
     } else {
       return `You have reached over ${notification.value} Followers`
     }
+  },
+  [NotificationType.TrendingTrack] (notification) {
+    const rank = notification.rank
+    const suffix = getNumberSuffix(rank)
+    return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
   },
   [NotificationType.UserSubscription] (notification) {
     const [user] = notification.users
