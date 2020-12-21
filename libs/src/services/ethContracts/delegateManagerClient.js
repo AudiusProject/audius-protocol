@@ -217,9 +217,9 @@ class DelegateManagerClient extends GovernedContractClient {
     )
   }
 
-  async cancelUndelegateStake () {
+  async cancelUndelegateStakeRequest () {
     const method = await this.getMethod(
-      'cancelUndelegateStake'
+      'cancelUndelegateStakeRequest'
     )
     return this.web3Manager.sendTransaction(
       method,
@@ -268,9 +268,9 @@ class DelegateManagerClient extends GovernedContractClient {
     )
   }
 
-  async cancelRemoveDelegator (serviceProvider, delegator) {
+  async cancelRemoveDelegatorRequest (serviceProvider, delegator) {
     const method = await this.getMethod(
-      'cancelRemoveDelegator',
+      'cancelRemoveDelegatorRequest',
       serviceProvider,
       delegator
     )
