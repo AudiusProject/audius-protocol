@@ -63,7 +63,7 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
     const newMetadata = { ...user }
     newMetadata.creator_node_endpoint = newEndpoints.join(',')
     console.debug(`Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`)
-    await libs.User.updateCreator(user.user_id, newMetadata)
+    await libs.User.updateUserMetadata(user.user_id, newMetadata)
   } catch (e) {
     console.error(e)
   }

@@ -13,6 +13,8 @@ const spEndpoint2 = 'http://localhost:5001'
 
 run()
 
+// TODO: do we need this file? uses old methods
+
 async function run () {
   // only used to get accounts
   const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545/'))

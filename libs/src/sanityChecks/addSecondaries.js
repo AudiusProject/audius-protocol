@@ -33,7 +33,7 @@ const addSecondaries = async (libs) => {
     const newMetadata = { ...user }
     newMetadata.creator_node_endpoint = newEndpoints.join(',')
     console.debug(`Sanity Check - addSecondaries - new nodes ${newMetadata.creator_node_endpoint}`)
-    await libs.User.updateCreator(user.user_id, newMetadata)
+    await libs.User.updateUserMetadata(user.user_id, newMetadata)
   }
 }
 

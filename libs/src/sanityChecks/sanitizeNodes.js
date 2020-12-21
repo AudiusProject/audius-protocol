@@ -17,7 +17,7 @@ const sanitizeNodes = async (libs, secondaries) => {
     console.debug(`Sanity Check - sanitizingNodes - ${user.creator_node_endpoint} -> ${sanitizedEndpoint}`)
     const newMetadata = { ...user }
     newMetadata.creator_node_endpoint = sanitizedEndpoint
-    await libs.User.updateCreator(user.user_id, newMetadata)
+    await libs.User.updateUserMetadata(user.user_id, newMetadata)
   }
 }
 

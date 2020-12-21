@@ -25,6 +25,8 @@ const findCorrectNode = async (nodes, cids) => {
   return null
 }
 
+// TODO: ask ray about this one again.. can we just remove it
+// / how to adjust for new assign replica set flow
 const isCreator = async (libs) => {
   console.debug('Sanity Check - isCreator')
   const user = libs.userStateManager.getCurrentUser()
@@ -64,7 +66,11 @@ const isCreator = async (libs) => {
       console.debug('Sanity Check - isCreator - Upgrading to Creator')
       // No need to actually pass in ServiceProvider since we are passing in the
       // Content Node endpoint value
-      await libs.User.assignReplicaSet(null, user.user_id, correctNode.endpoint)
+      await libs.User.assignReplicaSet({
+        serviceProvider: libs.ServiceProvider,
+        userId: user.user_id,
+        newContentNodeEndpoints: correctNode.endpoint
+      })
     } catch (e) {
       console.error(e)
       // We were actually a creator the whole time O_O

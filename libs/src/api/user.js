@@ -209,7 +209,25 @@ class Users extends Base {
    * @param {number} userId
    * @param {string[]} newContentNodeEndpoints comma separated list of Content Node endpoints
    */
-  async assignReplicaSet (serviceProvider, userId, newContentNodeEndpoints = '') {
+  /**
+   * Assigns a replica set to the user's metadata and adds new metadata to chain.
+   * This creates a record for that user on the connected creator node.
+   * @param {Object} param
+   * @param {Object} param.serviceProvider instance of ServiceProvider. Used for Content Node selection
+   * @param {number} param.userId
+   * @param {string[]} param.[newContentNodeEndpoints='']
+   * @param {Set<string>} param.[passList=null] whether or not to include only specified nodes
+   * @param {Set<string>} param.[blockList=null]  whether or not to exclude any nodes
+   */
+  /**
+   */
+  async assignReplicaSet ({
+    serviceProvider,
+    userId,
+    newContentNodeEndpoints = '', // ??? what is this supposed to look like
+    passList = null,
+    blockList = null
+  }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
       CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
@@ -239,7 +257,11 @@ class Users extends Base {
       let primary, secondaries
       if (!newContentNodeEndpoints || newContentNodeEndpoints.length === 0) {
         phase = phases.AUTOSELECT_CONTENT_NODES
-        const response = await serviceProvider.autoSelectCreatorNodes({ performSyncCheck: false })
+        const response = await serviceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false,
+          whitelist: passList,
+          blacklist: blockList
+        })
         primary = response.primary
         secondaries = response.secondaries
         if (!primary || !secondaries || secondaries.length < numNodes - 1) {

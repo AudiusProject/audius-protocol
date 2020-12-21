@@ -4,6 +4,7 @@ const addSecondaries = require('./addSecondaries')
 const syncNodes = require('./syncNodes')
 const rolloverNodes = require('./rolloverNodes')
 const recoveryEmail = require('./needsRecoveryEmail')
+const assignReplicaSet = require('./assignReplicaSet')
 
 // Checks to run at startup to ensure a user is in a good state.
 class SanityChecks {
@@ -22,6 +23,7 @@ class SanityChecks {
     await syncNodes(this.libs)
     await rolloverNodes(this.libs, creatorNodeWhitelist)
     await recoveryEmail(this.libs)
+    await assignReplicaSet(this.libs, creatorNodeWhitelist)
   }
 }
 
