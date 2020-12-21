@@ -1,11 +1,12 @@
 const express = require('express')
-const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat } = require('../../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse, errorResponseServerError } = require('../../apiHelpers')
 const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 
 const { recoverWallet } = require('../../apiSigning')
+const { handleTrackContentUpload, removeTrackFolder } = require('../../fileManager')
 
 const config = require('../../config')
 
@@ -13,6 +14,30 @@ const router = express.Router()
 
 // 5 minutes in ms is the maximum age of a timestamp sent to /health_check/duration
 const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
+
+// Helper Functions
+/**
+ * Verifies that the request is made by the delegate Owner
+ */
+const healthCheckVerifySignature = (req, res, next) => {
+  let { timestamp, randomBytes, signature } = req.query
+  if (!timestamp || !randomBytes || !signature) return sendResponse(req, res, errorResponseBadRequest(('Missing required query parameters')))
+
+  const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
+  const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
+  const recoveredTimestampDate = new Date(timestamp)
+  const currentTimestampDate = new Date()
+  const requestAge = currentTimestampDate - recoveredTimestampDate
+  if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
+    return sendResponse(req, res, errorResponseBadRequest(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`))
+  }
+  const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
+  if (recoveredPublicWallet !== delegateOwnerWallet) {
+    return sendResponse(req, res, errorResponseBadRequest("Requester's public key does does not match Creator Node's delegate owner wallet."))
+  }
+
+  next()
+}
 
 // Controllers
 
@@ -40,21 +65,6 @@ const syncHealthCheckController = async () => {
  * Calls healthCheckComponentService
  */
 const healthCheckDurationController = async (req) => {
-  let { timestamp, randomBytes, signature } = req.query
-  if (!timestamp || !randomBytes || !signature) return errorResponseBadRequest('Missing required query parameters')
-
-  const recoveryObject = { randomBytesToSign: randomBytes, timestamp }
-  const recoveredPublicWallet = recoverWallet(recoveryObject, signature).toLowerCase()
-  const recoveredTimestampDate = new Date(timestamp)
-  const currentTimestampDate = new Date()
-  const requestAge = currentTimestampDate - recoveredTimestampDate
-  if (requestAge >= MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS) {
-    throw new Error(`Submitted timestamp=${recoveredTimestampDate}, current timestamp=${currentTimestampDate}. Maximum age =${MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS}`)
-  }
-  const delegateOwnerWallet = config.get('delegateOwnerWallet').toLowerCase()
-  if (recoveredPublicWallet !== delegateOwnerWallet) {
-    throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
-  }
   let response = await healthCheckDuration()
   return successResponse(response)
 }
@@ -79,12 +89,26 @@ const healthCheckVerboseController = async (req) => {
   })
 }
 
+/**
+ * Controller for `health_check/fileupload` route *
+ * Perform a file upload health check limited to configured delegateOwnerWallet.
+ * This prunes the disc artifacts created by the process after.
+ */
+const healthCheckFileUploadController = async (req) => {
+  const err = req.fileFilterError || req.fileSizeError || await removeTrackFolder(req, req.fileDir)
+  if (err) {
+    return errorResponseServerError(err)
+  }
+  return successResponse({ success: true })
+}
+
 // Routes
 
 router.get('/health_check', handleResponse(healthCheckController))
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
-router.get('/health_check/duration', handleResponse(healthCheckDurationController))
-router.get('/health_check/duration/heartbeat', handleResponseWithHeartbeat(healthCheckDurationController))
+router.get('/health_check/duration', healthCheckVerifySignature, handleResponse(healthCheckDurationController))
+router.get('/health_check/duration/heartbeat', healthCheckVerifySignature, handleResponseWithHeartbeat(healthCheckDurationController))
 router.get('/health_check/verbose', handleResponse(healthCheckVerboseController))
+router.post('/health_check/fileupload', healthCheckVerifySignature, handleTrackContentUpload, handleResponseWithHeartbeat(healthCheckFileUploadController))
 
 module.exports = router

@@ -1,10 +1,11 @@
 /**
- * Verify sufficient connection duration limited to configured delegateOwnerWallet
+ * Verifies a file upload limited to configured delegateOwnerWallet.
  * Used to validate availability prior to joining the network
  *
- * Script usage: node verifyHealthCheckDuration.js
+ * Script usage: node verifyHealthCheckFileUpload.js
 */
 const axios = require('axios')
+const FormData = require('form-data')
 const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { promisify } = require('util')
 
@@ -15,14 +16,14 @@ const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 const randomBytes = promisify(crypto.randomBytes)
 
 /**
- * Process command line args and issue duration health check
+ * Process command line args and issue file upload health check
  */
 async function run () {
   try {
     parseEnvVarsAndArgs()
   } catch (e) {
     console.error(`\nIncorrect script usage: ${e.message}`)
-    console.error(`Script usage: node verifyHealthCheckDuration.js`)
+    console.error(`Script usage: node verifyHealthCheckFileUpload.js`)
     return
   }
 
@@ -33,11 +34,25 @@ async function run () {
     // Add randomBytes to outgoing request parameters
     const reqParam = signedLocalData
     reqParam.randomBytes = randomBytesToSign
-    let requestConfig = {
-      url: `${CREATOR_NODE_ENDPOINT}/health_check/duration`,
+
+    let sampleTrack = new FormData()
+    sampleTrack.append('file', (await axios({
       method: 'get',
+      url: 'https://s3-us-west-1.amazonaws.com/download.audius.co/sp-health-check-files/97mb_music.mp3', // 97 MB
+      responseType: 'stream'
+    })).data)
+
+    let requestConfig = {
+      headers: {
+        ...sampleTrack.getHeaders()
+      },
+      url: `${CREATOR_NODE_ENDPOINT}/health_check/fileupload`,
+      method: 'post',
       params: reqParam,
-      responseType: 'json'
+      responseType: 'json',
+      data: sampleTrack,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
     }
     let resp = await axios(requestConfig)
     let data = resp.data
