@@ -56,10 +56,11 @@ async function getUserById(userId, discoveryProviderEndpoint) {
     )
   }
 }
+
 async function getClockValues({
   wallet,
   creator_node_endpoint: creatorNodeEndpoint,
-  user_id: userId
+  handle
 }) {
   const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
   const secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
@@ -70,7 +71,7 @@ async function getClockValues({
       primaryClockValue: '',
       secondaryNodes: [],
       secondaryClockValues: [],
-      userId: userId
+      handle
     }
   }
 
@@ -86,7 +87,7 @@ async function getClockValues({
         CreatorNode.getClockValue(secondaryNode, wallet)
       )
     ),
-    userId: userId
+    handle
   }
 }
 
@@ -116,9 +117,9 @@ async function run() {
       primaryClockValue,
       secondaryNodes,
       secondaryClockValues,
-      userId
+      handle
     }) => {
-      console.log('UserId:', userId)
+      console.log('Handle:', handle)
       console.log('Primary')
       console.log(primaryNode, primaryClockValue)
 
@@ -131,27 +132,6 @@ async function run() {
     }
   )
 }
-
-// function getAllUserClockValues() {
-//   let mainPromise = new Promise(resolve => resolve())
-
-//   Array(100)
-//     .fill(null)
-//     .forEach((_, i) => {
-//       mainPromise = mainPromise.then(async () => {
-//         console.log(
-//           await getUserClockValues(
-//             [],
-//             Array(8)
-//               .fill(null)
-//               .map((_, j) => i * 8 + j + 1)
-//           )
-//         )
-//       })
-//     })
-
-//   return mainPromise
-// }
 
 /**
  * Process command line args, expects user handle as command line input.
