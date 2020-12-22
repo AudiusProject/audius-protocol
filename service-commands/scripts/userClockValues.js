@@ -16,16 +16,23 @@ program
   .usage('')
   .option('-h, --handles <handles>', 'Audius handles', commaSeparatedList, [])
   .option('-i, --user-ids <userIds>', 'Audius user ids', commaSeparatedList, [])
+  .option(
+    '-t, --timeout <timeout>',
+    'Timeout for single request in ms',
+    commaSeparatedList,
+    5000
+  )
 
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
-async function getUserByHandle(handle, discoveryProviderEndpoint) {
+async function getUserByHandle(handle, discoveryProviderEndpoint, timeout) {
   try {
     return (
       await axios({
         url: `/v1/full/users/handle/${handle}`,
         method: 'get',
-        baseURL: discoveryProviderEndpoint
+        baseURL: discoveryProviderEndpoint,
+        timeout: timeout
       })
     ).data.data[0]
   } catch (err) {
@@ -35,13 +42,14 @@ async function getUserByHandle(handle, discoveryProviderEndpoint) {
   }
 }
 
-async function getUserById(userId, discoveryProviderEndpoint) {
+async function getUserById(userId, discoveryProviderEndpoint, timeout) {
   try {
     const resp = (
       await axios({
         url: `/users?id=${userId}`,
         method: 'get',
-        baseURL: discoveryProviderEndpoint
+        baseURL: discoveryProviderEndpoint,
+        timeout
       })
     ).data.data[0]
 
@@ -57,11 +65,10 @@ async function getUserById(userId, discoveryProviderEndpoint) {
   }
 }
 
-async function getClockValues({
-  wallet,
-  creator_node_endpoint: creatorNodeEndpoint,
-  handle
-}) {
+async function getClockValues(
+  { wallet, creator_node_endpoint: creatorNodeEndpoint, handle },
+  timeout
+) {
   const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
   const secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
 
@@ -79,12 +86,13 @@ async function getClockValues({
     primaryNode: primaryCreatorNode,
     primaryClockValue: await CreatorNode.getClockValue(
       primaryCreatorNode,
-      wallet
+      wallet,
+      timeout
     ),
     secondaryNodes: secondaryCreatorNodes,
     secondaryClockValues: await Promise.all(
       secondaryCreatorNodes.map(secondaryNode =>
-        CreatorNode.getClockValue(secondaryNode, wallet)
+        CreatorNode.getClockValue(secondaryNode, wallet, timeout)
       )
     ),
     handle
@@ -92,25 +100,25 @@ async function getClockValues({
 }
 
 // get clock values for all users / some users via userIds / handles
-function getUserClockValues(handles, userIds) {
+function getUserClockValues(handles, userIds, timeout) {
   const usersFromHandles = handles.map(handle =>
-    getUserByHandle(handle, discoveryProviderEndpoint)
+    getUserByHandle(handle, discoveryProviderEndpoint, timeout)
   )
 
   const usersFromIds = userIds.map(userId =>
-    getUserById(userId, discoveryProviderEndpoint)
+    getUserById(userId, discoveryProviderEndpoint, timeout)
   )
 
   return Promise.all(
     [...usersFromHandles, ...usersFromIds].map(
-      async user => await getClockValues(await user)
+      async user => await getClockValues(await user, timeout)
     )
   )
 }
 
 async function run() {
-  const { handles, userIds } = parseArgsAndEnv()
-  const userClockValues = await getUserClockValues(handles, userIds)
+  const { handles, userIds, timeout } = parseArgsAndEnv()
+  const userClockValues = await getUserClockValues(handles, userIds, timeout)
   userClockValues.forEach(
     ({
       primaryNode,
@@ -146,7 +154,8 @@ function parseArgsAndEnv() {
 
   return {
     handles: program.handles,
-    userIds: program.userIds
+    userIds: program.userIds,
+    timeout: Number(program.timeout)
   }
 }
 
