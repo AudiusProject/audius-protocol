@@ -50,13 +50,13 @@ try {
   REACT_APP_ETH_OWNER_WALLET=${REACT_APP_ETH_OWNER_WALLET}
   `
 
-  // Note .env.development.local takes precidence over .env.development
+  // Note .env.dev.local takes precidence over .env.dev
   // https://facebook.github.io/create-react-app/docs/adding-custom-environment-variables
-  fs.writeFile('./.env.development.local', contents, err => {
+  fs.writeFile('./.env.dev.local', contents, err => {
     if (err) {
       console.error(err)
     }
-    console.log('Configured .env.development.local')
+    console.log('Configured .env.dev.local')
   })
 } catch (e) {
   console.error(`
