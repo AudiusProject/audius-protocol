@@ -9,7 +9,9 @@ let HOST = 'localhost'
 if (process.argv[2] && process.argv[2] === '--remote-host') {
   HOST = process.env.AUDIUS_REMOTE_DEV_HOST
   if (!HOST) {
-    throw new Error('Misconfigured local env. Ensure AUDIUS_REMOTE_DEV_HOST envvar has been exported.')
+    throw new Error(
+      'Misconfigured local env. Ensure AUDIUS_REMOTE_DEV_HOST envvar has been exported.'
+    )
   }
 }
 
@@ -24,8 +26,7 @@ try {
   const REACT_APP_USER_NODE = 'http://cn1_creator-node_1:4000'
 
   const REACT_APP_REGISTRY_ADDRESS = configFile.registryAddress
-  const REACT_APP_WEB3_PROVIDER_URLS =
-    `http://${HOST}:8545,http://${HOST}:8545`
+  const REACT_APP_WEB3_PROVIDER_URLS = `http://${HOST}:8545,http://${HOST}:8545`
 
   const REACT_APP_ETH_REGISTRY_ADDRESS = ethConfigFile.registryAddress
   const REACT_APP_ETH_PROVIDER_URL = `http://${HOST}:8546`
@@ -52,7 +53,7 @@ try {
 
   // Note .env.dev.local takes precidence over .env.dev
   // https://facebook.github.io/create-react-app/docs/adding-custom-environment-variables
-  fs.writeFile('./.env.dev.local', contents, err => {
+  fs.writeFile('./.env/.env.dev.local', contents, err => {
     if (err) {
       console.error(err)
     }
