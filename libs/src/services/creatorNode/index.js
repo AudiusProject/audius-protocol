@@ -439,7 +439,7 @@ class CreatorNode {
    *  type: 'primary' or 'secondary',
    *  endpoint: <Content Node endpoint>,
    *  wallet: wallet in userStateManager
-   *  clockValue: /users/clock_status/:wallet response OR null
+   *  clockValue: clock value (should be an integer)
    * }
    */
   async getClockValuesFromReplicaSet () {
