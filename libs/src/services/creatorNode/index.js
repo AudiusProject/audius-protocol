@@ -446,6 +446,7 @@ class CreatorNode {
     const user = this.userStateManager.getCurrentUser()
     if (!user || !user.creator_node_endpoint) {
       console.error('No user or Content Node endpoint found')
+      return
     }
 
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
