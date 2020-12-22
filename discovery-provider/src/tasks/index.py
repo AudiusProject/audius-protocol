@@ -11,6 +11,7 @@ from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
+from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
     most_recent_indexed_block_redis_key
@@ -174,6 +175,7 @@ def index_blocks(self, db, blocks_list):
             social_feature_factory_txs = []
             playlist_factory_txs = []
             user_library_factory_txs = []
+            user_replica_set_manager_txs = []
 
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
@@ -189,7 +191,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle user operations
                 if tx_target_contract_address == contract_addresses["user_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | UserFactory contract addr: {tx_target_contract_address}"
+                        f"index.py | UserFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}, adding to user_factory_txs to process in bulk"
                     )
                     user_factory_txs.append(tx_receipt)
@@ -197,7 +199,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle track operations
                 if tx_target_contract_address == contract_addresses["track_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | TrackFactory contract addr: {tx_target_contract_address}"
+                        f"index.py | TrackFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     # Track state operations
@@ -206,7 +208,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle social operations
                 if tx_target_contract_address == contract_addresses["social_feature_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | Social feature contract addr: {tx_target_contract_address}"
+                        f"index.py | Social feature contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     social_feature_factory_txs.append(tx_receipt)
@@ -214,7 +216,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle repost operations
                 if tx_target_contract_address == contract_addresses["playlist_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | Playlist contract addr: {tx_target_contract_address}"
+                        f"index.py | Playlist contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     playlist_factory_txs.append(tx_receipt)
@@ -222,10 +224,18 @@ def index_blocks(self, db, blocks_list):
                 # Handle User Library operations
                 if tx_target_contract_address == contract_addresses["user_library_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | User Library contract addr: {tx_target_contract_address}"
+                        f"index.py | User Library contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     user_library_factory_txs.append(tx_receipt)
+
+                # Handle UserReplicaSetManager operations
+                if tx_target_contract_address == contract_addresses["user_replica_set_manager"]:
+                    logger.info(
+                        f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
+                        f"tx from block - {tx}, receipt - {tx_receipt}"
+                    )
+                    user_replica_set_manager_txs.append(tx_receipt)
 
             # bulk process operations once all tx's for block have been parsed
             total_user_changes, user_ids = user_state_update(
@@ -243,6 +253,15 @@ def index_blocks(self, db, blocks_list):
                 )
                 > 0
             )
+
+            user_replica_set_state_changed = (
+                user_replica_set_state_update(
+                    self, update_task, session, user_replica_set_manager_txs, block_number, block_timestamp
+                )
+                > 0
+            )
+            if user_replica_set_state_changed:
+                logger.info(f"index.py | UserReplicaSetManager changes processed at {block}")
 
             # Playlist state operations processed in bulk
             total_playlist_changes, playlist_ids = playlist_state_update(
