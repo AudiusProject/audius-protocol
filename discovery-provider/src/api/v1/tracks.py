@@ -8,7 +8,7 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_full_response, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
     format_offset, format_limit, decode_string_id, stem_from_track, \
-    get_current_user_id, extend_track_id
+    get_current_user_id, get_encoded_track_id
 
 from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
@@ -313,9 +313,9 @@ class FullTrendingIds(Resource):
         args = trending_ids_route_parser.parse_args()
         trending_ids = get_trending_ids(args)
         res = {
-            "week": list(map(extend_track_id, trending_ids["week"])),
-            "month": list(map(extend_track_id, trending_ids["month"])),
-            "year": list(map(extend_track_id, trending_ids["year"]))
+            "week": list(map(get_encoded_track_id, trending_ids["week"])),
+            "month": list(map(get_encoded_track_id, trending_ids["month"])),
+            "year": list(map(get_encoded_track_id, trending_ids["year"]))
         }
         return success_response(res)
 

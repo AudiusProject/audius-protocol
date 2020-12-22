@@ -178,7 +178,7 @@ def extend_track(track):
 
     return track
 
-def extend_track_id(track):
+def get_encoded_track_id(track):
     return { "id": encode_int_id(track["track_id"]) }
 
 def stem_from_track(track):
