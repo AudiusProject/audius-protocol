@@ -49,6 +49,7 @@ class CreatorNode {
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
     this.web3Manager = web3Manager
+    // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
     this.userStateManager = userStateManager

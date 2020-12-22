@@ -40,6 +40,12 @@ class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
+
+    // For adding replica set to users on sign up
+    this.updateUserMetadata = this.updateUserMetadata.bind(this)
+    this.assignReplicaSet = this.assignReplicaSet.bind(this)
+    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
+
     this._waitForCreatorNodeUpdate = this._waitForCreatorNodeUpdate.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
@@ -174,6 +180,98 @@ class Users extends Base {
   }
 
   /* ------- SETTERS ------- */
+
+  /**
+   * Assigns a replica set to the user's metadata and adds new metadata to chain.
+   * This creates a record for that user on the connected creator node.
+   * @param {Object} param
+   * @param {Object} param.serviceProvider instance of ServiceProvider. Used for Content Node selection
+   * @param {number} param.userId
+   * @param {string[]} param.[newContentNodeEndpoints='']
+   * @param {Set<string>} param.[passList=null] whether or not to include only specified nodes
+   * @param {Set<string>} param.[blockList=null]  whether or not to exclude any nodes
+   */
+  async assignReplicaSet ({
+    serviceProvider,
+    userId,
+    newContentNodeEndpoints = '', // ??? what is this supposed to look like
+    passList = null,
+    blockList = null
+  }) {
+    this.REQUIRES(Services.CREATOR_NODE)
+    const phases = {
+      CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
+      AUTOSELECT_CONTENT_NODES: 'AUTOSELECT_CONTENT_NODES',
+      SYNC_ACROSS_CONTENT_NODES: 'SYNC_ACROSS_CONTENT_NODES',
+      SET_PRIMARY: 'SET_PRIMARY',
+      UPLOAD_METADATA_AND_UPDATE_ON_CHAIN: 'UPLOAD_METADATA_AND_UPDATE_ON_CHAIN'
+    }
+    let phase = ''
+    const numNodes = 3
+
+    const user = this.userStateManager.getCurrentUser()
+    // Failed the addUser() step
+    if (!user) { throw new Error('No current user') }
+    // No-op if the user already has a replica set assigned under creator_node_endpoint
+    if (user.creator_node_endpoint && user.creator_node_endpoint.length > 0) return
+
+    // The new metadata object that will contain the replica set
+    let newMetadata
+    try {
+      // Create starter metadata and validate
+      phase = phases.CLEAN_AND_VALIDATE_METADATA
+      newMetadata = this._cleanUserMetadata({ ...user })
+      this._validateUserMetadata(newMetadata)
+
+      // Autoselect a new replica set and update the metadata object with new content node endpoints
+      let primary, secondaries
+      if (!newContentNodeEndpoints || newContentNodeEndpoints.length === 0) {
+        phase = phases.AUTOSELECT_CONTENT_NODES
+        const response = await serviceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false,
+          whitelist: passList,
+          blacklist: blockList
+        })
+        primary = response.primary
+        secondaries = response.secondaries
+        if (!primary || !secondaries || secondaries.length < numNodes - 1) {
+          throw new Error(`Could not select a primary=${primary} and/or ${numNodes - 1} secondaries=${secondaries}`)
+        }
+        newContentNodeEndpoints = CreatorNode.buildEndpoint(primary, secondaries)
+      }
+      newMetadata.creator_node_endpoint = newContentNodeEndpoints
+
+      // Update the new primary to the auto-selected primary
+      phase = phases.SET_PRIMARY
+      const newPrimary = CreatorNode.getPrimary(newContentNodeEndpoints)
+      await this.creatorNode.setEndpoint(newPrimary)
+
+      // In signUp(), a replica set is assigned before uploading profile images.
+      // Should associate new metadata after profile photo upload.
+      phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
+      await this._handleMetadata({
+        newMetadata,
+        userId
+      })
+    } catch (e) {
+      throw new Error(`assignReplicaSet() Error -- Phase ${phase}: ${e}`)
+    }
+
+    return newMetadata
+  }
+
+  /**
+   * Wrapper around private method _handleMetadata()
+   * @param {number} userId
+   * @param {Object} metadata
+   */
+  async updateUserMetadata (userId, metadata) {
+    await this._handleMetadata({
+      newMetadata: metadata,
+      userId
+    })
+    return userId
+  }
 
   /**
    * Util to upload profile picture and cover photo images and update
@@ -406,6 +504,66 @@ class Users extends Base {
   }
 
   /* ------- PRIVATE  ------- */
+
+  /**
+   * 1. Uploads metadata to primary Content Node (which inherently calls a sync accross secondaries)
+   * 2. Updates metadata on chain
+   * @param {Object}
+   */
+  async _handleMetadata ({ newMetadata, userId }) {
+    this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
+    this.IS_OBJECT(newMetadata)
+    const phases = {
+      UPLOAD_METADATA: 'UPLOAD_METADATA',
+      UPDATE_METADATA_ON_CHAIN: 'UPDATE_METADATA_ON_CHAIN',
+      ASSOCIATE_USER: 'ASSOCIATE_USER'
+    }
+    let phase = ''
+
+    const originalMetadata = this.userStateManager.getCurrentUser()
+    if (!originalMetadata) { throw new Error('No current user.') }
+
+    newMetadata = this._cleanUserMetadata(newMetadata)
+    this._validateUserMetadata(newMetadata)
+
+    // If the new metadata is the same as the original, it is a no-op and exit early
+    const shouldUpdate = this._shouldUpdateUserStateManager(newMetadata)
+    if (!shouldUpdate) { return }
+
+    try {
+      // Upload new metadata
+      phase = phases.UPLOAD_METADATA
+      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
+        newMetadata
+      )
+      // Update new metadata on chain
+      let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+      let { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+      const { latestBlockNumber } = await this._updateUserOperations(newMetadata, originalMetadata, userId)
+      if (newMetadata.creator_node_endpoint !== originalMetadata.creator_node_endpoint) {
+        await this._waitForContentNodeEndpointUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
+      }
+
+      // Re-associate the user id with the metadata and block number
+      phase = phases.ASSOCIATE_USER
+      await this.creatorNode.associateUser(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+
+      this.userStateManager.updateCurrentUser(newMetadata)
+    } catch (e) {
+      // TODO: think about handling the update metadata on chain and associating..
+      throw new Error(`_handleMetadata() Error -- Phase ${phase}: ${e}`)
+    }
+  }
+
+  /**
+  * Compares the original user state to an updated state. Determines if an update is necessary.
+  * @param {Object} newMetadata fields to update in the current user state
+  */
+  _shouldUpdateUserStateManager (newMetadata) {
+    const originalMetadata = this.userStateManager.getCurrentUser()
+    const updatedMetadata = { ...originalMetadata, ...newMetadata }
+    return JSON.stringify(originalMetadata) !== JSON.stringify(updatedMetadata)
+  }
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
   async _waitForCreatorNodeUpdate (userId, creatorNodeEndpoint) {
