@@ -431,16 +431,16 @@ class CreatorNode {
   }
 
   /**
-   * Gets the clock values across the replica set for the wallet in userStateManager.
-   *
-   * Returns clock values across replica set in the structure:
+   * Gets and returns the clock values across the replica set for the wallet in userStateManager.
+   * @returns {Object[]} Array of objects with the structure:
    *
    * {
    *  type: 'primary' or 'secondary',
    *  endpoint: <Content Node endpoint>,
-   *  wallet: wallet in userStateManager
-   *  clockValue: clock value (should be an integer)
+   *  clockValue: clock value (should be an integer) or null
    * }
+   *
+   * 'clockValue' may be null if the request to fetch the clock value fails
    */
   async getClockValuesFromReplicaSet () {
     const user = this.userStateManager.getCurrentUser()
@@ -450,20 +450,16 @@ class CreatorNode {
     }
 
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
-    const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
     const replicaSet = CreatorNode.getEndpoints(user.creator_node_endpoint)
 
     const clockValueRequest = async (endpoint) => {
-      let type = ''
-      if (primary === endpoint) type = 'primary'
-      else if (secondaries.includes(endpoint)) type = 'secondary'
+      let type = primary === endpoint ? 'primary' : 'secondary'
 
       try {
         const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet)
         return {
           type,
           endpoint,
-          wallet: user.wallet,
           clockValue
         }
       } catch (e) {
@@ -471,7 +467,6 @@ class CreatorNode {
         return {
           type,
           endpoint,
-          wallet: user.wallet,
           clockValue: null
         }
       }
