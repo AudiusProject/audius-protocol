@@ -1,48 +1,36 @@
 const BlacklistManager = require('../../blacklistManager')
+const models = require('../../models')
+
+const types = models.ContentBlacklist.Types
 
 const getAllContentBlacklist = async () => {
-  const { trackIdsToBlacklist, userIdsToBlacklist } = await BlacklistManager.getTrackAndUserIdsToBlacklist()
-  return { trackIds: trackIdsToBlacklist, userIds: userIdsToBlacklist }
-}
-
-const addToContentBlacklist = async ({ type, id }) => {
-  // add to ContentBlacklist
-  const resp = await BlacklistManager.addToDb({ id, type })
-
-  // add to redis
-  switch (resp.type) {
-    case 'USER': {
-      await BlacklistManager.add([], [resp.id])
-      break
-    }
-    case 'TRACK': {
-      await BlacklistManager.add([resp.id])
-      break
-    }
+  // Segments stored in the ContentBlacklist may not be associated with a track
+  const segmentsFromCBL = await models.ContentBlacklist.findAll({
+    attributes: ['value'],
+    where: {
+      type: types.cid
+    },
+    raw: true
+  })
+  const individuallyBlacklistedSegments = segmentsFromCBL.map(entry => entry.value)
+  const allSegments = await BlacklistManager.getAllCIDs()
+  const blacklistedContent = {
+    trackIds: await BlacklistManager.getAllTrackIds(),
+    userIds: await BlacklistManager.getAllUserIds(),
+    individualSegments: individuallyBlacklistedSegments,
+    numberOfSegments: allSegments.length,
+    allSegments
   }
 
-  return resp
+  return blacklistedContent
 }
 
-const removeFromContentBlacklist = async ({ type, id }) => {
-  // remove from ContentBlacklist
-  const resp = await BlacklistManager.removeFromDb({ id, type })
+const addToContentBlacklist = async ({ type, values }) => {
+  await BlacklistManager.add({ type, values })
+}
 
-  if (resp) {
-    // remove from redis
-    switch (resp.type) {
-      case 'USER': {
-        await BlacklistManager.remove([], [resp.id])
-        break
-      }
-      case 'TRACK': {
-        await BlacklistManager.remove([resp.id])
-        break
-      }
-    }
-  }
-
-  return resp
+const removeFromContentBlacklist = async ({ type, values }) => {
+  await BlacklistManager.remove({ type, values })
 }
 
 module.exports = {

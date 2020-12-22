@@ -37,7 +37,7 @@ module.exports = function (app) {
         method: 'get',
         url: 'https://graph.instagram.com/me',
         qs: {
-          'fields': 'id,username,media_count,account_type',
+          'fields': 'id,username,account_type',
           'access_token': accessToken
         }
       })
