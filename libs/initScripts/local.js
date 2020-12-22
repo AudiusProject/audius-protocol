@@ -143,9 +143,19 @@ const run = async () => {
         await _updateUserReplicaSetAddresses(ethAccounts)
         break
 
-      // TODO: REMOVE SANDBOX
       case 'update-user-replica-set':
-        await updateUserReplicaSet(audiusLibs)
+        console.log(`Usage: node local.js update-user-replica-set userId=1 primary=2 secondaries=3,1`)
+        const userIdStr = args[3]
+        const primaryReplicaIdStr = args[4]
+        const secondaryReplicaIdStr = args[5]
+        const userId = parseInt(userIdStr.split('=')[1])
+        const primaryReplicaId = parseInt(primaryReplicaIdStr.split('=')[1])
+        let secondaryReplicaIds = (secondaryReplicaIdStr.split('=')[1])
+        secondaryReplicaIds = secondaryReplicaIds.split(',').map(x=>parseInt(x))
+        console.log(`Received userId: ${userId}`)
+        console.log(`Received primaryReplicaId: ${primaryReplicaId}`)
+        console.log(`Received secondaryReplicaIds: ${secondaryReplicaIds}`)
+        await updateUserReplicaSet(audiusLibs, userId, primaryReplicaId, secondaryReplicaIds)
         break
       default:
         throwArgError()
@@ -173,26 +183,31 @@ const getUsrmLibs = async (defaultAudiusLibs, acctIndex = 20) => {
 
 // Update a user's replica set on chain
 // Using the bootstrap address configured for local development (accounts[9])
-const updateUserReplicaSet = async (defaultAudiusLibs) => {
-  // UserReplicaBootstrapLibs
+const updateUserReplicaSet = async (
+  defaultAudiusLibs,
+  userId,
+  primaryId,
+  secondaryIds
+) => {
+  // UserReplicaBootstrapLibs, logged in as the known bootstrap address
   let userReplicaBootstrapAddressLibs = await getUsrmLibs(defaultAudiusLibs, 9)
-  let sp1Id = 1
+  let sp1Id = primaryId
   let sp1DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp1Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`)
-  let sp2Id = 2
+  let sp2Id = secondaryIds[0]
   let sp2DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp2Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp2Id} - ${sp2DelWal}`)
-  let sp3Id = 3
+  let sp3Id = secondaryIds[1]
   let sp3DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp3Id)
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`)
-  let userId = 1
   let user1ReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   console.log(`User ${userId} replica set prior to update: ${JSON.stringify(user1ReplicaSet)}`)
+  console.log(`User ${userId} replica set updating to primary=${primaryId}, secondaries=${secondaryIds}`)
   // Uncomment to perform update operation
   await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
     userId,
-    sp1Id,
-    [sp2Id, sp3Id],
+    primaryId,
+    secondaryIds,
     user1ReplicaSet.primary,
     user1ReplicaSet.secondaries
   )
@@ -337,6 +352,8 @@ const _updateUserReplicaSetAddresses = async (ethAccounts) => {
   })
   const bootstrapSPIdsString = `    bootstrapSPIds: [${bootstrapSPIds}],`
   const bootstrapSPDelegateWalletsString = `    bootstrapSPDelegateWallets: ['${bootstrapSPDelegateWallets[0]}', '${bootstrapSPDelegateWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
+  console.log(`Initializing UserReplicaSetManager configuration from known delegateWallets within system...`)
+  console.log(`Bootstrapping with ${bootstrapSPIds}, ${bootstrapSPDelegateWallets}`)
 
   let traversingDevelopmentConfigBlock = false
   let output = []
