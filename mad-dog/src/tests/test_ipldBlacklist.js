@@ -705,7 +705,7 @@ async function getCreatorId ({
   executeAll,
   executeOne,
   numCreatorNodes
-}) => {
+}) {
   if (!walletIndexToUserIdMap) {
     walletIndexToUserIdMap = await addAndUpgradeUsers(
       numUsers,
