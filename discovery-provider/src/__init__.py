@@ -44,6 +44,7 @@ social_feature_factory = None
 playlist_factory = None
 user_library_factory = None
 ipld_blacklist_factory = None
+user_replica_set_manager = None
 contract_addresses = None
 
 logger = logging.getLogger(__name__)
