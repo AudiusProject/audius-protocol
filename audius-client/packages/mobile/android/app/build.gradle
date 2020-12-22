@@ -83,8 +83,8 @@ project.ext.react = [
 ]
 
 project.ext.envConfigFiles = [
-    release: ".env.production",
-    bouncerelease: ".env.staging",
+    release: ".env.prod",
+    bouncerelease: ".env.stage",
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -153,7 +153,7 @@ android {
             ]
         }
         bounce {
-            // Pre-compile run ENVFILE=.env.staging
+            // Pre-compile run ENVFILE=.env.stage
             applicationIdSuffix ".bounce"
             manifestPlaceholders = [
                 appIcon: "@mipmap/ic_launcher_bounce"
