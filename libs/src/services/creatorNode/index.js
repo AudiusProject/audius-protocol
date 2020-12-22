@@ -458,17 +458,12 @@ class CreatorNode {
       else if (secondaries.includes(endpoint)) type = 'secondary'
 
       try {
-        const resp = await axios({
-          method: 'get',
-          baseURL: endpoint,
-          url: `/users/clock_status/${user.wallet}`
-        })
-
+        const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet)
         return {
           type,
           endpoint,
           wallet: user.wallet,
-          clockValue: resp.data.data.clockValue
+          clockValue
         }
       } catch (e) {
         console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
