@@ -131,7 +131,7 @@ jobs:
           at: ./
       - run:
           name: build-staging
-          command: npm run build:staging
+          command: npm run build:stage
       - persist_to_workspace:
           root: ./
           paths:
@@ -148,7 +148,7 @@ jobs:
           at: ./
       - run:
           name: build-mobile-staging
-          command: npm run build:mobile-staging
+          command: npm run build:mobile-stage
       - persist_to_workspace:
           root: ./
           paths:
@@ -218,7 +218,7 @@ jobs:
           at: ./
       - run:
           name: build-production
-          command: npm run build:production-source-maps
+          command: npm run build:prod-source-maps
       - persist_to_workspace:
           root: ./
           paths:
@@ -235,7 +235,7 @@ jobs:
           at: ./
       - run:
           name: build-mobile-production
-          command: npm run build:mobile-production
+          command: npm run build:mobile-prod
       - persist_to_workspace:
           root: ./
           paths:
