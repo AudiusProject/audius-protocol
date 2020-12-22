@@ -13,15 +13,15 @@ jobs:
       - run:
           name: copy staging env
           command: |
-            echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.staging
-            echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY_STAGING" >> .env.staging
-            echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY_STAGING" >> .env.staging
+            echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.stage
+            echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY_STAGING" >> .env.stage
+            echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY_STAGING" >> .env.stage
       - run:
           name: copy production env
           command: |
-            echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.production
-            echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY" >> .env.production
-            echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY" >> .env.production
+            echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.prod
+            echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY" >> .env.prod
+            echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY" >> .env.prod
       - run:
           name: update-npm
           command: 'sudo npm install -g npm@latest'
@@ -42,8 +42,8 @@ jobs:
           root: ./
           paths:
             - node_modules
-            - .env.staging
-            - .env.production
+            - .env.stage
+            - .env.prod
       
   pull-web-app:
     working_directory: ~/react-native-wrapper
@@ -126,7 +126,7 @@ jobs:
           command: cd ios && bundle update fastlane
       - run:
           name: fastlane
-          command: cp .env.staging ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
+          command: cp .env.stage ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
       - store_artifacts:
           path: output
       - store_test_results:
@@ -170,7 +170,7 @@ jobs:
           command: cd ios && bundle update fastlane
       - run:
           name: fastlane
-          command: cp .env.production ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
+          command: cp .env.prod ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
       - store_artifacts:
           path: output
       - store_test_results:
