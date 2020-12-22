@@ -2,7 +2,7 @@ const Setup = require('./setup')
 
 const { LibsWrapper, Utils } = require('./libs')
 
-// Any method you add in these commands files will be dynamically imported
+// Any method you add in these commands files will be atomically imported
 // and accessible via ServiceCommands
 const User = require('./commands/users')
 const Track = require('./commands/tracks')
