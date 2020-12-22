@@ -6,17 +6,13 @@ const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
 const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
 
-const TYPES_ARR = models.ContentBlacklist.Types
-const types = {}
-TYPES_ARR.map(type => {
-  types[type.toLowerCase()] = type
-})
+const types = models.ContentBlacklist.Types
 
 class BlacklistManager {
   static async init () {
     try {
-      const { trackIdsToBlacklist, userIdsToBlacklist } = await this.getTrackAndUserIdsToBlacklist()
-      await this.add(trackIdsToBlacklist, userIdsToBlacklist)
+      const contentToBlacklist = await this.getTrackAndUserIdsToBlacklist()
+      await this.fetchCIDsAndAddToRedis(contentToBlacklist)
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }
@@ -24,34 +20,41 @@ class BlacklistManager {
 
   /** Return list of trackIds and userIds to be blacklisted. */
   static async getTrackAndUserIdsToBlacklist () {
-    const trackIdObjsBlacklist = await models.ContentBlacklist.findAll({
-      attributes: ['id'],
+    // CBL = ContentBlacklist
+    const tracksFromCBL = await models.ContentBlacklist.findAll({
+      attributes: ['value'],
       where: {
         type: types.track
       },
       raw: true
     })
-
-    const userIdObjsBlacklist = await models.ContentBlacklist.findAll({
-      attributes: ['id'],
+    const usersFromCBL = await models.ContentBlacklist.findAll({
+      attributes: ['value'],
       where: {
         type: types.user
       },
       raw: true
     })
+    const segmentsFromCBL = await models.ContentBlacklist.findAll({
+      attributes: ['value'],
+      where: {
+        type: types.cid
+      },
+      raw: true
+    })
 
-    const trackIdsBlacklist = trackIdObjsBlacklist.map(entry => entry.id)
-    const userIdsBlacklist = userIdObjsBlacklist.map(entry => entry.id)
-
-    const trackIds = new Set(trackIdsBlacklist)
+    const segmentsToBlacklist = segmentsFromCBL.map(entry => entry.value)
+    const userIdsToBlacklist = usersFromCBL.map(entry => parseInt(entry.value))
+    let trackIdsToBlacklist = tracksFromCBL.map(entry => parseInt(entry.value))
+    trackIdsToBlacklist = new Set(trackIdsToBlacklist)
 
     // Fetch all tracks created by users in userBlacklist
-    let tracks = await this.getTracksFromUsers(userIdsBlacklist)
-    for (const track of tracks) {
-      trackIds.add(parseInt(track.blockchainId))
+    let userTracks = await this.getTracksFromUsers(userIdsToBlacklist)
+    for (const userTrack of userTracks) {
+      trackIdsToBlacklist.add(parseInt(userTrack.blockchainId))
     }
 
-    return { trackIdsToBlacklist: [...trackIds], userIdsToBlacklist: userIdsBlacklist }
+    return { trackIdsToBlacklist: [...trackIdsToBlacklist], userIdsToBlacklist, segmentsToBlacklist }
   }
 
   /**
@@ -76,16 +79,17 @@ class BlacklistManager {
   * Given trackIds and userIds to blacklist, fetch all segmentCIDs.
   * Also add the trackIds, userIds, and segmentCIDs to redis blacklist sets to prevent future interaction.
   */
-  static async add (trackIdsToBlacklist = [], userIdsToBlacklist = []) {
+  static async fetchCIDsAndAddToRedis ({ trackIdsToBlacklist = [], userIdsToBlacklist = [], segmentsToBlacklist = [] }) {
     // Get tracks from param and by parsing through user tracks
     const tracks = await this.getTracksFromUsers(userIdsToBlacklist)
-    trackIdsToBlacklist = [...tracks.map(track => track.blockchainId), ...trackIdsToBlacklist]
+    trackIdsToBlacklist = trackIdsToBlacklist.concat(tracks.map(track => track.blockchainId))
 
     // Dedupe trackIds
     const trackIds = new Set(trackIdsToBlacklist)
 
     // Retrieves CIDs from deduped trackIds
-    const segmentCIDsToBlacklist = await this.getCIDsFromTrackIds([...trackIds])
+    const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
+    const segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
 
     try {
       await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
@@ -100,20 +104,21 @@ class BlacklistManager {
   * Given trackIds and userIds to remove from blacklist, fetch all segmentCIDs.
   * Also remove the trackIds, userIds, and segmentCIDs from redis blacklist sets to prevent future interaction.
   */
-  static async remove (trackIdsToRemove = [], userIdsToRemove = []) {
+  static async fetchCIDsAndRemoveFromRedis ({ trackIdsToBlacklist = [], userIdsToBlacklist = [], segmentsToBlacklist = [] }) {
     // Get tracks from param and by parsing through user tracks
-    const tracks = await this.getTracksFromUsers(userIdsToRemove)
-    trackIdsToRemove = [...tracks.map(track => track.blockchainId), ...trackIdsToRemove]
+    const tracks = await this.getTracksFromUsers(userIdsToBlacklist)
+    trackIdsToBlacklist = trackIdsToBlacklist.concat(tracks.map(track => track.blockchainId))
 
     // Dedupe trackIds
-    const trackIds = new Set(trackIdsToRemove)
+    const trackIds = new Set(trackIdsToBlacklist)
 
     // Retrieves CIDs from deduped trackIds
-    const segmentCIDsToRemove = await this.getCIDsFromTrackIds([...trackIds])
+    const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
+    const segmentCIDsToRemove = segmentsFromTrackIds.concat(segmentsToBlacklist)
 
     try {
-      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToRemove)
-      await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToRemove)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToBlacklist)
       await this.removeFromRedis(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, segmentCIDsToRemove)
     } catch (e) {
       throw new Error(`Failed to remove from blacklist: ${e}`)
@@ -122,7 +127,7 @@ class BlacklistManager {
 
   /**
    * Retrieves the CIDs for each trackId in trackIds and returns a deduped list of segments CIDs
-   * @param {int[]} trackIds
+   * @param {number[]} trackIds
    */
   static async getCIDsFromTrackIds (trackIds) {
     const tracks = await models.Track.findAll({ where: { blockchainId: trackIds } })
@@ -141,57 +146,96 @@ class BlacklistManager {
     return [...segmentCIDs]
   }
 
+  static async add ({ values, type }) {
+    await this.addToDb({ values, type })
+
+    // add to redis
+    switch (type) {
+      case 'USER':
+        // add user ids to redis under userid key + its associated track segments
+        await this.fetchCIDsAndAddToRedis({ userIdsToBlacklist: values })
+        break
+      case 'TRACK':
+        // add track ids to redis under trackid key + its associated track segments
+        await this.fetchCIDsAndAddToRedis({ trackIdsToBlacklist: values })
+        break
+      case 'CID':
+        // add segments to redis under segment key
+        await this.fetchCIDsAndAddToRedis({ segmentsToBlacklist: values })
+        break
+    }
+  }
+
+  static async remove ({ values, type }) {
+    await this.removeFromDb({ values, type })
+
+    // add to redis
+    switch (type) {
+      case 'USER':
+        // add user ids to redis under userid key + its associated track segments
+        await this.fetchCIDsAndRemoveFromRedis({ userIdsToBlacklist: values })
+        break
+      case 'TRACK':
+        // add track ids to redis under trackid key + its associated track segments
+        await this.fetchCIDsAndRemoveFromRedis({ trackIdsToBlacklist: values })
+        break
+      case 'CID':
+        // add segments to redis under segment key
+        await this.fetchCIDsAndRemoveFromRedis({ segmentsToBlacklist: values })
+        break
+    }
+  }
+
   /**
-   * Adds entry to ContentBlacklist table
-   * @param {int} id user or track id
-   * @param {enum} type ['USER', 'TRACK']
+   * Adds ids and types as individual entries to ContentBlacklist table
+   * @param {number} id user or track id
+   * @param {'USER'|'TRACK'} type
    */
-  static async addToDb ({ id, type }) {
-    let resp
+  static async addToDb ({ values, type }) {
     try {
-      resp = await models.ContentBlacklist.findOrCreate({ where: { id, type } })
+      await models.ContentBlacklist.bulkCreate(values.map(value => ({
+        value,
+        type
+      })), { ignoreDuplicates: true }) // if dupes found, do not update any columns
     } catch (e) {
-      throw new Error(`Error with adding entry with type (${type}) and id (${id}): ${e}`)
+      throw new Error(`Error with adding to ContentBlacklist: ${e}`)
     }
 
-    if (resp) {
-      console.log(`Added entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
-    }
-
-    return { type, id }
+    logger.info(`Sucessfully added entries with type (${type}) and values (${values}) to the ContentBlacklist table!`)
+    return { type, values }
   }
 
   /**
    * Removes entry from Contentblacklist table
-   * @param {int} id user or track id
-   * @param {enum} type ['USER', 'TRACK']
+   * @param {number} id user or track id
+   * @param {'USER'|'TRACK'} type
    */
-  static async removeFromDb ({ id, type }) {
+  static async removeFromDb ({ values, type }) {
     let numRowsDestroyed
     try {
       numRowsDestroyed = await models.ContentBlacklist.destroy({
         where: {
-          id,
+          value: { [models.Sequelize.Op.in]: values }, // todo: might need to convert this to string before where clause
           type
         }
       })
     } catch (e) {
-      throw new Error(`Error with removing entry with type (${type}) and id (${id}): ${e}`)
+      throw new Error(`Error with removing entry with type [${type}] and id [${values.toString()}]: ${e}`)
     }
 
-    if (numRowsDestroyed) {
-      console.log(`Removed entry with type (${type}) and id (${id}) to the ContentBlacklist table!`)
-      return { type, id }
+    if (numRowsDestroyed > 0) {
+      logger.debug(`Removed entry with type [${type}] and values [${values.toString()}] to the ContentBlacklist table!`)
+      return { type, values }
     }
 
-    console.log(`Entry with type (${type}) and id (${id}) does not exist in ContentBlacklist.`)
+    logger.debug(`Entry with type [${type}] and id [${values.toString()}] does not exist in ContentBlacklist.`)
     return null
   }
 
   /**
-   * Adds key with value to redis
+   * Adds key with value to redis.
    * @param {string} key
-   * @param {int[]} value
+   * @param {number[]} value
    */
   static async addToRedis (key, value) {
     if (!value || value.length === 0) return
@@ -204,9 +248,9 @@ class BlacklistManager {
   }
 
   /**
-   * Removes key with value to redis
+   * Removes key with value to redis. If value does not exist, redis should ignore.
    * @param {string} key
-   * @param {int[]} value
+   * @param {number[]} value
    */
   static async removeFromRedis (key, value) {
     if (!value || value.length === 0) return
@@ -249,6 +293,21 @@ class BlacklistManager {
 
   static async CIDIsInBlacklist (CID) {
     return redis.sismember(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, CID)
+  }
+
+  // Retrieves all CIDs in redis
+  static async getAllCIDs () {
+    return redis.smembers(REDIS_SET_BLACKLIST_SEGMENTCID_KEY)
+  }
+
+  // Retrieves all user ids in redis
+  static async getAllUserIds () {
+    return redis.smembers(REDIS_SET_BLACKLIST_USERID_KEY)
+  }
+
+  // Retrieves all track ids in redis
+  static async getAllTrackIds () {
+    return redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
   }
 }
 

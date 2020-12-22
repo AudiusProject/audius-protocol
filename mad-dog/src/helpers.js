@@ -51,8 +51,8 @@ const addAndUpgradeUsers = async (
   executeAll,
   executeOne
 ) => {
-  let addedUserIds = []
-  let existingUserIds = []
+  const addedUserIds = []
+  const existingUserIds = []
   const walletIndexToUserIdMap = {}
 
   await logOps('Add users', async () => {
