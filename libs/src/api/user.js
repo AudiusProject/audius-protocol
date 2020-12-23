@@ -209,18 +209,16 @@ class Users extends Base {
     const numNodes = 3
 
     const user = this.userStateManager.getCurrentUser()
+    const newMetadata = { ...user }
     // Failed the addUser() step
     if (!user) { throw new Error('No current user') }
     // No-op if the user already has a replica set assigned under creator_node_endpoint
     if (user.creator_node_endpoint && user.creator_node_endpoint.length > 0) return
 
     // The new metadata object that will contain the replica set
-    let newMetadata
     try {
       // Create starter metadata and validate
       phase = phases.CLEAN_AND_VALIDATE_METADATA
-      newMetadata = this._cleanUserMetadata({ ...user })
-      this._validateUserMetadata(newMetadata)
 
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       let primary, secondaries
@@ -274,7 +272,7 @@ class Users extends Base {
 
   /**
    * Util to upload profile picture and cover photo images and update
-   * a metadata object
+   * a metadata object. This method inherently calls triggerSecondarySyncs().
    * @param {?File} profilePictureFile an optional file to upload as the profile picture
    * @param {?File} coverPhotoFile an optional file to upload as the cover phtoo
    * @param {Object} metadata to update
@@ -289,6 +287,12 @@ class Users extends Base {
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
       metadata.cover_photo_sizes = resp.dirCID
     }
+
+    await this._handleMetadata({
+      newMetadata: metadata,
+      userId: metadata.user_id
+    })
+
     return metadata
   }
 
@@ -507,7 +511,9 @@ class Users extends Base {
   /**
    * 1. Uploads metadata to primary Content Node (which inherently calls a sync accross secondaries)
    * 2. Updates metadata on chain
-   * @param {Object}
+   * @param {Object} param
+   * @param {Object} param.newMetadata new metadata object
+   * @param {number} param.userId
    */
   async _handleMetadata ({ newMetadata, userId }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
@@ -526,6 +532,8 @@ class Users extends Base {
     this._validateUserMetadata(newMetadata)
 
     // If the new metadata is the same as the original, it is a no-op and exit early
+    // NOTE: be careful -- this implies that the userStateManager is the source of truth
+    // if userStateManager is not up to date, can cause issues
     const shouldUpdate = this._shouldUpdateUserStateManager(newMetadata)
     if (!shouldUpdate) { return }
 
@@ -535,17 +543,18 @@ class Users extends Base {
       const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
         newMetadata
       )
+
       // Update new metadata on chain
       let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
       let { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
       const { latestBlockNumber } = await this._updateUserOperations(newMetadata, originalMetadata, userId)
       if (newMetadata.creator_node_endpoint !== originalMetadata.creator_node_endpoint) {
-        await this._waitForContentNodeEndpointUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
+        await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
       }
 
       // Re-associate the user id with the metadata and block number
       phase = phases.ASSOCIATE_USER
-      await this.creatorNode.associateUser(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+      await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
       this.userStateManager.updateCurrentUser(newMetadata)
     } catch (e) {
@@ -569,7 +578,7 @@ class Users extends Base {
     let isUpdated = false
     while (!isUpdated) {
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]
-      if (user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
+      if (user && user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
       await Utils.wait(500)
     }
   }

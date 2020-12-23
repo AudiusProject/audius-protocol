@@ -137,9 +137,7 @@ class Account extends Base {
 
       // Add user to chain
       phase = phases.ADD_USER
-      metadata = await this.User.addUser(metadata)
-
-      userId = metadata.user_id
+      userId = await this.User.addUser(metadata)
 
       // Assign replica set to user and update metadata object
       phase = phases.ADD_REPLICA_SET
@@ -150,11 +148,7 @@ class Account extends Base {
 
       // Upload profile pic to primary Content Node and sync across secondaries
       phase = phases.UPLOAD_PROFILE_IMAGES
-      metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-      // Update metadata on chain and upload metadata to Content Nodes
-      phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
-      await this.User.updateUserMetadata(userId, metadata)
+      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {
       return { error: e.message, phase }
     }
