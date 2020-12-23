@@ -106,7 +106,7 @@ async function queryLocalServices (audiusLibs, serviceTypeList, usrmLibs = null)
   console.log('----done querying service providers')
   if (usrmLibs) {
     console.log('\n----querying UserReplicaSetManager on data-contracts')
-   for (const cnode of cnodesInfoList) {
+    for (const cnode of cnodesInfoList) {
       let delegateWalletFromUsrmContract = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(cnode.spID)
       console.log(`spID ${cnode.spID} | \
 eth-contracts delegateWallet=${cnode.delegateOwnerWallet}, data-contracts delegateWallet=${delegateWalletFromUsrmContract}`)

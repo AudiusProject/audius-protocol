@@ -151,7 +151,7 @@ const run = async () => {
         const userId = parseInt(userIdStr.split('=')[1])
         const primaryReplicaId = parseInt(primaryReplicaIdStr.split('=')[1])
         let secondaryReplicaIds = (secondaryReplicaIdStr.split('=')[1])
-        secondaryReplicaIds = secondaryReplicaIds.split(',').map(x=>parseInt(x))
+        secondaryReplicaIds = secondaryReplicaIds.split(',').map(x => parseInt(x))
         console.log(`Received userId: ${userId}`)
         console.log(`Received primaryReplicaId: ${primaryReplicaId}`)
         console.log(`Received secondaryReplicaIds: ${secondaryReplicaIds}`)
