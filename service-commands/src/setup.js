@@ -46,7 +46,7 @@ const execShellCommand = (command, service, { verbose }) => {
       service !== 'STOPPING ANY PRE-EXISTING SERVICES' &&
       service !== Service.INIT_REPOS
     ) {
-      command = `${CD_PROTOCOL_DIR_COMMAND} ${command}`
+      command = `bash -c '${CD_PROTOCOL_DIR_COMMAND} ${command}'`
     }
 
     console.log(`${command}`)
@@ -103,6 +103,7 @@ const execShellCommands = async (commands, service, { verbose }) => {
 const SetupCommand = Object.freeze({
   UP: 'up',
   DOWN: 'down',
+  RESTART: 'restart',
   REGISTER: 'register',
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
   HEALTH_CHECK: 'health-check',
