@@ -41,7 +41,7 @@ async function getUserByHandle(handle, discoveryProviderEndpoint, timeout) {
       })
     ).data.data[0]
   } catch (err) {
-    throw new Error(
+    console.log(
       `Failed to get creator node endpoint and wallet from endpoint: ${discoveryProviderEndpoint} and handle: ${handle} with ${err}`
     )
   }
@@ -59,12 +59,12 @@ async function getUserById(userId, discoveryProviderEndpoint, timeout) {
     ).data.data[0]
 
     if (!resp) {
-      throw new Error(`Failed to find user with userId ${userId}`)
+      console.log(`Failed to find user with userId ${userId}`)
     }
 
     return resp
   } catch (err) {
-    throw new Error(
+    console.log(
       `Failed to get creator node endpoint and wallet from endpoint: ${discoveryProviderEndpoint} and user id: ${userId} with ${err}`
     )
   }
@@ -105,7 +105,7 @@ async function getClockValues(
 }
 
 // get clock values for all users / some users via userIds / handles
-function getUserClockValues(handles, userIds, timeout) {
+async function getUserClockValues(handles, userIds, timeout) {
   const usersFromHandles = handles.map(handle =>
     getUserByHandle(handle, discoveryProviderEndpoint, timeout)
   )
@@ -114,10 +114,9 @@ function getUserClockValues(handles, userIds, timeout) {
     getUserById(userId, discoveryProviderEndpoint, timeout)
   )
 
+  const users = await Promise.all([...usersFromHandles, ...usersFromIds])
   return Promise.all(
-    [...usersFromHandles, ...usersFromIds].map(
-      async user => await getClockValues(await user, timeout)
-    )
+    users.filter(user => user).map(user => getClockValues(user, timeout))
   )
 }
 
