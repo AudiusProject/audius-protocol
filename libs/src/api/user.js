@@ -302,8 +302,6 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
-    newMetadata.wallet = this.web3Manager.getWalletAddress()
-
     let userId
     const currentUser = this.userStateManager.getCurrentUser()
     if (currentUser && currentUser.handle) {
@@ -313,7 +311,9 @@ class Users extends Base {
     }
     await this._addUserOperations(userId, newMetadata)
 
-    this.userStateManager.setCurrentUser({ ...newMetadata })
+    newMetadata.wallet = this.web3Manager.getWalletAddress()
+    newMetadata.user_id = userId
+    this.userStateManager.updateCurrentUser(newMetadata)
     return userId
   }
 

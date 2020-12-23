@@ -3,7 +3,12 @@ const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
-const { consistency1, snapbackSMParallelSyncTest, IpldBlacklistTest } = require('./tests/tests')
+const {
+  consistency1,
+  snapbackSMParallelSyncTest,
+  IpldBlacklistTest,
+  replicaSetTest
+} = require('./tests/tests')
 
 // Configuration.
 // Should be CLI configurable in the future.
@@ -156,13 +161,13 @@ async function main () {
 
       const signUpReplicaSetTest = makeTest(
         'signUpReplicaSetTest',
-        replicaSetTests.assignReplicaSetAndSyncOnSignUp,
+        replicaSetTest.assignReplicaSetAndSyncOnSignUp,
         {
           numCreatorNodes: 3,
           numUsers: 1
         }
       )
-      const tests = [signUpReplicaSetTest, test, ...blacklistTests]
+      const tests = [signUpReplicaSetTest]//, test, ...blacklistTests]
 
       try {
         await testRunner(tests)
