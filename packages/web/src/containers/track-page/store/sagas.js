@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { all, fork, call, put, select, takeEvery } from 'redux-saga/effects'
+import { fork, call, put, select, takeEvery } from 'redux-saga/effects'
 
 import tracksSagas from 'containers/track-page/store/lineups/tracks/sagas'
 import * as trackPageActions from './actions'
@@ -8,72 +8,59 @@ import { tracksActions } from './lineups/tracks/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getIsReachable } from 'store/reachability/selectors'
 import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
-import { getTrack, getUser } from './selectors'
-import TimeRange from 'models/TimeRange'
+import { getTrack, getTrendingTrackRanks, getUser } from './selectors'
 import { push as pushRoute } from 'connected-react-router'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 import { getUsers } from 'store/cache/users/selectors'
-import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 export const TRENDING_BADGE_LIMIT = 10
 
 function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
-    yield call(waitForBackendSetup)
-    const [
-      weeklyTrendingTracks,
-      monthlyTrendingTracks,
-      yearlyTrendingTracks
-    ] = yield all([
-      call(retrieveTrending, {
-        timeRange: TimeRange.WEEK,
-        offset: 0,
-        limit: TRENDING_BADGE_LIMIT,
-        genre: null
-      }),
-      call(retrieveTrending, {
-        timeRange: TimeRange.MONTH,
-        offset: 0,
-        limit: TRENDING_BADGE_LIMIT,
-        genre: null
-      }),
-      call(retrieveTrending, {
-        timeRange: TimeRange.YEAR,
-        offset: 0,
-        limit: TRENDING_BADGE_LIMIT,
-        genre: null
-      })
-    ])
+    try {
+      yield call(waitForBackendSetup)
+      let trendingTrackRanks = yield select(getTrendingTrackRanks)
+      if (!trendingTrackRanks) {
+        const trendingRanks = yield apiClient.getTrendingIds({
+          limit: TRENDING_BADGE_LIMIT
+        })
+        yield put(trackPageActions.setTrackTrendingRanks(trendingRanks))
+        trendingTrackRanks = yield select(getTrendingTrackRanks)
+      }
 
-    const weeklyTrackIndex = weeklyTrendingTracks.findIndex(
-      ({ track_id: trackId }) => trackId === action.trackId
-    )
-    const monthlyTrackIndex = monthlyTrendingTracks.findIndex(
-      ({ track_id: trackId }) => trackId === action.trackId
-    )
-    const yearlyTrackIndex = yearlyTrendingTracks.findIndex(
-      ({ track_id: trackId }) => trackId === action.trackId
-    )
+      const weeklyTrackIndex = trendingTrackRanks.week.findIndex(
+        trackId => trackId === action.trackId
+      )
+      const monthlyTrackIndex = trendingTrackRanks.month.findIndex(
+        trackId => trackId === action.trackId
+      )
+      const yearlyTrackIndex = trendingTrackRanks.year.findIndex(
+        trackId => trackId === action.trackId
+      )
 
-    yield put(
-      trackPageActions.setTrackRank(
-        'week',
-        weeklyTrackIndex !== -1 ? weeklyTrackIndex + 1 : null
+      yield put(
+        trackPageActions.setTrackRank(
+          'week',
+          weeklyTrackIndex !== -1 ? weeklyTrackIndex + 1 : null
+        )
       )
-    )
-    yield put(
-      trackPageActions.setTrackRank(
-        'month',
-        monthlyTrackIndex !== -1 ? monthlyTrackIndex + 1 : null
+      yield put(
+        trackPageActions.setTrackRank(
+          'month',
+          monthlyTrackIndex !== -1 ? monthlyTrackIndex + 1 : null
+        )
       )
-    )
-    yield put(
-      trackPageActions.setTrackRank(
-        'year',
-        yearlyTrackIndex !== -1 ? yearlyTrackIndex + 1 : null
+      yield put(
+        trackPageActions.setTrackRank(
+          'year',
+          yearlyTrackIndex !== -1 ? yearlyTrackIndex + 1 : null
+        )
       )
-    )
+    } catch (error) {
+      console.error(`Unable to fetch track badge: ${error.message}`)
+    }
   })
 }
 

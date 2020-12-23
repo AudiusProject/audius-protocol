@@ -28,6 +28,7 @@ declare global {
 
 const ENDPOINT_MAP = {
   trending: '/tracks/trending',
+  trendingIds: '/tracks/trending/ids',
   following: (userId: OpaqueID) => `/users/${userId}/following`,
   followers: (userId: OpaqueID) => `/users/${userId}/followers`,
   trackRepostUsers: (trackId: OpaqueID) => `/tracks/${trackId}/reposts`,
@@ -72,6 +73,11 @@ type GetTrendingArgs = {
   limit?: number
   currentUserId: Nullable<ID>
   genre: Nullable<string>
+}
+
+type GetTrendingIdsArgs = {
+  limit?: number
+  genre?: Nullable<string>
 }
 
 type GetFollowingArgs = {
@@ -185,6 +191,18 @@ type GetSearchArgs = {
   offset?: number
 }
 
+type TrendingIdsResponse = {
+  week: { id: string }[]
+  month: { id: string }[]
+  year: { id: string }[]
+}
+
+type TrendingIds = {
+  week: ID[]
+  month: ID[]
+  year: ID[]
+}
+
 type InitializationState =
   | { state: 'uninitialized' }
   | {
@@ -251,6 +269,40 @@ class AudiusAPIClient {
       .map(adapter.makeTrack)
       .filter(removeNullable)
     return adapted
+  }
+
+  async getTrendingIds({ genre, limit }: GetTrendingIdsArgs) {
+    this._assertInitialized()
+    const params = {
+      limit,
+      genre: genre || undefined
+    }
+    const trendingIdsResponse: Nullable<APIResponse<
+      TrendingIdsResponse
+    >> = await this._getResponse(ENDPOINT_MAP.trendingIds, params)
+    if (!trendingIdsResponse) {
+      return {
+        week: [],
+        month: [],
+        year: []
+      }
+    }
+
+    const timeRanges = Object.keys(trendingIdsResponse.data) as TimeRange[]
+    const res = timeRanges.reduce(
+      (acc: TrendingIds, timeRange: TimeRange) => {
+        acc[timeRange] = trendingIdsResponse.data[timeRange]
+          .map(adapter.makeTrackId)
+          .filter(Boolean) as ID[]
+        return acc
+      },
+      {
+        week: [],
+        month: [],
+        year: []
+      }
+    )
+    return res
   }
 
   async getFollowing({

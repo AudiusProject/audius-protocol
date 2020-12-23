@@ -3,6 +3,7 @@ export const GET_TRACK_RANKS = 'TRACK_PAGE/GET_TRACK_RANKS'
 export const RESET = 'TRACK_PAGE/RESET'
 export const SET_TRACK_ID = 'TRACK_PAGE/SET_TRACK_ID'
 export const MAKE_TRACK_PUBLIC = 'TRACK_PAGE/MAKE_TRACK_PUBLIC'
+export const SET_TRACK_TRENDING_RANKS = 'TRACK_PAGE/SET_TRACK_TRENDING_RANKS'
 
 export const FETCH_TRACK = 'TRACK_PAGE/FETCH_TRACK'
 export const FETCH_TRACK_SUCCEEDED = 'TRACK_PAGE/FETCH_TRACK_SUCCEEDED'
@@ -48,4 +49,9 @@ export const goToRemixesOfParentPage = parentTrackId => ({
  */
 export const refetchLineup = () => ({
   type: REFETCH_LINEUP
+})
+
+export const setTrackTrendingRanks = trendingTrackRanks => ({
+  type: SET_TRACK_TRENDING_RANKS,
+  trendingTrackRanks
 })
