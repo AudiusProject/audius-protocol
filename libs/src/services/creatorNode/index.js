@@ -449,34 +449,39 @@ class CreatorNode {
       return
     }
 
-    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
     const replicaSet = CreatorNode.getEndpoints(user.creator_node_endpoint)
-
-    const clockValueRequest = async (endpoint) => {
-      let type = primary === endpoint ? 'primary' : 'secondary'
-
-      try {
-        const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet)
-        return {
-          type,
-          endpoint,
-          clockValue
-        }
-      } catch (e) {
-        console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
-        return {
-          type,
-          endpoint,
-          clockValue: null
-        }
-      }
-    }
-
     const clockValueResponses = await Promise.all(
-      replicaSet.map(endpoint => clockValueRequest(endpoint))
+      replicaSet.map(endpoint => this._clockValueRequest({ user, endpoint }))
     )
 
     return clockValueResponses
+  }
+
+  /**
+   * Wrapper around getClockValue() to return either a proper or null clock value
+   * @param {Object} param
+   * @param {Object} param.user user metadata object from userStateManager
+   * @param {string} param.endpoint the Content Node endpoint to check the clock value for
+   */
+  async _clockValueRequest ({ user, endpoint }) {
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    let type = primary === endpoint ? 'primary' : 'secondary'
+
+    try {
+      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet)
+      return {
+        type,
+        endpoint,
+        clockValue
+      }
+    } catch (e) {
+      console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
+      return {
+        type,
+        endpoint,
+        clockValue: null
+      }
+    }
   }
 
   /**
