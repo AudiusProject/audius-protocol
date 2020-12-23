@@ -49,7 +49,7 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
   const [sliderWidth, setSliderWidth] = useState(0)
 
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && min && max) {
       const percentage = AudiusClient.getBNPercentage(
         value.sub(min),
         max.sub(min)
@@ -61,7 +61,13 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
   }, [value, containerRef, max, min, setSliderWidth])
 
   useEffect(() => {
-    if (initialValue && !initialSliderWidth && containerRef.current) {
+    if (
+      initialValue &&
+      !initialSliderWidth &&
+      containerRef.current &&
+      min &&
+      max
+    ) {
       const percentage = AudiusClient.getBNPercentage(
         initialValue.sub(min),
         max.sub(min)
@@ -87,7 +93,8 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
       <div className={styles.slider}>
         <div
           className={clsx(styles.newValueSlider, {
-            [styles.invalid]: value.gt(max) || value.lt(min),
+            [styles.invalid]:
+              max && min ? value.gt(max) || value.lt(min) : false,
             [styles.lighter]: isIncrease
           })}
           style={{ width: sliderWidth }}

@@ -1,4 +1,4 @@
-import { AudiusClient } from './AudiusClient'
+import { AudiusClient } from '../AudiusClient'
 
 import { Address, BigNumber } from 'types'
 

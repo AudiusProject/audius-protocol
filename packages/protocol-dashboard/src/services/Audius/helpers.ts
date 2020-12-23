@@ -3,6 +3,7 @@ import { formatNumber, formatAudString } from 'utils/format'
 import AudiusClient from './AudiusClient'
 import { Permission, BigNumber } from 'types'
 import { fetchWithTimeout } from 'utils/fetch'
+import BN from 'bn.js'
 
 // Helpers
 export async function hasPermissions(
@@ -87,7 +88,7 @@ export function getBNPercentage(n1: BigNumber, n2: BigNumber): number {
 }
 
 export function displayShortAud(amount: BigNumber) {
-  return formatNumber(amount.div(Utils.toBN('1000000000000000000')))
+  return formatNumber(amount.div(Utils.toBN('1000000000000000000') as BN))
 }
 
 export function displayAud(amount: BigNumber) {

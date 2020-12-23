@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 import clsx from 'clsx'
 import SimpleBar from 'simplebar-react'
+import BN from 'bn.js'
 
 import AudiusClient from 'services/Audius'
 import { IconArrow, ButtonType } from '@audius/stems'
@@ -87,7 +88,7 @@ type OldStakeProps = {
   className?: string
   title: string
   oldStakeAmount: BigNumber
-  stakeDiff: BigNumber
+  stakeDiff: BigNumber | null
   isIncrease: boolean
 }
 export const OldStake: React.FC<OldStakeProps> = props => {
@@ -106,7 +107,7 @@ export const OldStake: React.FC<OldStakeProps> = props => {
         })}
       >
         {`${props.isIncrease ? '+' : '-'} ${AudiusClient.displayAud(
-          props.stakeDiff
+          props.stakeDiff ?? new BN('0')
         )}`}
       </div>
     </Box>

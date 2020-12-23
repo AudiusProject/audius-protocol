@@ -1,4 +1,4 @@
-import { AudiusClient } from './AudiusClient'
+import { AudiusClient } from '../AudiusClient'
 
 import BN from 'bn.js'
 
@@ -11,23 +11,15 @@ import {
   VoteEvent,
   Permission,
   ProposalEvent
-} from '../../types'
+} from '../../../types'
+import {
+  GovernanceProposalEvent,
+  GovernanceVoteEvent,
+  GovernanceVoteUpdateEvent
+} from 'models/TimelineEvents'
+import { RawProposal, RawVoteEvent } from './types'
 
 /* Types */
-
-/**
- * Raw unformatted Proposal returned over the wire.
- */
-export type RawProposal = Omit<Proposal, 'outcome'> & {
-  outcome: number
-}
-
-/**
- * Raw unformatted VoteEvent returned over the wire.
- */
-export type RawVoteEvent = Omit<VoteEvent, 'vote'> & {
-  vote: 1 | 2
-}
 
 export default class Governance {
   public aud: AudiusClient
@@ -148,6 +140,17 @@ export default class Governance {
     return votes.map(formatVoteEvent).filter(Boolean) as VoteEvent[]
   }
 
+  async getVoteEventsByAddress(
+    addresses: Address[],
+    queryStartBlock?: number
+  ): Promise<GovernanceVoteEvent[]> {
+    const votes = await this.getVotesByAddress(addresses, queryStartBlock)
+    return votes.map(v => ({
+      ...v,
+      _type: 'GovernanceVote'
+    }))
+  }
+
   /** Gets all vote update events on any proposal by addresses */
   async getVoteUpdatesByAddress(
     addresses: Address[],
@@ -158,6 +161,17 @@ export default class Governance {
       { addresses, queryStartBlock }
     )
     return votes.map(formatVoteEvent).filter(Boolean) as VoteEvent[]
+  }
+
+  async getVoteUpdateEventsByAddress(
+    addresses: Address[],
+    queryStartBlock?: number
+  ): Promise<GovernanceVoteUpdateEvent[]> {
+    const votes = await this.getVoteUpdatesByAddress(addresses, queryStartBlock)
+    return votes.map(v => ({
+      ...v,
+      _type: 'GovernanceVoteUpdate'
+    }))
   }
 
   async getProposals() {
@@ -175,13 +189,16 @@ export default class Governance {
   async getProposalsForAddresses(
     addresses: Address[],
     queryStartBlock?: number
-  ) {
+  ): Promise<GovernanceProposalEvent[]> {
     await this.aud.hasPermissions()
-    const proposals = await this.getContract().getProposalsForAddresses(
+    const proposals: ProposalEvent[] = await this.getContract().getProposalsForAddresses(
       addresses,
       queryStartBlock
     )
-    return proposals
+    return proposals.map(p => ({
+      ...p,
+      _type: 'GovernanceProposal'
+    }))
   }
 
   /* -------------------- Governance Write -------------------- */

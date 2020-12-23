@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Address, Event } from 'types'
+import { TimelineEvent } from 'models/TimelineEvents'
+import { Address } from 'types'
 
 export type State = {
   // Timeline events keyed by wallet
-  timelines: { [wallet: string]: Event[] }
+  timelines: { [wallet: string]: TimelineEvent[] }
 }
 
 export const initialState: State = {
@@ -12,7 +13,7 @@ export const initialState: State = {
 
 type SetTimeline = {
   wallet: Address
-  timeline: Event[]
+  timeline: TimelineEvent[]
 }
 
 const slice = createSlice({

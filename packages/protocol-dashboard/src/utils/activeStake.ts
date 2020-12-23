@@ -1,5 +1,6 @@
 import { Utils } from '@audius/libs'
 import { Operator, User } from 'types'
+import BN from 'bn.js'
 
 /**
  * Calculates and returns active stake for address
@@ -12,8 +13,8 @@ import { Operator, User } from 'types'
  */
 
 export const getActiveStake = (user: User | Operator) => {
-  let activeDeployerStake = Utils.toBN('0')
-  let activeDelegatorStake = Utils.toBN('0')
+  let activeDeployerStake: BN = Utils.toBN('0')
+  let activeDelegatorStake: BN = Utils.toBN('0')
   if ('serviceProvider' in user) {
     const { deployerStake } = user.serviceProvider
     const {
@@ -38,7 +39,7 @@ export const getActiveStake = (user: User | Operator) => {
 }
 
 export const getTotalActiveDelegatedStake = (user: User | Operator) => {
-  let total = Utils.toBN('0')
+  let total: BN = Utils.toBN('0')
   if ('delegators' in user) {
     for (const delegator of user.delegators) {
       total = total.add(delegator.activeAmount)
