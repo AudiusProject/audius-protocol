@@ -1,5 +1,4 @@
-import { AudiusClient } from './AudiusClient'
-import BN from 'bn.js'
+import { AudiusClient } from '../AudiusClient'
 
 import {
   ServiceType,
@@ -8,41 +7,33 @@ import {
   BlockNumber,
   ServiceProvider,
   TxReceipt,
-  TokenApproveReceipt,
   Node,
   Permission,
   Wallet
 } from 'types'
-
-export type NodeList = Array<Node>
-export type GetServiceProviderIdsFromAddressResponse = Array<number>
-export type GetPendingDecreaseStakeRequestResponse = {
-  lockupExpiryBlock: BlockNumber
-  amount: BN
-}
-export type GetServiceEndpointInfoFromAddressResponse = NodeList
-export type GetServiceProviderListResponse = NodeList
-export type DeregisterResponse = {
-  txReceipt: TxReceipt
-  spID: number
-  serviceType: ServiceType
-  owner: Address
-  endpoint: string
-}
-export type RegisterResponse = {
-  txReceipt: TxReceipt
-  spID: number
-  serviceType: ServiceType
-  owner: Address
-  endpoint: string
-  tokenApproveReceipt: any
-}
-export type RegisterWithDelegateResponse = RegisterResponse
-export type IncreaseStakeResponse = {
-  txReceipt: TxReceipt
-  tokenApproveReceipt: TokenApproveReceipt
-}
-export type DecreaseStakeResponse = { txReceipt: TxReceipt }
+import {
+  GetDecreasedStakeCancelledEventsResponse,
+  GetDecreasedStakeEvaluatedEventsResponse,
+  GetDecreasedStakeRequestedEventsResponse,
+  GetIncreasedStakeEventResponse,
+  GetDeregisteredServiceProviderEventsResponse,
+  GetPendingDecreaseStakeRequestResponse,
+  GetRegisteredServiceProviderEventsResponse,
+  GetServiceEndpointInfoFromAddressResponse,
+  GetServiceProviderIdsFromAddressResponse,
+  GetServiceProviderListResponse,
+  RegisterWithDelegateResponse,
+  RegisterResponse,
+  IncreaseStakeResponse,
+  DecreaseStakeResponse,
+  DeregisterResponse
+} from './types'
+import {
+  ServiceProviderDecreaseStakeEvent,
+  ServiceProviderDeregisteredEvent,
+  ServiceProviderIncreaseStakeEvent,
+  ServiceProviderRegisteredEvent
+} from '../../../models/TimelineEvents'
 
 export default class ServiceProviderClient {
   aud: AudiusClient
@@ -208,71 +199,109 @@ export default class ServiceProviderClient {
     return info
   }
 
-  async getRegisteredServiceProviderEvents(wallet: Address): Promise<any> {
+  async getRegisteredServiceProviderEvents(
+    wallet: Address
+  ): Promise<ServiceProviderRegisteredEvent[]> {
     await this.aud.hasPermissions()
-    const events = await this.getContract().getRegisteredServiceProviderEvents({
-      owner: wallet
-    })
-    return events.map((event: any) => ({
-      ...event,
-      registrationAction: 'register'
-    }))
-  }
-
-  async getDeregisteredServiceProviderEvents(wallet: Address): Promise<any> {
-    await this.aud.hasPermissions()
-    const events = await this.getContract().getDeregisteredServiceProviderEvents(
+    const events: GetRegisteredServiceProviderEventsResponse[] = await this.getContract().getRegisteredServiceProviderEvents(
       {
         owner: wallet
       }
     )
-    return events.map((event: any) => ({
+    return events.map(event => ({
       ...event,
-      registrationAction: 'deregister'
+      _type: 'ServiceProviderRegistered'
     }))
   }
 
-  async getIncreasedStakeEvents(wallet: Address): Promise<any> {
+  async getDeregisteredServiceProviderEvents(
+    wallet: Address
+  ): Promise<ServiceProviderDeregisteredEvent[]> {
     await this.aud.hasPermissions()
-    const events = await this.getContract().getIncreasedStakeEvents({
-      owner: wallet
-    })
-    return events.map((event: any) => ({
+    const events: GetDeregisteredServiceProviderEventsResponse[] = await this.getContract().getDeregisteredServiceProviderEvents(
+      {
+        owner: wallet
+      }
+    )
+    return events.map(event => ({
       ...event,
-      stakeAction: 'increase'
+      _type: 'ServiceProviderDeregistered'
     }))
   }
 
-  async getDecreasedStakeEvaluatedEvents(wallet: Address): Promise<any> {
+  async getIncreasedStakeEvents(
+    wallet: Address
+  ): Promise<ServiceProviderIncreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const events = await this.getContract().getDecreasedStakeEvaluatedEvents({
-      owner: wallet
-    })
-    return events.map((event: any) => ({
+    const events: GetIncreasedStakeEventResponse[] = await this.getContract().getIncreasedStakeEvents(
+      {
+        owner: wallet
+      }
+    )
+    return events.map(event => ({
       ...event,
-      stakeAction: 'decreaseEvaluated'
+      _type: 'ServiceProviderIncreaseStake'
     }))
   }
 
-  async getDecreasedStakeRequestedEvents(wallet: Address): Promise<any> {
+  async getDecreasedStakeEvaluatedEvents(
+    wallet: Address
+  ): Promise<ServiceProviderDecreaseStakeEvent[]> {
     await this.aud.hasPermissions()
-    const events = await this.getContract().getDecreasedStakeRequestedEvents({
-      owner: wallet
-    })
-    return events.map((event: any) => ({
-      ...event,
-      stakeAction: 'decreaseRequested'
+    const events: GetDecreasedStakeEvaluatedEventsResponse[] = await this.getContract().getDecreasedStakeEvaluatedEvents(
+      {
+        owner: wallet
+      }
+    )
+    return events.map(event => ({
+      _type: 'ServiceProviderDecreaseStake',
+      blockNumber: event.blockNumber,
+      owner: event.owner,
+      decreaseAmount: event.decreaseAmount,
+      data: {
+        newStakeAmount: event.newStakeAmount,
+        _type: 'Evaluated'
+      }
+    }))
+  }
+
+  async getDecreasedStakeRequestedEvents(
+    wallet: Address
+  ): Promise<ServiceProviderDecreaseStakeEvent[]> {
+    await this.aud.hasPermissions()
+    const events: GetDecreasedStakeRequestedEventsResponse[] = await this.getContract().getDecreasedStakeRequestedEvents(
+      {
+        owner: wallet
+      }
+    )
+    return events.map(event => ({
+      _type: 'ServiceProviderDecreaseStake',
+      blockNumber: event.blockNumber,
+      owner: event.owner,
+      decreaseAmount: event.decreaseAmount,
+      data: {
+        lockupExpiryBlock: event.lockupExpiryBlock,
+        _type: 'Requested'
+      }
     }))
   }
 
   async getDecreasedStakeCancelledEvents(wallet: Address): Promise<any> {
     await this.aud.hasPermissions()
-    const events = await this.getContract().getDecreasedStakeCancelledEvents({
-      owner: wallet
-    })
-    return events.map((event: any) => ({
-      ...event,
-      stakeAction: 'decreaseCancelled'
+    const events: GetDecreasedStakeCancelledEventsResponse[] = await this.getContract().getDecreasedStakeCancelledEvents(
+      {
+        owner: wallet
+      }
+    )
+    return events.map(event => ({
+      _type: 'ServiceProviderDecreaseStake',
+      blockNumber: event.blockNumber,
+      owner: event.owner,
+      decreaseAmount: event.decreaseAmount,
+      data: {
+        lockupExpiryBlock: event.lockupExpiryBlock,
+        _type: 'Cancelled'
+      }
     }))
   }
 

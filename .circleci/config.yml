@@ -50,12 +50,11 @@ jobs:
           at: ./
       - run:
           name: build
-          command: npm run build:staging
+          command: npm run build:stage
       - persist_to_workspace:
           root: ./
           paths:
             - build
-
 
   deploy-staging:
     working_directory: ~/protocol-dashboard
@@ -86,7 +85,6 @@ jobs:
           root: ./
           paths:
             - build
-
 
   deploy-prod:
     working_directory: ~/protocol-dashboard
@@ -136,4 +134,3 @@ workflows:
           filters:
             branches:
               only: /^main$/
-

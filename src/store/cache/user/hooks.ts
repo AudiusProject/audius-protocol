@@ -29,7 +29,7 @@ import {
   fetchContentNodes
 } from '../contentNode/hooks'
 import { useAccountUser } from 'store/account/hooks'
-import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/serviceProviderClient'
+import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
 import getActiveStake from 'utils/activeStake'
 
 type UseUsersProp = {
