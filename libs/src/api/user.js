@@ -44,7 +44,6 @@ class Users extends Base {
     // For adding replica set to users on sign up
     this.updateUserMetadata = this.updateUserMetadata.bind(this)
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
-    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
 
     this._waitForCreatorNodeUpdate = this._waitForCreatorNodeUpdate.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
