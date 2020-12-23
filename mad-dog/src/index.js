@@ -153,7 +153,16 @@ async function main () {
             numUsers: DEFAULT_NUM_USERS
           })
       )
-      const tests = [test, ...blacklistTests]
+
+      const signUpReplicaSetTest = makeTest(
+        'signUpReplicaSetTest',
+        replicaSetTests.assignReplicaSetAndSyncOnSignUp,
+        {
+          numCreatorNodes: 3,
+          numUsers: 1
+        }
+      )
+      const tests = [signUpReplicaSetTest, test, ...blacklistTests]
 
       try {
         await testRunner(tests)

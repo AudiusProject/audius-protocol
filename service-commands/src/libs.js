@@ -125,7 +125,7 @@ function LibsWrapper (walletIndex = 0) {
       await libs.init()
       this.libsInstance = libs
     } catch (e) {
-      console.log(`Error initting libs: ${e.message}`)
+      console.error(`Error initting libs: ${e}`)
     }
   }
 
@@ -139,12 +139,11 @@ function LibsWrapper (walletIndex = 0) {
       metadata.email,
       metadata.password,
       metadata,
-      false /* is creator */,
-      null /* profile picture */,
-      null /* cover photo */,
+      this.libsInstance.ServiceProvider /* ServiceProvider instance (for Content Node selection) */,
+      metadata.profilePictureFile /* profile picture */,
+      metadata.coverPhotoFile /* cover photo */,
       false /* has wallet */,
-      null /* host */,
-      false /* generate recovery info */
+      null /* host */
     )
   }
 
@@ -169,11 +168,11 @@ function LibsWrapper (walletIndex = 0) {
     blacklist
   }) => {
     assertLibsDidInit()
-    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes(
+    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes({
       numberOfNodes,
       whitelist,
       blacklist
-    )
+    })
   }
 
   /**
@@ -253,6 +252,10 @@ function LibsWrapper (walletIndex = 0) {
     return userAccount
   }
 
+  /**
+   * Updates userStateManager and updates the primary endpoint in libsInstance.creatorNode
+   * @param {Object} userAccount new metadata field
+   */
   this.setCurrentUser = async userAccount => {
     assertLibsDidInit()
     this.libsInstance.userStateManager.setCurrentUser(userAccount)
@@ -261,6 +264,15 @@ function LibsWrapper (walletIndex = 0) {
       const primary = CreatorNode.getPrimary(creatorNodeEndpoints)
       this.libsInstance.creatorNode.setEndpoint(primary)
     }
+  }
+
+  /**
+   * Wrapper for libsInstance.creatorNode.getEndpoints()
+   * @param {string} contentNodesEndpointField creator_node_endpoint field from user's metadata
+   */
+  this.getContentNodeEndpoints = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return this.libsInstance.creatorNode.getEndpoints(contentNodesEndpointField)
   }
 
   /**
