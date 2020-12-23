@@ -1,4 +1,6 @@
-const createPlaylist = async (
+const Playlist = {}
+
+Playlist.createPlaylist = async (
   libs,
   userId,
   playlistName,
@@ -16,7 +18,7 @@ const createPlaylist = async (
   return createPlaylistTxReceipt
 }
 
-const updatePlaylistCoverPhoto = async (
+Playlist.updatePlaylistCoverPhoto = async (
   libs,
   playlistId,
   updatedPlaylistImageMultihashDigest
@@ -28,7 +30,7 @@ const updatePlaylistCoverPhoto = async (
   return updatePlaylistCoverPhotoTxReceipt
 }
 
-const getPlaylists = async (
+Playlist.getPlaylists = async (
   libs,
   limit = 100,
   offset = 0,
@@ -39,8 +41,4 @@ const getPlaylists = async (
   return libs.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
 }
 
-module.exports = {
-  createPlaylist,
-  updatePlaylistCoverPhoto,
-  getPlaylists
-}
+module.exports = Playlist

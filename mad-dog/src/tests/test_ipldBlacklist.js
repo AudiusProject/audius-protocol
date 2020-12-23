@@ -25,62 +25,18 @@ const {
 } = require('../helpers.js')
 const ipfs = require('../ipfsClient')
 const { logger } = require('../logger.js')
-const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
 const BLACKLISTER_INDEX = 0 // blacklister wallet address = 0th libs instance (see index.js)
 const CREATOR_INDEX = 1
 const IPLD_CYCLE = 60000 // ms
+
+const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 let walletIndexToUserIdMap
 
-// Get the userId that is a creator with wallet index 1
-const getCreatorId = async ({
-  numUsers,
-  executeAll,
-  executeOne,
-  numCreatorNodes
-}) => {
-  if (!walletIndexToUserIdMap) {
-    walletIndexToUserIdMap = await addAndUpgradeUsers(
-      numUsers,
-      numCreatorNodes,
-      executeAll,
-      executeOne
-    )
-  }
-
-  return walletIndexToUserIdMap[CREATOR_INDEX]
-}
-
-/**
- * Add content to ipfs to generate random CID
- * @param {object} contentObject content in object form to add to ipfs
- */
-const addContentToIpfs = async contentObject => {
-  let buffer
-  try {
-    buffer = Buffer.from(JSON.stringify(contentObject))
-  } catch (e) {
-    throw new Error(
-      `Could not stringify content ${contentObject}: ${e.message}`
-    )
-  }
-
-  // add metadata object to ipfs to get CID
-  let ipfsResp
-  try {
-    ipfsResp = await ipfs.add(buffer, {
-      pin: false
-    })
-  } catch (e) {
-    throw new Error(`Could not add content to IPFS: ${e.message}`)
-  }
-
-  // return CID
-  return ipfsResp[0].hash
-}
+let IpldBlacklistTest = {}
 
 // TEST NEW TRACK FLOW -- METADATA
-const ipldBlacklistTestNewTrackMetadata = async ({
+IpldBlacklistTest.newTrackMetadata = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -144,7 +100,7 @@ const ipldBlacklistTestNewTrackMetadata = async ({
 }
 
 // TEST UPDATE TRACK FLOW -- METADATA
-const ipldBlacklistTestUpdateTrackMetadata = async ({
+IpldBlacklistTest.updateTrackMetadata = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -225,7 +181,7 @@ const ipldBlacklistTestUpdateTrackMetadata = async ({
 }
 
 // TEST NEW TRACK FLOW -- COVER PHOTO CID
-const ipldBlacklistTestNewTrackCoverPhoto = async ({
+IpldBlacklistTest.newTrackCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -296,7 +252,7 @@ const ipldBlacklistTestNewTrackCoverPhoto = async ({
 }
 
 // TEST UPDATE TRACK FLOW -- COVER PHOTO CID
-const ipldBlacklistTestUpdateTrackCoverPhoto = async ({
+IpldBlacklistTest.updateTrackCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -387,7 +343,7 @@ const ipldBlacklistTestUpdateTrackCoverPhoto = async ({
 }
 
 // TEST UPDATE USER METADATA CID FLOW
-const ipldBlacklistTestUpdateUserMetadataCID = async ({
+IpldBlacklistTest.updateUserMetadata = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -449,7 +405,7 @@ const ipldBlacklistTestUpdateUserMetadataCID = async ({
 }
 
 // TEST UPDATE USER PROFILE PHOTO FLOW
-const ipldBlacklistTestUpdateUserProfilePhoto = async ({
+IpldBlacklistTest.updateUserProfilePhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -511,7 +467,7 @@ const ipldBlacklistTestUpdateUserProfilePhoto = async ({
 }
 
 // TEST UPDATE USER COVER PHOTO FLOW
-const ipldBlacklistTestUpdateUserCoverPhoto = async ({
+IpldBlacklistTest.updateUserCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -573,7 +529,7 @@ const ipldBlacklistTestUpdateUserCoverPhoto = async ({
 }
 
 // TEST UPDATE PLAYLIST COVER PHOTO FLOW
-const ipldBlacklistTestUpdatePlaylistCoverPhoto = async ({
+IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
   numUsers,
   executeAll,
   executeOne,
@@ -655,102 +611,139 @@ const ipldBlacklistTestUpdatePlaylistCoverPhoto = async ({
   }
 }
 
-// TODO: add more
 // SAD PATH -- IPLD BLACKLIST HAS NO HITS
 
+// TODO: test is a bit outdated - needs to actually upload an image causes incorrect failure
 // TEST UPDATE PLAYLIST COVER PHOTO FLOW
-const ipldBlacklistTestUpdatePlaylistCoverPhotoNoMatch = async ({
+// IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
+//   numUsers,
+//   executeAll,
+//   executeOne,
+//   numCreatorNodes
+// }) => {
+//   try {
+//     const userId = await getCreatorId({
+//       numUsers,
+//       executeAll,
+//       executeOne,
+//       numCreatorNodes
+//     })
+
+//     // create playlist under userId
+//     const randomPlaylistName = 'playlist_' + genRandomString(8)
+//     const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
+//       return createPlaylist(
+//         libsWrapper,
+//         userId,
+//         randomPlaylistName,
+//         false,
+//         false,
+//         []
+//       )
+//     })
+
+//     // wait for indexing cycle (5s)
+//     await waitForIndexing()
+
+//     // generate random CID to blacklist and add to blacklist
+//     const randomCID = await addContentToIpfs({
+//       randomData: 'random' + randomPlaylistName
+//     })
+//     const randomCIDDecoded = Utils.decodeMultihash(randomCID)
+//     logger.info(`Adding CID ${randomCID} to the IPLD Blacklist!`)
+//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+//       return addIPLDToBlacklist(libsWrapper, randomCIDDecoded.digest)
+//     })
+
+//     // generate actual CID to use as update cover photo
+//     const cid = await addContentToIpfs({
+//       randomData: 'actual' + randomPlaylistName
+//     })
+
+//     const trackMultihashDecoded = Utils.decodeMultihash(cid)
+
+//     // wait for indexing cycle (60s)
+//     await waitForIndexing(IPLD_CYCLE)
+
+//     // update playlist with blacklisted CID cover photo
+//     const updatePlaylistTxReceipt = await executeOne(
+//       CREATOR_INDEX,
+//       libsWrapper => {
+//         return updatePlaylistCoverPhoto(
+//           libsWrapper,
+//           playlistId,
+//           trackMultihashDecoded.digest
+//         )
+//       }
+//     )
+
+//     // wait for indexing cycle (5s)
+//     await waitForIndexing()
+
+//     // query playlist and check that new cover photo not indexed
+//     const playlists = await executeOne(CREATOR_INDEX, libsWrapper => {
+//       return getPlaylists(libsWrapper, 1, 0, [playlistId], userId, false)
+//     })
+
+//     const playlist = playlists[0]
+//     if (playlist.playlist_image_multihash !== cid) {
+//       return {
+//         error:
+//           'Playlist update with blacklisted cover photo CID should have been indexed.'
+//       }
+//     }
+//   } catch (e) {
+//     return {
+//       error: `Error with IPLD Blacklist test for update playlist cover photo: ${e.message}`
+//     }
+//   }
+// }
+
+// Get the userId that is a creator with wallet index 1
+async function getCreatorId ({
   numUsers,
   executeAll,
   executeOne,
   numCreatorNodes
-}) => {
-  try {
-    const userId = await getCreatorId({
+}) {
+  if (!walletIndexToUserIdMap) {
+    walletIndexToUserIdMap = await addAndUpgradeUsers(
       numUsers,
+      numCreatorNodes,
       executeAll,
-      executeOne,
-      numCreatorNodes
-    })
-
-    // create playlist under userId
-    const randomPlaylistName = 'playlist_' + genRandomString(8)
-    const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
-      return createPlaylist(
-        libsWrapper,
-        userId,
-        randomPlaylistName,
-        false,
-        false,
-        []
-      )
-    })
-
-    // wait for indexing cycle (5s)
-    await waitForIndexing()
-
-    // generate random CID to blacklist and add to blacklist
-    const randomCID = await addContentToIpfs({
-      randomData: 'random' + randomPlaylistName
-    })
-    const randomCIDDecoded = Utils.decodeMultihash(randomCID)
-    logger.info(`Adding CID ${randomCID} to the IPLD Blacklist!`)
-    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-      return addIPLDToBlacklist(libsWrapper, randomCIDDecoded.digest)
-    })
-
-    // generate actual CID to use as update cover photo
-    const cid = await addContentToIpfs({
-      randomData: 'actual' + randomPlaylistName
-    })
-
-    const trackMultihashDecoded = Utils.decodeMultihash(cid)
-
-    // wait for indexing cycle (60s)
-    await waitForIndexing(IPLD_CYCLE)
-
-    // update playlist with blacklisted CID cover photo
-    const updatePlaylistTxReceipt = await executeOne(
-      CREATOR_INDEX,
-      libsWrapper => {
-        return updatePlaylistCoverPhoto(
-          libsWrapper,
-          playlistId,
-          trackMultihashDecoded.digest
-        )
-      }
+      executeOne
     )
-
-    // wait for indexing cycle (5s)
-    await waitForIndexing()
-
-    // query playlist and check that new cover photo not indexed
-    const playlists = await executeOne(CREATOR_INDEX, libsWrapper => {
-      return getPlaylists(libsWrapper, 1, 0, [playlistId], userId, false)
-    })
-
-    const playlist = playlists[0]
-    if (playlist.playlist_image_multihash !== cid) {
-      return {
-        error:
-          'Playlist update with blacklisted cover photo CID should have been indexed.'
-      }
-    }
-  } catch (e) {
-    return {
-      error: `Error with IPLD Blacklist test for update playlist cover photo: ${e.message}`
-    }
   }
+
+  return walletIndexToUserIdMap[CREATOR_INDEX]
 }
 
-module.exports = {
-  ipldBlacklistTestNewTrackMetadata,
-  ipldBlacklistTestUpdateTrackMetadata,
-  ipldBlacklistTestNewTrackCoverPhoto,
-  ipldBlacklistTestUpdateTrackCoverPhoto,
-  ipldBlacklistTestUpdateUserMetadataCID,
-  ipldBlacklistTestUpdateUserProfilePhoto,
-  ipldBlacklistTestUpdateUserCoverPhoto,
-  ipldBlacklistTestUpdatePlaylistCoverPhoto
-  // ipldBlacklistTestUpdatePlaylistCoverPhotoNoMatch test is a bit outdated - needs to actually upload an image causes incorrect failure
+/**
+ * Add content to ipfs to generate random CID
+ * @param {object} contentObject content in object form to add to ipfs
+ */
+async function addContentToIpfs (contentObject) {
+  let buffer
+  try {
+    buffer = Buffer.from(JSON.stringify(contentObject))
+  } catch (e) {
+    throw new Error(
+      `Could not stringify content ${contentObject}: ${e.message}`
+    )
+  }
+
+  // add metadata object to ipfs to get CID
+  let ipfsResp
+  try {
+    ipfsResp = await ipfs.add(buffer, {
+      pin: false
+    })
+  } catch (e) {
+    throw new Error(`Could not add content to IPFS: ${e.message}`)
+  }
+
+  // return CID
+  return ipfsResp[0].hash
 }
+
+module.exports = IpldBlacklistTest

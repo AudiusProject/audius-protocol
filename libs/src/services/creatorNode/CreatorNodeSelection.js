@@ -127,8 +127,6 @@ class CreatorNodeSelection extends ServiceSelection {
     const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
     // Perform sync checks on all services
     for (const response of syncResponses) {
-      console.log('here is each sync check respoinse')
-      console.log(response)
       // Could not perform a sync check. Add to unhealthy
       if (response.error) {
         console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`)

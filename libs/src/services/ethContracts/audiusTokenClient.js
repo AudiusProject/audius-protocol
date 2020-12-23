@@ -6,12 +6,22 @@ class AudiusTokenClient {
 
     this.web3 = this.ethWeb3Manager.getWeb3()
     this.AudiusTokenContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
+
+    this.bustCacheNonce = 0
   }
 
   /* ------- GETTERS ------- */
 
+  async bustCache () {
+    this.bustCacheNonce += 1
+  }
+
   async balanceOf (account) {
-    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call()
+    let args
+    if (this.bustCacheNonce > 0) {
+      args = { _audiusBustCache: this.bustCacheNonce }
+    }
+    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call(args)
     return this.web3.utils.toBN(balance)
   }
 
