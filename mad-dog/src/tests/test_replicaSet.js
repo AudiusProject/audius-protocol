@@ -33,9 +33,6 @@ const assignReplicaSetAndSyncOnSignUp = async ({
   // Should only be 1 value in map bc numUsers = 1
   const [walletIndex, userId] = Object.entries(walletIndexToUserIdMap)[0]
 
-  console.log('here is da map for assign replica set test')
-  console.log(walletIndexToUserIdMap, walletIndex)
-
   // Check that is_creator = false, and that a replica set is assigned
   const user = await executeOne(walletIndex, libsWrapper => {
     return getUser(libsWrapper, userId)
