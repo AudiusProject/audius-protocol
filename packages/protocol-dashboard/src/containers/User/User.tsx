@@ -154,7 +154,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
           showViewActiveServices={false}
         />
       )}
-      {!delegates.isZero() && (
+      {!delegates.isZero() && user && (
         <Delegate
           wallet={user.wallet}
           delegates={delegates}

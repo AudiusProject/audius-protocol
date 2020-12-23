@@ -140,6 +140,7 @@ const UserInfo = ({
       {showUndelegate && (
         <div className={styles.buttonContainer}>
           <Button
+            className={styles.undelegateButton}
             text={messages.undelegate}
             type={ButtonType.PRIMARY}
             onClick={onClickUndelegate}
