@@ -1,4 +1,5 @@
 import Favorite from 'models/Favorite'
+import { ID } from 'models/common/Identifiers'
 import Repost from 'models/Repost'
 import { Remix, StemTrackMetadata, UserTrackMetadata } from 'models/Track'
 import { UserCollectionMetadata, Variant } from 'models/Collection'
@@ -174,6 +175,14 @@ export const makeTrack = (
   delete marshalled.favorite_count
 
   return marshalled
+}
+
+export const makeTrackId = (track: { id: string }): ID | undefined => {
+  const decodedTrackId = decodeHashId(track.id)
+  if (!decodedTrackId) {
+    return undefined
+  }
+  return decodedTrackId
 }
 
 export const makePlaylist = (
