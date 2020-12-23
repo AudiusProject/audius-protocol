@@ -101,3 +101,8 @@
 .boxSpacing {
   margin-bottom: 16px
 }
+
+.undelegateButton {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
