@@ -12,7 +12,7 @@ const axios = require('axios')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const { Command } = require('commander')
 
-function commaSeparatedList(value, unusedPrevValue) {
+function commaSeparatedList (value, unusedPrevValue) {
   return value.split(',')
 }
 
@@ -30,7 +30,7 @@ program
 
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
-async function getUserByHandle(handle, discoveryProviderEndpoint, timeout) {
+async function getUserByHandle (handle, discoveryProviderEndpoint, timeout) {
   try {
     return (
       await axios({
@@ -47,7 +47,7 @@ async function getUserByHandle(handle, discoveryProviderEndpoint, timeout) {
   }
 }
 
-async function getUserById(userId, discoveryProviderEndpoint, timeout) {
+async function getUserById (userId, discoveryProviderEndpoint, timeout) {
   try {
     const resp = (
       await axios({
@@ -70,7 +70,7 @@ async function getUserById(userId, discoveryProviderEndpoint, timeout) {
   }
 }
 
-async function getClockValues(
+async function getClockValues (
   { wallet, creator_node_endpoint: creatorNodeEndpoint, handle },
   timeout
 ) {
@@ -105,7 +105,7 @@ async function getClockValues(
 }
 
 // get clock values for all users / some users via userIds / handles
-async function getUserClockValues(handles, userIds, timeout) {
+async function getUserClockValues (handles, userIds, timeout) {
   const usersFromHandles = handles.map(handle =>
     getUserByHandle(handle, discoveryProviderEndpoint, timeout)
   )
@@ -120,7 +120,7 @@ async function getUserClockValues(handles, userIds, timeout) {
   )
 }
 
-async function run() {
+async function run () {
   const { handles, userIds, timeout } = parseArgsAndEnv()
   const userClockValues = await getUserClockValues(handles, userIds, timeout)
   userClockValues.forEach(
@@ -148,7 +148,7 @@ async function run() {
 /**
  * Process command line args, expects user handle as command line input.
  */
-function parseArgsAndEnv() {
+function parseArgsAndEnv () {
   program.parse(process.argv)
   if (!discoveryProviderEndpoint) {
     const errorMessage =
@@ -156,28 +156,10 @@ function parseArgsAndEnv() {
     throw new Error(errorMessage)
   }
 
-<<<<<<< HEAD
-  // check appropriate CLI usage
-  if (program.handle && program.userId) {
-    const errorMessage =
-      'Incorrect script usage, expected handle or user id, got both.\nPlease follow the structure: node userClockValues.js -h <handle> or node userClockValues.js -i <userId>'
-    throw new Error(errorMessage)
-  }
-  if (!program.handle && !program.userId) {
-    const errorMessage =
-      'Incorrect script usage, expected handle or user id, got neither.\nPlease follow the structure: node userClockValues.js -h <handle> or node userClockValues.js -i <userId>'
-    throw new Error(errorMessage)
-  }
-
-  return {
-    handle: program.handle,
-    userId: program.userId
-=======
   return {
     handles: program.handles,
     userIds: program.userIds,
     timeout: Number(program.timeout)
->>>>>>> origin
   }
 }
 
