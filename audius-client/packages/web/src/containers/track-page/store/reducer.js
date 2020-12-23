@@ -1,11 +1,21 @@
 import { asLineup } from 'store/lineup/reducer'
 import tracksReducer from 'containers/track-page/store/lineups/tracks/reducer'
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
-import { SET_TRACK_ID, RESET, SET_TRACK_RANK } from './actions'
+import {
+  SET_TRACK_ID,
+  RESET,
+  SET_TRACK_RANK,
+  SET_TRACK_TRENDING_RANKS
+} from './actions'
 
 const initialState = {
   trackId: null,
   rank: {
+    week: null,
+    month: null,
+    year: null
+  },
+  trendingTrackRanks: {
     week: null,
     month: null,
     year: null
@@ -25,6 +35,15 @@ const actionsMap = {
       rank: {
         ...state.rank,
         [action.duration]: action.rank
+      }
+    }
+  },
+  [SET_TRACK_TRENDING_RANKS](state, action) {
+    return {
+      ...state,
+      trendingTrackRanks: {
+        ...state.trendingTrackRanks,
+        ...action.trendingTrackRanks
       }
     }
   },

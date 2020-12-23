@@ -8,5 +8,10 @@ export default interface TrackPageState {
     month: number | null
     year: number | null
   }
+  trendingTrackRanks: {
+    week: ID[] | null
+    month: ID[] | null
+    year: ID[] | null
+  }
   tracks: LineupState<{ id: ID }>
 }
