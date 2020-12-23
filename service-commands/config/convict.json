@@ -49,7 +49,7 @@
   },
   "user_node": {
     "env": "USER_NODE",
-    "default": "http://cn1_creator-node_1:4000"
+    "default": "http://cn1_creator-node_1:4099"
   },
   "identity_service": {
     "env": "IDENTITY_SERVICE",

@@ -105,7 +105,9 @@ const SetupCommand = Object.freeze({
   DOWN: 'down',
   REGISTER: 'register',
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
-  HEALTH_CHECK: 'health-check'
+  HEALTH_CHECK: 'health-check',
+  UNSET_SHELL_ENV: 'unset-shell-env',
+  UP_UM: 'up-um'
 })
 
 /**
@@ -130,6 +132,7 @@ const Service = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
   CONTENT_SERVICE: 'content-service',
   CREATOR_NODE: 'creator-node',
+  USER_METADATA_NODE: 'user-metadata-node',
   IDENTITY_SERVICE: 'identity-service',
   DISTRIBUTE: 'distribute',
   INIT_REPOS: 'init-repos'
@@ -320,6 +323,14 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
       { ...options, retries: 2 }
+    ],
+    [
+      Service.USER_METADATA_NODE,
+      SetupCommand.UNSET_SHELL_ENV
+    ],
+    [
+      Service.USER_METADATA_NODE,
+      SetupCommand.UP_UM
     ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
