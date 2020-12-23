@@ -10,6 +10,7 @@
     "commander": "^6.0.0",
     "convict": "^5.2.0",
     "dotenv": "^8.2.0",
+    "ffmpeg-static": "^4.2.7",
     "node-fetch": "^2.6.0",
     "untildify": "^4.0.0",
     "web3": "^1.2.7"

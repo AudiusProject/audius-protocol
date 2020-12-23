@@ -1,63 +1,148 @@
 /**
  * Find the creator nodes associated with a user and their respective clock values.
  *
- * Script usage: node userClockValues.js <size> <outFile>
+ * Script usage:
+ * export DISCOVERY_PROVIDER_ENDPOINT=<discovery provider endpoint>
+ * node userClockValues.js -h <comma separated user handles> -i <comma separated user ids> -t <axios timeout>
+ *
+ * Example command: node userClockValues.js -h cheran_test,mukundan314 -i 3 -t 1000
+ *
  */
 const axios = require('axios')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const { Command } = require('commander')
 
+function commaSeparatedList(value, unusedPrevValue) {
+  return value.split(',')
+}
+
 const program = new Command()
 program
   .usage('')
-  .option('-h, --handle <handle>', 'Audius handle')
-  .option('-i, --user-id <userId>', 'Audius user id')
+  .option('-h, --handles <handles>', 'Audius handles', commaSeparatedList, [])
+  .option('-i, --user-ids <userIds>', 'Audius user ids', commaSeparatedList, [])
+  .option(
+    '-t, --timeout <timeout>',
+    'Timeout for single request in ms',
+    commaSeparatedList,
+    5000
+  )
 
-// export DISCOVERY_PROVIDER_ENDPOINT="https://discoveryprovider.audius.co"
 const discoveryProviderEndpoint = process.env.DISCOVERY_PROVIDER_ENDPOINT
 
-async function run() {
+async function getUserByHandle(handle, discoveryProviderEndpoint, timeout) {
   try {
-    const { handle, userId } = parseArgsAndEnv()
-    const { wallet, creator_node_endpoint: creatorNodeEndpoint } = (
+    return (
       await axios({
-        url: handle ? `/v1/full/users/handle/${handle}` : `/users?id=${userId}`,
+        url: `/v1/full/users/handle/${handle}`,
         method: 'get',
-        baseURL: discoveryProviderEndpoint
+        baseURL: discoveryProviderEndpoint,
+        timeout: timeout
+      })
+    ).data.data[0]
+  } catch (err) {
+    console.log(
+      `Failed to get creator node endpoint and wallet from endpoint: ${discoveryProviderEndpoint} and handle: ${handle} with ${err}`
+    )
+  }
+}
+
+async function getUserById(userId, discoveryProviderEndpoint, timeout) {
+  try {
+    const resp = (
+      await axios({
+        url: `/users?id=${userId}`,
+        method: 'get',
+        baseURL: discoveryProviderEndpoint,
+        timeout
       })
     ).data.data[0]
 
-    primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
-    secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
+    if (!resp) {
+      console.log(`Failed to find user with userId ${userId}`)
+    }
 
-    console.log('Primary')
-    console.log(
-      primaryCreatorNode,
-      await CreatorNode.getClockValue(primaryCreatorNode, wallet)
-    )
-
-    console.log('\nSecondaries')
-    secondaryCreatorNodes.forEach(async secondaryCreatorNode => {
-      console.log(
-        secondaryCreatorNode,
-        await CreatorNode.getClockValue(secondaryCreatorNode, wallet)
-      )
-    })
+    return resp
   } catch (err) {
-    if (err.isAxiosError) {
-      if (err.config.baseURL === discoveryProviderEndpoint) {
-        console.error(
-          `Could not get wallet and endpoint from discovery node ${discoveryProviderEndpoint} with ${err}`
-        )
-      } else {
-        console.error(
-          `Could not fetch clock values at endpoint ${err.config.baseURL} with ${err}`
-        )
-      }
-    } else {
-      console.error(err)
+    console.log(
+      `Failed to get creator node endpoint and wallet from endpoint: ${discoveryProviderEndpoint} and user id: ${userId} with ${err}`
+    )
+  }
+}
+
+async function getClockValues(
+  { wallet, creator_node_endpoint: creatorNodeEndpoint, handle },
+  timeout
+) {
+  const primaryCreatorNode = CreatorNode.getPrimary(creatorNodeEndpoint)
+  const secondaryCreatorNodes = CreatorNode.getSecondaries(creatorNodeEndpoint)
+
+  if (!creatorNodeEndpoint) {
+    return {
+      primaryNode: '',
+      primaryClockValue: '',
+      secondaryNodes: [],
+      secondaryClockValues: [],
+      handle
     }
   }
+
+  return {
+    primaryNode: primaryCreatorNode,
+    primaryClockValue: await CreatorNode.getClockValue(
+      primaryCreatorNode,
+      wallet,
+      timeout
+    ),
+    secondaryNodes: secondaryCreatorNodes,
+    secondaryClockValues: await Promise.all(
+      secondaryCreatorNodes.map(secondaryNode =>
+        CreatorNode.getClockValue(secondaryNode, wallet, timeout)
+      )
+    ),
+    handle
+  }
+}
+
+// get clock values for all users / some users via userIds / handles
+async function getUserClockValues(handles, userIds, timeout) {
+  const usersFromHandles = handles.map(handle =>
+    getUserByHandle(handle, discoveryProviderEndpoint, timeout)
+  )
+
+  const usersFromIds = userIds.map(userId =>
+    getUserById(userId, discoveryProviderEndpoint, timeout)
+  )
+
+  const users = await Promise.all([...usersFromHandles, ...usersFromIds])
+  return Promise.all(
+    users.filter(user => user).map(user => getClockValues(user, timeout))
+  )
+}
+
+async function run() {
+  const { handles, userIds, timeout } = parseArgsAndEnv()
+  const userClockValues = await getUserClockValues(handles, userIds, timeout)
+  userClockValues.forEach(
+    ({
+      primaryNode,
+      primaryClockValue,
+      secondaryNodes,
+      secondaryClockValues,
+      handle
+    }) => {
+      console.log('Handle:', handle)
+      console.log('Primary')
+      console.log(primaryNode, primaryClockValue)
+
+      console.log('Secondary')
+      secondaryNodes.forEach((secondaryNode, idx) => {
+        console.log(secondaryNode, secondaryClockValues[idx])
+      })
+
+      console.log()
+    }
+  )
 }
 
 /**
@@ -71,6 +156,7 @@ function parseArgsAndEnv() {
     throw new Error(errorMessage)
   }
 
+<<<<<<< HEAD
   // check appropriate CLI usage
   if (program.handle && program.userId) {
     const errorMessage =
@@ -86,6 +172,12 @@ function parseArgsAndEnv() {
   return {
     handle: program.handle,
     userId: program.userId
+=======
+  return {
+    handles: program.handles,
+    userIds: program.userIds,
+    timeout: Number(program.timeout)
+>>>>>>> origin
   }
 }
 
