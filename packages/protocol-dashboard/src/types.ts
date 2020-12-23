@@ -1,9 +1,6 @@
 import BN from 'bn.js'
-import { GetPendingUndelegateRequestResponse } from 'services/Audius/delegate'
-import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/serviceProviderClient'
-
-// TODO: Type BigNumber
-export type BigNumber = any // BN
+import { GetPendingUndelegateRequestResponse } from 'services/Audius/delegate/types'
+import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
 
 export type Version = string
 export type Address = string
@@ -12,7 +9,8 @@ export type Wallet = string
 export type NodeId = number
 export type BlockNumber = number
 export type Block = any
-export type Amount = BigNumber
+export type Amount = BN
+export type BigNumber = BN
 
 export enum ServiceType {
   DiscoveryProvider = 'discovery-node',
@@ -65,8 +63,6 @@ export type Delegate = {
 }
 
 type EventID = string
-
-export type Event = any
 
 export type User = {
   wallet: Address

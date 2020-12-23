@@ -5,6 +5,7 @@ import { Utils } from '@audius/libs'
 import { Address, BigNumber } from 'types'
 import AudiusClient from 'services/Audius'
 import { TICKER } from './consts'
+import BN from 'bn.js'
 
 dayjs.extend(duration)
 
@@ -23,7 +24,7 @@ export const formatWeight = (weight: number) => {
 }
 
 // Format a number with commas
-export const formatNumber = (num: number) => {
+export const formatNumber = (num: number | BN) => {
   const parts = num.toString().split('.')
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   return parts.join('.')
@@ -60,16 +61,18 @@ export const formatShortWallet = (wallet: Address) => {
  * Format a BN to the shortened $audio currency
  * @param num BN
  */
-export const formatAud = (amount: BigNumber) => {
+export const formatAud = (amount: BigNumber | null) => {
   if (!Utils.isBN(amount)) return ''
-  let aud = amount.div(Utils.toBN('1000000000000000000')).toString()
+  let aud = (amount as BigNumber)
+    .div(Utils.toBN('1000000000000000000'))
+    .toString()
   aud = numeral(aud).format('0,0')
   return aud
 }
 
-export const formatWei = (amount: BigNumber) => {
+export const formatWei = (amount: BigNumber | null) => {
   if (!Utils.isBN(amount)) return ''
-  let aud = formatNumberCommas(AudiusClient.getAud(amount))
+  let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
   return `${aud} ${TICKER}`
 }
 
@@ -89,7 +92,7 @@ export const leftPadZero = (number: number, desiredLength: number) => {
   return number.toString().padStart(desiredLength, '0')
 }
 
-export const formatShortAud = (amount: BigNumber) => {
+export const formatShortAud = (amount: BigNumber | null) => {
   if (!amount) return ''
   let aud = amount.div(Utils.toBN('1000000000000000000')).toNumber()
   if (aud >= 1000) {

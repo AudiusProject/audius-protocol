@@ -5,9 +5,7 @@ import SimpleBar from 'simplebar-react'
 import styles from './TimelineModal.module.css'
 import Modal from 'components/Modal'
 import TimelineEvent from './TimelineEvent'
-import { ProposalEvent, VoteEvent, Event } from 'types'
-
-type TimelineEvent = ProposalEvent | VoteEvent | Event
+import { TimelineEvent as TimelineEventType } from 'models/TimelineEvents'
 
 const messages = {
   title: 'Timeline'
@@ -17,7 +15,7 @@ type OwnProps = {
   className?: string
   isOpen: boolean
   onClose: () => void
-  events: Array<TimelineEvent>
+  events: TimelineEventType[]
 }
 
 type TimelineModalProps = OwnProps

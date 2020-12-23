@@ -9,10 +9,11 @@ import Tooltip from 'components/Tooltip'
 import { formatShortWallet, formatWei } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { Operator, Status } from 'types'
+import { Address, Operator, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
+import BN from 'bn.js'
 
 const messages = {
   topAddresses: 'Top Service Operators by Active Stake',
@@ -22,9 +23,9 @@ const messages = {
 type TableUser = {
   rank: number
   img: string
-  name: string
-  wallet: string
-  staked: number
+  name?: string
+  wallet: Address
+  staked: BN
   voteWeight: number
   proposedVotes: number
 }

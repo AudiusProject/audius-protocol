@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { AudiusClient } from './AudiusClient'
+import { AudiusClient } from '../AudiusClient'
 
 import { Address, BlockNumber } from 'types'
 

@@ -10,7 +10,7 @@ import Tooltip from 'components/Tooltip'
 import { formatShortWallet, formatWeight, formatWei } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { Status } from 'types'
+import { Address, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake from 'utils/activeStake'
@@ -23,9 +23,9 @@ const messages = {
 type TableUser = {
   rank: number
   img: string
-  name: string
-  wallet: string
-  staked: number
+  name?: string
+  wallet: Address
+  staked: BN
   voteWeight: number
   proposedVotes: number
 }
@@ -70,7 +70,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     return total.add(activeStake)
   }, new BN('0'))
 
-  const data = users
+  const data: TableUser[] = users
     .map((user, idx) => {
       const activeStake = getActiveStake(user)
       const voteWeight = Audius.getBNPercentage(

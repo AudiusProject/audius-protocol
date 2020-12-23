@@ -17,7 +17,9 @@ export async function getUserDelegates(this: AudiusClient, delegator: Address) {
   await this.hasPermissions()
   const delegates = []
   const increaseDelegateStakeEvents = await this.Delegate.getIncreaseDelegateStakeEvents(
-    delegator
+    {
+      delegator
+    }
   )
   const pendingUndelegateRequest = await this.Delegate.getPendingUndelegateRequest(
     delegator

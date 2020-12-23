@@ -8,8 +8,9 @@ import { useEffect } from 'react'
 import { setTimeline } from './slice'
 import { Address } from 'types'
 import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
+import { TimelineEvent } from 'models/TimelineEvents'
 
-const getFirstEvent = (...events: Array<{ blockNumber: number }>) => {
+const getFirstEvent = (...events: TimelineEvent[]) => {
   let min = Number.MAX_SAFE_INTEGER
   let firstEvent = null
   let index = 0
@@ -21,13 +22,13 @@ const getFirstEvent = (...events: Array<{ blockNumber: number }>) => {
       index = i
     }
   }
-  return { firstEvent, index }
+  // TS thinks firstEvent can be null because it doesn't
+  // understand the algorithm, so cast
+  return { firstEvent: firstEvent as TimelineEvent, index }
 }
 
-const combineEvents = (
-  ...eventLists: Array<Array<{ blockNumber: number }>>
-) => {
-  const combined = []
+const combineEvents = (...eventLists: TimelineEvent[][]) => {
+  const combined: TimelineEvent[] = []
   let i = 0
   const combinedLength = eventLists.reduce((acc, cur) => acc + cur.length, 0)
   while (i < combinedLength) {
@@ -53,7 +54,7 @@ export function fetchTimeline(
   wallet: Address,
   timelineType: TimelineType
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
+  return async (dispatch, _, aud) => {
     // Some delegation methods allow you to either filter
     // by delegator or service provider
     const filter =
@@ -61,21 +62,25 @@ export function fetchTimeline(
         ? { delegator: wallet }
         : { serviceProvider: wallet }
 
-    const events = await Promise.all([
-      aud.Governance.getVotesByAddress([wallet]),
-      aud.Governance.getVoteUpdatesByAddress([wallet]),
+    /* Define the events outside Promise.all because Promise.all TS bindings
+     * only supports ten elements
+     * https://github.com/microsoft/TypeScript/issues/39788
+     */
+    const rawEvents: Promise<TimelineEvent[]>[] = [
+      aud.Governance.getVoteEventsByAddress([wallet]),
+      aud.Governance.getVoteUpdateEventsByAddress([wallet]),
       aud.Governance.getProposalsForAddresses([wallet]),
-      aud.Delegate.getIncreaseDelegateStakeEvents(wallet),
       aud.Claim.getClaimProcessedEvents(wallet),
-      aud.Delegate.getReceiveDelegationIncreaseEvents(wallet),
       aud.ServiceProviderClient.getRegisteredServiceProviderEvents(wallet),
       aud.ServiceProviderClient.getDeregisteredServiceProviderEvents(wallet),
       aud.ServiceProviderClient.getIncreasedStakeEvents(wallet),
       aud.ServiceProviderClient.getDecreasedStakeRequestedEvents(wallet),
-      aud.Delegate.getDecreaseDelegateStakeEvents(filter),
+      aud.Delegate.getIncreaseDelegateStakeEvents(filter),
+      aud.Delegate.getDecreaseDelegateStakeEvaluatedEvents(filter),
       aud.Delegate.getUndelegateStakeRequestedEvents(filter),
       aud.Delegate.getUndelegateStakeCancelledEvents(filter)
-    ])
+    ]
+    const events = await Promise.all(rawEvents)
 
     const timeline = combineEvents(...events).reverse()
     dispatch(setTimeline({ wallet, timeline }))

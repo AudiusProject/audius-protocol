@@ -1,10 +1,10 @@
-import ServiceProviderClient from './serviceProviderClient'
-import Staking from './staking'
-import AudiusToken from './audiusToken'
-import Delegate from './delegate'
-import Governance from './governance'
+import ServiceProviderClient from './service-provider/serviceProviderClient'
+import Staking from './staking/staking'
+import AudiusToken from './token/audiusToken'
+import Delegate from './delegate/delegate'
+import Governance from './governance/governance'
 import NodeType from './nodeType'
-import Claim from './claim'
+import Claim from './claim/claim'
 
 import { setup } from './setup'
 import {
