@@ -1,5 +1,7 @@
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
+
+const axios = require('axios')
 const { Base, Services } = require('./base')
 const { raceRequests } = require('../utils/network')
 const retry = require('async-retry')
@@ -108,6 +110,24 @@ class File extends Base {
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
     }
+  }
+
+  /**
+   * Checks if a cid exists in an IPFS node. Public gateways are tried first, then
+   * fallback to a specified gateway and then to the default gateway.
+   * @param {string} cid IPFS content identifier
+   * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   */
+  async checkCID (cid, creatorNodeGateways) {
+    const gateways = creatorNodeGateways.concat(publicGateways)
+    return Promise.all(gateways.map(async (gateway) => {
+      try {
+        const { status } = await axios({ url: urlJoin(gateway, cid), method: 'head' })
+        return [gateway, status === 200]
+      } catch (err) {
+        return [gateway, false]
+      }
+    }))
   }
 
   /**
