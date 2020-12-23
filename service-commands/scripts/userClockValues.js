@@ -1,7 +1,12 @@
 /**
  * Find the creator nodes associated with a user and their respective clock values.
  *
- * Script usage: node userClockValues.js <size> <outFile>
+ * Script usage:
+ * export DISCOVERY_PROVIDER_ENDPOINT=<discovery provider endpoint>
+ * node userClockValues.js -h <comma separated user handles> -i <comma separated user ids> -t <axios timeout>
+ *
+ * Example command: node userClockValues.js -h cheran_test,mukundan314 -i 3 -t 1000
+ *
  */
 const axios = require('axios')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
