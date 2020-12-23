@@ -118,15 +118,6 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 
   /**
-   * Builds the creator_node_endpoint value off of a primary and secondaries list
-   * @param {string} primary the primary endpoint
-   * @param {string[]} secondaries a list of secondary endpoints
-   */
-  static buildEndpoint (primary, secondaries) {
-    return [primary, ...secondaries].join()
-  }
-
-  /**
    * Performs a sync check for every endpoint in services. Returns an array of successful sync checked endpoints and
    * adds the err'd sync checked endpoints to this.unhealthy
    * @param {string[]} services content node endpoints
