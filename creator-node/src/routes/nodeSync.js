@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const middlewares = require('../middlewares')
+const { getOwnEndpoint, getCreatorNodeEndpoints, authMiddleware, ensurePrimaryMiddleware } = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
@@ -139,7 +139,7 @@ module.exports = function (app) {
    * Given walletPublicKeys array and target creatorNodeEndpoint, will request export
    * of all user data, update DB state accordingly, fetch all files and make them available.
    */
-  app.post('/sync', handleResponse(async (req, res) => {
+  app.post('/sync', authMiddleware, ensurePrimaryMiddleware, handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true')
@@ -273,8 +273,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
 
       if (!dbOnlySync) {
         try {
-          const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
-          userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+          const myCnodeEndpoint = await getOwnEndpoint(req)
+          userReplicaSet = await getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
 
           // push user metadata node to user's replica set if defined
           if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))

@@ -40,7 +40,7 @@ class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
-    this._waitForCreatorNodeUpdate = this._waitForCreatorNodeUpdate.bind(this)
+    this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
@@ -252,31 +252,39 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
-    // We only support one user per creator node / libs instance
+    // Error if libs instance already has user - we only support one user per creator node / libs instance
     const user = this.userStateManager.getCurrentUser()
     if (user) {
       throw new Error('User already created for creator node / libs instance')
     }
 
+    // populate metadata object with required fields - wallet, is_creator, creator_node_endpoint
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
     newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
 
-    // Upload metadata
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
-      newMetadata
-    )
-    // Write metadata to chain
-    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { userId, txReceipt } = await this.contracts.UserFactoryClient.addUser(
-      newMetadata.handle
-    )
-    await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
-    const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata)
-    // Associate the user id with the metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+    // Create user record on chain with handle
+    const { userId } = await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
 
+    // Update user creator_node_endpoint on chain
+    await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint'])
+
+    // Upload metadata object to CN
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+
+    // Write metadata multihash to chain
+    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
+
+    // Write remaining metadata fields to chain
+    const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata, ['creator_node_endpoint'])
+
+    // Write to CN to associate blockchain user id with the metadata and block number
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, latestBlockNumber)
+
+    // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...newMetadata })
+
     return userId
   }
 
@@ -291,27 +299,39 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
+    // Error if libs instance does not already have existing user state
     const user = this.userStateManager.getCurrentUser()
     if (!user) {
       throw new Error('No current user')
     }
+
+    // Preserve old metadata object
     const oldMetadata = { ...user }
 
-    // Upload new metadata
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
-      newMetadata
-    )
-    // Update new metadata on chain
-    let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    // Update user creator_node_endpoint on chain if applicable
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
-    }
-    // Re-associate the user id with the metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
 
+      // Ensure DN has indexed creator_node_endpoint change
+      await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+    }
+
+    // Upload new metadata object to CN
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+
+    // Write metadata multihash to chain
+    const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+
+    // Write remaining metadata fields to chain
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+
+    // Write to CN to associate blockchain user id with updated metadata and block number
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, latestBlockNumber)
+
+    // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+
     return userId
   }
 
@@ -322,31 +342,37 @@ class Users extends Base {
    * @param {string} newCreatorNodeEndpoint comma delineated
    */
   async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
-    if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
-
     this.REQUIRES(Services.CREATOR_NODE)
 
+    if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
+
+    // Error if libs instance does not already have existing user state
     const user = this.userStateManager.getCurrentUser()
     if (!user) {
       throw new Error('No current user')
     }
+
     // No-op if the user is already a creator.
     // Consider them a creator iff they have is_creator=true AND a creator node endpoint
     if (user.is_creator && user.creator_node_endpoint) return
 
     const userId = user.user_id
     const oldMetadata = { ...user }
+
+    // Clean and validate metadata
     const newMetadata = this._cleanUserMetadata({ ...user })
     this._validateUserMetadata(newMetadata)
 
+    // Populate metadata with required fields - wallet, is_creator, creator_node_endpoint
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
     newMetadata.creator_node_endpoint = newCreatorNodeEndpoint
 
     const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
-    // Sync the new primary from from the node that has the user's data
+
+    // Sync user data from old primary to new endpoint
     if (existingEndpoint) {
-      // Don't validate what we're sycing from because the user isn't
+      // Don't validate what we're syncing from because the user isn't
       // a creator yet.
       await this.creatorNode.syncSecondary(
         newPrimary,
@@ -356,23 +382,33 @@ class Users extends Base {
       )
     }
 
+    // Update local libs state with new CN endpoint
     await this.creatorNode.setEndpoint(newPrimary)
 
-    // Upload new metadata
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
-      newMetadata
-    )
-    // Update new metadata on chain
-    let updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    // Update user creator_node_endpoint on chain if applicable
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
-    }
-    // Re-associate the user id with the metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
+      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
 
+      // Ensure DN has indexed creator_node_endpoint change
+      await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+    }
+
+    // Upload new metadata object to CN
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+
+    // Write metadata multihash to chain
+    const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
+    await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    
+    // Write remaining metadata fields to chain
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+
+    // Write to CN to associate blockchain user id with updated metadata and block number
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, latestBlockNumber)
+
+    // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+
     return userId
   }
 
@@ -408,7 +444,7 @@ class Users extends Base {
   /* ------- PRIVATE  ------- */
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
-  async _waitForCreatorNodeUpdate (userId, creatorNodeEndpoint) {
+  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
     let isUpdated = false
     while (!isUpdated) {
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]
@@ -417,8 +453,18 @@ class Users extends Base {
     }
   }
 
-  async _addUserOperations (userId, metadata) {
+  /**
+   * TODO
+   *
+   * @param {*} userId 
+   * @param {*} metadata 
+   * @param {*} exclude 
+   */
+  async _addUserOperations (userId, metadata, exclude = []) {
     let addOps = []
+
+    // Remove excluded keys from metadata object
+    exclude.map(excludedKey => delete metadata[excludedKey])
 
     if (metadata['name']) {
       addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata['name']))
@@ -454,8 +500,19 @@ class Users extends Base {
     return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
   }
 
-  async _updateUserOperations (metadata, currentMetadata, userId) {
+  /**
+   * TODO
+   *
+   * @param {*} metadata 
+   * @param {*} currentMetadata 
+   * @param {*} userId 
+   * @param {*} exclude 
+   */
+  async _updateUserOperations (metadata, currentMetadata, userId, exclude = []) {
     let updateOps = []
+
+    // Remove excluded keys from metadata object
+    exclude.map(excludedKey => delete metadata[excludedKey])
 
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
