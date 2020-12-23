@@ -8,11 +8,10 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_full_response, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
     format_offset, format_limit, decode_string_id, stem_from_track, \
-    get_current_user_id
+    get_current_user_id, get_encoded_track_id
 
 from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
-from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
@@ -23,6 +22,8 @@ from src.queries.get_tracks_including_unlisted import get_tracks_including_unlis
 from src.queries.get_stems_of import get_stems_of
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
+from src.queries.get_trending_ids import get_trending_ids
+from src.queries.get_trending import TRENDING_LIMIT, TRENDING_TTL_SEC, get_trending
 
 logger = logging.getLogger(__name__)
 
@@ -222,30 +223,6 @@ class TrackSearchResult(Resource):
 # `get_trending_tracks.py`, which caches the scored tracks before they are populated (keyed by genre + time).
 # With this second cache, each user_id can reuse on the same cached list of tracks, and then populate them uniquely.
 
-TRENDING_LIMIT = 100
-TRENDING_TTL_SEC = 30 * 60
-
-def get_trending(args):
-    """Get Trending, shared between full and regular endpoints."""
-    # construct args
-    time = args.get("time") if args.get("time") is not None else 'week'
-    current_user_id = args.get("user_id")
-    args = {
-        'time': time,
-        'genre': args.get("genre", None),
-        'with_users': True,
-        'limit': TRENDING_LIMIT,
-        'offset': 0
-    }
-
-    # decode and add user_id if necessary
-    if current_user_id:
-        decoded_id = decode_string_id(current_user_id)
-        args["current_user_id"] = decoded_id
-
-    tracks = get_trending_tracks(args)
-    return list(map(extend_track, tracks))
-
 @ns.route("/trending")
 class Trending(Resource):
     @record_metrics
@@ -297,6 +274,50 @@ class FullTrending(Resource):
         trending = full_trending[offset: limit + offset]
         return success_response(trending)
 
+
+trending_ids_route_parser = reqparse.RequestParser()
+trending_ids_route_parser.add_argument('limit', required=False, type=int, default=10)
+trending_ids_route_parser.add_argument('genre', required=False, type=str)
+
+track_id = ns.model('track_id', { "id": fields.String(required=True) })
+trending_times_ids = ns.model('trending_times_ids', {
+        "week": fields.List(fields.Nested(track_id)),
+        "month": fields.List(fields.Nested(track_id)),
+        "year": fields.List(fields.Nested(track_id))
+})
+trending_ids_response = make_response(
+    "trending_ids_response",
+    ns,
+    fields.Nested(trending_times_ids)
+)
+
+@full_ns.route("/trending/ids")
+class FullTrendingIds(Resource):
+    @record_metrics
+    @full_ns.expect(trending_ids_route_parser)
+    @ns.doc(
+        id="""Trending Tracks Ids""",
+        params={
+            'genre': 'Track genre',
+            'limit': 'Limit',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(trending_ids_response)
+    def get(self):
+        """Gets the track ids of the top trending tracks on Audius"""
+        args = trending_ids_route_parser.parse_args()
+        trending_ids = get_trending_ids(args)
+        res = {
+            "week": list(map(get_encoded_track_id, trending_ids["week"])),
+            "month": list(map(get_encoded_track_id, trending_ids["month"])),
+            "year": list(map(get_encoded_track_id, trending_ids["year"]))
+        }
+        return success_response(res)
 
 track_favorites_route_parser = reqparse.RequestParser()
 track_favorites_route_parser.add_argument('user_id', required=False)
