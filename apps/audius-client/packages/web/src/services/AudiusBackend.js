@@ -2099,7 +2099,7 @@ class AudiusBackend {
    * Make a request to check if the user has already claimed
    * @returns {Promise<BN>} doesHaveClaim
    */
-  static async getBalance() {
+  static async getBalance(bustCache = false) {
     await waitForLibsInit()
     const wallet = audiusLibs.web3Manager.getWalletAddress()
     if (!wallet) return
@@ -2107,6 +2107,9 @@ class AudiusBackend {
     try {
       const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
       const checksumWallet = ethWeb3.utils.toChecksumAddress(wallet)
+      if (bustCache) {
+        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
+      }
       const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
         checksumWallet
       )
