@@ -20,11 +20,13 @@ export type WalletAddress = string
 type WalletState = {
   balance: Nullable<StringWei>
   pendingClaimBalance: Nullable<StringWei>
+  localBalanceDidChange: boolean
 }
 
 const initialState: WalletState = {
   balance: null,
-  pendingClaimBalance: null
+  pendingClaimBalance: null,
+  localBalanceDidChange: false
 }
 
 const slice = createSlice({
@@ -36,6 +38,7 @@ const slice = createSlice({
       { payload: { balance } }: PayloadAction<{ balance: StringWei }>
     ) => {
       state.balance = balance
+      state.localBalanceDidChange = false
     },
     increaseBalance: (
       state,
@@ -46,6 +49,7 @@ const slice = createSlice({
       state.balance = existingBalance
         .add(new BN(amount))
         .toString() as StringWei
+      state.localBalanceDidChange = true
     },
     decreaseBalance: (
       state,
@@ -56,6 +60,7 @@ const slice = createSlice({
       state.balance = existingBalance
         .sub(new BN(amount))
         .toString() as StringWei
+      state.localBalanceDidChange = true
     },
     setClaim: (
       state,
@@ -160,6 +165,10 @@ export const getAccountBalance = (state: AppState): Nullable<BNWei> => {
   const balance = state.wallet.balance
   if (!balance) return null
   return stringWeiToBN(balance)
+}
+
+export const getLocalBalanceDidChange = (state: AppState): boolean => {
+  return state.wallet.localBalanceDidChange
 }
 
 export const {
