@@ -30,6 +30,7 @@ const SERVICES = [
   'cn9_creator-node_1',
   'cn10_creator-node_1',
   'audius-disc-prov_web-server_1',
+  'cn-um_creator-node_1',
   'audius_ganache_cli'
 ]
 
