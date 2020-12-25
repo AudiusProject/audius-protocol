@@ -29,7 +29,7 @@ def _get_top_user_track_tags(session, args):
         .query(TagTrackUserMatview.tag)
         .filter(TagTrackUserMatview.owner_id == args['user_id'])
         .group_by(TagTrackUserMatview.tag)
-        .order_by(desc(func.count(TagTrackUserMatview.tag)),desc(TagTrackUserMatview.tag))
+        .order_by(desc(func.count(TagTrackUserMatview.tag)), desc(TagTrackUserMatview.tag))
         .all()
     )
 
