@@ -148,7 +148,8 @@
     "host": "localhost",
     "port": 4099,
     "up-um": [
-      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/unsetShellEnv.sh",
+      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
