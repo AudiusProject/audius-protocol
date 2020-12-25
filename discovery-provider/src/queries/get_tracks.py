@@ -51,6 +51,7 @@ def _get_tracks(session, args):
         if args["sort"] == "date":
             base_query = base_query.order_by(
                 coalesce(
+                    # This func is defined in alembic migrations
                     func.to_date_safe(Track.release_date, 'Dy Mon DD YYYY HH24:MI:SS'),
                     Track.created_at
                 ).desc(),
