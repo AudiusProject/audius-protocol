@@ -1,7 +1,7 @@
 {
   "all": {
     "down": [
-      "SERVICES=$(docker ps -aq); if [[ -n $SERVICES ]]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
+      "SERVICES=$(docker ps -aq); docker stop ${SERVICES} && docker rm ${SERVICES}",
       "docker container prune -f",
       "docker volume prune -f",
       "docker network prune -f"
