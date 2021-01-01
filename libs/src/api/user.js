@@ -201,6 +201,7 @@ class Users extends Base {
    * @param {Object} metadata metadata to associate with the user
    */
   async addUser (metadata) {
+    console.log('SIDTEST NEW CODE')
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
@@ -226,6 +227,7 @@ class Users extends Base {
    * @param {Object} metadata
    */
   async updateUser (userId, metadata) {
+    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
@@ -244,9 +246,12 @@ class Users extends Base {
    * Create a new user that is a creator or upgrade from a non-creator user to a creator
    * Fills in wallet and creator_node_endpoint fields in metadata.
    *
+   * @notice - this function is most likely not used and can be removed
+   *
    * @param {Object} metadata - metadata to associate with the user, following the format in `user-metadata-format.json` in audius-contracts.
    */
   async addCreator (metadata) {
+    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
@@ -294,6 +299,7 @@ class Users extends Base {
    * @param {Object} metadata
    */
   async updateCreator (userId, metadata) {
+    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
@@ -342,6 +348,7 @@ class Users extends Base {
    * @param {string} newCreatorNodeEndpoint comma delineated
    */
   async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
+    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.CREATOR_NODE)
 
     if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
