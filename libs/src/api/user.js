@@ -401,7 +401,7 @@ class Users extends Base {
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
-    
+
     // Write remaining metadata fields to chain
     const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
 
@@ -455,13 +455,6 @@ class Users extends Base {
     }
   }
 
-  /**
-   * TODO
-   *
-   * @param {*} userId 
-   * @param {*} metadata 
-   * @param {*} exclude 
-   */
   async _addUserOperations (userId, metadata, exclude = []) {
     let addOps = []
 
@@ -502,14 +495,6 @@ class Users extends Base {
     return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
   }
 
-  /**
-   * TODO
-   *
-   * @param {*} metadata 
-   * @param {*} currentMetadata 
-   * @param {*} userId 
-   * @param {*} exclude 
-   */
   async _updateUserOperations (metadata, currentMetadata, userId, exclude = []) {
     let updateOps = []
 
