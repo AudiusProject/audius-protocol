@@ -201,7 +201,6 @@ class Users extends Base {
    * @param {Object} metadata metadata to associate with the user
    */
   async addUser (metadata) {
-    console.log('SIDTEST NEW CODE')
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
@@ -227,7 +226,6 @@ class Users extends Base {
    * @param {Object} metadata
    */
   async updateUser (userId, metadata) {
-    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
@@ -251,7 +249,6 @@ class Users extends Base {
    * @param {Object} metadata - metadata to associate with the user, following the format in `user-metadata-format.json` in audius-contracts.
    */
   async addCreator (metadata) {
-    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
@@ -279,13 +276,13 @@ class Users extends Base {
 
     // Write metadata multihash to chain
     const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
 
     // Write remaining metadata fields to chain
     const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata, ['creator_node_endpoint'])
 
     // Write to CN to associate blockchain user id with the metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, latestBlockNumber)
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...newMetadata })
@@ -299,7 +296,6 @@ class Users extends Base {
    * @param {Object} metadata
    */
   async updateCreator (userId, metadata) {
-    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this._cleanUserMetadata(metadata)
@@ -327,13 +323,13 @@ class Users extends Base {
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
     const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
 
     // Write to CN to associate blockchain user id with updated metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, latestBlockNumber)
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
@@ -348,7 +344,6 @@ class Users extends Base {
    * @param {string} newCreatorNodeEndpoint comma delineated
    */
   async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
-    console.log('SIDTEST NEW CODE')
     this.REQUIRES(Services.CREATOR_NODE)
 
     if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
@@ -405,13 +400,13 @@ class Users extends Base {
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
+    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
     
     // Write remaining metadata fields to chain
     const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
 
     // Write to CN to associate blockchain user id with updated metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, latestBlockNumber)
+    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
@@ -556,7 +551,9 @@ class Users extends Base {
     }
 
     const ops = await Promise.all(updateOps)
-    return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
+    const latestBlockNumber = Math.max(...ops.map(op => op.txReceipt.blockNumber))
+
+    return { ops: ops, latestBlockNumber }
   }
 
   _validateUserMetadata (metadata) {
