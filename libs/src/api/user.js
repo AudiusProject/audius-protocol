@@ -307,6 +307,11 @@ class Users extends Base {
       throw new Error('No current user')
     }
 
+    // Ensure libs is connected to correct CN
+    if (this.creatorNode.getEndpoint() !== newMetadata['creator_node_endpoint']) {
+      throw new Error(`Not connected to correct content node. Expected ${newMetadata['creator_node_endpoint']}, got ${this.creatorNode.getEndpoint()}`)
+    }
+
     // Preserve old metadata object
     const oldMetadata = { ...user }
 
@@ -455,10 +460,11 @@ class Users extends Base {
     }
   }
 
-  async _addUserOperations (userId, metadata, exclude = []) {
+  async _addUserOperations (userId, newMetadata, exclude = []) {
     let addOps = []
 
     // Remove excluded keys from metadata object
+    let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
 
     if (metadata['name']) {
@@ -495,10 +501,11 @@ class Users extends Base {
     return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
   }
 
-  async _updateUserOperations (metadata, currentMetadata, userId, exclude = []) {
+  async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
     let updateOps = []
 
     // Remove excluded keys from metadata object
+    let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
 
     // Compare the existing metadata with the new values and conditionally
