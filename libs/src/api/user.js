@@ -308,8 +308,8 @@ class Users extends Base {
     }
 
     // Ensure libs is connected to correct CN
-    if (this.creatorNode.getEndpoint() !== newMetadata['creator_node_endpoint']) {
-      throw new Error(`Not connected to correct content node. Expected ${newMetadata['creator_node_endpoint']}, got ${this.creatorNode.getEndpoint()}`)
+    if (this.creatorNode.getEndpoint() !== CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])) {
+      throw new Error(`Not connected to correct content node. Expected ${CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])}, got ${this.creatorNode.getEndpoint()}`)
     }
 
     // Preserve old metadata object
