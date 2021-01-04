@@ -23,7 +23,7 @@
   },
   "engineStrict": true,
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.1",
     "convict": "^6.0.0",
     "fs-extra": "^9.0.1",
     "ipfs-http-client": "^33.1.1",
