@@ -60,7 +60,7 @@ const cmd = process.argv[2]
 if (cmd === 'add') {
   let lines = readFileIntoArray()
   if (!verifyNotAlreadyAdded(lines)) {
-    console.log('Local dev mapping already exists! If you want to update your hosts file, please run the `remove` command and then re-run `add-remote-host`.')
+    console.log('Local dev mapping already exists! If you want to update your hosts file, please run the `remove` command and then re-run `add`.')
     exit(0)
   }
 
