@@ -23,7 +23,7 @@ try {
   const REACT_APP_DISCOVERY_PROVIDER_FALLBACKS =
     'http://audius-disc-prov_web-server_1:5000'
   const REACT_APP_IDENTITY_SERVICE = `http://${HOST}:7000`
-  const REACT_APP_USER_NODE = 'http://cn1_creator-node_1:4000'
+  const REACT_APP_USER_NODE = 'http://cn-um_creator-node_1:4099'
 
   const REACT_APP_REGISTRY_ADDRESS = configFile.registryAddress
   const REACT_APP_WEB3_PROVIDER_URLS = `http://${HOST}:8545,http://${HOST}:8545`
