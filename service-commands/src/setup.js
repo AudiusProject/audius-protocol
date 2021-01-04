@@ -277,6 +277,8 @@ const performHealthCheck = async (service, serviceNumber) => {
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
 const allUp = async ({ numCreatorNodes = 4 }) => {
+  console.log(`\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n`.error)
+
   const options = { verbose: true }
 
   const inParallel = [
