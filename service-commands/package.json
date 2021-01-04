@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "dependencies": {
     "@audius/libs": "^0.13.3",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "colors": "^1.4.0",
     "commander": "^6.0.0",
     "convict": "^5.2.0",
