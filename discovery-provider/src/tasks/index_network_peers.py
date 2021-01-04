@@ -28,6 +28,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance):
         content_node_service_type,
         sp_id
     ).call()
+    logger.error(f"FETCHED {cn_endpoint_info} for {sp_id}")
     return cn_endpoint_info
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
@@ -47,6 +48,7 @@ def retrieve_peers_from_eth_contracts(self):
         address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
     )
     total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(content_node_service_type).call()
+    logger.error(f"FOUND {total_cn_type_providers} type providers for {content_node_service_type}")
     ids_list = list(range(1, total_cn_type_providers + 1))
     eth_cn_endpoints_set = set()
    # Given the total number of nodes in the network we can now fetch node info in parallel
