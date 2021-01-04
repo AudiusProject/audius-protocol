@@ -27,7 +27,13 @@ export enum IntKeys {
   NOTIFICATION_POLLING_FREQ_MS = 'NOTIFICATION_POLLING_FREQ_MS'
 }
 
-export enum BooleanKeys {}
+export enum BooleanKeys {
+  /**
+   * If the optimized trending track ids endpoint should be used for badges
+   * else the trending tracks endpoint will be used
+   */
+  OPTIMIZED_TRENDING_BADGE_ENDPOINT = 'OPTIMIZED_TRENDING_BADGE_ENDPOINT'
+}
 
 export enum DoubleKeys {}
 
