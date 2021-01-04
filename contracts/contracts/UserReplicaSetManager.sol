@@ -33,9 +33,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
 
     /* Events */
     event UpdateReplicaSet(
-        uint _userId,
-        uint _primary,
-        uint[] _secondaries
+        uint indexed _userId,
+        uint indexed _primary,
+        uint[] indexed _secondaries
     );
 
     event AddOrUpdateContentNode(
@@ -353,15 +353,25 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address[] memory _bootstrapWallets
     ) internal
     {
+        uint256[3] memory emptyProposerIds = [uint256(0), uint256(0), uint256(0)];
         require(
             _bootstrapSPIDs.length == _bootstrapWallets.length,
             "Mismatched bootstrap array lengths"
         );
         for (uint i = 0; i < _bootstrapSPIDs.length; i++) {
             spIdToContentNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapWallets[i];
+            emit AddOrUpdateContentNode(
+                _bootstrapSPIDs[i],
+                _bootstrapWallets[i],
+                emptyProposerIds,
+                address(0x00),
+                address(0x00),
+                address(0x00)
+            );
         }
     }
 
+    // Confirm sender is valid
     function _validateUpdateOperation (
         address _proposer1Address,
         address _proposer2Address,

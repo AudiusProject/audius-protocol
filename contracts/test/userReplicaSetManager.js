@@ -11,6 +11,7 @@ import {
 import * as _constants from './utils/constants'
 import { eth_signTypedData } from './utils/util'
 import { getNetworkIdForContractInstance } from './utils/getters'
+import { web3 } from '@openzeppelin/test-helpers/src/setup'
 
 const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 const abi = require('ethereumjs-abi')
@@ -22,7 +23,9 @@ const encodeCall = (name, args, values) => {
     return '0x' + methodId + params
 }
 
-contract('UserReplicaSetManager', async (accounts) => {
+const addressZero = '0x0000000000000000000000000000000000000000'
+
+contract.only('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const userId1 = 1
@@ -93,8 +96,47 @@ contract('UserReplicaSetManager', async (accounts) => {
            initializeUserReplicaSetManagerCalldata,
            { from: deployer }
         )
+
         userReplicaSetManager = await UserReplicaSetManager.at(proxyContractDeployTx.address)
-    })
+
+        // Confirm constructor events were fired as expected
+        await expectEvent.inTransaction(
+            proxyContractDeployTx.transactionHash,
+            UserReplicaSetManager,
+            'AddOrUpdateContentNode',
+            {
+                _newCnodeId: toBN(cnode1SpID),
+                _newCnodeDelegateOwnerWallet: cnode1Account,
+                _proposer1Address: addressZero,
+                _proposer2Address: addressZero,
+                _proposer3Address: addressZero
+           }
+        )
+        await expectEvent.inTransaction(
+            proxyContractDeployTx.transactionHash,
+            UserReplicaSetManager,
+            'AddOrUpdateContentNode',
+            {
+                _newCnodeId: toBN(cnode2SpID),
+                _newCnodeDelegateOwnerWallet: cnode2Account,
+                _proposer1Address: addressZero,
+                _proposer2Address: addressZero,
+                _proposer3Address: addressZero
+           }
+        )
+        await expectEvent.inTransaction(
+            proxyContractDeployTx.transactionHash,
+            UserReplicaSetManager,
+            'AddOrUpdateContentNode',
+            {
+                _newCnodeId: toBN(cnode3SpID),
+                _newCnodeDelegateOwnerWallet: cnode3Account,
+                _proposer1Address: addressZero,
+                _proposer2Address: addressZero,
+                _proposer3Address: addressZero
+           }
+        )
+   })
 
     // Confirm constructor arguments are respected on chain
     const validateBootstrapNodes = async () => {
@@ -422,7 +464,6 @@ contract('UserReplicaSetManager', async (accounts) => {
             userReplicaBootstrapAddress,
             `Expected ${userReplicaBootstrapAddress}, found ${userReplicaBootstrapAddressOnChain}`
         )
-        const addressZero = '0x0000000000000000000000000000000000000000'
         // Confirm failure if update function sent from wrong address
         await expectRevert(
             userReplicaSetManager.updateUserReplicaBootstrapAddress(addressZero),
