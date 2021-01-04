@@ -40,8 +40,6 @@ class ServiceRegistry {
     this.redis.set('ipfsGatewayReqs', 0)
     this.redis.set('ipfsStandaloneReqs', 0)
 
-    console.log(`isUserMetadataNode: ${config.get('isUserMetadataNode')}`)
-
     await this.blacklistManager.init()
     const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
     this.libs = audiusLibs
