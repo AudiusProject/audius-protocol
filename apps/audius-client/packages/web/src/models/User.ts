@@ -33,6 +33,8 @@ export type UserMetadata = {
   instagram_handle?: string
   website?: string
   donation?: string
+  twitterVerified?: boolean
+  instagramVerified?: boolean
 } & Timestamped
 
 export type ComputedUserProperties = {

@@ -285,7 +285,27 @@ function* associateTwitterAccount(action) {
     const account = yield select(getAccountUser)
     const { verified } = profile
     if (!account.is_verified && verified) {
-      yield call(AudiusBackend.updateIsVerified, userId, verified)
+      yield put(
+        cacheActions.update(Kind.USERS, [
+          { id: userId, metadata: { is_verified: true } }
+        ])
+      )
+    }
+  } catch (err) {
+    console.error(err.message)
+  }
+}
+
+function* associateInstagramAccount(action) {
+  const { uuid, profile } = action.payload
+  try {
+    const userId = yield select(getUserId)
+    const handle = yield select(getUserHandle)
+    yield call(AudiusBackend.associateInstagramAccount, uuid, userId, handle)
+
+    const account = yield select(getAccountUser)
+    const { is_verified: verified } = profile
+    if (!account.is_verified && verified) {
       yield put(
         cacheActions.update(Kind.USERS, [
           { id: userId, metadata: { is_verified: true } }
@@ -363,6 +383,10 @@ function* watchTwitterLogin() {
   yield takeEvery(accountActions.twitterLogin.type, associateTwitterAccount)
 }
 
+function* watchInstagramLogin() {
+  yield takeEvery(accountActions.instagramLogin.type, associateInstagramAccount)
+}
+
 function* watchFetchSavedAlbums() {
   yield takeEvery(accountActions.fetchSavedAlbums.type, fetchSavedAlbumsAsync)
 }
@@ -406,6 +430,7 @@ export default function sagas() {
   const sagas = [
     watchFetchAccount,
     watchTwitterLogin,
+    watchInstagramLogin,
     watchFetchSavedAlbums,
     watchFetchSavedPlaylists,
     watchShowPushNotificationConfirmation,

@@ -68,6 +68,8 @@ export const FAVORITING_USERS_ROUTE = '/favoriting_users'
 export const FOLLOWING_USERS_ROUTE = '/following'
 export const FOLLOWERS_USERS_ROUTE = '/followers'
 export const ACCOUNT_SETTINGS_PAGE = '/settings/account'
+export const ACCOUNT_VERIFICATION_SETTINGS_PAGE =
+  '/settings/account/verification'
 export const NOTIFICATION_SETTINGS_PAGE = '/settings/notifications'
 export const ABOUT_SETTINGS_PAGE = '/settings/about'
 export const TRENDING_GENRES = '/trending/genres'

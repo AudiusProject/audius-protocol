@@ -36,12 +36,15 @@ import TabSlider from 'components/data-entry/TabSlider'
 import useScrollToTop from 'hooks/useScrollToTop'
 import { isDarkMode } from 'utils/theme/theme'
 import cn from 'classnames'
+import VerificationPage from './VerificationPage'
+import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export enum SubPage {
   ACCOUNT = 'account',
   NOTIFICATIONS = 'notifications',
-  ABOUT = 'about'
+  ABOUT = 'about',
+  VERIFICATION = 'verification'
 }
 
 const messages = {
@@ -68,7 +71,8 @@ type OwnProps = {
   profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
   isVerified: boolean
-  onTwitterLogin: (uuid: string, profile: object) => void
+  onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
+  onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
   notificationSettings: Notifications
   emailFrequency: EmailFrequency
   pushNotificationSettings: PushNotifications
@@ -97,7 +101,8 @@ const SubPages = {
   [SubPage.ABOUT]: AboutSettingsPage as React.FC<SettingsPageProps>,
   [SubPage.NOTIFICATIONS]: NotificationsSettingsPage as React.FC<
     SettingsPageProps
-  >
+  >,
+  [SubPage.VERIFICATION]: VerificationPage as React.FC<SettingsPageProps>
 }
 
 const SettingsPage = (props: SettingsPageProps) => {

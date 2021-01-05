@@ -1,6 +1,6 @@
 /* Title */
 .header {
-  margin: 64px 0px 24px;
+  margin: 0px 0px 48px;
   color: var(--secondary);
   font-size: var(--font-l);
   font-weight: bold;
@@ -10,15 +10,28 @@
   width: 250px;
 }
 
+.divider {
+  width: 224px;
+  border-top: 1px solid var(--neutral-light-8);
+  margin: 20px auto;
+}
+
+.lowerDivider {
+  margin: 16px auto;
+}
+
 /* Twitter Button */
 .twitterOverlayContainer {
+  padding-top: 72px;
   width: 100%;
-  height: 100%;
   display: inline-flex;
   align-items: center;
   flex-direction: column;
   background-color: var(--white);
   transition: all .07s ease-in-out;
+  padding-bottom: 32px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 .twitterOverlayContainer.isMobile {
@@ -27,9 +40,8 @@
 }
 
 .twitterButton {
-  margin-bottom: 28px;
-  height: 48px !important;
-  width: 300px !important;
+  height: 80px !important;
+  width: 320px !important;
   border-radius: 6px;
   background-color: var(--static-twitter-blue);
   box-shadow: 0 2px 5px -2px rgba(133,129,153,0.5), 0 2px 8px -2px rgba(27,161,241,0.25);
@@ -38,8 +50,8 @@
   align-items: center;
 }
 .twitterButton svg {
-  height: 32px !important;
-  width: 32px !important;
+  height: 48px !important;
+  width: 48px !important;
 }
 
 .twitterButton :global(.btnTextLabel) {
@@ -47,7 +59,81 @@
   font-size: var(--font-l);
   font-weight: var(--font-bold);
   letter-spacing: 0.15px;
-  margin-left: 36px;
+  margin-left: 16px;
+}
+
+.instagramButton {
+  height: 80px !important;
+  width: 320px !important;
+  margin-bottom: 20px;
+}
+
+.btnIcon svg {
+  height: 48px !important;
+  width: 48px !important;
+}
+
+.autofill {
+  font-weight: var(--font-demi-bold);
+  margin-bottom: 18px;
+  cursor: default;
+  user-select: none;
+  max-width: 320px;
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  line-height: 23px;
+}
+
+.autofillChecklist {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 224px;
+}
+
+.checkItem {
+  width: 100%;
+  max-width: 180px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  cursor: default;
+  user-select: none;
+}
+
+.checkIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 32px;
+  width: 32px;
+  margin-right: 12px;
+  border-radius: 50%;
+}
+
+.checkIcon svg {
+  height: 32px;
+  width: 32px;
+}
+
+.verified {
+  height: 14px;
+  width: 14px;
+}
+
+.ifApplicable  {
+  margin-top: 6px;
+  margin-bottom: -18px;
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  text-align: left;
+  color: var(--neutral-light-4);
 }
 
 .reasons {

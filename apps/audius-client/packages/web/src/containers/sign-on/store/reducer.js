@@ -3,6 +3,7 @@ import {
   SET_FIELD,
   SET_VALUE_FIELD,
   SET_TWITTER_PROFILE,
+  SET_INSTAGRAM_PROFILE,
   FETCH_FOLLOW_ARTISTS_SUCCEEDED,
   SET_FOLLOW_ARTIST_CATEGORY,
   VALIDATE_EMAIL,
@@ -57,6 +58,8 @@ const initialState = {
   accountReady: false,
   twitterId: '',
   twitterScreenName: '',
+  instagramId: '',
+  instagramScreenName: '',
   profileImage: null, // Object with file blob & url
   coverPhoto: null, // Object with file blob & url
   status: 'editing', // 'editing', 'loading', 'success', or 'failure'
@@ -204,6 +207,24 @@ const actionsMap = {
       profileImage: action.profileImage,
       coverPhoto: action.coverPhoto,
       verified: action.profile.verified
+    }
+  },
+  [SET_INSTAGRAM_PROFILE](state, action) {
+    return {
+      ...state,
+      instagramId: action.instagramId,
+      name: {
+        value: action.profile.full_name || '',
+        status: 'editing',
+        error: ''
+      },
+      handle: {
+        ...state.handle,
+        value: action.profile.username
+      },
+      instagramScreenName: action.profile.username,
+      profileImage: action.profileImage || null,
+      verified: action.profile.is_verified
     }
   },
   [VALIDATE_EMAIL](state, action) {

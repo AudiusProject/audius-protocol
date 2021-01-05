@@ -1,6 +1,14 @@
 import React, { useState, useContext, useCallback } from 'react'
+import cn from 'classnames'
 import { debounce } from 'lodash'
-import { Modal, Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
+import {
+  Modal,
+  Button,
+  ButtonType,
+  IconMail,
+  IconSignOut,
+  IconVerified
+} from '@audius/stems'
 
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -8,7 +16,6 @@ import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import { useUserProfilePicture } from 'hooks/useImageSize'
 
-import TwitterAccountVerified from '../TwitterAccountVerified'
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './AccountSettingsPage.module.css'
 import { SquareSizes } from 'models/common/ImageSizes'
@@ -19,17 +26,19 @@ import SignOutPage from 'containers/nav/mobile/SignOut'
 import { ToastContext } from 'components/toast/ToastContext'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import { ACCOUNT_VERIFICATION_SETTINGS_PAGE } from 'utils/route'
 
 const messages = {
   recovery: `Store your recovery email safely.
 This email is the only way to recover your account if you forget your password.`,
-  verified:
-    'Link your verified Twitter Account to instantly become verified on Audius!',
+  verified: 'Get verified by linking a verified social account to Audius',
   signOut:
     'Make sure you have your account recovery email stored somewhere safe before signing out!',
   emailSent: 'Email Sent!',
   emailNotSent: 'Something broke! Please try again!',
-  holdUp: 'HOLD UP!'
+  holdUp: 'HOLD UP!',
+  verify: 'Verification',
+  isVerified: 'You’re Verified!'
 }
 
 const AccountSettingsPage = ({
@@ -39,9 +48,8 @@ const AccountSettingsPage = ({
   name,
   handle,
   profilePictureSizes,
-  isVerified,
-  onTwitterLogin,
-  onTwitterCompleteOauth
+  goToRoute,
+  isVerified
 }: SettingsPageProps) => {
   const [showModalSignOut, setShowModalSignOut] = useState(false)
   const { toast } = useContext(ToastContext)
@@ -69,9 +77,9 @@ const AccountSettingsPage = ({
     [toast]
   )
 
-  const onTwitterClick = useCallback(() => {
-    record(make(Name.SETTINGS_START_TWITTER_OAUTH, {}))
-  }, [record])
+  const goToVerificationPage = useCallback(() => {
+    goToRoute(ACCOUNT_VERIFICATION_SETTINGS_PAGE)
+  }, [goToRoute])
 
   return (
     <MobilePageContainer
@@ -112,13 +120,25 @@ const AccountSettingsPage = ({
               title='Get Verified'
               body={messages.verified}
             >
-              <TwitterAccountVerified
-                isMobile
-                isVerified={isVerified}
-                onTwitterLogin={onTwitterLogin}
-                onTwitterClick={onTwitterClick}
-                onTwitterCompleteOauth={onTwitterCompleteOauth}
-              />
+              {isVerified ? (
+                <Button
+                  text={messages.isVerified}
+                  onClick={goToVerificationPage}
+                  type={ButtonType.COMMON_ALT}
+                  isDisabled={true}
+                  className={cn(styles.verificationBtn, styles.isVerified)}
+                  textClassName={styles.verifiedText}
+                  leftIcon={<IconVerified className={styles.verifiedIcon} />}
+                />
+              ) : (
+                <Button
+                  text={messages.verify}
+                  onClick={goToVerificationPage}
+                  type={ButtonType.COMMON_ALT}
+                  className={styles.verificationBtn}
+                  leftIcon={<IconVerified className={styles.verifiedIcon} />}
+                />
+              )}
             </Row>
           </Grouping>
           <Grouping>
