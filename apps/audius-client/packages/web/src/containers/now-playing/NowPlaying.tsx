@@ -66,7 +66,6 @@ import { useRecord, make } from 'store/analytics/actions'
 import { AudioState } from 'store/player/types'
 import { withNullGuard } from 'utils/withNullGuard'
 import CoSign, { Size } from 'components/co-sign/CoSign'
-import { getAverageColor } from 'store/application/ui/average-color/slice'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -122,8 +121,7 @@ const NowPlaying = g(
     clickOverflow,
     goToRoute,
     isCasting,
-    castMethod,
-    averageRGBColor
+    castMethod
   }) => {
     const { uid } = currentQueueItem
     const { track, user } = currentQueueItem
@@ -300,15 +298,16 @@ const NowPlaying = g(
       }
     }
 
-    const artworkAverageColor = averageRGBColor
-      ? {
-          boxShadow: `0 1px 15px -2px rgba(
-          ${averageRGBColor.r},
-          ${averageRGBColor.g},
-          ${averageRGBColor.b}
+    const artworkAverageColor =
+      track && track._cover_art_color
+        ? {
+            boxShadow: `0 1px 15px -2px rgba(
+          ${track._cover_art_color.r},
+          ${track._cover_art_color.g},
+          ${track._cover_art_color.b}
           , 0.5)`
-        }
-      : {}
+          }
+        : {}
 
     return (
       <div
@@ -433,24 +432,15 @@ function makeMapStateToProps() {
   const getCurrentQueueItem = makeGetCurrent()
 
   const mapStateToProps = (state: AppState) => {
-    const currentQueueItem = getCurrentQueueItem(state)
     return {
-      currentQueueItem,
+      currentQueueItem: getCurrentQueueItem(state),
       currentUserId: getUserId(state),
       playCounter: getCounter(state),
       audio: getAudio(state),
       isPlaying: getPlaying(state),
       isBuffering: getBuffering(state),
       isCasting: getIsCasting(state),
-      castMethod: getCastMethod(state),
-      averageRGBColor: currentQueueItem.track
-        ? getAverageColor(state, {
-            multihash:
-              currentQueueItem.track.cover_art_sizes ??
-              currentQueueItem.track.cover_art ??
-              ''
-          })
-        : null
+      castMethod: getCastMethod(state)
     }
   }
   return mapStateToProps
