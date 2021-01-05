@@ -5,7 +5,6 @@ const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
-const EthereumWallet = require('ethereumjs-wallet')
 
 const axios = require('axios')
 
@@ -187,10 +186,8 @@ module.exports = function (app) {
         belowMinimumBalances.push({ account, balance })
       }
     }
-
-    const privateKeyBuffer = Buffer.from(config.get('relayerPublicKey'), 'hex')
-    const relayerAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
-    const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerAddress), 'ether'))
+    const relayerPublicKey = config.get('relayerPublicKey')
+    const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerPublicKey), 'ether'))
     const relayerAboveMinimum = relayerBalance >= minimumRelayerBalance
 
     // no accounts below minimum balance
@@ -200,7 +197,7 @@ module.exports = function (app) {
         'minimum_balance': minimumBalance,
         'balances': balances,
         'relayer': {
-          'wallet': relayerAddress,
+          'wallet': relayerPublicKey,
           'balance': relayerBalance,
           'above_balance_minimum': relayerAboveMinimum
         }
@@ -212,7 +209,7 @@ module.exports = function (app) {
         'balances': balances,
         'below_minimum_balance': belowMinimumBalances,
         'relayer': {
-          'wallet': relayerAddress,
+          'wallet': relayerPublicKey,
           'balance': relayerBalance,
           'above_balance_minimum': relayerAboveMinimum
         }
@@ -222,7 +219,7 @@ module.exports = function (app) {
 
   app.get('/eth_balance_check', handleResponse(async (req, res) => {
     let minimumBalance = parseFloat(config.get('ethMinimumBalance'))
-    let minimumFunderBalance = parseFloat(config.get('minimumFunderBalance'))
+    let minimumFunderBalance = parseFloat(config.get('ethMinimumFunderBalance'))
     let funderAddress = config.get('ethFunderAddress')
     let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
     let funderAboveMinimum = funderBalance >= minimumFunderBalance
