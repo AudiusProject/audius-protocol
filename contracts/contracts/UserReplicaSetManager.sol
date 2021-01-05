@@ -33,9 +33,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
 
     /* Events */
     event UpdateReplicaSet(
-        uint indexed _userId,
-        uint indexed _primary,
-        uint[] indexed _secondaries
+        uint _userId,
+        uint _primary,
+        uint[] _secondaries
     );
 
     event AddOrUpdateContentNode(

@@ -11,7 +11,6 @@ import {
 import * as _constants from './utils/constants'
 import { eth_signTypedData } from './utils/util'
 import { getNetworkIdForContractInstance } from './utils/getters'
-import { web3 } from '@openzeppelin/test-helpers/src/setup'
 
 const { expectRevert, expectEvent } = require('@openzeppelin/test-helpers');
 const abi = require('ethereumjs-abi')
@@ -25,7 +24,7 @@ const encodeCall = (name, args, values) => {
 
 const addressZero = '0x0000000000000000000000000000000000000000'
 
-contract.only('UserReplicaSetManager', async (accounts) => {
+contract('UserReplicaSetManager', async (accounts) => {
     const deployer = accounts[0]
     const verifierAddress = accounts[2]
     const userId1 = 1
@@ -183,7 +182,7 @@ contract.only('UserReplicaSetManager', async (accounts) => {
 
     let updateReplicaSet = async (userId, newPrimary, newSecondaries, oldPrimary, oldSecondaries, senderAcct) => {
         // console.log(`Updating user=${userId} from ${oldPrimary},${oldSecondaries} to ${newPrimary},${newSecondaries} from ${senderAcct}`)
-        await _lib.updateReplicaSet(
+        let updateTxResp = await _lib.updateReplicaSet(
             userReplicaSetManager,
             userId,
             newPrimary,
@@ -195,6 +194,15 @@ contract.only('UserReplicaSetManager', async (accounts) => {
         let replicaSetFromChain = await userReplicaSetManager.getUserReplicaSet(userId)
         assert.isTrue(replicaSetFromChain.primary.eq(newPrimary), 'Primary mismatch')
         assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(newSecondaries[i])), 'Secondary mismatch')
+        await expectEvent.inTransaction(
+            updateTxResp.tx,
+            UserReplicaSetManager,
+            'UpdateReplicaSet',
+            {
+                _userId: toBN(userId),
+                _primary: toBN(newPrimary),
+            }
+        )
     }
 
     let generateProposeAddOrUpdateContentNodeData = async (chainId, newCNodeSPId, newCnodeDelegateWallet, proposerSpId, proposerAccount) => {
