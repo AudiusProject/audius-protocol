@@ -14,7 +14,7 @@
   width: 100%;
   border-radius: 0 0 40px 40px;
   background-color: var(--white);
-  box-shadow: 0 2px 25px -5px rgba(17,17,34,0.5); 
+  box-shadow: 0 2px 25px -5px rgba(17,17,34,0.5);
 }
 
 .native .topSection {
@@ -42,8 +42,8 @@
 
 .bottomContainer {
   z-index: 0;
-  background-size: cover; 
-  background-position: center; 
+  background-size: cover;
+  background-position: center;
   width: 100%;
   flex: 1;
   margin: -40px 0px 0px;
@@ -111,14 +111,14 @@
 .inputField {
   text-align: center;
   height: 40px;
-  width: 320px;
+  max-width: 320px;
 }
 
 .signInInput {
   margin: 16px auto;
   text-align: center;
   height: 40px;
-  width: 320px;
+  max-width: 320px;
 }
 .inputField > input {
   height: 100% !important;
