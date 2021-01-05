@@ -1,13 +1,15 @@
 .container {
   display: inline-flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   position: absolute;
+  z-index: -1;
   height: 100%;
   left: 0;
   right: 0;
   user-select: none;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Title */
@@ -16,7 +18,6 @@
   color: #7E1BCC;
   font-size: var(--font-l);
   font-weight: bold;
-  width: 320px;
   text-align: center;
   line-height: 26px;
   width: 250px;
@@ -25,8 +26,16 @@
 .profileContentContainer {
   position: relative;
   width: 100%;
-  max-width: 320px;
   min-height: 536px;
+  height: 100%;
+  margin-top: 41px;
+  overflow: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
+.authOverlay {
+  min-height: 820px;
+  height: 100%;
 }
 
 .backButton {

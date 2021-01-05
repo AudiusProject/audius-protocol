@@ -47,6 +47,7 @@ import {
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
   ACCOUNT_SETTINGS_PAGE,
+  ACCOUNT_VERIFICATION_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
   FOLLOWING_USERS_ROUTE,
@@ -163,6 +164,10 @@ const ConnectedMusicConfetti = lazyWithPreload(
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 export const MAIN_CONTENT_ID = 'mainContent'
+
+export const includeSearch = search => {
+  return search.includes('oauth_token') || search.includes('code')
+}
 
 initializeSentry()
 
@@ -353,8 +358,10 @@ class App extends Component {
   }
 
   pushWithToken = route => {
-    if (this.props.location.search.includes('oauth_token')) {
-      this.props.history.push(`${route}${this.props.location.search}`)
+    const search = this.props.location.search
+    // Twitter and instagram search params
+    if (includeSearch(search)) {
+      this.props.history.push(`${route}${search}`)
     } else {
       this.props.history.push(route)
     }
@@ -698,6 +705,12 @@ class App extends Component {
               />
               <MobileRoute
                 exact
+                path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
+                isMobile={isMobileClient}
+                render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
+              />
+              <MobileRoute
+                exact
                 path={NOTIFICATION_SETTINGS_PAGE}
                 isMobile={isMobileClient}
                 render={() => <SettingsPage subPage={SubPage.NOTIFICATIONS} />}
@@ -798,7 +811,7 @@ class App extends Component {
                     window.location.pathname === HOME_PAGE
                       ? FEED_PAGE
                       : window.location.pathname,
-                  search: this.props.location.search.includes('oauth_token')
+                  search: includeSearch(this.props.location.search)
                     ? this.props.location.search
                     : ''
                 }}

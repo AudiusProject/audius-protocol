@@ -18,8 +18,14 @@ const TwitterButton = props => {
 
   return (
     <div onClick={props.onClick} className={cn(buttonClassNames)}>
-      <IconTwitter />
-      <span className={cn('btnTextLabel', styles.textLabel)}>
+      <IconTwitter
+        className={cn({ [props.iconClassName]: !!props.iconClassName })}
+      />
+      <span
+        className={cn('btnTextLabel', styles.textLabel, {
+          [props.textClassName]: !!props.textClassName
+        })}
+      >
         {props.textLabel}
       </span>
     </div>
@@ -33,7 +39,9 @@ TwitterButton.propTypes = {
   style: PropTypes.object,
   size: PropTypes.oneOf(['tiny', 'small', 'medium', 'large']),
   onClick: PropTypes.func,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  textClassName: PropTypes.string,
+  iconClassName: PropTypes.string
 }
 
 TwitterButton.defaultProps = {

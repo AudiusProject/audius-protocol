@@ -3,7 +3,6 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
 import TwitterLogin from 'react-twitter-auth'
-import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 
 import styles from './ProfileForm.module.css'
@@ -13,6 +12,8 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 import StatusMessage from 'components/general/StatusMessage'
+import InstagramAuth from 'components/general/InstagramAuth'
+import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 
 const messages = {
   manual: 'I’d rather fill out my profile manually',
@@ -20,9 +21,11 @@ const messages = {
   errors: {
     characters: 'Only use A-Z, 0-9, and underscores',
     inUse: 'That handle has already been taken',
-    twitterReserved: 'This verified Twitter handle is reserved.'
+    twitterReserved: 'This verified Twitter handle is reserved.',
+    instagramReserved: 'This verified Instagram handle is reserved.'
   },
-  completeWithTwitter: 'Complete with Twitter to claim'
+  completeWithTwitter: 'Link to Twitter to claim',
+  completeWithInstagram: 'Link to Instagram to claim'
 }
 
 const ProfileForm = props => {
@@ -41,13 +44,14 @@ const ProfileForm = props => {
   }
 
   const suggestTwitterLogin = handle.error === 'twitterReserved'
+  const suggestInstagramLogin = handle.error === 'instagramReserved'
 
   return (
     <div
       className={cn(styles.profileFormContainer, {
         [styles.isMobile]: props.isMobile,
         [styles.blur]: props.showTwitterOverlay,
-        [styles.moveFormUp]: suggestTwitterLogin
+        [styles.moveFormUp]: suggestTwitterLogin || suggestInstagramLogin
       })}
     >
       {props.isMobile ? (
@@ -155,6 +159,28 @@ const ProfileForm = props => {
                 >
                   {messages.completeWithTwitter}
                 </TwitterLogin>
+              </div>
+            )}
+          </Spring>
+        ) : null}
+        {suggestInstagramLogin ? (
+          <Spring
+            from={{ opacity: 0 }}
+            to={{ opacity: 1 }}
+            leave={{ opacity: 0 }}
+            config={{ duration: 200 }}
+          >
+            {animProps => (
+              <div style={animProps} className={styles.suggestTwitter}>
+                <InstagramAuth
+                  onFailure={(...args) => console.log(args)}
+                  onSuccess={props.onInstagramLogin}
+                  className={styles.hideTwitterButton}
+                  setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
+                  getUserUrl={`${IDENTITY_SERVICE}/instagram`}
+                >
+                  {messages.completeWithInstagram}
+                </InstagramAuth>
               </div>
             )}
           </Spring>

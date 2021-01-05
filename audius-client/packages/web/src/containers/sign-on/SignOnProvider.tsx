@@ -332,6 +332,15 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     this.props.recordTwitterComplete(!!profile.verified)
   }
 
+  setInstagramProfile = (
+    instagramId: string,
+    profile: { username?: string; is_verified?: boolean },
+    profileImage?: any
+  ) => {
+    if (profile.username) this.props.validateHandle(profile.username)
+    this.props.setInstagramProfile(instagramId, profile, profileImage)
+  }
+
   onMetaMaskSignIn = () => {
     this.props.goToRoute(FEED_PAGE)
     window.location.reload()
@@ -392,6 +401,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       onViewSignIn: this.onViewSignIn,
       onViewSignUp: this.onViewSignUp,
       setTwitterProfile: this.setTwitterProfile,
+      setInstagramProfile: this.setInstagramProfile,
       onMetaMaskSignIn: this.onMetaMaskSignIn,
       recordTwitterStart: this.props.recordTwitterStart,
       recordTwitterComplete: this.props.recordTwitterComplete
@@ -443,6 +453,14 @@ function mapDispatchToProps(dispatch: Dispatch) {
           profileImage,
           coverPhoto
         )
+      ),
+    setInstagramProfile: (
+      instagramId: string,
+      profile: object,
+      profileImage?: object
+    ) =>
+      dispatch(
+        signOnAction.setInstagramProfile(instagramId, profile, profileImage)
       ),
     sendWelcomeEmail: (name: string) =>
       dispatch(signOnAction.sendWelcomeEmail(name)),

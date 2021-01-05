@@ -148,7 +148,12 @@ class TwitterLogin extends Component {
       const message = new RequestTwitterAuthMessage(authenticationUrl)
       message.send()
       const response = await message.receive()
-      return this.getOauthToken(response.oauthVerifier, response.oauthToken)
+      const { oauthVerifier, oauthToken } = response
+      if (oauthVerifier && oauthToken) {
+        return this.getOauthToken(oauthVerifier, oauthToken)
+      } else {
+        this.props.onFailure()
+      }
     } catch (err) {
       this.props.onFailure(err)
     }

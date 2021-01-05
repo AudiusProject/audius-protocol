@@ -53,6 +53,8 @@ export type ProfilePageProps = {
   location: string
   twitterHandle: string
   instagramHandle: string
+  twitterVerified?: boolean
+  instagramVerified?: boolean
   website: string
   donation: string
   coverPhotoSizes: CoverPhotoSizes | null
@@ -178,6 +180,8 @@ const ProfilePage = g(
     followers,
     twitterHandle,
     instagramHandle,
+    twitterVerified,
+    instagramVerified,
     website,
     donation,
     albums,
@@ -302,6 +306,8 @@ const ProfilePage = g(
           isVerified={verified}
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
+          twitterVerified={twitterVerified}
+          instagramVerified={instagramVerified}
           website={website}
           donation={donation}
           onUpdateName={updateName}

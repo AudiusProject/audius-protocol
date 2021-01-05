@@ -1,0 +1,152 @@
+.wrapperClassName {
+  width: 100%;
+  margin: auto;
+}
+
+.modalBodyStyle {
+  max-width: 736px;
+}
+
+.container {
+  border-top: 1px solid var(--neutral-light-8);
+  padding: 24px 20px;
+  margin: 0px 24px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: var(--neutral);
+}
+
+.container b {
+  font-weight: var(--font-bold);
+}
+
+
+.headerContainer {
+  margin: 0px 8px;
+  position: relative;
+  border-bottom: none;
+}
+
+.warning {
+  margin-top: 36px; 
+}
+
+.btnContainer {
+  margin-top: 24px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.btn {
+  height: 64px !important;
+  padding: 0px 35px;
+}
+
+.disabledBtn .btnIcon path,
+.btn .btnIcon path {
+  fill: var(--primary) !important;
+}
+
+.btn .btnText {
+  font-size: var(--font-l);
+}
+
+.twitterClassName {
+  margin-right: 24px;
+}
+
+.error {
+  color: var(--accent-red);
+  font-weight: var(--font-demi-bold);
+  display: flex;
+  width: 100%;
+  text-align: left;
+  padding: 0px 28px;
+  margin-top: 28px;
+}
+
+.validationIcon {
+  height: 16px;
+  width: 16px;
+  margin-right: 10px;
+}
+
+.loadingContainer {
+  height: 48px;
+  margin: 120px auto;
+}
+
+.verified {
+  background-image: var(--page-header-gradient);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  font-weight: var(--font-heavy);
+  font-size: var(--font-3xl);
+  margin-bottom: 12px;
+}
+
+.verifiedIcon {
+  margin-left: 12px;
+}
+
+.profilePicture {
+  height: 112px;
+  width: 112px;
+  border-radius: 50%;
+  margin: 0px auto 8px;
+  overflow: hidden;
+}
+
+.displayName {
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  color: var(--neutral);
+  margin-bottom: 10px;
+}
+
+.handle {
+  font-weight: normal;
+  font-size: var(--font-m);
+  color: var(--neutral-light-4);
+  margin-bottom: 24px
+}
+
+.iconVerified {
+  height: 12px;
+  width: 12px;
+  margin-left: 4px;
+}
+
+.container .successBtn {
+  height: 64px !important;
+  padding: 0px 56px;
+}
+
+.successBtn .btnText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  text-transform: capitalize;
+  color: var(--neutral);
+}
+
+
+.disabledBtn {
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-6);
+  opacity: 0.5;
+  height: 64px !important;
+}
+
+.disabledBtn:hover,
+.disabledBtn:active {
+  transform: none !important;
+  background-color: var(--white) !important;
+  border: 1px solid var(--neutral-light-6) !important;
+}
+
+.disabledBtn .disabledBtnText {
+  color: var(--neutral);
+  font-weight: var(--font-demi-bold);
+}

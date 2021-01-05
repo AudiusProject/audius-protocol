@@ -175,7 +175,7 @@ const ProfileWrapping = props => {
                 ? props.handle.replace('@', '')
                 : props.twitterHandle
             }
-            isDisabled={props.verified}
+            isDisabled={!!props.twitterVerified}
             className={styles.twitterInput}
             type={Type.TWITTER}
             onChange={props.onUpdateTwitterHandle}
@@ -185,6 +185,7 @@ const ProfileWrapping = props => {
           <SocialLinkInput
             defaultValue={props.instagramHandle}
             className={styles.instagramInput}
+            isDisabled={!!props.instagramVerified}
             type={Type.INSTAGRAM}
             onChange={props.onUpdateInstagramHandle}
           />

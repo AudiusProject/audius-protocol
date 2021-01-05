@@ -5,7 +5,7 @@
   display: inline-flex;
   align-items: center;
   flex-direction: column;
-  padding-top: 101px;
+  padding-top: 32px;
   background-color: rgba(255,255,255,0.75);
   transition: all .07s ease-in-out;
 }
@@ -13,7 +13,7 @@
 .twitterButton {
   margin-bottom: 40px;
   height: 80px !important;
-  width: 284px !important;
+  width: 320px !important;
   border-radius: 6px;
   background-color: var(--static-twitter-blue);
   box-shadow: 0 2px 5px -2px rgba(133,129,153,0.5), 0 2px 8px -2px rgba(27,161,241,0.25);
@@ -23,13 +23,47 @@
   width: 42px !important;
 }
 
-
-.twitterButton :global(.btnTextLabel) {
+.twitterButton .btnText {
   color: var(--white);
   font-size: var(--font-l);
-  font-weight: var(-font-demi-bold);
+  font-weight: var(--font-bold);
   letter-spacing: 0.25px;
 }
+
+.twitterButton .btnIcon svg {
+  height: 48px;
+  width: 48px;
+}
+
+
+.instagramButton {
+  height: 80px !important;
+  width: 320px !important;
+  margin-bottom: 16px;
+}
+
+.instagramButton .instagramText {
+}
+
+.instagramButton .btnIcon svg {
+  height: 48px;
+  width: 48px;
+}
+
+.verified {
+  height: 14px;
+  width: 14px;
+}
+
+.ifApplicable  {
+  margin-top: 6px;
+  margin-bottom: -18px;
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  text-align: left;
+  color: var(--neutral-light-4);
+}
+
 
 /* Checklist  */
 
@@ -38,22 +72,31 @@
   margin-bottom: 18px;
   cursor: default;
   user-select: none;
+  max-width: 320px;
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  line-height: 23px;
 }
 
 .autofillChecklist {
   display: inline-flex;
   align-items: center;
   flex-direction: column;
-  margin-bottom:81px;
+  justify-content: center;
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 224px;
 }
 
 .checkItem {
   width: 100%;
+  max-width: 180px;
   display: inline-flex;
-  margin-bottom: 16px;
-  color: var(--neutral-light-1);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
+  align-items: center;
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
   cursor: default;
   user-select: none;
 }
@@ -62,17 +105,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
+  height: 32px;
+  width: 32px;
+  margin-right: 12px;
   border-radius: 50%;
 }
 
-.checkIcon > svg path {
-  fill: var(--white);
-}
-.checkIcon > svg circle {
-  fill: var(--secondary);  
+.checkIcon svg {
+  height: 32px;
+  width: 32px;
 }
 
 .pwdCheckLabel {
@@ -80,6 +121,13 @@
   font-size: var(--font-xs);
   cursor: default;
   user-select: none;
+}
+
+.divider {
+  border-bottom: 1px solid var(--neutral-light-8);
+  max-width: 224px;
+  width: 100%;
+  margin-bottom: 16px;
 }
 
 /* manual */
@@ -96,5 +144,19 @@
 .manualText:hover {
   color: var(--secondary);
   text-decoration: underline;
+}
+
+/* Loading */
+.loadingContainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loadingSpinner {
+  height: 48px;
+  width: 48px;
 }
 

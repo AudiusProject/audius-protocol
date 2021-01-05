@@ -487,6 +487,8 @@ class AudiusBackend {
         account.website = body.website || null
         account.donation = body.donation || null
         account._artist_pick = body.pinnedTrackId || null
+        account.twitterVerified = body.twitterVerified || false
+        account.instagramVerified = body.instagramVerified || false
         return AudiusBackend.getUserImages(account)
       } catch (e) {
         // Failed to fetch social handles and artist pick, but return what we have
@@ -1473,6 +1475,21 @@ class AudiusBackend {
     await waitForLibsInit()
     try {
       await audiusLibs.Account.associateTwitterUser(twitterId, userId, handle)
+      return { success: true }
+    } catch (error) {
+      console.error(error.message)
+      return { success: false, error }
+    }
+  }
+
+  static async associateInstagramAccount(instagramId, userId, handle) {
+    await waitForLibsInit()
+    try {
+      await audiusLibs.Account.associateInstagramUser(
+        instagramId,
+        userId,
+        handle
+      )
       return { success: true }
     } catch (error) {
       console.error(error.message)

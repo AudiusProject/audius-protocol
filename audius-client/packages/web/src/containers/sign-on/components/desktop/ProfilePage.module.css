@@ -33,6 +33,10 @@
   background-color: #DAD9E0;
 }
 
+.hide {
+  display: none;
+}
+
 /* Mobile */
 .isMobile.container {
   padding: 24px 16px;

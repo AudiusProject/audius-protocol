@@ -18,6 +18,8 @@ type EditProfileProps = {
   isVerified: boolean
   twitterHandle: string
   instagramHandle: string
+  twitterVerified?: boolean
+  instagramVerified?: boolean
   website: string
   donation: string
 
@@ -37,6 +39,8 @@ const EditProfile = ({
   isVerified,
   twitterHandle,
   instagramHandle,
+  twitterVerified,
+  instagramVerified,
   website,
   donation,
   onUpdateName,
@@ -79,7 +83,7 @@ const EditProfile = ({
             onChange={onUpdateTwitterHandle}
             maxLength={200}
             inputPrefix='@'
-            isDisabled={isVerified}
+            isDisabled={!!twitterVerified}
           />
           <EditableRow
             label={<IconInstagram className={styles.icon} />}
@@ -88,6 +92,7 @@ const EditProfile = ({
             onChange={onUpdateInstagramHandle}
             maxLength={200}
             inputPrefix='@'
+            isDisabled={!!instagramVerified}
           />
           <EditableRow
             label={<IconLink className={styles.icon} />}

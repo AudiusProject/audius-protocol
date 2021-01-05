@@ -24,6 +24,9 @@ export const SIGN_UP_TIMEOUT = 'SIGN_ON/SIGN_UP_TIMEOUT'
 
 export const SET_TWITTER_PROFILE = 'SIGN_ON/SET_TWITTER_PROFILE'
 export const SET_TWITTER_PROFILE_ERROR = 'SIGN_ON/SET_TWITTER_PROFILE_ERROR'
+export const SET_INSTAGRAM_PROFILE = 'SIGN_ON/SET_INSTAGRAM_PROFILE'
+export const SET_INSTAGRAM_PROFILE_ERROR = 'SIGN_ON/SET_INSTAGRAM_PROFILE_ERROR'
+
 export const SET_STATUS = 'SIGN_ON/SET_STATUS'
 export const CONFIGURE_META_MASK = 'SIGN_ON/CONFIGURE_META_MASK'
 
@@ -196,6 +199,19 @@ export function setTwitterProfile(
 
 export function setTwitterProfileError(error) {
   return { type: SET_TWITTER_PROFILE_ERROR, error }
+}
+
+export function setInstagramProfile(instagramId, profile, profileImage) {
+  return {
+    type: SET_INSTAGRAM_PROFILE,
+    instagramId,
+    profile,
+    profileImage
+  }
+}
+
+export function setInstagramProfileError(error) {
+  return { type: SET_INSTAGRAM_PROFILE_ERROR, error }
 }
 
 /**

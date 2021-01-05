@@ -1,0 +1,8 @@
+.button {}
+
+.button .text {
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+}
+
+.button .icon path {}

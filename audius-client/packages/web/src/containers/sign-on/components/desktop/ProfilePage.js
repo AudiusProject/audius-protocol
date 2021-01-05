@@ -21,7 +21,8 @@ export class ProfilePage extends Component {
     handleError: '',
     profileValid: false,
     initial: true,
-    isSubmitted: false
+    isSubmitted: false,
+    isLoading: false
   }
 
   onToggleTwitterOverlay = () =>
@@ -43,6 +44,14 @@ export class ProfilePage extends Component {
       name.value &&
       (handle.status === 'success' || handle.status === 'disabled')
     )
+  }
+
+  setIsLoading = () => {
+    this.setState({ isLoading: true })
+  }
+
+  setDidFinishLoading = () => {
+    this.setState({ isLoading: false })
   }
 
   onTwitterLogin = async twitterProfile => {
@@ -81,9 +90,45 @@ export class ProfilePage extends Component {
       } else {
         this.props.setTwitterProfile(uuid, profile, { url, file })
       }
-      this.setState({ showTwitterOverlay: false, initial: false })
+      this.setState({
+        showTwitterOverlay: false,
+        initial: false,
+        isLoading: false
+      })
     } catch (err) {
-      this.setState({ showTwitterOverlay: false, initial: false })
+      this.setState({
+        showTwitterOverlay: false,
+        initial: false,
+        isLoading: false
+      })
+    }
+  }
+
+  onInstagramLogin = async (uuid, profile) => {
+    try {
+      if (profile.profile_pic_url_hd) {
+        const profileUrl = profile.profile_pic_url_hd
+        const imageBlob = await fetch(profileUrl).then(r => r.blob())
+        const artworkFile = new File([imageBlob], 'Artwork', {
+          type: 'image/jpeg'
+        })
+        const file = await resizeImage(artworkFile)
+        const url = URL.createObjectURL(file)
+        this.props.setInstagramProfile(uuid, profile, { url, file })
+      } else {
+        this.props.setInstagramProfile(uuid, profile)
+      }
+      this.setState({
+        showTwitterOverlay: false,
+        initial: false
+      })
+      this.setState({ isLoading: false })
+    } catch (err) {
+      this.setState({
+        showTwitterOverlay: false,
+        initial: false,
+        isLoading: false
+      })
     }
   }
 
@@ -101,10 +146,9 @@ export class ProfilePage extends Component {
       isVerified,
       setProfileImage,
       twitterId,
-      isMobile,
-      recordTwitterStart
+      isMobile
     } = this.props
-    const { showTwitterOverlay, initial } = this.state
+    const { showTwitterOverlay, initial, isLoading } = this.state
     const canUpdateHandle = !(
       isVerified &&
       twitterId &&
@@ -137,9 +181,12 @@ export class ProfilePage extends Component {
             header={messages.header}
             isMobile={isMobile}
             initial={initial}
+            isLoading={isLoading}
             showTwitterOverlay={showTwitterOverlay}
-            onClick={recordTwitterStart}
+            onClick={this.setIsLoading}
+            onFailure={this.setDidFinishLoading}
             onTwitterLogin={this.onTwitterLogin}
+            onInstagramLogin={this.onInstagramLogin}
             onToggleTwitterOverlay={this.onToggleTwitterOverlay}
           />
           <ProfileForm
@@ -149,6 +196,7 @@ export class ProfilePage extends Component {
             profileImage={profileImage}
             name={name}
             onTwitterLogin={this.onTwitterLogin}
+            onInstagramLogin={this.onInstagramLogin}
             onToggleTwitterOverlay={this.onToggleTwitterOverlay}
             canUpdateHandle={canUpdateHandle}
             handle={handle}

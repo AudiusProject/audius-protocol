@@ -34,6 +34,28 @@ type RenameAccountPlaylistPayload = {
   name: string
 }
 
+export type InstagramProfile = {
+  id: string
+  username: string
+  biography?: string
+  business_email?: string
+  edge_follow: { count: number }
+  edge_followed_by: { count: number }
+  external_url?: string
+  full_name?: string
+  is_business_account?: boolean
+  is_private?: boolean
+  is_verified: boolean
+  profile_pic_url?: string
+  profile_pic_url_hd?: string
+}
+
+export type TwitterProfile = {
+  verified: boolean
+  name: string
+  screen_name: string
+}
+
 const slice = createSlice({
   name: 'account',
   initialState,
@@ -125,6 +147,10 @@ const slice = createSlice({
       state,
       action: PayloadAction<{ uuid: string; profile: any }>
     ) => {},
+    instagramLogin: (
+      state,
+      action: PayloadAction<{ uuid: string; profile: InstagramProfile }>
+    ) => {},
     showPushNotificationConfirmation: () => {}
   }
 })
@@ -149,6 +175,7 @@ export const {
   fetchBrowserPushNotifications,
   subscribeBrowserPushNotifications,
   unsubscribeBrowserPushNotifications,
+  instagramLogin,
   twitterLogin,
   showPushNotificationConfirmation
 } = slice.actions

@@ -147,6 +147,7 @@ class SettingsPage extends PureComponent<
       getPushNotificationSettings,
       castMethod,
       onTwitterLogin,
+      onInstagramLogin,
       toggleNotificationSetting,
       togglePushNotificationSetting,
       updateEmailFrequency,
@@ -170,6 +171,7 @@ class SettingsPage extends PureComponent<
       profilePictureSizes,
       theme,
       toggleTheme: this.toggleTheme,
+      onInstagramLogin,
       onTwitterClick,
       onTwitterCompleteOauth,
       recordSignOut,
@@ -224,6 +226,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.getPushNotificationSettings()),
     onTwitterLogin: (uuid: string, profile: object) =>
       dispatch(accountActions.twitterLogin({ uuid, profile })),
+    onInstagramLogin: (
+      uuid: string,
+      profile: accountActions.InstagramProfile
+    ) => dispatch(accountActions.instagramLogin({ uuid, profile })),
     subscribeBrowserPushNotifications: () =>
       dispatch(accountActions.subscribeBrowserPushNotifications()),
     setBrowserNotificationSettingsOn: () =>

@@ -5,17 +5,38 @@ import { Transition } from 'react-spring/renderprops'
 
 import styles from './TwitterOverlay.module.css'
 import TwitterAuthButton from 'components/general/TwitterAuthButton'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import InstagramButton from 'components/general/InstagramButton'
+import { IconVerified } from '@audius/stems'
+import { ReactComponent as IconGradientSave } from 'assets/img/gradientSave.svg'
+import { useRemoteVar } from 'containers/remote-config/hooks'
+import { BooleanKeys } from 'services/remote-config'
 
 const messages = {
-  twitterButton: 'Complete With Twitter',
-  reasons:
-    'Quickly complete your profile by autofilling with one of your accounts. ',
-  actions:
-    'We will autofill your name, handle, profile picture, cover photo, location, and verification.  You won’t use this to log-in, and Audius will never post on your behalf.',
-  manual: 'I’d rather fill out my profile manually'
+  twitterButton: 'Link To Twitter',
+  instagramButton: 'Link To Instagram',
+  linkProfile:
+    'Quickly complete your profile by linking one of your social accounts.',
+  manual: 'I’d rather fill out my profile manually',
+  twitterChecks: [
+    'Display Name',
+    'Handle',
+    'Profile Picture',
+    'Cover Photo',
+    <div key={'verify'}>
+      <div>
+        {'Verification'} <IconVerified className={styles.verified} />
+      </div>
+      <div className={styles.ifApplicable}>{'(if applicable)'}</div>
+    </div>
+  ]
 }
 
 const TwitterOverlay = props => {
+  const displayInstagram = useRemoteVar(
+    BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION
+  )
+
   return (
     <Transition
       items={props.showTwitterOverlay}
@@ -44,21 +65,58 @@ const TwitterOverlay = props => {
               })}
             >
               <div className={styles.header}>{props.header}</div>
-              <div className={styles.reasons}>{messages.reasons}</div>
-              <TwitterAuthButton
-                showIcon={false}
-                className={styles.twitterButton}
-                textLabel={messages.twitterButton}
-                onSuccess={props.onTwitterLogin}
-                onFailure={(...args) => console.log(args)}
-              />
-              <div className={styles.actions}>{messages.actions}</div>
-              <div
-                className={styles.manualText}
-                onClick={props.onToggleTwitterOverlay}
-              >
-                {messages.manual}
-              </div>
+              {props.isLoading || !props.showTwitterOverlay ? (
+                <div className={styles.loadingContainer}>
+                  <LoadingSpinner className={styles.loadingSpinner} />
+                </div>
+              ) : (
+                <>
+                  {displayInstagram && (
+                    <InstagramButton
+                      className={styles.instagramButton}
+                      textClassName={styles.btnText}
+                      iconClassName={styles.btnIcon}
+                      onClick={props.onClick}
+                      onSuccess={props.onInstagramLogin}
+                      onFailure={props.onFailure}
+                      text={messages.instagramButton}
+                    />
+                  )}
+                  <TwitterAuthButton
+                    showIcon={false}
+                    onClick={props.onClick}
+                    className={styles.twitterButton}
+                    iconClassName={styles.btnIcon}
+                    textLabel={messages.twitterButton}
+                    onSuccess={props.onTwitterLogin}
+                    onFailure={props.onFailure}
+                  />
+                  <div className={styles.divider} />
+                  <div className={styles.autofillContainer}>
+                    <div className={styles.autofill}>
+                      {messages.linkProfile}
+                    </div>
+                    <div className={styles.autofillChecklist}>
+                      {messages.twitterChecks.map((check, ind) => (
+                        <div key={ind} className={styles.checkItem}>
+                          <div className={styles.checkIcon}>
+                            {' '}
+                            <IconGradientSave />
+                          </div>
+                          {check}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={cn(styles.divider, styles.lowerDivider)} />
+                  <div
+                    className={styles.manualText}
+                    onClick={props.onToggleTwitterOverlay}
+                  >
+                    {messages.manual}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))
@@ -72,7 +130,11 @@ TwitterOverlay.propTypes = {
   showTwitterOverlay: PropTypes.bool,
   initial: PropTypes.bool,
   onTwitterLogin: PropTypes.func,
+  onInstagramLogin: PropTypes.func,
   onToggleTwitterOverlay: PropTypes.func,
+  onClick: PropTypes.func,
+  onFailure: PropTypes.func,
+  isLoading: PropTypes.bool,
   isMobile: PropTypes.bool
 }
 

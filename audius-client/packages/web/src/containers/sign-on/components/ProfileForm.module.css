@@ -183,7 +183,7 @@
 }
 
 .isMobile.profileFormContainer {
-  padding-top: 0px;
+  padding-top: 64px;
 }
 
 .isMobile .profileInput > input {
@@ -194,6 +194,7 @@
 }
 
 .isMobile .inputContainer {
+  max-width: 320px;
   margin-bottom: 15px;
   width: 100%;
 }
@@ -223,4 +224,5 @@
 
 .isMobile .profilePic {
   margin-bottom: 20px;
+  overflow: hidden;
 }
