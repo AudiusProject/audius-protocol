@@ -1,7 +1,9 @@
 const fs = require('fs')
 const assert = require('assert')
 
-const uploadTrack = async (libs, trackMetadata, trackPath) => {
+const Track = {}
+
+Track.uploadTrack = async (libs, trackMetadata, trackPath) => {
   const trackFile = fs.createReadStream(trackPath)
 
   const trackId = await libs.uploadTrack({
@@ -15,7 +17,7 @@ const uploadTrack = async (libs, trackMetadata, trackPath) => {
   const errors = []
   for (const [key, value] of Object.entries(trackMetadata)) {
     try {
-      assert.deepEqual(uploadedTrackMetadata[key], value)
+      assert.deepStrictEqual(uploadedTrackMetadata[key], value)
     } catch (e) {
       errors.push({ key, expected: value, actual: uploadedTrackMetadata[key] })
     }
@@ -32,11 +34,11 @@ const uploadTrack = async (libs, trackMetadata, trackPath) => {
   return trackId
 }
 
-const getTrackMetadata = async (libs, trackId) => {
+Track.getTrackMetadata = async (libs, trackId) => {
   return await libs.getTrack(trackId)
 }
 
-const addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {
+Track.addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {
   const trackTxReceipt = await libs.addTrackToChain(userId, {
     digest,
     hashFn,
@@ -45,7 +47,7 @@ const addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {
   return trackTxReceipt
 }
 
-const updateTrackOnChain = async (
+Track.updateTrackOnChain = async (
   libs,
   trackId,
   userId,
@@ -60,9 +62,4 @@ const updateTrackOnChain = async (
   return trackTxReceipt
 }
 
-module.exports = {
-  uploadTrack,
-  getTrackMetadata,
-  addTrackToChain,
-  updateTrackOnChain
-}
+module.exports = Track
