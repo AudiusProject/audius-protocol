@@ -1,6 +1,3 @@
-### Trello Card Link
-
-
 ### Description
 
 
