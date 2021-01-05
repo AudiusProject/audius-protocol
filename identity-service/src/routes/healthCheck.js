@@ -222,6 +222,10 @@ module.exports = function (app) {
 
   app.get('/eth_balance_check', handleResponse(async (req, res) => {
     let minimumBalance = parseFloat(config.get('ethMinimumBalance'))
+    let minimumFunderBalance = parseFloat(config.get('minimumFunderBalance'))
+    let funderAddress = config.get('ethFunderAddress')
+    let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
+    let funderAboveMinimum = funderBalance >= minimumFunderBalance
     let belowMinimumBalances = []
     let balances = []
     for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
@@ -231,12 +235,19 @@ module.exports = function (app) {
         belowMinimumBalances.push({ account, balance })
       }
     }
+
     let balanceResponse = {
       'minimum_balance': minimumBalance,
-      'balances': balances
+      'balances': balances,
+      'funder': {
+        'wallet': funderAddress,
+        'balance': funderAddress,
+        'above_balance_minimum': funderAboveMinimum
+      }
     }
+
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && funderAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         ...balanceResponse

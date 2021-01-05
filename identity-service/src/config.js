@@ -106,6 +106,12 @@ const config = convict({
     env: 'relayerWallets',
     default: null
   },
+  ethFunderAddress: {
+    doc: 'L1 Relayer Address. The source of the funds when funding wallet.',
+    format: String,
+    env: 'ethFunderAddress',
+    default: null
+  },
   ethRelayerWallets: {
     doc: 'L1 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
     format: 'string-array',
