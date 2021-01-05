@@ -148,6 +148,7 @@ def index_blocks(self, db, blocks_list):
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
+        logger.error(f"index.py - KNOWN ADDRS {contract_addresses}")
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
@@ -185,6 +186,7 @@ def index_blocks(self, db, blocks_list):
             # Parse tx events in each block
             for tx in sorted_txs:
                 tx_hash = web3.toHex(tx["hash"])
+                logger.error(tx)
                 tx_target_contract_address = tx["to"]
                 tx_receipt = tx_receipt_dict[tx_hash]
 
@@ -230,6 +232,12 @@ def index_blocks(self, db, blocks_list):
                     user_library_factory_txs.append(tx_receipt)
 
                 # Handle UserReplicaSetManager operations
+                '''
+                 TODO: In order to consume the `AddOrUpdateContentNode` event emitted in the
+                    'initialize' pseudo-constructor of UserReplicaSetManager, a different field than the transaction 'to' must be
+                    accounted for when parsing sorted txs in a given block
+                    Instead of doing this, MAKE THE BOOTSTRAP INFO A DP CONFIG TOO
+                '''
                 if tx_target_contract_address == contract_addresses["user_replica_set_manager"]:
                     logger.info(
                         f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
