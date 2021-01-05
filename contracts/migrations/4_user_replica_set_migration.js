@@ -47,16 +47,12 @@ module.exports = (deployer, network, accounts) => {
             'address',
             'bytes32',
             'address',
-            'uint[]',
-            'address[]',
             'uint'
         ],
         [
           registryAddress,
           userFactoryKey,
           userReplicaSetBootstrapAddress,
-          bootstrapSPIds,
-          bootstrapNodeDelegateWallets,
           networkId
         ]
     )
@@ -76,5 +72,20 @@ module.exports = (deployer, network, accounts) => {
     // Confirm registered address matches proxy
     let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
     console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)
+
+    // Confirm seed is not yet complete
+    let userReplicaSetManagerInst = await UserReplicaSetManager.at(deployedProxyTx.address)
+    let seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
+    console.log(`Seed complete: ${seedComplete}`)
+    // Issue seed operation
+    // TODO: REMEMBER THAT THIS CANNOT BE CALLED FROM SAME WALLET as deployer
+    //       Ensure there is a way to do this
+    await userReplicaSetManagerInst.seedBootstrapNodes(
+      bootstrapSPIds,
+      bootstrapNodeDelegateWallets,
+      { from: userReplicaSetBootstrapAddress }
+    )
+    seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
+    console.log(`Seed complete: ${seedComplete}`)
   })
 }
