@@ -238,7 +238,7 @@ module.exports = function (app) {
       'balances': balances,
       'funder': {
         'wallet': funderAddress,
-        'balance': funderAddress,
+        'balance': funderBalance,
         'above_balance_minimum': funderAboveMinimum
       }
     }
