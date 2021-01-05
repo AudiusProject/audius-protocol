@@ -1,4 +1,3 @@
-import Color from 'models/common/Color'
 import { CID, ID, UID } from 'models/common/Identifiers'
 import { CoverArtSizes } from 'models/common/ImageSizes'
 import Repost from 'models/Repost'
@@ -104,7 +103,6 @@ export type ComputedTrackProperties = {
   _cover_art_sizes: CoverArtSizes
   _first_segment?: string
   _followees?: Followee[]
-  _cover_art_color?: Color
   _marked_deleted?: boolean
   _is_publishing?: boolean
   _stems?: Stem[]
