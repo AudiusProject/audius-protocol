@@ -63,6 +63,7 @@ import RemoteConfigReducer from 'containers/remote-config/slice'
 import StemsUploadReducer from 'store/application/ui/stemsUpload/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import ServiceSelectionReducer from 'containers/service-selection/store/slice'
+import averageColor from 'store/application/ui/average-color/slice'
 
 import wallet from 'store/wallet/slice'
 
@@ -117,6 +118,7 @@ export type AppState = {
       enablePushNotificationsDrawer: ReturnType<
         typeof EnablePushNotificationsDrawer
       >
+      averageColor: ReturnType<typeof averageColor>
     }
     pages: {
       explore: ExplorePageState

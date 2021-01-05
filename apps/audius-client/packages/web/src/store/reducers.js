@@ -69,6 +69,7 @@ import mobileKeyboard from 'store/application/ui/mobileKeyboard/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import stemsUpload from 'store/application/ui/stemsUpload/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
+import averageColor from 'store/application/ui/average-color/slice'
 
 import wallet from 'store/wallet/slice'
 
@@ -136,7 +137,8 @@ const createRootReducer = routeHistory =>
         appCTAModal,
         musicConfetti,
         mobileUploadDrawer,
-        enablePushNotificationsDrawer
+        enablePushNotificationsDrawer,
+        averageColor
       }),
       pages: combineReducers({
         explore,

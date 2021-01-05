@@ -65,6 +65,7 @@ import { make, useRecord } from 'store/analytics/actions'
 import { Name, CreatePlaylistSource } from 'services/analytics'
 import { Variant } from 'models/Collection'
 import { getClaimableBalance } from 'store/wallet/slice'
+import { getAverageColor } from 'store/application/ui/average-color/slice'
 
 const NavColumn = ({
   account,
@@ -90,7 +91,8 @@ const NavColumn = ({
   goToRoute,
   goToSignUp: routeToSignup,
   goToUpload,
-  pendingClaim
+  pendingClaim,
+  averageRGBColor
 }) => {
   const record = useRecord()
   const goToSignUp = useCallback(
@@ -446,7 +448,7 @@ const NavColumn = ({
             (currentQueueItem?.user?.handle ?? null) ===
             (account?.handle ?? undefined)
           }
-          coverArtColor={currentQueueItem.track?._cover_art_color ?? null}
+          coverArtColor={averageRGBColor}
           coverArtSizes={currentQueueItem.track?._cover_art_sizes ?? null}
           draggableLink={getTrackPageLink()}
           onClick={onClickArtwork}
@@ -458,18 +460,29 @@ const NavColumn = ({
 
 const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
-  const mapStateToProps = state => ({
-    currentQueueItem: getCurrentQueueItem(state),
-    account: getAccountUser(state),
-    accountStatus: getAccountStatus(state),
-    playlists: getAccountPlaylists(state),
-    dragging: getIsDragging(state),
-    notificationCount: getNotificationUnreadCount(state),
-    notificationPanelIsOpen: getNotificationPanelIsOpen(state),
-    upload: state.upload,
-    showCreatePlaylistModal: getIsOpen(state),
-    pendingClaim: getClaimableBalance(state)
-  })
+  const mapStateToProps = state => {
+    const currentQueueItem = getCurrentQueueItem(state)
+    return {
+      currentQueueItem,
+      account: getAccountUser(state),
+      accountStatus: getAccountStatus(state),
+      playlists: getAccountPlaylists(state),
+      dragging: getIsDragging(state),
+      notificationCount: getNotificationUnreadCount(state),
+      notificationPanelIsOpen: getNotificationPanelIsOpen(state),
+      upload: state.upload,
+      showCreatePlaylistModal: getIsOpen(state),
+      pendingClaim: getClaimableBalance(state),
+      averageRGBColor: currentQueueItem.track
+        ? getAverageColor(state, {
+            multihash:
+              currentQueueItem.track.cover_art_sizes ??
+              currentQueueItem.track.cover_art ??
+              ''
+          })
+        : null
+    }
+  }
   return mapStateToProps
 }
 
