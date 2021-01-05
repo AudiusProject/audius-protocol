@@ -592,7 +592,7 @@ class Users extends Base {
       let { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
       const { latestBlockNumber } = await this._updateUserOperations(newMetadata, originalMetadata, userId)
       if (newMetadata.creator_node_endpoint !== originalMetadata.creator_node_endpoint) {
-        await this._waitForCreatorNodeUpdate(newMetadata.user_id, newMetadata.creator_node_endpoint)
+        await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
       }
 
       // Re-associate the user id with the metadata and block number
