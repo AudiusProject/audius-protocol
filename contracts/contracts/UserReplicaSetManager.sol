@@ -92,6 +92,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address[] calldata _bootstrapNodeDelegateWallets
     ) external
     {
+        require(seedComplete == false, "Seed operation already completed");
         _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
     }
 
