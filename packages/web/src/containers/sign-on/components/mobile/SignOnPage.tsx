@@ -24,6 +24,7 @@ import { PushNotificationSetting } from 'containers/settings-page/store/types'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 import cn from 'classnames'
 import { show as showEnablePushNotificationsDrawer } from 'containers/enable-push-notifications-drawer/store/slice'
+import { InstagramProfile } from 'store/account/reducer'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export type SignOnProps = {
@@ -52,6 +53,11 @@ export type SignOnProps = {
     profile: { screen_name?: string },
     profileImage: any,
     coverPhoto: any
+  ) => void
+  setInstagramProfile: (
+    instagramId: string,
+    profile: InstagramProfile,
+    profileImage?: any
   ) => void
   onAddFollows: (followIds: ID[]) => void
   onRemoveFollows: (followIds: ID[]) => void
@@ -91,6 +97,7 @@ const SignOnPage = ({
   onNameChange,
   onSetProfileImage,
   setTwitterProfile,
+  setInstagramProfile,
   onAddFollows,
   onRemoveFollows,
   onAutoSelect,
@@ -213,6 +220,7 @@ const SignOnPage = ({
           profileImage={profileImage}
           setProfileImage={onSetProfileImage}
           setTwitterProfile={setTwitterProfile}
+          setInstagramProfile={setInstagramProfile}
           onNextPage={onNextPage}
         />
       </animated.div>

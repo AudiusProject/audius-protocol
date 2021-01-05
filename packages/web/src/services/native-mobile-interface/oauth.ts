@@ -6,3 +6,9 @@ export class RequestTwitterAuthMessage extends NativeMobileMessage {
     super(MessageType.REQUEST_TWITTER_AUTH, { authURL })
   }
 }
+
+export class RequestInstagramAuthMessage extends NativeMobileMessage {
+  constructor(authURL: string) {
+    super(MessageType.REQUEST_INSTAGRAM_AUTH, { authURL })
+  }
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+    <title>iconSave</title>
+      <linearGradient id="gradientCrown" gradientTransform="rotate(45)" height="100%" width="100%">
+    <stop offset="0%" stop-color="#A22FEB"/>
+    <stop offset="100%" stop-color="#5B23E1"/>
+  </linearGradient>
+    <g id="Assets" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="assets" transform="translate(-763.000000, -1567.000000)">
+            <g id="icon/Add" transform="translate(763.000000, 1567.000000)">
+                <rect id="bound" x="0" y="0" width="24" height="24"/>
+                <path d="M13.65,10.25 L18.025,10.25 C18.5082492,10.25 18.9,10.6417508 18.9,11.125 L18.9,12.875 C18.9,13.3582492 18.5082492,13.75 18.025,13.75 L13.65,13.75 L13.65,18.125 C13.65,18.6082492 13.2582492,19 12.775,19 L11.025,19 C10.5417508,19 10.15,18.6082492 10.15,18.125 L10.15,13.75 L5.775,13.75 C5.29175084,13.75 4.9,13.3582492 4.9,12.875 L4.9,11.125 C4.9,10.6417508 5.29175084,10.25 5.775,10.25 L10.15,10.25 L10.15,5.875 C10.15,5.39175084 10.5417508,5 11.025,5 L12.775,5 C13.2582492,5 13.65,5.39175084 13.65,5.875 L13.65,10.25 Z" id="Path" fill-rule="evenodd" style="fill: url(#gradientCrown);"/>
+            </g>
+        </g>
+    </g>
+</svg>

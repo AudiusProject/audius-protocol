@@ -36,6 +36,7 @@ import { Name } from 'services/analytics'
 import { Pages, FollowArtistsCategory } from './types'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { Genre, ELECTRONIC_SUBGENRES } from 'utils/genres'
+import { getIGUserUrl } from 'components/general/InstagramAuth'
 
 const SUGGESTED_FOLLOW_USER_HANDLE_URL =
   process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES ||
@@ -106,6 +107,25 @@ function* fetchFollowArtistGenre(followArtistCategory) {
 const isResrtictedHandle = handle => restrictedHandles.has(handle.toLowerCase())
 const isValidHandle = handle => /^[a-zA-Z0-9_]*$/.test(handle)
 
+async function getInstagramUser(handle) {
+  try {
+    const fetchIGUserUrl = getIGUserUrl(handle)
+    const igProfile = await fetch(fetchIGUserUrl)
+    if (!igProfile.ok) return null
+    const igProfileJson = await igProfile.json()
+    if (!igProfileJson.graphql || !igProfileJson.graphql.user) {
+      return null
+    }
+    const fields = ['username', 'is_verified']
+    return fields.reduce((profile, field) => {
+      profile[field] = igProfileJson.graphql.user[field]
+      return profile
+    }, {})
+  } catch (err) {
+    return null
+  }
+}
+
 function* validateHandle(action) {
   yield call(waitForBackendSetup)
   try {
@@ -119,11 +139,13 @@ function* validateHandle(action) {
     yield delay(300) // Wait 300 ms to debounce user input
     const signOn = yield select(getSignOn)
     const twitterScreenName = signOn.twitterScreenName
+    const instagramScreenName = signOn.instagramScreenName
     const verified = signOn.verified
 
-    const [inUse, twitterUserQuery] = yield all([
+    const [inUse, twitterUserQuery, instagramUser] = yield all([
       call(AudiusBackend.handleInUse, action.handle),
-      call(AudiusBackend.twitterHandle, action.handle)
+      call(AudiusBackend.twitterHandle, action.handle),
+      call(getInstagramUser, action.handle)
     ])
     const {
       user: { profile }
@@ -141,16 +163,24 @@ function* validateHandle(action) {
           signOnActions.validateHandleSucceeded(false, 'twitterReserved')
         )
         return
-      } else if (
-        profile.errors &&
-        profile.errors.some(
-          e => e.code === 17 /* No user matches for specified terms. */
-        )
+      }
+    }
+    if (
+      !verified ||
+      instagramScreenName.toLowerCase() !== action.handle.toLowerCase()
+    ) {
+      if (
+        instagramUser &&
+        action.handle.toLowerCase() === instagramUser.username.toLowerCase() &&
+        instagramUser.is_verified
       ) {
-        yield put(signOnActions.validateHandleSucceeded(!inUse))
+        yield put(
+          signOnActions.validateHandleSucceeded(false, 'instagramReserved')
+        )
         return
       }
     }
+
     yield put(signOnActions.validateHandleSucceeded(!inUse))
   } catch (err) {
     yield put(signOnActions.validateHandleFailed(err.message))
@@ -216,6 +246,22 @@ function* signUp(action) {
           )
           if (error) {
             yield put(signOnActions.setTwitterProfileError(error))
+          }
+        }
+        if (
+          !signOn.useMetaMask &&
+          signOn.instagramId &&
+          handle.toLowerCase() ===
+            (signOn.instagramScreenName || '').toLowerCase()
+        ) {
+          const { error } = yield call(
+            AudiusBackend.associateInstagramAccount,
+            signOn.instagramId,
+            userId,
+            handle
+          )
+          if (error) {
+            yield put(signOnActions.setInstagramProfileError(error))
           }
         }
 

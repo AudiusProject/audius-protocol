@@ -1,10 +1,22 @@
-/* Twitter Toast */
-.twitterToastOverlay:not(.isMobile):global(.ant-tooltip) {
-  max-width: 325px;
-  width: 325px;
+.twitterButton {
+  height: 64px !important;
+  min-width: 273px !important;
 }
 
 .twitterTextContainer {
   text-align: left;
   padding: 2px 14px;
+}
+
+.twitterButton {
+}
+
+.twitterButton .text {
+  font-size: var(--font-l) !important;
+  font-weight: var(--font-bold) !important;
+}
+
+.twitterButton .icon {
+  height: 24px;
+  width: 24px;
 }

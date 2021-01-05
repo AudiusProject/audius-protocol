@@ -680,6 +680,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const userId = profile ? profile.user_id : null
     const handle = profile ? `@${profile.handle}` : ''
     const verified = profile ? profile.is_verified : false
+    const twitterVerified = profile ? profile.twitterVerified : false
+    const instagramVerified = profile ? profile.instagramVerified : false
     const created = profile
       ? moment(profile.created_at).format('YYYY')
       : moment().format('YYYY')
@@ -774,6 +776,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       stats,
       activeTab,
       mostUsedTags,
+      twitterVerified,
+      instagramVerified,
 
       profile,
       status: profileLoadingStatus,

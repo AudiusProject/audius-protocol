@@ -31,10 +31,13 @@ import { version } from '../../../../../package.json'
 
 import NotificationSettings from './NotificationSettings'
 import styles from './SettingsPage.module.css'
-import TwitterAccountVerified from '../TwitterAccountVerified'
+import VerificationModal from './VerificationModal'
 import SettingsCard from './SettingsCard'
 import { OS } from 'models/OS'
 import audiusIcon from 'assets/img/audiusIcon.png'
+import { ProfilePictureSizes } from 'models/common/ImageSizes'
+import { ID } from 'models/common/Identifiers'
+import { InstagramProfile } from 'store/account/reducer'
 
 const SIGN_OUT_MODAL_TEXT = `
   Are you sure you want to sign out?
@@ -50,7 +53,9 @@ const messages = {
   emailNotSent: 'Something broke! Please try again!',
   darkModeOn: 'On',
   darkModeOff: 'Off',
-  darkModeAuto: 'Auto'
+  darkModeAuto: 'Auto',
+  verifiedTitle: 'Verified on twitter or Instagram?',
+  getVerified: 'Get verified by linking a verified social account to Audius'
 }
 
 type OwnProps = {
@@ -58,10 +63,16 @@ type OwnProps = {
   description: string
   isVerified: boolean
   isCreator: boolean
+  userId: ID
+  handle: string
+  name: string
+  profilePictureSizes: ProfilePictureSizes | null
   theme: any
   toggleTheme: (theme: any) => void
+  goToRoute: (route: string) => void
   notificationSettings: Notifications
   getNotificationSettings: () => void
+  onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
   onTwitterLogin: (uuid: string, profile: Record<string, any>) => void
   toggleBrowserPushNotificationPermissions: (
     notificationType: BrowserNotificationSetting,
@@ -73,8 +84,6 @@ type OwnProps = {
   ) => void
   emailFrequency: EmailFrequency
   updateEmailFrequency: (frequency: EmailFrequency) => void
-  onTwitterClick: () => void
-  onTwitterCompleteOauth: (isVerified: boolean) => void
   recordSignOut: (callback?: () => void) => void
   recordAccountRecovery: () => void
   recordDownloadDesktopApp: () => void
@@ -143,8 +152,12 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
       description,
       isVerified,
       isCreator,
-      onTwitterClick,
-      onTwitterCompleteOauth,
+      userId,
+      handle,
+      name,
+      profilePictureSizes,
+      onInstagramLogin,
+      goToRoute,
       onTwitterLogin,
       theme,
       toggleTheme,
@@ -167,18 +180,17 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
       >
         <div className={styles.settings}>
           <SettingsCard
-            title='Have a verified twitter account?'
-            description={
-              isVerified
-                ? 'Congrats, you are now verified!'
-                : 'Link your verified Twitter Account to instantly become verified on Audius!'
-            }
+            title={messages.verifiedTitle}
+            description={messages.getVerified}
           >
-            <TwitterAccountVerified
-              isMobile={false}
+            <VerificationModal
+              userId={userId}
+              handle={handle}
+              name={name}
+              profilePictureSizes={profilePictureSizes}
+              goToRoute={goToRoute}
               isVerified={isVerified}
-              onTwitterCompleteOauth={onTwitterCompleteOauth}
-              onTwitterClick={onTwitterClick}
+              onInstagramLogin={onInstagramLogin}
               onTwitterLogin={onTwitterLogin}
             />
           </SettingsCard>
@@ -190,6 +202,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
               <Button
                 onClick={this.downloadDesktopApp}
                 className={styles.downloadButton}
+                textClassName={styles.settingButtonText}
                 type={ButtonType.COMMON_ALT}
                 text='Get App'
                 leftIcon={
@@ -215,6 +228,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
               <Button
                 onClick={this.showEmailToast}
                 className={styles.resetButton}
+                textClassName={styles.settingButtonText}
                 iconClassName={styles.resetButtonIcon}
                 type={ButtonType.COMMON_ALT}
                 text='Resend'
@@ -252,9 +266,10 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
             <Button
               onClick={this.showNotificationSettings}
               className={styles.resetButton}
+              textClassName={styles.settingButtonText}
               type={ButtonType.COMMON_ALT}
               text='Review'
-              leftIcon={<IconNotification />}
+              leftIcon={<IconNotification className={styles.reviewIcon} />}
             />
           </SettingsCard>
         </div>

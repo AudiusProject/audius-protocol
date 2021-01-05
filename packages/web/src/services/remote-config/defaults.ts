@@ -25,5 +25,6 @@ export const remoteConfigDoubleDefaults: {
 export const remoteConfigBooleanDefaults: {
   [key in BooleanKeys]: boolean | null
 } = {
-  OPTIMIZED_TRENDING_BADGE_ENDPOINT: false
+  [BooleanKeys.OPTIMIZED_TRENDING_BADGE_ENDPOINT]: false,
+  [BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION]: true
 }

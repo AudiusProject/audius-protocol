@@ -62,6 +62,8 @@ export type ProfilePageProps = {
   location: string
   twitterHandle: string
   instagramHandle: string
+  twitterVerified?: boolean
+  instagramVerified?: boolean
   website: string
   donation: string
   coverPhotoSizes: CoverPhotoSizes | null
@@ -198,6 +200,8 @@ const ProfilePage = ({
   location,
   twitterHandle,
   instagramHandle,
+  twitterVerified,
+  instagramVerified,
   website,
   donation,
   coverPhotoSizes,
@@ -554,6 +558,8 @@ const ProfilePage = ({
           location={location}
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
+          twitterVerified={twitterVerified}
+          instagramVerified={instagramVerified}
           website={website}
           donation={donation}
           created={created}

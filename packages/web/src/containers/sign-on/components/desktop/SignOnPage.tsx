@@ -31,6 +31,7 @@ import { ID } from 'models/common/Identifiers'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 import AppCTA from './AppCTA'
 import lazyWithPreload from 'utils/lazyWithPreload'
+import { InstagramProfile } from 'store/account/reducer'
 
 const MetaMaskModal = lazyWithPreload(
   () => import('containers/sign-on/components/desktop/MetaMaskModal'),
@@ -72,6 +73,11 @@ export type SignOnProps = {
     profile: { screen_name?: string },
     profileImage: any,
     coverPhoto: any
+  ) => void
+  setInstagramProfile: (
+    instagramId: string,
+    profile: InstagramProfile,
+    profileImage?: any
   ) => void
   onAddFollows: (followIds: ID[]) => void
   onRemoveFollows: (followIds: ID[]) => void
@@ -136,6 +142,7 @@ const SignOnProvider = ({
   onNameChange,
   onSetProfileImage,
   setTwitterProfile,
+  setInstagramProfile,
   onAddFollows,
   onRemoveFollows,
   onAutoSelect,
@@ -250,6 +257,7 @@ const SignOnProvider = ({
           profileImage={profileImage}
           setProfileImage={onSetProfileImage}
           setTwitterProfile={setTwitterProfile}
+          setInstagramProfile={setInstagramProfile}
           recordTwitterStart={recordTwitterStart}
           onNextPage={onNextPage}
         />
