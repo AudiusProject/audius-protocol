@@ -120,14 +120,18 @@ class File extends Base {
    */
   async checkCID (cid, creatorNodeGateways) {
     const gateways = creatorNodeGateways.concat(publicGateways)
-    return Promise.all(gateways.map(async (gateway) => {
+    const exists = {}
+
+    await Promise.all(gateways.map(async (gateway) => {
       try {
         const { status } = await axios({ url: urlJoin(gateway, cid), method: 'head' })
-        return [gateway, status === 200]
+        exists[gateway] = status === 200
       } catch (err) {
-        return [gateway, false]
+        exists[gateway] = false
       }
     }))
+
+    return exists
   }
 
   /**
