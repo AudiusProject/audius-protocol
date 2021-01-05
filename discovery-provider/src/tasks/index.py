@@ -232,12 +232,6 @@ def index_blocks(self, db, blocks_list):
                     user_library_factory_txs.append(tx_receipt)
 
                 # Handle UserReplicaSetManager operations
-                '''
-                 TODO: In order to consume the `AddOrUpdateContentNode` event emitted in the
-                    'initialize' pseudo-constructor of UserReplicaSetManager, a different field than the transaction 'to' must be
-                    accounted for when parsing sorted txs in a given block
-                    Instead of doing this, MAKE THE BOOTSTRAP INFO A DP CONFIG TOO
-                '''
                 if tx_target_contract_address == contract_addresses["user_replica_set_manager"]:
                     logger.info(
                         f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
