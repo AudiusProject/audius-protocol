@@ -5,6 +5,7 @@ const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
+const EthereumWallet = require('ethereumjs-wallet')
 
 const axios = require('axios')
 
@@ -172,6 +173,7 @@ module.exports = function (app) {
 
   app.get('/balance_check', handleResponse(async (req, res) => {
     let minimumBalance = parseFloat(config.get('minimumBalance'))
+    let minimumRelayerBalance = parseFloat(config.get('minimumRelayerBalance'))
     let belowMinimumBalances = []
     let balances = []
 
@@ -186,19 +188,34 @@ module.exports = function (app) {
       }
     }
 
+    const privateKeyBuffer = Buffer.from(config.get('relayerPublicKey'), 'hex')
+    const relayerAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
+    const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerAddress), 'ether'))
+    const relayerAboveMinimum = relayerBalance >= minimumRelayerBalance
+
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && relayerAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         'minimum_balance': minimumBalance,
-        'balances': balances
+        'balances': balances,
+        'relayer': {
+          'wallet': relayerAddress,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     } else {
       return errorResponseServerError({
         'above_balance_minimum': false,
         'minimum_balance': minimumBalance,
         'balances': balances,
-        'below_minimum_balance': belowMinimumBalances
+        'below_minimum_balance': belowMinimumBalances,
+        'relayer': {
+          'wallet': relayerAddress,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     }
   }))
