@@ -118,7 +118,7 @@ class File extends Base {
    * @param {string} cid IPFS content identifier
    * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
    */
-  async checkCID (cid, creatorNodeGateways) {
+  async checkIfCidAvailable (cid, creatorNodeGateways) {
     const gateways = creatorNodeGateways.concat(publicGateways)
     const exists = {}
 

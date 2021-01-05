@@ -45,23 +45,6 @@ class CreatorNode {
     return null
   }
 
-  /**
-   * Checks if a cid is available from provided creator node endpoint
-   * @param {string} endpoint creator node endpoint
-   * @param {number} cid
-   */
-  static async checkIfCidAvailable (endpoint, cid) {
-    try {
-      return (await axios({ url: `ipfs/${cid}`, baseURL: endpoint, method: 'head' })).status === 200
-    } catch (err) {
-      if (err.response.status === 404) {
-        return false
-      } else {
-        throw new Error(`Failed to check if cid (${cid}) is available in endpoint (${endpoint}) with ${err}`)
-      }
-    }
-  }
-
   /* -------------- */
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
