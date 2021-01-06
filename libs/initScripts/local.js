@@ -157,6 +157,16 @@ const run = async () => {
         console.log(`Received secondaryReplicaIds: ${secondaryReplicaIds}`)
         await updateUserReplicaSet(audiusLibs, userId, primaryReplicaId, secondaryReplicaIds)
         break
+      case 'query-user-replica-set':
+        console.log(`Usage: node local.js query-user-replica-set userId=1`)
+        let userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
+        let userReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
+          parseInt(
+            args[3].split('=')[1]
+          )
+        )
+        console.log(userReplicaSet)
+        break
       default:
         throwArgError()
     }
@@ -204,13 +214,14 @@ const updateUserReplicaSet = async (
   console.log(`User ${userId} replica set prior to update: ${JSON.stringify(user1ReplicaSet)}`)
   console.log(`User ${userId} replica set updating to primary=${primaryId}, secondaries=${secondaryIds}`)
   // Uncomment to perform update operation
-  await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+  let tx1 = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
     userId,
     primaryId,
     secondaryIds,
     user1ReplicaSet.primary,
     user1ReplicaSet.secondaries
   )
+  console.dir(tx1, { depth: 5 })
   let user1ReplicaSetAfterUpdate = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   console.log(`User ${userId} replica set after to update: ${JSON.stringify(user1ReplicaSetAfterUpdate)}`)
 }
