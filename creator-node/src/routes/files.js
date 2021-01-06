@@ -69,7 +69,7 @@ const streamFromFileSystem = async (req, res, path) => {
 
       // Add a content range header to the response
       res.set('Content-Range', formatContentRange(start, end, stat.size))
-      res.set('Content-Length', end - start)
+      res.set('Content-Length', end - start + 1)
       // set 206 "Partial Content" success status response code
       res.status(206)
     } else {
@@ -188,7 +188,7 @@ const getCID = async (req, res) => {
         )
         // Add a content range header to the response
         res.set('Content-Range', formatContentRange(start, end, stat.size))
-        res.set('Content-Length', end - start)
+        res.set('Content-Length', end - start + 1)
         // set 206 "Partial Content" success status response code
         res.status(206)
       } else {
