@@ -12,6 +12,5 @@ jobs:
     - uses: yogevbd/enforce-label-action@2.1.0
       with:
         REQUIRED_LABELS_ANY: "audit-feedback-2,audit-feedback,bug,content-node,data-contracts,dependencies,discovery-node,documentation,duplicate,Epic,eth-contracts,feature,good first feature,help wanted,identity-service,invalid,javascript,libs,mad-dog,mainnet,question,requires-special-attention,service-commands,wontfix"
-        REQUIRED_LABELS_ANY_DESCRIPTION: "Please select one of the required labels for this PR: ${REQUIRED_LABELS_ANY}"
         BANNED_LABELS: ""
         
