@@ -223,10 +223,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         }
     }
 
-    // it.only('testsid', async () => {
-    //     console.log('yes')
-    // })
-
     /** Test Cases **/
     it('Validate constructor bootstrap arguments', async () => {
         // Confirm constructor arguments validated
