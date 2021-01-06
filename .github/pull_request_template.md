@@ -14,6 +14,3 @@ _List the manual tests and repro instructions to verify that this PR works as an
 3. Test 3\
 ...
 
-
-**:exclamation: Reminder :bulb::exclamation::**\
-If this PR touches a critical flow (such as Indexing, Uploads, Gateway or the Filesystem), make sure to add the `requires-special-attention` label. **Add relevant labels as necessary.**
