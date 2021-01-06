@@ -1,6 +1,6 @@
 const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
-const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
+const { CreatorNodeSelection } = require('../services/creatorNode/CreatorNodeSelection')
 
 const CREATOR_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-node'
@@ -71,7 +71,7 @@ class ServiceProvider extends Base {
     whitelist = null,
     blacklist = null
   ) {
-    const creatorNodeSelection = new CreatorNodeSelection({
+     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
@@ -79,8 +79,8 @@ class ServiceProvider extends Base {
       blacklist
     })
 
-    const { primary, secondaries, services } = await creatorNodeSelection.select()
-    return { primary, secondaries, services }
+    const { primary, secondaries, services, ids } = await creatorNodeSelection.select()
+    return { primary, secondaries, services, ids }
   }
 
   /* ------- DISCOVERY PROVIDER ------ */

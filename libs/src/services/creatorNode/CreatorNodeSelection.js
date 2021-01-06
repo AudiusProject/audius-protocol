@@ -2,13 +2,22 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
+
+let contentNodeEndpointToSpID = { }
+function getSpIDFromEndpoint(endpoint) {
+  return contentNodeEndpointToSpID[endpoint]
+}
+
 class CreatorNodeSelection extends ServiceSelection {
   constructor ({ creatorNode, numberOfNodes, ethContracts, whitelist, blacklist }) {
     super({
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
-        return services.map(e => e.endpoint)
+        return services.map((e) => {
+          contentNodeEndpointToSpID[e.endpoint] = e.spID
+          return e.endpoint
+        })
       },
       whitelist,
       blacklist
@@ -38,6 +47,7 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // Get all the Content Node endpoints on chain and filter
     let services = await this.getServices()
+    console.log(contentNodeEndpointToSpID)
     this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
 
     if (this.whitelist) { services = this.filterToWhitelist(services) }
@@ -123,7 +133,15 @@ class CreatorNodeSelection extends ServiceSelection {
     })
 
     console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
-    return { primary, secondaries, services: servicesMap }
+    console.log(primary)
+    console.log(contentNodeEndpointToSpID[primary])
+    console.log(secondaries)
+    console.log(servicesMap)
+    const idsMap = {
+      primary: contentNodeEndpointToSpID[primary],
+      secondaries: secondaries.map(x => contentNodeEndpointToSpID[x])
+    }
+    return { primary, secondaries, services: servicesMap, ids: idsMap }
   }
 
   /**
@@ -178,4 +196,7 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 }
 
-module.exports = CreatorNodeSelection
+module.exports = {
+  CreatorNodeSelection,
+  getSpIDFromEndpoint
+}
