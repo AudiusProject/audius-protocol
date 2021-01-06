@@ -5,7 +5,7 @@ import {
     UserFactory,
     UserReplicaSetManager,
     TestUserReplicaSetManager,
-    AudiusAdminUpgradeabilityProxy2
+    AdminUpgradeabilityProxy
 } from './_lib/artifacts.js'
 
 import * as _constants from './utils/constants'
@@ -89,7 +89,7 @@ contract('UserReplicaSetManager', async (accounts) => {
                networkId
             ]
         )
-        let proxyContractDeployTx = await AudiusAdminUpgradeabilityProxy2.new(
+        let proxyContractDeployTx = await AdminUpgradeabilityProxy.new(
            logicAddress,
            proxyAdminAddress,
            initializeUserReplicaSetManagerCalldata,
@@ -255,7 +255,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
         // Revert message is not propagated for constructor failures
         await expectRevert.unspecified(
-            AudiusAdminUpgradeabilityProxy2.new(
+            AdminUpgradeabilityProxy.new(
                 logicAddress,
                 proxyAdminAddress,
                 userReplicaSetManagerInitData,
@@ -516,7 +516,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         let deployUpgradedLogicContract = await TestUserReplicaSetManager.new({ from: deployer })
         let upgradedLogicAddress = deployUpgradedLogicContract.address
         let proxyAddress = userReplicaSetManager.address
-        let proxyInstance = await AudiusAdminUpgradeabilityProxy2.at(proxyAddress)
+        let proxyInstance = await AdminUpgradeabilityProxy.at(proxyAddress)
         // Attempt to upgrade from an invalid address (the initial deployer)
         await expectRevert(
             proxyInstance.upgradeTo(upgradedLogicAddress, { from: deployer }),
