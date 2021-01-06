@@ -1,7 +1,7 @@
 const contractConfig = require('../contract-config.js')
 const Registry = artifacts.require('Registry')
 const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
-const AudiusAdminUpgradeabilityProxy2 = artifacts.require('AudiusAdminUpgradeabilityProxy2')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
 const userReplicaSetManagerKeyString = 'UserReplicaSetManager'
 const userReplicaSetManagerKey = web3.utils.utf8ToHex(userReplicaSetManagerKeyString)
@@ -62,7 +62,7 @@ module.exports = (deployer, network, accounts) => {
     )
     // Deploy proxy contract with encoded initialize function
     let deployedProxyTx = await deployer.deploy(
-      AudiusAdminUpgradeabilityProxy2,
+      AdminUpgradeabilityProxy,
       logicContractAddress,
       proxyAdminAddress,
       initializeUserReplicaSetManagerCalldata
