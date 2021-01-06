@@ -177,7 +177,7 @@ const VerificationPage = ({
       if (!profile.is_verified) {
         setError(messages.errorVerifiedInstagram)
         setStatus(Status.ERROR)
-      } else if (profile.username !== handle) {
+      } else if (profile.username.toLowerCase() !== handle.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
@@ -191,9 +191,9 @@ const VerificationPage = ({
   const twitterLogin = useCallback(
     (uuid: string, profile: TwitterProfile) => {
       if (!profile.verified) {
-        setError(messages.errorVerifiedInstagram)
+        setError(messages.errorVerifiedTwitter)
         setStatus(Status.ERROR)
-      } else if (profile.screen_name !== handle) {
+      } else if (profile.screen_name.toLowerCase() !== handle.toLowerCase()) {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
