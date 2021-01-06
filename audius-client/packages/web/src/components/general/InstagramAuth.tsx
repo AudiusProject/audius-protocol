@@ -7,8 +7,11 @@ import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oa
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = process.env.REACT_APP_INSTAGRAM_APP_ID
-const INSTAGRAM_REDIRECT_URL = process.env.REACT_APP_INSTAGRAM_REDIRECT_URL
-const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${INSTAGRAM_REDIRECT_URL}&scope=user_profile,user_media&response_type=code`
+const INSTAGRAM_REDIRECT_URL =
+  process.env.REACT_APP_INSTAGRAM_REDIRECT_URL || ''
+const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
+  INSTAGRAM_REDIRECT_URL
+)}&scope=user_profile,user_media&response_type=code`
 
 // Route to fetch instagram user data w/ the username
 export const getIGUserUrl = (username: string) =>
@@ -102,7 +105,7 @@ const InstagramAuth = ({
           return onFailure(new Error('Unable to fetch information'))
         }
 
-        return onSuccess(igUserProfile.id, igUserProfile)
+        return onSuccess(igUserProfile.username, igUserProfile)
       } catch (err) {
         console.log(err)
         onFailure(err.message)
@@ -158,8 +161,9 @@ const InstagramAuth = ({
     [getProfile, onFailure]
   )
 
-  const getRequestToken = useCallback(() => {
+  const getRequestToken = useCallback(async () => {
     const popup = openPopup()
+    await new Promise(resolve => setTimeout(resolve, 500))
     if (!popup) {
       console.error('unable to open window')
     }
@@ -171,6 +175,7 @@ const InstagramAuth = ({
         polling(popup)
       }
     } catch (error) {
+      console.log(error)
       if (popup) popup.close()
       return onFailure(error)
     }

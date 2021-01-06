@@ -256,7 +256,7 @@ function* signUp(action) {
         ) {
           const { error } = yield call(
             AudiusBackend.associateInstagramAccount,
-            signOn.instagramId,
+            handle.toLowerCase(),
             userId,
             handle
           )
