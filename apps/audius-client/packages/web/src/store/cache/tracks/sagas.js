@@ -37,6 +37,7 @@ import { Name } from 'services/analytics'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 import { makeKindId } from 'utils/uid'
+import { setColor } from 'store/application/ui/average-color/slice'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -395,9 +396,10 @@ function* watchFetchCoverArt() {
 
       const rgb = yield call(averageRgb, url)
       yield put(
-        cacheActions.update(Kind.TRACKS, [
-          { id: trackId, metadata: { _cover_art_color: rgb } }
-        ])
+        setColor({
+          multihash,
+          color: rgb
+        })
       )
     } catch (e) {
       console.error(`Unable to fetch cover art for track ${trackId}`)
