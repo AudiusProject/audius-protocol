@@ -317,21 +317,34 @@ class Users extends Base {
     // Preserve old metadata object
     const oldMetadata = { ...user }
 
+    console.log(`Updating from ${oldMetadata.creator_node_endpoint}`)
+    console.log(`Updating to ${newMetadata.creator_node_endpoint}`)
+
     // Update user creator_node_endpoint on chain if applicable
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // TODO: UPDTAE HERE
-      // NOTE _ WORKS IF YOU CALL AUTOSELECT CREATOR NODES FIRST
+      // NOTE THIS WORKS IF YOU CALL AUTOSELECT CREATOR NODES FIRST
       let primaryEndpoint = CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])
-      let primarySpID = getSpIDFromEndpoint(primaryEndpoint)
+      let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)
       console.log(`found primary spID:${primarySpID}`)
 
       let secondaries = CreatorNode.getSecondaries(newMetadata['creator_node_endpoint'])
       console.log(`found secondaries: ${secondaries}`)
-      let secondary1SpID = getSpIDFromEndpoint(secondaries[0])
-      let secondary2SpID = getSpIDFromEndpoint(secondaries[1])
+      let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
+      let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
       console.log(`secondary ids: ${secondary1SpID}, ${secondary2SpID}`)
 
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
+        userId,
+        newMetadata['creator_node_endpoint']
+      )
+
+      // Update in new contract
+      await this.contracts.UserReplicaSetManagerClient.updateReplicaSet2(
+        userId,
+        primarySpID,
+        [secondary1SpID, secondary2SpID]
+      )
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
@@ -574,6 +587,18 @@ class Users extends Base {
 
   _cleanUserMetadata (metadata) {
     return pick(metadata, USER_PROPS.concat('user_id'))
+  }
+
+  async _retrieveSpIDFromEndpoint (endpoint) {
+    let cachedSpID = await getSpIDFromEndpoint(endpoint)
+    let spID = cachedSpID
+    if (!spID) {
+      let spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
+        endpoint
+      )
+      spID = spEndpointInfo.spID
+    }
+    return spID
   }
 }
 

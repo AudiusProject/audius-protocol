@@ -8,6 +8,10 @@ function getSpIDFromEndpoint(endpoint) {
   return contentNodeEndpointToSpID[endpoint]
 }
 
+function setEndpointToSpID (spID, endpoint) {
+  contentNodeEndpointToSpID[endpoint] = spID
+}
+
 class CreatorNodeSelection extends ServiceSelection {
   constructor ({ creatorNode, numberOfNodes, ethContracts, whitelist, blacklist }) {
     super({
@@ -221,5 +225,6 @@ class CreatorNodeSelection extends ServiceSelection {
 
 module.exports = {
   CreatorNodeSelection,
-  getSpIDFromEndpoint
+  getSpIDFromEndpoint,
+  setEndpointToSpID
 }

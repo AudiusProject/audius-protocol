@@ -2,6 +2,17 @@ const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 
 class UserReplicaSetManagerClient extends ContractClient {
+
+  async updateReplicaSet2(userId, primary, secondaries) {
+    const contractAddress = await this.getAddress()
+    console.log(`updateReplicaSet2 found contractAddress:${contractAddress}`)
+    console.log(`UserReplicaSetManager client processing ${userId}`)
+    console.log(`UserReplicaSetManager client ${userId} - primary=${primary}, secondaries=${secondaries}`)
+    let existingReplicaSetInfo = await this.getUserReplicaSet(userId)
+    console.log(`Found existing info: ${existingReplicaSetInfo}`)
+    console.log(existingReplicaSetInfo)
+  }
+
   // TODO: Comments throughout
   async updateReplicaSet (userId, primary, secondaries, oldPrimary, oldSecondaries) {
     const contractAddress = await this.getAddress()
@@ -41,9 +52,23 @@ class UserReplicaSetManagerClient extends ContractClient {
   // TODO: AddOrUpdateContentNode Functionality
 
   async getUserReplicaSet (userId) {
+    console.log('-----')
+    console.log(`getUserReplicaSet 1`)
     const method = await this.getMethod('getUserReplicaSet', userId)
-    return method.call({ from: this.web3Manager.ownerWallet })
+    console.log(`getUserReplicaSet 2, wallet=${this.web3Manager.ownerWallet}`)
+    console.log(this.web3Manager.ownerWallet)
+    console.log(typeof this.web3Manager.ownerWallet)
+    let currentWallet = this.web3Manager.ownerWallet
+    if (typeof currentWallet === "object") {
+      console.log(`Updating object to string format`)
+      currentWallet = this.web3Manager.ownerWallet.getAddressString()
+    }
+    console.log(`Using ${currentWallet}`)
+    let t = await method.call({ from: currentWallet })
+    console.log(`getUserReplicaSet 3`)
+    return t
   }
+
   async getContentNodeWallet (spId) {
     const method = await this.getMethod('getContentNodeWallet', spId)
     return method.call({ from: this.web3Manager.ownerWallet })
