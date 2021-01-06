@@ -210,7 +210,7 @@ const DelegationDecreaseEvent: React.FC<{
       <>
         {`Delegator`}
         <span className={styles.titleSpacingLeft}>
-          ${formatShortWallet(event.delegator)}
+          {formatShortWallet(event.delegator)}
         </span>
         <span
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
@@ -253,7 +253,7 @@ const DelegationDecreaseEvent: React.FC<{
       <>
         {`Delegator`}
         <span className={styles.titleSpacingLeft}>
-          ${formatShortWallet(event.delegator)}
+          {formatShortWallet(event.delegator)}
         </span>
         <span
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
