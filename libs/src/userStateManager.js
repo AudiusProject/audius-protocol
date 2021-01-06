@@ -18,15 +18,6 @@ class UserStateManager {
   }
 
   /**
-   * Updates this.currentUser with new fields in the input currentUser
-   * @param {Object} currentUser fields to update this.currentUser with
-   */
-  updateCurrentUser (currentUser) {
-    const updatedCurrentUser = { ...this.currentUser, ...currentUser }
-    this.setCurrentUser(updatedCurrentUser)
-  }
-
-  /**
    * Sets this.currentUser with currentUser
    * @param {Object} currentUser fields to override this.currentUser with
    */

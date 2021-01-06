@@ -44,6 +44,7 @@ class Users extends Base {
     // For adding replica set to users on sign up
     this.updateUserMetadata = this.updateUserMetadata.bind(this)
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
+    this.updateIsCreatorFlagToTrue = this.updateIsCreatorFlagToTrue.bind(this)
 
     this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
@@ -317,7 +318,7 @@ class Users extends Base {
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
-    this.userStateManager.updateCurrentUser(newMetadata)
+    this.userStateManager.setCurrentUser({ ...newMetadata })
     return userId
   }
 
@@ -623,8 +624,8 @@ class Users extends Base {
       phase = phases.ASSOCIATE_USER
       await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
 
-      // Update userStateManager with new metadata
-      this.userStateManager.updateCurrentUser(newMetadata)
+      // Update libs instance with new user metadata object
+      this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
       throw new Error(`_handleMetadata() Error -- Phase ${phase}: ${e}`)
