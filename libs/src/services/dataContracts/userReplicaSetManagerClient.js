@@ -4,13 +4,19 @@ const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 class UserReplicaSetManagerClient extends ContractClient {
 
   async updateReplicaSet2(userId, primary, secondaries) {
-    const contractAddress = await this.getAddress()
-    console.log(`updateReplicaSet2 found contractAddress:${contractAddress}`)
-    console.log(`UserReplicaSetManager client processing ${userId}`)
-    console.log(`UserReplicaSetManager client ${userId} - primary=${primary}, secondaries=${secondaries}`)
     let existingReplicaSetInfo = await this.getUserReplicaSet(userId)
-    console.log(`Found existing info: ${existingReplicaSetInfo}`)
-    console.log(existingReplicaSetInfo)
+    const existingPrimary = existingReplicaSetInfo.primary
+    const existingSecondaries = existingReplicaSetInfo.secondaries
+    console.log('Found everything!')
+    console.log(existingPrimary)
+    console.log(existingSecondaries)
+    await this.updateReplicaSet(
+      userId,
+      primary,
+      secondaries,
+      existingPrimary,
+      existingSecondaries
+    )
   }
 
   // TODO: Comments throughout
@@ -58,11 +64,9 @@ class UserReplicaSetManagerClient extends ContractClient {
     console.log(`getUserReplicaSet 2, wallet=${this.web3Manager.ownerWallet}`)
     console.log(this.web3Manager.ownerWallet)
     console.log(typeof this.web3Manager.ownerWallet)
-    let currentWallet = this.web3Manager.ownerWallet
-    if (typeof currentWallet === "object") {
-      console.log(`Updating object to string format`)
-      currentWallet = this.web3Manager.ownerWallet.getAddressString()
-    }
+
+    let currentWallet = this.web3Manager.getWalletAddressString()
+
     console.log(`Using ${currentWallet}`)
     let t = await method.call({ from: currentWallet })
     console.log(`getUserReplicaSet 3`)
