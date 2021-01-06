@@ -39,7 +39,7 @@ class CreatorNodeSelection extends ServiceSelection {
    * 4. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime
    * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
    */
-  async select () {
+  async select (performSyncCheck = true) {
     // Reset decision tree and backups
     this.decisionTree = []
     this.clearBackups()
@@ -58,69 +58,9 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // TODO: add a sample size selection round to not send requests to all available nodes
 
-    const successfulSyncCheckServices = []
-    const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
-    // Perform sync checks on all services
-    for (const response of syncResponses) {
-      // Could not perform a sync check. Add to unhealthy
-      if (response.error) {
-        console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`)
-        this.addUnhealthy(response.service)
-        continue
-      }
-
-      const { isBehind, isConfigured } = response.syncStatus
-      // a first time creator will have a sync status as isBehind = true and isConfigured = false. this is ok
-      const firstTimeCreator = isBehind && !isConfigured
-      // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
-      const existingCreator = !isBehind && isConfigured
-      // if either of these two are true, the cnode is suited to be selected
-      if (firstTimeCreator || existingCreator) {
-        successfulSyncCheckServices.push(response.service)
-      } else {
-        // else, add to unhealthy
-        this.addUnhealthy(response.service)
-      }
-    }
-    services = [...successfulSyncCheckServices]
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
-
-    // Perform a health check on services that passed the sync checks
-    const healthCheckedServices = await timeRequestsAndSortByVersion(
-      services.map(node => ({
-        id: node,
-        url: `${node}/${this.healthCheckPath}`
-      }))
-    )
-
-    const healthyServices = healthCheckedServices.filter(resp => {
-      const endpoint = resp.request.id
-      let isHealthy = false
-
-      // Check that the health check responded with status code 200 and that the
-      // version is up to date on major and minor
-      if (resp.response) {
-        const isUp = resp.response.status === 200
-        const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
-          this.currentVersion,
-          resp.response.data.data.version
-        )
-        isHealthy = isUp && versionIsUpToDate
-      }
-
-      if (!isHealthy) { this.addUnhealthy(endpoint) }
-
-      return isHealthy
-    })
-
-    // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
-    // Also update services to be healthy services
-    const servicesMap = {}
-    services = healthyServices.map(service => {
-      servicesMap[service.request.id] = service.response.data
-      return service.request.id
-    })
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
+    if (performSyncCheck) { services = await this._performSyncChecks(services) }
+    const { healthyServicesList, healthyServicesMap: servicesMap } = await this._performHealthChecks(services)
+    services = healthyServicesList
 
     // Set index 0 from services as the primary
     const primary = this.getPrimary(services)
@@ -193,6 +133,89 @@ class CreatorNodeSelection extends ServiceSelection {
     const secondaries = backups.slice(0, this.numberOfNodes - 1)
 
     return secondaries
+  }
+
+  /**
+   * Performs a sync check for every endpoint in services. Returns an array of successful sync checked endpoints and
+   * adds the err'd sync checked endpoints to this.unhealthy
+   * @param {string[]} services content node endpoints
+   */
+  async _performSyncChecks (services) {
+    const successfulSyncCheckServices = []
+    const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
+    // Perform sync checks on all services
+    for (const response of syncResponses) {
+      // Could not perform a sync check. Add to unhealthy
+      if (response.error) {
+        console.warn(`CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`)
+        this.addUnhealthy(response.service)
+        continue
+      }
+
+      const { isBehind, isConfigured } = response.syncStatus
+      // a first time creator will have a sync status as isBehind = true and isConfigured = false. this is ok
+      const firstTimeCreator = isBehind && !isConfigured
+      // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
+      const existingCreator = !isBehind && isConfigured
+      // if either of these two are true, the cnode is suited to be selected
+      if (firstTimeCreator || existingCreator) {
+        successfulSyncCheckServices.push(response.service)
+      } else {
+        // else, add to unhealthy
+        this.addUnhealthy(response.service)
+      }
+    }
+
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
+
+    return successfulSyncCheckServices
+  }
+
+  /**
+   * Performs a health check for every endpoint in services. Returns an array of successful health checked endpoints and
+   * adds the err'd health checked endpoints to this.unhealthy, and a mapping of successful endpoint to its health check response.
+   * @param {string[]} services content node endpoints
+   */
+  async _performHealthChecks (services) {
+    // Perform a health check on services that passed the sync checks
+    const healthCheckedServices = await timeRequestsAndSortByVersion(
+      services.map(node => ({
+        id: node,
+        url: `${node}/${this.healthCheckPath}`
+      }))
+    )
+
+    const healthyServices = healthCheckedServices.filter(resp => {
+      const endpoint = resp.request.id
+      let isHealthy = false
+
+      // Check that the health check responded with status code 200 and that the
+      // version is up to date on major and minor
+      if (resp.response) {
+        const isUp = resp.response.status === 200
+        const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
+          this.currentVersion,
+          resp.response.data.data.version
+        )
+        isHealthy = isUp && versionIsUpToDate
+      }
+
+      if (!isHealthy) { this.addUnhealthy(endpoint) }
+
+      return isHealthy
+    })
+
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
+
+    // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
+    // Also update services to be healthy services
+    let servicesMap = {}
+    const healthyServicesList = healthyServices.map(service => {
+      servicesMap[service.request.id] = service.response.data
+      return service.request.id
+    })
+
+    return { healthyServicesList, healthyServicesMap: servicesMap }
   }
 }
 

@@ -117,7 +117,7 @@ function parseEnvVarsAndArgs () {
     values = values.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
     if (values.length === 0) throw new Error('List of ids is not proper.')
     if (originalNumIds !== values.length) {
-      console.warn(`Filterd out non-numeric ids from input. Please only pass integers!`)
+      console.warn(`Filtered out non-numeric ids from input. Please only pass integers!`)
     }
   } else { // else will be CID
     // Parse cids and ensure they follow the pattern Qm...
