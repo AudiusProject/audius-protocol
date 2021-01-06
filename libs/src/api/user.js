@@ -2,6 +2,8 @@ const { pick } = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
+const { getSpIDFromEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
+
 
 const USER_PROPS = [
   'is_creator',
@@ -317,6 +319,18 @@ class Users extends Base {
 
     // Update user creator_node_endpoint on chain if applicable
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+      // TODO: UPDTAE HERE
+      // NOTE _ WORKS IF YOU CALL AUTOSELECT CREATOR NODES FIRST
+      let primaryEndpoint = CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])
+      let primarySpID = getSpIDFromEndpoint(primaryEndpoint)
+      console.log(`found primary spID:${primarySpID}`)
+
+      let secondaries = CreatorNode.getSecondaries(newMetadata['creator_node_endpoint'])
+      console.log(`found secondaries: ${secondaries}`)
+      let secondary1SpID = getSpIDFromEndpoint(secondaries[0])
+      let secondary2SpID = getSpIDFromEndpoint(secondaries[1])
+      console.log(`secondary ids: ${secondary1SpID}, ${secondary2SpID}`)
+
       await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -502,12 +516,15 @@ class Users extends Base {
   }
 
   async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
+    console.log(`_updateUserOperations invoked for user ${userId}`)
     let updateOps = []
 
     // Remove excluded keys from metadata object
     let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
 
+    console.log(metadata)
+    console.log(exclude)
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
     for (const key in metadata) {
@@ -537,7 +554,10 @@ class Users extends Base {
           ))
         }
         if (key === 'creator_node_endpoint') {
-          updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
+         updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
+            userId,
+            metadata['creator_node_endpoint'])
+          )
         }
       }
     }
