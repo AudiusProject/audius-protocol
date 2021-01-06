@@ -1,7 +1,7 @@
 {
   "all": {
     "down": [
-      "SERVICES=$(docker ps -aq); if [[ -n $SERVICES ]]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
+      "SERVICES=$(docker ps -aq); if [ \"$SERVICES\" != \"\" ]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
       "docker container prune -f",
       "docker volume prune -f",
       "docker network prune -f"
@@ -126,11 +126,37 @@
     "down": [
       "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
+    "restart": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh",
+      "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
+      "cd libs/; node initScripts/local.js update-cnode-config #",
+      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ],
     "register": [
       "cd libs/; node initScripts/local.js register-cnode #"
     ],
     "update-delegate-wallet": [
       "cd libs/; node initScripts/local.js update-cnode-config #"
+    ],
+    "unset-shell-env": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ]
+  },
+  "user-metadata-node": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 4099,
+    "up-um": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh",
+      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ],
+    "down": [
+      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
+    ],
+    "unset-shell-env": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
     ]
   },
   "identity-service": {
