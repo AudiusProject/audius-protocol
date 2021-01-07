@@ -325,7 +325,7 @@ class CreatorNode {
         userBlockNumber: user.blocknumber,
         trackBlockNumber: user.track_blocknumber,
         // Whether or not the endpoint is behind in syncing
-        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber),
+        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
         isConfigured: status.data.latestBlockNumber !== -1
       }
     }
