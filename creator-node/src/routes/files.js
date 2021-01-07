@@ -22,7 +22,7 @@ const { recoverWallet } = require('../apiSigning')
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
@@ -303,7 +303,7 @@ module.exports = function (app) {
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */
-  app.post('/image_upload', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
+  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
