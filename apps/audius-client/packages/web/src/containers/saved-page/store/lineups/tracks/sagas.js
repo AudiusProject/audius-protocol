@@ -16,7 +16,7 @@ import moment from 'moment'
 import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
 import { retrieveTracks } from 'store/cache/tracks/utils'
-
+import { getUid as getPlayerUid } from 'store/player/selectors'
 const getSavedTracks = state => state.saved.tracks
 
 function* getTracks() {
@@ -124,15 +124,20 @@ function* watchUnsave() {
   yield takeEvery(UNSAVE_TRACK, function* (action) {
     const { trackId } = action
     const localSaveUid = yield select(getLocalSave, { id: trackId })
+    const playerUid = yield select(getPlayerUid)
     yield put(saveActions.removeLocalSave(action.trackId))
     if (localSaveUid) {
       yield put(savedTracksActions.remove(Kind.TRACKS, localSaveUid))
-      yield put(queueActions.remove({ uid: localSaveUid }))
+      if (localSaveUid !== playerUid) {
+        yield put(queueActions.remove({ uid: localSaveUid }))
+      }
     }
     const lineupSaveUid = yield select(getSavedTracksLineupUid, { id: trackId })
     if (lineupSaveUid) {
       yield put(savedTracksActions.remove(Kind.TRACKS, lineupSaveUid))
-      yield put(queueActions.remove({ uid: lineupSaveUid }))
+      if (lineupSaveUid !== playerUid) {
+        yield put(queueActions.remove({ uid: lineupSaveUid }))
+      }
     }
   })
 }
