@@ -60,7 +60,7 @@ const ConnectedBrowserPushConfirmationModal = ({
         if (permission === Permission.GRANTED) onClose()
       } else if (isSafariPushAvailable) {
         // NOTE: The request browser permission must be done directly
-        // b/c safari requires the user action to trigger the premission request
+        // b/c safari requires the user action to trigger the permission request
         if (permission === Permission.GRANTED) {
           subscribeBrowserPushNotifications()
         } else {
@@ -83,6 +83,7 @@ const ConnectedBrowserPushConfirmationModal = ({
         }
       }
     }
+    onClose()
     return () => {
       cancelled = true
     }
