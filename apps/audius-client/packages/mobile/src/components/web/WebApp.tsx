@@ -29,9 +29,8 @@ import useKeyboardListeners from '../../utils/useKeyboardListeners'
 import NotificationReminder from '../notification-reminder/NotificationReminder'
 import {postMessage as postMessageUtil} from '../../utils/postMessage'
 
-const USE_LOCALHOST_APP = Config.USE_LOCALHOST_APP
-const LOCALHOST_APP_URL = 'http://localhost:3000/feed'
-const STATIC_PORT = Config.STATIC_SERVER_PORT
+const URL_OVERRIDE = Config.URL_OVERRIDE
+const STATIC_PORT = Config.STATIC_SERVER_PORT || 3100
 export const URL_SCHEME = 'audius://'
 
 // Intercept localhost://, file:///, or audius://
@@ -436,7 +435,7 @@ const WebApp = ({
     setAtTop(navState.nativeEvent.contentOffset.y <= 1)
   }
 
-  const uri = USE_LOCALHOST_APP ? LOCALHOST_APP_URL : url
+  const uri = URL_OVERRIDE || url
   if (!uri) return null
   return (
     <>
