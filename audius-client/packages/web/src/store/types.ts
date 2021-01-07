@@ -17,6 +17,7 @@ import { UploadPageState } from 'containers/upload-page/store/types'
 import VisualizerReducer from 'containers/visualizer/store/slice'
 import { ThemeState } from './application/ui/theme/types'
 import { CreatePlaylistModalState } from './application/ui/createPlaylistModal/types'
+import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
@@ -98,6 +99,7 @@ export type AppState = {
   application: {
     ui: {
       createPlaylistModal: CreatePlaylistModalState
+      editPlaylistModal: EditPlaylistModalState
       editTrackModal: EditTrackModalState
       theme: ThemeState
       scrollLock: ScrollLockState

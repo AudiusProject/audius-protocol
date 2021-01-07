@@ -183,6 +183,7 @@ const Card = ({
           currentUserReposted={isReposted}
           currentUserSaved={isSaved}
           isPublic={isPublic}
+          includeEdit
         />
       </div>
     )

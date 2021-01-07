@@ -188,7 +188,8 @@ export class ActionsTab extends PureComponent {
       currentUserSaved,
       currentUserReposted,
       isArtistPick,
-      isPublic
+      isPublic,
+      includeEdit
     } = this.props
 
     const overflowMenu = {
@@ -212,6 +213,7 @@ export class ActionsTab extends PureComponent {
       overflowMenu.menu.playlistName = playlistName
       overflowMenu.menu.includeAddToPlaylist = false
       overflowMenu.menu.isPublic = isPublic
+      overflowMenu.menu.includeEdit = includeEdit
     }
 
     return (
@@ -247,6 +249,7 @@ ActionsTab.propTypes = {
   minimized: PropTypes.bool,
   standalone: PropTypes.bool,
   isDisabled: PropTypes.bool,
+  includeEdit: PropTypes.bool,
   direction: PropTypes.oneOf(['vertical', 'horizontal']),
   variant: PropTypes.oneOf(['track', 'playlist', 'album']),
   containerStyles: PropTypes.string,

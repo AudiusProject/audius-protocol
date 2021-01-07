@@ -1,7 +1,7 @@
 import { getEntry, getAllEntries } from 'store/cache/selectors'
 import { Kind, AppState, Status } from 'store/types'
-import { getTracks } from '../tracks/selectors'
-import { getUsers } from '../users/selectors'
+import { getTracks } from 'store/cache/tracks/selectors'
+import { getUsers, getUser as getUserById } from 'store/cache/users/selectors'
 import { Uid } from 'utils/uid'
 import { ID, UID } from 'models/common/Identifiers'
 import Collection from 'models/Collection'
@@ -103,4 +103,21 @@ export const getTracksFromCollection = (
       user: users[tracks[t.track].owner_id]
     }
   })
+}
+
+type EnhancedCollection = Collection & { user: User }
+export const getCollectionWithUser = (
+  state: AppState,
+  props: { id?: ID }
+): EnhancedCollection | null => {
+  const collection = getCollection(state, { id: props.id })
+  const userId = collection?.playlist_owner_id
+  const user = getUserById(state, { id: userId })
+  if (collection && user) {
+    return {
+      user,
+      ...collection
+    }
+  }
+  return null
 }

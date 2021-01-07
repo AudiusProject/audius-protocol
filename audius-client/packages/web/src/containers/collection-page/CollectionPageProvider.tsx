@@ -22,13 +22,13 @@ import {
   trackPage,
   profilePage,
   NOT_FOUND_PAGE,
-  FEED_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
   fullPlaylistPage,
   playlistPage,
   albumPage
 } from 'utils/route'
+import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
 import { setFavorite } from 'containers/favorites-page/store/actions'
@@ -99,8 +99,6 @@ type CollectionPageProps = OwnProps &
 type CollectionPageState = {
   filterText: string
   initialOrder: string[] | null
-  showEditPlaylist: boolean
-  showDeleteConfirmation: boolean
   playlistId: number | null
   reordering: string[] | null
   allowReordering: boolean
@@ -116,8 +114,6 @@ class CollectionPage extends Component<
   state: CollectionPageState = {
     filterText: '',
     initialOrder: null,
-    showEditPlaylist: false,
-    showDeleteConfirmation: false,
     playlistId: null,
     // For drag + drop reordering
     reordering: null,
@@ -537,19 +533,8 @@ class CollectionPage extends Component<
     this.props.orderPlaylist(this.state.playlistId!, trackIdAndTimes, newOrder)
   }
 
-  onSaveEdit = (formFields: any) => {
-    this.setState({ showEditPlaylist: false })
-    this.props.editPlaylist(this.state.playlistId!, formFields)
-  }
-
   onPublish = () => {
     this.props.publishPlaylist(this.state.playlistId!)
-  }
-
-  onDelete = () => {
-    this.setState({ showEditPlaylist: false })
-    this.props.deletePlaylist(this.state.playlistId!)
-    this.props.goToRoute(FEED_PAGE)
   }
 
   onSavePlaylist = (isSaved: boolean, playlistId: number) => {
@@ -580,10 +565,6 @@ class CollectionPage extends Component<
     this.props.shareCollection(playlistId)
   }
 
-  onDeletePlaylist = () => this.setState({ showDeleteConfirmation: true })
-  onCancelEditPlaylist = () => this.setState({ showEditPlaylist: false })
-  onCancelDelete = () => this.setState({ showDeleteConfirmation: false })
-
   onHeroTrackClickArtistName = () => {
     const {
       goToRoute,
@@ -593,7 +574,11 @@ class CollectionPage extends Component<
     goToRoute(profilePage(playlistOwnerHandle))
   }
 
-  onHeroTrackEdit = () => this.setState({ showEditPlaylist: true })
+  onHeroTrackEdit = () => {
+    if (this.state.playlistId)
+      this.props.onEditCollection(this.state.playlistId)
+  }
+
   onHeroTrackShare = () => {
     const { playlistId } = this.state
     this.onSharePlaylist(playlistId!)
@@ -693,12 +678,7 @@ class CollectionPage extends Component<
       smartCollection
     } = this.props
 
-    const {
-      showEditPlaylist,
-      showDeleteConfirmation,
-      playlistId,
-      allowReordering
-    } = this.state
+    const { playlistId, allowReordering } = this.state
 
     const title = metadata?.playlist_name ?? ''
     const description = metadata?.description ?? ''
@@ -712,8 +692,6 @@ class CollectionPage extends Component<
       title,
       description,
       canonicalUrl,
-      showEditPlaylist,
-      showDeleteConfirmation,
       playlistId: playlistId!,
       allowReordering,
       playing,
@@ -744,11 +722,6 @@ class CollectionPage extends Component<
       onSortTracks: this.onSortTracks,
       onReorderTracks: this.onReorderTracks,
       onClickRemove: this.onClickRemove,
-      onDeletePlaylist: this.onDeletePlaylist,
-      onSaveEdit: this.onSaveEdit,
-      onCancelEditPlaylist: this.onCancelEditPlaylist,
-      onDelete: this.onDelete,
-      onCancelDelete: this.onCancelDelete,
       onClickMobileOverflow: this.props.clickOverflow,
       onClickFavorites: this.onClickFavorites,
       onClickReposts: this.onClickReposts,
@@ -941,7 +914,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
           id: trackID
         })
       ),
-    setModalVisibility: () => dispatch(setVisibility(true))
+    setModalVisibility: () => dispatch(setVisibility(true)),
+    onEditCollection: (playlistId: ID) =>
+      dispatch(openEditCollectionModal(playlistId))
   }
 }
 
