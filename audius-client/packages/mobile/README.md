@@ -12,6 +12,13 @@ Pull a the latest dapp from s3:
 npm run pull-web-app
 ```
 
+Copy environment variables and replace missing values (you will need an FCM sender id as well as a Segment write key)
+
+```
+cp .env.stage.tmpl .env.stage
+cp .env.prod.tmpl .env.prod
+```
+
 **iOS**
 ```
 # install cocoapods
@@ -25,8 +32,8 @@ cd ..
 
 # Run a simulator
 npm run ios
-# Run a simulator pointed at localhost
-npm run ios:localhost
+# Run a simulator pointed at localhost (you may wish to modify the port in .env.dev)
+npm run ios:dev
 # Run the app on a device
 npm run ios:device "Raymond's iPhone"
 ```
@@ -35,8 +42,8 @@ npm run ios:device "Raymond's iPhone"
 ```
 # Run a simulator
 npm run android
-# Run a simulator pointed at localhost
-npm run android:localhost
+# Run a simulator pointed at localhost (you may wish to modify the port in .env.dev)
+npm run android:dev
 
 # Look at android devices
 adb devices
