@@ -200,11 +200,6 @@ const EditTrackModal = ({
         onAddStems={onAddStems}
       />
       <DeleteConfirmationModal
-        // Need to re-key this whenever it changes visibility state,
-        // so that it always recreates a new modal thus preserving z-index
-        // ordering between EditTrackModal and DeleteConfirmationModal
-        // (DeleteConfirmationModal should be on top)
-        key={isOpen ? 'isOpen' : 'isClosed'}
         title={messages.deleteTrack}
         entity='Track'
         visible={showDeleteConfirmation}
