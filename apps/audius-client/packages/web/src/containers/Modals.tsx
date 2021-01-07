@@ -11,6 +11,7 @@ import ConnectedUserListModal from 'containers/user-list-modal/ConnectedUserList
 import BrowserPushConfirmationModal from './browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import FirstUploadModal from 'containers/first-upload-modal/FirstUploadModal'
 import UnloadDialog from 'containers/unload-dialog/UnloadDialog'
+import EditPlaylistModal from 'containers/edit-playlist/desktop/EditPlaylistModal'
 
 import { getClient } from 'utils/clientUtil'
 import Client from 'models/Client'
@@ -31,6 +32,7 @@ const Modals = () => {
       <UnloadDialog />
 
       {!isMobileClient && <EmbedModal />}
+      {!isMobileClient && <EditPlaylistModal />}
       {!isMobileClient && <ConnectedUserListModal />}
       {!NATIVE_MOBILE && client !== Client.ELECTRON && (
         <BrowserPushConfirmationModal />

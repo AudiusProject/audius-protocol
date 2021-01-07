@@ -60,6 +60,7 @@ import tokenDashboard from 'store/token-dashboard/slice'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import browserPushPermissionConfirmation from 'store/application/ui/browserPushPermissionConfirmation/reducer'
 import createPlaylistModal from 'store/application/ui/createPlaylistModal/reducer'
+import editPlaylistModal from 'store/application/ui/editPlaylistModal/slice'
 import editTrackModal from 'store/application/ui/editTrackModal/reducer'
 import theme from 'store/application/ui/theme/reducer'
 import scrollLock from 'store/application/ui/scrollLock/reducer'
@@ -119,6 +120,7 @@ const createRootReducer = routeHistory =>
 
     application: combineReducers({
       ui: combineReducers({
+        editPlaylistModal,
         createPlaylistModal,
         editTrackModal,
         embedModal,

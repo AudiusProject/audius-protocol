@@ -6,6 +6,7 @@ import { albumPage, playlistPage, profilePage } from 'utils/route'
 
 import * as socialActions from 'store/social/collections/actions'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
+import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
 import CascadingMenu from 'components/navigation/CascadingMenu'
 import { ShareSource, FavoriteSource, RepostSource } from 'services/analytics'
@@ -25,6 +26,7 @@ export type OwnProps = {
   isArtist: boolean
   isPublic: boolean
   playlistId: PlaylistId
+  includeEdit?: boolean
   includeShare: boolean
   includeRepost: boolean
   includeFavorite: boolean
@@ -56,6 +58,7 @@ const CollectionMenu: React.FC<CollectionMenuProps> = props => {
       isOwner,
       isFavorited,
       isReposted,
+      includeEdit,
       includeShare,
       includeRepost,
       includeFavorite,
@@ -66,6 +69,7 @@ const CollectionMenu: React.FC<CollectionMenuProps> = props => {
       onShare,
       goToRoute,
       openEmbedModal,
+      editCollection,
       shareCollection,
       saveCollection,
       unsaveCollection,
@@ -113,6 +117,11 @@ const CollectionMenu: React.FC<CollectionMenuProps> = props => {
       onClick: () => goToRoute(routePage(handle, playlistName, playlistId))
     }
 
+    const editCollectionMenuItem = {
+      text: `Edit ${typeName}`,
+      onClick: () => editCollection(playlistId)
+    }
+
     const embedMenuItem = {
       text: messages.embed,
       onClick: () =>
@@ -140,6 +149,9 @@ const CollectionMenu: React.FC<CollectionMenuProps> = props => {
     }
     if (includeEmbed && isPublic) {
       menu.items.push(embedMenuItem)
+    }
+    if (includeEdit && isOwner) {
+      menu.items.push(editCollectionMenuItem)
     }
 
     return menu
@@ -173,6 +185,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     shareCollection: (playlistId: PlaylistId) =>
       dispatch(socialActions.shareCollection(playlistId, ShareSource.OVERFLOW)),
+    editCollection: (playlistId: ID) =>
+      dispatch(openEditCollectionModal(playlistId)),
     saveCollection: (playlistId: PlaylistId) =>
       dispatch(
         socialActions.saveCollection(playlistId, FavoriteSource.OVERFLOW)

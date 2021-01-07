@@ -10,6 +10,7 @@ import FormTile from 'components/data-entry/FormTile'
 import styles from './EditTrackModal.module.css'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { SquareSizes } from 'models/common/ImageSizes'
+import zIndex from 'utils/zIndex'
 
 const EditTrackModal = ({
   visible,
@@ -97,7 +98,7 @@ const EditTrackModal = ({
       isOpen={visible}
       onClose={onClose}
       // Antd modal default value, behind antd DropdownInput
-      zIndex={1000}
+      zIndex={zIndex.EDIT_TRACK_MODAL}
       bodyClassName={styles.modalBody}
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}

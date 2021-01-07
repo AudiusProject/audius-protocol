@@ -25,7 +25,7 @@ const CreatePlaylistModal = props => {
     artwork: false
   })
 
-  const { visible, metadata, editMode } = props
+  const { zIndex, visible, metadata, editMode } = props
 
   // On modal open (similar to componentDidMount, but this component is mounted before being displayed)
   useEffect(() => {
@@ -119,6 +119,7 @@ const CreatePlaylistModal = props => {
       titleClassName={styles.modalTitle}
       isOpen={props.visible}
       onClose={onCancel}
+      zIndex={zIndex}
     >
       <div className={styles.createPlaylist}>
         <UploadArtwork
@@ -191,7 +192,8 @@ CreatePlaylistModal.propTypes = {
   // When the save button is clicked
   onSave: PropTypes.func,
   // When the delete button is clicked
-  onDelete: PropTypes.func
+  onDelete: PropTypes.func,
+  zIndex: PropTypes.number
 }
 
 CreatePlaylistModal.defaultProps = {
