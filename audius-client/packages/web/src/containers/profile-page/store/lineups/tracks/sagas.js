@@ -11,6 +11,7 @@ import {
 } from 'containers/profile-page/store/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getTrack } from 'store/cache/tracks/selectors'
+import { DELETE_TRACK } from 'store/cache/tracks/actions'
 import { tracksActions as lineupActions } from './actions'
 import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
 import { retrieveTracks } from 'store/cache/tracks/utils'
@@ -20,6 +21,7 @@ import { retrieveUserTracks } from './retrieveUserTracks'
 import { waitForValue } from 'utils/sagaHelpers'
 import { getUser } from 'store/cache/users/selectors'
 import { TracksSortMode } from '../../types'
+import { Kind } from 'store/types'
 
 function* getTracks({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)
@@ -129,7 +131,18 @@ function* watchSetArtistPick() {
   })
 }
 
+function* watchDeleteTrack() {
+  yield takeEvery(DELETE_TRACK, function* (action) {
+    const { trackId } = action
+    const lineup = yield select(getProfileTracksLineup)
+    const trackLineupEntry = lineup.entries.find(entry => entry.id === trackId)
+    if (trackLineupEntry) {
+      yield put(tracksActions.remove(Kind.TRACKS, trackLineupEntry.uid))
+    }
+  })
+}
+
 export default function sagas() {
   const trackSagas = new TracksSagas().getSagas()
-  return trackSagas.concat([watchSetArtistPick])
+  return trackSagas.concat([watchSetArtistPick, watchDeleteTrack])
 }
