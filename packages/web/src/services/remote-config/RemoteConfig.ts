@@ -68,7 +68,12 @@ export enum StringKeys {
   /**
    * Blocks content
    */
-  CONTENT_BLOCK_LIST = 'CONTENT_BLOCK_LIST'
+  CONTENT_BLOCK_LIST = 'CONTENT_BLOCK_LIST',
+
+  /**
+   * Blocks content nodes from selection
+   */
+  CONTENT_NODE_BLOCK_LIST = 'CONTENT_NODE_BLOCK_LIST'
 }
 
 export type AllRemoteConfigKeys =

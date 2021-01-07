@@ -459,13 +459,36 @@ class AudiusBackend {
   }
 
   static async autoSelectCreatorNodes() {
+    let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
+    if (contentNodeBlockList) {
+      try {
+        contentNodeBlockList = new Set(contentNodeBlockList.split(','))
+      } catch (e) {
+        console.error(e)
+        contentNodeBlockList = null
+      }
+    }
     return audiusLibs.ServiceProvider.autoSelectCreatorNodes(
-      /* numberOfNodes */ 3
+      /* numberOfNodes */ 3,
+      /* whitelist */ null,
+      /* blacklist */ contentNodeBlockList
     )
   }
 
   static async getSelectableCreatorNodes() {
-    return audiusLibs.ServiceProvider.getSelectableCreatorNodes()
+    let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
+    if (contentNodeBlockList) {
+      try {
+        contentNodeBlockList = new Set(contentNodeBlockList.split(','))
+      } catch (e) {
+        console.error(e)
+        contentNodeBlockList = null
+      }
+    }
+    return audiusLibs.ServiceProvider.getSelectableCreatorNodes(
+      /* whitelist */ null,
+      /* blacklist */ contentNodeBlockList
+    )
   }
 
   static async getAccount(fromSource = false) {
