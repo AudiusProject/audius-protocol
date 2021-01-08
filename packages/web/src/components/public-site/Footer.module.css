@@ -97,7 +97,6 @@
   font-family: Gilroy !important;
   font-size: var(--font-s);
   line-height: 24px;
-  margin-right: 48px;
   text-decoration-color: var(--static-neutral) !important;
 }
 
@@ -239,10 +238,12 @@
 
 .isMobile .siteLinksContainer {
   margin-bottom: 0px;
+  width: 100%;
 }
 
 .isMobile .siteLinksRowContainer {
   height: 32px;
+  max-width: 100%;
 }
 
 .isMobile .linksContainer {
