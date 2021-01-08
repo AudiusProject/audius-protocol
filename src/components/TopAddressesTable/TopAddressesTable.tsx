@@ -88,7 +88,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     })
     .sort((a, b) => b.voteWeight - a.voteWeight)
     .map((user, index) => ({
-      rank: index+1,
+      rank: index + 1,
       ...user
     }))
 

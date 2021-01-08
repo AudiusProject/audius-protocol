@@ -85,7 +85,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
     })
     .map((user, index) => {
       return {
-        rank: index+1,
+        rank: index + 1,
         ...user
       }
     })
