@@ -10,9 +10,6 @@ const supportsLocalStorage = () => typeof window !== 'undefined' && window && wi
 class UserStateManager {
   constructor () {
     this.currentUser = null
-    if (supportsLocalStorage()) {
-      window.localStorage.removeItem(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
-    }
   }
 
   setCurrentUser (currentUser) {
