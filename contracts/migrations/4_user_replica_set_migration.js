@@ -78,8 +78,7 @@ module.exports = (deployer, network, accounts) => {
     let seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
     console.log(`Seed complete: ${seedComplete}`)
     // Issue seed operation
-    // TODO: REMEMBER THAT THIS CANNOT BE CALLED FROM SAME WALLET as deployer
-    //       Ensure there is a way to do this
+    // Note - seedBootstrapNodes MUST be called from userReplicaBootstrapAddress
     await userReplicaSetManagerInst.seedBootstrapNodes(
       bootstrapSPIds,
       bootstrapNodeDelegateWallets,

@@ -92,8 +92,28 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address[] calldata _bootstrapNodeDelegateWallets
     ) external
     {
+        require(
+            msg.sender == userReplicaSetBootstrapAddress,
+            "Only callable by userReplicaSetBootstrapAddress"
+        );
         require(seedComplete == false, "Seed operation already completed");
-        _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
+        uint256[3] memory emptyProposerIds = [uint256(0), uint256(0), uint256(0)];
+        require(
+            _bootstrapSPIds.length == _bootstrapNodeDelegateWallets.length,
+            "Mismatched bootstrap array lengths"
+        );
+        for (uint i = 0; i < _bootstrapSPIds.length; i++) {
+            spIdToContentNodeDelegateWallet[_bootstrapSPIds[i]] = _bootstrapNodeDelegateWallets[i];
+            emit AddOrUpdateContentNode(
+                _bootstrapSPIds[i],
+                _bootstrapNodeDelegateWallets[i],
+                emptyProposerIds,
+                address(0x00),
+                address(0x00),
+                address(0x00)
+            );
+        }
+        seedComplete = true;
     }
 
     /**
@@ -370,31 +390,6 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             }
         }
         return secondarySenderFound;
-    }
-
-    // Update state given constructor arguments
-    function _seedBootstrapNodes(
-        uint[] memory _bootstrapSPIDs,
-        address[] memory _bootstrapWallets
-    ) internal
-    {
-        uint256[3] memory emptyProposerIds = [uint256(0), uint256(0), uint256(0)];
-        require(
-            _bootstrapSPIDs.length == _bootstrapWallets.length,
-            "Mismatched bootstrap array lengths"
-        );
-        for (uint i = 0; i < _bootstrapSPIDs.length; i++) {
-            spIdToContentNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapWallets[i];
-            emit AddOrUpdateContentNode(
-                _bootstrapSPIDs[i],
-                _bootstrapWallets[i],
-                emptyProposerIds,
-                address(0x00),
-                address(0x00),
-                address(0x00)
-            );
-        }
-        seedComplete = true;
     }
 
     // Confirm sender is valid
