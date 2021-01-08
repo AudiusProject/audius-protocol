@@ -7,6 +7,7 @@ import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { TRENDING_PAGE } from 'utils/route'
+import { LineupTrack } from 'models/Track'
 
 import styles from './HistoryPage.module.css'
 import Spin from 'antd/lib/spin'
@@ -24,7 +25,7 @@ export type HistoryPageProps = {
   title: string
   description: string
   userId: ID
-  entries: any
+  entries: LineupTrack[]
   playing: boolean
   isEmpty: boolean
   loading: boolean
@@ -54,14 +55,16 @@ const HistoryPage = ({
     setRight(null)
   }, [setLeft, setCenter, setRight])
 
-  const tracks = entries.map((track: any, index: number) => {
+  const tracks = entries.map((track: LineupTrack, index: number) => {
     const isActive = track.uid === currentQueueItem.uid
     return {
       isLoading: loading,
+      isReposted: track.has_current_user_reposted,
       isSaved: track.has_current_user_saved,
       isActive,
       isPlaying: isActive && playing,
       artistName: track.user.name,
+      artistHandle: track.user.handle,
       trackTitle: track.title,
       trackId: track.track_id,
       uid: track.uid,
@@ -70,7 +73,7 @@ const HistoryPage = ({
     }
   })
 
-  const onClickEmtpy = useCallback(() => {
+  const onClickEmpty = useCallback(() => {
     goToRoute(TRENDING_PAGE)
   }, [goToRoute])
 
@@ -87,23 +90,26 @@ const HistoryPage = ({
             type={ButtonType.SECONDARY}
             className={styles.btn}
             textClassName={styles.btnText}
-            onClick={onClickEmtpy}
+            onClick={onClickEmpty}
             text={messages.empty.cta}
           />
         </div>
       ) : (
         <div className={styles.trackListContainer}>
-          {loading && <Spin size='large' className={styles.spin} />}
-          <TrackList
-            containerClassName={styles.containerClassName}
-            tracks={tracks}
-            itemClassName={styles.itemClassNamew}
-            showDivider
-            showBorder
-            onSave={onToggleSave}
-            togglePlay={onTogglePlay}
-            trackItemAction={TrackItemAction.Overflow}
-          />
+          {loading ? (
+            <Spin size='large' className={styles.spin} />
+          ) : (
+            <TrackList
+              containerClassName={styles.containerClassName}
+              tracks={tracks}
+              itemClassName={styles.itemClassName}
+              showDivider
+              showBorder
+              onSave={onToggleSave}
+              togglePlay={onTogglePlay}
+              trackItemAction={TrackItemAction.Overflow}
+            />
+          )}
         </div>
       )}
     </MobilePageContainer>
