@@ -56,7 +56,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     [pushRoute]
   )
 
-  const { status, users } = useUsers({ limit })
+  const { status, users } = useUsers()
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([
@@ -70,7 +70,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     return total.add(activeStake)
   }, new BN('0'))
 
-  const data: TableUser[] = users
+  let data: TableUser[] = users
     .map(user => {
       const activeStake = getActiveStake(user)
       const voteWeight = Audius.getBNPercentage(
@@ -91,6 +91,10 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
       rank: index + 1,
       ...user
     }))
+
+  if (limit) {
+    data = data.slice(0, limit)
+  }
 
   const renderRow = (data: TableUser) => {
     return (
