@@ -20,6 +20,15 @@ const USER_REQUIRED_PROPS = [
   'name',
   'handle'
 ]
+const UPDATE_USER_PROPS = Object.freeze({
+  NAME: 'name',
+  IS_CREATOR: 'is_creator',
+  BIO: 'bio',
+  LOCATION: 'location',
+  PROFILE_PICTURE_SIZES: 'profile_picture_sizes',
+  COVER_PHOTO_SIZES: 'cover_photo_sizes',
+  CREATOR_NODE_ENDPOINT: 'creator_node_endpoint'
+})
 
 class Users extends Base {
   constructor (...args) {
@@ -646,11 +655,11 @@ class Users extends Base {
       exclude: []
     }
 
-    Object.keys(updatedMetadata).forEach(key => {
-      if (originalMetadata[key] && updatedMetadata[key] === originalMetadata[key]) {
-        metadataFields.exclude.push(key)
+    Object.values(UPDATE_USER_PROPS).forEach(prop => {
+      if (updatedMetadata[prop] === originalMetadata[prop]) {
+        metadataFields.exclude.push(prop)
       } else {
-        metadataFields.include.push(key)
+        metadataFields.include.push(prop)
       }
     })
 
@@ -674,32 +683,32 @@ class Users extends Base {
     let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
 
-    if (metadata['name']) {
-      addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata['name']))
+    if (metadata[UPDATE_USER_PROPS.NAME]) {
+      addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[UPDATE_USER_PROPS.NAME]))
     }
-    if (metadata['location']) {
-      addOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata['location']))
+    if (metadata[UPDATE_USER_PROPS.LOCATION]) {
+      addOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[UPDATE_USER_PROPS.LOCATION]))
     }
-    if (metadata['bio']) {
-      addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata['bio']))
+    if (metadata[UPDATE_USER_PROPS.BIO]) {
+      addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[UPDATE_USER_PROPS.BIO]))
     }
-    if (metadata['profile_picture_sizes']) {
+    if (metadata[UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES]) {
       addOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
         userId,
-        Utils.decodeMultihash(metadata['profile_picture_sizes']).digest
+        Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES]).digest
       ))
     }
-    if (metadata['cover_photo_sizes']) {
+    if (metadata[UPDATE_USER_PROPS.COVER_PHOTO_SIZES]) {
       addOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
         userId,
-        Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
+        Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.COVER_PHOTO_SIZES]).digest
       ))
     }
-    if (metadata['is_creator']) {
-      addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata['is_creator']))
+    if (metadata[UPDATE_USER_PROPS.IS_CREATOR]) {
+      addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[UPDATE_USER_PROPS.IS_CREATOR]))
     }
-    if (metadata['creator_node_endpoint']) {
-      addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
+    if (metadata[UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT]) {
+      addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT]))
     }
 
     // Execute update promises concurrently
@@ -719,32 +728,32 @@ class Users extends Base {
     // perform update operations
     for (const key in metadata) {
       if (metadata.hasOwnProperty(key) && currentMetadata.hasOwnProperty(key) && metadata[key] !== currentMetadata[key]) {
-        if (key === 'name') {
-          updateOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata['name']))
+        if (key === UPDATE_USER_PROPS.NAME) {
+          updateOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[UPDATE_USER_PROPS.NAME]))
         }
-        if (key === 'is_creator') {
-          updateOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata['is_creator']))
+        if (key === UPDATE_USER_PROPS.IS_CREATOR) {
+          updateOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[UPDATE_USER_PROPS.IS_CREATOR]))
         }
-        if (key === 'bio') {
-          updateOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata['bio']))
+        if (key === UPDATE_USER_PROPS.BIO) {
+          updateOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[UPDATE_USER_PROPS.BIO]))
         }
-        if (key === 'location') {
-          updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata['location']))
+        if (key === UPDATE_USER_PROPS.LOCATION) {
+          updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[UPDATE_USER_PROPS.LOCATION]))
         }
-        if (key === 'profile_picture_sizes') {
+        if (key === UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES) {
           updateOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
             userId,
-            Utils.decodeMultihash(metadata['profile_picture_sizes']).digest
+            Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES]).digest
           ))
         }
-        if (key === 'cover_photo_sizes') {
+        if (key === UPDATE_USER_PROPS.COVER_PHOTO_SIZES) {
           updateOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
             userId,
-            Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
+            Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.COVER_PHOTO_SIZES]).digest
           ))
         }
-        if (key === 'creator_node_endpoint') {
-          updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
+        if (key === UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT) {
+          updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT]))
         }
       }
     }
