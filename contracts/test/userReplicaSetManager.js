@@ -76,16 +76,12 @@ contract('UserReplicaSetManager', async (accounts) => {
                'address',
                'bytes32',
                'address',
-               'uint[]',
-               'address[]',
                'uint'
            ],
            [
                registry.address,
                _constants.userFactoryKey,
                userReplicaBootstrapAddress,
-               bootstrapSPIds,
-               bootstrapDelegateWallets,
                networkId
             ]
         )
@@ -98,9 +94,19 @@ contract('UserReplicaSetManager', async (accounts) => {
 
         userReplicaSetManager = await UserReplicaSetManager.at(proxyContractDeployTx.address)
 
+        let seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
+        assert.isFalse(seedComplete, "Expect no seed operation")
+        let seedTx = await userReplicaSetManager.seedBootstrapNodes(
+            bootstrapSPIds,
+            bootstrapDelegateWallets,
+            { from: userReplicaBootstrapAddress }
+        )
+        seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
+        assert.isTrue(seedComplete, "Expect completed seed operation")
+
         // Confirm constructor events were fired as expected
         await expectEvent.inTransaction(
-            proxyContractDeployTx.transactionHash,
+            seedTx.tx,
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
@@ -112,7 +118,7 @@ contract('UserReplicaSetManager', async (accounts) => {
            }
         )
         await expectEvent.inTransaction(
-            proxyContractDeployTx.transactionHash,
+            seedTx.tx,
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
@@ -124,7 +130,7 @@ contract('UserReplicaSetManager', async (accounts) => {
            }
         )
         await expectEvent.inTransaction(
-            proxyContractDeployTx.transactionHash,
+            seedTx.tx,
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {

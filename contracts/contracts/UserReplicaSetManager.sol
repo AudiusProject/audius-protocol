@@ -31,6 +31,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /// @notice Current uint userId to Replica Set
     mapping (uint => ReplicaSet) userReplicaSets;
 
+    /// @notice Flag indicating whether bootstrap information has been configured
+    bool seedComplete;
+
     /* Events */
     event UpdateReplicaSet(
         uint _userId,
@@ -60,8 +63,6 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address _registryAddress,
         bytes32 _userFactoryRegistryKey,
         address _userReplicaSetBootstrapAddress,
-        uint[] memory _bootstrapSPIds,
-        address[] memory _bootstrapNodeDelegateWallets,
         uint _networkId
     ) public initializer
     {
@@ -73,13 +74,46 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         registry = RegistryInterface(_registryAddress);
         userFactoryRegistryKey = _userFactoryRegistryKey;
         userReplicaSetBootstrapAddress = _userReplicaSetBootstrapAddress;
-        _seedBootstrapNodes(_bootstrapSPIds, _bootstrapNodeDelegateWallets);
         // Initialize base Signing Logic contract
         SigningLogicInitializable.initialize(
             "User Replica Set Manager",
             "1",
             _networkId
         );
+        seedComplete = false;
+    }
+
+    /**
+     * @notice Function used to initialize bootstrap nodes
+     * Prior to this function, the contract is effectively disabled
+     */
+    function seedBootstrapNodes(
+        uint[] calldata _bootstrapSPIds,
+        address[] calldata _bootstrapNodeDelegateWallets
+    ) external
+    {
+        require(
+            msg.sender == userReplicaSetBootstrapAddress,
+            "Only callable by userReplicaSetBootstrapAddress"
+        );
+        require(seedComplete == false, "Seed operation already completed");
+        uint256[3] memory emptyProposerIds = [uint256(0), uint256(0), uint256(0)];
+        require(
+            _bootstrapSPIds.length == _bootstrapNodeDelegateWallets.length,
+            "Mismatched bootstrap array lengths"
+        );
+        for (uint i = 0; i < _bootstrapSPIds.length; i++) {
+            spIdToContentNodeDelegateWallet[_bootstrapSPIds[i]] = _bootstrapNodeDelegateWallets[i];
+            emit AddOrUpdateContentNode(
+                _bootstrapSPIds[i],
+                _bootstrapNodeDelegateWallets[i],
+                emptyProposerIds,
+                address(0x00),
+                address(0x00),
+                address(0x00)
+            );
+        }
+        seedComplete = true;
     }
 
     /**
@@ -105,6 +139,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         bytes calldata _proposer3Sig
     ) external
     {
+        _requireSeed();
         // For every entry in spIds/Nonces/Sigs
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
@@ -166,6 +201,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         bytes calldata _subjectSig
     ) external
     {
+        _requireSeed();
         address signer = _recoverUserReplicaSetRequestSignerAddress(
             _userId,
             _primary,
@@ -237,6 +273,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address _newBootstrapAddress
     ) external
     {
+        _requireSeed();
         require(
             msg.sender == userReplicaSetBootstrapAddress,
             "Invalid sender, expect current userReplicaSetBootstrapAddress"
@@ -266,6 +303,14 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     returns (address)
     {
         return userReplicaSetBootstrapAddress;
+    }
+
+    /// @notice Get seedComplete
+    function getSeedComplete() external view
+    returns (bool)
+    {
+        return seedComplete;
+
     }
 
     /* EIP712 - Signer recovery */
@@ -347,30 +392,6 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         return secondarySenderFound;
     }
 
-    // Update state given constructor arguments
-    function _seedBootstrapNodes(
-        uint[] memory _bootstrapSPIDs,
-        address[] memory _bootstrapWallets
-    ) internal
-    {
-        uint256[3] memory emptyProposerIds = [uint256(0), uint256(0), uint256(0)];
-        require(
-            _bootstrapSPIDs.length == _bootstrapWallets.length,
-            "Mismatched bootstrap array lengths"
-        );
-        for (uint i = 0; i < _bootstrapSPIDs.length; i++) {
-            spIdToContentNodeDelegateWallet[_bootstrapSPIDs[i]] = _bootstrapWallets[i];
-            emit AddOrUpdateContentNode(
-                _bootstrapSPIDs[i],
-                _bootstrapWallets[i],
-                emptyProposerIds,
-                address(0x00),
-                address(0x00),
-                address(0x00)
-            );
-        }
-    }
-
     // Confirm sender is valid
     function _validateUpdateOperation (
         address _proposer1Address,
@@ -399,5 +420,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             spIdToContentNodeDelegateWallet[_proposerSpIds[2]] == _proposer3Address,
             "Invalid wallet provided for 3rd proposer"
         );
+    }
+
+    function _requireSeed () internal view {
+        require(seedComplete == true, "Must be initialized");
     }
 }
