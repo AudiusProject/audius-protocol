@@ -269,6 +269,8 @@ const Drawer = ({
         {/* "Bottom padding" so over drags upwards of the drawer are white */}
         <div className={styles.skirt} />
       </animated.div>
+      {/* Display transparent BG to block clicks behind drawer */}
+      {isOpen && <div className={styles.background} />}
     </Portal>
   )
 }
