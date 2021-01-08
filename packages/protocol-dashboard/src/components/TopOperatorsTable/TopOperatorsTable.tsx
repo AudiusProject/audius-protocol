@@ -66,12 +66,11 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   }
 
   const data = (users as Operator[])
-    .map((user, idx) => {
+    .map(user => {
       const activeStake = getActiveStake(user)
       const totalActiveDelegated = getTotalActiveDelegatedStake(user)
       const totalCurrentStake = activeStake.add(totalActiveDelegated)
       return {
-        rank: idx + 1,
         img: user.image,
         name: user.name,
         wallet: user.wallet,
@@ -83,6 +82,12 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
       if (val.isZero()) return 0
       else if (val.isNeg()) return -1
       return 1
+    })
+    .map((user, index) => {
+      return {
+        rank: index + 1,
+        ...user
+      }
     })
 
   const renderRow = (data: TableUser) => {
