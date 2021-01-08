@@ -1,6 +1,61 @@
 {
-  "contractName": "UserReplicaSetManager",
+  "contractName": "TestUserReplicaSetManager",
   "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_bootstrapSPIds",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_bootstrapNodeDelegateWallets",
+          "type": "address[]"
+        }
+      ],
+      "name": "seedBootstrapNodes",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getUserReplicaSetBootstrapAddress",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUserReplicaSet",
+      "outputs": [
+        {
+          "name": "primary",
+          "type": "uint256"
+        },
+        {
+          "name": "secondaries",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
     {
       "constant": false,
       "inputs": [],
@@ -11,9 +66,37 @@
       "type": "function"
     },
     {
+      "constant": true,
+      "inputs": [],
+      "name": "getSeedComplete",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [],
       "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newBootstrapAddress",
+          "type": "address"
+        }
+      ],
+      "name": "updateUserReplicaBootstrapAddress",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -56,6 +139,149 @@
         }
       ],
       "name": "setRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_spID",
+          "type": "uint256"
+        }
+      ],
+      "name": "getContentNodeWallet",
+      "outputs": [
+        {
+          "name": "wallet",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newCnodeId",
+          "type": "uint256"
+        },
+        {
+          "name": "_newCnodeDelegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "name": "_proposerSpIds",
+          "type": "uint256[3]"
+        },
+        {
+          "name": "_proposerNonces",
+          "type": "bytes32[3]"
+        },
+        {
+          "name": "_proposer1Sig",
+          "type": "bytes"
+        },
+        {
+          "name": "_proposer2Sig",
+          "type": "bytes"
+        },
+        {
+          "name": "_proposer3Sig",
+          "type": "bytes"
+        }
+      ],
+      "name": "addOrUpdateContentNode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_userFactoryRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_userReplicaSetBootstrapAddress",
+          "type": "address"
+        },
+        {
+          "name": "_networkId",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_primary",
+          "type": "uint256"
+        },
+        {
+          "name": "_secondaries",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_oldPrimary",
+          "type": "uint256"
+        },
+        {
+          "name": "_oldSecondaries",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_requestNonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateReplicaSet",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -171,229 +397,17 @@
       "type": "event"
     },
     {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "name": "version",
-          "type": "string"
-        },
-        {
-          "name": "chainId",
-          "type": "uint256"
-        }
-      ],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        },
-        {
-          "name": "_userFactoryRegistryKey",
-          "type": "bytes32"
-        },
-        {
-          "name": "_userReplicaSetBootstrapAddress",
-          "type": "address"
-        },
-        {
-          "name": "_networkId",
-          "type": "uint256"
-        }
-      ],
-      "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_bootstrapSPIds",
-          "type": "uint256[]"
-        },
-        {
-          "name": "_bootstrapNodeDelegateWallets",
-          "type": "address[]"
-        }
-      ],
-      "name": "seedBootstrapNodes",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_newCnodeId",
-          "type": "uint256"
-        },
-        {
-          "name": "_newCnodeDelegateOwnerWallet",
-          "type": "address"
-        },
-        {
-          "name": "_proposerSpIds",
-          "type": "uint256[3]"
-        },
-        {
-          "name": "_proposerNonces",
-          "type": "bytes32[3]"
-        },
-        {
-          "name": "_proposer1Sig",
-          "type": "bytes"
-        },
-        {
-          "name": "_proposer2Sig",
-          "type": "bytes"
-        },
-        {
-          "name": "_proposer3Sig",
-          "type": "bytes"
-        }
-      ],
-      "name": "addOrUpdateContentNode",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        },
-        {
-          "name": "_primary",
-          "type": "uint256"
-        },
-        {
-          "name": "_secondaries",
-          "type": "uint256[]"
-        },
-        {
-          "name": "_oldPrimary",
-          "type": "uint256"
-        },
-        {
-          "name": "_oldSecondaries",
-          "type": "uint256[]"
-        },
-        {
-          "name": "_requestNonce",
-          "type": "bytes32"
-        },
-        {
-          "name": "_subjectSig",
-          "type": "bytes"
-        }
-      ],
-      "name": "updateReplicaSet",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_newBootstrapAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateUserReplicaBootstrapAddress",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_userId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getUserReplicaSet",
-      "outputs": [
-        {
-          "name": "primary",
-          "type": "uint256"
-        },
-        {
-          "name": "secondaries",
-          "type": "uint256[]"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_spID",
-          "type": "uint256"
-        }
-      ],
-      "name": "getContentNodeWallet",
-      "outputs": [
-        {
-          "name": "wallet",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": true,
       "inputs": [],
-      "name": "getUserReplicaSetBootstrapAddress",
+      "name": "newFunction",
       "outputs": [
         {
           "name": "",
-          "type": "address"
+          "type": "uint256"
         }
       ],
       "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getSeedComplete",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "pure",
       "type": "function"
     }
   ]
