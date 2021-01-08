@@ -324,14 +324,23 @@ function* confirmUpdateProfile(userId, metadata) {
         // Store the update in local storage so it is correct upon reload
         yield setAudiusAccountUser(confirmedUser)
         // Update the cached user so it no longer contains image upload artifacts
+        // and contains updated profile picture / cover photo sizes if any
+        const newMetadata = {
+          updatedProfilePicture: null,
+          updatedCoverPhoto: null
+        }
+        if (metadata.updatedCoverPhoto) {
+          newMetadata.cover_photo_sizes = confirmedUser.cover_photo_sizes
+        }
+        if (metadata.updatedProfilePicture) {
+          newMetadata.profile_picture_sizes =
+            confirmedUser.profile_picture_sizes
+        }
         yield put(
           cacheActions.update(Kind.USERS, [
             {
               id: confirmedUser.user_id,
-              metadata: {
-                updatedProfilePicture: null,
-                updatedCoverPhoto: null
-              }
+              metadata: newMetadata
             }
           ])
         )
