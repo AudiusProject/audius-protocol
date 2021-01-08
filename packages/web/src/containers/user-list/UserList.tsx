@@ -15,6 +15,7 @@ import { getUsers } from 'store/cache/users/selectors'
 import User from 'models/User'
 import { isMobile } from 'utils/clientUtil'
 import { FollowSource } from 'services/analytics'
+import { setNotificationSubscription } from 'containers/profile-page/store/actions'
 
 type ConnectedUserListOwnProps = {
   // A tag uniquely identifying this particular instance of a UserList in the store.
@@ -103,11 +104,18 @@ function mapDispatchToProps(
   dispatch: Dispatch,
   ownProps: ConnectedUserListOwnProps
 ) {
+  const mobile = isMobile()
   return {
     onFollow: (userId: ID) =>
       dispatch(socialActions.followUser(userId, FollowSource.USER_LIST)),
-    onUnfollow: (userId: ID) =>
-      dispatch(unfollowConfirmationActions.setOpen(userId)),
+    onUnfollow: (userId: ID) => {
+      if (mobile) {
+        dispatch(unfollowConfirmationActions.setOpen(userId))
+      } else {
+        dispatch(socialActions.unfollowUser(userId, FollowSource.USER_LIST))
+        dispatch(setNotificationSubscription(userId, false, true))
+      }
+    },
     onClickArtistName: (handle: string) =>
       dispatch(pushRoute(profilePage(handle))),
     loadMore: () => dispatch(loadMore(ownProps.tag)),
