@@ -66,10 +66,6 @@ module.exports = (deployer, network, accounts) => {
     let userReplicaSetManagerProxyAddress = deployedProxyTx.address
     console.log(`UserReplicaSetManager Proxy Contract deployed at ${deployedProxyTx.address}`)
 
-    // Confirm registered address matches proxy
-    let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
-    console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)
-
     // Confirm seed is not yet complete
     let userReplicaSetManagerInst = await UserReplicaSetManager.at(deployedProxyTx.address)
     let seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
@@ -83,8 +79,10 @@ module.exports = (deployer, network, accounts) => {
     )
     seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
     console.log(`Seed complete: ${seedComplete}`)
-
     // Register proxy contract against Registry
     await registry.addContract(userReplicaSetManagerKey, userReplicaSetManagerProxyAddress)
+    // Confirm registered address matches proxy
+    let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
+    console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)
   })
 }
