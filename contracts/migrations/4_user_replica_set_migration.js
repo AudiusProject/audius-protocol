@@ -1,7 +1,7 @@
 const contractConfig = require('../contract-config.js')
 const Registry = artifacts.require('Registry')
 const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
-const AudiusAdminUpgradeabilityProxy2 = artifacts.require('AudiusAdminUpgradeabilityProxy2')
+const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
 const userReplicaSetManagerKeyString = 'UserReplicaSetManager'
 const userReplicaSetManagerKey = web3.utils.utf8ToHex(userReplicaSetManagerKeyString)
@@ -47,22 +47,18 @@ module.exports = (deployer, network, accounts) => {
             'address',
             'bytes32',
             'address',
-            'uint[]',
-            'address[]',
             'uint'
         ],
         [
           registryAddress,
           userFactoryKey,
           userReplicaSetBootstrapAddress,
-          bootstrapSPIds,
-          bootstrapNodeDelegateWallets,
           networkId
         ]
     )
     // Deploy proxy contract with encoded initialize function
     let deployedProxyTx = await deployer.deploy(
-      AudiusAdminUpgradeabilityProxy2,
+      AdminUpgradeabilityProxy,
       logicContractAddress,
       proxyAdminAddress,
       initializeUserReplicaSetManagerCalldata
@@ -70,9 +66,21 @@ module.exports = (deployer, network, accounts) => {
     let userReplicaSetManagerProxyAddress = deployedProxyTx.address
     console.log(`UserReplicaSetManager Proxy Contract deployed at ${deployedProxyTx.address}`)
 
+    // Confirm seed is not yet complete
+    let userReplicaSetManagerInst = await UserReplicaSetManager.at(deployedProxyTx.address)
+    let seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
+    console.log(`Seed complete: ${seedComplete}`)
+    // Issue seed operation
+    // Note - seedBootstrapNodes MUST be called from userReplicaBootstrapAddress
+    await userReplicaSetManagerInst.seedBootstrapNodes(
+      bootstrapSPIds,
+      bootstrapNodeDelegateWallets,
+      { from: userReplicaSetBootstrapAddress }
+    )
+    seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
+    console.log(`Seed complete: ${seedComplete}`)
     // Register proxy contract against Registry
     await registry.addContract(userReplicaSetManagerKey, userReplicaSetManagerProxyAddress)
-
     // Confirm registered address matches proxy
     let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
     console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)

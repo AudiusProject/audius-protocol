@@ -5,7 +5,7 @@ import {
     UserFactory,
     UserReplicaSetManager,
     TestUserReplicaSetManager,
-    AudiusAdminUpgradeabilityProxy2
+    AdminUpgradeabilityProxy
 } from './_lib/artifacts.js'
 
 import * as _constants from './utils/constants'
@@ -76,20 +76,16 @@ contract('UserReplicaSetManager', async (accounts) => {
                'address',
                'bytes32',
                'address',
-               'uint[]',
-               'address[]',
                'uint'
            ],
            [
                registry.address,
                _constants.userFactoryKey,
                userReplicaBootstrapAddress,
-               bootstrapSPIds,
-               bootstrapDelegateWallets,
                networkId
             ]
         )
-        let proxyContractDeployTx = await AudiusAdminUpgradeabilityProxy2.new(
+        let proxyContractDeployTx = await AdminUpgradeabilityProxy.new(
            logicAddress,
            proxyAdminAddress,
            initializeUserReplicaSetManagerCalldata,
@@ -98,9 +94,19 @@ contract('UserReplicaSetManager', async (accounts) => {
 
         userReplicaSetManager = await UserReplicaSetManager.at(proxyContractDeployTx.address)
 
+        let seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
+        assert.isFalse(seedComplete, "Expect no seed operation")
+        let seedTx = await userReplicaSetManager.seedBootstrapNodes(
+            bootstrapSPIds,
+            bootstrapDelegateWallets,
+            { from: userReplicaBootstrapAddress }
+        )
+        seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
+        assert.isTrue(seedComplete, "Expect completed seed operation")
+
         // Confirm constructor events were fired as expected
         await expectEvent.inTransaction(
-            proxyContractDeployTx.transactionHash,
+            seedTx.tx,
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
@@ -112,7 +118,7 @@ contract('UserReplicaSetManager', async (accounts) => {
            }
         )
         await expectEvent.inTransaction(
-            proxyContractDeployTx.transactionHash,
+            seedTx.tx,
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
@@ -124,7 +130,7 @@ contract('UserReplicaSetManager', async (accounts) => {
            }
         )
         await expectEvent.inTransaction(
-            proxyContractDeployTx.transactionHash,
+            seedTx.tx,
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
@@ -255,7 +261,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
         // Revert message is not propagated for constructor failures
         await expectRevert.unspecified(
-            AudiusAdminUpgradeabilityProxy2.new(
+            AdminUpgradeabilityProxy.new(
                 logicAddress,
                 proxyAdminAddress,
                 userReplicaSetManagerInitData,
@@ -516,7 +522,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         let deployUpgradedLogicContract = await TestUserReplicaSetManager.new({ from: deployer })
         let upgradedLogicAddress = deployUpgradedLogicContract.address
         let proxyAddress = userReplicaSetManager.address
-        let proxyInstance = await AudiusAdminUpgradeabilityProxy2.at(proxyAddress)
+        let proxyInstance = await AdminUpgradeabilityProxy.at(proxyAddress)
         // Attempt to upgrade from an invalid address (the initial deployer)
         await expectRevert(
             proxyInstance.upgradeTo(upgradedLogicAddress, { from: deployer }),
