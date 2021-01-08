@@ -117,6 +117,7 @@ class File extends Base {
    * fallback to a specified gateway and then to the default gateway.
    * @param {string} cid IPFS content identifier
    * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * Eg. creatorNodeGateways = ["https://creatornode.audius.co/ipfs/", "https://creatornode2.audius.co/ipfs/"]
    */
   async checkIfCidAvailable (cid, creatorNodeGateways) {
     const gateways = creatorNodeGateways.concat(publicGateways)
