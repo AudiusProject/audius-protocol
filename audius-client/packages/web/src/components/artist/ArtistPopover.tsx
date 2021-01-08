@@ -18,6 +18,7 @@ import { FollowSource } from 'services/analytics'
 import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
 import { WidthSizes, SquareSizes } from 'models/common/ImageSizes'
 import { MountPlacement } from 'components/types'
+import { setNotificationSubscription } from 'containers/profile-page/store/actions'
 
 enum Placement {
   Top = 'top',
@@ -154,8 +155,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   goToRoute: (route: string) => dispatch(pushRoute(route)),
   onFollow: (userId: ID) =>
     dispatch(socialActions.followUser(userId, FollowSource.HOVER_TILE)),
-  onUnfollow: (userId: ID) =>
+  onUnfollow: (userId: ID) => {
     dispatch(socialActions.unfollowUser(userId, FollowSource.HOVER_TILE))
+    dispatch(setNotificationSubscription(userId, false, true))
+  }
 })
 
 ArtistPopover.defaultProps = {
