@@ -71,14 +71,13 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
   }, new BN('0'))
 
   const data: TableUser[] = users
-    .map((user, idx) => {
+    .map(user => {
       const activeStake = getActiveStake(user)
       const voteWeight = Audius.getBNPercentage(
         activeStake,
         totalVotingPowerStake
       )
       return {
-        rank: idx + 1,
         img: user.image,
         name: user.name,
         wallet: user.wallet,
@@ -88,6 +87,10 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
       }
     })
     .sort((a, b) => b.voteWeight - a.voteWeight)
+    .map((user, index) => ({
+      rank: index + 1,
+      ...user
+    }))
 
   const renderRow = (data: TableUser) => {
     return (
