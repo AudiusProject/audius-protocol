@@ -1,22 +1,31 @@
 import logging
 from datetime import datetime
-from src import contract_addresses
+from src import contract_addresses, eth_abi_values
 from src.tasks.users import lookup_user_record, invalidate_old_user
+from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
 from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, \
         user_replica_set_manager_event_types_lookup
+from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_pickled_key
 
 logger = logging.getLogger(__name__)
 
-def user_replica_set_state_update(self, update_task, session, user_replica_set_mgr_txs, block_number, block_timestamp):
+def user_replica_set_state_update(
+    self,
+    update_task,
+    session,
+    user_replica_set_mgr_txs,
+    block_number,
+    block_timestamp,
+    redis
+):
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
+    user_ids = set()
     if not user_replica_set_mgr_txs:
-        return num_total_changes
+        return num_total_changes, user_ids
 
     user_replica_set_manager_abi = update_task.abi_values["UserReplicaSetManager"]["abi"]
-    logger.error(f"USER REPLICA SET ABI")
-    logger.error(user_replica_set_manager_abi)
     user_contract = update_task.web3.eth.contract(
         address=contract_addresses["user_replica_set_manager"], abi=user_replica_set_manager_abi
     )
@@ -35,6 +44,8 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
                 # Check if _userId is present
                 # If user id is found in the event args, update the local lookup object
                 user_id = args._userId if "_userId" in args else None
+                user_ids.add(user_id)
+
                 # if the user id is not in the lookup object, it hasn't been initialized yet
                 # first, get the user object from the db(if exists or create a new one)
                 # then set the lookup object for user_id with the appropriate props
@@ -48,13 +59,22 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
                 if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
                     primary = args._primary
                     secondaries = args._secondaries
-
                     user_record = user_replica_set_events_lookup[user_id]["user"]
                     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
                     user_record.primary = primary
                     user_record.secondaries = secondaries
 
+                    # Update cnode endpoint string reconstructed from sp ID
+                    creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
+                        self,
+                        update_task,
+                        primary,
+                        secondaries,
+                        redis
+                    )
+                    user_record.creator_node_endpoint = creator_node_endpoint_str 
                     user_replica_set_events_lookup[user_id]["user"] = user_record
+
                 elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
                     # TODO: Handle indexing creator node fields separately
                     # PROCESSING THIS IS PENDING BELOW PR:
@@ -73,4 +93,50 @@ def user_replica_set_state_update(self, update_task, session, user_replica_set_m
         invalidate_old_user(session, user_id)
         session.add(value_obj["user"])
 
-    return num_total_changes
+    return num_total_changes, user_ids
+
+# TODO: Figure out an alternate way to handle this
+def get_endpoint_string_from_sp_ids(
+    self,
+    update_task,
+    primary,
+    secondaries,
+    redis
+):
+    shared_config = update_task.shared_config
+    eth_web3 = update_task.eth_web3
+    eth_registry_address = update_task.eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    logger.error(f"USER REPLICA SET PY: ETH REGISTRY {eth_registry_address}")
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    sp_factory_address = eth_registry_instance.functions.getContract(
+        sp_factory_registry_key
+    ).call()
+    sp_factory_inst = eth_web3.eth.contract(
+        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+    )
+    primary_cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
+        content_node_service_type,
+        primary
+    ).call()
+    logger.error(primary_cn_endpoint_info)
+    logger.error(f"PRIMARY CN INFO {primary_cn_endpoint_info}")
+    logger.error(f"Primary ID {primary}:{primary_cn_endpoint_info[1]}")
+    logger.error("END get_endpoint_string_from_sp_ids")
+    logger.error(f"SECOONDARIES: {secondaries}")
+    primary_endpoint = primary_cn_endpoint_info[1]
+
+    endpoint_string = "{}".format(primary_endpoint)
+    logger.error(f"ENDPOINT_STR={endpoint_string}")
+    for secondary_id in secondaries:
+        logger.error(f"PROCESSING SECONDARY: {secondary_id}")
+        secondary_info = sp_factory_inst.functions.getServiceEndpointInfo(
+            content_node_service_type,
+            secondary_id
+        ).call()
+        secondary_endpoint = secondary_info[1]
+        endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
+    return endpoint_string

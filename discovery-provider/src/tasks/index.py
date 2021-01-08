@@ -256,12 +256,19 @@ def index_blocks(self, db, blocks_list):
                 > 0
             )
 
-            user_replica_set_state_changed = (
+            # Index UserReplicaSet changes
+            total_user_replica_set_changes, replica_user_ids = (
                 user_replica_set_state_update(
-                    self, update_task, session, user_replica_set_manager_txs, block_number, block_timestamp
+                    self,
+                    update_task,
+                    session,
+                    user_replica_set_manager_txs,
+                    block_number,
+                    block_timestamp,
+                    redis
                 )
-                > 0
             )
+            user_replica_set_state_changed = total_user_replica_set_changes > 0 
             if user_replica_set_state_changed:
                 logger.info(f"index.py | UserReplicaSetManager changes processed at {block}")
 
@@ -280,6 +287,9 @@ def index_blocks(self, db, blocks_list):
             if user_state_changed:
                 if user_ids:
                     remove_cached_user_ids(redis, user_ids)
+            if user_replica_set_state_changed:
+                if replica_user_ids:
+                    remove_cached_user_ids(redis, replica_user_ids)
             if track_lexeme_state_changed:
                 if track_ids:
                     remove_cached_track_ids(redis, track_ids)

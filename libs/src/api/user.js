@@ -271,7 +271,8 @@ class Users extends Base {
     const { userId } = await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
 
     // Update user creator_node_endpoint on chain
-    await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint'])
+    // await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint'])
+    await this._updateReplicaSet(userId, newMetadata)
 
     // Upload metadata object to CN
     const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
@@ -322,32 +323,14 @@ class Users extends Base {
 
     // Update user creator_node_endpoint on chain if applicable
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      // TODO: UPDTAE HERE
-      // NOTE THIS WORKS IF YOU CALL AUTOSELECT CREATOR NODES FIRST
-      let primaryEndpoint = CreatorNode.getPrimary(newMetadata['creator_node_endpoint'])
-      let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)
-      console.log(`found primary spID:${primarySpID}`)
-
-      let secondaries = CreatorNode.getSecondaries(newMetadata['creator_node_endpoint'])
-      console.log(`found secondaries: ${secondaries}`)
-      let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
-      let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
-      console.log(`secondary ids: ${secondary1SpID}, ${secondary2SpID}`)
-
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
-        userId,
-        newMetadata['creator_node_endpoint']
-      )
-
-      // Update in new contract
-      await this.contracts.UserReplicaSetManagerClient.updateReplicaSet2(
-        userId,
-        primarySpID,
-        [secondary1SpID, secondary2SpID]
-      )
+      // Perform update to new contract
+      await this._updateReplicaSet(userId, newMetadata)
 
       // Ensure DN has indexed creator_node_endpoint change
-      await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+      await this._waitForCreatorNodeEndpointIndexing(
+        newMetadata.user_id,
+        newMetadata.creator_node_endpoint
+      )
     }
 
     // Upload new metadata object to CN
@@ -421,10 +404,17 @@ class Users extends Base {
 
     // Update user creator_node_endpoint on chain if applicable
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
-
+      // await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      await this._updateReplicaSet(userId, newMetadata)
+      console.log(`Updated replica set`)
+      console.log(`Waiting for indexing to ${newMetadata.creator_node_endpoint}`)
+      console.log(newMetadata)
       // Ensure DN has indexed creator_node_endpoint change
-      await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+      await this._waitForCreatorNodeEndpointIndexing(
+        newMetadata.user_id,
+        newMetadata.creator_node_endpoint,
+        newMetadata.handle
+      )
     }
 
     // Upload new metadata object to CN
@@ -478,10 +468,11 @@ class Users extends Base {
   /* ------- PRIVATE  ------- */
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
-  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
+  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint, handle = null) {
     let isUpdated = false
     while (!isUpdated) {
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]
+      console.log(`found ${user.creator_node_endpoint}, expected ${creatorNodeEndpoint}`)
       if (user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
       await Utils.wait(500)
     }
@@ -587,6 +578,20 @@ class Users extends Base {
 
   _cleanUserMetadata (metadata) {
     return pick(metadata, USER_PROPS.concat('user_id'))
+  }
+
+  async _updateReplicaSet(userId, metadata) {
+    let primaryEndpoint = CreatorNode.getPrimary(metadata['creator_node_endpoint'])
+    let secondaries = CreatorNode.getSecondaries(metadata['creator_node_endpoint'])
+    let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)
+    let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
+    let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
+    // Update in new contract
+    await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primarySpID,
+      [secondary1SpID, secondary2SpID]
+    )
   }
 
   async _retrieveSpIDFromEndpoint (endpoint) {
