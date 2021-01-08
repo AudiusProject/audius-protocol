@@ -26,6 +26,24 @@ class CreatorNode {
   static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
 
   /**
+   * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
+   * @param {string} endpoint creator node endpoint
+   * @param {string} wallet user wallet address
+   */
+  static async getClockValue (endpoint, wallet, timeout) {
+    try {
+      return (await axios({
+        url: `/users/clock_status/${wallet}`,
+        method: 'get',
+        baseURL: endpoint,
+        timeout
+      })).data.clockValue
+    } catch (err) {
+      throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
+    }
+  }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId

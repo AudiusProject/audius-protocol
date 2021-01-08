@@ -73,6 +73,7 @@ def populate_mock_db(db, entities):
                 genre=track_meta.get("genre", ""),
                 updated_at=track_meta.get("updated_at", datetime.now()),
                 created_at=track_meta.get("created_at", datetime.now()),
+                release_date=track_meta.get("release_date", None),
                 is_unlisted=track_meta.get("is_unlisted", False)
             )
             session.add(track)

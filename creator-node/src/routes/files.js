@@ -46,12 +46,10 @@ const streamFromFileSystem = async (req, res, path) => {
     let fileStream
 
     let stat
+    stat = fs.statSync(path)
+    // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
-      // Add content length headers
-      // Stats a file from FS and returns fs stat info, like size in bytes
-      stat = fs.statSync(path)
       res.set('Accept-Ranges', 'bytes')
-      res.set('Content-Length', stat.size)
     }
 
     // If a range header is present, use that to create the readstream
@@ -71,10 +69,12 @@ const streamFromFileSystem = async (req, res, path) => {
 
       // Add a content range header to the response
       res.set('Content-Range', formatContentRange(start, end, stat.size))
+      res.set('Content-Length', end - start + 1)
       // set 206 "Partial Content" success status response code
       res.status(206)
     } else {
       fileStream = fs.createReadStream(path)
+      res.set('Content-Length', stat.size)
     }
 
     await new Promise((resolve, reject) => {
@@ -165,7 +165,6 @@ const getCID = async (req, res) => {
     // If the IPFS stat call fails or timesout, an error is thrown
     const stat = await ipfsStat(CID, req.logContext, 500)
     res.set('Accept-Ranges', 'bytes')
-    res.set('Content-Length', stat.size)
 
     // Stream file from ipfs if cat one byte takes under 500ms
     // If catReadableStream() promise is rejected, throw an error and stream from file system
@@ -189,10 +188,12 @@ const getCID = async (req, res) => {
         )
         // Add a content range header to the response
         res.set('Content-Range', formatContentRange(start, end, stat.size))
+        res.set('Content-Length', end - start + 1)
         // set 206 "Partial Content" success status response code
         res.status(206)
       } else {
         stream = req.app.get('ipfsAPI').catReadableStream(CID)
+        res.set('Content-Length', stat.size)
       }
 
       stream

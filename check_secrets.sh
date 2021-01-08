@@ -1,10 +1,7 @@
 # used to exercise the `if command is not git command` logic below. change this to an invalid value to test printing out install message
 COMMAND_PREFIX='secrets'
 
-# 2>&1 sends stderr to stdout
-GIT_SECRET_CMD_OUTPUT=$(git $COMMAND_PREFIX -h 2>&1)
-
-if grep -q "git: '$COMMAND_PREFIX' is not a git command" <<< $GIT_SECRET_CMD_OUTPUT; then
+if ! git secrets > /dev/null 2>&1; then
   echo "Please install 'git-secrets' from https://github.com/awslabs/git-secrets and run 'git secrets --install' in the audius-protocol/ repo"
   exit 1
 fi

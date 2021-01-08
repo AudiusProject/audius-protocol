@@ -1,6 +1,8 @@
 const fetch = require('node-fetch')
 
-const verifyCIDExistsOnCreatorNode = async (cid, creatorNodeEndpoint) => {
+const File = {}
+
+File.verifyCIDExistsOnCreatorNode = async (cid, creatorNodeEndpoint) => {
   console.log('verifying CID exists!')
   const url = `${creatorNodeEndpoint}/ipfs/${cid}`
 
@@ -9,4 +11,4 @@ const verifyCIDExistsOnCreatorNode = async (cid, creatorNodeEndpoint) => {
   return resp.ok
 }
 
-module.exports = { verifyCIDExistsOnCreatorNode }
+module.exports = File
