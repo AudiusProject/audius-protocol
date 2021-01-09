@@ -52,7 +52,8 @@ logger = logging.getLogger(__name__)
 
 def init_contracts():
     registry_address = web3.toChecksumAddress(
-        shared_config["contracts"]["registry"])
+        shared_config["contracts"]["registry"]
+    )
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )

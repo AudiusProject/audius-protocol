@@ -134,6 +134,18 @@ def fetch_tx_receipts(self, block_transactions):
         raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
     return block_tx_with_receipts
 
+def update_user_replica_set_manager_address_if_necessary(self):
+    logger.error(f"update_user_replica_set_manager_address_if_necessary")
+
+    shared_config = update_task.shared_config
+    usrm_address = contract_addresses["user_replica_set_manager"]
+
+    logger.error(f"for usrm addr found: {usrm_address}")
+    logger.error(f"END update_user_replica_set_manager_address_if_necessary")
+
+    if usrm_address = "0x0000000000000000000000000000000000000000":
+        logger.error("MISSING USRM ADDRESS")
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -512,6 +524,7 @@ def update_task(self):
         if have_lock:
             logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
+            update_user_replica_set_manager_address_if_necessary(self)
 
             latest_block = get_latest_block(db)
 
