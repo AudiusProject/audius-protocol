@@ -37,3 +37,5 @@ export const makeGetExplore = () => {
     }
   )
 }
+
+export const getTab = (state: AppState) => state.application.pages.explore.tab

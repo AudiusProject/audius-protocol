@@ -2,16 +2,18 @@ import {
   FETCH_EXPLORE,
   FETCH_EXPLORE_SUCCEEDED,
   FETCH_EXPLORE_FAILED,
-  ExplorePageActions
+  ExplorePageActions,
+  SET_TAB
 } from './actions'
 import { Status } from 'store/types'
-import ExplorePageState from './types'
+import ExplorePageState, { Tabs } from './types'
 import { ActionsMap } from 'utils/reducer'
 
 const initialState: ExplorePageState = {
   playlists: [],
   profiles: [],
-  status: Status.SUCCESS
+  status: Status.SUCCESS,
+  tab: Tabs.FOR_YOU
 }
 
 const actionsMap: ActionsMap<ExplorePageState> = {
@@ -34,6 +36,12 @@ const actionsMap: ActionsMap<ExplorePageState> = {
     return {
       ...initialState,
       status: Status.ERROR
+    }
+  },
+  [SET_TAB](state, action) {
+    return {
+      ...state,
+      tab: action.tab
     }
   }
 }
