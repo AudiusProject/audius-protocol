@@ -17,6 +17,7 @@ export default interface ExplorePageState {
   status: Status
   playlists: ID[]
   profiles: ID[]
+  tab: Tabs
 }
 
 export enum ExploreCollectionsVariant {
