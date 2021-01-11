@@ -27,19 +27,22 @@ const CreatePlaylistModal = props => {
 
   const { zIndex, visible, metadata, editMode } = props
 
-  // On modal open (similar to componentDidMount, but this component is mounted before being displayed)
+  // On receiving new, defined metadata, set the form fields
   useEffect(() => {
-    if (visible) {
+    if (metadata) {
       setFormFields(_ => ({
         artwork: {},
         ...schemas.newCollectionMetadata(metadata)
       }))
+    }
+  }, [metadata])
 
-      return () => {
-        if (!editMode) {
-          setFormFields(initialFormFields)
-        }
-        setErrors({})
+  // On becoming invisible, hide errors and reset form fields
+  useEffect(() => {
+    if (!visible) {
+      setErrors({})
+      if (!editMode) {
+        setFormFields(initialFormFields)
       }
     }
   }, [visible, metadata, editMode, setErrors])

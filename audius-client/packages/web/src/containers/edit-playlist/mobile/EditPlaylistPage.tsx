@@ -175,6 +175,11 @@ const EditPlaylistPage = g(
     }
 
     const onSave = useCallback(() => {
+      // Sanitize description field. Description is required to be present, but can be null
+      if (formFields.description === undefined) {
+        formFields.description = null
+      }
+
       if (metadata && formFields.playlist_id) {
         // Edit playlist
         if (hasReordered) {

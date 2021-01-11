@@ -122,11 +122,15 @@ function* createPlaylistAsync(action) {
     })
   )
   yield put(collectionActions.createPlaylistSucceeded())
+
+  const collectionIds = (user._collectionIds || [])
+    .filter(c => c.uid !== uid)
+    .concat(uid)
   yield put(
     cacheActions.update(Kind.USERS, [
       {
         id: userId,
-        metadata: { _collectionIds: (user._collectionIds || []).concat(uid) }
+        metadata: { _collectionIds: collectionIds }
       }
     ])
   )
@@ -153,15 +157,33 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
         } else {
           check = playlist => some([playlist], toConfirm)
         }
-        return yield call(pollPlaylist, playlistId, userId, check)
-      },
-      function* (confirmedPlaylist) {
+        const confirmedPlaylist = yield call(
+          pollPlaylist,
+          playlistId,
+          userId,
+          check
+        )
+
+        // Immediately after confirming the playlist,
+        // create a new playlist reference and mark the temporary one as moved.
+        // This will trigger the page to refresh, etc. with the new ID url.
+        // Even if there are other actions confirming for this particular
+        // playlist, those will just file in afterwards.
+
         const subscribedUid = makeUid(
           Kind.COLLECTIONS,
           confirmedPlaylist.playlist_id,
           'account'
         )
         const movedCollection = yield select(getCollection, { id: uid })
+
+        // The reformatted playlist is the combination of the results we get back
+        // from the confirmation, plus any writes that may be in the confirmer still.
+        const reformattedPlaylist = {
+          ...reformat(confirmedPlaylist),
+          ...movedCollection,
+          _temp: false
+        }
 
         // On playlist creation, copy over all fields from the temp collection
         // to retain optimistically set fields.
@@ -170,11 +192,7 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
             {
               id: confirmedPlaylist.playlist_id,
               uid: subscribedUid,
-              metadata: {
-                ...movedCollection,
-                ...reformat(confirmedPlaylist),
-                _temp: false
-              }
+              metadata: reformattedPlaylist
             }
           ])
         )
@@ -185,7 +203,7 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
               id: userId,
               metadata: {
                 _collectionIds: (user._collectionIds || [])
-                  .filter(cId => cId !== uid)
+                  .filter(cId => cId !== uid && confirmedPlaylist.playlist_id)
                   .concat(confirmedPlaylist.playlist_id)
               }
             }
@@ -200,7 +218,9 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
         yield put(
           accountActions.addAccountPlaylist({
             id: confirmedPlaylist.playlist_id,
-            name: confirmedPlaylist.playlist_name,
+            // Take playlist name from the "local" state because the user
+            // may have edited the name before we got the confirmed result back.
+            name: reformattedPlaylist.playlist_name,
             isAlbum: confirmedPlaylist.is_album,
             user: {
               id: user.user_id,
@@ -214,7 +234,9 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
           status: 'success'
         })
         yield put(event)
+        return confirmedPlaylist
       },
+      function* () {},
       function* ({ error, timeout, message }) {
         const event = make(Name.PLAYLIST_COMPLETE_CREATE, {
           source,
