@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useMemo, ReactNode } from 'react'
+import React, {
+  useContext,
+  useEffect,
+  useMemo,
+  ReactNode,
+  useCallback
+} from 'react'
 import Spin from 'antd/lib/spin'
 
 import useTabs from 'hooks/useTabs/useTabs'
@@ -53,6 +59,9 @@ import {
   ExploreCollection,
   ExploreMoodCollection
 } from 'containers/explore-page/collections'
+import { useDispatch, useSelector } from 'react-redux'
+import { getTab } from 'containers/explore-page/store/selectors'
+import { setTab } from 'containers/explore-page/store/actions'
 
 const messages = {
   pageName: 'Explore',
@@ -290,9 +299,19 @@ const ExplorePage = ({
     ]
   }, [playlistCards, profileCards, justForYouTiles, lifestyleTiles, status])
 
+  const initialTab = useSelector(getTab)
+  const dispatch = useDispatch()
+  const didSwitchTabs = useCallback(
+    (_: string, to: string) => {
+      dispatch(setTab(to as ExploreTabs))
+    },
+    [dispatch]
+  )
   const { tabs, body } = useTabs({
     tabs: tabHeaders,
-    elements: memoizedElements
+    elements: memoizedElements,
+    initialTab,
+    didChangeTabsFrom: didSwitchTabs
   })
 
   const { setHeader } = useContext(HeaderContext)

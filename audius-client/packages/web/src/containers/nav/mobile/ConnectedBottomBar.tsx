@@ -18,6 +18,8 @@ import {
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
 import { isDarkMode } from 'utils/theme/theme'
+import { setTab } from 'containers/explore-page/store/actions'
+import { Tabs } from 'containers/explore-page/store/types'
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -27,7 +29,8 @@ const ConnectedNavBar = ({
   goToRoute,
   handle,
   history,
-  openSignOn
+  openSignOn,
+  resetExploreTab
 }: ConnectedBottomBarProps) => {
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
@@ -45,36 +48,41 @@ const ConnectedNavBar = ({
   }
 
   const goToFeed = useCallback(() => {
+    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(FEED_PAGE)
     }
-  }, [goToRoute, handle, openSignOn])
+  }, [goToRoute, handle, openSignOn, resetExploreTab])
 
   const goToTrending = useCallback(() => {
+    resetExploreTab()
     goToRoute(TRENDING_PAGE)
-  }, [goToRoute])
+  }, [goToRoute, resetExploreTab])
 
   const goToExplore = useCallback(() => {
+    resetExploreTab()
     goToRoute(EXPLORE_PAGE)
-  }, [goToRoute])
+  }, [goToRoute, resetExploreTab])
 
   const goToFavorites = useCallback(() => {
+    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(FAVORITES_PAGE)
     }
-  }, [goToRoute, handle, openSignOn])
+  }, [goToRoute, handle, openSignOn, resetExploreTab])
 
   const goToProfile = useCallback(() => {
+    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(profilePage(handle))
     }
-  }, [goToRoute, handle, openSignOn])
+  }, [goToRoute, handle, openSignOn, resetExploreTab])
 
   return (
     <BottomBar
@@ -102,6 +110,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openSignOn: () => {
       dispatch(openSignOn(false))
       dispatch(showRequiresAccountModal())
+    },
+    resetExploreTab: () => {
+      dispatch(setTab(Tabs.FOR_YOU))
     }
   }
 }
