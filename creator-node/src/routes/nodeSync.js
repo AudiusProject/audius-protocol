@@ -274,7 +274,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
       if (!dbOnlySync) {
         try {
           const myCnodeEndpoint = await getOwnEndpoint(req)
-          userReplicaSet = await getCreatorNodeEndpoints(req, fetchedWalletPublicKey, myCnodeEndpoint)
+          userReplicaSet = await getCreatorNodeEndpoints(req, fetchedWalletPublicKey, myCnodeEndpoint, false)
 
           // push user metadata node to user's replica set if defined
           if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
