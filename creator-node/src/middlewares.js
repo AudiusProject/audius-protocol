@@ -69,7 +69,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   let creatorNodeEndpoints
   try {
-    creatorNodeEndpoints = await getCreatorNodeEndpoints(req, req.session.wallet)
+    creatorNodeEndpoints = await getCreatorNodeEndpoints(req, req.session.wallet, serviceEndpoint)
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
@@ -110,10 +110,13 @@ async function triggerSecondarySyncs (req) {
   }
 }
 
-/** Retrieves current FQDN registered on-chain with node's owner wallet. */
-// TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
-// services has been registered, and we can't register the service unless the service starts up.
-// Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
+/**
+ * Retrieves current FQDN registered on-chain with node's owner wallet
+ * 
+ * @notice TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
+ *    services has been registered, and we can't register the service unless the service starts up.
+ *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
+ */
 async function getOwnEndpoint (req) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
@@ -144,8 +147,13 @@ async function getOwnEndpoint (req) {
   return spInfo['endpoint']
 }
 
-/** Get all creator node endpoints for user by wallet from discprov. */
-async function getCreatorNodeEndpoints (req, wallet) {
+/**
+ * Get all creator node endpoints for user by wallet from discprov
+ * 
+ * If tx blocknumber provided, poll discprov until it has indexed that blocknumber
+ *    Else poll discprov until it returns own endpoint as primary else error
+ */
+async function getCreatorNodeEndpoints (req, wallet, ownEndpoint) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
@@ -156,51 +164,109 @@ async function getCreatorNodeEndpoints (req, wallet) {
   let user = null
   const { blockNumber } = req.body
   if (blockNumber) {
-    let discprovBlockNumber = -1
     const start2 = Date.now()
 
     // In total, will try for 200 seconds.
     const MaxRetries = 40
     const RetryTimeout = 5000 // 5 seconds
+    
+    // Initial delay before polling
     await utils.timeout(1000)
+
+    let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
       req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
           throw new Error('Missing or malformatted user fetched from discprov.')
         }
+
         user = fetchedUser
         discprovBlockNumber = Math.max(user[0].blocknumber, user[0].track_blocknumber)
+
         if (discprovBlockNumber >= blockNumber) {
           break
         }
       } catch (e) { // Ignore all errors until MaxRetries exceeded.
         req.logger.info(e)
       }
+
       await utils.timeout(RetryTimeout)
       req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
 
-    if (discprovBlockNumber < blockNumber) {
-      throw new Error(`Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
-    }
+    // Error if discprov doesn't return any user for wallet
     if (!user) {
       throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
     }
+
+    // Error if discprov has still not indexed to target blockNumber
+    if (discprovBlockNumber < blockNumber) {
+      throw new Error(`Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
+    }
   } else {
-    req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
-    user = await libs.User.getUsers(1, 0, null, wallet)
+    req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`)
+
+    if (!ownEndpoint) {
+      throw new Error('getCreatorNodeEndpoints requires either req.body.blockNumber or ownEndpoint from getOwnEndpoint')
+    }
+    const start2 = Date.now()
+
+    // Will poll every 5 sec for up to 1 minute (60 sec)
+    const MaxRetries = 12
+    const RetryTimeout = 5000 // 5 seconds
+
+    // Initial delay before polling
+    await utils.timeout(1000)
+
+    let returnedPrimaryEndpoint = null
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      req.logger.info(`getCreatorNodeEndpoints ENDPOINT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} ownEndpoint ${ownEndpoint}`)
+
+      try {
+        const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
+        if (!fetchedUser || fetchedUser.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
+        }
+
+        user = fetchedUser
+        returnedPrimaryEndpoint = (user[0].creator_node_endpoint).split(',')[0]
+
+        if (returnedPrimaryEndpoint === ownEndpoint) {
+          break
+        }
+      } catch (e) { // Ignore all errors until MaxRetries exceeded
+        req.logger.info(e)
+      }
+
+      await utils.timeout(RetryTimeout)
+      req.logger.info(`getCreatorNodeEndpoints ENDPOINT AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} ownEndpoint ${ownEndpoint}`)
+    }
+
+    // Error if discprov doesn't return any user for wallet
+    if (!user) {
+      throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
+    }
+
+    // Error if discprov has still not returned own endpoint as primary
+    if (returnedPrimaryEndpoint !== ownEndpoint) {
+      throw new Error(`Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${ownEndpoint}`)
+    }
   }
 
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
     throw new Error(`Invalid return data from discovery provider for user with wallet ${wallet}.`)
   }
+
   const endpoint = user[0]['creator_node_endpoint']
-  const resp = endpoint ? endpoint.split(',') : []
+  const userReplicaSet = endpoint ? endpoint.split(',') : []
 
   req.logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
-  return resp
+  return userReplicaSet
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
