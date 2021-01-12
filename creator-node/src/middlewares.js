@@ -114,7 +114,7 @@ async function triggerSecondarySyncs (req) {
 
 /**
  * Retrieves current FQDN registered on-chain with node's owner wallet
- * 
+ *
  * @notice TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
  *    services has been registered, and we can't register the service unless the service starts up.
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
@@ -151,7 +151,7 @@ async function getOwnEndpoint (req) {
 
 /**
  * Get all creator node endpoints for user by wallet from discprov
- * 
+ *
  * If tx blocknumber provided, poll discprov until it has indexed that blocknumber
  *    Else poll discprov until it returns own endpoint as primary else error
  */
@@ -172,7 +172,7 @@ async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary)
     // In total, will try for 200 seconds.
     const MaxRetries = 40
     const RetryTimeout = 5000 // 5 seconds
-    
+
     // Initial delay before polling
     await utils.timeout(1000)
 
