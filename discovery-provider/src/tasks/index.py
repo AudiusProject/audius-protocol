@@ -135,16 +135,22 @@ def fetch_tx_receipts(self, block_transactions):
     return block_tx_with_receipts
 
 def update_user_replica_set_manager_address_if_necessary(self):
-    logger.error(f"update_user_replica_set_manager_address_if_necessary")
-
+    web3 = update_task.web3
     shared_config = update_task.shared_config
-    usrm_address = contract_addresses["user_replica_set_manager"]
-
-    logger.error(f"for usrm addr found: {usrm_address}")
-    logger.error(f"END update_user_replica_set_manager_address_if_necessary")
-
-    if usrm_address = "0x0000000000000000000000000000000000000000":
-        logger.error("MISSING USRM ADDRESS! @@2222")
+    abi_values = update_task.abi_values
+    user_replica_set_manager_address = contract_addresses["user_replica_set_manager"]
+    if user_replica_set_manager_address == "0x0000000000000000000000000000000000000000":
+        registry_address = web3.toChecksumAddress(
+            shared_config["contracts"]["registry"]
+        )
+        registry_instance = web3.eth.contract(
+            address=registry_address, abi=abi_values["Registry"]["abi"]
+        )
+        user_replica_set_manager_address = registry_instance.functions.getContract(
+            bytes("UserReplicaSetManager", "utf-8")
+        ).call()
+        contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
+        logger.info(f"index.py | Updated user_replica_set_manager_address:{user_replica_set_manager_address}")
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
