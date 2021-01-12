@@ -117,14 +117,15 @@ class Account extends Base {
     let userId
 
     try {
+      this.REQUIRES(Services.CREATOR_NODE)
+
       if (this.web3Manager.web3IsExternal()) {
-        this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+        this.REQUIRES(Services.IDENTITY_SERVICE)
 
         phase = phases.CREATE_USER_RECORD
         await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
-        this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
+        this.REQUIRES(Services.HEDGEHOG)
         // If an owner wallet already exists, don't try to recreate it
         if (!hasWallet) {
           phase = phases.HEDGEHOG_SIGNUP
@@ -138,7 +139,7 @@ class Account extends Base {
       phase = phases.ADD_USER
       userId = await this.User.addUser(metadata)
 
-      // Assign replica set to user and update metadata object
+      // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
       phase = phases.ADD_REPLICA_SET
       metadata = await this.User.assignReplicaSet({
         serviceProvider,

@@ -43,7 +43,6 @@ class Users extends Base {
     this.uploadProfileImages = this.uploadProfileImages.bind(this)
     this.addUser = this.addUser.bind(this)
     this.updateUser = this.updateUser.bind(this)
-    this.addCreator = this.addCreator.bind(this)
     this.updateCreator = this.updateCreator.bind(this)
     this.upgradeToCreator = this.upgradeToCreator.bind(this)
     this.updateIsVerified = this.updateIsVerified.bind(this)
@@ -272,19 +271,24 @@ class Users extends Base {
    * @returns {Object} the passed in metadata object with profile_picture and cover_photo fields added
    */
   async uploadProfileImages (profilePictureFile, coverPhotoFile, metadata) {
+    let didMetadataUpdate = false
     if (profilePictureFile) {
       const resp = await this.creatorNode.uploadImage(profilePictureFile, true)
       metadata.profile_picture_sizes = resp.dirCID
+      didMetadataUpdate = true
     }
     if (coverPhotoFile) {
       const resp = await this.creatorNode.uploadImage(coverPhotoFile, false)
       metadata.cover_photo_sizes = resp.dirCID
+      didMetadataUpdate = true
     }
 
-    await this._handleMetadata({
-      newMetadata: metadata,
-      userId: metadata.user_id
-    })
+    if (didMetadataUpdate) {
+      await this._handleMetadata({
+        newMetadata: metadata,
+        userId: metadata.user_id
+      })
+    }
 
     return metadata
   }
@@ -299,6 +303,8 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
+    newMetadata.wallet = this.web3Manager.getWalletAddress()
+
     let userId
     const currentUser = this.userStateManager.getCurrentUser()
     if (currentUser && currentUser.handle) {
@@ -308,8 +314,6 @@ class Users extends Base {
     }
     await this._addUserOperations(userId, newMetadata)
 
-    newMetadata.wallet = this.web3Manager.getWalletAddress()
-    newMetadata.user_id = userId
     this.userStateManager.setCurrentUser({ ...newMetadata })
     return userId
   }
@@ -332,56 +336,6 @@ class Users extends Base {
     const oldMetadata = users[0]
     await this._updateUserOperations(newMetadata, oldMetadata, userId)
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
-  }
-
-  /**
-   * Create a new user that is a creator or upgrade from a non-creator user to a creator
-   * Fills in wallet and creator_node_endpoint fields in metadata.
-   *
-   * @notice - this function is most likely not used and can be removed
-   *
-   * @param {Object} metadata - metadata to associate with the user, following the format in `user-metadata-format.json` in audius-contracts.
-   */
-  async addCreator (metadata) {
-    this.REQUIRES(Services.CREATOR_NODE)
-    this.IS_OBJECT(metadata)
-    const newMetadata = this._cleanUserMetadata(metadata)
-    this._validateUserMetadata(newMetadata)
-
-    // Error if libs instance already has user - we only support one user per creator node / libs instance
-    const user = this.userStateManager.getCurrentUser()
-    if (user) {
-      throw new Error('User already created for creator node / libs instance')
-    }
-
-    // populate metadata object with required fields - wallet, is_creator, creator_node_endpoint
-    newMetadata.wallet = this.web3Manager.getWalletAddress()
-    newMetadata.is_creator = true
-    newMetadata.creator_node_endpoint = this.creatorNode.getEndpoint()
-
-    // Create user record on chain with handle
-    const { userId } = await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
-
-    // Update user creator_node_endpoint on chain
-    await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint'])
-
-    // Upload metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
-
-    // Write metadata multihash to chain
-    const multihashDecoded = Utils.decodeMultihash(metadataMultihash)
-    const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
-
-    // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata, ['creator_node_endpoint'])
-
-    // Write to CN to associate blockchain user id with the metadata and block number
-    await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
-
-    // Update libs instance with new user metadata object
-    this.userStateManager.setCurrentUser({ ...newMetadata })
-
-    return userId
   }
 
   /**

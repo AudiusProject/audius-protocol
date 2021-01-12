@@ -2,7 +2,7 @@
 // When: they sign up
 // Then: the new user should be assigned a replica set
 // And then: metadata blob should exist in all 3 cnodes
-// And then: disc prov has indexed the user with
+// And then: disc node has indexed the user with
 // is_creator = false
 // creator_node_endpoints = cn1, cn2, cn3 (any order)
 // clock values in all 3 cnodes are the same (primary = secondary1, secondary2)
@@ -24,7 +24,6 @@ const assignReplicaSetAndSyncOnSignUp = async ({
 }) => {
   const walletIndexToUserIdMap = await addUsersWithoutProfileImageOnSignUp(
     numUsers /* 1 */,
-    numCreatorNodes /* 3 */,
     executeAll,
     executeOne
   )

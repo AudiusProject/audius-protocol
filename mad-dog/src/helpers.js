@@ -29,15 +29,6 @@ const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Happy.mp3'
 ]
 
-const makeCreatorNodeEndpointString = selectedCNodesObj => {
-  if (!selectedCNodesObj || !selectedCNodesObj.primary) return ''
-  const endpointArr = [
-    selectedCNodesObj.primary,
-    ...selectedCNodesObj.secondaries
-  ]
-  return endpointArr.join(',')
-}
-
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
 
 /**
@@ -65,7 +56,6 @@ const addAndUpgradeUsers = async (
 
 const addUsers = async (
   userCount,
-  numCreatorNodes,
   executeAll,
   executeOne
 ) => {
@@ -81,7 +71,6 @@ const addUsers = async (
 
 const addUsersWithoutProfileImageOnSignUp = async (
   userCount,
-  numCreatorNodes,
   executeAll,
   executeOne
 ) => {
