@@ -51,7 +51,6 @@ class Users extends Base {
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
 
     // For adding replica set to users on sign up
-    this.updateUserMetadata = this.updateUserMetadata.bind(this)
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
     this.updateIsCreatorFlagToTrue = this.updateIsCreatorFlagToTrue.bind(this)
 
@@ -203,7 +202,6 @@ class Users extends Base {
   async assignReplicaSet ({
     serviceProvider,
     userId,
-    newContentNodeEndpoints = '', // ??? what is this supposed to look like
     passList = null,
     blockList = null
   }) {
@@ -219,33 +217,31 @@ class Users extends Base {
     const numNodes = 3
 
     const user = this.userStateManager.getCurrentUser()
-    const newMetadata = { ...user }
     // Failed the addUser() step
     if (!user) { throw new Error('No current user') }
     // No-op if the user already has a replica set assigned under creator_node_endpoint
     if (user.creator_node_endpoint && user.creator_node_endpoint.length > 0) return
 
     // The new metadata object that will contain the replica set
+    const newMetadata = { ...user }
     try {
       // Create starter metadata and validate
       phase = phases.CLEAN_AND_VALIDATE_METADATA
 
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       let primary, secondaries
-      if (!newContentNodeEndpoints || newContentNodeEndpoints.length === 0) {
-        phase = phases.AUTOSELECT_CONTENT_NODES
-        const response = await serviceProvider.autoSelectCreatorNodes({
-          performSyncCheck: false,
-          whitelist: passList,
-          blacklist: blockList
-        })
-        primary = response.primary
-        secondaries = response.secondaries
-        if (!primary || !secondaries || secondaries.length < numNodes - 1) {
-          throw new Error(`Could not select a primary=${primary} and/or ${numNodes - 1} secondaries=${secondaries}`)
-        }
-        newContentNodeEndpoints = CreatorNode.buildEndpoint(primary, secondaries)
+      phase = phases.AUTOSELECT_CONTENT_NODES
+      const response = await serviceProvider.autoSelectCreatorNodes({
+        performSyncCheck: false,
+        whitelist: passList,
+        blacklist: blockList
+      })
+      primary = response.primary
+      secondaries = response.secondaries
+      if (!primary || !secondaries || secondaries.length < numNodes - 1) {
+        throw new Error(`Could not select a primary=${primary} and/or ${numNodes - 1} secondaries=${secondaries}`)
       }
+      const newContentNodeEndpoints = CreatorNode.buildEndpoint(primary, secondaries)
       newMetadata.creator_node_endpoint = newContentNodeEndpoints
 
       // Update the new primary to the auto-selected primary
@@ -265,19 +261,6 @@ class Users extends Base {
     }
 
     return newMetadata
-  }
-
-  /**
-   * Wrapper around private method _handleMetadata()
-   * @param {number} userId
-   * @param {Object} metadata
-   */
-  async updateUserMetadata (userId, metadata) {
-    await this._handleMetadata({
-      newMetadata: metadata,
-      userId
-    })
-    return userId
   }
 
   /**

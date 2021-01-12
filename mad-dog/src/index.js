@@ -167,7 +167,8 @@ async function main () {
           numUsers: 1
         }
       )
-      const tests = [signUpReplicaSetTest]//, test, ...blacklistTests]
+
+      const tests = [test, ...blacklistTests, signUpReplicaSetTest]
 
       try {
         await testRunner(tests)

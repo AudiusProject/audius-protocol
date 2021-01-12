@@ -11,7 +11,21 @@ User.addUser = async (libsWrapper, metadata) => {
   return userId
 }
 
+// TODO: we shouldn't need to upload the photo prior to signup as this is not
+// representative of our actual flow. But since the third party libs gets confused
+// uploading a photo via code, have to do this work around.
 User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePath) => {
+  // Sign user up
+  const userId = await User.addUser(libsWrapper, metadata)
+
+  // Wait for disc prov to index user
+  await waitForIndexing()
+
+  // Get primary off user and set in libs
+  const user = await User.getUser(libsWrapper, userId)
+  libsWrapper.getPrimaryAndSetLibs(user.creator_node_endpoint)
+
+  // Upload images to that primary (will inherently sync)
   const userPicFile = fs.createReadStream(userPicturePath)
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
@@ -20,11 +34,13 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   metadata.profile_picture_sizes = resp.dirCID
   metadata.cover_photo_sizes = resp.dirCID
 
-  return User.addUser(libsWrapper, metadata)
+  libsWrapper.setCurrentUser(metadata)
+
+  return userId
 }
 
-User.upgradeToCreator = async (libsWrapper, endpoint) => {
-  await libsWrapper.upgradeToCreator({
+User.updateIsCreatorFlagToTrue = async (libsWrapper, endpoint) => {
+  await libsWrapper.updateIsCreatorFlagToTrue({
     endpoint,
     userNode: config.get('user_node')
   })
@@ -55,8 +71,12 @@ User.getLibsWalletAddress = libs => {
   return libs.getWalletAddress()
 }
 
-User.setCurrentUser = async (libs, userAccount) => {
-  libs.setCurrentUser(userAccount)
+User.setCurrentUserAndUpdateLibs = async (libs, userAccount) => {
+  libs.setCurrentUserAndUpdateLibs(userAccount)
+}
+
+User.setCurrentUser = (libs, user) => {
+  libs.setCurrentUser(user)
 }
 
 User.getLibsUserInfo = async libs => {
@@ -89,6 +109,17 @@ User.getContentNodeEndpoints = (libsWrapper, contentNodeEndpointField) => {
 
 User.getClockValuesFromReplicaSet = async libsWrapper => {
   return libsWrapper.getClockValuesFromReplicaSet()
+}
+
+/** Delay execution for n ms */
+function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/** Wrapper for custom delay time */
+async function waitForIndexing (waitTime = 5000) {
+  console.info(`Pausing ${waitTime}ms for discprov indexing...`)
+  await delay(waitTime)
 }
 
 module.exports = User

@@ -11,12 +11,12 @@ const ServiceCommands = require('@audius/service-commands')
 const {
   addUser,
   uploadProfileImagesAndAddUser,
-  upgradeToCreator,
+  updateIsCreatorFlagToTrue,
   autoSelectCreatorNodes,
   getLibsUserInfo,
   getUserAccount,
   getLibsWalletAddress,
-  setCurrentUser
+  setCurrentUserAndUpdateLibs
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -110,40 +110,48 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
   await logOps('Add users', async () => {
     const users = genRandomUsers(userCount)
     await executeAll(async (libs, i) => {
+      try {
       // If user already exists, do not recreate user and use existing user
-      const existingUser = await getUser({ executeOne, walletIndex: i })
-      let userId
-      if (existingUser) {
-        existingUserIds.push(existingUser.user_id)
-        userId = existingUser.user_id
-        logger.info(`Found existing user: ${userId}`)
-      } else {
-        const userMetadata = users[i]
-        let newUserId
-        if (uploadProfilePic) {
-          newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, USER_PIC_PATH)
+        const existingUser = await getUser({ executeOne, walletIndex: i })
+        let userId
+        if (existingUser) {
+          logger.info(`Found existing user: ${existingUser.user_id}`)
+          existingUserIds.push(existingUser.user_id)
+          userId = existingUser.user_id
         } else {
-          newUserId = await addUser(libs, userMetadata)
+          logger.info('Creating new user...')
+          const userMetadata = users[i]
+          let newUserId
+          if (uploadProfilePic) {
+            newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, USER_PIC_PATH)
+          } else {
+            newUserId = await addUser(libs, userMetadata)
+          }
+          logger.info(`Created new user: ${newUserId}`)
+          addedUserIds.push(newUserId)
+          userId = newUserId
+
+          // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
+          // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
+          await waitForIndexing()
+          const userWalletAddress = getLibsWalletAddress(libs)
+          const userAccount = await getUserAccount(libs, userWalletAddress)
+          setCurrentUserAndUpdateLibs(libs, userAccount) // might not need this anymore bc refactored signup flow
+
+          // add to wallet index to userId mapping
+          walletIndexToUserIdMap[i] = userId
+
+          // print userIds that exist and were added
+          logger.info(`Added users, userIds=${addedUserIds}`)
+          logger.info(`Existing users, userIds=${existingUserIds}`)
+          await waitForIndexing()
         }
-        addedUserIds.push(newUserId)
-        userId = newUserId
-        logger.info(`Created new user: ${userId}`)
-
-        // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
-        // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-        await waitForIndexing()
-        const userWalletAddress = getLibsWalletAddress(libs)
-        const userAccount = await getUserAccount(libs, userWalletAddress)
-        setCurrentUser(libs, userAccount)
+      } catch (e) {
+        logger.error('GOT ERR CREATING USER')
+        logger.error(e.message)
+        throw e
       }
-
-      // add to wallet index to userId mapping
-      walletIndexToUserIdMap[i] = userId
     })
-    // print userIds that exist and were added
-    logger.info(`Added users, userIds=${addedUserIds}`)
-    logger.info(`Existing users, userIds=${existingUserIds}`)
-    await waitForIndexing()
   })
 }
 
@@ -159,22 +167,16 @@ async function _upgradeToCreator (executeAll, executeOne, numCreatorNodes) {
       await executeAll(async (libs, i) => {
         // Check if existing users are already creators. If so, don't upgrade
         const existingUser = await getUser({ executeOne, walletIndex: i })
-
-        // Autoselect replica set from valid nodes on-chain
-        if (!existingUser || !existingUser.creator_node_endpoint) {
-          const selectedCNodes = await executeOne(i, libsWrapper => autoSelectCreatorNodes(libsWrapper, numCreatorNodes))
-          const { primary, secondaries } = selectedCNodes
-          if (!primary || !secondaries) {
-            throw new Error(`Could not properly select cnodes. primary=${primary} | secondaries=${secondaries}`)
-          }
-          const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
-          logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
-          // Upgrade to creator with replica set
-          await executeOne(i, l => upgradeToCreator(l, endpointString))
-          logger.info(`Finished upgrading creator wallet index ${i}`)
-        } else {
+        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with walletIndex ${i}`)
+        if (existingUser.tracks > 0) {
           logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
+          return
         }
+        // Upgrade to creator with replica set
+        const endpointString = existingUser.creator_node_endpoint
+        logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
+        await executeOne(i, l => updateIsCreatorFlagToTrue(l, endpointString))
+        logger.info(`Finished upgrading creator wallet index ${i}`)
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')

@@ -13,7 +13,6 @@ const {
   getUser
 } = ServiceCommands
 const {
-  addUsers,
   addUsersWithoutProfileImageOnSignUp
 } = require('../helpers.js')
 

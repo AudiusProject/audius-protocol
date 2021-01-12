@@ -152,9 +152,9 @@ function LibsWrapper (walletIndex = 0) {
    *
    * @param {*} args endpoint to upgrade to, current userNode endpoint.
    */
-  this.upgradeToCreator = async ({ endpoint, userNode }) => {
+  this.updateIsCreatorFlagToTrue = async ({ endpoint, userNode }) => {
     assertLibsDidInit()
-    return this.libsInstance.User.upgradeToCreator(userNode, endpoint)
+    return this.libsInstance.User.updateIsCreatorFlagToTrue(userNode, endpoint)
   }
 
   /**
@@ -256,14 +256,33 @@ function LibsWrapper (walletIndex = 0) {
    * Updates userStateManager and updates the primary endpoint in libsInstance.creatorNode
    * @param {Object} userAccount new metadata field
    */
-  this.setCurrentUser = async userAccount => {
+  this.setCurrentUserAndUpdateLibs = async userAccount => {
     assertLibsDidInit()
-    this.libsInstance.userStateManager.setCurrentUser(userAccount)
-    const creatorNodeEndpoints = userAccount.creator_node_endpoint
-    if (creatorNodeEndpoints) {
-      const primary = CreatorNode.getPrimary(creatorNodeEndpoints)
-      this.libsInstance.creatorNode.setEndpoint(primary)
+    this.setCurrentUser(userAccount)
+    const contentNodeEndpointField = userAccount.creator_node_endpoint
+    if (contentNodeEndpointField) {
+      this.getPrimaryAndSetLibs(contentNodeEndpointField)
     }
+  }
+
+  /**
+   * Updates userStateManager with input user metadata
+   * @param {object} user user metadata
+   */
+  this.setCurrentUser = user => {
+    assertLibsDidInit()
+    this.libsInstance.userStateManager.setCurrentUser(user)
+  }
+
+  /**
+  * Gets the primary off the user metadata and then sets the primary
+  * on the CreatorNode instance in libs
+  * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
+  */
+  this.getPrimaryAndSetLibs = contentNodeEndpointField => {
+    assertLibsDidInit()
+    const primary = CreatorNode.getPrimary(contentNodeEndpointField)
+    this.libsInstance.creatorNode.setEndpoint(primary)
   }
 
   /**
