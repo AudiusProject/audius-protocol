@@ -144,7 +144,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
     logger.error(f"END update_user_replica_set_manager_address_if_necessary")
 
     if usrm_address = "0x0000000000000000000000000000000000000000":
-        logger.error("MISSING USRM ADDRESS!")
+        logger.error("MISSING USRM ADDRESS! @@2222")
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
