@@ -12,7 +12,6 @@ const {
   addUser,
   uploadProfileImagesAndAddUser,
   updateIsCreatorFlagToTrue,
-  autoSelectCreatorNodes,
   getLibsUserInfo,
   getUserAccount,
   getLibsWalletAddress,
@@ -150,7 +149,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
  * @param {*} executeOne
  * @param {int} numCreatorNodes
  */
-async function _upgradeToCreator (executeAll, executeOne, numCreatorNodes) {
+async function _upgradeToCreator (executeAll, executeOne) {
   await logOps('Upgrade to creator', async () => {
     try {
       await executeAll(async (libs, i) => {
