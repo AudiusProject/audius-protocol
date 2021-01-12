@@ -70,7 +70,7 @@ export const waitForWeb3 = async () => {
 }
 
 let AudiusLibs = null
-let Utils = null
+export let Utils = null
 let SanityChecks = null
 
 let audiusLibs = null
