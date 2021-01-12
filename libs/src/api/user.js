@@ -53,6 +53,7 @@ class Users extends Base {
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
     this.updateIsCreatorFlagToTrue = this.updateIsCreatorFlagToTrue.bind(this)
 
+    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
     this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
@@ -511,6 +512,13 @@ class Users extends Base {
   async deleteUserFollow (followeeUserId) {
     const followerUserId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.deleteUserFollow(followerUserId, followeeUserId)
+  }
+
+  /**
+   * Gets the clock status for user in userStateManager across replica set.
+   */
+  async getClockValuesFromReplicaSet () {
+    return this.creatorNode.getClockValuesFromReplicaSet()
   }
 
   /* ------- PRIVATE  ------- */

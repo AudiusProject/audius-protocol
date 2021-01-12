@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihash } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config')
-const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../middlewares')
+const middlewares = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
@@ -273,8 +273,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
 
       if (!dbOnlySync) {
         try {
-          const myCnodeEndpoint = await getOwnEndpoint(req)
-          userReplicaSet = await getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+          const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
+          userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
 
           // push user metadata node to user's replica set if defined
           if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))

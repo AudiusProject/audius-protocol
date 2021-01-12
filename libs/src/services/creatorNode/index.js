@@ -478,12 +478,12 @@ class CreatorNode {
    * @param {Object} param.user user metadata object from userStateManager
    * @param {string} param.endpoint the Content Node endpoint to check the clock value for
    */
-  async _clockValueRequest ({ user, endpoint }) {
+  async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
     let type = primary === endpoint ? 'primary' : 'secondary'
 
     try {
-      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet)
+      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout)
       return {
         type,
         endpoint,
