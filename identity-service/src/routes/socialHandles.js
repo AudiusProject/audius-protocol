@@ -11,12 +11,14 @@ module.exports = function (app) {
     })
 
     const twitterUser = await models.TwitterUser.findOne({ where: {
+      // Twitter stores case sensitive screen names
       'twitterProfile.screen_name': handle,
       verified: true
     } })
 
     const instagramUser = await models.InstagramUser.findOne({ where: {
-      'profile.username': handle,
+      // Instagram does not store case sensitive screen names
+      'profile.username': handle.toLowerCase(),
       verified: true
     } })
 
