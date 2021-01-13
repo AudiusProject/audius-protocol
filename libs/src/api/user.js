@@ -40,6 +40,7 @@ class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
+    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
     this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
@@ -316,15 +317,17 @@ class Users extends Base {
     const oldMetadata = { ...user }
 
     // Update user creator_node_endpoint on chain if applicable
+    let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -393,15 +396,17 @@ class Users extends Base {
     await this.creatorNode.setEndpoint(newPrimary)
 
     // Update user creator_node_endpoint on chain if applicable
+    let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -446,6 +451,13 @@ class Users extends Base {
   async deleteUserFollow (followeeUserId) {
     const followerUserId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.deleteUserFollow(followerUserId, followeeUserId)
+  }
+
+  /**
+   * Gets the clock status for user in userStateManager across replica set.
+   */
+  async getClockValuesFromReplicaSet () {
+    return this.creatorNode.getClockValuesFromReplicaSet()
   }
 
   /* ------- PRIVATE  ------- */
