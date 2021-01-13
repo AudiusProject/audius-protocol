@@ -608,7 +608,7 @@ track_id={self.track_id},\
 owner_id={self.owner_id}>"
 
 class POAContentNode(Base):
-    __tablename__ = "poa_content_nodes"
+    __tablename__ = "l2_content_nodes"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     is_current = Column(Boolean, nullable=False)
     cnode_id = Column(Integer, nullable=False)
