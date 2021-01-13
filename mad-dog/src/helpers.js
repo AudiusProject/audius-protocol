@@ -46,7 +46,7 @@ const addAndUpgradeUsers = async (
   const walletIndexToUserIdMap = {}
 
   await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
-  await _upgradeToCreator(executeAll, executeOne)
+  await _upgradeUsersToCreator(executeAll, executeOne)
 
   // Map out walletId index => userId
   return walletIndexToUserIdMap
@@ -148,7 +148,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
  * @param {*} executeOne
  * @param {int} numCreatorNodes
  */
-async function _upgradeToCreator (executeAll, executeOne) {
+async function _upgradeUsersToCreator (executeAll, executeOne) {
   await logOps('Upgrade to creator', async () => {
     try {
       await executeAll(async (libs, i) => {
