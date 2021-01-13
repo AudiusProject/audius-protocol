@@ -130,7 +130,9 @@ const TrackListItem = ({
             </ArtistPopover>
           </div>
         </div>
-        <div className={styles.duration}>{formatSeconds(track.duration)}</div>
+        <div className={styles.duration}>
+          {track.duration && formatSeconds(track.duration)}
+        </div>
         {deleted ? <div className={styles.more} style={{ width: 16 }} /> : null}
         {!disableActions && !deleted ? (
           <div className={styles.more} onClick={onMoreClick}>

@@ -117,7 +117,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             </div>
           )}
           <div className={cn(styles.duration, fadeIn)}>
-            {formatSeconds(props.duration)}
+            {props.duration && formatSeconds(props.duration)}
           </div>
         </div>
         <div className={styles.metadata}>
