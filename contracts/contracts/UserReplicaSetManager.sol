@@ -366,6 +366,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         return signer;
     }
 
+    // Compare old secondaries submitted by function caller
+    // and the value stored on the contract - note that the order
+    // does matter when comparing secondary replicas
     function _compareUserSecondariesAndCheckSender(
         uint _userId,
         uint[] memory _oldSecondaries,
