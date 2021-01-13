@@ -171,8 +171,9 @@ module.exports = function (app) {
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('minimumBalance'))
-    let minimumRelayerBalance = parseFloat(config.get('minimumRelayerBalance'))
+    let { minimumBalance, minimumRelayerBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('minimumBalance'))
+    minimumRelayerBalance = parseFloat(minimumRelayerBalance || config.get('minimumRelayerBalance'))
     let belowMinimumBalances = []
     let balances = []
 
@@ -218,8 +219,9 @@ module.exports = function (app) {
   }))
 
   app.get('/eth_balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('ethMinimumBalance'))
-    let minimumFunderBalance = parseFloat(config.get('ethMinimumFunderBalance'))
+    let { minimumBalance, minimumFunderBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('ethMinimumBalance'))
+    minimumFunderBalance = parseFloat(minimumFunderBalance || config.get('ethMinimumFunderBalance'))
     let funderAddress = config.get('ethFunderAddress')
     let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
     let funderAboveMinimum = funderBalance >= minimumFunderBalance

@@ -107,7 +107,7 @@ const config = convict({
     default: null
   },
   ethFunderAddress: {
-    doc: 'L1 Relayer Address. The source of the funds when funding wallet.',
+    doc: 'L1 Relayer Address. The source of the funds when funding wallets. (Only used in balance_check and eth_balance_check to check if enough funds exist)',
     format: String,
     env: 'ethFunderAddress',
     default: null
