@@ -51,9 +51,9 @@ def user_replica_set_state_update(
                 user_id = args._userId if "_userId" in args else None
                 user_ids.add(user_id)
 
-                # Check if _newCnodeId is present
+                # Check if cnodeId is present
                 # If cnode id is found in event args, update local lookup object
-                cnode_id = args._newCnodeId if "_newCnodeId" in args else None
+                cnode_id = args._cnodeId if "_cnodeId" in args else None
 
                 # if the user id is not in the lookup object, it hasn't been initialized yet
                 # first, get the user object from the db(if exists or create a new one)
@@ -165,7 +165,7 @@ def get_endpoint_string_from_sp_ids(
 
 def parse_poa_cnode_record(self, update_task, session, entry, cnode_record):
     event_args = entry["args"]
-    delegate_owner_wallet = event_args._newCnodeDelegateOwnerWallet
+    delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
     sp_ids = event_args._proposerSpIds
     proposer_1 = event_args._proposer1Address
     proposer_2 = event_args._proposer2Address
@@ -182,7 +182,7 @@ def lookup_poa_cnode_record(self, update_task, session, entry, block_number, blo
     event_args = entry["args"]
 
     # Arguments from the event
-    cnode_id = event_args._newCnodeId
+    cnode_id = event_args._cnodeId
 
     cnode_record_exists = session.query(L2ContentNode).filter_by(cnode_id=cnode_id).count() > 0
     logger.error(f"lookup_poa_cnode_record | {cnode_id} record exists={cnode_record_exists}")
