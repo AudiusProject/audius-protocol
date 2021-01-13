@@ -129,7 +129,6 @@ class BlacklistedIPLD(Base):
 blocknumber={self.blocknumber},ipld={self.ipld}\
 is_blacklisted={self.is_blacklisted}, is_current={self.is_current})>"
 
-
 class User(Base):
     __tablename__ = "users"
 
@@ -607,3 +606,23 @@ class TagTrackUserMatview(Base):
 tag={self.tag},\
 track_id={self.track_id},\
 owner_id={self.owner_id}>"
+
+class POAContentNode(Base):
+    __tablename__ = "poa_content_nodes"
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    cnode_id = Column(Integer, nullable=False)
+    delegate_owner_wallet = Column(String, nullable=False)
+    proposer_sp_ids = Column(postgresql.ARRAY(Integer), nullable=False)
+    proposer_1_address = Column(String, nullable=False)
+    proposer_2_address = Column(String, nullable=False)
+    proposer_3_address = Column(String, nullable=False)
+
+    PrimaryKeyConstraint(is_current, cnode_id, blockhash)
+
+    def __repr__(self):
+        return f"<POAContentNode(blockhash={self.blockhash},\
+is_current={self.is_current},cnode_id={self.cnode_id},\
+delegate_owner_wallet={self.delegate_owner_wallet}, proposer_sp_ids={self.proposer_sp_ids},\
+proposer_1_address={self.proposer_1_address},proposer_2_address={self.proposer_2_address},\
+proposer_3_address={self.proposer_3_address})>"
