@@ -89,6 +89,9 @@ function LibsWrapper (walletIndex = 0) {
     )
 
     const walletAddress = config.get('data_wallets')[walletIndex]
+    this.walletAddress = walletAddress
+    this.walletIndex = walletIndex
+
     const web3Config = await AudiusLibs.configExternalWeb3(
       REGISTRY_ADDRESS,
       dataWeb3,
@@ -292,6 +295,15 @@ function LibsWrapper (walletIndex = 0) {
   this.getContentNodeEndpoints = contentNodesEndpointField => {
     assertLibsDidInit()
     return this.libsInstance.creatorNode.getEndpoints(contentNodesEndpointField)
+  }
+
+  /**
+   * Updates the metadata on chain and uploads new metadata instance on content node
+   * @param {*} param0
+   */
+  this.updateAndUploadMetadata = ({ newMetadata, userId }) => {
+    assertLibsDidInit()
+    return this.libsInstance.User.updateAndUploadMetadata({ newMetadata, userId })
   }
 
   /**

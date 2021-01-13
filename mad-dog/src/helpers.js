@@ -38,7 +38,6 @@ const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
  */
 const addAndUpgradeUsers = async (
   userCount,
-  numCreatorNodes,
   executeAll,
   executeOne
 ) => {
@@ -47,7 +46,7 @@ const addAndUpgradeUsers = async (
   const walletIndexToUserIdMap = {}
 
   await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
-  await _upgradeToCreator(executeAll, executeOne, numCreatorNodes)
+  await _upgradeToCreator(executeAll, executeOne)
 
   // Map out walletId index => userId
   return walletIndexToUserIdMap
@@ -118,22 +117,22 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           logger.info(`Created new user: ${newUserId}`)
           addedUserIds.push(newUserId)
           userId = newUserId
-
-          // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
-          // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-          await waitForIndexing()
-          const userWalletAddress = getLibsWalletAddress(libs)
-          const userAccount = await getUserAccount(libs, userWalletAddress)
-          setCurrentUserAndUpdateLibs(libs, userAccount) // might not need this anymore bc refactored signup flow
-
-          // add to wallet index to userId mapping
-          walletIndexToUserIdMap[i] = userId
-
-          // print userIds that exist and were added
-          logger.info(`Added users, userIds=${addedUserIds}`)
-          logger.info(`Existing users, userIds=${existingUserIds}`)
-          await waitForIndexing()
         }
+
+        // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
+        // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
+        await waitForIndexing()
+        const userWalletAddress = getLibsWalletAddress(libs)
+        const userAccount = await getUserAccount(libs, userWalletAddress)
+        setCurrentUserAndUpdateLibs(libs, userAccount) // might not need this anymore bc refactored signup flow
+
+        // add to wallet index to userId mapping
+        walletIndexToUserIdMap[i] = userId
+
+        // print userIds that exist and were added
+        logger.info(`Added users, userIds=${addedUserIds}`)
+        logger.info(`Existing users, userIds=${existingUserIds}`)
+        await waitForIndexing()
       } catch (e) {
         logger.error('GOT ERR CREATING USER')
         logger.error(e.message)

@@ -20,10 +20,7 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
 
   // Wait for disc prov to index user
   await waitForIndexing()
-
-  // Get primary off user and set in libs
-  const user = await User.getUser(libsWrapper, userId)
-  libsWrapper.getPrimaryAndSetLibs(user.creator_node_endpoint)
+  metadata = await User.getUser(libsWrapper, userId)
 
   // Upload images to that primary (will inherently sync)
   const userPicFile = fs.createReadStream(userPicturePath)
@@ -34,7 +31,8 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   metadata.profile_picture_sizes = resp.dirCID
   metadata.cover_photo_sizes = resp.dirCID
 
-  libsWrapper.setCurrentUser(metadata)
+  // Update metadata on content node + chain
+  libsWrapper.updateAndUploadMetadata({ newMetadata: metadata, userId })
 
   return userId
 }

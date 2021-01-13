@@ -137,7 +137,6 @@ module.exports = consistency1 = async ({
   try {
     walletIdMap = await addAndUpgradeUsers(
       numUsers,
-      numCreatorNodes,
       executeAll,
       executeOne
     )

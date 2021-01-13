@@ -39,7 +39,7 @@ async function tearDownAllServices () {
   logger.info('All services downed.')
 }
 
-const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
+const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
       const res = await testFn({
@@ -57,7 +57,8 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
   return {
     testName: name,
     test: wrappedTest,
-    numUsers
+    numUsers,
+    useZeroIndexedWallet
   }
 }
 
@@ -155,7 +156,8 @@ async function main () {
         ([testName, testLogic]) =>
           makeTest(testName, testLogic, {
             numCreatorNodes: 1,
-            numUsers: DEFAULT_NUM_USERS
+            numUsers: DEFAULT_NUM_USERS,
+            useZeroIndexedWallet: true
           })
       )
 

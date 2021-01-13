@@ -229,15 +229,14 @@ class Users extends Base {
       phase = phases.CLEAN_AND_VALIDATE_METADATA
 
       // Autoselect a new replica set and update the metadata object with new content node endpoints
-      let primary, secondaries
       phase = phases.AUTOSELECT_CONTENT_NODES
       const response = await serviceProvider.autoSelectCreatorNodes({
         performSyncCheck: false,
         whitelist: passList,
         blacklist: blockList
       })
-      primary = response.primary
-      secondaries = response.secondaries
+      const primary = response.primary
+      const secondaries = response.secondaries
       if (!primary || !secondaries || secondaries.length < numNodes - 1) {
         throw new Error(`Could not select a primary=${primary} and/or ${numNodes - 1} secondaries=${secondaries}`)
       }
@@ -246,13 +245,12 @@ class Users extends Base {
 
       // Update the new primary to the auto-selected primary
       phase = phases.SET_PRIMARY
-      const newPrimary = CreatorNode.getPrimary(newContentNodeEndpoints)
-      await this.creatorNode.setEndpoint(newPrimary)
+      await this.creatorNode.setEndpoint(primary)
 
       // In signUp(), a replica set is assigned before uploading profile images.
       // Should associate new metadata after profile photo upload.
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
-      await this._handleMetadata({
+      await this.updateAndUploadMetadata({
         newMetadata,
         userId
       })
@@ -285,7 +283,7 @@ class Users extends Base {
     }
 
     if (didMetadataUpdate) {
-      await this._handleMetadata({
+      await this.updateAndUploadMetadata({
         newMetadata: metadata,
         userId: metadata.user_id
       })
@@ -402,7 +400,7 @@ class Users extends Base {
     let newMetadata = { ...oldMetadata }
     newMetadata.is_creator = true
 
-    await this._handleMetadata({
+    await this.updateAndUploadMetadata({
       newMetadata,
       userId: newMetadata.user_id
     })
@@ -530,7 +528,7 @@ class Users extends Base {
    * @param {Object} param.newMetadata new metadata object
    * @param {number} param.userId
    */
-  async _handleMetadata ({ newMetadata, userId }) {
+  async updateAndUploadMetadata ({ newMetadata, userId }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
     const phases = {
@@ -559,7 +557,7 @@ class Users extends Base {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
         await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
         // Ensure DN has indexed creator_node_endpoint change
-        await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+        await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
       }
 
       // Upload new metadata object to CN
@@ -582,7 +580,7 @@ class Users extends Base {
       this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
-      throw new Error(`_handleMetadata() Error -- Phase ${phase}: ${e}`)
+      throw new Error(`updateAndUploadMetadata() Error -- Phase ${phase}: ${e}`)
     }
   }
 
