@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from src import contract_addresses, eth_abi_values
-from src.models import POAContentNode
+from src.models import L2ContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
 from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, \
@@ -191,14 +191,14 @@ def lookup_poa_cnode_record(self, update_task, session, entry, block_number, blo
     # Arguments from the event
     cnode_id = event_args._newCnodeId
 
-    cnode_record_exists = session.query(POAContentNode).filter_by(cnode_id=cnode_id).count() > 0
+    cnode_record_exists = session.query(L2ContentNode).filter_by(cnode_id=cnode_id).count() > 0
     logger.error(f"lookup_poa_cnode_record | {cnode_id} record exists={cnode_record_exists}")
     logger.error(f"{event_args}")
     cnode_record = None
     if cnode_record_exists:
         cnode_record = (
-            session.query(POAContentNode)
-            .filter(POAContentNode.cnode_id == cnode_id, POAContentNode.is_current == True)
+            session.query(L2ContentNode)
+            .filter(L2ContentNode.cnode_id == cnode_id, L2ContentNode.is_current == True)
             .first()
         )
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
@@ -206,7 +206,7 @@ def lookup_poa_cnode_record(self, update_task, session, entry, block_number, blo
         session.expunge(cnode_record)
         make_transient(cnode_record)
     else:
-        cnode_record = POAContentNode(
+        cnode_record = L2ContentNode(
             is_current=True,
             cnode_id=cnode_id,
             created_at=datetime.utcfromtimestamp(block_timestamp)
@@ -217,11 +217,11 @@ def lookup_poa_cnode_record(self, update_task, session, entry, block_number, blo
     return cnode_record
 
 def invalidate_old_cnode_record(session, cnode_id):
-    cnode_record_exists = session.query(POAContentNode).filter_by(cnode_id=cnode_id).count() > 0
+    cnode_record_exists = session.query(L2ContentNode).filter_by(cnode_id=cnode_id).count() > 0
     if cnode_record_exists:
         num_invalidated_records = (
-            session.query(POAContentNode)
-            .filter(POAContentNode.cnode_id == cnode_id, POAContentNode.is_current == True)
+            session.query(L2ContentNode)
+            .filter(L2ContentNode.cnode_id == cnode_id, L2ContentNode.is_current == True)
             .update({"is_current": False})
         )
         assert (
