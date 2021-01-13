@@ -145,6 +145,7 @@ import ConfirmerPreview from 'containers/confirmer-preview/ConfirmerPreview'
 import Notice from './notice/Notice'
 import SignOn from 'containers/sign-on/SignOn'
 import EnablePushNotificationsDrawer from './enable-push-notifications-drawer/EnablePushNotificationsDrawer'
+import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -287,9 +288,7 @@ class App extends Component {
       }
     }
 
-    if (this.props.theme === null) {
-      this.props.setTheme(getSystemTheme() || Theme.DEFAULT)
-    }
+    this.handleTheme()
   }
 
   componentDidUpdate(prevProps) {
@@ -344,6 +343,10 @@ class App extends Component {
     ) {
       this.props.setConnectivityFailure(this.props.firstLoadConnectivityFailure)
     }
+
+    if (prevProps.theme !== this.props.theme) {
+      this.handleTheme()
+    }
   }
 
   componentWillUnmount() {
@@ -354,6 +357,22 @@ class App extends Component {
     if (client === Client.ELECTRON) {
       this.ipc.removeAllListeners('updateDownloaded')
       this.ipc.removeAllListeners('updateAvailable')
+    }
+  }
+
+  handleTheme() {
+    // Set local theme
+    if (this.props.theme === null) {
+      this.props.setTheme(getSystemTheme() || Theme.DEFAULT)
+    }
+
+    // If we're on native mobile, dispatch
+    // a message to the native layer so it can properly
+    // set it's status bar color.
+    if (NATIVE_MOBILE) {
+      const theme = this.props.theme || Theme.DEFAULT
+      const themeMessage = new ThemeChangeMessage(theme)
+      themeMessage.send()
     }
   }
 
