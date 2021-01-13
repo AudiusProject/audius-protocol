@@ -10,23 +10,23 @@ import { web3New } from '../utils/web3New'
 const signatureSchemas = require('../../signature_schemas/signatureSchemas')
 
 /** UserReplicaSetManager functions */
-export const addOrUpdateCreatorNode = async (userReplicaSetManager, newCnodeId, newCnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
+export const addOrUpdateCreatorNode = async (userReplicaSetManager, cnodeId, cnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
   const nonce = signatureSchemas.getNonce()
   const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
   let signatureData = signatureSchemas.generators.getAddOrUpdateCreatorNodeRequestData(
     chainId,
     userReplicaSetManager.address,
-    newCnodeId,
-    newCnodeDelegateOwnerWallet,
+    cnodeId,
+    cnodeDelegateOwnerWallet,
     proposerId,
     nonce)
   // Sign with proposerWallet
   let sig = await eth_signTypedData(proposerWallet, signatureData)
-  let tx = await userReplicaSetManager.addOrUpdateCreatorNode(newCnodeId, newCnodeDelegateOwnerWallet, proposerId, nonce, sig)
+  let tx = await userReplicaSetManager.addOrUpdateCreatorNode(cnodeId, cnodeDelegateOwnerWallet, proposerId, nonce, sig)
   parseTxWithAssertsAndResp(
     tx,
     'AddOrUpdateCreatorNode',
-    { _newCnodeId: newCnodeId, _newCnodeDelegateOwnerWallet: newCnodeDelegateOwnerWallet, _proposerSpId: proposerId }
+    { _cnodeId: cnodeId, _cnodeDelegateOwnerWallet: cnodeDelegateOwnerWallet, _proposerSpId: proposerId }
   )
   return tx
 }
