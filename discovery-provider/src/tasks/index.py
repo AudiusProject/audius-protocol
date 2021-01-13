@@ -134,6 +134,10 @@ def fetch_tx_receipts(self, block_transactions):
         raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
     return block_tx_with_receipts
 
+# During each indexing iteration, check if the address for UserReplicaSetManager
+# Has been set in the L2 contract registry - if so, update the global contract_addresses object
+# This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
+# added to the registry.
 def update_user_replica_set_manager_address_if_necessary(self):
     web3 = update_task.web3
     shared_config = update_task.shared_config
@@ -150,7 +154,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
             bytes("UserReplicaSetManager", "utf-8")
         ).call()
         contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
-        logger.info(f"index.py | Updated user_replica_set_manager_address:{user_replica_set_manager_address}")
+        logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
@@ -204,7 +208,6 @@ def index_blocks(self, db, blocks_list):
             # Parse tx events in each block
             for tx in sorted_txs:
                 tx_hash = web3.toHex(tx["hash"])
-                logger.error(tx)
                 tx_target_contract_address = tx["to"]
                 tx_receipt = tx_receipt_dict[tx_hash]
 
@@ -287,8 +290,6 @@ def index_blocks(self, db, blocks_list):
                 )
             )
             user_replica_set_state_changed = total_user_replica_set_changes > 0 
-            if user_replica_set_state_changed:
-                logger.info(f"index.py | UserReplicaSetManager changes processed at {block}")
 
             # Playlist state operations processed in bulk
             total_playlist_changes, playlist_ids = playlist_state_update(

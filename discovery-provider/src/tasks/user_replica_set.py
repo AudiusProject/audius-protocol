@@ -89,15 +89,8 @@ def user_replica_set_state_update(
                     user_record.creator_node_endpoint = creator_node_endpoint_str 
                     user_replica_set_events_lookup[user_id]["user"] = user_record
                     user_replica_set_events_lookup[user_id]["events"].append(event_type)
+                # Process L2 Content Node operations
                 elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
-                    # TODO: Handle indexing creator node fields separately
-                    # PROCESSING THIS IS PENDING BELOW PR:
-                    # https://github.com/AudiusProject/audius-protocol/pull/1163/files
-                    # This is in order to enable bootstrap node events to be indexed outside of the constructor
-                    #   without a significant modification to the indexing flow.
-                    logger.error('add_or_update_content_node EVENT FOUND')
-                    logger.error(f'{event_type}')
-                    logger.error(args)
                     cnode_record = parse_poa_cnode_record(
                         self,
                         update_task,

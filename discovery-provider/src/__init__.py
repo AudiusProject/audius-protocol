@@ -105,7 +105,6 @@ def init_contracts():
     user_replica_set_manager_inst = web3.eth.contract(
         address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
     )
-    logger.error(f"Found address for USRM: {user_replica_set_manager_address}")
 
     contract_address_dict = {
         "registry": registry_address,
