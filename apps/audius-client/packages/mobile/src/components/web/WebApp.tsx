@@ -3,7 +3,8 @@ import {
   NativeSyntheticEvent,
   AppState as RNState,
   Linking,
-  BackHandler
+  BackHandler,
+  StatusBar,
 } from 'react-native'
 import React, { useRef, useState, useEffect, RefObject, useCallback } from 'react'
 import Config from "react-native-config"
@@ -141,6 +142,10 @@ const WebApp = ({
       return false
     }
   }, [url])
+
+  useEffect(() => {
+    StatusBar.setHidden(true)
+  }, [])
 
   useEffect(() => {
     const asyncEffect = async () => {
@@ -445,13 +450,16 @@ const WebApp = ({
         onRefresh={() => setAtTop(false)}
       >
         <WebView
+          // WebView tries to manage the status bar,
+          // randomly setting to the wrong color at times.
+          // See: https://github.com/react-native-webview/react-native-webview/issues/735
+          autoManageStatusBarEnabled={false}
           key={key}
           ref={webRef}
           source={{ uri }}
           decelerationRate='normal' // Default iOS inertial scrolling
           onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           javaScriptEnabled
-          // allowsBackForwardNavigationGestures
           allowFileAccess
           originWhitelist={[
             'https://*',
