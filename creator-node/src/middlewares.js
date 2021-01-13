@@ -71,7 +71,13 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   let creatorNodeEndpoints
   try {
-    creatorNodeEndpoints = await getCreatorNodeEndpoints(req, req.session.wallet, serviceEndpoint, true)
+    creatorNodeEndpoints = await getCreatorNodeEndpoints({
+      req,
+      wallet: req.session.wallet,
+      blockNumber: req.body.blockNumber,
+      ensurePrimary: true,
+      myCnodeEndpoint: serviceEndpoint
+    })
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
@@ -150,23 +156,37 @@ async function getOwnEndpoint (req) {
 }
 
 /**
- * Get all creator node endpoints for user by wallet from discprov
+ * Retrieves user replica set from discprov
  *
- * If tx blocknumber provided, poll discprov until it has indexed that blocknumber
- *    Else poll discprov until it returns own endpoint as primary else error
+ * Polls discprov conditionally as follows:
+ *    - If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
+ *    - Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
+ *      - Errors if retrieved primary does not match myCnodeEndpoint
+ *    - If neither of above conditions are met, falls back to single discprov query without polling
+ *
+ * @param {Object} req - request object passed throughout route lifespan
+ * @param {string} wallet - wallet used to query discprov for user data
+ * @param {number} blockNumber - blocknumber of eth TX preceding CN call
+ * @param {string} myCnodeEndpoint - endpoint of this CN
+ * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
+ *
+ * @returns {Array} - array of strings of replica set
  */
-async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary) {
-  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
-  const libs = req.app.get('audiusLibs')
+async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
+  if (config.get('isUserMetadataNode')) {
+    throw new Error('Not available for userMetadataNode')
+  }
 
   req.logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
+  const libs = req.app.get('audiusLibs')
   const start = Date.now()
 
-  // Poll discprov until it has indexed provided blocknumber to ensure up-to-date user data.
   let user = null
-  const { blockNumber } = req.body
 
   if (blockNumber) {
+    /**
+     * If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
+     */
     const start2 = Date.now()
 
     // In total, will try for 200 seconds.
@@ -210,7 +230,11 @@ async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary)
     if (discprovBlockNumber < blockNumber) {
       throw new Error(`Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
     }
-  } else if (ensurePrimary && ownEndpoint) {
+  } else if (ensurePrimary && myCnodeEndpoint) {
+    /**
+     * Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
+     * Errors if retrieved primary does not match myCnodeEndpoint
+     */
     req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`)
 
     const start2 = Date.now()
@@ -224,7 +248,7 @@ async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary)
 
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
-      req.logger.info(`getCreatorNodeEndpoints ENDPOINT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} ownEndpoint ${ownEndpoint}`)
+      req.logger.info(`getCreatorNodeEndpoints ENDPOINT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
@@ -236,7 +260,7 @@ async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary)
         user = fetchedUser
         returnedPrimaryEndpoint = (user[0].creator_node_endpoint).split(',')[0]
 
-        if (returnedPrimaryEndpoint === ownEndpoint) {
+        if (returnedPrimaryEndpoint === myCnodeEndpoint) {
           break
         }
       } catch (e) { // Ignore all errors until MaxRetries exceeded
@@ -244,7 +268,7 @@ async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary)
       }
 
       await utils.timeout(RetryTimeout)
-      req.logger.info(`getCreatorNodeEndpoints ENDPOINT AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} ownEndpoint ${ownEndpoint}`)
+      req.logger.info(`getCreatorNodeEndpoints ENDPOINT AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
     }
 
     // Error if discprov doesn't return any user for wallet
@@ -253,10 +277,13 @@ async function getCreatorNodeEndpoints (req, wallet, ownEndpoint, ensurePrimary)
     }
 
     // Error if discprov has still not returned own endpoint as primary
-    if (returnedPrimaryEndpoint !== ownEndpoint) {
-      throw new Error(`Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${ownEndpoint}`)
+    if (returnedPrimaryEndpoint !== myCnodeEndpoint) {
+      throw new Error(`Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${myCnodeEndpoint}`)
     }
-  } else { // simply query and return current discprov state
+  } else {
+    /**
+     * If neither of above conditions are met, falls back to single discprov query without polling
+     */
     req.logger.info(`getCreatorNodeEndpoints || ensurePrimary === false, fetching user without retries`)
     user = await libs.User.getUsers(1, 0, null, wallet)
   }
