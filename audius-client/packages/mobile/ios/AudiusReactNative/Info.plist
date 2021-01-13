@@ -70,5 +70,7 @@
 	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>UIStatusBarHidden</key>
+	<true/>
 </dict>
 </plist>
