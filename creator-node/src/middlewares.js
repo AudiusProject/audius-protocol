@@ -248,7 +248,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
 
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
-      req.logger.info(`getCreatorNodeEndpoints ENDPOINT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+      req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
@@ -268,7 +268,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
       }
 
       await utils.timeout(RetryTimeout)
-      req.logger.info(`getCreatorNodeEndpoints ENDPOINT AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+      req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
     }
 
     // Error if discprov doesn't return any user for wallet
