@@ -189,11 +189,11 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_newCnodeId",
+          "name": "_cnodeId",
           "type": "uint256"
         },
         {
-          "name": "_newCnodeDelegateOwnerWallet",
+          "name": "_cnodeDelegateOwnerWallet",
           "type": "address"
         },
         {
@@ -347,12 +347,12 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_newCnodeId",
+          "name": "_cnodeId",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_newCnodeDelegateOwnerWallet",
+          "name": "_cnodeDelegateOwnerWallet",
           "type": "address"
         },
         {
