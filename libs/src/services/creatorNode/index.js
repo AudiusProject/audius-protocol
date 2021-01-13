@@ -137,19 +137,22 @@ class CreatorNode {
    * Uploads creator content to a creator node
    * @param {object} metadata the creator metadata
    */
-  async uploadCreatorContent (metadata) {
+  async uploadCreatorContent (metadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
       this.schemas[SchemaValidator.userSchemaType].validate(metadata)
 
-      return this._makeRequest({
+      const requestObj = {
         url: '/audius_users/metadata',
         method: 'post',
         data: {
-          metadata
+          metadata,
+          blockNumber
         }
-      })
+      }
+
+      return this._makeRequest(requestObj)
     } catch (e) {
       console.error('Error validating creator metadata', e)
     }
@@ -437,6 +440,60 @@ class CreatorNode {
       method: 'post'
     }, false)
     this.authToken = null
+  }
+
+  /**
+   * Gets and returns the clock values across the replica set for the wallet in userStateManager.
+   * @returns {Object[]} Array of objects with the structure:
+   *
+   * {
+   *  type: 'primary' or 'secondary',
+   *  endpoint: <Content Node endpoint>,
+   *  clockValue: clock value (should be an integer) or null
+   * }
+   *
+   * 'clockValue' may be null if the request to fetch the clock value fails
+   */
+  async getClockValuesFromReplicaSet () {
+    const user = this.userStateManager.getCurrentUser()
+    if (!user || !user.creator_node_endpoint) {
+      console.error('No user or Content Node endpoint found')
+      return
+    }
+
+    const replicaSet = CreatorNode.getEndpoints(user.creator_node_endpoint)
+    const clockValueResponses = await Promise.all(
+      replicaSet.map(endpoint => this._clockValueRequest({ user, endpoint }))
+    )
+
+    return clockValueResponses
+  }
+
+  /**
+   * Wrapper around getClockValue() to return either a proper or null clock value
+   * @param {Object} param
+   * @param {Object} param.user user metadata object from userStateManager
+   * @param {string} param.endpoint the Content Node endpoint to check the clock value for
+   */
+  async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    let type = primary === endpoint ? 'primary' : 'secondary'
+
+    try {
+      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout)
+      return {
+        type,
+        endpoint,
+        clockValue
+      }
+    } catch (e) {
+      console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
+      return {
+        type,
+        endpoint,
+        clockValue: null
+      }
+    }
   }
 
   /**

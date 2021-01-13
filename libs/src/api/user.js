@@ -42,6 +42,7 @@ class Users extends Base {
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.addUserFollow = this.addUserFollow.bind(this)
     this.deleteUserFollow = this.deleteUserFollow.bind(this)
+    this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
     this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
@@ -322,9 +323,13 @@ class Users extends Base {
     console.log(`Updating to ${newMetadata.creator_node_endpoint}`)
 
     // Update user creator_node_endpoint on chain if applicable
+    let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // Perform update to new contract
       await this._updateReplicaSet(userId, newMetadata)
+
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(
@@ -334,7 +339,7 @@ class Users extends Base {
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -403,12 +408,17 @@ class Users extends Base {
     await this.creatorNode.setEndpoint(newPrimary)
 
     // Update user creator_node_endpoint on chain if applicable
+    let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
-      await this._updateReplicaSet(userId, newMetadata)
+      let updateTx = await this._updateReplicaSet(userId, newMetadata)
+      console.dir(updateTx)
       console.log(`Updated replica set`)
       console.log(`Waiting for indexing to ${newMetadata.creator_node_endpoint}`)
       console.log(newMetadata)
+      updateEndpointTxBlockNumber = updateTx.blockNumber
+      console.log(`Found blockNumber: ${updateEndpointTxBlockNumber}`)
+
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(
         newMetadata.user_id,
@@ -418,7 +428,7 @@ class Users extends Base {
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -463,6 +473,13 @@ class Users extends Base {
   async deleteUserFollow (followeeUserId) {
     const followerUserId = this.userStateManager.getCurrentUserId()
     return this.contracts.SocialFeatureFactoryClient.deleteUserFollow(followerUserId, followeeUserId)
+  }
+
+  /**
+   * Gets the clock status for user in userStateManager across replica set.
+   */
+  async getClockValuesFromReplicaSet () {
+    return this.creatorNode.getClockValuesFromReplicaSet()
   }
 
   /* ------- PRIVATE  ------- */
@@ -587,7 +604,7 @@ class Users extends Base {
     let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
     let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
     // Update in new contract
-    await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+    return await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
       primarySpID,
       [secondary1SpID, secondary2SpID]

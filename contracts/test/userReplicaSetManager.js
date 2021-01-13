@@ -110,8 +110,8 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _newCnodeId: toBN(cnode1SpID),
-                _newCnodeDelegateOwnerWallet: cnode1Account,
+                _cnodeId: toBN(cnode1SpID),
+                _cnodeDelegateOwnerWallet: cnode1Account,
                 _proposer1Address: addressZero,
                 _proposer2Address: addressZero,
                 _proposer3Address: addressZero
@@ -122,8 +122,8 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _newCnodeId: toBN(cnode2SpID),
-                _newCnodeDelegateOwnerWallet: cnode2Account,
+                _cnodeId: toBN(cnode2SpID),
+                _cnodeDelegateOwnerWallet: cnode2Account,
                 _proposer1Address: addressZero,
                 _proposer2Address: addressZero,
                 _proposer3Address: addressZero
@@ -134,8 +134,8 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _newCnodeId: toBN(cnode3SpID),
-                _newCnodeDelegateOwnerWallet: cnode3Account,
+                _cnodeId: toBN(cnode3SpID),
+                _cnodeDelegateOwnerWallet: cnode3Account,
                 _proposer1Address: addressZero,
                 _proposer2Address: addressZero,
                 _proposer3Address: addressZero
@@ -327,8 +327,8 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _newCnodeId: toBN(newCNodeSPId),
-                _newCnodeDelegateOwnerWallet: newCnodeDelegateWallet,
+                _cnodeId: toBN(newCNodeSPId),
+                _cnodeDelegateOwnerWallet: newCnodeDelegateWallet,
                 _proposer1Address: cnode1Account,
                 _proposer2Address: cnode2Account,
                 _proposer3Address: cnode3Account

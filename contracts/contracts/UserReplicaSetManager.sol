@@ -42,8 +42,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     );
 
     event AddOrUpdateContentNode(
-        uint _newCnodeId,
-        address _newCnodeDelegateOwnerWallet,
+        uint _cnodeId,
+        address _cnodeDelegateOwnerWallet,
         uint[3] _proposerSpIds,
         address _proposer1Address,
         address _proposer2Address,
@@ -53,7 +53,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /// @notice EIP-712 Typehash definitions
     //          Used to validate identity with gasless transaction submission
     bytes32 constant PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-        "ProposeAddOrUpdateContentNode(uint newCnodeId,address newCnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
+        "ProposeAddOrUpdateContentNode(uint cnodeId,address cnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
     );
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primary,bytes32 secondariesHash,uint oldPrimary,bytes32 oldSecondariesHash,bytes32 nonce)"
@@ -121,8 +121,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
      *         Nodes are required to have an identity in Audius L2 and this function enables
      *         known entities to register other known entities on L2 contracts.
      * @dev Multiple distinct parties must sign and submit signatures as part of this request
-     * @param _newCnodeId - Incoming spID
-     * @param _newCnodeDelegateOwnerWallet - Incoming SP delegateOwnerWallet
+     * @param _cnodeId - Incoming spID
+     * @param _cnodeDelegateOwnerWallet - Incoming SP delegateOwnerWallet
      * @param _proposerSpIds - Array of 3 spIDs proposing new node
      * @param _proposerNonces - Array of 3 nonces, each index corresponding to _proposerSpIds
      * @param _proposer1Sig - Signature from first proposing node
@@ -130,8 +130,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
      * @param _proposer3Sig - Signature from third proposing node
      */
     function addOrUpdateContentNode(
-        uint _newCnodeId,
-        address _newCnodeDelegateOwnerWallet,
+        uint _cnodeId,
+        address _cnodeDelegateOwnerWallet,
         uint[3] calldata _proposerSpIds,
         bytes32[3] calldata _proposerNonces,
         bytes calldata _proposer1Sig,
@@ -144,22 +144,22 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
         address proposer1Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
-            _newCnodeId,
-            _newCnodeDelegateOwnerWallet,
+            _cnodeId,
+            _cnodeDelegateOwnerWallet,
             _proposerSpIds[0],
             _proposerNonces[0],
             _proposer1Sig
         );
         address proposer2Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
-            _newCnodeId,
-            _newCnodeDelegateOwnerWallet,
+            _cnodeId,
+            _cnodeDelegateOwnerWallet,
             _proposerSpIds[1],
             _proposerNonces[1],
             _proposer2Sig
         );
         address proposer3Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
-            _newCnodeId,
-            _newCnodeDelegateOwnerWallet,
+            _cnodeId,
+            _cnodeDelegateOwnerWallet,
             _proposerSpIds[2],
             _proposerNonces[2],
             _proposer3Sig
@@ -170,10 +170,10 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             proposer3Address,
             _proposerSpIds
         );
-        spIdToContentNodeDelegateWallet[_newCnodeId] = _newCnodeDelegateOwnerWallet;
+        spIdToContentNodeDelegateWallet[_cnodeId] = _cnodeDelegateOwnerWallet;
         emit AddOrUpdateContentNode(
-            _newCnodeId,
-            _newCnodeDelegateOwnerWallet,
+            _cnodeId,
+            _cnodeDelegateOwnerWallet,
             _proposerSpIds,
             proposer1Address,
             proposer2Address,
@@ -366,6 +366,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         return signer;
     }
 
+    // Compare old secondaries submitted by function caller
+    // and the value stored on the contract - note that the order
+    // does matter when comparing secondary replicas
     function _compareUserSecondariesAndCheckSender(
         uint _userId,
         uint[] memory _oldSecondaries,
