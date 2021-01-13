@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from src import contract_addresses, eth_abi_values
+from src.models import POAContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
 from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, \
@@ -84,6 +85,14 @@ def user_replica_set_state_update(
                     logger.error('add_or_update_content_node EVENT FOUND')
                     logger.error(f'{event_type}')
                     logger.error(args)
+                    # parse_poa_cnode_record(update_task, session, entry, block_number, timestamp):
+                    parse_poa_cnode_record(
+                        self,
+                        update_task,
+                        session,
+                        entry,
+                        block_number,
+                        block_timestamp)
             num_total_changes += len(user_events_tx)
 
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
@@ -95,7 +104,7 @@ def user_replica_set_state_update(
 
     return num_total_changes, user_ids
 
-# TODO: Figure out an alternate way to handle this
+# TODO: Enable a cache from index_network_peers
 def get_endpoint_string_from_sp_ids(
     self,
     update_task,
@@ -140,3 +149,41 @@ def get_endpoint_string_from_sp_ids(
         secondary_endpoint = secondary_info[1]
         endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
     return endpoint_string
+
+def parse_poa_cnode_record(self, update_task, session, entry, block_number, timestamp):
+    logger.error(f"parse_poa_cnode_record {block_number}")
+    lookup_poa_cnode_record(
+        self,
+        update_task,
+        session,
+        entry,
+        block_number,
+        timestamp)
+    return None
+
+def lookup_poa_cnode_record(self, update_task, session, entry, block_number, block_timestamp):
+    event_blockhash = update_task.web3.toHex(entry.blockHash)
+    event_args = entry["args"]
+    cnode_id = event_args._newCnodeId
+    cnode_record_exists = session.query(POAContentNode).filter_by(cnode_id=cnode_id).count() > 0
+    logger.error(f"lookup_poa_cnode_record | {cnode_id} record exists={cnode_record_exists}")
+    logger.error(f"{event_args}")
+    cnode_record = None
+    if cnode_record_exists:
+        cnode_record = (
+            session.query(POAContentNode)
+            .filter(POAContentNode.cnode_id == cnode_id, POAContentNode.is_current == True)
+            .first()
+        )
+        # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
+        # https://stackoverflow.com/questions/28871406/how-to-clone-a-sqlalchemy-db-object-with-new-primary-key
+        session.expunge(cnode_record)
+        make_transient(cnode_record)
+    else:
+        cnode_record = POAContentNode(
+            is_current=True,
+            cnode_id=cnode_id,
+            created_at=datetime.utcfromtimestamp(block_timestamp)
+        )
+    # update these fields regardless of type
+    cnode_record.blockhash = event_blockhash

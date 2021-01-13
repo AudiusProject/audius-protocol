@@ -617,6 +617,7 @@ class POAContentNode(Base):
     proposer_1_address = Column(String, nullable=False)
     proposer_2_address = Column(String, nullable=False)
     proposer_3_address = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, cnode_id, blockhash)
 
