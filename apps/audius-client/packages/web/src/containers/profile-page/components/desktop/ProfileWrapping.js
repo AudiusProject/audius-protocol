@@ -22,7 +22,6 @@ import { formatCount, squashNewLines } from 'utils/formatUtil'
 
 import styles from './ProfilePage.module.css'
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 
 const Tags = props => {
   const { tags, goToRoute } = props
@@ -170,11 +169,7 @@ const ProfileWrapping = props => {
         </div>
         <div className={styles.editField}>
           <SocialLinkInput
-            defaultValue={
-              props.verified
-                ? props.handle.replace('@', '')
-                : props.twitterHandle
-            }
+            defaultValue={props.twitterHandle}
             isDisabled={!!props.twitterVerified}
             className={styles.twitterInput}
             type={Type.TWITTER}
@@ -223,11 +218,7 @@ const ProfileWrapping = props => {
           {props.twitterHandle && (
             <SocialLink
               type={Type.TWITTER}
-              link={
-                props.verified && !verifiedHandleWhitelist.has(props.handle)
-                  ? props.handle.replace('@', '')
-                  : props.twitterHandle
-              }
+              link={props.twitterHandle}
               onClick={onClickTwitter}
             />
           )}

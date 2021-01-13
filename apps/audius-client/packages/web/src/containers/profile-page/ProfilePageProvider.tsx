@@ -45,6 +45,7 @@ import {
 import { make, TrackEvent } from 'store/analytics/actions'
 import { Name, FollowSource, ShareSource } from 'services/analytics'
 import { parseUserRoute } from 'utils/route/userRouteParser'
+import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -704,11 +705,15 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const twitterHandle = profile
       ? updatedTwitterHandle !== null
         ? updatedTwitterHandle
+        : profile.twitterVerified && !verifiedHandleWhitelist.has(handle)
+        ? profile.handle
         : profile.twitter_handle || ''
       : ''
     const instagramHandle = profile
       ? updatedInstagramHandle !== null
         ? updatedInstagramHandle
+        : profile.instagramVerified
+        ? profile.handle
         : profile.instagram_handle || ''
       : ''
     const website = profile
