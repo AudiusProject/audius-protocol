@@ -32,7 +32,6 @@ import FollowButton from 'components/general/FollowButton'
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import UploadStub from './UploadStub'
 import SubscribeButton from 'components/general/SubscribeButton'
-import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import UploadButton from './UploadButton'
@@ -217,20 +216,17 @@ const ProfileHeader = ({
     )
     if (win) win.focus()
   }, [record, instagramHandle, handle])
+
   const onGoToTwitter = useCallback(() => {
-    const linkHandle =
-      verified && !verifiedHandleWhitelist.has(handle)
-        ? handle.replace('@', '')
-        : twitterHandle
     record(
       make(Name.PROFILE_PAGE_CLICK_TWITTER, {
-        handle: linkHandle,
+        handle: handle.replace('@', ''),
         twitterHandle
       })
     )
-    const win = window.open(`https://twitter.com/${linkHandle}`, '_blank')
+    const win = window.open(`https://twitter.com/${twitterHandle}`, '_blank')
     if (win) win.focus()
-  }, [record, verified, twitterHandle, handle])
+  }, [record, twitterHandle, handle])
 
   const onExternalLinkClick = useCallback(
     event => {
