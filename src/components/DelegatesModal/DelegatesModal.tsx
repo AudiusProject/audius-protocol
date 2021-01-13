@@ -69,8 +69,11 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
 
   const pushRoute = usePushRoute()
   const onRowClick = useCallback(
-    (row: Delegator) => pushRoute(accountPage(row.address)),
-    [pushRoute]
+    (row: Delegator) => {
+      onClose()
+      pushRoute(accountPage(row.address))
+    },
+    [onClose, pushRoute]
   )
 
   if (data.length === 0) {
