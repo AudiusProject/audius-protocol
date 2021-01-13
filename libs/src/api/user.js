@@ -31,8 +31,11 @@ const UPDATE_USER_PROPS = Object.freeze({
 })
 
 class Users extends Base {
-  constructor (...args) {
+  constructor (serviceProvider, ...args) {
     super(...args)
+
+    this.ServiceProvider = serviceProvider
+
     this.getUsers = this.getUsers.bind(this)
     this.getMutualFollowers = this.getMutualFollowers.bind(this)
     this.getFollowersForUser = this.getFollowersForUser.bind(this)
@@ -193,14 +196,11 @@ class Users extends Base {
    * Assigns a replica set to the user's metadata and adds new metadata to chain.
    * This creates a record for that user on the connected creator node.
    * @param {Object} param
-   * @param {Object} param.serviceProvider instance of ServiceProvider. Used for Content Node selection
    * @param {number} param.userId
-   * @param {string[]} param.[newContentNodeEndpoints='']
    * @param {Set<string>} param.[passList=null] whether or not to include only specified nodes
    * @param {Set<string>} param.[blockList=null]  whether or not to exclude any nodes
    */
   async assignReplicaSet ({
-    serviceProvider,
     userId,
     passList = null,
     blockList = null
@@ -230,13 +230,12 @@ class Users extends Base {
 
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       phase = phases.AUTOSELECT_CONTENT_NODES
-      const response = await serviceProvider.autoSelectCreatorNodes({
+      const response = await this.ServiceProvider.autoSelectCreatorNodes({
         performSyncCheck: false,
         whitelist: passList,
         blacklist: blockList
       })
-      const primary = response.primary
-      const secondaries = response.secondaries
+      const { primary, secondaries } = response
       if (!primary || !secondaries || secondaries.length < numNodes - 1) {
         throw new Error(`Could not select a primary=${primary} and/or ${numNodes - 1} secondaries=${secondaries}`)
       }

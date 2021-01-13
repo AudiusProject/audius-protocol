@@ -90,7 +90,6 @@ class Account extends Base {
    * @param {string} email
    * @param {string} password
    * @param {Object} metadata
-   * @param {Object} serviceProvider instance of libs' ServiceProvider
    * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
@@ -100,7 +99,6 @@ class Account extends Base {
     email,
     password,
     metadata,
-    serviceProvider,
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
@@ -141,12 +139,9 @@ class Account extends Base {
 
       // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
       phase = phases.ADD_REPLICA_SET
-      metadata = await this.User.assignReplicaSet({
-        serviceProvider,
-        userId
-      })
+      metadata = await this.User.assignReplicaSet({ userId })
 
-      // Upload profile pic to primary Content Node and sync across secondaries
+      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
     } catch (e) {

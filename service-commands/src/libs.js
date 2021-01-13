@@ -142,7 +142,6 @@ function LibsWrapper (walletIndex = 0) {
       metadata.email,
       metadata.password,
       metadata,
-      this.libsInstance.ServiceProvider /* ServiceProvider instance (for Content Node selection) */,
       metadata.profilePictureFile /* profile picture */,
       metadata.coverPhotoFile /* cover photo */,
       false /* has wallet */,
