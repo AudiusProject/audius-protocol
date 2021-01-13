@@ -7,6 +7,7 @@ import { SET_THEME, ThemeActions, setTheme as setThemeAction } from './actions'
 import Theme from 'models/Theme'
 import { PrefersColorSchemeMessage } from 'services/native-mobile-interface/android/theme'
 import { getIsIOS } from 'utils/browser'
+import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -38,12 +39,17 @@ function* watchNativeTheme() {
 
 export function* watchSetTheme() {
   yield takeEvery(SET_THEME, function* (action: ThemeActions) {
-    setTheme(action.theme)
+    const { theme } = action
+    setTheme(theme)
+    if (NATIVE_MOBILE) {
+      const message = new ThemeChangeMessage(theme)
+      message.send()
+    }
 
     // If the user switches to auto, add a media query listener that
     // updates their theme setting again if the OS theme preference changes
     if (mql && mqlListener) mql.removeListener(mqlListener)
-    if (action.theme === Theme.AUTO && mql) {
+    if (theme === Theme.AUTO && mql) {
       const channel = eventChannel(emitter => {
         mqlListener = () => {
           emitter(setThemeAction(Theme.AUTO))
@@ -54,7 +60,7 @@ export function* watchSetTheme() {
       yield spawn(actionChannelDispatcher, channel)
     }
 
-    if (action.theme === Theme.AUTO && NATIVE_MOBILE && !getIsIOS()) {
+    if (theme === Theme.AUTO && NATIVE_MOBILE && !getIsIOS()) {
       yield spawn(watchNativeTheme)
     }
   })

@@ -71,7 +71,10 @@ export enum MessageType {
   ANALYTICS_SCREEN = 'analytics-screen',
 
   // Logging
-  LOGGING = 'logging'
+  LOGGING = 'logging',
+
+  // Theme
+  THEME_CHANGE = 'theme-change'
 }
 
 export interface Message {
