@@ -12,6 +12,7 @@
   position: relative;
   min-width: var(--mobile-min-width);
   user-select: none;
+  touch-action: none;
 }
 
 .leftElement {
