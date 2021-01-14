@@ -272,7 +272,6 @@ class Users extends Base {
     const { userId } = await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
 
     // Update user creator_node_endpoint on chain
-    // await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint'])
     await this._updateReplicaSet(userId, newMetadata)
 
     // Upload metadata object to CN
@@ -283,7 +282,7 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, multihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata, ['creator_node_endpoint'])
+    const { latestBlockNumber } = await this._addUserOperations(userId, newMetadata)
 
     // Write to CN to associate blockchain user id with the metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -326,9 +325,7 @@ class Users extends Base {
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // Perform update to new contract
-      await this._updateReplicaSet(userId, newMetadata)
-
-      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      const updateEndpointTxReceipt = await this._updateReplicaSet(userId, newMetadata)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -346,7 +343,7 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -410,14 +407,8 @@ class Users extends Base {
     // Update user creator_node_endpoint on chain if applicable
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      // await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
       let updateTx = await this._updateReplicaSet(userId, newMetadata)
-      console.dir(updateTx)
-      console.log(`Updated replica set`)
-      console.log(`Waiting for indexing to ${newMetadata.creator_node_endpoint}`)
-      console.log(newMetadata)
       updateEndpointTxBlockNumber = updateTx.blockNumber
-      console.log(`Found blockNumber: ${updateEndpointTxBlockNumber}`)
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(
@@ -435,7 +426,7 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -526,9 +517,6 @@ class Users extends Base {
     if (metadata['is_creator']) {
       addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata['is_creator']))
     }
-    if (metadata['creator_node_endpoint']) {
-      addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata['creator_node_endpoint']))
-    }
 
     // Execute update promises concurrently
     // TODO - what if one or more of these fails?
@@ -537,7 +525,6 @@ class Users extends Base {
   }
 
   async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
-    console.log(`_updateUserOperations invoked for user ${userId}`)
     let updateOps = []
 
     // Remove excluded keys from metadata object
@@ -574,12 +561,6 @@ class Users extends Base {
             Utils.decodeMultihash(metadata['cover_photo_sizes']).digest
           ))
         }
-        if (key === 'creator_node_endpoint') {
-         updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
-            userId,
-            metadata['creator_node_endpoint'])
-          )
-        }
       }
     }
 
@@ -604,11 +585,12 @@ class Users extends Base {
     let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
     let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
     // Update in new contract
-    return await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+    let tx = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
       primarySpID,
       [secondary1SpID, secondary2SpID]
     )
+    return tx
   }
 
   async _retrieveSpIDFromEndpoint (endpoint) {

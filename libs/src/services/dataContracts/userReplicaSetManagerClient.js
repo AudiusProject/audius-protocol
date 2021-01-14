@@ -5,7 +5,7 @@ class UserReplicaSetManagerClient extends ContractClient {
 
   async updateReplicaSet(userId, primary, secondaries) {
     let existingReplicaSetInfo = await this.getUserReplicaSet(userId)
-    await this._updateReplicaSet(
+    return await this._updateReplicaSet(
       userId,
       primary,
       secondaries,
@@ -19,7 +19,6 @@ class UserReplicaSetManagerClient extends ContractClient {
     const contractAddress = await this.getAddress()
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
-    console.log(`updateReplicaSet: ${contractAddress}, ${nonce}, ${chainId}`)
     let web3 = this.web3Manager.getWeb3()
     let secondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', secondaries))
     let oldSecondariesHash = web3.utils.soliditySha3(web3.eth.abi.encodeParameter('uint[]', oldSecondaries))
@@ -43,11 +42,12 @@ class UserReplicaSetManagerClient extends ContractClient {
       nonce,
       sig
     )
-    return this.web3Manager.sendTransaction(
+    const tx = await this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
       contractAddress
     )
+    return tx
   }
 
   // TODO: AddOrUpdateContentNode Functionality
