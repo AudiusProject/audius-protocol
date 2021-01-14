@@ -13,15 +13,28 @@ import history from 'utils/history'
 import * as Sentry from '@sentry/browser'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import { ERROR_PAGE } from 'utils/route'
+import { getIsDeployedOnHost } from 'utils/clientUtil'
 
 const onSagaError = (error, extraInfo) => {
   console.error(`Caught saga error: ${error}`)
   store.dispatch(replaceRoute(ERROR_PAGE))
+
+  // Get sagaStack if it exists, attaching
+  // to sentry extra info + logging it
+  let extra = extraInfo || {}
+  if (error.sagaStack) {
+    console.error(`Saga stack: ${error.sagaStack}`)
+    extra = {
+      ...extra,
+      sagaStack: error.sagaStack
+    }
+  }
+
+  // Send to sentry if not on localhost
+  if (!getIsDeployedOnHost()) return
   try {
     Sentry.withScope(scope => {
-      if (extraInfo) {
-        scope.setExtras(extraInfo)
-      }
+      scope.setExtras(extra)
       Sentry.captureException(error)
     })
   } catch {
