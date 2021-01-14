@@ -119,7 +119,11 @@ def user_replica_set_state_update(
 
     return num_total_changes, user_ids
 
-# TODO: Enable a cache from index_network_peers
+# Reconstruct endpoint string from primary and secondary IDs
+# Note that this is BEST EFFORT and may fail, however unlikely
+# In the case of failure where a given user has valid primary/secondaries but no 
+# endpoint string, a client must fetch the endpoint associated with ID 
+# Indexing CANNOT block on this endpoint string optimization.
 def get_endpoint_string_from_sp_ids(
     self,
     update_task,
@@ -127,12 +131,64 @@ def get_endpoint_string_from_sp_ids(
     secondaries,
     redis
 ):
+    sp_factory_inst = None
+    endpoint_string = None
+    primary_endpoint = None
+    try:
+        # Get primary cache key
+        primary_cache_key = get_sp_id_key(primary)
+        # Attempt to fetch from cache
+        primary_info_cached = get_pickled_key(update_task.redis, primary_cache_key)
+        if primary_info_cached:
+            primary_endpoint = primary_info_cached[1]
+            logger.info(f"user_replica_set.py | CACHE HIT FOR {primary_cache_key}, found {primary_info_cached}")
+
+        # If cache miss, fetch from eth-contract
+        if not primary_endpoint:
+            logger.info(f"user_replica_set.py | CACHE MISS FOR {primary_cache_key}, found {primary_info_cached}")
+            if sp_factory_inst is None:
+                sp_factory_inst = get_sp_factory_inst(self, update_task)
+            primary_cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
+                content_node_service_type,
+                primary
+            ).call()
+            logger.info(primary_cn_endpoint_info)
+            primary_endpoint = primary_cn_endpoint_info[1]
+
+        endpoint_string = "{}".format(primary_endpoint)
+        for secondary_id in secondaries:
+            secondary_endpoint = None
+            secondary_cache_key = get_sp_id_key(secondary_id)
+            secondary_info_cached = get_pickled_key(update_task.redis, secondary_cache_key)
+            if secondary_info_cached:
+                secondary_endpoint = secondary_info_cached[1]
+                logger.info(f"user_replica_set.py | CACHE HIT FOR {secondary_cache_key}, found {secondary_info_cached}")
+
+            if not secondary_endpoint:
+                logger.info(f"user_replica_set.py | CACHE MISS FOR {secondary_cache_key}, found {secondary_info_cached}")
+                if sp_factory_inst is None:
+                    sp_factory_inst = get_sp_factory_inst(self, update_task)
+                secondary_info = sp_factory_inst.functions.getServiceEndpointInfo(
+                    content_node_service_type,
+                    secondary_id
+                ).call()
+                secondary_endpoint = secondary_info[1]
+
+            if secondary_endpoint:
+                endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
+            else:
+                logger.info(f"user_replica_set.py | Failed to find secondary info for {secondary_endpoint}")
+    except Exception as exc:
+        logger.error(f"user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}")
+    logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}")
+    return endpoint_string
+
+def get_sp_factory_inst(self, update_task):
     shared_config = update_task.shared_config
     eth_web3 = update_task.eth_web3
-    eth_registry_address = update_task.eth_web3.toChecksumAddress(
+    eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
-    logger.error(f"USER REPLICA SET PY: ETH REGISTRY {eth_registry_address}")
     eth_registry_instance = eth_web3.eth.contract(
         address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
     )
@@ -142,58 +198,7 @@ def get_endpoint_string_from_sp_ids(
     sp_factory_inst = eth_web3.eth.contract(
         address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
     )
-    primary_endpoint = None
-    # Get primary cache key
-    primary_cache_key = get_sp_id_key(primary)
-    # Attempt to fetch from cache
-    primary_info_cached = get_pickled_key(update_task.redis, primary_cache_key)
-    if primary_info_cached:
-        primary_endpoint = primary_info_cached[1]
-        logger.error(f"CACHE HIT FOR {primary_cache_key}, found {primary_info_cached}")
-
-    # If cache miss, fetch from eth-contract
-    if not primary_endpoint:
-        logger.error(f"CACHE MISS FOR {primary_cache_key}, found {primary_info_cached}")
-        primary_cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
-            content_node_service_type,
-            primary
-        ).call()
-        logger.error(primary_cn_endpoint_info)
-        logger.error(f"PRIMARY CN INFO {primary_cn_endpoint_info}")
-        logger.error(f"Primary ID {primary}:{primary_cn_endpoint_info[1]}")
-        logger.error("END get_endpoint_string_from_sp_ids")
-        primary_endpoint = primary_cn_endpoint_info[1]
-
-    logger.error(f"SECOONDARIES: {secondaries}")
-    endpoint_string = "{}".format(primary_endpoint)
-    logger.error(f"ENDPOINT_STR={endpoint_string}")
-    for secondary_id in secondaries:
-        logger.error(f"PROCESSING SECONDARY: {secondary_id}")
-
-        secondary_endpoint = None
-        secondary_cache_key = get_sp_id_key(secondary_id)
-
-        logger.error(f"Secondary CACHE KEY={secondary_cache_key}")
-        secondary_info_cached = get_pickled_key(update_task.redis, secondary_cache_key)
-        if secondary_info_cached:
-            secondary_endpoint = secondary_info_cached[1]
-            logger.error(f"CACHE HIT FOR {secondary_cache_key}, found {secondary_info_cached}")
-
-        if not secondary_endpoint:
-            logger.error(f"CACHE MISS FOR {secondary_cache_key}, found {secondary_info_cached}")
-            secondary_info = sp_factory_inst.functions.getServiceEndpointInfo(
-                content_node_service_type,
-                secondary_id
-            ).call()
-            secondary_endpoint = secondary_info[1]
-
-        if secondary_endpoint:
-            endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
-            logger.error(f"FINISHED PROCESSING SECONDARY: {secondary_id}")
-        else:
-            logger.error(f"Failed to find secondary info for {secondary_endpoint}")
-    logger.error(f"USER REPLICA SET PY | ENDPOINT_STR={endpoint_string}")
-    return endpoint_string
+    return sp_factory_inst
 
 def parse_poa_cnode_record(self, update_task, session, entry, cnode_record):
     event_args = entry["args"]
