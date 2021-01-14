@@ -7,6 +7,7 @@ import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
+import { ReactComponent as IconRemoveTrack } from 'assets/img/iconRemoveTrack.svg'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
@@ -93,6 +94,7 @@ const getMessages = ({ isDeleted = false }: { isDeleted?: boolean } = {}) => ({
 
 export type TrackListItemProps = {
   className?: string
+  index: number
   isLoading: boolean
   isSaved?: boolean
   isReposted?: boolean
@@ -108,6 +110,7 @@ export type TrackListItemProps = {
   isReorderable?: boolean
   isDragging?: boolean
   onSave?: (isSaved: boolean, trackId: ID) => void
+  onRemove?: (trackId: ID) => void
   togglePlay?: (uid: string, trackId: ID) => void
   onClickOverflow?: () => void
   trackItemAction?: TrackItemAction
@@ -116,6 +119,7 @@ export type TrackListItemProps = {
 const TrackListItem = ({
   className,
   isLoading,
+  index,
   isSaved = false,
   isActive = false,
   isPlaying = false,
@@ -126,6 +130,7 @@ const TrackListItem = ({
   coverArtSizes,
   isDeleted,
   onSave,
+  onRemove,
   togglePlay,
   trackItemAction,
   onClickOverflow,
@@ -142,6 +147,11 @@ const TrackListItem = ({
     e.stopPropagation()
     if (isDeleted && !isSaved) return
     if (onSave) onSave(isSaved, trackId)
+  }
+
+  const onRemoveTrack = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onRemove) onRemove(index)
   }
 
   return (
@@ -198,6 +208,15 @@ const TrackListItem = ({
               e.stopPropagation()
               onClickOverflow()
             }}
+          />
+        </div>
+      )}
+      {onRemove && (
+        <div className={styles.iconContainer}>
+          <IconButton
+            icon={<IconRemoveTrack />}
+            className={styles.removeTrackContainer}
+            onClick={onRemoveTrack}
           />
         </div>
       )}
