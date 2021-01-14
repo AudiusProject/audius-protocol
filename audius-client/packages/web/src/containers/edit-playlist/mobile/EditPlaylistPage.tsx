@@ -19,7 +19,8 @@ import { getAccountUser } from 'store/account/selectors'
 import {
   createPlaylist,
   editPlaylist,
-  orderPlaylist
+  orderPlaylist,
+  removeTrackFromPlaylist
 } from 'store/cache/collections/actions'
 
 import { tracksActions } from 'containers/collection-page/store/lineups/tracks/actions'
@@ -41,6 +42,8 @@ import { SquareSizes } from 'models/common/ImageSizes'
 import { ToastContext } from 'components/toast/ToastContext'
 import { CreatePlaylistSource } from 'services/analytics'
 import { withNullGuard } from 'utils/withNullGuard'
+import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
+import { Nullable } from 'utils/typeUtils'
 
 const messages = {
   createPlaylist: 'Create Playlist',
@@ -72,6 +75,7 @@ const EditPlaylistPage = g(
     createPlaylist,
     metadata,
     tracks,
+    removeTrack,
     editPlaylist,
     orderPlaylist,
     refreshLineup
@@ -86,6 +90,19 @@ const EditPlaylistPage = g(
       initialMetadata || initialFormFields
     )
 
+    const [showRemoveTrackDrawer, setShowRemoveTrackDrawer] = useState(false)
+    const onDrawerClose = () => setShowRemoveTrackDrawer(false)
+
+    // Holds all tracks to be removed on save
+    const [removedTracks, setRemovedTracks] = useState<
+      { timestamp: number; trackId: ID }[]
+    >([])
+
+    // Holds track to be removed if confirmed
+    const [confirmRemoveTrack, setConfirmRemoveTrack] = useState<
+      Nullable<{ title: string; trackId: ID; timestamp: number }>
+    >(null)
+
     // State to keep track of reordering
     const [reorderedTracks, setReorderedTracks] = useState<number[]>([])
     const [hasReordered, setHasReordered] = useState(false)
@@ -93,7 +110,7 @@ const EditPlaylistPage = g(
       if (reorderedTracks.length === 0 && tracks && tracks.length !== 0) {
         setReorderedTracks(tracks.map((_: any, i: number) => i))
       }
-    }, [reorderedTracks, tracks])
+    }, [setReorderedTracks, reorderedTracks, tracks])
 
     const existingImage = useCollectionCoverArt(
       formFields.playlist_id,
@@ -164,9 +181,12 @@ const EditPlaylistPage = g(
       [setHasReordered, reorderedTracks, setReorderedTracks]
     )
 
-    const formatReorder = (metadata: Collection, reorder: number[]) => {
+    const formatReorder = (
+      trackIds: { track: ID; time: number }[],
+      reorder: number[]
+    ) => {
       return reorder.map(i => {
-        const { track, time } = metadata.playlist_contents.track_ids[i]
+        const { track, time } = trackIds[i]
         return {
           id: track,
           time
@@ -179,15 +199,30 @@ const EditPlaylistPage = g(
       if (formFields.description === undefined) {
         formFields.description = null
       }
+      // Copy the metadata playlist contents so that a reference is not changed between
+      // removing tracks, updating track order, and edit playlist
+      const playlistTrackIds = [
+        ...(metadata?.playlist_contents?.track_ids ?? [])
+      ]
+
+      for (const removedTrack of removedTracks) {
+        const { playlist_id } = metadata!
+        removeTrack(removedTrack.trackId, playlist_id, removedTrack.timestamp)
+      }
 
       if (metadata && formFields.playlist_id) {
         // Edit playlist
         if (hasReordered) {
-          // Reorder the playlist and refresh the linup just in case it's
+          // Reorder the playlist and refresh the lineup just in case it's
           // in the view behind the edit playlist page.
           orderPlaylist(
             metadata.playlist_id,
-            formatReorder(metadata, reorderedTracks)
+            formatReorder(playlistTrackIds, reorderedTracks)
+          )
+          // Update the playlist content track_ids so that the editPlaylist
+          // optimistically update the cached collection trackIds
+          formFields.playlist_contents.track_ids = reorderedTracks.map(
+            idx => playlistTrackIds[idx]
           )
         }
         refreshLineup()
@@ -216,8 +251,65 @@ const EditPlaylistPage = g(
       reorderedTracks,
       orderPlaylist,
       refreshLineup,
-      toast
+      toast,
+      removeTrack,
+      removedTracks
     ])
+
+    /**
+     * Stores the track to be removed if confirmed
+     * Opens the drawer to confirm removal of the track
+     */
+    const onRemoveTrack = useCallback(
+      (index: number) => {
+        if ((metadata?.playlist_contents?.track_ids.length ?? 0) <= index)
+          return
+        const reorderedIndex = reorderedTracks[index]
+        const { playlist_contents } = metadata!
+        const { track: trackId, time } = playlist_contents.track_ids[
+          reorderedIndex
+        ]
+        const trackMetadata = tracks?.find(track => track.track_id === trackId)
+        if (!trackMetadata) return
+        setConfirmRemoveTrack({
+          title: trackMetadata.title,
+          trackId,
+          timestamp: time
+        })
+        setShowRemoveTrackDrawer(true)
+      },
+      [
+        reorderedTracks,
+        setShowRemoveTrackDrawer,
+        metadata,
+        tracks,
+        setConfirmRemoveTrack
+      ]
+    )
+
+    /**
+     * Moves the track to be removed to the removedTracks array
+     * Closes the drawer to confirm removal of the track
+     */
+    const onConfirmRemove = useCallback(() => {
+      if (!confirmRemoveTrack) return
+      const removeIdx = metadata?.playlist_contents.track_ids.findIndex(
+        t =>
+          t.track === confirmRemoveTrack.trackId &&
+          t.time === confirmRemoveTrack.timestamp
+      )
+      if (removeIdx === -1) return
+      setRemovedTracks(removed =>
+        removed.concat({
+          trackId: confirmRemoveTrack.trackId,
+          timestamp: confirmRemoveTrack.timestamp
+        })
+      )
+      setReorderedTracks(tracks =>
+        tracks.filter(trackIndex => trackIndex !== removeIdx)
+      )
+      onDrawerClose()
+    }, [metadata, confirmRemoveTrack, setRemovedTracks, setReorderedTracks])
 
     const setters = useCallback(
       () => ({
@@ -246,12 +338,14 @@ const EditPlaylistPage = g(
     if (tracks && reorderedTracks.length > 0) {
       trackList = reorderedTracks.map(i => {
         const t = tracks[i]
+        const playlistTrack = metadata?.playlist_contents.track_ids[i]
         return {
           isLoading: false,
           artistName: t.user.name,
           artistHandle: t.user.handle,
           trackTitle: t.title,
           trackId: t.track_id,
+          time: playlistTrack?.time,
           isDeleted: t.is_delete
         }
       })
@@ -310,12 +404,19 @@ const EditPlaylistPage = g(
                   showDivider
                   noDividerMargin
                   isReorderable
+                  onRemove={onRemoveTrack}
                   onReorder={onReorderPlaylist}
                 />
               </Grouping>
             )}
           </GroupableList>
         </div>
+        <RemovePlaylistTrackDrawer
+          isOpen={showRemoveTrackDrawer}
+          trackTitle={confirmRemoveTrack?.title}
+          onClose={onDrawerClose}
+          onConfirm={onConfirmRemove}
+        />
       </div>
     )
   }
@@ -338,8 +439,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     editPlaylist: (id: ID, metadata: Collection) =>
       dispatch(editPlaylist(id, metadata)),
-    orderPlaylist: (playlistId: number, idsAndTimes: any) =>
+    orderPlaylist: (playlistId: ID, idsAndTimes: any) =>
       dispatch(orderPlaylist(playlistId, idsAndTimes)),
+    removeTrack: (playlistId: ID, trackId: ID, timestamp: number) =>
+      dispatch(removeTrackFromPlaylist(playlistId, trackId, timestamp)),
     refreshLineup: () => dispatch(tracksActions.fetchLineupMetadatas()),
     goToRoute: (route: string) => dispatch(pushRoute(route))
   }
