@@ -165,7 +165,7 @@ function LibsWrapper (walletIndex = 0) {
    */
   this.upgradeToCreator = async (userNode) => {
     assertLibsDidInit()
-    return this.libsInstance.User.upgradeToCreator(userNode, null)
+    return this.libsInstance.User.upgradeToCreator(userNode, '')
   }
 
   /**
