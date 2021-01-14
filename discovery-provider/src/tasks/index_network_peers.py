@@ -6,7 +6,7 @@ from src.tasks.celery_app import celery
 from src import eth_abi_values
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
 from src.models import User
-from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_pickled_key
+from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_pickled_key, get_sp_id_key
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,9 @@ def fetch_cnode_info(sp_id, sp_factory_instance):
         content_node_service_type,
         sp_id
     ).call()
+    sp_id_key = get_sp_id_key(sp_id) 
+    pickle_and_set(redis, sp_id_key, cn_endpoint_info, 50000)
+    logger.info(f"index_network_peers.py | Configured redis cache with {sp_id_key} - {cn_endpoint_info}")
     return cn_endpoint_info
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
@@ -66,7 +69,7 @@ def retrieve_peers_from_eth_contracts(self):
                 if valid_endpoint:
                     eth_cn_endpoints_set.add(cn_endpoint_info[1])
             except Exception as exc:
-                logger.error(f"index_network_peers.py | fetch_cnode_futures {single_cnode_fetch_op} generated {exc}")
+                logger.error(f"index_network_peers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}")
    # Return dictionary with key = endpoint, formatted as { endpoint: True }
     return eth_cn_endpoints_set
 
