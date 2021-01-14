@@ -115,11 +115,9 @@ class Account extends Base {
     let userId
 
     try {
-      this.REQUIRES(Services.CREATOR_NODE)
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
       if (this.web3Manager.web3IsExternal()) {
-        this.REQUIRES(Services.IDENTITY_SERVICE)
-
         phase = phases.CREATE_USER_RECORD
         await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
