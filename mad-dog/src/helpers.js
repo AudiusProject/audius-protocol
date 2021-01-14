@@ -11,7 +11,7 @@ const ServiceCommands = require('@audius/service-commands')
 const {
   addUser,
   uploadProfileImagesAndAddUser,
-  updateIsCreatorFlagToTrue,
+  upgradeToCreator,
   getLibsUserInfo,
   getUserAccount,
   getLibsWalletAddress,
@@ -160,9 +160,7 @@ async function _upgradeUsersToCreator (executeAll, executeOne) {
           return
         }
         // Upgrade to creator with replica set
-        const endpointString = existingUser.creator_node_endpoint
-        logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
-        await executeOne(i, l => updateIsCreatorFlagToTrue(l, endpointString))
+        await executeOne(i, l => upgradeToCreator(l))
         logger.info(`Finished upgrading creator wallet index ${i}`)
       })
     } catch (e) {

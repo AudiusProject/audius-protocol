@@ -154,9 +154,18 @@ function LibsWrapper (walletIndex = 0) {
    *
    * @param {*} args endpoint to upgrade to, current userNode endpoint.
    */
-  this.updateIsCreatorFlagToTrue = async ({ endpoint, userNode }) => {
+  /**
+   * Upgrades the current user for this LibsWrapper to a creator.
+   *
+   * @param {string} userNode current userNode endpoint
+   *
+   * @note upgradeToCreator() second param (new content node endpoint) is null
+   * because new users in mad-dog will now be assigned a replica set. They do not
+   * need to be reassigned a new rset.
+   */
+  this.upgradeToCreator = async (userNode) => {
     assertLibsDidInit()
-    return this.libsInstance.User.updateIsCreatorFlagToTrue(userNode, endpoint)
+    return this.libsInstance.User.upgradeToCreator(userNode, null)
   }
 
   /**

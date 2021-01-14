@@ -54,7 +54,6 @@ class Users extends Base {
 
     // For adding replica set to users on sign up
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
-    this.updateIsCreatorFlagToTrue = this.updateIsCreatorFlagToTrue.bind(this)
 
     this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
     this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
@@ -389,23 +388,6 @@ class Users extends Base {
   }
 
   /**
-   * Updates user's is_creator field to true, and then uploads new metadata to chain and then
-   * Content Nodes.
-   */
-  async updateIsCreatorFlagToTrue () {
-    const oldMetadata = this.userStateManager.getCurrentUser()
-    if (!oldMetadata) { throw new Error('No current user') }
-
-    let newMetadata = { ...oldMetadata }
-    newMetadata.is_creator = true
-
-    await this.updateAndUploadMetadata({
-      newMetadata,
-      userId: newMetadata.user_id
-    })
-  }
-
-  /**
    * Upgrades a user to a creator using their metadata object.
    * This creates a record for that user on the connected creator node.
    * @param {string} existingEndpoint
@@ -413,8 +395,6 @@ class Users extends Base {
    */
   async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
     this.REQUIRES(Services.CREATOR_NODE)
-
-    if (!newCreatorNodeEndpoint) throw new Error(`No creator node endpoint provided`)
 
     // Error if libs instance does not already have existing user state
     const user = this.userStateManager.getCurrentUser()
@@ -436,27 +416,33 @@ class Users extends Base {
     // Populate metadata with required fields - wallet, is_creator, creator_node_endpoint
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
-    newMetadata.creator_node_endpoint = newCreatorNodeEndpoint
 
-    const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
+    if (oldMetadata.creator_node_endpoint) {
+      // Update the newMetadata with the existing creator_node_endpoint field from oldMetadata
+      newMetadata.creator_node_endpoint = oldMetadata.creator_node_endpoint
+    } else {
+      // If there is no creator_node_endpoint field, update the field with newCreatorNodeEndpoint.
+      // This is because new users on signup will now be assigned an rset and do not need to
+      // be assigned a new one via newCreatorNodeEndpoint.
+      newMetadata.creator_node_endpoint = newCreatorNodeEndpoint
+      const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
 
-    // Sync user data from old primary to new endpoint
-    if (existingEndpoint) {
-      // Don't validate what we're syncing from because the user isn't
-      // a creator yet.
-      await this.creatorNode.syncSecondary(
-        newPrimary,
-        existingEndpoint,
-        /* immediate= */ true,
-        /* validate= */ false
-      )
-    }
+      // Sync user data from old primary to new endpoint
+      if (existingEndpoint) {
+        // Don't validate what we're syncing from because the user isn't
+        // a creator yet.
+        await this.creatorNode.syncSecondary(
+          newPrimary,
+          existingEndpoint,
+          /* immediate= */ true,
+          /* validate= */ false
+        )
+      }
 
-    // Update local libs state with new CN endpoint
-    await this.creatorNode.setEndpoint(newPrimary)
+      // Update local libs state with new CN endpoint
+      await this.creatorNode.setEndpoint(newPrimary)
 
-    // Update user creator_node_endpoint on chain if applicable
-    if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+      // Update user creator_node_endpoint on chain if applicable
       await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
 
       // Ensure DN has indexed creator_node_endpoint change

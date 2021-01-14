@@ -37,11 +37,8 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   return userId
 }
 
-User.updateIsCreatorFlagToTrue = async (libsWrapper, endpoint) => {
-  await libsWrapper.updateIsCreatorFlagToTrue({
-    endpoint,
-    userNode: config.get('user_node')
-  })
+User.upgradeToCreator = async (libsWrapper) => {
+  await libsWrapper.upgradeToCreator(config.get('user_node'))
 }
 
 User.autoSelectCreatorNodes = async (
