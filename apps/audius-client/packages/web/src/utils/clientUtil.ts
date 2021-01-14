@@ -2,6 +2,11 @@ import { useMemo } from 'react'
 
 import { OS, MobileOS } from 'models/OS'
 import Client from 'models/Client'
+declare global {
+  interface Window {
+    opera: any
+  }
+}
 
 const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -83,3 +88,9 @@ export const useIsMobile = () =>
   useMemo(() => {
     return isMobile()
   }, [])
+
+/**
+ * Whether we're deployed on our host or running elsewhere
+ */
+export const getIsDeployedOnHost = () =>
+  window.location.host === process.env.REACT_APP_PUBLIC_HOSTNAME
