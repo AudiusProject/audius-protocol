@@ -147,19 +147,22 @@ class CreatorNode {
    * Uploads creator content to a creator node
    * @param {object} metadata the creator metadata
    */
-  async uploadCreatorContent (metadata) {
+  async uploadCreatorContent (metadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
       this.schemas[SchemaValidator.userSchemaType].validate(metadata)
 
-      return this._makeRequest({
+      const requestObj = {
         url: '/audius_users/metadata',
         method: 'post',
         data: {
-          metadata
+          metadata,
+          blockNumber
         }
-      })
+      }
+
+      return this._makeRequest(requestObj)
     } catch (e) {
       console.error('Error validating creator metadata', e)
     }

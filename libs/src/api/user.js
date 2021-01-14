@@ -361,15 +361,17 @@ class Users extends Base {
     const oldMetadata = { ...user }
 
     // Update user creator_node_endpoint on chain if applicable
+    let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -417,6 +419,7 @@ class Users extends Base {
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.is_creator = true
 
+    let updateEndpointTxBlockNumber = null
     if (oldMetadata.creator_node_endpoint) {
       // Update the newMetadata with the existing creator_node_endpoint field from oldMetadata
       newMetadata.creator_node_endpoint = oldMetadata.creator_node_endpoint
@@ -443,14 +446,15 @@ class Users extends Base {
       await this.creatorNode.setEndpoint(newPrimary)
 
       // Update user creator_node_endpoint on chain if applicable
-      await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
     }
 
     // Upload new metadata object to CN
-    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+    const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata, updateEndpointTxBlockNumber)
 
     // Write metadata multihash to chain
     const updatedMultihashDecoded = Utils.decodeMultihash(metadataMultihash)
@@ -530,12 +534,6 @@ class Users extends Base {
     newMetadata = this._cleanUserMetadata(newMetadata)
     this._validateUserMetadata(newMetadata)
 
-    // If the new metadata is the same as the original, it is a no-op and exit early
-    // NOTE: be careful -- this implies that the userStateManager is the source of truth
-    // if userStateManager is not up to date, can cause issues
-    const metadataFields = this._getMetadataFieldsToUpdate(newMetadata)
-    if (metadataFields.include.length === 0) { return }
-
     try {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
@@ -555,7 +553,7 @@ class Users extends Base {
       const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
       // Write remaining metadata fields to chain
-      const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, metadataFields.exclude)
+      const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
 
       // Write to CN to associate blockchain user id with updated metadata and block number
       phase = phases.ASSOCIATE_USER
