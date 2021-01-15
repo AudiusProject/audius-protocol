@@ -3,7 +3,14 @@ const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
 class CreatorNodeSelection extends ServiceSelection {
-  constructor ({ creatorNode, numberOfNodes, ethContracts, whitelist, blacklist }) {
+  constructor ({
+    creatorNode,
+    numberOfNodes,
+    ethContracts,
+    whitelist,
+    blacklist,
+    timeout = null
+  }) {
     super({
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
@@ -16,6 +23,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
+    this.timeout = timeout
     this.healthCheckPath = 'version'
     // String array of healthy Content Node endpoints
     this.backupsList = []
@@ -29,6 +37,7 @@ class CreatorNodeSelection extends ServiceSelection {
    * 3. Filter out unhealthy, outdated, and still syncing nodes via health and sync check
    * 4. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime
    * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
+   * @param {boolean?} performSyncCheck whether or not to check whether the nodes need syncs before selection
    */
   async select (performSyncCheck = true) {
     // Reset decision tree and backups
@@ -48,7 +57,7 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // TODO: add a sample size selection round to not send requests to all available nodes
 
-    if (performSyncCheck) { services = await this._performSyncChecks(services) }
+    if (performSyncCheck) { services = await this._performSyncChecks(services, this.timeout) }
     const { healthyServicesList, healthyServicesMap: servicesMap } = await this._performHealthChecks(services)
     services = healthyServicesList
 
@@ -69,10 +78,11 @@ class CreatorNodeSelection extends ServiceSelection {
   /**
    * Checks the sync progress of a Content Node
    * @param {string} service Content Node endopint
+   * @param {number?} timeout ms
    */
-  async getSyncStatus (service) {
+  async getSyncStatus (service, timeout = null) {
     try {
-      const syncStatus = await this.creatorNode.getSyncStatus(service)
+      const syncStatus = await this.creatorNode.getSyncStatus(service, timeout)
       return { service, syncStatus, error: null }
     } catch (e) {
       return { service, syncStatus: null, error: e }
@@ -121,10 +131,11 @@ class CreatorNodeSelection extends ServiceSelection {
    * Performs a sync check for every endpoint in services. Returns an array of successful sync checked endpoints and
    * adds the err'd sync checked endpoints to this.unhealthy
    * @param {string[]} services content node endpoints
+   * @param {number?} timeout ms applied to each request
    */
-  async _performSyncChecks (services) {
+  async _performSyncChecks (services, timeout = null) {
     const successfulSyncCheckServices = []
-    const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service)))
+    const syncResponses = await Promise.all(services.map(service => this.getSyncStatus(service, timeout)))
     // Perform sync checks on all services
     for (const response of syncResponses) {
       // Could not perform a sync check. Add to unhealthy
@@ -164,7 +175,8 @@ class CreatorNodeSelection extends ServiceSelection {
       services.map(node => ({
         id: node,
         url: `${node}/${this.healthCheckPath}`
-      }))
+      })),
+      this.timeout
     )
 
     const healthyServices = healthCheckedServices.filter(resp => {

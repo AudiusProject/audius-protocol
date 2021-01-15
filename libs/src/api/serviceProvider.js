@@ -2,8 +2,11 @@ const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
 const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
 
-const CREATOR_NODE_SERVICE_NAME = 'content-node'
-const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-node'
+const CONTENT_NODE_SERVICE_NAME = 'content-node'
+const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
+
+// Default timeout for each content node's sync and health check
+const CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT = 7500
 
 /**
  * API methods to interact with Audius service providers.
@@ -16,7 +19,7 @@ class ServiceProvider extends Base {
   /* ------- CREATOR NODE  ------- */
 
   async listCreatorNodes () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
+    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CONTENT_NODE_SERVICE_NAME)
   }
 
   /**
@@ -26,7 +29,8 @@ class ServiceProvider extends Base {
    */
   async getSelectableCreatorNodes (
     whitelist = null,
-    blacklist = null
+    blacklist = null,
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   ) {
     let creatorNodes = await this.listCreatorNodes()
 
@@ -44,7 +48,8 @@ class ServiceProvider extends Base {
       creatorNodes.map(node => ({
         id: node.endpoint,
         url: `${node.endpoint}/version`
-      }))
+      })),
+      timeout
     )
 
     let services = {}
@@ -61,6 +66,7 @@ class ServiceProvider extends Base {
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
+   * @param {number?} timeout ms applied to each request made to a content node
    * @returns { primary, secondaries, services }
    * // primary: string
    * // secondaries: Array<string>
@@ -69,14 +75,16 @@ class ServiceProvider extends Base {
   async autoSelectCreatorNodes (
     numberOfNodes = 3,
     whitelist = null,
-    blacklist = null
+    blacklist = null,
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   ) {
     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
       whitelist,
-      blacklist
+      blacklist,
+      timeout
     })
 
     const { primary, secondaries, services } = await creatorNodeSelection.select()
@@ -86,7 +94,7 @@ class ServiceProvider extends Base {
   /* ------- DISCOVERY PROVIDER ------ */
 
   async listDiscoveryProviders () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_PROVIDER_SERVICE_NAME)
+    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_NODE_SERVICE_NAME)
   }
 }
 
