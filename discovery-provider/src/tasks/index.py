@@ -170,7 +170,6 @@ def index_blocks(self, db, blocks_list):
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
-        logger.error(f"index.py - KNOWN ADDRS {contract_addresses}")
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
