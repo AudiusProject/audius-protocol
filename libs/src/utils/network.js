@@ -7,15 +7,20 @@ const promiseFight = require('./promiseFight')
 /**
 * Fetches a url and times how long it took the request to complete.
 * @param {Object} request {id, url}
+* @param {number?} timeout
 * @returns { request, response, millis }
 */
-async function timeRequest (request) {
+async function timeRequest (request, timeout = null) {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
+  let config = {}
+  if (timeout) {
+    config.timeout = timeout
+  }
   let response
   try {
-    response = await axios.get(request.url)
+    response = await axios.get(request.url, config)
   } catch (e) {
     console.debug(`Error with request for ${request.url}: ${e}`)
     return { request, response: null, millis: null }
@@ -28,11 +33,12 @@ async function timeRequest (request) {
  * Fetches multiple urls and times each request and returns the results sorted by
  * lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {number?} timeout applied to each individual request
  * @returns { Array<{url, response, millis}> }
  */
-async function timeRequests (requests) {
+async function timeRequests (requests, timeout = null) {
   let timings = await Promise.all(requests.map(async request =>
-    timeRequest(request)
+    timeRequest(request, timeout)
   ))
 
   return timings
@@ -44,11 +50,12 @@ async function timeRequests (requests) {
  * Fetches multiple urls and times each request and returns the results sorted
  * first by version and then by lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {number?} timeout applied to each individual request
  * @returns { Array<{url, response, millis}> }
  */
-async function timeRequestsAndSortByVersion (requests) {
+async function timeRequestsAndSortByVersion (requests, timeout = null) {
   let timings = await Promise.all(requests.map(async request =>
-    timeRequest(request)
+    timeRequest(request, timeout)
   ))
 
   return timings.sort((a, b) => {
