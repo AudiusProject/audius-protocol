@@ -319,8 +319,9 @@ class CreatorNode {
    * Given a particular endpoint to a creator node, check whether
    * this user has a sync in progress on that node.
    * @param {string} endpoint
+   * @param {number?} timeout ms
    */
-  async getSyncStatus (endpoint) {
+  async getSyncStatus (endpoint, timeout = null) {
     const user = this.userStateManager.getCurrentUser()
     if (user) {
       const req = {
@@ -328,6 +329,7 @@ class CreatorNode {
         url: `/sync_status/${user.wallet}`,
         method: 'get'
       }
+      if (timeout) req.timeout = timeout
       const status = await axios(req)
       return {
         status: status.data,
