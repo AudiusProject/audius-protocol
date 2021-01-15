@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import cn from 'classnames'
 import {
   Modal,
   Button,
@@ -201,7 +202,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
             >
               <Button
                 onClick={this.downloadDesktopApp}
-                className={styles.downloadButton}
+                className={cn(styles.cardButton, styles.downloadButton)}
                 textClassName={styles.settingButtonText}
                 type={ButtonType.COMMON_ALT}
                 text='Get App'
@@ -227,7 +228,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
             >
               <Button
                 onClick={this.showEmailToast}
-                className={styles.resetButton}
+                className={cn(styles.cardButton, styles.resetButton)}
                 textClassName={styles.settingButtonText}
                 iconClassName={styles.resetButtonIcon}
                 type={ButtonType.COMMON_ALT}
@@ -265,7 +266,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
           >
             <Button
               onClick={this.showNotificationSettings}
-              className={styles.resetButton}
+              className={cn(styles.cardButton, styles.resetButton)}
               textClassName={styles.settingButtonText}
               type={ButtonType.COMMON_ALT}
               text='Review'
