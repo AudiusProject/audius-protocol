@@ -4,6 +4,13 @@ const Web3Manager = require('../web3Manager/index')
 
 class UserReplicaSetManagerClient extends ContractClient {
 
+  /**
+   * Update a user's replica set on the UserReplicaSetManager contract 
+   * Callable by user wallet, or any node within the user's replica set 
+   * @param {number} userId
+   * @param {number} primary
+   * @param {Array<number>} secondaries
+   */
   async updateReplicaSet(userId, primary, secondaries) {
     let existingReplicaSetInfo = await this.getUserReplicaSet(userId)
     return await this._updateReplicaSet(
@@ -15,6 +22,17 @@ class UserReplicaSetManagerClient extends ContractClient {
     )
   }
 
+  /**
+   * Add a new content node to the L2 layer of the protocol
+   * Requires signatures from 3 existing nodes on the UserReplicaSetManager contract
+   * @param {number} cnodeId
+   * @param {string} cnodeDelegateOwnerWallet
+   * @param {Array<number>} proposerSpIds
+   * @param {Array<string>} proposerNonces
+   * @param {string} proposer1Sig
+   * @param {string} proposer2Sig
+   * @param {string} proposer3Sig
+   */
   async addOrUpdateContentNode(
     cnodeId,
     cnodeDelegateOwnerWallet,
@@ -43,6 +61,16 @@ class UserReplicaSetManagerClient extends ContractClient {
     return tx
   }
 
+  /**
+   * Generate the relevant data required to propose a new content node
+   * Each incoming node requires 3 distinct signatures in order to be added
+   * This function will be used by content nodes
+   * @param {number} cnodeId
+   * @param {string} cnodeDelegateWallet
+   * @param {number} proposerSpId
+   * @param {string} proposerWallet
+   * @param {Object} ethWeb3
+   */
   async getProposeAddOrUpdateContentNodeRequestData (
     cnodeId,
     cnodeDelegateWallet,
@@ -69,7 +97,15 @@ class UserReplicaSetManagerClient extends ContractClient {
     }
   }
 
-  // TODO: Comments throughout
+  /**
+   * Submit update transaction to UserReplicaSetManager to modify a user's replica set
+   * Can be sent by user's wallet, or any content node in the replica set
+   * @param {number} userId
+   * @param {number} primary
+   * @param {Array<number>} secondaries
+   * @param {number} oldPrimary
+   * @param {Array<number>} oldSecondaries
+   */
   async _updateReplicaSet (userId, primary, secondaries, oldPrimary, oldSecondaries) {
     const contractAddress = await this.getAddress()
     const nonce = signatureSchemas.getNonce()
@@ -105,14 +141,20 @@ class UserReplicaSetManagerClient extends ContractClient {
     return tx
   }
 
-  // TODO: AddOrUpdateContentNode Functionality
-
+  /**
+   * Return the current replica set associated with a given user
+   * @param {number} userId
+   */
   async getUserReplicaSet (userId) {
     const method = await this.getMethod('getUserReplicaSet', userId)
     let currentWallet = this.web3Manager.getWalletAddressString()
     return method.call({ from: currentWallet })
   }
 
+  /**
+   * Return the current wallet address associated with a given spID
+   * @param {number} userId
+   */
   async getContentNodeWallet (spId) {
     const method = await this.getMethod('getContentNodeWallet', spId)
     let currentWallet = this.web3Manager.getWalletAddressString()
