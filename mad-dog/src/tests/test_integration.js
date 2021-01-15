@@ -19,7 +19,7 @@ const {
   getRandomTrackFilePath,
   addUsers,
   r6,
-  delay,
+  waitForSync,
   upgradeUsersToCreators
 } = require('../helpers.js')
 const { getContentNodeEndpoints } = require('@audius/service-commands')
@@ -39,6 +39,7 @@ const TEST_DURATION_SECONDS = 10
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
 const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
+const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
 const SYNC_WAIT = 10000
 /**
  * Randomly uploads tracks over the duration of the test,
@@ -163,98 +164,45 @@ module.exports = coreIntegration = async ({
   const walletIndexes = Object.keys(walletIdMap)
   const userIds = Object.values(walletIdMap)
 
-  const userMetadatas = await executeOne(walletIndexes[0], libsWrapper => {
+  let userMetadatas = await executeOne(walletIndexes[0], libsWrapper => {
     return getUsers(libsWrapper, userIds)
   })
 
   // 1. Check that certain MD fields in disc prov are what we expected it to be
-  userMetadatas.forEach(async user => {
+  userMetadatas.forEach(user => {
     logger.info(`Checking initial metadata on signup for user ${user.user_id}...`)
     if (user.is_creator) {
       return {
-        error: 'New user should not be a creator immediately after sign-up.'
+        error: `New user ${user.user_id} should not be a creator immediately after sign-up.`
       }
     }
 
     // make this if case stronger -- like query cn1-3 to make sure that data is there
     if (!user.creator_node_endpoint) {
       return {
-        error: 'New user should have been assigned a replica set.'
+        error: `New user ${user.user_id} should have been assigned a replica set.`
       }
     }
 
     if (!user.profile_picture_sizes) {
       return {
-        error: 'New user should have an updated profile picture.'
+        error: `New user ${user.user_id} should have an updated profile picture.`
       }
     }
   })
 
-  for (let i = 0; i < walletIndexes.length; i++) {
-    // 2. Check that the clock values across replica set are equal
-    await checkClockValuesAcrossReplicaSet({
-      executeOne,
-      indexOfLibsInstance: i,
-      userId: walletIdMap[i]
+  // Check user metadata is proper and that the clock values across the replica set is consistent
+  try {
+    await checkUserMetadataAndClockValues({
+      walletIndexes,
+      walletIdMap,
+      userMetadatas,
+      picturePath: SECOND_USER_PIC_PATH,
+      executeOne
     })
-
-    // 3. Check that the metadata object in CN across replica set is what we expect it to be
-    const replicaSetEndpoints = await executeOne(i, libsWrapper =>
-      getContentNodeEndpoints(libsWrapper, userMetadatas[i].creator_node_endpoint)
-    )
-
-    try {
-      await checkMetadataEquality({
-        endpoints: replicaSetEndpoints,
-        metadataMultihash: userMetadatas[i].metadata_multihash,
-        userId: walletIdMap[i]
-      })
-    } catch (e) {
-      return {
-        error: `New user after initial signup -- ${e.message}`
-      }
-    }
-
-    // 4. Update MD (bio + photo) and check that 2 and 3 are correct
-    const updatedBio = 'i am a bio update!!! ' + r6()
-    await executeOne(i, async libsWrapper => {
-      // Update bio
-      const newMetadata = { ...userMetadatas[i] }
-      newMetadata.bio = updatedBio
-
-      // Update profile picture and metadata accordingly
-      logger.info(`Updating metadata for user ${userMetadatas[i].user_id}...`)
-      await uploadPhotoAndUpdateMetadata({
-        libsWrapper,
-        metadata: newMetadata,
-        userId: userMetadatas[i].user_id,
-        picturePath: SECOND_USER_PIC_PATH,
-        updateCoverPhoto: false
-      })
-    })
-
-    logger.info(`Waiting ${SYNC_WAIT}ms for sync to occur...`)
-    await delay(SYNC_WAIT)
-
-    // 5. Check that clock values are consistent among replica set
-    await checkClockValuesAcrossReplicaSet({
-      executeOne,
-      indexOfLibsInstance: i,
-      userId: walletIdMap[i]
-    })
-
-    // 6. Check that the updated MD is correct with the updated bio and profile picture
-    const updatedUser = await executeOne(i, libsWrapper => getUser(libsWrapper, userMetadatas[i].user_id))
-    try {
-      await checkMetadataEquality({
-        endpoints: replicaSetEndpoints,
-        metadataMultihash: updatedUser.metadata_multihash,
-        userId: walletIdMap[i]
-      })
-    } catch (e) {
-      return {
-        error: `Non-creator profile update -- ${e.message}`
-      }
+  } catch (e) {
+    return {
+      error: `User pre-track upload -- ${e.message}`
     }
   }
 
@@ -301,7 +249,50 @@ module.exports = coreIntegration = async ({
   // Remove temp storage dir
   await fs.remove(TEMP_STORAGE_PATH)
 
-  // 4. do 1-3 again after track upload with certain checks
+  // 7. do 1-6 again after track upload with certain checks
+  userMetadatas = await executeOne(walletIndexes[0], libsWrapper => {
+    return getUsers(libsWrapper, userIds)
+  })
+
+  await waitForSync()
+
+  // 8. Check that certain MD fields in disc prov are what we expected it to be
+  userMetadatas.forEach(user => {
+    logger.info(`Checking post track upload metadata for user ${user.user_id}...`)
+    if (user.is_creator) {
+      return {
+        error: `User ${user.user_id} should be a creator after track upload.`
+      }
+    }
+
+    // make this if case stronger -- like query cn1-3 to make sure that data is there
+    if (!user.creator_node_endpoint) {
+      return {
+        error: `User ${user.user_id} should have kept their replica set.`
+      }
+    }
+
+    if (!user.profile_picture_sizes) {
+      return {
+        error: `User ${user.user_id} should have an updated profile picture.`
+      }
+    }
+  })
+
+  // Check user metadata is proper and that the clock values across the replica set is consistent
+  try {
+    await checkUserMetadataAndClockValues({
+      walletIndexes,
+      walletIdMap,
+      userMetadatas,
+      picturePath: THIRD_USER_PIC_PATH,
+      executeOne
+    })
+  } catch (e) {
+    return {
+      error: `User post track upload -- ${e.message}`
+    }
+  }
 
   return {}
 }
@@ -361,6 +352,69 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
   return !failedCIDs.length
 }
 
+async function checkUserMetadataAndClockValues ({
+  walletIndexes,
+  walletIdMap,
+  userMetadatas,
+  picturePath,
+  executeOne
+}) {
+  for (let i = 0; i < walletIndexes.length; i++) {
+    // 2. Check that the clock values across replica set are equal
+    await checkClockValuesAcrossReplicaSet({
+      executeOne,
+      indexOfLibsInstance: i,
+      userId: walletIdMap[i]
+    })
+
+    // 3. Check that the metadata object in CN across replica set is what we expect it to be
+    const replicaSetEndpoints = await executeOne(i, libsWrapper =>
+      getContentNodeEndpoints(libsWrapper, userMetadatas[i].creator_node_endpoint)
+    )
+
+    await checkMetadataEquality({
+      endpoints: replicaSetEndpoints,
+      metadataMultihash: userMetadatas[i].metadata_multihash,
+      userId: walletIdMap[i]
+    })
+
+    // 4. Update MD (bio + photo) and check that 2 and 3 are correct
+    const updatedBio = 'i am so cool ' + r6()
+    await executeOne(i, async libsWrapper => {
+      // Update bio
+      const newMetadata = { ...userMetadatas[i] }
+      newMetadata.bio = updatedBio
+
+      // Update profile picture and metadata accordingly
+      logger.info(`Updating metadata for user ${userMetadatas[i].user_id}...`)
+      await uploadPhotoAndUpdateMetadata({
+        libsWrapper,
+        metadata: newMetadata,
+        userId: userMetadatas[i].user_id,
+        picturePath,
+        updateCoverPhoto: false
+      })
+    })
+
+    await waitForSync()
+
+    // 5. Check that clock values are consistent among replica set
+    await checkClockValuesAcrossReplicaSet({
+      executeOne,
+      indexOfLibsInstance: i,
+      userId: walletIdMap[i]
+    })
+
+    // 6. Check that the updated MD is correct with the updated bio and profile picture
+    const updatedUser = await executeOne(i, libsWrapper => getUser(libsWrapper, userMetadatas[i].user_id))
+    await checkMetadataEquality({
+      endpoints: replicaSetEndpoints,
+      metadataMultihash: updatedUser.metadata_multihash,
+      userId: walletIdMap[i]
+    })
+  }
+}
+
 async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) {
   logger.info(`Checking metadata across replica set is consistent for user ${userId}...`)
   const replicaSetMetadatas = (await Promise.all(
@@ -405,6 +459,6 @@ async function checkClockValuesAcrossReplicaSet ({ executeOne, indexOfLibsInstan
   const secondary2ClockValue = replicaSetClockValues[2].clockValue
 
   if (primaryClockValue !== secondary1ClockValue || primaryClockValue !== secondary2ClockValue) {
-    throw new Error(`Clock values are out of sync:\nPrimary: ${primaryClockValue}\nSecondary 1:${secondary1ClockValue}\nSecondary 2:${secondary2ClockValue}`)
+    throw new Error(`Clock values are out of sync:\nPrimary: ${primaryClockValue}\nSecondary 1: ${secondary1ClockValue}\nSecondary 2: ${secondary2ClockValue}`)
   }
 }

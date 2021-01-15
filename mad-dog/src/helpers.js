@@ -327,6 +327,10 @@ const waitForIndexing = async (waitTime = 5000) => {
   await delay(waitTime)
 }
 
+const waitForSync = async (waitTime = 10000) => {
+  logger.info(`Pausing ${waitTime}ms for sync to occur...`)
+  await delay(waitTime)
+}
 /**
  * Handy helper function for executing an operation against
  * an array of libs wrappers in parallel.
@@ -351,6 +355,7 @@ module.exports = {
   getRandomTrackFilePath,
   delay,
   waitForIndexing,
+  waitForSync,
   makeExecuteAll,
   makeExecuteOne,
   r6,
