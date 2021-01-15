@@ -476,7 +476,7 @@ class Users extends Base {
   /* ------- PRIVATE  ------- */
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
-  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint, handle = null) {
+  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
     let isUpdated = false
     while (!isUpdated) {
       const user = (await this.discoveryProvider.getUsers(1, 0, [userId]))[0]
@@ -530,9 +530,6 @@ class Users extends Base {
     // Remove excluded keys from metadata object
     let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
-
-    console.log(metadata)
-    console.log(exclude)
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
     for (const key in metadata) {

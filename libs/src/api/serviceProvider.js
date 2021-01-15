@@ -71,7 +71,7 @@ class ServiceProvider extends Base {
     whitelist = null,
     blacklist = null
   ) {
-     const creatorNodeSelection = new CreatorNodeSelection({
+    const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
@@ -79,8 +79,8 @@ class ServiceProvider extends Base {
       blacklist
     })
 
-    const { primary, secondaries, services, ids } = await creatorNodeSelection.select()
-    return { primary, secondaries, services, ids }
+    const { primary, secondaries, services } = await creatorNodeSelection.select()
+    return { primary, secondaries, service }
   }
 
   /* ------- DISCOVERY PROVIDER ------ */
