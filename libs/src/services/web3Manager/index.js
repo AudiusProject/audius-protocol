@@ -154,7 +154,11 @@ class Web3Manager {
 
   async signTypedData (signatureData) {
     if (this.useExternalWeb3) {
-      return this.ethSignTypedData(this.getWeb3(), this.getWalletAddress(), signatureData)
+      return Web3Manager.ethSignTypedData(
+        this.getWeb3(),
+        this.getWalletAddress(),
+        signatureData
+      )
     } else {
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
