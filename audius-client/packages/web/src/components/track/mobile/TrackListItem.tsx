@@ -100,6 +100,7 @@ export type TrackListItemProps = {
   isReposted?: boolean
   isActive?: boolean
   isPlaying?: boolean
+  isRemoveActive?: boolean
   isDeleted: boolean
   coverArtSizes?: CoverArtSizes
   artistName: string
@@ -123,6 +124,7 @@ const TrackListItem = ({
   isSaved = false,
   isActive = false,
   isPlaying = false,
+  isRemoveActive = false,
   artistName,
   trackTitle,
   trackId,
@@ -215,7 +217,9 @@ const TrackListItem = ({
         <div className={styles.iconContainer}>
           <IconButton
             icon={<IconRemoveTrack />}
-            className={styles.removeTrackContainer}
+            className={cn(styles.removeTrackContainer, {
+              [styles.isRemoveActive]: isRemoveActive
+            })}
             onClick={onRemoveTrack}
           />
         </div>

@@ -18,6 +18,7 @@ type TrackListProps = {
     isReposted?: boolean
     isActive?: boolean
     isPlaying?: boolean
+    isRemoveActive?: boolean
     artistHandle: string
     artistName: string
     trackTitle: string
@@ -109,6 +110,7 @@ const TrackList = ({
           uid={track.uid}
           isDeleted={track.isDeleted}
           onSave={onSave}
+          isRemoveActive={track.isRemoveActive}
           onRemove={onRemove}
           togglePlay={togglePlay}
           trackItemAction={trackItemAction}
