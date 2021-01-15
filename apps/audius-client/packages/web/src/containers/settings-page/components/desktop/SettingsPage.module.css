@@ -94,3 +94,7 @@
 .settingButtonText {
   font-size: var(--font-l) !important;
 }
+
+.cardButton {
+  margin-left: 16px;
+}
