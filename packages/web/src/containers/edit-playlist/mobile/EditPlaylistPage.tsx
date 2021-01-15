@@ -339,6 +339,11 @@ const EditPlaylistPage = g(
       trackList = reorderedTracks.map(i => {
         const t = tracks[i]
         const playlistTrack = metadata?.playlist_contents.track_ids[i]
+        const isRemoveActive =
+          showRemoveTrackDrawer &&
+          t.track_id === confirmRemoveTrack?.trackId &&
+          playlistTrack?.time === confirmRemoveTrack?.timestamp
+
         return {
           isLoading: false,
           artistName: t.user.name,
@@ -346,7 +351,8 @@ const EditPlaylistPage = g(
           trackTitle: t.title,
           trackId: t.track_id,
           time: playlistTrack?.time,
-          isDeleted: t.is_delete
+          isDeleted: t.is_delete,
+          isRemoveActive
         }
       })
     }
