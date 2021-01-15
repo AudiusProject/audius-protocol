@@ -76,16 +76,7 @@ class CreatorNodeSelection extends ServiceSelection {
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
     })
 
-    console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
-    console.log(primary)
-    console.log(contentNodeEndpointToSpID[primary])
-    console.log(secondaries)
-    console.log(servicesMap)
-    const idsMap = {
-      primary: contentNodeEndpointToSpID[primary],
-      secondaries: secondaries.map(x => contentNodeEndpointToSpID[x])
-    }
-    return { primary, secondaries, services: servicesMap, ids: idsMap }
+    return { primary, secondaries, services: servicesMap }
   }
 
   /**

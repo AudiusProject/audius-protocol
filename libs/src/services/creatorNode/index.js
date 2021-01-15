@@ -319,10 +319,6 @@ class CreatorNode {
         method: 'get'
       }
       const status = await axios(req)
-      console.log(`latest from req`)
-      console.log(status.data.latestBlockNumber)
-      console.log(`latest from user: `)
-      console.log(user.blocknumber)
       return {
         status: status.data,
         userBlockNumber: user.blocknumber,
