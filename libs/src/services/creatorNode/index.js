@@ -309,7 +309,7 @@ class CreatorNode {
    * Given a particular endpoint to a creator node, check whether
    * this user has a sync in progress on that node.
    * @param {string} endpoint
-   * @param {number?} timeout
+   * @param {number?} timeout ms
    */
   async getSyncStatus (endpoint, timeout = null) {
     const user = this.userStateManager.getCurrentUser()

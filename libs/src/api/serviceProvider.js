@@ -66,7 +66,7 @@ class ServiceProvider extends Base {
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
-   * @param {number?} timeout applied to each request made to a content node
+   * @param {number?} timeout ms applied to each request made to a content node
    * @returns { primary, secondaries, services }
    * // primary: string
    * // secondaries: Array<string>

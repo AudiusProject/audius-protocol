@@ -78,7 +78,7 @@ class CreatorNodeSelection extends ServiceSelection {
   /**
    * Checks the sync progress of a Content Node
    * @param {string} service Content Node endopint
-   * @param {number?} timeout
+   * @param {number?} timeout ms
    */
   async getSyncStatus (service, timeout = null) {
     try {
@@ -131,7 +131,7 @@ class CreatorNodeSelection extends ServiceSelection {
    * Performs a sync check for every endpoint in services. Returns an array of successful sync checked endpoints and
    * adds the err'd sync checked endpoints to this.unhealthy
    * @param {string[]} services content node endpoints
-   * @param {number?} timeout applied to each request
+   * @param {number?} timeout ms applied to each request
    */
   async _performSyncChecks (services, timeout = null) {
     const successfulSyncCheckServices = []

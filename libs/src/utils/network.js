@@ -33,7 +33,7 @@ async function timeRequest (request, timeout = null) {
  * Fetches multiple urls and times each request and returns the results sorted by
  * lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {number?} timeout applied to each individual request
+ * @param {number?} timeout ms applied to each individual request
  * @returns { Array<{url, response, millis}> }
  */
 async function timeRequests (requests, timeout = null) {
@@ -50,7 +50,7 @@ async function timeRequests (requests, timeout = null) {
  * Fetches multiple urls and times each request and returns the results sorted
  * first by version and then by lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {number?} timeout applied to each individual request
+ * @param {number?} timeout ms applied to each individual request
  * @returns { Array<{url, response, millis}> }
  */
 async function timeRequestsAndSortByVersion (requests, timeout = null) {
