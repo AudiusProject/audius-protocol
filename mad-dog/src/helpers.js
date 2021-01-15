@@ -119,12 +119,13 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           userId = newUserId
         }
 
+        // TODO: test to see if this is necessary
         // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
         await waitForIndexing()
         const userWalletAddress = getLibsWalletAddress(libs)
         const userAccount = await getUserAccount(libs, userWalletAddress)
-        setCurrentUserAndUpdateLibs(libs, userAccount) // might not need this anymore bc refactored signup flow
+        setCurrentUserAndUpdateLibs(libs, userAccount)
 
         // add to wallet index to userId mapping
         walletIndexToUserIdMap[i] = userId
@@ -160,7 +161,7 @@ async function _upgradeUsersToCreator (executeAll, executeOne) {
           return
         }
         // Upgrade to creator with replica set
-        await executeOne(i, l => upgradeToCreator(l))
+        await executeOne(i, l => upgradeToCreator(l, ''))
         logger.info(`Finished upgrading creator wallet index ${i}`)
       })
     } catch (e) {

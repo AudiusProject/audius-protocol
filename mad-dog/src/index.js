@@ -39,6 +39,10 @@ async function tearDownAllServices () {
   logger.info('All services downed.')
 }
 
+// Writing IPLD txns to chain require the 0th indexed wallet.
+// This flag is set to 'true' to run the test with the 0th indexed wallet.
+// The default will be 'undefined' for the other tests that do not require
+// this flag.
 const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {

@@ -152,20 +152,20 @@ function LibsWrapper (walletIndex = 0) {
   /**
    * Upgrades the current user for this LibsWrapper to a creator.
    *
-   * @param {*} args endpoint to upgrade to, current userNode endpoint.
-   */
-  /**
-   * Upgrades the current user for this LibsWrapper to a creator.
-   *
    * @param {string} userNode current userNode endpoint
    *
-   * @note upgradeToCreator() second param (new content node endpoint) is null
-   * because new users in mad-dog will now be assigned a replica set. They do not
-   * need to be reassigned a new rset.
+   * @note userNode is the user metadata node. New users created in
+   * the mad-dog test suite will not need to pass `userNode` as they will
+   * be assigned a replica set on signup. This field is more so for
+   * existing users prior to deprecate UM task that still use the UM node.
+   *
+   * The current mad-dog suite passes in a value for `userNode`, and an empty
+   * string for `endpoint`. The protocol will not try to sync data from
+   * `userNode` if an empty string is passed into `userNode`.
    */
-  this.upgradeToCreator = async (userNode) => {
+  this.upgradeToCreator = async ({ endpoint, userNode }) => {
     assertLibsDidInit()
-    return this.libsInstance.User.upgradeToCreator(userNode, '')
+    return this.libsInstance.User.upgradeToCreator(userNode, endpoint)
   }
 
   /**

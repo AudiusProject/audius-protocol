@@ -3,6 +3,8 @@ const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
 
+// User metadata fields that are required on the metadata object and can have
+// null or non-null values
 const USER_PROPS = [
   'is_creator',
   'is_verified',
@@ -16,11 +18,14 @@ const USER_PROPS = [
   'location',
   'creator_node_endpoint'
 ]
+// User metadata fields that are required on the metadata object and only can have
+// non-null values
 const USER_REQUIRED_PROPS = [
   'name',
   'handle'
 ]
-const UPDATE_USER_PROPS = Object.freeze({
+// Constants for user metadata fields
+const USER_PROP_NAME_CONSTANTS = Object.freeze({
   NAME: 'name',
   IS_CREATOR: 'is_creator',
   BIO: 'bio',
@@ -420,10 +425,7 @@ class Users extends Base {
     newMetadata.is_creator = true
 
     let updateEndpointTxBlockNumber = null
-    if (oldMetadata.creator_node_endpoint) {
-      // Update the newMetadata with the existing creator_node_endpoint field from oldMetadata
-      newMetadata.creator_node_endpoint = oldMetadata.creator_node_endpoint
-    } else {
+    if (!oldMetadata.creator_node_endpoint) {
       // If there is no creator_node_endpoint field, update the field with newCreatorNodeEndpoint.
       // This is because new users on signup will now be assigned an rset and do not need to
       // be assigned a new one via newCreatorNodeEndpoint.
@@ -567,31 +569,6 @@ class Users extends Base {
     }
   }
 
-  /**
-  * Compares the original user state to an updated state. Determines the fields to include or exclude
-  * in the metadata update on chain.
-  * @param {Object} newMetadata fields to update in the current user state
-  */
-  _getMetadataFieldsToUpdate (newMetadata) {
-    const originalMetadata = this.userStateManager.getCurrentUser()
-    const updatedMetadata = { ...originalMetadata, ...newMetadata }
-
-    let metadataFields = {
-      include: [],
-      exclude: []
-    }
-
-    Object.values(UPDATE_USER_PROPS).forEach(prop => {
-      if (updatedMetadata[prop] === originalMetadata[prop]) {
-        metadataFields.exclude.push(prop)
-      } else {
-        metadataFields.include.push(prop)
-      }
-    })
-
-    return metadataFields
-  }
-
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
   async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
     let isUpdated = false
@@ -609,32 +586,32 @@ class Users extends Base {
     let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
 
-    if (metadata[UPDATE_USER_PROPS.NAME]) {
-      addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[UPDATE_USER_PROPS.NAME]))
+    if (metadata[USER_PROP_NAME_CONSTANTS.NAME]) {
+      addOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[USER_PROP_NAME_CONSTANTS.NAME]))
     }
-    if (metadata[UPDATE_USER_PROPS.LOCATION]) {
-      addOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[UPDATE_USER_PROPS.LOCATION]))
+    if (metadata[USER_PROP_NAME_CONSTANTS.LOCATION]) {
+      addOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[USER_PROP_NAME_CONSTANTS.LOCATION]))
     }
-    if (metadata[UPDATE_USER_PROPS.BIO]) {
-      addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[UPDATE_USER_PROPS.BIO]))
+    if (metadata[USER_PROP_NAME_CONSTANTS.BIO]) {
+      addOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[USER_PROP_NAME_CONSTANTS.BIO]))
     }
-    if (metadata[UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES]) {
+    if (metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]) {
       addOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
         userId,
-        Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES]).digest
+        Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]).digest
       ))
     }
-    if (metadata[UPDATE_USER_PROPS.COVER_PHOTO_SIZES]) {
+    if (metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]) {
       addOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
         userId,
-        Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.COVER_PHOTO_SIZES]).digest
+        Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]).digest
       ))
     }
-    if (metadata[UPDATE_USER_PROPS.IS_CREATOR]) {
-      addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[UPDATE_USER_PROPS.IS_CREATOR]))
+    if (metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]) {
+      addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]))
     }
-    if (metadata[UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT]) {
-      addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT]))
+    if (metadata[USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT]) {
+      addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT]))
     }
 
     // Execute update promises concurrently
@@ -654,32 +631,32 @@ class Users extends Base {
     // perform update operations
     for (const key in metadata) {
       if (metadata.hasOwnProperty(key) && currentMetadata.hasOwnProperty(key) && metadata[key] !== currentMetadata[key]) {
-        if (key === UPDATE_USER_PROPS.NAME) {
-          updateOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[UPDATE_USER_PROPS.NAME]))
+        if (key === USER_PROP_NAME_CONSTANTS.NAME) {
+          updateOps.push(this.contracts.UserFactoryClient.updateName(userId, metadata[USER_PROP_NAME_CONSTANTS.NAME]))
         }
-        if (key === UPDATE_USER_PROPS.IS_CREATOR) {
-          updateOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[UPDATE_USER_PROPS.IS_CREATOR]))
+        if (key === USER_PROP_NAME_CONSTANTS.IS_CREATOR) {
+          updateOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]))
         }
-        if (key === UPDATE_USER_PROPS.BIO) {
-          updateOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[UPDATE_USER_PROPS.BIO]))
+        if (key === USER_PROP_NAME_CONSTANTS.BIO) {
+          updateOps.push(this.contracts.UserFactoryClient.updateBio(userId, metadata[USER_PROP_NAME_CONSTANTS.BIO]))
         }
-        if (key === UPDATE_USER_PROPS.LOCATION) {
-          updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[UPDATE_USER_PROPS.LOCATION]))
+        if (key === USER_PROP_NAME_CONSTANTS.LOCATION) {
+          updateOps.push(this.contracts.UserFactoryClient.updateLocation(userId, metadata[USER_PROP_NAME_CONSTANTS.LOCATION]))
         }
-        if (key === UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES) {
+        if (key === USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES) {
           updateOps.push(this.contracts.UserFactoryClient.updateProfilePhoto(
             userId,
-            Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.PROFILE_PICTURE_SIZES]).digest
+            Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.PROFILE_PICTURE_SIZES]).digest
           ))
         }
-        if (key === UPDATE_USER_PROPS.COVER_PHOTO_SIZES) {
+        if (key === USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES) {
           updateOps.push(this.contracts.UserFactoryClient.updateCoverPhoto(
             userId,
-            Utils.decodeMultihash(metadata[UPDATE_USER_PROPS.COVER_PHOTO_SIZES]).digest
+            Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]).digest
           ))
         }
-        if (key === UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT) {
-          updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[UPDATE_USER_PROPS.CREATOR_NODE_ENDPOINT]))
+        if (key === USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT) {
+          updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT]))
         }
       }
     }
@@ -694,6 +671,7 @@ class Users extends Base {
     this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
   }
 
+  // Metadata object may have extra fields. Only keep core fields in USER_PROPS and 'user_id'.
   _cleanUserMetadata (metadata) {
     return pick(metadata, USER_PROPS.concat('user_id'))
   }

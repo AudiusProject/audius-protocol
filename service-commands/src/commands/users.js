@@ -11,9 +11,12 @@ User.addUser = async (libsWrapper, metadata) => {
   return userId
 }
 
-// TODO: we shouldn't need to upload the photo prior to signup as this is not
-// representative of our actual flow. But since the third party libs gets confused
-// uploading a photo via code, have to do this work around.
+/**
+ * TODO: The third party libraries we use in libs gets buggy when we try to upload photos
+ * programically via libs. We should be uploading a photo via signUp() instead of explicitly
+ * uploading photos after signup and reassociating the updated metadata. This is the
+ * workaround for this issue.
+ */
 User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePath) => {
   // Sign user up
   const userId = await User.addUser(libsWrapper, metadata)
@@ -37,8 +40,8 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   return userId
 }
 
-User.upgradeToCreator = async (libsWrapper) => {
-  await libsWrapper.upgradeToCreator(config.get('user_node'))
+User.upgradeToCreator = async (libsWrapper, newEndpoint) => {
+  await libsWrapper.upgradeToCreator(config.get('user_node'), newEndpoint)
 }
 
 User.autoSelectCreatorNodes = async (
