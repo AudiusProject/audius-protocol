@@ -1,25 +1,24 @@
 import logging
 from datetime import datetime
-from src import contract_addresses, eth_abi_values
 from sqlalchemy.orm.session import make_transient
+from src import contract_addresses, eth_abi_values
 from src.models import L2ContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
 from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, \
         user_replica_set_manager_event_types_lookup
-from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_pickled_key, \
-        get_sp_id_key
+from src.utils.redis_cache import get_pickled_key, get_sp_id_key
 
 logger = logging.getLogger(__name__)
 
 def user_replica_set_state_update(
-    self,
-    update_task,
-    session,
-    user_replica_set_mgr_txs,
-    block_number,
-    block_timestamp,
-    redis
+        self,
+        update_task,
+        session,
+        user_replica_set_mgr_txs,
+        block_number,
+        block_timestamp,
+        redis
 ):
     """Return int representing number of User model state changes found in transaction."""
 
@@ -66,7 +65,14 @@ def user_replica_set_state_update(
 
                 # def lookup_poa_cnode_record(self, update_task, session, entry, block_number, block_timestamp):
                 if cnode_id and (cnode_id not in cnode_events_lookup):
-                    ret_cnode = lookup_poa_cnode_record(self, update_task, session, entry, block_number, block_timestamp)
+                    ret_cnode = lookup_poa_cnode_record(
+                        self,
+                        update_task,
+                        session,
+                        entry,
+                        block_number,
+                        block_timestamp
+                    )
                     cnode_events_lookup[cnode_id] = {"content_node": ret_cnode, "events": []}
 
                 # Add or update the value of the user record for this block in user_replica_set_events_lookup,
@@ -88,7 +94,7 @@ def user_replica_set_state_update(
                         secondaries,
                         redis
                     )
-                    user_record.creator_node_endpoint = creator_node_endpoint_str 
+                    user_record.creator_node_endpoint = creator_node_endpoint_str
                     user_replica_set_events_lookup[user_id]["user"] = user_record
                     user_replica_set_events_lookup[user_id]["events"].append(event_type)
                 # Process L2 Content Node operations
@@ -121,15 +127,15 @@ def user_replica_set_state_update(
 
 # Reconstruct endpoint string from primary and secondary IDs
 # Note that this is BEST EFFORT and may fail, however unlikely
-# In the case of failure where a given user has valid primary/secondaries but no 
-# endpoint string, a client must fetch the endpoint associated with ID 
+# In the case of failure where a given user has valid primary/secondaries but no
+# endpoint string, a client must fetch the endpoint associated with ID
 # Indexing CANNOT block on this endpoint string optimization.
 def get_endpoint_string_from_sp_ids(
-    self,
-    update_task,
-    primary,
-    secondaries,
-    redis
+        self,
+        update_task,
+        primary,
+        secondaries,
+        redis
 ):
     sp_factory_inst = None
     endpoint_string = None
@@ -165,7 +171,9 @@ def get_endpoint_string_from_sp_ids(
                 logger.info(f"user_replica_set.py | CACHE HIT FOR {secondary_cache_key}, found {secondary_info_cached}")
 
             if not secondary_endpoint:
-                logger.info(f"user_replica_set.py | CACHE MISS FOR {secondary_cache_key}, found {secondary_info_cached}")
+                logger.info(
+                    f"user_replica_set.py | CACHE MISS FOR {secondary_cache_key}, found {secondary_info_cached}"
+                )
                 if sp_factory_inst is None:
                     sp_factory_inst = get_sp_factory_inst(self, update_task)
                 secondary_info = sp_factory_inst.functions.getServiceEndpointInfo(

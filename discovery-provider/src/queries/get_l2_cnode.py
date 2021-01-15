@@ -1,4 +1,3 @@
-from src import exceptions
 from src.models import L2ContentNode
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
