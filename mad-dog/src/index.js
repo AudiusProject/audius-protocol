@@ -4,10 +4,9 @@ const { _ } = require('lodash')
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
 const {
-  consistency1,
+  coreIntegration,
   snapbackSMParallelSyncTest,
-  IpldBlacklistTest,
-  replicaSetTest
+  IpldBlacklistTest
 } = require('./tests/tests')
 
 // Configuration.
@@ -130,7 +129,7 @@ async function main () {
       break
     }
     case 'test': {
-      const test = makeTest('consistency', consistency1, {
+      const test = makeTest('consistency', coreIntegration, {
         numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
         numUsers: DEFAULT_NUM_USERS
       })
@@ -150,7 +149,7 @@ async function main () {
       break
     }
     case 'test-ci': {
-      const test = makeTest('consistency:ci', consistency1, {
+      const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
         numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
         numUsers: DEFAULT_NUM_USERS
       })
@@ -165,16 +164,7 @@ async function main () {
           })
       )
 
-      const signUpReplicaSetTest = makeTest(
-        'signUpReplicaSetTest',
-        replicaSetTest.assignReplicaSetAndSyncOnSignUp,
-        {
-          numCreatorNodes: 3,
-          numUsers: 1
-        }
-      )
-
-      const tests = [test, ...blacklistTests, signUpReplicaSetTest]
+      const tests = [coreIntegrationTests, ...blacklistTests]
 
       try {
         await testRunner(tests)

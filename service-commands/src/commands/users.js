@@ -25,19 +25,51 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   await waitForIndexing()
   metadata = await User.getUser(libsWrapper, userId)
 
-  // Upload images to that primary (will inherently sync)
-  const userPicFile = fs.createReadStream(userPicturePath)
+  // Upload photo for profile picture
+  await User.uploadPhotoAndUpdateMetadata({
+    metadata,
+    libsWrapper,
+    userId,
+    picturePath: userPicturePath
+  })
+
+  return userId
+}
+
+/**
+ * Upload photo for cover photo and profile picture and update the metadata object
+ * @param {Object} param
+ * @param {Object} param.metadata original metadata object
+ * @param {Object} param.libsWrapper libs wrapper in ServiceCommands
+ * @param {number} param.userId
+ * @param {string} param.picturePath path of picture to upload
+ * @param {boolean} param.[updateCoverPhoto=true] flag to update cover_photo_sizes hash
+ * @param {boolean} param.[updateProfilePicture=true] flag to update profile_picture_sizes hash
+ */
+User.uploadPhotoAndUpdateMetadata = async ({
+  metadata,
+  libsWrapper,
+  userId,
+  picturePath,
+  updateCoverPhoto = true,
+  updateProfilePicture = true
+}) => {
+  const userPicFile = fs.createReadStream(picturePath)
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
     'true' // square, this weirdly has to be a boolean string
   )
-  metadata.profile_picture_sizes = resp.dirCID
-  metadata.cover_photo_sizes = resp.dirCID
+  if (updateProfilePicture) metadata.profile_picture_sizes = resp.dirCID
+  if (updateCoverPhoto) metadata.cover_photo_sizes = resp.dirCID
 
   // Update metadata on content node + chain
-  libsWrapper.updateAndUploadMetadata({ newMetadata: metadata, userId })
+  await libsWrapper.updateAndUploadMetadata({ newMetadata: metadata, userId })
 
-  return userId
+  return metadata
+}
+
+User.updateAndUploadMetadata = async (libsWrapper, { newMetadata, userId }) => {
+  await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
 }
 
 User.upgradeToCreator = async (libsWrapper, newEndpoint) => {
@@ -59,6 +91,10 @@ User.autoSelectCreatorNodes = async (
 
 User.getUser = async (libs, userId) => {
   return libs.getUser(userId)
+}
+
+User.getUsers = async (libs, userIds) => {
+  return libs.getUsers(userIds)
 }
 
 User.getUserAccount = async (libs, wallet) => {

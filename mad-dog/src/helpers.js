@@ -46,7 +46,7 @@ const addAndUpgradeUsers = async (
   const walletIndexToUserIdMap = {}
 
   await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
-  await _upgradeUsersToCreator(executeAll, executeOne)
+  await upgradeUsersToCreators(executeAll, executeOne)
 
   // Map out walletId index => userId
   return walletIndexToUserIdMap
@@ -149,7 +149,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
  * @param {*} executeOne
  * @param {int} numCreatorNodes
  */
-async function _upgradeUsersToCreator (executeAll, executeOne) {
+async function upgradeUsersToCreators (executeAll, executeOne) {
   await logOps('Upgrade to creator', async () => {
     try {
       await executeAll(async (libs, i) => {
@@ -160,9 +160,9 @@ async function _upgradeUsersToCreator (executeAll, executeOne) {
           logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
           return
         }
-        // Upgrade to creator with replica set
+        // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
         await executeOne(i, l => upgradeToCreator(l, ''))
-        logger.info(`Finished upgrading creator wallet index ${i}`)
+        logger.info(`Finished upgrading creator for user ${existingUser.user_id}`)
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
@@ -352,5 +352,7 @@ module.exports = {
   delay,
   waitForIndexing,
   makeExecuteAll,
-  makeExecuteOne
+  makeExecuteOne,
+  r6,
+  upgradeUsersToCreators
 }

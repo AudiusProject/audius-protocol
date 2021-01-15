@@ -249,6 +249,23 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
+   * Fetch users metadata from discovery node given array of userIds
+   * @param {number[]} userIds int array of user ids
+   */
+  this.getUsers = async userIds => {
+    assertLibsDidInit()
+    const users = await this.libsInstance.User.getUsers(
+      1 /* limit */,
+      0 /* offset */,
+      userIds
+    )
+    if (!users.length || users.length !== userIds.length) {
+      throw new Error('No users or not all users found')
+    }
+    return users
+  }
+
+  /**
    * Fetch user account from /user/account with wallet param
    * @param {string} wallet wallet address
    */
@@ -302,16 +319,28 @@ function LibsWrapper (walletIndex = 0) {
    */
   this.getContentNodeEndpoints = contentNodesEndpointField => {
     assertLibsDidInit()
-    return this.libsInstance.creatorNode.getEndpoints(contentNodesEndpointField)
+    return CreatorNode.getEndpoints(contentNodesEndpointField)
+  }
+
+  this.getPrimary = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getPrimary(contentNodesEndpointField)
+  }
+
+  this.getSecondaries = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getSecondaries(contentNodesEndpointField)
   }
 
   /**
    * Updates the metadata on chain and uploads new metadata instance on content node
-   * @param {*} param0
+   * @param {Object} param
+   * @param {Object} param.newMetadata new metadata object to update in content nodes and on chain
+   * @param {number} param.userId
    */
-  this.updateAndUploadMetadata = ({ newMetadata, userId }) => {
+  this.updateAndUploadMetadata = async ({ newMetadata, userId }) => {
     assertLibsDidInit()
-    return this.libsInstance.User.updateAndUploadMetadata({ newMetadata, userId })
+    return await this.libsInstance.User.updateAndUploadMetadata({ newMetadata, userId })
   }
 
   /**
