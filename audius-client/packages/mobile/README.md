@@ -9,7 +9,7 @@ Pull a the latest dapp from s3:
 
 ```
 # Make sure you have s3 creds set up and the aws cli installed.
-npm run pull-web-app
+npm run copy:remote-production
 ```
 
 Copy environment variables and replace missing values (you will need an FCM sender id as well as a Segment write key)
