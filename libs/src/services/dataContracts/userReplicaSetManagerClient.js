@@ -1,5 +1,6 @@
 const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
+const Web3Manager = require('../web3Manager/index')
 
 class UserReplicaSetManagerClient extends ContractClient {
 
@@ -12,6 +13,60 @@ class UserReplicaSetManagerClient extends ContractClient {
       existingReplicaSetInfo.primary,
       existingReplicaSetInfo.secondaries
     )
+  }
+
+  async addOrUpdateContentNode(
+    cnodeId,
+    cnodeDelegateOwnerWallet,
+    proposerSpIds,
+    proposerNonces,
+    proposer1Sig,
+    proposer2Sig,
+    proposer3Sig
+  ) {
+    const contractAddress = await this.getAddress()
+    const method = await this.getMethod(
+      'addOrUpdateContentNode',
+      cnodeId,
+      cnodeDelegateOwnerWallet,
+      proposerSpIds,
+      proposerNonces,
+      proposer1Sig,
+      proposer2Sig,
+      proposer3Sig
+    )
+    const tx = await this.web3Manager.sendTransaction(
+      method,
+      this.contractRegistryKey,
+      contractAddress
+    )
+    return tx
+  }
+
+  async getProposeAddOrUpdateContentNodeRequestData (
+    cnodeId,
+    cnodeDelegateWallet,
+    proposerSpId,
+    proposerWallet,
+    ethWeb3
+  ) {
+    const chainId = await this.getEthNetId()
+    const contractAddress = await this.getAddress()
+    const nonce = signatureSchemas.getNonce()
+    const signatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
+      chainId,
+      contractAddress,
+      cnodeId,
+      cnodeDelegateWallet,
+      proposerSpId,
+      nonce
+    )
+    let sig = await Web3Manager.ethSignTypedData(ethWeb3, proposerWallet, signatureData)
+    return {
+      nonce,
+      signatureData,
+      sig
+    }
   }
 
   // TODO: Comments throughout
@@ -60,7 +115,8 @@ class UserReplicaSetManagerClient extends ContractClient {
 
   async getContentNodeWallet (spId) {
     const method = await this.getMethod('getContentNodeWallet', spId)
-    return method.call({ from: this.web3Manager.ownerWallet })
+    let currentWallet = this.web3Manager.getWalletAddressString()
+    return method.call({ from: currentWallet })
   }
 }
 

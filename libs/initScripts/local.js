@@ -157,6 +157,7 @@ const run = async () => {
         console.log(`Received secondaryReplicaIds: ${secondaryReplicaIds}`)
         await updateUserReplicaSet(audiusLibs, userId, primaryReplicaId, secondaryReplicaIds)
         break
+
       case 'query-user-replica-set':
         console.log(`Usage: node local.js query-user-replica-set userId=1`)
         let userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
@@ -166,6 +167,22 @@ const run = async () => {
           )
         )
         console.log(userReplicaSet)
+        break
+
+      case 'add-l2-content-node':
+        console.log(`Usage: node local.js add-l2-content-node spId=4 delegateWallet=0x95b6A2Be3423dF7D5774...`)
+        const spIdStr = args[3] 
+        const spID = parseInt(spIdStr.split('=')[1])
+        const delegateWalletStr = args[4] 
+        const delegateWallet = delegateWalletStr.split('=')[1]
+        console.log(`Configuring L2 ${spID} with wallet: ${delegateWallet}`)
+        // Initialize from a different acct than proxy admin
+        let queryLibs = await getUsrmLibs(audiusLibs, 9)
+        await addL2ContentNode(
+          queryLibs,
+          ethAccounts,
+          spID,
+          delegateWallet)
         break
       default:
         throwArgError()
@@ -178,6 +195,102 @@ const run = async () => {
 }
 
 run()
+
+/*
+  Helper function to bootstrap additional local content nodes onto the L2 local network
+  Assumes 3 content nodes are already up prior to execution
+*/
+const addL2ContentNode = async(
+  audiusLibs,
+  ethAccounts,
+  newCnodeId,
+  newCnodeDelegateWallet
+) => {
+  const existingWalletToCnodeIdL2 = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(newCnodeId)
+  const spIdToWalletPresent = (existingWalletToCnodeIdL2 === newCnodeDelegateWallet)
+  if (spIdToWalletPresent) {
+    console.log(`No update required! Found ${existingWalletToCnodeIdL2} for spId=${newCnodeId}, expected ${newCnodeDelegateWallet}`)
+    return
+  }
+  console.log(`addL2ContentNode: ${newCnodeId}, ${newCnodeDelegateWallet}`)
+
+  // cn1, cn2, cn3 are all initialized to the 1,2,3 indexes into local ethAccounts array
+  // NOTE: Proposer Accounts must match the deployed bootstrap addresses on UserReplicaSetManager
+  //  Changing any of the below indices will affect the wallets performing this update and operations will fail
+  const proposer1WalletIndex = 1
+  const proposer2WalletIndex = 2
+  const proposer3WalletIndex = 3
+  // Local service provider IDs assigned by eth-contracts
+  // These values just HAPPEN to coincide with the indices above but are set explicitly to avoid confusion
+  const proposer1SpId = 1
+  const proposer2SpId = 2
+  const proposer3SpId = 3
+  // Retrieve the wallet associated with each index
+  const proposer1Wallet = ethAccounts[parseInt(proposer1WalletIndex)]
+  const proposer2Wallet = ethAccounts[parseInt(proposer2WalletIndex)]
+  const proposer3Wallet = ethAccounts[parseInt(proposer3WalletIndex)]
+  console.log(`proposer1Wallet: ${proposer1Wallet}`)
+  console.log(`proposer2Wallet: ${proposer2Wallet}`)
+  console.log(`proposer3Wallet: ${proposer3Wallet}`)
+
+  // Initialize libs with each incoming proposer
+  const proposer1Libs = await initAudiusLibs(true, null, proposer1Wallet)
+  const proposer1EthAddress = proposer1Libs.ethWeb3Manager.getWalletAddress()
+  const proposer1EthWeb3 = proposer1Libs.ethWeb3Manager.getWeb3()
+  console.log(`Initialized proposer1 libs, proposer1EthAddress: ${proposer1EthAddress}`)
+  let proposer1SignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
+    newCnodeId,
+    newCnodeDelegateWallet,
+    proposer1SpId,
+    proposer1Wallet,
+    proposer1EthWeb3
+  )
+  console.dir(proposer1SignatureInfo, { depth: 5 })
+
+  const proposer2Libs = await initAudiusLibs(true, null, proposer2Wallet)
+  const proposer2EthAddress = proposer2Libs.ethWeb3Manager.getWalletAddress()
+  const proposer2EthWeb3 = proposer2Libs.ethWeb3Manager.getWeb3()
+  console.log(`Initialized proposer2 libs, proposer2EthAddress: ${proposer2EthAddress}`)
+  let proposer2SignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
+    newCnodeId,
+    newCnodeDelegateWallet,
+    proposer2SpId,
+    proposer2Wallet,
+    proposer2EthWeb3
+  )
+  console.dir(proposer2SignatureInfo, { depth: 5 })
+
+  const proposer3Libs = await initAudiusLibs(true, null, proposer3Wallet)
+  const proposer3EthAddress = proposer3Libs.ethWeb3Manager.getWalletAddress()
+  const proposer3EthWeb3 = proposer3Libs.ethWeb3Manager.getWeb3()
+  console.log(`Initialized proposer3 libs, proposer3EthAddress: ${proposer3EthAddress}`)
+  let proposer3SignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
+    newCnodeId,
+    newCnodeDelegateWallet,
+    proposer3SpId,
+    proposer3Wallet,
+    proposer3EthWeb3
+  )
+  console.dir(proposer3SignatureInfo, { depth: 5 })
+
+  // Generate arguments for proposal
+  const proposerSpIds = [proposer1SpId, proposer2SpId, proposer3SpId]
+  const proposerNonces = [
+    proposer1SignatureInfo.nonce,
+    proposer2SignatureInfo.nonce,
+    proposer3SignatureInfo.nonce
+  ]
+
+  await audiusLibs.contracts.UserReplicaSetManagerClient.addOrUpdateContentNode(
+    newCnodeId,
+    newCnodeDelegateWallet,
+    proposerSpIds,
+    proposerNonces,
+    proposer1SignatureInfo.sig,
+    proposer2SignatureInfo.sig,
+    proposer3SignatureInfo.sig
+  )
+}
 
 // In order to issue operations we need a libs account initialized from a different address than
 // the 0th account on local data-contracts

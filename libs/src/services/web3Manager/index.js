@@ -23,6 +23,35 @@ class Web3Manager {
     this.AudiusABIDecoder = AudiusABIDecoder
   }
 
+
+  /** Browser and testing-compatible signTypedData */
+  static ethSignTypedData (web3, wallet, signatureData) {
+    return new Promise((resolve, reject) => {
+      let method
+      if (web3.currentProvider.isMetaMask === true) {
+        method = 'eth_signTypedData_v3'
+        signatureData = JSON.stringify(signatureData)
+      } else {
+        method = 'eth_signTypedData'
+        // fix per https://github.com/ethereum/web3.js/issues/1119
+      }
+
+      web3.currentProvider.send({
+        method: method,
+        params: [wallet, signatureData],
+        from: wallet
+      }, (err, result) => {
+        if (err) {
+          reject(err)
+        } else if (result.error) {
+          reject(result.error)
+        } else {
+          resolve(result.result)
+        }
+      })
+    })
+  }
+
   async init () {
     const web3Config = this.web3Config
     if (!web3Config) throw new Error('Failed to initialize Web3Manager')
@@ -125,7 +154,7 @@ class Web3Manager {
 
   async signTypedData (signatureData) {
     if (this.useExternalWeb3) {
-      return ethSignTypedData(this.getWeb3(), this.getWalletAddress(), signatureData)
+      return this.ethSignTypedData(this.getWeb3(), this.getWalletAddress(), signatureData)
     } else {
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
@@ -133,7 +162,6 @@ class Web3Manager {
       )
     }
   }
-
 
   getWalletAddressString() {
     if (this.useExternalWeb3) {
@@ -238,33 +266,6 @@ class Web3Manager {
 
 module.exports = Web3Manager
 
-/** Browser and testing-compatible signTypedData */
-const ethSignTypedData = (web3, wallet, signatureData) => {
-  return new Promise((resolve, reject) => {
-    let method
-    if (web3.currentProvider.isMetaMask === true) {
-      method = 'eth_signTypedData_v3'
-      signatureData = JSON.stringify(signatureData)
-    } else {
-      method = 'eth_signTypedData'
-      // fix per https://github.com/ethereum/web3.js/issues/1119
-    }
-
-    web3.currentProvider.send({
-      method: method,
-      params: [wallet, signatureData],
-      from: wallet
-    }, (err, result) => {
-      if (err) {
-        reject(err)
-      } else if (result.error) {
-        reject(result.error)
-      } else {
-        resolve(result.result)
-      }
-    })
-  })
-}
 
 function override (object, methodName, callback) {
   object[methodName] = callback(object[methodName])
