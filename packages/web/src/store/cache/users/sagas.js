@@ -16,7 +16,7 @@ import { retrieve } from 'store/cache/sagas'
 import { DefaultSizes } from 'models/common/ImageSizes'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getAccountUser, getUserId } from 'store/account/selectors'
-import { reformat } from './utils'
+import { pruneBlobValues, reformat } from './utils'
 import {
   getAudiusAccountUser,
   setAudiusAccountUser
@@ -143,9 +143,15 @@ function* watchSyncLocalStorageUser() {
       action.entries[0].id === currentId
     ) {
       const addedUser = action.entries[0].metadata
+      // Get existing locally stored user
       const existing = getAudiusAccountUser()
+      // Merge with the new metadata
       const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
-      setAudiusAccountUser(merged)
+      // Remove blob urls if any
+      // Blob urls only last for the session so we don't want to store those
+      const cleaned = pruneBlobValues(merged)
+      // Set user back to local storage
+      setAudiusAccountUser(cleaned)
     }
   }
   yield takeEvery(cacheActions.ADD_SUCCEEDED, syncLocalStorageUser)
