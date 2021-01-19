@@ -119,13 +119,9 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           userId = newUserId
         }
 
-        // TODO: test to see if this is necessary
         // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
         await waitForIndexing()
-        const userWalletAddress = getLibsWalletAddress(libs)
-        const userAccount = await getUserAccount(libs, userWalletAddress)
-        setCurrentUserAndUpdateLibs(libs, userAccount)
 
         // add to wallet index to userId mapping
         walletIndexToUserIdMap[i] = userId
@@ -133,7 +129,6 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         // print userIds that exist and were added
         logger.info(`Added users, userIds=${addedUserIds}`)
         logger.info(`Existing users, userIds=${existingUserIds}`)
-        await waitForIndexing()
       } catch (e) {
         logger.error('GOT ERR CREATING USER')
         logger.error(e.message)
