@@ -322,7 +322,7 @@ const waitForIndexing = async (waitTime = 5000) => {
   await delay(waitTime)
 }
 
-const waitForSync = async (waitTime = 12000) => {
+const waitForSync = async (waitTime = 20000) => {
   logger.info(`Pausing ${waitTime}ms for sync to occur...`)
   await delay(waitTime)
 }

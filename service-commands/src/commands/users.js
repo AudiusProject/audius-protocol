@@ -54,18 +54,19 @@ User.uploadPhotoAndUpdateMetadata = async ({
   updateCoverPhoto = true,
   updateProfilePicture = true
 }) => {
+  const newMetadata = { ...metadata }
   const userPicFile = fs.createReadStream(picturePath)
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
     'true' // square, this weirdly has to be a boolean string
   )
-  if (updateProfilePicture) metadata.profile_picture_sizes = resp.dirCID
-  if (updateCoverPhoto) metadata.cover_photo_sizes = resp.dirCID
+  if (updateProfilePicture) newMetadata.profile_picture_sizes = resp.dirCID
+  if (updateCoverPhoto) newMetadata.cover_photo_sizes = resp.dirCID
 
   // Update metadata on content node + chain
-  await libsWrapper.updateAndUploadMetadata({ newMetadata: metadata, userId })
+  await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
 
-  return metadata
+  return newMetadata
 }
 
 User.updateAndUploadMetadata = async (libsWrapper, { newMetadata, userId }) => {
