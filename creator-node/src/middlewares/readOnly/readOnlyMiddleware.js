@@ -26,7 +26,7 @@ function readOnlyMiddlewareHelper (isReadOnlyMode, method, url) {
     return true
   }
 
-  if (isReadOnlyMode && method !== 'GET') {
+  if (isReadOnlyMode && method !== 'GET' && method !== 'HEAD') {
     return false
   }
 
