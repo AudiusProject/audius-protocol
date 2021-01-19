@@ -313,7 +313,7 @@ class Users extends Base {
       userId = (await this.contracts.UserFactoryClient.addUser(newMetadata.handle)).userId
     }
     await this._addUserOperations(userId, newMetadata)
-    
+
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
 
