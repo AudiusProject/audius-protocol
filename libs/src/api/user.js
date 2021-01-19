@@ -305,8 +305,6 @@ class Users extends Base {
     const newMetadata = this._cleanUserMetadata(metadata)
     this._validateUserMetadata(newMetadata)
 
-    newMetadata.wallet = this.web3Manager.getWalletAddress()
-
     let userId
     const currentUser = this.userStateManager.getCurrentUser()
     if (currentUser && currentUser.handle) {
@@ -315,6 +313,9 @@ class Users extends Base {
       userId = (await this.contracts.UserFactoryClient.addUser(newMetadata.handle)).userId
     }
     await this._addUserOperations(userId, newMetadata)
+    
+    newMetadata.wallet = this.web3Manager.getWalletAddress()
+    newMetadata.user_id = userId
 
     this.userStateManager.setCurrentUser({ ...newMetadata })
     return userId
@@ -425,10 +426,17 @@ class Users extends Base {
     newMetadata.is_creator = true
 
     let updateEndpointTxBlockNumber = null
-    if (!oldMetadata.creator_node_endpoint) {
-      // If there is no creator_node_endpoint field, update the field with newCreatorNodeEndpoint.
-      // This is because new users on signup will now be assigned an rset and do not need to
-      // be assigned a new one via newCreatorNodeEndpoint.
+
+    /**
+     * If there is no creator_node_endpoint field or if newCreatorNodeEndpoint is not the same as the existing
+     * metadata creator_node_endpoint field value, update the field with newCreatorNodeEndpoint.
+     * This is because new users on signup will now be assigned a replica set, and do not need to
+     * be assigned a new one via newCreatorNodeEndpoint.
+     */
+    if (
+      !oldMetadata.creator_node_endpoint ||
+      oldMetadata.creator_node_endpoint !== newCreatorNodeEndpoint
+    ) {
       newMetadata.creator_node_endpoint = newCreatorNodeEndpoint
       const newPrimary = CreatorNode.getPrimary(newCreatorNodeEndpoint)
 
