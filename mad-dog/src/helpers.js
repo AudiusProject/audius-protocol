@@ -156,7 +156,7 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
           return
         }
         // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
-        await executeOne(i, l => upgradeToCreator(l, ''))
+        await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
         logger.info(`Finished upgrading creator for user ${existingUser.user_id}`)
       })
     } catch (e) {
@@ -322,7 +322,7 @@ const waitForIndexing = async (waitTime = 5000) => {
   await delay(waitTime)
 }
 
-const waitForSync = async (waitTime = 10000) => {
+const waitForSync = async (waitTime = 12000) => {
   logger.info(`Pausing ${waitTime}ms for sync to occur...`)
   await delay(waitTime)
 }

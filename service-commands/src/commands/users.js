@@ -73,7 +73,10 @@ User.updateAndUploadMetadata = async (libsWrapper, { newMetadata, userId }) => {
 }
 
 User.upgradeToCreator = async (libsWrapper, newEndpoint) => {
-  await libsWrapper.upgradeToCreator(config.get('user_node'), newEndpoint)
+  await libsWrapper.upgradeToCreator({
+    userNode: config.get('user_node'),
+    endpoint: newEndpoint
+  })
 }
 
 User.autoSelectCreatorNodes = async (

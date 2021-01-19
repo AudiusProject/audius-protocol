@@ -265,7 +265,6 @@ module.exports = coreIntegration = async ({
       }
     }
 
-    // make this if case stronger -- like query cn1-3 to make sure that data is there
     if (!user.creator_node_endpoint) {
       return {
         error: `User ${user.user_id} should have kept their replica set.`
