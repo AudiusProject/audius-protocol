@@ -20,6 +20,61 @@ jobs:
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+      
+      # Download and cache dependencies
+
+      # libs
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "libs/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
+      - run: |
+          cd libs
+          npm install
+      - save_cache:
+          paths:
+            - libs/node_modules
+          key: v1-dependencies-{{ checksum "libs/package.json" }}
+
+      # data contracts
+      - restore_cache:
+          keys:
+          - data-contracts-{{ checksum "contracts/package.json" }}
+          - data-contracts-
+      - run:
+          name: contract repo init
+          command: |
+            cd contracts/
+            npm install
+      - save_cache:
+          paths:
+            - contracts/node_modules
+          key: data-contracts-{{ checksum "contracts/package.json" }}
+
+      # eth contracts
+      - restore_cache:
+          keys:
+          - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+          - eth-contracts-
+      - run:
+          name: eth-contracts repo init
+          command: |
+            cd eth-contracts/
+            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+            npm install
+      - save_cache:
+          paths:
+            - eth-contracts/node_modules
+          key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
+
+      # content node
+
+      # discovery node
+
+      # identity 
+
       - run:
           name: execute
           command: |
