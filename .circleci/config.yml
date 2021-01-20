@@ -78,10 +78,38 @@ jobs:
           key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
 
       # content node
+      - restore_cache:
+          name: Restore identity-service cache
+          keys:
+          - identity-service-{{ checksum "creator-node/package.json" }}
+          - identity-service-
+      - run:
+          name: identity-service repo init
+          command: |
+            cd identity-service/
+            npm install
+      - save_cache:
+          name: Save identity-service cache
+          paths:
+            - identity-service/node_modules
+          key: identity-service-{{ checksum "creator-node/package.json" }}
 
-      # discovery node
-
-      # identity 
+      # identity
+      - restore_cache:
+          name: Restore identity-service cache
+          keys:
+          - identity-service-{{ checksum "identity-service/package.json" }}
+          - identity-service-
+      - run:
+          name: identity-service repo init
+          command: |
+            cd identity-service/
+            npm install
+      - save_cache:
+          name: Save identity-service cache
+          paths:
+            - identity-service/node_modules
+          key: identity-service-{{ checksum "identity-service/package.json" }} 
 
       # test -- restore cache above only eth/data contracts + libs. still `npm i` on other repos
       - run:
@@ -93,7 +121,6 @@ jobs:
             nvm install v10.16
             nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
-            sh init-specific-repos.sh
             cd /home/circleci/project/libs/
             npm link
             cd /home/circleci/project/service-commands/
