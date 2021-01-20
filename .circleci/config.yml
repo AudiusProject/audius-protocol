@@ -142,6 +142,7 @@ jobs:
           name: execute
           command: |
             set -e
+            nvm use 10.16
             export PROTOCOL_DIR=/home/circleci/project
             cd /home/circleci/project/libs/
             npm link
