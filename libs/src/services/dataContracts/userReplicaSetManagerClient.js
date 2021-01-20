@@ -3,17 +3,16 @@ const signatureSchemas = require('../../../data-contracts/signatureSchemas')
 const Web3Manager = require('../web3Manager/index')
 
 class UserReplicaSetManagerClient extends ContractClient {
-
   /**
-   * Update a user's replica set on the UserReplicaSetManager contract 
-   * Callable by user wallet, or any node within the user's replica set 
+   * Update a user's replica set on the UserReplicaSetManager contract
+   * Callable by user wallet, or any node within the user's replica set
    * @param {number} userId
    * @param {number} primary
    * @param {Array<number>} secondaries
    */
-  async updateReplicaSet(userId, primary, secondaries) {
+  async updateReplicaSet (userId, primary, secondaries) {
     let existingReplicaSetInfo = await this.getUserReplicaSet(userId)
-    return await this._updateReplicaSet(
+    return this._updateReplicaSet(
       userId,
       primary,
       secondaries,
@@ -33,7 +32,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    * @param {string} proposer2Sig
    * @param {string} proposer3Sig
    */
-  async addOrUpdateContentNode(
+  async addOrUpdateContentNode (
     cnodeId,
     cnodeDelegateOwnerWallet,
     proposerSpIds,

@@ -88,7 +88,7 @@ class ServiceProvider extends Base {
     })
 
     const { primary, secondaries, services } = await creatorNodeSelection.select()
-    return { primary, secondaries, service }
+    return { primary, secondaries, services }
   }
 
   /* ------- DISCOVERY PROVIDER ------ */

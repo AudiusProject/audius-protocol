@@ -2,9 +2,8 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
-
 let contentNodeEndpointToSpID = { }
-function getSpIDFromEndpoint(endpoint) {
+function getSpIDFromEndpoint (endpoint) {
   return contentNodeEndpointToSpID[endpoint]
 }
 

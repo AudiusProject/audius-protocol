@@ -23,7 +23,6 @@ class Web3Manager {
     this.AudiusABIDecoder = AudiusABIDecoder
   }
 
-
   /** Browser and testing-compatible signTypedData */
   static ethSignTypedData (web3, wallet, signatureData) {
     return new Promise((resolve, reject) => {
@@ -167,7 +166,7 @@ class Web3Manager {
     }
   }
 
-  getWalletAddressString() {
+  getWalletAddressString () {
     if (this.useExternalWeb3) {
       return this.ownerWallet
     } else {
@@ -269,7 +268,6 @@ class Web3Manager {
 }
 
 module.exports = Web3Manager
-
 
 function override (object, methodName, callback) {
   object[methodName] = callback(object[methodName])

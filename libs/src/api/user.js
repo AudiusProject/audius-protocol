@@ -4,7 +4,6 @@ const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
 const { getSpIDFromEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
 
-
 const USER_PROPS = [
   'is_creator',
   'is_verified',
@@ -575,7 +574,7 @@ class Users extends Base {
     return pick(metadata, USER_PROPS.concat('user_id'))
   }
 
-  async _updateReplicaSet(userId, metadata) {
+  async _updateReplicaSet (userId, metadata) {
     let primaryEndpoint = CreatorNode.getPrimary(metadata['creator_node_endpoint'])
     let secondaries = CreatorNode.getSecondaries(metadata['creator_node_endpoint'])
     let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)

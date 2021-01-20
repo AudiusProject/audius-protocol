@@ -171,9 +171,9 @@ const run = async () => {
 
       case 'add-l2-content-node':
         console.log(`Usage: node local.js add-l2-content-node spId=4 delegateWallet=0x95b6A2Be3423dF7D5774...`)
-        const spIdStr = args[3] 
+        const spIdStr = args[3]
         const spID = parseInt(spIdStr.split('=')[1])
-        const delegateWalletStr = args[4] 
+        const delegateWalletStr = args[4]
         const delegateWallet = delegateWalletStr.split('=')[1]
         console.log(`Configuring L2 ${spID} with wallet: ${delegateWallet}`)
         // Initialize from a different acct than proxy admin
@@ -200,7 +200,7 @@ run()
   Helper function to bootstrap additional local content nodes onto the L2 local network
   Assumes 3 content nodes are already up prior to execution
 */
-const addL2ContentNode = async(
+const addL2ContentNode = async (
   audiusLibs,
   ethAccounts,
   newCnodeId,
