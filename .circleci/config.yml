@@ -79,20 +79,20 @@ jobs:
 
       # content node
       - restore_cache:
-          name: Restore identity-service cache
+          name: Restore content-node cache
           keys:
-          - identity-service-{{ checksum "creator-node/package.json" }}
-          - identity-service-
+          - content-node-{{ checksum "creator-node/package.json" }}
+          - content-node-
       - run:
-          name: identity-service repo init
+          name: content-node repo init
           command: |
-            cd identity-service/
+            cd content-node/
             npm install
       - save_cache:
-          name: Save identity-service cache
+          name: Save content-node cache
           paths:
-            - identity-service/node_modules
-          key: identity-service-{{ checksum "creator-node/package.json" }}
+            - content-node/node_modules
+          key: content-node-{{ checksum "creator-node/package.json" }}
 
       # identity
       - restore_cache:
