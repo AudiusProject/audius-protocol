@@ -86,12 +86,12 @@ jobs:
       - run:
           name: content-node repo init
           command: |
-            cd content-node/
+            cd creator-node/
             npm install
       - save_cache:
           name: Save content-node cache
           paths:
-            - content-node/node_modules
+            - creator-node/node_modules
           key: content-node-{{ checksum "creator-node/package.json" }}
 
       # identity
