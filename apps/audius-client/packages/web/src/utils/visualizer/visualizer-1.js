@@ -7,6 +7,7 @@ import * as fragmentShader from '!raw-loader!glslify-loader!./shaders/visualizer
 import createLine from './gl-line-3d'
 import vignette from './gl-vignette-background'
 import GLAudioAnalyser from 'utils/visualizer/GLAudioAnalyser'
+import { webglSupported } from 'containers/visualizer/utils'
 
 const createOrbit = require('orbit-controls')
 const createCamera = require('perspective-camera')
@@ -26,7 +27,10 @@ let settings = {
   useHue: true
 }
 
+const webglExists = webglSupported()
+
 let Visualizer1 = (function () {
+  if (!webglExists) return null
   const steps = 200
   const segments = 100
   const radius = 0.1

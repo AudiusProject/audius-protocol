@@ -23,6 +23,7 @@ import Track from 'models/Track'
 import { SquareSizes } from 'models/common/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import AudioStream from 'audio/AudioStream'
+import { webglSupported } from './utils'
 
 type VisualizerProps = {
   visualizerVisible: boolean
@@ -32,7 +33,6 @@ type VisualizerProps = {
 type VisualizerState = {
   trackId: ID | null
   trackSegment: any
-  showDisabledToast: boolean
   toastText: string
 }
 
@@ -47,12 +47,13 @@ const Artwork = ({ track }: { track?: Track | null }) => {
   return <DynamicImage wrapperClassName={styles.artwork} image={image} />
 }
 
+const webGLExists = webglSupported()
+
 class Visualizer extends Component<VisualizerProps, VisualizerState> {
   state = {
     trackId: null,
     trackSegment: null,
-    showDisabledToast: true,
-    toastText: ''
+    toastText: '',
   }
 
   messages = (browser: string) => ({
@@ -60,23 +61,24 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
   })
 
   updateVisibility () {
+    if (!webGLExists) return
     const { audio, playing, theme, recordOpen, recordClose } = this.props
 
     // Set visibility for the visualizer
     if (this.props.visualizerVisible) {
-      if (!Visualizer1.isShowing()) {
+      if (!Visualizer1?.isShowing()) {
         const darkMode = shouldShowDark(theme)
-        Visualizer1.show(darkMode)
+        Visualizer1?.show(darkMode)
         recordOpen()
       }
     } else {
-      if (Visualizer1.isShowing()) {
-        Visualizer1.hide()
+      if (Visualizer1?.isShowing()) {
+        Visualizer1?.hide()
         recordClose()
       }
     }
     // Rebind audio
-    if ((audio as AudioStream).audioCtx && playing) Visualizer1.bind(audio)
+    if ((audio as AudioStream).audioCtx && playing) Visualizer1?.bind(audio)
   }
 
   componentDidMount() {
@@ -96,7 +98,7 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
   }
 
   componentWillUnmount() {
-    Visualizer1.stop()
+    Visualizer1?.stop()
   }
 
   componentDidUpdate() {
@@ -108,7 +110,9 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
       currentQueueItem: { track, user },
       visualizerVisible
     } = this.props
-    const { showDisabledToast, toastText } = this.state
+    const { toastText } = this.state
+
+    if (!webGLExists) return null
 
     return (
       <div
@@ -138,7 +142,7 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
           mount={MountPlacement.BODY}
           placement={ComponentPlacement.BOTTOM}
           overlayClassName={styles.visualizerDisabled}
-          open={visualizerVisible && showDisabledToast && !!toastText}
+          open={visualizerVisible && !!toastText}
           text={toastText || ''}
         />
       </div>
