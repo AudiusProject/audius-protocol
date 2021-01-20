@@ -98,27 +98,27 @@ jobs:
           key: content-node-{{ checksum "creator-node/package.json" }}
 
       # discovery node
-      - restore_cache:
-          keys:
-            - discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
-            - discovery-node-
-      - run:
-          name: python-setup
-          command: |
-            cd discovery-provider
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-      - save_cache:
-          paths:
-            - discovery-provider/venv/
-          key: discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
-      - run:
-          name: python-lint
-          command: |
-            cd discovery-provider
-            source venv/bin/activate
-            python ./scripts/lint.py
+      # - restore_cache:
+      #     keys:
+      #       - discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
+      #       - discovery-node-
+      # - run:
+      #     name: python-setup
+      #     command: |
+      #       cd discovery-provider
+      #       python3 -m venv venv
+      #       source venv/bin/activate
+      #       pip install -r requirements.txt
+      # - save_cache:
+      #     paths:
+      #       - discovery-provider/venv/
+      #     key: discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
+      # - run:
+      #     name: python-lint
+      #     command: |
+      #       cd discovery-provider
+      #       source venv/bin/activate
+      #       python ./scripts/lint.py
 
       # identity
       - restore_cache:
@@ -160,6 +160,7 @@ jobs:
             export ipfsPort=6001
             cd /home/circleci/project/mad-dog/
             npm run start test-ci
+
   test-libs:
     docker:
       # specify the version you desire here
