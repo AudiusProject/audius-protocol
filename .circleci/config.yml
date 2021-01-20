@@ -88,6 +88,8 @@ jobs:
           command: |
             set -e
             node -v
+            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
+            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
             nvm install 10.16
             node -v
             cd creator-node/
