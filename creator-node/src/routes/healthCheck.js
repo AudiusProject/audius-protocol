@@ -1,4 +1,4 @@
-const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
@@ -90,6 +90,10 @@ module.exports = function (app) {
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
+    if (config.get('isReadOnlyMode') === true) {
+      return errorResponseBadRequest()
+    }
+
     const info = {
       ...versionInfo,
       country: config.get('serviceCountry'),
