@@ -88,6 +88,8 @@ jobs:
           command: |
             set -e
             node -v
+            nvm install 10.16
+            node -v
             cd creator-node/
             npm install
       - save_cache:
