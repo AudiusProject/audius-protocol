@@ -40,7 +40,7 @@ const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
 const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
 const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
-const SYNC_WAIT = 10000
+
 /**
  * Randomly uploads tracks over the duration of the test,
  * testing that the CIDs are on the respective CNodes at the end of the test.
@@ -191,6 +191,8 @@ module.exports = coreIntegration = async ({
     }
   })
 
+  await waitForSync()
+
   // Check user metadata is proper and that the clock values across the replica set is consistent
   try {
     await checkUserMetadataAndClockValues({
@@ -254,8 +256,6 @@ module.exports = coreIntegration = async ({
     return getUsers(libsWrapper, userIds)
   })
 
-  await waitForSync()
-
   // 8. Check that certain MD fields in disc prov are what we expected it to be
   userMetadatas.forEach(user => {
     logger.info(`Checking post track upload metadata for user ${user.user_id}...`)
@@ -277,6 +277,8 @@ module.exports = coreIntegration = async ({
       }
     }
   })
+
+  await waitForSync()
 
   // Check user metadata is proper and that the clock values across the replica set is consistent
   try {
