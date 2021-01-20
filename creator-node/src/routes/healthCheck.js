@@ -14,6 +14,11 @@ module.exports = function (app) {
    * Performs diagnostic ipfs operations to confirm functionality
    */
   app.get('/health_check/ipfs', handleResponse(async (req, res) => {
+    if (config.get('isReadOnlyMode')) {
+      res.status(400)
+      return
+    }
+
     const ipfs = req.app.get('ipfsAPI')
     try {
       const start = Date.now()
