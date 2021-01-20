@@ -86,6 +86,8 @@ jobs:
       - run:
           name: content-node repo init
           command: |
+            set -e
+            node -v
             cd creator-node/
             npm install
       - save_cache:
