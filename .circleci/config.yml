@@ -23,59 +23,59 @@ jobs:
       
       # Download and cache dependencies
 
-      # libs
-      - restore_cache:
-          name: Restore libs cache
-          keys:
-          - v1-dependencies-{{ checksum "libs/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
-      - run: 
-          name: libs repo init
-          command: |
-            cd libs
-            npm install
-      - save_cache:
-          name: Save libs cache
-          key: v1-dependencies-{{ checksum "libs/package.json" }}
-          paths:
-            - libs/node_modules
+      # # libs
+      # - restore_cache:
+      #     name: Restore libs cache
+      #     keys:
+      #     - v1-dependencies-{{ checksum "libs/package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - v1-dependencies-
+      # - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
+      # - run: 
+      #     name: libs repo init
+      #     command: |
+      #       cd libs
+      #       npm install
+      # - save_cache:
+      #     name: Save libs cache
+      #     key: v1-dependencies-{{ checksum "libs/package.json" }}
+      #     paths:
+      #       - libs/node_modules
 
-      # data contracts
-      - restore_cache:
-          name: Restore contracts cache 
-          keys:
-          - data-contracts-{{ checksum "contracts/package.json" }}
-          - data-contracts-
-      - run:
-          name: contract repo init
-          command: |
-            cd contracts/
-            npm install
-      - save_cache:
-          name: Save contracts cache
-          paths:
-            - contracts/node_modules
-          key: data-contracts-{{ checksum "contracts/package.json" }}
+      # # data contracts
+      # - restore_cache:
+      #     name: Restore contracts cache 
+      #     keys:
+      #     - data-contracts-{{ checksum "contracts/package.json" }}
+      #     - data-contracts-
+      # - run:
+      #     name: contract repo init
+      #     command: |
+      #       cd contracts/
+      #       npm install
+      # - save_cache:
+      #     name: Save contracts cache
+      #     paths:
+      #       - contracts/node_modules
+      #     key: data-contracts-{{ checksum "contracts/package.json" }}
 
-      # eth contracts
-      - restore_cache:
-          name: Restore eth-contracts cache
-          keys:
-          - eth-contracts-{{ checksum "eth-contracts/package.json" }}
-          - eth-contracts-
-      - run:
-          name: eth-contracts repo init
-          command: |
-            cd eth-contracts/
-            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
-            npm install
-      - save_cache:
-          name: Save eth-contracts cache
-          paths:
-            - eth-contracts/node_modules
-          key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
+      # # eth contracts
+      # - restore_cache:
+      #     name: Restore eth-contracts cache
+      #     keys:
+      #     - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+      #     - eth-contracts-
+      # - run:
+      #     name: eth-contracts repo init
+      #     command: |
+      #       cd eth-contracts/
+      #       rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+      #       npm install
+      # - save_cache:
+      #     name: Save eth-contracts cache
+      #     paths:
+      #       - eth-contracts/node_modules
+      #     key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
 
       # content node
       - restore_cache:
@@ -121,58 +121,58 @@ jobs:
       #       python3 ./scripts/lint.py
 
       # identity
-      - restore_cache:
-          name: Restore identity-service cache
-          keys:
-          - identity-service-{{ checksum "identity-service/package.json" }}
-          - identity-service-
-      - run:
-          name: identity-service repo init
-          command: |
-            cd identity-service/
-            npm install
-      - save_cache:
-          name: Save identity-service cache
-          paths:
-            - identity-service/node_modules
-          key: identity-service-{{ checksum "identity-service/package.json" }} 
+      # - restore_cache:
+      #     name: Restore identity-service cache
+      #     keys:
+      #     - identity-service-{{ checksum "identity-service/package.json" }}
+      #     - identity-service-
+      # - run:
+      #     name: identity-service repo init
+      #     command: |
+      #       cd identity-service/
+      #       npm install
+      # - save_cache:
+      #     name: Save identity-service cache
+      #     paths:
+      #       - identity-service/node_modules
+      #     key: identity-service-{{ checksum "identity-service/package.json" }} 
 
       # mad-dog
-      - restore_cache:
-          name: Restore mad-dog cache
-          keys:
-          - mad-dog-{{ checksum "mad-dog/package.json" }}
-          - mad-dog-
-      - run:
-          name: mad-dog repo init
-          command: |
-            cd mad-dog/
-            npm install
-      - save_cache:
-          name: Save mad-dog cache
-          paths:
-            - mad-dog/node_modules
-          key: mad-dog-{{ checksum "mad-dog/package.json" }} 
+      # - restore_cache:
+      #     name: Restore mad-dog cache
+      #     keys:
+      #     - mad-dog-{{ checksum "mad-dog/package.json" }}
+      #     - mad-dog-
+      # - run:
+      #     name: mad-dog repo init
+      #     command: |
+      #       cd mad-dog/
+      #       npm install
+      # - save_cache:
+      #     name: Save mad-dog cache
+      #     paths:
+      #       - mad-dog/node_modules
+      #     key: mad-dog-{{ checksum "mad-dog/package.json" }} 
 
-      # service commands
-      - restore_cache:
-          name: Restore service-commands cache
-          keys:
-          - service-commands-{{ checksum "service-commands/package.json" }}
-          - service-commands-
-      - run:
-          name: service-commands repo init
-          command: |
-            source ~/.bash_profile
-            nvm install v10.16
-            nvm use 10.16
-            cd service-commands/
-            npm install
-      - save_cache:
-          name: Save service-commands cache
-          paths:
-            - service-commands/node_modules
-          key: service-commands-{{ checksum "service-commands/package.json" }} 
+      # # service commands
+      # - restore_cache:
+      #     name: Restore service-commands cache
+      #     keys:
+      #     - service-commands-{{ checksum "service-commands/package.json" }}
+      #     - service-commands-
+      # - run:
+      #     name: service-commands repo init
+      #     command: |
+      #       source ~/.bash_profile
+      #       nvm install v10.16
+      #       nvm use 10.16
+      #       cd service-commands/
+      #       npm install
+      # - save_cache:
+      #     name: Save service-commands cache
+      #     paths:
+      #       - service-commands/node_modules
+      #     key: service-commands-{{ checksum "service-commands/package.json" }} 
 
       # test -- restore cache above only eth/data contracts + libs. still `npm i` on other repos
       - run:
@@ -182,22 +182,22 @@ jobs:
             export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
             nvm use 10.16
-            cd /home/circleci/project/libs/
-            npm link
-            cd /home/circleci/project/service-commands/
-            npm link
-            npm link @audius/libs
-            cd /home/circleci/project/mad-dog/
-            npm link @audius/service-commands
+            # cd /home/circleci/project/libs/
+            # npm link
+            # cd /home/circleci/project/service-commands/
+            # npm link
+            # npm link @audius/libs
+            # cd /home/circleci/project/mad-dog/
+            # npm link @audius/service-commands
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             "$(which node)" setup.js up -nc 3
-            docker ps
-            export ipfsHost="localhost"
-            export ipfsPort=6001
-            cd /home/circleci/project/mad-dog/
-            npm run start test-ci
+            # docker ps
+            # export ipfsHost="localhost"
+            # export ipfsPort=6001
+            # cd /home/circleci/project/mad-dog/
+            # npm run start test-ci
 
   test-libs:
     docker:
