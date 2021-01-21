@@ -38,9 +38,9 @@ jobs:
             npm install
       - save_cache:
           name: Save libs cache
+          key: v1-dependencies-{{ checksum "libs/package.json" }}
           paths:
             - libs/node_modules
-          key: v1-dependencies-{{ checksum "libs/package.json" }}
 
       # data contracts
       - restore_cache:
@@ -137,14 +137,48 @@ jobs:
             - identity-service/node_modules
           key: identity-service-{{ checksum "identity-service/package.json" }} 
 
+      # mad-dog
+      - restore_cache:
+          name: Restore mad-dog cache
+          keys:
+          - mad-dog-{{ checksum "mad-dog/package.json" }}
+          - mad-dog-
+      - run:
+          name: mad-dog repo init
+          command: |
+            cd mad-dog/
+            npm install
+      - save_cache:
+          name: Save mad-dog cache
+          paths:
+            - mad-dog/node_modules
+          key: mad-dog-{{ checksum "mad-dog/package.json" }} 
+
+      # service commands
+      - restore_cache:
+          name: Restore service-commands cache
+          keys:
+          - service-commands-{{ checksum "service-commands/package.json" }}
+          - service-commands-
+      - run:
+          name: service-commands repo init
+          command: |
+            cd service-commands/
+            npm install
+      - save_cache:
+          name: Save service-commands cache
+          paths:
+            - service-commands/node_modules
+          key: service-commands-{{ checksum "service-commands/package.json" }} 
+
       # test -- restore cache above only eth/data contracts + libs. still `npm i` on other repos
       - run:
           name: execute
           command: |
             set -e
+            export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
             nvm use 10.16
-            export PROTOCOL_DIR=/home/circleci/project
             cd /home/circleci/project/libs/
             npm link
             cd /home/circleci/project/service-commands/
