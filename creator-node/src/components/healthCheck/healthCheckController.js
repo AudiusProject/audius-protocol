@@ -46,8 +46,8 @@ const healthCheckVerifySignature = (req, res, next) => {
  * `healthCheckComponentService`.
  */
 const healthCheckController = async (req) => {
-  if (config.get('isReadOnlyMode') === true) {
-    return errorResponseBadRequest()
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError()
   }
 
   const logger = req.logger
