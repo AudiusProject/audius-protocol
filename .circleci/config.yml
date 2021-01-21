@@ -108,7 +108,7 @@ jobs:
       #       cd discovery-provider
       #       python3 -m venv venv
       #       source venv/bin/activate
-      #       pip install -r requirements.txt
+      #       pip3 install -r requirements.txt
       # - save_cache:
       #     paths:
       #       - discovery-provider/venv/
@@ -118,7 +118,7 @@ jobs:
       #     command: |
       #       cd discovery-provider
       #       source venv/bin/activate
-      #       python ./scripts/lint.py
+      #       python3 ./scripts/lint.py
 
       # identity
       - restore_cache:
@@ -142,6 +142,7 @@ jobs:
           name: execute
           command: |
             set -e
+            source ~/.bash_profile
             nvm use 10.16
             export PROTOCOL_DIR=/home/circleci/project
             cd /home/circleci/project/libs/
