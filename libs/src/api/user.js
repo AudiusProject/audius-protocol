@@ -218,7 +218,6 @@ class Users extends Base {
       UPLOAD_METADATA_AND_UPDATE_ON_CHAIN: 'UPLOAD_METADATA_AND_UPDATE_ON_CHAIN'
     }
     let phase = ''
-    const numNodes = 3
 
     const user = this.userStateManager.getCurrentUser()
     // Failed the addUser() step
@@ -239,10 +238,14 @@ class Users extends Base {
         whitelist: passList,
         blacklist: blockList
       })
+      // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
+      // is chosen. If a primary was not selected (which also implies that secondaries were not chosen), throw
+      // an error.
       const { primary, secondaries } = response
-      if (!primary || !secondaries || secondaries.length < numNodes - 1) {
-        throw new Error(`Could not select a primary=${primary} and/or ${numNodes - 1} secondaries=${secondaries}`)
+      if (!primary) {
+        throw new Error(`Could not select a primary.`)
       }
+
       const newContentNodeEndpoints = CreatorNode.buildEndpoint(primary, secondaries)
       newMetadata.creator_node_endpoint = newContentNodeEndpoints
 
@@ -250,14 +253,14 @@ class Users extends Base {
       phase = phases.SET_PRIMARY
       await this.creatorNode.setEndpoint(primary)
 
-      // In signUp(), a replica set is assigned before uploading profile images.
-      // Should associate new metadata after profile photo upload.
+      // Update metadata in CN and on chain of newly assigned replica set
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
       await this.updateAndUploadMetadata({
         newMetadata,
         userId
       })
     } catch (e) {
+      console.log(`assignReplicaSet() Error -- Phase ${phase}: ${e}`)
       throw new Error(`assignReplicaSet() Error -- Phase ${phase}: ${e}`)
     }
 
