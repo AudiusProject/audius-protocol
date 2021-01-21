@@ -1,4 +1,4 @@
-const { handleResponse, successResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
@@ -15,8 +15,7 @@ module.exports = function (app) {
    */
   app.get('/health_check/ipfs', handleResponse(async (req, res) => {
     if (config.get('isReadOnlyMode')) {
-      res.status(400)
-      return
+      return errorResponseServerError()
     }
 
     const ipfs = req.app.get('ipfsAPI')
@@ -90,8 +89,8 @@ module.exports = function (app) {
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
-    if (config.get('isReadOnlyMode') === true) {
-      return errorResponseBadRequest()
+    if (config.get('isReadOnlyMode')) {
+      return errorResponseServerError()
     }
 
     const info = {
