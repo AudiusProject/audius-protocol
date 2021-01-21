@@ -15,8 +15,7 @@ module.exports = function (app) {
    */
   app.get('/health_check/ipfs', handleResponse(async (req, res) => {
     if (config.get('isReadOnlyMode')) {
-      res.status(400)
-      return
+      return errorResponseBadRequest()
     }
 
     const ipfs = req.app.get('ipfsAPI')
@@ -90,7 +89,7 @@ module.exports = function (app) {
   }))
 
   app.get('/version', handleResponse(async (req, res) => {
-    if (config.get('isReadOnlyMode') === true) {
+    if (config.get('isReadOnlyMode')) {
       return errorResponseBadRequest()
     }
 
