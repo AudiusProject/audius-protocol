@@ -426,20 +426,20 @@ jobs:
           steps:
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #     - v1-dependencies-{{ checksum "creator-node/package.json" }}
-      #     # fallback to using the latest cache if no exact match is found
-      #     - v1-dependencies-
+      - restore_cache:
+          keys:
+          - v1-content-node-{{ checksum "creator-node/package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-content-node-
       - run:
           name: setup
           command: |
             cd creator-node
             npm install
-      # - save_cache:
-      #     paths:
-      #       - creator-node/node_modules
-      #     key: v1-dependencies-{{ checksum "creator-node/package.json" }}
+      - save_cache:
+          paths:
+            - creator-node/node_modules
+          key: v1-content-node-{{ checksum "creator-node/package.json" }}
       - run:
           name: run creator node tests
           command: |

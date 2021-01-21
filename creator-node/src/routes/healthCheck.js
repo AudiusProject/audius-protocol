@@ -15,6 +15,7 @@ module.exports = function (app) {
    */
   app.get('/health_check/ipfs', handleResponse(async (req, res) => {
     if (config.get('isReadOnlyMode')) {
+      req.logger.info('Node is in read-only mode!')
       res.status(400)
       return
     }
