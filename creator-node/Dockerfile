@@ -1,5 +1,5 @@
 FROM node:10.16 as builder
-WORKDIR /usr/src/app	
+WORKDIR /app	
 COPY package*.json ./
 RUN npm ci --loglevel verbose
 
