@@ -25,7 +25,7 @@ services:
       - ..:/usr/src/app
       # Prevent hiding node_modules on container with host volume
       # From https://github.com/barrysteyn/node-scrypt/issues/148
-      - /usr/src/app/node_modules # does fresh reinstsall of deps
+      - node_modules:/usr/src/app/node_modules
   redis:
     image: redis:5.0.4
     ports:
