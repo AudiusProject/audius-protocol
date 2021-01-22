@@ -1,14 +1,9 @@
-FROM node:10.16 as builder
-RUN apt-get install make
+FROM node:10.16
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM node:10.16-alpine
-
-WORKDIR /usr/src/app
-COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
 # Add the wait script to the image
