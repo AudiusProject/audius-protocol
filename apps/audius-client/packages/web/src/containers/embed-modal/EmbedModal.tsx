@@ -25,7 +25,8 @@ const BASE_EMBED_URL = `${BASE_GA_URL}/embed`
 
 const FlavorMap = {
   [Size.STANDARD]: 'card',
-  [Size.COMPACT]: 'compact'
+  [Size.COMPACT]: 'compact',
+  [Size.TINY]: 'tiny'
 }
 
 const KindMap = {
@@ -47,11 +48,19 @@ const constructUrl = (
 }
 
 const formatIFrame = (url: string, size: Size) => {
-  const sizeString =
-    size === Size.STANDARD
-      ? 'width="100%" height="480"'
-      : 'width="100%" height="120"'
-  return `<iframe src=${url} ${sizeString} allow="encrypted-media" style="border: none;"></iframe>`
+  let extras
+  switch (size) {
+    case Size.STANDARD:
+      extras = 'width="100%" height="480"'
+      break
+    case Size.COMPACT:
+      extras = 'width="100%" height="120"'
+      break
+    case Size.TINY:
+      extras = 'width="100%" height="20" allowTransparency="true"'
+      break
+  }
+  return `<iframe src=${url} ${extras} allow="encrypted-media" style="border: none;"></iframe>`
 }
 
 const messages = {
@@ -93,7 +102,7 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
         make(Name.EMBED_COPY, {
           kind,
           id: `${id}`,
-          size: size === Size.COMPACT ? 'compact' : 'standard'
+          size: FlavorMap[size] as 'card' | 'compact' | 'tiny'
         })
       )
     }
@@ -114,6 +123,38 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
       Size.COMPACT
     )
   }, [kind, id, metadata])
+  const tinyFrameString = useMemo(() => {
+    if (!kind || !id || !metadata) return ''
+    return formatIFrame(constructUrl(kind, id, metadata, Size.TINY), Size.TINY)
+  }, [kind, id, metadata])
+
+  const tabOptions = [
+    {
+      key: Size.STANDARD,
+      text: Size.STANDARD
+    },
+    {
+      key: Size.COMPACT,
+      text: Size.COMPACT
+    },
+    {
+      key: Size.TINY,
+      text: Size.TINY
+    }
+  ]
+
+  let frameString
+  switch (size) {
+    case Size.STANDARD:
+      frameString = standardFrameString
+      break
+    case Size.COMPACT:
+      frameString = compactFrameString
+      break
+    case Size.TINY:
+      frameString = tinyFrameString
+      break
+  }
 
   return (
     <Modal
@@ -144,22 +185,24 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
               {delayedOpen && <EmbedFrame frameString={compactFrameString} />}
             </div>
           )}
+          {kind === PlayableType.TRACK && (
+            <div
+              className={cn(styles.switcher, {
+                [styles.show]: size === Size.TINY
+              })}
+            >
+              {delayedOpen && (
+                <EmbedFrame width={265} frameString={tinyFrameString} />
+              )}
+            </div>
+          )}
         </div>
         <div className={styles.details}>
           {metadata && (metadata as Track).track_id && (
             <div className={styles.panel}>
               <div className={styles.title}>{messages.playerSize}</div>
               <TabSlider
-                options={[
-                  {
-                    key: Size.STANDARD,
-                    text: Size.STANDARD
-                  },
-                  {
-                    key: Size.COMPACT,
-                    text: Size.COMPACT
-                  }
-                ]}
+                options={tabOptions}
                 selected={size}
                 onSelectOption={size => setSize(size)}
               />
@@ -167,12 +210,7 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
           )}
           <div className={styles.panel}>
             <div className={styles.title}>{messages.embedCode}</div>
-            <EmbedCopy
-              frameString={
-                size === Size.COMPACT ? compactFrameString : standardFrameString
-              }
-              onCopy={onCopy}
-            />
+            <EmbedCopy frameString={frameString} onCopy={onCopy} />
           </div>
 
           <div className={styles.bottom}>

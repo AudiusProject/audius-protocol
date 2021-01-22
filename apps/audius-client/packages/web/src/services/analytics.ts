@@ -362,7 +362,7 @@ type EmbedCopy = {
   eventName: Name.EMBED_COPY
   kind: PlayableType
   id: string
-  size: 'standard' | 'compact'
+  size: 'card' | 'compact' | 'tiny'
 }
 
 // Track Upload
