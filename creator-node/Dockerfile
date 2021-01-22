@@ -1,11 +1,11 @@
-FROM node:10.16 as builder
+FROM node:10.16
 WORKDIR /app	
 COPY package*.json ./
 RUN npm ci --loglevel verbose
 
 FROM node:10.16-alpine	
 WORKDIR /usr/src/app	
-COPY --from=builder /app/node_modules ./node_modules
+COPY /app/node_modules ./node_modules
 
 COPY . .
 
