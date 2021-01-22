@@ -179,29 +179,33 @@ jobs:
           name: execute
           command: |
             set -e
-            export PROTOCOL_DIR=/home/circleci/project
-            source ~/.bash_profile
-            nvm install v10.16
-            nvm use 10.16
-            cd /home/circleci/project/service-commands/scripts/
-            sh init-specific-repos.sh
-            cd /home/circleci/project/libs/	
-            npm link	
-            cd /home/circleci/project/service-commands/	
-            npm link	
-            npm link @audius/libs	
-            cd /home/circleci/project/mad-dog/	
-            npm link @audius/libs	
-            npm link @audius/service-commands	
-            cd /home/circleci/project/service-commands/scripts/
-            sudo "$(which node)" hosts.js add
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 3
-            cd /home/circleci/project/mad-dog/	
+            cd /home/circleci/project/creator-node
+            docker-compose -f compose/docker-compose.yml up --build -d
             docker ps -a
-            export ipfsHost="localhost"	
-            export ipfsPort=6001	
-            npm run start test-ci
+            # set -e
+            # export PROTOCOL_DIR=/home/circleci/project
+            # source ~/.bash_profile
+            # nvm install v10.16
+            # nvm use 10.16
+            # cd /home/circleci/project/service-commands/scripts/
+            # sh init-specific-repos.sh
+            # cd /home/circleci/project/libs/	
+            # npm link	
+            # cd /home/circleci/project/service-commands/	
+            # npm link	
+            # npm link @audius/libs	
+            # cd /home/circleci/project/mad-dog/	
+            # npm link @audius/libs	
+            # npm link @audius/service-commands	
+            # cd /home/circleci/project/service-commands/scripts/
+            # sudo "$(which node)" hosts.js add
+            # sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            # "$(which node)" setup.js up -nc 3
+            # cd /home/circleci/project/mad-dog/	
+            # docker ps -a
+            # export ipfsHost="localhost"	
+            # export ipfsPort=6001	
+            # npm run start test-ci
 
   test-libs:
     docker:
