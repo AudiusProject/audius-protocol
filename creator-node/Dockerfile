@@ -1,8 +1,8 @@
 FROM node:10.16
 
 WORKDIR /app
-# COPY package*.json ./
-# RUN npm install --loglevel verbose
+COPY package*.json ./
+RUN npm ci --loglevel verbose
 
 COPY . .
 
