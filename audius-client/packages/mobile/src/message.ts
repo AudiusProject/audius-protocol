@@ -23,6 +23,7 @@ import { checkConnectivity, Connectivity } from './utils/connectivity'
 import { Provider } from './store/oauth/reducer'
 import { handleWebAppLog } from './utils/logging'
 import { remindUserToTurnOnNotifications } from './components/notification-reminder/NotificationReminder'
+import { handleThemeChange } from './utils/theme'
 
 let sentInitialTheme = false
 
@@ -97,7 +98,10 @@ export enum MessageType {
   ANALYTICS_SCREEN = 'analytics-screen',
 
   // Logging
-  LOGGING = 'logging'
+  LOGGING = 'logging',
+
+  // Theme
+  THEME_CHANGE = 'theme-change'
 }
 
 export interface Message {
@@ -271,6 +275,11 @@ export const handleMessage = async (
     }
     case MessageType.LOGGING: {
       handleWebAppLog(message.level, message.message)
+      break
+    }
+
+    case MessageType.THEME_CHANGE: {
+      handleThemeChange(message.theme)
       break
     }
   }
