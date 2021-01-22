@@ -817,6 +817,10 @@ class AudiusBackend {
     }
   }
 
+  /**
+   * Upgrades a user to a creator
+   * @param {string} newCreatorNodeEndpoint will follow the structure 'cn1,cn2,cn3'
+   */
   static async upgradeToCreator(newCreatorNodeEndpoint) {
     return audiusLibs.User.upgradeToCreator(USER_NODE, newCreatorNodeEndpoint)
   }
@@ -1400,7 +1404,7 @@ class AudiusBackend {
   /**
    * @param {string} email
    * @param {string} password
-   * @param {object} formFields
+   * @param {Object} formFields {name, handle, profilePicture, coverPhoto, isVerified, location}
    * @param {boolean?} hasWallet the user already has a wallet but didn't complete sign up
    */
   static async signUp(email, password, formFields, hasWallet = false) {
@@ -1425,7 +1429,6 @@ class AudiusBackend {
       email,
       password,
       metadata,
-      metadata.is_creator /* false */,
       formFields.profilePicture,
       formFields.coverPhoto,
       hasWallet,
