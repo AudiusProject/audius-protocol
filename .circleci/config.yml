@@ -181,6 +181,7 @@ jobs:
             set -e
             cd /home/circleci/project/creator-node
             . compose/env/shellEnv1.sh
+            docker network create audius_dev
             docker-compose -f compose/docker-compose.yml up --build -d
             docker ps -a
             # set -e
