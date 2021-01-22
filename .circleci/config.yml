@@ -81,8 +81,8 @@ jobs:
       - restore_cache:
           name: Restore content-node cache
           keys:
-          - v1-content-node-{{ checksum "creator-node/package.json" }}
-          - v1-content-node-
+          - huh-content-node-{{ checksum "creator-node/package.json" }}
+          - huh-content-node-
       - run:
           name: content-node repo init
           command: |
@@ -97,7 +97,7 @@ jobs:
             - creator-node/node_modules
             - creator-node/package.json
             - creator-node/package-lock.json
-          key: v1-content-node-{{ checksum "creator-node/package.json" }}
+          key: huh-content-node-{{ checksum "creator-node/package.json" }}
 
       # discovery node
       # - restore_cache:
