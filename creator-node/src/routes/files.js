@@ -121,7 +121,7 @@ const getCID = async (req, res) => {
     }
 
     if (queryResults.type === 'dir') {
-      return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+      return sendResponse(req, res, errorResponseBadRequest('This dag node is a directory'))
     }
 
     storagePath = queryResults.storagePath
