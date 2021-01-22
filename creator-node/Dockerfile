@@ -1,7 +1,7 @@
 FROM node:10.16
-WORKDIR /app	
-COPY package*.json ./
-RUN npm ci --loglevel verbose
+WORKDIR /usr/src/app
+# COPY package*.json ./
+# RUN npm ci --loglevel verbose
 
 # FROM node:10.16-alpine	
 # WORKDIR /usr/src/app	
