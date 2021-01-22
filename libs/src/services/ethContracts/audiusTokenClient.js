@@ -33,7 +33,10 @@ class AudiusTokenClient {
 
   // Get the name of the contract
   async nonces (wallet) {
-    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call()
+    // Pass along a unique param so the nonce value is always not cached
+    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call({
+      _audiusBustCache: Date.now()
+    })
     const number = this.web3.utils.toBN(nonce).toNumber()
     return number
   }
