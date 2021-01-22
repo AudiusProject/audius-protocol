@@ -356,9 +356,7 @@ def get_track_play_count_dict(session, track_ids):
     track_play_dict = dict(track_play_counts)
     return track_play_dict
 
-
 redis = redis_connection.get_redis()
-
 
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
@@ -522,8 +520,6 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
                             remixes[track["track_id"]][parent_track_id])
         else:
             track[response_name_constants.remix_of] = None
-
-        #
 
     return tracks
 

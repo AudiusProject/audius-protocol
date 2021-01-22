@@ -10,9 +10,8 @@ logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
 
 def refresh_user_ids(redis, db, token_contract, eth_web3):
-    # List users in Redis set
+    # List users in Redis set, balances decoded as strings
     redis_user_ids = redis.smembers(REDIS_PREFIX)
-    # Convert the bytes to ints
     redis_user_ids = [user_id.decode() for user_id in redis_user_ids]
 
     if not redis_user_ids:

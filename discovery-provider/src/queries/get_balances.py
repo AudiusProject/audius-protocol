@@ -59,7 +59,6 @@ def get_balances(session, redis, user_ids):
     # Add needs refresh balances + new balances to Redis queue
     needs_balance_ids = [user.user_id for user in needs_refresh] + list(needs_balance_set)
     if needs_balance_ids:
-        logger.info(f"Setting in Redis:{needs_balance_ids}")
         redis.sadd(REDIS_PREFIX, *needs_balance_ids)
 
     return result
