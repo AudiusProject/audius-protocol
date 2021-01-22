@@ -92,9 +92,11 @@ jobs:
             cd creator-node/
             npm install
       - save_cache:
-          name: Save content-node cache
+          name: Save content-node cache (node_modules + package*.json)
           paths:
             - creator-node/node_modules
+            - creator-node/package.json
+            - creator-node/package-lock.json
           key: content-node-{{ checksum "creator-node/package.json" }}
 
       # discovery node
