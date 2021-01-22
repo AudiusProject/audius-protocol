@@ -1,4 +1,5 @@
 export enum Size {
   STANDARD = 'Standard',
-  COMPACT = 'Compact'
+  COMPACT = 'Compact',
+  TINY = 'Tiny'
 }
