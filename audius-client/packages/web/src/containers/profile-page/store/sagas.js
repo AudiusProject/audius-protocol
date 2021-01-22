@@ -297,7 +297,7 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        if (metadata.is_creator) {
+        if (metadata.creator_node_endpoint) {
           yield call(AudiusBackend.updateCreator, metadata, userId)
         } else {
           yield call(AudiusBackend.updateUser, metadata, userId)
