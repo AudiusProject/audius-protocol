@@ -603,3 +603,16 @@ class TagTrackUserMatview(Base):
 tag={self.tag},\
 track_id={self.track_id},\
 owner_id={self.owner_id}>"
+
+class UserBalance(Base):
+    __tablename__ = "user_balances"
+
+    user_id = Column(Integer, nullable=False, primary_key=True)
+    balance = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<UserBalance(\
+user_id={self.user_id},\
+balance={self.balance}>"
