@@ -7,9 +7,10 @@ from flask import request
 from src import exceptions
 from src.queries import response_name_constants
 from src.models import User, Track, Repost, RepostType, Follow, \
-    Playlist, Save, SaveType, Remix, AggregatePlays
-from src.utils import helpers
+    Playlist, Save, SaveType, Remix, AggregatePlays, UserBalance
+from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.get_balances import get_balances
 
 logger = logging.getLogger(__name__)
 
@@ -284,6 +285,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
         current_user_followee_follow_count_dict = {user_id: followee_follow_count for (
             user_id, followee_follow_count) in current_user_followee_follow_counts}
 
+    balance_dict = get_balances(session, redis, user_ids)
+
     for user in users:
         user_id = user["user_id"]
         user[response_name_constants.track_count] = track_count_dict.get(
@@ -308,6 +311,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             user_id, False)
         user[response_name_constants.current_user_followee_follow_count] = current_user_followee_follow_count_dict.get(
             user_id, 0)
+        user[response_name_constants.balance] = balance_dict.get(user_id, 0)
 
     return users
 
@@ -351,6 +355,9 @@ def get_track_play_count_dict(session, track_ids):
     track_play_counts = session.execute(query, {"ids": track_ids}).fetchall()
     track_play_dict = dict(track_play_counts)
     return track_play_dict
+
+
+redis = redis_connection.get_redis()
 
 
 # given list of track ids and corresponding tracks, populates each track object with:
@@ -515,6 +522,8 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
                             remixes[track["track_id"]][parent_track_id])
         else:
             track[response_name_constants.remix_of] = None
+
+        #
 
     return tracks
 
