@@ -1,7 +1,7 @@
 FROM node:10.16
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package.json ./
 
 # # RUN npm ci --loglevel verbose
 
