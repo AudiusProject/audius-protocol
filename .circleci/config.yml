@@ -180,12 +180,12 @@ jobs:
       - run:
           name: execute
           command: |
-            # set -e
-            # cd /home/circleci/project/creator-node
-            # . compose/env/shellEnv1.sh
-            # docker network create audius_dev
-            # docker-compose -f compose/docker-compose.yml up --no-recreate --build -d 
-            # docker ps -a
+            set -e
+            cd /home/circleci/project/creator-node
+            . compose/env/shellEnv1.sh
+            docker network create audius_dev
+            docker-compose -f compose/docker-compose.yml up --no-recreate --build -d 
+            docker ps -a
             # set -e
             # export PROTOCOL_DIR=/home/circleci/project
             # source ~/.bash_profile
