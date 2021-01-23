@@ -14,18 +14,7 @@ jobs:
       image: ubuntu-1604:201903-01    # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
     steps:
       - add_ssh_keys
-
-      # Cache checking out repo
-      - restore_cache:
-          keys:
-            - source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
       - checkout
-      - save_cache:
-          key: source-v1-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - ".git"
       - run:
           name: clone tooling and mad dog
           command: |
@@ -195,7 +184,7 @@ jobs:
             cd /home/circleci/project/creator-node
             . compose/env/shellEnv1.sh
             docker network create audius_dev
-            docker-compose -f compose/docker-compose.yml up --build -d
+            docker-compose -f compose/docker-compose.yml up --no-recreate --build -d 
             docker ps -a
             # set -e
             # export PROTOCOL_DIR=/home/circleci/project
