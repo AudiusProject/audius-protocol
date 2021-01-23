@@ -14,7 +14,18 @@ jobs:
       image: ubuntu-1604:201903-01    # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
     steps:
       - add_ssh_keys
+
+      # Cache checking out repo
+      - restore_cache:
+          keys:
+            - source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
       - checkout
+      - save_cache:
+          key: source-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
       - run:
           name: clone tooling and mad dog
           command: |
@@ -78,26 +89,26 @@ jobs:
       #     key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
 
       # content node
-      - restore_cache:
-          name: Restore content-node cache
-          keys:
-          - huh-content-node-{{ checksum "creator-node/package.json" }}
-          - huh-content-node-
-      - run:
-          name: content-node repo init
-          command: |
-            source ~/.bash_profile
-            nvm install v10.16
-            nvm use 10.16
-            cd creator-node/
-            npm install
-      - save_cache:
-          name: Save content-node cache (node_modules + package*.json)
-          paths:
-            - creator-node/node_modules
-            - creator-node/package.json
-            - creator-node/package-lock.json
-          key: huh-content-node-{{ checksum "creator-node/package.json" }}
+      # - restore_cache:
+      #     name: Restore content-node cache
+      #     keys:
+      #     - huh-content-node-{{ checksum "creator-node/package.json" }}
+      #     - huh-content-node-
+      # - run:
+      #     name: content-node repo init
+      #     command: |
+      #       source ~/.bash_profile
+      #       nvm install v10.16
+      #       nvm use 10.16
+      #       cd creator-node/
+      #       npm install
+      # - save_cache:
+      #     name: Save content-node cache (node_modules + package*.json)
+      #     paths:
+      #       - creator-node/node_modules
+      #       - creator-node/package.json
+      #       - creator-node/package-lock.json
+      #     key: huh-content-node-{{ checksum "creator-node/package.json" }}
 
       # discovery node
       # - restore_cache:
