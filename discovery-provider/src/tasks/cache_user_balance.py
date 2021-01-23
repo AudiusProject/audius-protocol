@@ -6,8 +6,28 @@ from src.models import UserBalance, User
 from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
 
 logger = logging.getLogger(__name__)
-
 audius_token_registry_key = bytes("Token", "utf-8")
+
+# *Explanation of user balance caching*
+# In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
+# and current users (logged in dapp users, who might be changing their balance) on an interval.
+#
+# - In populate_track_metadat, look up User_Balance entry in db.
+#       If it doesn't exist, return 0, persist a User_Balance row with 0,
+#       & enqueue in Redis the user ID for later balance lookup.
+# - On track get endpoints, if current_user exists, enqueue balance lookup
+#       in Redis.
+#
+# In this recurring task:
+#   - Get all enqueued user balance refresh requests. These are stored in a set, so
+#       we don't worry about deduping.
+#   - If a given balance is either
+#        a) new (created_at == updated_at)
+#        b) not new, but updated before a certain threshold
+#     we look up said users, adding User_Balance rows, and removing them from Redis.
+#
+#     enqueued user_ids in Redis that are *not* ready to be refreshed yet are left in the queue
+#     for later.
 
 def refresh_user_ids(redis, db, token_contract, eth_web3):
     # List users in Redis set, balances decoded as strings
