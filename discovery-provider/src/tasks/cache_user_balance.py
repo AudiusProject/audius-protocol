@@ -26,8 +26,20 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
             UserBalance.user_id.in_(redis_user_ids)
         ).all())
 
+        # Balances from current user lookup may
+        # not be present in the db, so make those
+        not_present_set = {int(user_id) for user_id in redis_user_ids} - {user.user_id for user in query}
+        new_balances = [UserBalance(user_id=int(user_id), balance=0) for user_id in not_present_set]
+        if new_balances:
+            session.add_all(new_balances)
+            logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
+
         # Filter only user_balances that still need refresh
+        # This includes new balances
         needs_refresh = list(filter(does_user_balance_need_refresh, query))
+        needs_refresh += new_balances
+
+        logger.info(f"cache_user_balance.py | needs refresh: {needs_refresh}")
 
         # map user_id -> user_balance
         needs_refresh_map = {user.user_id: user for user in needs_refresh}
@@ -58,8 +70,10 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         session.commit()
 
         # Remove the fetched balances from Redis set
+        to_remove = [user.user_id for user in needs_refresh]
         logger.info(f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis.")
-        redis.srem(REDIS_PREFIX, *redis_user_ids)
+        if to_remove:
+            redis.srem(REDIS_PREFIX, *to_remove)
 
 def get_token_contract(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(
