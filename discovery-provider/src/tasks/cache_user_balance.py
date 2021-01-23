@@ -12,7 +12,7 @@ audius_token_registry_key = bytes("Token", "utf-8")
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
 # and current users (logged in dapp users, who might be changing their balance) on an interval.
 #
-# - In populate_track_metadat, look up User_Balance entry in db.
+# - In populate_track_metadata, look up User_Balance entry in db.
 #       If it doesn't exist, return 0, persist a User_Balance row with 0,
 #       & enqueue in Redis the user ID for later balance lookup.
 # - On track get endpoints, if current_user exists, enqueue balance lookup
@@ -23,16 +23,16 @@ audius_token_registry_key = bytes("Token", "utf-8")
 #       we don't worry about deduping.
 #   - If a given balance is either
 #        a) new (created_at == updated_at)
-#        b) not new, but updated before a certain threshold
+#        b) not new, but stale: last updated prior to (now - threshold)
 #     we look up said users, adding User_Balance rows, and removing them from Redis.
 #
-#     enqueued user_ids in Redis that are *not* ready to be refreshed yet are left in the queue
+#     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
 
 def refresh_user_ids(redis, db, token_contract, eth_web3):
     # List users in Redis set, balances decoded as strings
     redis_user_ids = redis.smembers(REDIS_PREFIX)
-    redis_user_ids = [user_id.decode() for user_id in redis_user_ids]
+    redis_user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
 
     if not redis_user_ids:
         return
@@ -48,8 +48,8 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
 
         # Balances from current user lookup may
         # not be present in the db, so make those
-        not_present_set = {int(user_id) for user_id in redis_user_ids} - {user.user_id for user in query}
-        new_balances = [UserBalance(user_id=int(user_id), balance=0) for user_id in not_present_set]
+        not_present_set = {user_id for user_id in redis_user_ids} - {user.user_id for user in query}
+        new_balances = [UserBalance(user_id=user_id, balance=0) for user_id in not_present_set]
         if new_balances:
             session.add_all(new_balances)
             logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
