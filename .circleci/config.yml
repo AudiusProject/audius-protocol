@@ -99,27 +99,27 @@ jobs:
           key: v1-content-node-{{ checksum "creator-node/package.json" }}
 
       # discovery node
-      - restore_cache:
-          keys:
-            - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
-            - v1-discovery-node- 
-      - run:
-          name: python-setup
-          command: |
-            cd discovery-provider
-            python3 -m venv venv
-            source venv/bin/activate
-            pip3 install -r requirements.txt
-      - save_cache:
-          paths:
-            - discovery-provider/venv/
-          key: v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
-      - run:
-          name: python-lint
-          command: |
-            cd discovery-provider
-            source venv/bin/activate
-            python3 ./scripts/lint.py
+      # - restore_cache:
+      #     keys:
+      #       - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
+      #       - v1-discovery-node- 
+      # - run:
+      #     name: python-setup
+      #     command: |
+      #       cd discovery-provider
+      #       python3 -m venv venv
+      #       source venv/bin/activate
+      #       pip3 install -r requirements.txt
+      # - save_cache:
+      #     paths:
+      #       - discovery-provider/venv/
+      #     key: v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
+      # - run:
+      #     name: python-lint
+      #     command: |
+      #       cd discovery-provider
+      #       source venv/bin/activate
+      #       python3 ./scripts/lint.py
 
       # identity
       - restore_cache:
