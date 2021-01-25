@@ -97,7 +97,7 @@ jobs:
             - creator-node/node_modules
           key: v1-content-node-{{ checksum "creator-node/package.json" }}
 
-      discovery node
+      # discovery node
       - restore_cache:
           keys:
             - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
