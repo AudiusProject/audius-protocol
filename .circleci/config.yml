@@ -174,7 +174,6 @@ jobs:
             - service-commands/node_modules
           key: v1-service-commands-{{ checksum "service-commands/package.json" }} 
 
-      # test -- restore cache above only eth/data contracts + libs. still `npm i` on other repos
       - run:
           name: execute
           command: |
@@ -195,7 +194,7 @@ jobs:
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 2
+            "$(which node)" setup.js up -nc 3
             docker ps -a
             cd /home/circleci/project/mad-dog/	
             export ipfsHost="localhost"	
@@ -234,9 +233,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "libs/package.json" }}
+          - v1-libs-{{ checksum "libs/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - v1-libs-
       - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
       - run: |
           cd libs
@@ -244,12 +243,12 @@ jobs:
       - save_cache:
           paths:
             - libs/node_modules
-          key: v1-dependencies-{{ checksum "libs/package.json" }}
+          key: v1-libs-{{ checksum "libs/package.json" }}
 
       - restore_cache:
           keys:
           - v1-data-contracts-{{ checksum "contracts/package.json" }}
-          -v1-data-contracts- 
+          - v1-data-contracts- 
       - run:
           name: contract repo init
           command: |
@@ -299,9 +298,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "contracts/package.json" }}
+          - v1-libs-{{ checksum "contracts/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - v1-libs-
 
       - run:
           name: installation
@@ -312,7 +311,7 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: v1-dependencies-{{ checksum "contracts/package.json" }}
+          key: v1-libs-{{ checksum "contracts/package.json" }}
 
       # run tests!
       - run:
@@ -340,9 +339,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+          - v1-libs-{{ checksum "eth-contracts/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - v1-libs-
       - run:
           name: installation
           command: |
@@ -352,7 +351,7 @@ jobs:
       - save_cache:
           paths:
             - eth-contracts/node_modules
-          key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+          key: v1-libs-{{ checksum "eth-contracts/package.json" }}
       - run:
           name: run_lint
           command: |
@@ -486,7 +485,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
-            -v1-discovery-node- 
+            - v1-discovery-node- 
       - run:
           name: python-setup
           command: |
@@ -556,7 +555,7 @@ jobs:
       - restore_cache:
           keys:
           - v1-data-contracts-{{ checksum "contracts/package.json" }}
-          -v1-data-contracts- 
+          - v1-data-contracts- 
       - run:
           name: contract repo init
           command: |
@@ -565,9 +564,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - identity-servicedep1-{{ checksum "identity-service/package.json" }}
+          - identity-service-dep1-{{ checksum "identity-service/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - identity-servicedep1-
+          - identity-service-dep1-
       - run:
           name: setup identity
           command: |
@@ -577,7 +576,7 @@ jobs:
       - save_cache:
           paths:
             - identity-service/node_modules
-          key: identity-servicedep1-{{ checksum "identity-service/package.json" }}
+          key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
       - run:
           name: run identity service tests
           command: |
@@ -840,7 +839,7 @@ workflows:
           name: deploy-ci
           cluster-name: audius-ci
           aws-region: us-west-2
-          deploy-args: ci contracts-1 v1-eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
+          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
           requires:
             - build-libs
             - build-contracts
