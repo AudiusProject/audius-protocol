@@ -70,6 +70,7 @@ jobs:
           command: |
             cd eth-contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+            source ~/.bash_profile
             nvm install 10.16
             npm install
       - save_cache:
