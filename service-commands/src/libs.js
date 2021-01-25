@@ -445,6 +445,10 @@ function LibsWrapper (walletIndex = 0) {
   this.getWalletAddress = () => {
     return this.libsInstance.web3Manager.getWalletAddress()
   }
+
+  this.getServices = async (type) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
+  }
 }
 
 module.exports = { LibsWrapper, Utils }

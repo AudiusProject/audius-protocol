@@ -110,9 +110,6 @@ const addAndUpgradeUsers = async (
           await executeOne(i, l => upgradeToCreator(l, endpointString))
           logger.info(`Finished upgrading creator wallet index ${i}`)
 
-          // TODO: Validate returned fields AFTER this
-          // Confirm that the returned IDs for this user match 
-
         } else {
           logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
         }
