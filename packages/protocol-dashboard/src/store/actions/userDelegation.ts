@@ -13,7 +13,7 @@ export const useUserDelegation = (wallet: Address) => {
 
   const delegationInfo = useProtocolDelegator()
 
-  const min = delegationInfo.minDelgationAmount
+  const min = delegationInfo.minDelegationAmount
 
   useEffect(() => {
     setStatus(undefined)

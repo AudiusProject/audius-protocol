@@ -13,7 +13,7 @@ export type State = {
   // Average block processing time
   averageBlockTime?: number
   delegator: {
-    minDelgationAmount?: BN
+    minDelegationAmount?: BN
     maxDelegators?: number
   }
   services: {
@@ -29,7 +29,7 @@ export const initialState: State = {
 
 type SetTotalStaked = BN
 type SetDelegator = {
-  minDelgationAmount: BN
+  minDelegationAmount: BN
   maxDelegators: number
 }
 
@@ -46,7 +46,7 @@ const slice = createSlice({
       state.totalStaked = action.payload
     },
     setDelgator: (state, action: PayloadAction<SetDelegator>) => {
-      state.delegator.minDelgationAmount = action.payload.minDelgationAmount
+      state.delegator.minDelegationAmount = action.payload.minDelegationAmount
       state.delegator.maxDelegators = action.payload.maxDelegators
     },
     setServiceTypeInfo: (state, action: PayloadAction<SetServiceTypeInfo>) => {

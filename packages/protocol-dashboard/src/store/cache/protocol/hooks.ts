@@ -37,9 +37,9 @@ export function fetchProtocolDelegation(): ThunkAction<
 > {
   return async (dispatch, getState, aud) => {
     const maxDelegators = await aud.Delegate.getMaxDelegators()
-    const minDelgationAmount = await aud.Delegate.getMinDelegationAmount()
+    const minDelegationAmount = await aud.Delegate.getMinDelegationAmount()
 
-    dispatch(setDelgator({ maxDelegators, minDelgationAmount }))
+    dispatch(setDelgator({ maxDelegators, minDelegationAmount }))
   }
 }
 
@@ -132,7 +132,7 @@ export const useProtocolDelegator = () => {
   useEffect(() => {
     if (
       delegatorInfo.maxDelegators === undefined ||
-      delegatorInfo.minDelgationAmount === undefined
+      delegatorInfo.minDelegationAmount === undefined
     ) {
       dispatch(fetchProtocolDelegation())
     }

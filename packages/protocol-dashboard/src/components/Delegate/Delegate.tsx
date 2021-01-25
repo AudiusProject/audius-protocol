@@ -16,8 +16,8 @@ import { formatWei, formatShortAud } from 'utils/format'
 const messages = {
   title: 'Manage Delegation',
   delegationLabel: `Your STAKE ${TICKER}`,
-  decrease: 'DECREASE DELGATION',
-  increase: 'INCREASE DELGATION'
+  decrease: 'DECREASE DELEGATION',
+  increase: 'INCREASE DELEGATION'
 }
 
 const DecreaseDelegation = ({
@@ -110,7 +110,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       <div className={styles.title}>{messages.title} </div>
       <div className={styles.content}>
-        <div className={styles.delgationContainer}>
+        <div className={styles.delegationContainer}>
           <Tooltip
             position={Position.TOP}
             text={formatWei(delegates)}
