@@ -3,7 +3,7 @@ const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
-const { consistency1, snapbackSMParallelSyncTest, IpldBlacklistTest } = require('./tests')
+const { coreIntegration, snapbackSMParallelSyncTest, IpldBlacklistTest } = require('./tests')
 
 // Configuration.
 // Should be CLI configurable in the future.
@@ -34,7 +34,11 @@ async function tearDownAllServices () {
   logger.info('All services downed.')
 }
 
-const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
+// Writing IPLD txns to chain require the 0th indexed wallet.
+// This flag is set to 'true' to run the test with the 0th indexed wallet.
+// The default will be 'undefined' for the other tests that do not require
+// this flag.
+const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
       const res = await testFn({
@@ -52,12 +56,13 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
   return {
     testName: name,
     test: wrappedTest,
-    numUsers
+    numUsers,
+    useZeroIndexedWallet
   }
 }
 
 const testRunner = async tests => {
-  let failedTests = []
+  const failedTests = []
 
   // Run each test
   for (let { testName, test, numUsers, useZeroIndexedWallet } of tests) {
@@ -120,7 +125,7 @@ async function main () {
       break
     }
     case 'test': {
-      const test = makeTest('consistency', consistency1, {
+      const test = makeTest('consistency', coreIntegration, {
         numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
         numUsers: DEFAULT_NUM_USERS
       })
@@ -140,7 +145,7 @@ async function main () {
       break
     }
     case 'test-ci': {
-      const test = makeTest('consistency:ci', consistency1, {
+      const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
         numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
         numUsers: DEFAULT_NUM_USERS
       })
@@ -150,10 +155,12 @@ async function main () {
         ([testName, testLogic]) =>
           makeTest(testName, testLogic, {
             numCreatorNodes: 1,
-            numUsers: DEFAULT_NUM_USERS
+            numUsers: DEFAULT_NUM_USERS,
+            useZeroIndexedWallet: true
           })
       )
-      const tests = [test, ...blacklistTests]
+
+      const tests = [coreIntegrationTests, ...blacklistTests]
 
       try {
         await testRunner(tests)

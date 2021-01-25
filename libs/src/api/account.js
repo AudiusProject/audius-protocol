@@ -90,7 +90,6 @@ class Account extends Base {
    * @param {string} email
    * @param {string} password
    * @param {Object} metadata
-   * @param {?boolean} [isCreator] whether or not the user is a content creator.
    * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
@@ -100,91 +99,52 @@ class Account extends Base {
     email,
     password,
     metadata,
-    isCreator = false,
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null
   ) {
-    let userId
-
     const phases = {
-      ADD_CREATOR: 'ADD_CREATOR',
+      ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
-
     let phase = ''
+    let userId
+
     try {
-      if (isCreator) {
-        if (this.web3Manager.web3IsExternal()) {
-          // Creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Creator and identity service web3
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-        }
+      if (this.web3Manager.web3IsExternal()) {
+        phase = phases.CREATE_USER_RECORD
+        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
-        if (this.web3Manager.web3IsExternal()) {
-          // Non-creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.IDENTITY_SERVICE)
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Non-creator and identity service web3
-          this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
+        this.REQUIRES(Services.HEDGEHOG)
+        // If an owner wallet already exists, don't try to recreate it
+        if (!hasWallet) {
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          await this.web3Manager.setOwnerWallet(ownerWallet)
+          await this.generateRecoveryLink({ handle: metadata.handle, host })
         }
       }
-    } catch (err) {
-      return { error: err.message, phase }
-    }
 
-    metadata.user_id = userId
-    metadata.wallet = this.web3Manager.getWalletAddress()
-    this.userStateManager.setCurrentUser(metadata)
+      // Add user to chain
+      phase = phases.ADD_USER
+      userId = await this.User.addUser(metadata)
+
+      // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
+      phase = phases.ADD_REPLICA_SET
+      metadata = await this.User.assignReplicaSet({ userId })
+
+      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+    } catch (e) {
+      return { error: e.message, phase }
+    }
 
     return { userId, error: false }
   }
