@@ -3,7 +3,7 @@ WORKDIR /usr/src/app
 
 COPY package.json ./
 
-RUN npm ci --loglevel verbose
+RUN npm i --loglevel verbose
 
 COPY . .
 
