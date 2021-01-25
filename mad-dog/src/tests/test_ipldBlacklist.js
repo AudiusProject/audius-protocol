@@ -31,7 +31,6 @@ const CREATOR_INDEX = 1
 const IPLD_CYCLE = 60000 // ms
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
-let walletIndexToUserIdMap
 
 let IpldBlacklistTest = {}
 
@@ -706,14 +705,11 @@ async function getCreatorId ({
   executeOne,
   numCreatorNodes
 }) {
-  if (!walletIndexToUserIdMap) {
-    walletIndexToUserIdMap = await addAndUpgradeUsers(
-      numUsers,
-      numCreatorNodes,
-      executeAll,
-      executeOne
-    )
-  }
+  const walletIndexToUserIdMap = await addAndUpgradeUsers(
+    numUsers,
+    executeAll,
+    executeOne
+  )
 
   return walletIndexToUserIdMap[CREATOR_INDEX]
 }

@@ -77,7 +77,6 @@ const snapbackSMParallelSyncTest = async ({
     try {
       walletIndexToUserIdMap = await addAndUpgradeUsers(
         numUsers,
-        numCreatorNodes,
         executeAll,
         executeOne
       )
