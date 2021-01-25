@@ -357,4 +357,62 @@ describe('test CreatorNodeSelection', () => {
       assert(returnedHealthyServices.length === numNodes)
     }
   })
+
+  it.only('selects 1 secondary if only 1 secondary is available', async () => {
+    const shouldBePrimary = 'https://shouldBePrimary.audius.co'
+    nock(shouldBePrimary)
+      .get('/version')
+      .delay(200)
+      .reply(200, { data: {
+        service: CREATOR_NODE_SERVICE_NAME,
+        version: '1.2.3',
+        country: 'US',
+        latitude: '37.7058',
+        longitude: '-122.4619'
+      } })
+
+    const shouldBeSecondary = 'https://secondary.audius.co'
+    nock(shouldBeSecondary)
+      .get('/version')
+      .delay(100)
+      .reply(200, { data: {
+        service: CREATOR_NODE_SERVICE_NAME,
+        version: '1.2.0',
+        country: 'US',
+        latitude: '37.7058',
+        longitude: '-122.4619'
+      } })
+
+    const unhealthy = 'https://unhealthy.audius.co'
+    nock(unhealthy)
+      .get('/version')
+      .reply(500, { })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts([unhealthy, shouldBePrimary, shouldBeSecondary], '1.2.3'),
+      whitelist: null,
+      blacklist: null
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 1)
+    assert(secondaries.includes(shouldBeSecondary))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 2)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
 })

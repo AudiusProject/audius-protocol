@@ -26,6 +26,15 @@ class CreatorNode {
   static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
 
   /**
+   * Builds the creator_node_endpoint value off of a primary and secondaries list
+   * @param {string} primary the primary endpoint
+   * @param {string[]} secondaries a list of secondary endpoints
+   */
+  static buildEndpoint (primary, secondaries) {
+    return [primary, ...secondaries].join()
+  }
+
+  /**
    * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
    * @param {string} endpoint creator node endpoint
    * @param {string} wallet user wallet address
@@ -67,6 +76,7 @@ class CreatorNode {
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
     this.web3Manager = web3Manager
+    // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
     this.userStateManager = userStateManager
