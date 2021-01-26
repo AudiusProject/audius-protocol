@@ -41,12 +41,13 @@ class CreatorNode {
    */
   static async getClockValue (endpoint, wallet, timeout) {
     try {
-      return (await axios({
+      const { data: body } = await axios({
         url: `/users/clock_status/${wallet}`,
         method: 'get',
         baseURL: endpoint,
         timeout
-      })).data.clockValue
+      })
+      return body.data.clockValue
     } catch (err) {
       throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
     }
@@ -65,8 +66,8 @@ class CreatorNode {
         url: `/tracks/download_status/${trackId}`,
         method: 'get'
       }
-      const res = await axios(req)
-      if (res.data.cid) return res.data.cid
+      const { data: body } = await axios(req)
+      if (body.data.cid) return body.data.cid
     }
     // Download is not available, clients should display "processing"
     return null
@@ -162,7 +163,8 @@ class CreatorNode {
         }
       }
 
-      return this._makeRequest(requestObj)
+      const { data: body } = await this._makeRequest(requestObj)
+      return body
     } catch (e) {
       console.error('Error validating creator metadata', e)
     }
@@ -254,7 +256,7 @@ class CreatorNode {
       console.error('Error validating track metadata', e)
     }
 
-    return this._makeRequest({
+    const { data: body } = await this._makeRequest({
       url: '/tracks/metadata',
       method: 'post',
       data: {
@@ -262,6 +264,7 @@ class CreatorNode {
         sourceFile
       }
     }, true)
+    return body
   }
 
   /**
@@ -286,11 +289,13 @@ class CreatorNode {
   }
 
   async uploadImage (file, square = true, onProgress) {
-    return this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
+    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
+    return body
   }
 
   async uploadTrackAudio (file, onProgress) {
-    return this._uploadFile(file, '/track_content', onProgress)
+    const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
+    return body
   }
 
   /**
@@ -304,15 +309,8 @@ class CreatorNode {
       url: 'tracks/unlisted',
       method: 'get'
     }
-    const resp = await this._makeRequest(request)
-    return resp.tracks
-  }
-
-  async getHealthy () {
-    return this._makeRequest({
-      url: '/health_check',
-      method: 'get'
-    })
+    const { data: body } = await this._makeRequest(request)
+    return body.tracks
   }
 
   /**
@@ -330,14 +328,15 @@ class CreatorNode {
         method: 'get'
       }
       if (timeout) req.timeout = timeout
-      const status = await axios(req)
+      const { data: body } = await axios(req)
+      const status = body.data
       return {
-        status: status.data,
+        status,
         userBlockNumber: user.blocknumber,
         trackBlockNumber: user.track_blocknumber,
         // Whether or not the endpoint is behind in syncing
-        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
-        isConfigured: status.data.latestBlockNumber !== -1
+        isBehind: status.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
+        isConfigured: status.latestBlockNumber !== -1
       }
     }
     throw new Error(`No current user`)
@@ -413,7 +412,7 @@ class CreatorNode {
         }
       }, false)
 
-      clientChallengeKey = challengeResp.challenge
+      clientChallengeKey = challengeResp.data.challenge
       url = '/users/login/challenge'
     } catch (e) {
       // If '/users/login/get_challenge' returns 404, login using legacy non-challenge route
@@ -436,7 +435,7 @@ class CreatorNode {
         signature
       }
     }, false)
-    this.authToken = resp.sessionToken
+    this.authToken = resp.data.sessionToken
   }
 
   async _logoutNodeUser () {
@@ -509,6 +508,7 @@ class CreatorNode {
    * @param {Object} axiosRequestObj
    * @param {bool} requiresConnection if set, the currently configured creator node
    * is connected to before the request is made.
+   * @return {Object} response body
    */
   async _makeRequest (axiosRequestObj, requiresConnection = true) {
     if (requiresConnection) {
@@ -532,6 +532,7 @@ class CreatorNode {
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
+      // Axios `data` field gets the response body
       return resp.data
     } catch (e) {
       _handleErrorHelper(e, axiosRequestObj.url)

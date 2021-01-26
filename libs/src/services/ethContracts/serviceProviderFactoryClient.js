@@ -42,12 +42,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       timeout: 1000
     }
     const resp = await axios(axiosRequestObj)
-    let endpointServiceType
-    try {
-      endpointServiceType = resp.data.data.service
-    } catch (e) {
-      endpointServiceType = resp.data.service
-    }
+    const endpointServiceType = resp.data.data.service
 
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to register endpoint with mismatched service type')
@@ -427,12 +422,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
 
     const resp = await axios(axiosRequestObj)
-    let serviceType
-    try {
-      serviceType = resp.data.data.service
-    } catch (e) {
-      serviceType = resp.data.service
-    }
+    const serviceType = resp.data.data.service
 
     const serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
     const info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)
