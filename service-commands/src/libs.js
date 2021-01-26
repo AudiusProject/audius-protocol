@@ -132,6 +132,12 @@ function LibsWrapper (walletIndex = 0) {
     }
   }
 
+  this.getLatestBlockOnChain = async () => {
+    assertLibsDidInit()
+    const { number: latestBlock } = await this.libsInstance.web3Manager.web3.eth.getBlock('latest')
+    return latestBlock
+  }
+
   /**
    * Signs up a user.
    * @param {*} args metadata describing a user.

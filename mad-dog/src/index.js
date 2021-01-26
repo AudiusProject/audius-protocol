@@ -160,7 +160,8 @@ async function main () {
           })
       )
 
-      const tests = [coreIntegrationTests, ...blacklistTests]
+      // const tests = [coreIntegrationTests, ...blacklistTests]
+      const tests = [...blacklistTests]
 
       try {
         await testRunner(tests)

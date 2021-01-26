@@ -1,3 +1,4 @@
+const axios = require('axios')
 const { _ } = require('lodash')
 const fs = require('fs-extra')
 const path = require('path')
@@ -13,9 +14,7 @@ const {
   uploadProfileImagesAndAddUser,
   upgradeToCreator,
   getLibsUserInfo,
-  getUserAccount,
-  getLibsWalletAddress,
-  setCurrentUserAndUpdateLibs
+  getLatestBlockOnChain
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -29,6 +28,8 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
+const MAX_INDEXING_TIMEOUT = 60000 // extra second of buffer....
+const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
 
 /**
  * Adds and upgrades `userCount` users.
@@ -121,7 +122,8 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
 
         // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-        await waitForIndexing()
+        // await waitForIndexing()
+        await waitForLatestBlock(executeOne)
 
         // add to wallet index to userId mapping
         walletIndexToUserIdMap[i] = userId
@@ -164,7 +166,7 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
       logger.error(e.message)
       throw e
     }
-    await waitForIndexing()
+    await waitForLatestBlock(executeOne)
   })
 }
 
@@ -316,10 +318,45 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 /** Delay execution for n ms */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-/** Wrapper for custom delay time */
-const waitForIndexing = async (waitTime = 5000) => {
-  logger.info(`Pausing ${waitTime}ms for discprov indexing...`)
-  await delay(waitTime)
+const getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
+  const resp = await axios({
+    method: 'get',
+    baseURL: endpoint,
+    url: '/health_check'
+  })
+
+  const { data: { latest_indexed_block: latestIndexedBlock } } = resp
+
+  return latestIndexedBlock
+}
+
+/**
+ * Wait for the discovery node to catch up to the latest block on chain up to a max
+ * indexing timeout of default 5000ms.
+ * @param {*} executeOne
+ * @param {*} libsWrapper
+ * @param {number} maxIndexingTimeout default 5000ms
+ */
+const waitForLatestBlock = async (executeOne, maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+  const latestBlockOnChain = await executeOne(0, libsWrapper => {
+    return getLatestBlockOnChain(libsWrapper)
+  })
+
+  logger.info(`Waiting for latest block #${latestBlockOnChain} to be indexed...`)
+
+  let latestIndexedBlock = -1 // init
+  const startTime = Date.now()
+  while (Date.now() - startTime < maxIndexingTimeout) {
+    console.log(Date.now() - startTime)
+    latestIndexedBlock = await getLatestIndexedBlock()
+    if (latestIndexedBlock >= latestBlockOnChain) {
+      logger.info(`Discovery Node has indexed block #${latestBlockOnChain}!`)
+      return true
+    }
+  }
+
+  logger.warn(`Could not index latest block #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+  return false
 }
 
 const waitForSync = async (waitTime = 20000) => {
@@ -349,7 +386,7 @@ module.exports = {
   genRandomString,
   getRandomTrackFilePath,
   delay,
-  waitForIndexing,
+  waitForLatestBlock,
   waitForSync,
   makeExecuteAll,
   makeExecuteOne,

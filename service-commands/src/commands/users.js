@@ -22,7 +22,7 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   const userId = await User.addUser(libsWrapper, metadata)
 
   // Wait for disc prov to index user
-  await waitForIndexing()
+  await waitForIndexing() // TODO: remove this and use block comparison
   metadata = await User.getUser(libsWrapper, userId)
 
   // Upload photo for profile picture
