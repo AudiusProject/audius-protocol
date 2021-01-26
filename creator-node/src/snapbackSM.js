@@ -295,8 +295,8 @@ class SnapbackSM {
             }
           }
           this.log(`Requesting ${walletsToQuery.length} users from ${node}`)
-          let resp = await axios(requestParams)
-          let userClockStatusList = resp.data.users
+          let { data: body } = await axios(requestParams)
+          let userClockStatusList = body.data.users
           // Process returned clock values from this secondary node
           userClockStatusList.map(
             (entry) => {
