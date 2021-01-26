@@ -1,4 +1,3 @@
-const axios = require('axios')
 const semver = require('semver')
 let urlJoin = require('proper-url-join')
 
@@ -12,13 +11,6 @@ const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
 const ClaimDistributionClient = require('./claimDistributionClient')
 const Utils = require('../../utils')
-let localStorage
-if (typeof window === 'undefined' || window === null) {
-  const LocalStorage = require('node-localstorage').LocalStorage
-  localStorage = new LocalStorage('./local-storage')
-} else {
-  localStorage = window.localStorage
-}
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
 const RegistryABI = Utils.importEthContractABI('Registry.json').abi
@@ -39,13 +31,6 @@ const ClaimsManagerProxyKey = 'ClaimsManagerProxy'
 const ClaimDistributionRegistryKey = 'ClaimDistribution'
 
 const TWO_MINUTES = 2 * 60 * 1000
-
-const {
-  DISCOVERY_PROVIDER_TIMESTAMP,
-  UNHEALTHY_BLOCK_DIFF,
-  DISCOVERY_PROVIDER_TIMESTAMP_INTERVAL,
-  DISCOVERY_PROVIDER_RESELECT_TIMEOUT
-} = require('../discoveryProvider/constants')
 
 const serviceType = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-node',
