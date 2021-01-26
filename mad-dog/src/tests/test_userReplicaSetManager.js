@@ -35,9 +35,11 @@ const userReplicaSetManagerTest = async ({
 }) => {
   contentNodeEndpointToInfoMapping = {}
 
+  console.log(executeAll)
   // Initialize users
   if (!walletIndexToUserIdMap) {
     try {
+      console.log('here1')
       walletIndexToUserIdMap = await addAndUpgradeUsers(
         numUsers,
         numCreatorNodes,
@@ -48,6 +50,7 @@ const userReplicaSetManagerTest = async ({
       return { error: `Issue with creating and upgrading users: ${e}` }
     }
   }
+  console.log('here2')
 
   let contentNodeList = await executeOne(DEFAULT_INDEX, async (libsWrapper) => {
     console.log('Executing one!')
@@ -59,6 +62,7 @@ const userReplicaSetManagerTest = async ({
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
   console.log(contentNodeEndpointToInfoMapping)
+  /*
 
   await executeAll(async (libs, i) => {
     // Retrieve user id if known from walletIndexToUserIdMap
@@ -73,6 +77,7 @@ const userReplicaSetManagerTest = async ({
       logger.error(`Error uploading track for userId:${userId} :${e}`)
     }
   })
+  */
 }
 
 module.exports = {
