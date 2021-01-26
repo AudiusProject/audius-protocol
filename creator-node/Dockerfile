@@ -1,10 +1,13 @@
-FROM node:10.16
+FROM node:10.16 as builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --loglevel verbose
+
+FROM node:10.16-alpine
+
 WORKDIR /usr/src/app
-
-COPY package.json ./
-
-RUN npm i --loglevel verbose
-
+COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
 # Add the wait script to the image
