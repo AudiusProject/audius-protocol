@@ -32,13 +32,6 @@ class DateTimeEncoder(json.JSONEncoder):
 def error_response(error, error_code=500):
     return jsonify({'success': False, 'error': error}), error_code
 
-# Create a response dict with just data, signature, and timestamp
-# This response will contain a duplicate of response_entity
-def success_response_backwards_compat(response_entity=None, status=200, sign_response=True):
-    starting_response_dictionary = {'data': response_entity, **response_entity}
-    response_dictionary = response_dict_with_metadata(starting_response_dictionary, sign_response)
-    return jsonify(response_dictionary), status
-
 # Create a response dict with metadata, data, signature, and timestamp
 def success_response(response_entity=None, status=200, to_json=True, sign_response=True):
     starting_response_dictionary = {'data': response_entity}

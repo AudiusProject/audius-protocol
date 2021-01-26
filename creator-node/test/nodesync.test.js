@@ -91,7 +91,7 @@ describe('test nodesync', async function () {
       const file = fs.readFileSync(testAudioFilePath)
 
       // Upload track content
-      const { body: trackContentRespBody } = await request(app)
+      const { body: { data: trackContentRespBody } } = await request(app)
         .post('/track_content')
         .attach('file', file, { filename: 'fname.mp3' })
         .set('Content-Type', 'multipart/form-data')
@@ -111,8 +111,8 @@ describe('test nodesync', async function () {
         .post('/tracks/metadata')
         .set('X-Session-ID', sessionToken)
         .send({ metadata: trackMetadata, source_file: sourceFile })
-      trackMetadataMultihash = trackMetadataResp.body.metadataMultihash
-      trackMetadataFileUUID = trackMetadataResp.body.metadataFileUUID
+      trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
+      trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
       // associate track + track metadata with blockchain ID
       await request(app)
