@@ -18,6 +18,7 @@ const {
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
+const MonitoringQueue = require('./monitors/MonitoringQueue')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
@@ -71,6 +72,10 @@ const initializeApp = (port, serviceRegistry) => {
   server.timeout = config.get('timeout')
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')
+
+  // Start the monitoring queue cron that computes and persists
+  // service metrics to redis
+  MonitoringQueue.start()
 
   return { app: app, server: server }
 }
