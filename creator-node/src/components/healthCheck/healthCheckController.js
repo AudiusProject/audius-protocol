@@ -46,6 +46,10 @@ const healthCheckVerifySignature = (req, res, next) => {
  * `healthCheckComponentService`.
  */
 const healthCheckController = async (req) => {
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError()
+  }
+
   const logger = req.logger
   const response = await healthCheck(serviceRegistry, logger, sequelize)
   return successResponse(response)

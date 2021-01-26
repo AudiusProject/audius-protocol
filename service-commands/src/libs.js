@@ -89,6 +89,9 @@ function LibsWrapper (walletIndex = 0) {
     )
 
     const walletAddress = config.get('data_wallets')[walletIndex]
+    this.walletAddress = walletAddress
+    this.walletIndex = walletIndex
+
     const web3Config = await AudiusLibs.configExternalWeb3(
       REGISTRY_ADDRESS,
       dataWeb3,
@@ -125,7 +128,7 @@ function LibsWrapper (walletIndex = 0) {
       await libs.init()
       this.libsInstance = libs
     } catch (e) {
-      console.log(`Error initting libs: ${e.message}`)
+      console.error(`Error initting libs: ${e}`)
     }
   }
 
@@ -139,19 +142,26 @@ function LibsWrapper (walletIndex = 0) {
       metadata.email,
       metadata.password,
       metadata,
-      false /* is creator */,
-      null /* profile picture */,
-      null /* cover photo */,
+      metadata.profilePictureFile /* profile picture */,
+      metadata.coverPhotoFile /* cover photo */,
       false /* has wallet */,
-      null /* host */,
-      false /* generate recovery info */
+      null /* host */
     )
   }
 
   /**
    * Upgrades the current user for this LibsWrapper to a creator.
    *
-   * @param {*} args endpoint to upgrade to, current userNode endpoint.
+   * @param {string} userNode current userNode endpoint
+   *
+   * @note userNode is the user metadata node. New users created in
+   * the mad-dog test suite will not need to pass `userNode` as they will
+   * be assigned a replica set on signup. This field is more so for
+   * existing users prior to deprecate UM task that still use the UM node.
+   *
+   * The current mad-dog suite passes in a value for `userNode`, and an empty
+   * string for `endpoint`. The protocol will not try to sync data from
+   * `userNode` if an empty string is passed into `userNode`.
    */
   this.upgradeToCreator = async ({ endpoint, userNode }) => {
     assertLibsDidInit()
@@ -169,11 +179,11 @@ function LibsWrapper (walletIndex = 0) {
     blacklist
   }) => {
     assertLibsDidInit()
-    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes(
+    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes({
       numberOfNodes,
       whitelist,
       blacklist
-    )
+    })
   }
 
   /**
@@ -239,6 +249,23 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
+   * Fetch users metadata from discovery node given array of userIds
+   * @param {number[]} userIds int array of user ids
+   */
+  this.getUsers = async userIds => {
+    assertLibsDidInit()
+    const users = await this.libsInstance.User.getUsers(
+      1 /* limit */,
+      0 /* offset */,
+      userIds
+    )
+    if (!users.length || users.length !== userIds.length) {
+      throw new Error('No users or not all users found')
+    }
+    return users
+  }
+
+  /**
    * Fetch user account from /user/account with wallet param
    * @param {string} wallet wallet address
    */
@@ -253,14 +280,75 @@ function LibsWrapper (walletIndex = 0) {
     return userAccount
   }
 
-  this.setCurrentUser = async userAccount => {
+  /**
+   * Updates userStateManager and updates the primary endpoint in libsInstance.creatorNode
+   * @param {Object} userAccount new metadata field
+   */
+  this.setCurrentUserAndUpdateLibs = async userAccount => {
     assertLibsDidInit()
-    this.libsInstance.userStateManager.setCurrentUser(userAccount)
-    const creatorNodeEndpoints = userAccount.creator_node_endpoint
-    if (creatorNodeEndpoints) {
-      const primary = CreatorNode.getPrimary(creatorNodeEndpoints)
-      this.libsInstance.creatorNode.setEndpoint(primary)
+    this.setCurrentUser(userAccount)
+    const contentNodeEndpointField = userAccount.creator_node_endpoint
+    if (contentNodeEndpointField) {
+      this.getPrimaryAndSetLibs(contentNodeEndpointField)
     }
+  }
+
+  /**
+   * Updates userStateManager with input user metadata
+   * @param {object} user user metadata
+   */
+  this.setCurrentUser = user => {
+    assertLibsDidInit()
+    this.libsInstance.userStateManager.setCurrentUser(user)
+  }
+
+  /**
+  * Gets the primary off the user metadata and then sets the primary
+  * on the CreatorNode instance in libs
+  * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
+  */
+  this.getPrimaryAndSetLibs = contentNodeEndpointField => {
+    assertLibsDidInit()
+    const primary = CreatorNode.getPrimary(contentNodeEndpointField)
+    this.libsInstance.creatorNode.setEndpoint(primary)
+  }
+
+  /**
+   * Wrapper for libsInstance.creatorNode.getEndpoints()
+   * @param {string} contentNodesEndpointField creator_node_endpoint field from user's metadata
+   */
+  this.getContentNodeEndpoints = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getEndpoints(contentNodesEndpointField)
+  }
+
+  this.getPrimary = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getPrimary(contentNodesEndpointField)
+  }
+
+  this.getSecondaries = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getSecondaries(contentNodesEndpointField)
+  }
+
+  /**
+   * Updates the metadata on chain and uploads new metadata instance on content node
+   * @param {Object} param
+   * @param {Object} param.newMetadata new metadata object to update in content nodes and on chain
+   * @param {number} param.userId
+   */
+  this.updateAndUploadMetadata = async ({ newMetadata, userId }) => {
+    assertLibsDidInit()
+    return await this.libsInstance.User.updateAndUploadMetadata({ newMetadata, userId })
+  }
+
+  /**
+   * Wrapper for libsInstance.creatorNode.getClockValuesFromReplicaSet()
+   */
+  this.getClockValuesFromReplicaSet = async () => {
+    assertLibsDidInit()
+    return this.libsInstance.creatorNode.getClockValuesFromReplicaSet()
   }
 
   /**

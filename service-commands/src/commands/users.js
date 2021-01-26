@@ -11,22 +11,72 @@ User.addUser = async (libsWrapper, metadata) => {
   return userId
 }
 
+/**
+ * TODO: The third party libraries we use in libs gets buggy when we try to upload photos
+ * programically via libs. We should be uploading a photo via signUp() instead of explicitly
+ * uploading photos after signup and reassociating the updated metadata. This is the
+ * workaround for this issue.
+ */
 User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePath) => {
-  const userPicFile = fs.createReadStream(userPicturePath)
+  // Sign user up
+  const userId = await User.addUser(libsWrapper, metadata)
+
+  // Wait for disc prov to index user
+  await waitForIndexing()
+  metadata = await User.getUser(libsWrapper, userId)
+
+  // Upload photo for profile picture
+  await User.uploadPhotoAndUpdateMetadata({
+    metadata,
+    libsWrapper,
+    userId,
+    picturePath: userPicturePath
+  })
+
+  return userId
+}
+
+/**
+ * Upload photo for cover photo and profile picture and update the metadata object
+ * @param {Object} param
+ * @param {Object} param.metadata original metadata object
+ * @param {Object} param.libsWrapper libs wrapper in ServiceCommands
+ * @param {number} param.userId
+ * @param {string} param.picturePath path of picture to upload
+ * @param {boolean} param.[updateCoverPhoto=true] flag to update cover_photo_sizes hash
+ * @param {boolean} param.[updateProfilePicture=true] flag to update profile_picture_sizes hash
+ */
+User.uploadPhotoAndUpdateMetadata = async ({
+  metadata,
+  libsWrapper,
+  userId,
+  picturePath,
+  updateCoverPhoto = true,
+  updateProfilePicture = true
+}) => {
+  const newMetadata = { ...metadata }
+  const userPicFile = fs.createReadStream(picturePath)
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
     'true' // square, this weirdly has to be a boolean string
   )
-  metadata.profile_picture_sizes = resp.dirCID
-  metadata.cover_photo_sizes = resp.dirCID
+  if (updateProfilePicture) newMetadata.profile_picture_sizes = resp.dirCID
+  if (updateCoverPhoto) newMetadata.cover_photo_sizes = resp.dirCID
 
-  return User.addUser(libsWrapper, metadata)
+  // Update metadata on content node + chain
+  await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
+
+  return newMetadata
 }
 
-User.upgradeToCreator = async (libsWrapper, endpoint) => {
+User.updateAndUploadMetadata = async (libsWrapper, { newMetadata, userId }) => {
+  await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
+}
+
+User.upgradeToCreator = async (libsWrapper, newEndpoint) => {
   await libsWrapper.upgradeToCreator({
-    endpoint,
-    userNode: config.get('user_node')
+    userNode: config.get('user_node'),
+    endpoint: newEndpoint
   })
 }
 
@@ -47,6 +97,10 @@ User.getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
 
+User.getUsers = async (libs, userIds) => {
+  return libs.getUsers(userIds)
+}
+
 User.getUserAccount = async (libs, wallet) => {
   return libs.getUserAccount(wallet)
 }
@@ -55,8 +109,12 @@ User.getLibsWalletAddress = libs => {
   return libs.getWalletAddress()
 }
 
-User.setCurrentUser = async (libs, userAccount) => {
-  libs.setCurrentUser(userAccount)
+User.setCurrentUserAndUpdateLibs = async (libs, userAccount) => {
+  libs.setCurrentUserAndUpdateLibs(userAccount)
+}
+
+User.setCurrentUser = (libs, user) => {
+  libs.setCurrentUser(user)
 }
 
 User.getLibsUserInfo = async libs => {
@@ -89,6 +147,17 @@ User.getContentNodeEndpoints = (libsWrapper, contentNodeEndpointField) => {
 
 User.getClockValuesFromReplicaSet = async libsWrapper => {
   return libsWrapper.getClockValuesFromReplicaSet()
+}
+
+/** Delay execution for n ms */
+function delay (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/** Wrapper for custom delay time */
+async function waitForIndexing (waitTime = 5000) {
+  console.info(`Pausing ${waitTime}ms for discprov indexing...`)
+  await delay(waitTime)
 }
 
 module.exports = User
