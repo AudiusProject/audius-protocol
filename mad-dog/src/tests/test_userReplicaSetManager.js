@@ -34,15 +34,11 @@ const userReplicaSetManagerTest = async ({
   numCreatorNodes
 }) => {
   contentNodeEndpointToInfoMapping = {}
-
-  console.log(executeAll)
   // Initialize users
   if (!walletIndexToUserIdMap) {
     try {
-      console.log('here1')
       walletIndexToUserIdMap = await addAndUpgradeUsers(
         numUsers,
-        numCreatorNodes,
         executeAll,
         executeOne
       )
@@ -50,10 +46,8 @@ const userReplicaSetManagerTest = async ({
       return { error: `Issue with creating and upgrading users: ${e}` }
     }
   }
-  console.log('here2')
 
   let contentNodeList = await executeOne(DEFAULT_INDEX, async (libsWrapper) => {
-    console.log('Executing one!')
     //   console.log(libsWrapper)
     let endpointsList = await libsWrapper.getServices('content-node') 
     return endpointsList
@@ -61,8 +55,6 @@ const userReplicaSetManagerTest = async ({
   contentNodeList.forEach((info)=>{
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
-  console.log(contentNodeEndpointToInfoMapping)
-  /*
 
   await executeAll(async (libs, i) => {
     // Retrieve user id if known from walletIndexToUserIdMap
@@ -70,14 +62,48 @@ const userReplicaSetManagerTest = async ({
     const userId = walletIndexToUserIdMap[i]
     try {
         // Query user object
-        console.log(`Validating user: ${userId}`)
         let userObject = await getUser(libs, i)
-        console.log(userObject)
+
+        // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
+        let replicaEndpointArray = userObject.creator_node_endpoint.split(",")
+        let primaryEndpointString = replicaEndpointArray[0]
+        let secondaryEndpointStrings = replicaEndpointArray.slice(1)
+
+        let primaryInfo = contentNodeEndpointToInfoMapping[primaryEndpointString]
+
+        let primaryId = userObject.primary
+
+        // Throw if mismatched
+        if (primaryId !== primaryInfo.spID) {
+          throw new Error(`Mismatch spID values. Expected endpoint for ${primaryId}, found ${primaryInfo.spID}`)
+        }
+        console.log(`userId: ${userId} primaryId: ${primaryId} primaryIdFromEndointStr: ${primaryInfo.spID}`)
+
+        // Throw if array lengths do not match for secondaries
+        if (secondaryEndpointStrings.length !== userObject.secondaries.length) {
+          throw new Error('Mismatched secondary status')
+        }
+
+        // Compare secondary replica ID values to secondary endpoints in 
+        //    legacy comma separated strings
+        for (var i = 0; i < userObject.secondaries.length; i++) {
+          let secondaryId = userObject.secondaries[i]
+          let secondaryEndpoint = secondaryEndpointStrings[i]
+          let secondaryInfoFromStr = contentNodeEndpointToInfoMapping[secondaryEndpoint]
+          let secondaryIdFromStr = secondaryInfoFromStr.spID
+          console.log(`userId: ${userId} secondaryId: ${secondaryId} secondaryIdFromEndpointStr: ${secondaryIdFromStr}`)
+
+          // Throw if the ID array does not match the endpoint in the 
+          //  comma separated string
+          if (secondaryId !== secondaryIdFromStr) {
+            throw new Error("Invalid write operation")
+          }
+        }
+
     } catch (e) {
-      logger.error(`Error uploading track for userId:${userId} :${e}`)
+      logger.error(`Error validating userId:${userId} :${e}`)
     }
   })
-  */
 }
 
 module.exports = {
