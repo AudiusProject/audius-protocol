@@ -20,7 +20,7 @@ const MONITORS = [
     name: 'databaseSize',
     ttl: 120,
     func: getDatabaseSize
-  },
+  }
   // TODO: Add more monitors
 ]
 
@@ -34,7 +34,7 @@ const MONITORS = [
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor() {
+  constructor () {
     this.queue = new Bull(
       'monitoring-queue',
       {
@@ -76,11 +76,11 @@ class MonitoringQueue {
   async setIfNotFresh (monitor) {
     const key = `${MONITORING_REDIS_PREFIX}:${monitor.name}`
     const ttlKey = `${key}:ttl`
-  
+
     // If the value is fresh, exit early
     const isFresh = await redis.get(ttlKey)
     if (isFresh) return
-  
+
     const value = await monitor.func()
     this.logStatus(`Computed value for ${monitor.name} ${value}`)
     // Set the value
@@ -104,7 +104,7 @@ class MonitoringQueue {
    * Starts the monitoring queue on an every minute cron.
    */
   start () {
-    this.queue.add(PROCESS_NAMES.monitor, {}, { repeat: { cron: '* * * * *' }})
+    this.queue.add(PROCESS_NAMES.monitor, {}, { repeat: { cron: '* * * * *' } })
   }
 }
 
