@@ -2,7 +2,7 @@
 .e2e-overrides/
 docker-compose/
 file_storage/
-# node_modules/
+node_modules/
 
 .dockerignore
 .env
