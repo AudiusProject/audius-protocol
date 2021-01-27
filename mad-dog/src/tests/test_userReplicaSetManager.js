@@ -3,7 +3,8 @@ const axios = require('axios')
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
-  addAndUpgradeUsers
+  addAndUpgradeUsers,
+  delay
 } = require('../helpers.js')
 const { exec } = require('child_process')
 
@@ -100,7 +101,7 @@ const getLatestIndexedBlock = async (endpoint) => {
   })).data.latest_indexed_block
 }
 
-const maxIndexingTimeout = 5000
+const maxIndexingTimeout = 15000
 
 
 const waitForBlock = async (libs, targetBlockNumber) => {
@@ -113,7 +114,7 @@ const waitForBlock = async (libs, targetBlockNumber) => {
       return true
     }
   }
-  logger.info(`Exiting...reached ${targetBlockNumber}`)
+  throw new Error(`Failed to reach ${targetBlockNumber} in ${maxIndexingTimeout}`)
 }
 
 const verifyUserReplicaSets = async(executeAll) => {
@@ -135,7 +136,7 @@ const promoteSecondary1ToPrimary = async(executeAll) => {
     // NOTE - It might be easier to just create a map of wallets instead of using 'index'
     const userId = walletIndexToUserIdMap[i]
     let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
-    logger.info(`Reordering ${userId}`)
+    logger.info(`userId: ${userId}: promoteSecondary1ToPrimary`)
     let primary = usrReplicaInfoFromContract.primary
     let secondaries = usrReplicaInfoFromContract.secondaries
 
@@ -158,12 +159,34 @@ const promoteSecondary2ToPrimary = async(executeAll) => {
     // NOTE - It might be easier to just create a map of wallets instead of using 'index'
     const userId = walletIndexToUserIdMap[i]
     let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
-    logger.info(`Reordering ${userId}`)
+    logger.info(`userId: ${userId}: promoteSecondary2ToPrimary`)
     let primary = usrReplicaInfoFromContract.primary
     let secondaries = usrReplicaInfoFromContract.secondaries
 
     let newPrimary = parseInt(secondaries[1])
     let newSecondaries = [secondaries[1], primary].map(x=>parseInt(x))
+    logger.info(`userId: ${userId} | P: ${primary}->${newPrimary}`)
+    logger.info(`userId: ${userId} | S1: ${secondaries[0]}->${newSecondaries[0]}`)
+    logger.info(`userId: ${userId} | S2: ${secondaries[1]}->${newSecondaries[1]}`)
+    let tx = await libs.updateReplicaSet(userId, newPrimary, newSecondaries)
+    await waitForBlock(libs, tx.blockNumber)
+  })
+}
+
+// Promote each user's secondary2 to primary
+// Replica set transitions: (P=Primary, S1=Secondary1, S2 = Secondary2)
+// P->P, S1->S2, S2->S1
+const swapSecondaries = async(executeAll) => {
+  await executeAll(async (libs, i) => {
+    // Retrieve user id if known from walletIndexToUserIdMap
+    // NOTE - It might be easier to just create a map of wallets instead of using 'index'
+    const userId = walletIndexToUserIdMap[i]
+    let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
+    logger.info(`userId: ${userId}: swapSecondaries`)
+    let primary = usrReplicaInfoFromContract.primary
+    let secondaries = usrReplicaInfoFromContract.secondaries
+    let newPrimary = primary
+    let newSecondaries = [secondaries[1], secondaries[0]].map(x=>parseInt(x))
     logger.info(`userId: ${userId} | P: ${primary}->${newPrimary}`)
     logger.info(`userId: ${userId} | S1: ${secondaries[0]}->${newSecondaries[0]}`)
     logger.info(`userId: ${userId} | S2: ${secondaries[1]}->${newSecondaries[1]}`)
@@ -204,6 +227,8 @@ const userReplicaSetManagerTest = async ({
   await promoteSecondary1ToPrimary(executeAll)
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary2ToPrimary(executeAll)
+  await verifyUserReplicaSets(executeAll)
+  await swapSecondaries(executeAll)
   await verifyUserReplicaSets(executeAll)
 }
 
