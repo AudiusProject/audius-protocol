@@ -223,6 +223,7 @@ const userReplicaSetManagerTest = async ({
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
 
+  // Start of actual test logic
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary1ToPrimary(executeAll)
   await verifyUserReplicaSets(executeAll)
