@@ -268,7 +268,7 @@ class CreatorNode {
   }
 
   /**
-   * Creates a track on the creator node, associating track id with file content
+   * Creates a track on the content node, associating track id with file content
    * @param {number} audiusTrackId returned by track creation on-blockchain
    * @param {string} metadataFileUUID unique ID for metadata file
    * @param {number} blockNumber
@@ -288,11 +288,23 @@ class CreatorNode {
     })
   }
 
+  /**
+   * Uploads an image to the connected content node
+   * @param {File} file image to upload
+   * @param {boolean?} square whether this image should be turned into a square (e.g. profile picture / track artwork)
+   * @param {function?} onProgress called with loaded bytes and total bytes
+   * @return {Object} response body
+   */
   async uploadImage (file, square = true, onProgress) {
     const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
     return body
   }
 
+  /**
+   * @param {File} file track to upload
+   * @param {function?} onProgress called with loaded bytes and total bytes
+   * @return {Object} response body
+   */
   async uploadTrackAudio (file, onProgress) {
     const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
     return body
@@ -543,7 +555,7 @@ class CreatorNode {
    * Uploads a file to the connected creator node.
    * @param {File} file
    * @param {string} route route to handle upload (image_upload, track_upload, etc.)
-   * @param {?function} onProgress called with loaded bytes and total bytes
+   * @param {function?} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
   async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}) {
