@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const config = require('../config')
-const middlewares = require('../middlewares')
+const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
@@ -293,12 +293,18 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       }
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
-      // Build user replica set array for use in file fetch + save
-      // TODO move this logic to right before file save ops...
-      let userReplicaSet = []
+      /**
+       * TODO
+       */
       try {
-        const myCnodeEndpoint = await middlewares.getOwnEndpoint(req)
-        userReplicaSet = await middlewares.getCreatorNodeEndpoints(req, fetchedWalletPublicKey)
+        const myCnodeEndpoint = await getOwnEndpoint(req)
+        userReplicaSet = await getCreatorNodeEndpoints({
+          req,
+          wallet: fetchedWalletPublicKey,
+          blockNumber: req.body.blockNumber,
+          ensurePrimary: false,
+          myCnodeEndpoint
+        })
 
         // push user metadata node to user's replica set if defined
         if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))

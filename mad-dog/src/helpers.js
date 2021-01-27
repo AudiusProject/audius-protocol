@@ -10,12 +10,9 @@ const { logger } = require('./logger.js')
 const ServiceCommands = require('@audius/service-commands')
 const {
   addUser,
+  uploadProfileImagesAndAddUser,
   upgradeToCreator,
-  autoSelectCreatorNodes,
-  getLibsUserInfo,
-  getUserAccount,
-  getLibsWalletAddress,
-  setCurrentUser
+  getLibsUserInfo
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -28,15 +25,6 @@ const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Happy.mp3'
 ]
 
-const makeCreatorNodeEndpointString = selectedCNodesObj => {
-  if (!selectedCNodesObj || !selectedCNodesObj.primary) return ''
-  const endpointArr = [
-    selectedCNodesObj.primary,
-    ...selectedCNodesObj.secondaries
-  ]
-  return endpointArr.join(',')
-}
-
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
 
 /**
@@ -47,72 +35,126 @@ const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
  */
 const addAndUpgradeUsers = async (
   userCount,
-  numCreatorNodes,
   executeAll,
   executeOne
 ) => {
-  let addedUserIds = []
-  let existingUserIds = []
+  const addedUserIds = []
+  const existingUserIds = []
   const walletIndexToUserIdMap = {}
 
+  await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
+  await upgradeUsersToCreators(executeAll, executeOne)
+
+  // Map out walletId index => userId
+  return walletIndexToUserIdMap
+}
+
+const addUsers = async (
+  userCount,
+  executeAll,
+  executeOne
+) => {
+  const addedUserIds = []
+  const existingUserIds = []
+  const walletIndexToUserIdMap = {}
+
+  await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
+
+  // Map out walletId index => userId
+  return walletIndexToUserIdMap
+}
+
+const addUsersWithoutProfileImageOnSignUp = async (
+  userCount,
+  executeAll,
+  executeOne
+) => {
+  const addedUserIds = []
+  const existingUserIds = []
+  const walletIndexToUserIdMap = {}
+
+  await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic: false })
+
+  // Map out walletId index => userId
+  return walletIndexToUserIdMap
+}
+
+/**
+ * Helper function to add a user. If the wallet index is already used to create a user, add that userId to
+ * the walletIndexToUserMap.
+ * @param {*} userCount
+ * @param {*} executeAll
+ * @param {*} executeOne
+ * @param {int[]} existingUserIds
+ * @param {int[]} addedUserIds
+ * @param {Object} walletIndexToUserIdMap
+ * @param {boolean} uploadProfilePic flag to upload profile pic on sign up or not
+ */
+async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic = true }) {
   await logOps('Add users', async () => {
     const users = genRandomUsers(userCount)
     await executeAll(async (libs, i) => {
+      try {
       // If user already exists, do not recreate user and use existing user
-      const existingUser = await getUser({ executeOne, walletIndex: i })
-      let userId
-      if (existingUser) {
-        existingUserIds.push(existingUser.user_id)
-        userId = existingUser.user_id
-        logger.info(`Found existing user with id ${userId}`)
-      } else {
-        const userMetadata = users[i]
-        const newUserId = await addUser(libs, userMetadata, USER_PIC_PATH)
-        addedUserIds.push(newUserId)
-        userId = newUserId
-        logger.info(`Created new user: ${userId}`)
+        const existingUser = await getUser({ executeOne, walletIndex: i })
+        let userId
+        if (existingUser) {
+          logger.info(`Found existing user with id ${existingUser.user_id}`)
+          existingUserIds.push(existingUser.user_id)
+          userId = existingUser.user_id
+        } else {
+          logger.info('Creating new user...')
+          const userMetadata = users[i]
+          let newUserId
+          if (uploadProfilePic) {
+            newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, USER_PIC_PATH)
+          } else {
+            newUserId = await addUser(libs, userMetadata)
+          }
+          logger.info(`Created new user: ${newUserId}`)
+          addedUserIds.push(newUserId)
+          userId = newUserId
+        }
 
         // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
         await waitForIndexing()
-        const userWalletAddress = getLibsWalletAddress(libs)
-        const userAccount = await getUserAccount(libs, userWalletAddress)
-        setCurrentUser(libs, userAccount)
+
+        // add to wallet index to userId mapping
+        walletIndexToUserIdMap[i] = userId
+
+        // print userIds that exist and were added
+        if (addedUserIds.length) logger.info(`Added users, userIds=${addedUserIds}`)
+        if (existingUserIds.length) logger.info(`Existing users, userIds=${existingUserIds}`)
+      } catch (e) {
+        logger.error('GOT ERR CREATING USER')
+        logger.error(e.message)
+        throw e
       }
-
-      // add to wallet index to userId mapping
-      walletIndexToUserIdMap[i] = userId
     })
-    // print userIds that exist and were added
-    if (addedUserIds.length) logger.info(`Added users, userIds = [${addedUserIds}]`)
-    if (existingUserIds.length) logger.info(`Existing users, userIds = [${existingUserIds}]`)
-
-    await waitForIndexing()
   })
+}
 
+/**
+ * Helper function to upgrade a user at a wallet index to a creator if not already.
+ * @param {*} executeAll
+ * @param {*} executeOne
+ * @param {int} numCreatorNodes
+ */
+async function upgradeUsersToCreators (executeAll, executeOne) {
   await logOps('Upgrade to creator', async () => {
     try {
       await executeAll(async (libs, i) => {
         // Check if existing users are already creators. If so, don't upgrade
         const existingUser = await getUser({ executeOne, walletIndex: i })
-
-        // Autoselect replica set from valid nodes on-chain
-        if (!existingUser || !existingUser.creator_node_endpoint) {
-          const selectedCNodes = await executeOne(i, libsWrapper =>
-            autoSelectCreatorNodes(libsWrapper, numCreatorNodes)
-          )
-          const { primary, secondaries } = selectedCNodes
-          if (!primary || !secondaries) {
-            throw new Error(`Could not properly select cnodes. primary=${primary} | secondaries=${secondaries}`)
-          }
-          const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
-          logger.info(`Upgrading creator wallet index ${i} with ${endpointString} endpoints`)
-          // Upgrade to creator with replica set
-          await executeOne(i, l => upgradeToCreator(l, endpointString))
-          logger.info(`Finished upgrading creator wallet index ${i}`)
-        } else {
+        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with walletIndex ${i}`)
+        if (existingUser.tracks > 0) {
           logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
+          return
         }
+        // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
+        await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
+        logger.info(`Finished upgrading creator for user ${existingUser.user_id}`)
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
@@ -121,8 +163,6 @@ const addAndUpgradeUsers = async (
     }
     await waitForIndexing()
   })
-  // Map out walletId index => userId
-  return walletIndexToUserIdMap
 }
 
 /**
@@ -279,6 +319,10 @@ const waitForIndexing = async (waitTime = 5000) => {
   await delay(waitTime)
 }
 
+const waitForSync = async (waitTime = 20000) => {
+  logger.info(`Pausing ${waitTime}ms for sync to occur...`)
+  await delay(waitTime)
+}
 /**
  * Handy helper function for executing an operation against
  * an array of libs wrappers in parallel.
@@ -294,6 +338,8 @@ const makeExecuteOne = libsArray => async (index, operation) => {
 
 module.exports = {
   addAndUpgradeUsers,
+  addUsers,
+  addUsersWithoutProfileImageOnSignUp,
   logOps,
   genRandomUsers,
   getRandomUser,
@@ -302,6 +348,9 @@ module.exports = {
   getRandomTrackFilePath,
   delay,
   waitForIndexing,
+  waitForSync,
   makeExecuteAll,
-  makeExecuteOne
+  makeExecuteOne,
+  r6,
+  upgradeUsersToCreators
 }

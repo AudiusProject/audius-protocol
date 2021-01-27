@@ -29,7 +29,8 @@ const NotificationType = Object.freeze({
   MilestoneListen: 'MilestoneListen',
   MilestoneFollow: 'MilestoneFollow',
   RemixCreate: 'RemixCreate',
-  RemixCosign: 'RemixCosign'
+  RemixCosign: 'RemixCosign',
+  TrendingTrack: 'TrendingTrack'
 })
 
 const ClientNotificationTypes = new Set([
@@ -38,7 +39,8 @@ const ClientNotificationTypes = new Set([
   NotificationType.Favorite,
   NotificationType.Announcement,
   NotificationType.UserSubscription,
-  NotificationType.Milestone
+  NotificationType.Milestone,
+  NotificationType.TrendingTrack
 ])
 
 const Entity = Object.freeze({
@@ -175,6 +177,19 @@ const formatRemixCosign = (notification) => {
   }
 }
 
+const formatTrendingTrack = (notification) => {
+  const [time, genre] = notification.actions[0].actionEntityType.split(':')
+  return {
+    ...getCommonNotificationsFields(notification),
+    type: NotificationType.TrendingTrack,
+    entityType: Entity.Track,
+    entityId: notification.entityId,
+    rank: notification.actions[0].actionEntityId,
+    time,
+    genre
+  }
+}
+
 const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
@@ -199,7 +214,8 @@ const notificationResponseMap = {
   [NotificationType.MilestoneListen]: formatMilestone,
   [NotificationType.MilestoneFollow]: formatMilestone,
   [NotificationType.RemixCreate]: formatRemixCreate,
-  [NotificationType.RemixCosign]: formatRemixCosign
+  [NotificationType.RemixCosign]: formatRemixCosign,
+  [NotificationType.TrendingTrack]: formatTrendingTrack
 }
 
 /* Merges the notifications with the user announcements in time sorted order (Most recent first).
@@ -275,6 +291,7 @@ module.exports = function (app) {
    * urlQueryParam: {number} limit        Max number of notifications to return, Cannot exceed 100
    * urlQueryParam: {number?} timeOffset  A timestamp reference offset for fetch notification before this date
    * urlQueryParam: {boolean?} withRemix  A boolean to fetch notifications with remixes
+   * urlQueryParam: {boolean?} withTrendingTrack  A boolean to fetch notifications with weekly trending tracks
    *
    * TODO: Validate userId
    * NOTE: The `createdDate` param can/should be changed to the user sending their wallet &
@@ -289,10 +306,20 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Invalid Date params`)
     }
 
-    const withRemixQuery = req.query.withRemix === 'true' ? {} : {
-      type: { [models.Sequelize.Op.notIn]: [NotificationType.RemixCreate, NotificationType.RemixCosign] }
+    const filterNotificationTypes = []
+
+    if (req.query.withRemix !== 'true') {
+      filterNotificationTypes.push(NotificationType.RemixCreate, NotificationType.RemixCosign)
     }
 
+    if (req.query.withTrendingTrack !== 'true') {
+      filterNotificationTypes.push(NotificationType.TrendingTrack)
+    }
+
+    const queryFilter = filterNotificationTypes.length > 0 ? {
+      type: { [models.Sequelize.Op.notIn]: filterNotificationTypes }
+    } : {}
+    req.logger.warn({ filterNotificationTypes })
     if (isNaN(limit) || limit > 100) {
       return errorResponseBadRequest(
         `Limit and offset number be integers with a max limit of 100`
@@ -303,7 +330,7 @@ module.exports = function (app) {
         where: {
           userId,
           isHidden: false,
-          ...withRemixQuery,
+          ...queryFilter,
           timestamp: {
             [models.Sequelize.Op.lt]: timeOffset.toDate()
           }
@@ -325,7 +352,7 @@ module.exports = function (app) {
           isViewed: false,
           isRead: false,
           isHidden: false,
-          ...withRemixQuery
+          ...queryFilter
         },
         include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],

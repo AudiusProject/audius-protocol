@@ -185,6 +185,10 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
         }
         break
       }
+      case NotificationType.TrendingTrack: {
+        trackIdsToFetch.push(notification.entityId)
+        break
+      }
     }
   }
 

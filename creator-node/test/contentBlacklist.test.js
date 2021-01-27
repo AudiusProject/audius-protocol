@@ -25,7 +25,7 @@ describe('test ContentBlacklist', async function () {
 
   beforeEach(async () => {
     const ipfs = ipfsClient.ipfs
-    libsMock = getLibsMock()
+    libsMock = setupLibsMock(libsMock)
 
     process.env.delegateOwnerWallet = DELEGATE_OWNER_WALLET
     process.env.delegatePrivateKey = DELEGATE_PRIVATE_KEY
@@ -56,17 +56,17 @@ describe('test ContentBlacklist', async function () {
 
   // Tests that should return success responses
 
-  it('should return the proper userIds and trackIds', async () => {
+  it('should return the proper userIds, trackIds, and segments', async () => {
     const addUserData = generateTimestampAndSignature({
       type: BlacklistManager.getTypes().user,
-      id: 1
+      values: [1]
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
       .query({
         type: BlacklistManager.getTypes().user,
-        id: 1,
+        'values[]': [1],
         signature: addUserData.signature,
         timestamp: addUserData.timestamp
       })
@@ -74,16 +74,32 @@ describe('test ContentBlacklist', async function () {
 
     const addTrackData = generateTimestampAndSignature({
       type: BlacklistManager.getTypes().track,
-      id: 1
+      values: [1]
     }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
       .query({
         type: BlacklistManager.getTypes().track,
-        id: 1,
+        'values[]': [1],
         signature: addTrackData.signature,
         timestamp: addTrackData.timestamp
+      })
+      .expect(200)
+
+    const cids = [generateRandomCID()]
+    const addCIDData = generateTimestampAndSignature({
+      type: BlacklistManager.getTypes().cid,
+      values: cids
+    }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({
+        type: BlacklistManager.getTypes().cid,
+        'values[]': cids,
+        signature: addCIDData.signature,
+        timestamp: addCIDData.timestamp
       })
       .expect(200)
 
@@ -91,231 +107,488 @@ describe('test ContentBlacklist', async function () {
       .get('/blacklist')
       .expect(200)
       .expect(resp => {
-        assert.deepStrictEqual(resp.body.trackIds[0], 1)
         assert.deepStrictEqual(resp.body.trackIds.length, 1)
-        assert.deepStrictEqual(resp.body.userIds[0], 1)
+        assert.deepStrictEqual(resp.body.trackIds[0], '1')
         assert.deepStrictEqual(resp.body.userIds.length, 1)
+        assert.deepStrictEqual(resp.body.userIds[0], '1')
+        assert.deepStrictEqual(resp.body.individualSegments.length, 1)
+        assert.deepStrictEqual(resp.body.individualSegments[0], cids[0])
       })
   })
 
   it('should add user type and id to db and redis', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const user = await models.ContentBlacklist.findOne({ where: { id, type } })
-    assert.deepStrictEqual(user.id, id)
+    const user = await models.ContentBlacklist.findOne({
+      where: {
+        value: { [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+        type
+      }
+    })
+
+    assert.deepStrictEqual(user.value, ids[0].toString())
     assert.deepStrictEqual(user.type, type)
-    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(user.id), 1)
+    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(user.value), 1)
   })
 
   it('should add track type and id to db and redis', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const track = await models.ContentBlacklist.findOne({ where: { id, type } })
-    assert.deepStrictEqual(track.id, id)
+    const track = await models.ContentBlacklist.findOne({
+      where: {
+        value: {
+          [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+        type
+      }
+    })
+    assert.deepStrictEqual(track.value, ids[0].toString())
     assert.deepStrictEqual(track.type, type)
-    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(track.id), 1)
+    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(track.value), 1)
   })
 
   it('should remove user type and id from db and redis', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/delete')
-      .query({ type, id, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const user = await models.ContentBlacklist.findOne({ where: { id, type } })
+    const user = await models.ContentBlacklist.findOne({
+      where: {
+        value: {
+          [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+        type
+      }
+    })
     assert.deepStrictEqual(user, null)
-    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(id), 0)
+    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(ids[0]), 0)
   })
 
   it('should remove track type and id from db and redis', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
-      .post('/blacklist/delete')
-      .query({ type, id, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const track = await models.ContentBlacklist.findOne({ where: { id, type } })
+    const track = await models.ContentBlacklist.findOne({
+      where: {
+        value: {
+          [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+        type
+      }
+    })
     assert.deepStrictEqual(track, null)
-    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(id), 0)
+    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(ids[0]), 0)
   })
 
   it('should return success when removing a user that does not exist', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/delete')
-      .query({ type, id, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const user = await models.ContentBlacklist.findOne({ where: { id, type } })
+    const user = await models.ContentBlacklist.findOne({ where: {
+      value: {
+        [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+      type
+    } })
     assert.deepStrictEqual(user, null)
-    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(id), 0)
+    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(ids[0]), 0)
   })
 
   it('should return success when removing a track that does not exist', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
-      .post('/blacklist/delete')
-      .query({ type, id, timestamp, signature })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const track = await models.ContentBlacklist.findOne({ where: { id, type } })
+    const track = await models.ContentBlacklist.findOne({ where: {
+      value: {
+        [models.Sequelize.Op.in]: ids.map(id => id.toString())
+      },
+      type
+    } })
     assert.deepStrictEqual(track, null)
-    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(id), 0)
+    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(ids[0]), 0)
   })
 
   it('should ignore duplicate add for track', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const tracks = await models.ContentBlacklist.findAll({ where: { id, type } })
+    const tracks = await models.ContentBlacklist.findAll({ where: {
+      value: {
+        [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+      type
+    } })
     assert.deepStrictEqual(tracks.length, 1)
     const track = tracks[0]
-    assert.deepStrictEqual(track.id, id)
+    assert.deepStrictEqual(track.value, ids[0].toString())
     assert.deepStrictEqual(track.type, type)
-    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(track.id), 1)
+    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(track.value), 1)
   })
 
   it('should ignore duplicate add for user', async () => {
-    const id = generateRandomNaturalNumber()
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(200)
 
-    const users = await models.ContentBlacklist.findAll({ where: { id, type } })
+    const users = await models.ContentBlacklist.findAll({ where: {
+      value: {
+        [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+      type
+    } })
     assert.deepStrictEqual(users.length, 1)
     const user = users[0]
-    assert.deepStrictEqual(user.id, id)
+    assert.deepStrictEqual(user.value, ids[0].toString())
     assert.deepStrictEqual(user.type, type)
-    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(user.id), 1)
+    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(user.value), 1)
+  })
+
+  it('should only blacklist partial user ids list if only some ids are found', async () => {
+    const ids = [generateRandomNaturalNumber(), generateRandomNaturalNumber()]
+    libsMock.User.getUsers.returns([{ user_id: ids[0] }]) // only user @ index 0 is found
+    const type = BlacklistManager.getTypes().user
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
+      .expect(200)
+
+    // Ensure only one user was added to the blacklist
+    const users = await models.ContentBlacklist.findAll({
+      where: {
+        value: { [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+        type
+      }
+    })
+
+    assert.deepStrictEqual(users.length, 1)
+    const user = users[0]
+    assert.deepStrictEqual(user.value, ids[0].toString())
+    assert.deepStrictEqual(user.type, type)
+    assert.deepStrictEqual(await BlacklistManager.userIdIsInBlacklist(user.value), 1)
+  })
+
+  it('should only blacklist partial track ids list if only some ids are found', async () => {
+    const ids = [generateRandomNaturalNumber(), generateRandomNaturalNumber()]
+    libsMock.Track.getTracks.returns([{ track_id: ids[0] }]) // only user @ index 0 is found
+    const type = BlacklistManager.getTypes().track
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp, signature })
+      .expect(200)
+
+    // Ensure only one track was added to the blacklist
+    const tracks = await models.ContentBlacklist.findAll({
+      where: {
+        value: { [models.Sequelize.Op.in]: ids.map(id => id.toString()) },
+        type
+      }
+    })
+
+    assert.deepStrictEqual(tracks.length, 1)
+    const track = tracks[0]
+    assert.deepStrictEqual(track.value, ids[0].toString())
+    assert.deepStrictEqual(track.type, type)
+    assert.deepStrictEqual(await BlacklistManager.trackIdIsInBlacklist(track.value), 1)
+  })
+
+  it('should add cids to db and redis', async () => {
+    const cids = [generateRandomCID()]
+    const type = BlacklistManager.getTypes().cid
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: cids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': cids, timestamp, signature })
+      .expect(200)
+
+    const entry = await models.ContentBlacklist.findOne({
+      where: {
+        value: { [models.Sequelize.Op.in]: cids },
+        type
+      }
+    })
+
+    assert.deepStrictEqual(entry.value, cids[0])
+    assert.deepStrictEqual(entry.type, type)
+    assert.deepStrictEqual(await BlacklistManager.CIDIsInBlacklist(cids[0]), 1)
+  })
+
+  it('should remove cids from db and redis', async () => {
+    const cids = [generateRandomCID()]
+    const type = BlacklistManager.getTypes().cid
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: cids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': cids, timestamp, signature })
+      .expect(200)
+
+    await request(app)
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': cids, timestamp, signature })
+      .expect(200)
+
+    const entry = await models.ContentBlacklist.findAll({
+      where: {
+        value: { [models.Sequelize.Op.in]: cids },
+        type
+      }
+    })
+
+    assert.deepStrictEqual(entry, [])
+    assert.deepStrictEqual(await BlacklistManager.CIDIsInBlacklist(cids[0]), 0)
   })
 
   // Tests that should return error responses
 
-  it("should throw error if delegate private key does not match that of the creator node's", async () => {
-    const id = generateRandomNaturalNumber()
+  it("should throw an error if delegate private key does not match that of the creator node's", async () => {
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().user
     const BAD_KEY = '0xBADKEY4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
 
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, BAD_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, BAD_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, timestamp, signature })
+      .query({ type, 'values[]': ids, timestamp, signature })
       .expect(401)
   })
 
-  it('should throw error if query params does not contain all necessary keys', async () => {
-    const id = generateRandomNaturalNumber()
+  it('should throw an error if query params does not contain all necessary keys', async () => {
+    const ids = [generateRandomNaturalNumber()]
     const type = BlacklistManager.getTypes().track
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id })
+      .query({ type, 'values[]': ids })
       .expect(400)
 
     await request(app)
-      .post('/blacklist/delete')
-      .query({ type, id })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids })
       .expect(400)
   })
 
-  it('should throw error if query params id and type are not proper', async () => {
-    const id = 'halsey'
+  it('should throw an error if query params id and type are not proper', async () => {
+    const ids = 'halsey'
     const type = 'is fantastic'
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
 
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id, signature, timestamp })
+      .query({ type, 'values[]': ids, signature, timestamp })
       .expect(400)
 
     await request(app)
-      .post('/blacklist/delete')
-      .query({ type, id, signature, timestamp })
+      .post('/blacklist/remove')
+      .query({ type, 'values[]': ids, signature, timestamp })
       .expect(400)
   })
 
-  it('should throw an error when attempting to stream a track via /ipfs/:CID route', async () => {
+  it('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
+    // Create user and upload track
+    const resp = await createUserAndUploadTrack()
+
+    // Blacklist trackId
+    const type = BlacklistManager.getTypes().user
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [1] }, DELEGATE_PRIVATE_KEY)
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [1], signature, timestamp })
+      .expect(200)
+
+    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
+    await Promise.all(
+      resp.track.trackSegments.map(segment =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .expect(403)
+      )
+    )
+
+    // TODO: add remove and test that the segments are unblacklisted
+  })
+
+  it('should throw an error when adding a track id to the blacklist and streaming /ipfs/:CID route', async () => {
     // Create user and upload track
     const resp = await createUserAndUploadTrack()
 
     // Blacklist trackId
     const type = BlacklistManager.getTypes().track
-    const { signature, timestamp } = generateTimestampAndSignature({ type, id: resp.track.blockchainId }, DELEGATE_PRIVATE_KEY)
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [resp.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
     await request(app)
       .post('/blacklist/add')
-      .query({ type, id: resp.track.blockchainId, signature, timestamp })
+      .query({ type, 'values[]': [resp.track.blockchainId], signature, timestamp })
       .expect(200)
 
     // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
-    try {
-      await Promise.all(
-        resp.track.trackSegments.map(segment =>
-          request(app)
-            .get(`/ipfs/${segment.multihash}`)
-            .expect(403)
-        )
+    await Promise.all(
+      resp.track.trackSegments.map(segment =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .expect(403)
       )
-    } catch (e) {
-      assert.fail(e.message)
-    }
+    )
+  })
+
+  it('should throw an error when adding a cid to the blacklist and streaming /ipfs/:CID', async () => {
+    const cids = [generateRandomCID()]
+    const type = BlacklistManager.getTypes().cid
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: cids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': cids, timestamp, signature })
+      .expect(200)
+
+    await request(app)
+      .get(`/ipfs/${cids[0]}`)
+      .expect(403)
+  })
+
+  it('should throw an error if user id does not exist', async () => {
+    libsMock.User.getUsers.returns([])
+    const ids = [generateRandomNaturalNumber()]
+    const type = BlacklistManager.getTypes().user
+    const resp1 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
+      .expect(400)
+
+    // Ensure works with multiple ids
+    ids.push(generateRandomNaturalNumber())
+    const resp2 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
+      .expect(400)
+  })
+
+  it('should throw an error if track id does not exist', async () => {
+    libsMock.Track.getTracks.returns([])
+    const ids = [generateRandomNaturalNumber()]
+    const type = BlacklistManager.getTypes().track
+    const resp1 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
+      .expect(400)
+
+    // Ensure works with multiple ids
+    ids.push(generateRandomNaturalNumber())
+    const resp2 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
+      .expect(400)
+  })
+
+  it('should throw an error if disc prov is unable to lookup ids', async () => {
+    libsMock.User.getUsers.returns([])
+    const ids = [generateRandomNaturalNumber()]
+    const type = BlacklistManager.getTypes().user
+    const resp1 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp1.timestamp, signature: resp1.signature })
+      .expect(400)
+
+    // Ensure works with multiple ids
+    ids.push(generateRandomNaturalNumber())
+    const resp2 = generateTimestampAndSignature({ type, values: ids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': ids, timestamp: resp2.timestamp, signature: resp2.signature })
+      .expect(400)
+  })
+
+  it('should throw an error if query params cids does not match the Qm... pattern', async () => {
+    const cids = ['vicky was here', 'and here too', generateRandomNaturalNumber(), '###%^&']
+    const type = BlacklistManager.getTypes().cid
+    const { timestamp, signature } = generateTimestampAndSignature({ type: BlacklistManager.getTypes().cid, values: cids }, DELEGATE_PRIVATE_KEY)
+
+    await request(app)
+      .post('/blacklist/add')
+      .query({
+        type,
+        'values[]': cids,
+        timestamp,
+        signature
+      })
+      .expect(400)
   })
 
   /** Helper setup method to test ContentBlacklist.  */
@@ -386,3 +659,45 @@ describe('test ContentBlacklist', async function () {
 // https://stackoverflow.com/questions/29640432/generate-4-digit-random-number-using-substring/29640472
 // NOTE: There is a chance the same number will be returned....... :-)
 const generateRandomNaturalNumber = (max = 1000) => Math.floor(Math.random() * max)
+
+// Generates a random CID with suffix of a random number of n digits
+const generateRandomCID = (numRandomDigits = 5, maxRandomNumber = 1000) => {
+  // If n is out of bounds, default to 5
+  if (numRandomDigits < 0 || numRandomDigits > 46) numRandomDigits = 5
+  const randomNDigitNumber = (Array(numRandomDigits).join('0') + generateRandomNaturalNumber(maxRandomNumber)).slice(-numRandomDigits)
+
+  // Return Qm..aaa... of length 46. Array(..) part needs + 1 to generate the remaining amount
+  return 'Qm' + randomNDigitNumber + Array(46 - 2 - numRandomDigits + 1).join('a')
+}
+// Setup libs mock according to ContentBlacklist needs by using libsMock as the base
+const setupLibsMock = (libsMock) => {
+  libsMock = getLibsMock()
+
+  delete libsMock.User.getUsers.atMost
+  libsMock.User.getUsers.callsFake((limit, offset, ids) => {
+    // getUsers() is used in creating user/uploading track flow.
+    // setting ids to dummy value allows for above flows to work
+    if (!ids) ids = [0]
+    const resp = ids.map(id => {
+      return {
+        creator_node_endpoint: 'http://localhost:5000',
+        blocknumber: 10,
+        track_blocknumber: 10,
+        user_id: id
+      }
+    })
+
+    return resp
+  })
+
+  libsMock.Track = { getTracks: sinon.mock() }
+  libsMock.Track.getTracks.callsFake((limit, offset, ids) => {
+    return ids.map(id => {
+      return {
+        track_id: id
+      }
+    })
+  })
+  libsMock.Track.getTracks.atLeast(0)
+  return libsMock
+}

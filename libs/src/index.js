@@ -292,12 +292,12 @@ class AudiusLibs {
       this.comstock,
       this.isServer
     ]
-    this.User = new User(...services)
+    this.ServiceProvider = new ServiceProvider(...services)
+    this.User = new User(this.ServiceProvider, ...services)
     this.Account = new Account(this.User, ...services)
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(...services)
-    this.ServiceProvider = new ServiceProvider(...services)
   }
 }
 

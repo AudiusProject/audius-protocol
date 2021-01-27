@@ -26,6 +26,33 @@ class CreatorNode {
   static getEndpoints (endpoints) { return endpoints ? endpoints.split(',') : [] }
 
   /**
+   * Builds the creator_node_endpoint value off of a primary and secondaries list
+   * @param {string} primary the primary endpoint
+   * @param {string[]} secondaries a list of secondary endpoints
+   */
+  static buildEndpoint (primary, secondaries) {
+    return [primary, ...secondaries].join()
+  }
+
+  /**
+   * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
+   * @param {string} endpoint creator node endpoint
+   * @param {string} wallet user wallet address
+   */
+  static async getClockValue (endpoint, wallet, timeout) {
+    try {
+      return (await axios({
+        url: `/users/clock_status/${wallet}`,
+        method: 'get',
+        baseURL: endpoint,
+        timeout
+      })).data.clockValue
+    } catch (err) {
+      throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
+    }
+  }
+
+  /**
    * Checks if a download is available from provided creator node endpoints
    * @param {string} endpoints creator node endpoints
    * @param {number} trackId
@@ -49,6 +76,7 @@ class CreatorNode {
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
     this.web3Manager = web3Manager
+    // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
     this.isServer = isServer
     this.userStateManager = userStateManager
@@ -119,19 +147,22 @@ class CreatorNode {
    * Uploads creator content to a creator node
    * @param {object} metadata the creator metadata
    */
-  async uploadCreatorContent (metadata) {
+  async uploadCreatorContent (metadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
       this.schemas[SchemaValidator.userSchemaType].validate(metadata)
 
-      return this._makeRequest({
+      const requestObj = {
         url: '/audius_users/metadata',
         method: 'post',
         data: {
-          metadata
+          metadata,
+          blockNumber
         }
-      })
+      }
+
+      return this._makeRequest(requestObj)
     } catch (e) {
       console.error('Error validating creator metadata', e)
     }
@@ -289,8 +320,9 @@ class CreatorNode {
    * this user has a sync in progress on that node and return sync status info.
    * Throws if no current user is set or if sync_status request fails
    * @param {string} endpoint
+   * @param {number?} timeout ms
    */
-  async getSyncStatus (endpoint) {
+  async getSyncStatus (endpoint, timeout = null) {
     const user = this.userStateManager.getCurrentUser()
 
     if (!user) {
@@ -302,6 +334,9 @@ class CreatorNode {
       url: `/sync_status/${user.wallet}`,
       method: 'get'
     }
+
+    if (timeout) req.timeout = timeout
+
     // axios request will throw error on non-200 response code
     const status = await axios(req)
 
@@ -423,6 +458,60 @@ class CreatorNode {
   }
 
   /**
+   * Gets and returns the clock values across the replica set for the wallet in userStateManager.
+   * @returns {Object[]} Array of objects with the structure:
+   *
+   * {
+   *  type: 'primary' or 'secondary',
+   *  endpoint: <Content Node endpoint>,
+   *  clockValue: clock value (should be an integer) or null
+   * }
+   *
+   * 'clockValue' may be null if the request to fetch the clock value fails
+   */
+  async getClockValuesFromReplicaSet () {
+    const user = this.userStateManager.getCurrentUser()
+    if (!user || !user.creator_node_endpoint) {
+      console.error('No user or Content Node endpoint found')
+      return
+    }
+
+    const replicaSet = CreatorNode.getEndpoints(user.creator_node_endpoint)
+    const clockValueResponses = await Promise.all(
+      replicaSet.map(endpoint => this._clockValueRequest({ user, endpoint }))
+    )
+
+    return clockValueResponses
+  }
+
+  /**
+   * Wrapper around getClockValue() to return either a proper or null clock value
+   * @param {Object} param
+   * @param {Object} param.user user metadata object from userStateManager
+   * @param {string} param.endpoint the Content Node endpoint to check the clock value for
+   */
+  async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
+    const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
+    let type = primary === endpoint ? 'primary' : 'secondary'
+
+    try {
+      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout)
+      return {
+        type,
+        endpoint,
+        clockValue
+      }
+    } catch (e) {
+      console.error(`Error in getting clock status for ${user.wallet} at ${endpoint}: ${e}`)
+      return {
+        type,
+        endpoint,
+        clockValue: null
+      }
+    }
+  }
+
+  /**
    * Makes an axios request to the connected creator node.
    * @param {Object} axiosRequestObj
    * @param {bool} requiresConnection if set, the currently configured creator node
@@ -529,8 +618,8 @@ function _handleErrorHelper (e, requestUrl) {
     // delete headers, may contain tokens
     if (e.config && e.config.headers) delete e.config.headers
 
-    console.error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
-    throw new Error(`Network error while making request to ${requestUrl} ${JSON.stringify(e)}`)
+    console.error(`Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\nError: ${e}`)
+    throw new Error(`Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\nError: ${e}`)
   } else {
     throw e
   }

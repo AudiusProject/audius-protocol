@@ -296,8 +296,10 @@ async function removeTrackFolder (req, fileDir) {
     // Delete fileDir after all its contents have been deleted
     await rmdir(fileDir)
     req.logger.info(`Removed track folder at fileDir ${fileDir}`)
+    return null
   } catch (err) {
     req.logger.error(`Error removing ${fileDir}. ${err}`)
+    return err
   }
 }
 
@@ -350,7 +352,7 @@ const trackFileUpload = multer({
       cb(null, true)
     } else {
       req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${file.mimetype}`
-      cb(null, false)
+      cb(new Error(req.fileFilterError))
     }
   }
 })

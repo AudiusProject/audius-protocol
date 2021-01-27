@@ -3,14 +3,16 @@ const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
-const consistency1 = require('./tests/test_1.js')
-const { snapbackSMParallelSyncTest } = require('./tests/test_snapbackSM.js')
-const ipldBlacklistTests = require('./tests/test_ipldBlacklist')
+const {
+  coreIntegration,
+  snapbackSMParallelSyncTest,
+  IpldBlacklistTest
+} = require('./tests/tests')
 
 // Configuration.
 // Should be CLI configurable in the future.
-const NUM_CREATOR_NODES = 3
-const NUM_USERS = 2
+const DEFAULT_NUM_CREATOR_NODES = 3
+const DEFAULT_NUM_USERS = 2
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
@@ -26,7 +28,7 @@ const {
 
 async function setupAllServices () {
   logger.info('Setting up all services!')
-  await allUp({ numCreatorNodes: NUM_CREATOR_NODES })
+  await allUp({ numCreatorNodes: DEFAULT_NUM_CREATOR_NODES })
   logger.info('All services set up!')
 }
 
@@ -36,7 +38,11 @@ async function tearDownAllServices () {
   logger.info('All services downed.')
 }
 
-const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
+// Writing IPLD txns to chain require the 0th indexed wallet.
+// This flag is set to 'true' to run the test with the 0th indexed wallet.
+// The default will be 'undefined' for the other tests that do not require
+// this flag.
+const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
       const res = await testFn({
@@ -54,14 +60,16 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes }) => {
   return {
     testName: name,
     test: wrappedTest,
-    numUsers
+    numUsers,
+    useZeroIndexedWallet
   }
 }
 
 const testRunner = async tests => {
   let failedTests = []
+
   // Run each test
-  for (let { testName, test, numUsers } of tests) {
+  for (let { testName, test, numUsers, useZeroIndexedWallet } of tests) {
     const date = new Date().toISOString()
     const fileLoggerName = `${testName}-${date}`
     const removeLogger = addFileLogger(fileLoggerName)
@@ -70,20 +78,9 @@ const testRunner = async tests => {
 
     let libsArray = []
 
-    // Writing IPLD txns to chain require the 0th account
-    // Here, we init a libs instance with the 0th acc and set it as index 0
-    // in the libs array
-    if (testName.startsWith('ipld')) {
-      // add libs with wallet index 0
-      const libsWithWallet0 = new LibsWrapper(0)
-      await libsWithWallet0.initLibs()
-      libsArray = [libsWithWallet0]
-
-      // if offset is 0, incr by 1 to not use wallet 0
-      accountOffset = accountOffset === 0 ? accountOffset + 1 : accountOffset
-
-      // decr numUsers by 1 as libsWithWallet0 is one of the created users
-      numUsers -= 1
+    // Add libs with wallet index 0 if flag exists
+    if (useZeroIndexedWallet) {
+      ({ libsArray, numUsers } = await _setLibsArrayWithZeroIndexedWallet(libsArray, numUsers))
     }
 
     // Init required libs instances
@@ -109,7 +106,7 @@ const testRunner = async tests => {
     removeLogger()
   }
 
-  if (failedTests.length > 0) throw new Error(failedTests.toString())
+  if (failedTests.length > 0) throw new Error(`\n${JSON.stringify(failedTests, null, 2)}`)
 }
 
 // This should go away when we have multiple tests.
@@ -132,9 +129,9 @@ async function main () {
       break
     }
     case 'test': {
-      const test = makeTest('consistency', consistency1, {
-        numCreatorNodes: NUM_CREATOR_NODES,
-        numUsers: NUM_USERS
+      const test = makeTest('consistency', coreIntegration, {
+        numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+        numUsers: DEFAULT_NUM_USERS
       })
       await testRunner([test])
       break
@@ -152,20 +149,22 @@ async function main () {
       break
     }
     case 'test-ci': {
-      const test = makeTest('consistency:ci', consistency1, {
-        numCreatorNodes: NUM_CREATOR_NODES,
-        numUsers: NUM_USERS
+      const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
+        numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+        numUsers: DEFAULT_NUM_USERS
       })
 
       // dynamically create ipld tests
-      const blacklistTests = Object.entries(ipldBlacklistTests).map(
+      const blacklistTests = Object.entries(IpldBlacklistTest).map(
         ([testName, testLogic]) =>
           makeTest(testName, testLogic, {
             numCreatorNodes: 1,
-            numUsers: NUM_USERS
+            numUsers: DEFAULT_NUM_USERS,
+            useZeroIndexedWallet: true
           })
       )
-      const tests = [test, ...blacklistTests]
+
+      const tests = [coreIntegrationTests, ...blacklistTests]
 
       try {
         await testRunner(tests)
@@ -183,3 +182,19 @@ async function main () {
 }
 
 main()
+
+// Writing IPLD txns to chain require the 0th indexed wallet.
+// Here, we init a libs instance with the 0th wallet and set it in index 0
+// of the libs array
+async function _setLibsArrayWithZeroIndexedWallet (libsArray, numUsers) {
+  const libsWithWallet0 = new LibsWrapper(0)
+  await libsWithWallet0.initLibs()
+  libsArray = [libsWithWallet0]
+
+  // If offset is 0, incr by 1 to not use wallet 0
+  accountOffset = accountOffset === 0 ? accountOffset + 1 : accountOffset
+
+  // Decrement numUsers by 1 as libsWithWallet0 is one of the created users
+  numUsers -= 1
+  return { libsArray, numUsers }
+}
