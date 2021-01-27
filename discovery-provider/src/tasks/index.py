@@ -135,7 +135,7 @@ def fetch_tx_receipts(self, block_transactions):
     return block_tx_with_receipts
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
-# Has been set in the L2 contract registry - if so, update the global contract_addresses object
+# has been set in the L2 contract registry - if so, update the global contract_addresses object
 # This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
 # added to the registry.
 def update_user_replica_set_manager_address_if_necessary(self):

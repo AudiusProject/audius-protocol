@@ -211,16 +211,11 @@ def get_sp_factory_inst(self, update_task):
 # Update cnode_record with event arguments
 def parse_usrm_cnode_record(self, update_task, session, entry, cnode_record):
     event_args = entry["args"]
-    delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
-    sp_ids = event_args._proposerSpIds
-    proposer_1 = event_args._proposer1Address
-    proposer_2 = event_args._proposer2Address
-    proposer_3 = event_args._proposer3Address
-    cnode_record.delegate_owner_wallet = delegate_owner_wallet
-    cnode_record.proposer_1_address = proposer_1
-    cnode_record.proposer_2_address = proposer_2
-    cnode_record.proposer_3_address = proposer_3
-    cnode_record.proposer_sp_ids = sp_ids
+    cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet 
+    cnode_record.proposer_1_address = event_args._proposer1Address
+    cnode_record.proposer_2_address = event_args._proposer2Address
+    cnode_record.proposer_3_address = event_args._proposer3Address
+    cnode_record.proposer_sp_ids = event_args._proposerSpIds
     return cnode_record
 
 # Return or create instance of record pointing to this content_node
