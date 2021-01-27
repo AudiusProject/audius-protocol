@@ -2,7 +2,7 @@ const Bull = require('bull')
 const redis = require('../redis')
 const config = require('../config')
 const { logger } = require('../logging')
-const { getDatabaseSize } = require('./database')
+const { getDatabaseSize, getDatabaseConnections } = require('./database')
 
 const MONITORING_REDIS_PREFIX = 'monitoring'
 const PROCESS_NAMES = Object.freeze({
@@ -11,15 +11,21 @@ const PROCESS_NAMES = Object.freeze({
 
 /**
  * List of all monitors to run, containing:
- *  @param {string} name A unique name (for caching in redis)
- *  @param {number} ttl TTL in seconds for how long a cached value is good for
+ *  @param {string} name A unique name for the metric (for caching in redis)
  *  @param {function} func The actual work to compute a value. The return value is what is cached.
+ *  @param {number?} ttl TTL in seconds for how long a cached value is good for.
+ *    Since the job runs on a cron, the min TTL a metric can be refreshed is 60s.
+ *    If a TTL isn't provided, the metric is refreshed every 60s.
  */
 const MONITORS = [
   {
     name: 'databaseSize',
-    ttl: 120,
-    func: getDatabaseSize
+    func: getDatabaseSize,
+    ttl: 120
+  },
+  {
+    name: 'databaseConnections',
+    func: getDatabaseConnections
   }
   // TODO: Add more monitors
 ]
@@ -62,7 +68,7 @@ class MonitoringQueue {
         // value is not fresh.
         MONITORS.forEach(async monitor => {
           try {
-            await this.setIfNotFresh(monitor)
+            await this.refresh(monitor)
           } catch (e) {
             this.logStatus(`Error on ${monitor.name} ${e}`)
           }
@@ -73,7 +79,7 @@ class MonitoringQueue {
     )
   }
 
-  async setIfNotFresh (monitor) {
+  async refresh (monitor) {
     const key = `${MONITORING_REDIS_PREFIX}:${monitor.name}`
     const ttlKey = `${key}:ttl`
 
@@ -83,12 +89,16 @@ class MonitoringQueue {
 
     const value = await monitor.func()
     this.logStatus(`Computed value for ${monitor.name} ${value}`)
+
     // Set the value
     redis.set(key, value)
-    // Set a TTL key to track when this value needs refreshing.
-    // We store a separate TTL key rather than expiring the value itself
-    // so that in the case of an error, the current value can still be read
-    redis.set(ttlKey, 1, 'EX', monitor.ttl)
+
+    if (monitor.ttl) {
+      // Set a TTL key to track when this value needs refreshing.
+      // We store a separate TTL key rather than expiring the value itself
+      // so that in the case of an error, the current value can still be read
+      redis.set(ttlKey, 1, 'EX', monitor.ttl)
+    }
   }
 
   /**
