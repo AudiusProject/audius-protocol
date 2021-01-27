@@ -3,10 +3,9 @@ const axios = require('axios')
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
-  addAndUpgradeUsers,
-  delay
+  addAndUpgradeUsers
 } = require('../helpers.js')
-const { exec } = require('child_process')
+// const { exec } = require('child_process')
 
 const DEFAULT_INDEX = 1
 
