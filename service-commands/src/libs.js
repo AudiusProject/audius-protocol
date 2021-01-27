@@ -537,6 +537,10 @@ function LibsWrapper (walletIndex = 0) {
   this.getServices = async (type) => {
     return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
   }
+
+  this.getUserReplicaSet = async (userId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  }
 }
 
 module.exports = { LibsWrapper, Utils }
