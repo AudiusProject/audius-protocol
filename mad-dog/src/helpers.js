@@ -123,7 +123,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
         // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
         // await waitForIndexing()
-        await waitForLatestBlock(executeOne)
+        await waitForLatestBlock({ executeOne })
 
         // add to wallet index to userId mapping
         walletIndexToUserIdMap[i] = userId
@@ -166,7 +166,7 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
       logger.error(e.message)
       throw e
     }
-    await waitForLatestBlock(executeOne)
+    await waitForLatestBlock({ executeOne })
   })
 }
 
@@ -319,15 +319,19 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
-  const resp = await axios({
+  return (await axios({
     method: 'get',
     baseURL: endpoint,
     url: '/health_check'
-  })
+  })).data.latest_indexed_block
+}
 
-  const { data: { latest_indexed_block: latestIndexedBlock } } = resp
-
-  return latestIndexedBlock
+const getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
+  return (await axios({
+    method: 'get',
+    baseURL: endpoint,
+    url: '/ipld_block_check'
+  })).data.data.block
 }
 
 /**
@@ -337,18 +341,18 @@ const getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
  * @param {*} libsWrapper
  * @param {number} maxIndexingTimeout default 5000ms
  */
-const waitForLatestBlock = async (executeOne, maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = 5000, checkIpldBlockNumber = false }) => {
   const latestBlockOnChain = await executeOne(0, libsWrapper => {
     return getLatestBlockOnChain(libsWrapper)
   })
 
   logger.info(`Waiting for latest block #${latestBlockOnChain} to be indexed...`)
 
-  let latestIndexedBlock = -1 // init
+  let latestIndexedBlock = -1
   const startTime = Date.now()
   while (Date.now() - startTime < maxIndexingTimeout) {
-    console.log(Date.now() - startTime)
-    latestIndexedBlock = await getLatestIndexedBlock()
+    if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
+    else latestIndexedBlock = await getLatestIndexedBlock()
     if (latestIndexedBlock >= latestBlockOnChain) {
       logger.info(`Discovery Node has indexed block #${latestBlockOnChain}!`)
       return true

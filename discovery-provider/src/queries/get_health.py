@@ -2,11 +2,12 @@ import logging
 import os
 import sqlalchemy
 
-from src.models import Block
+from src.models import Block, BlacklistedIPLD
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
-    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key
+    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
+    most_recent_indexed_ipld_block_redis_key
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,6 @@ def _get_db_block_state():
             Block.is_current == True).all()
         assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
         return helpers.model_to_dictionary(db_block_query[0])
-
 
 # Returns number of and info on open db connections
 def _get_db_conn_state():
@@ -46,6 +46,31 @@ def _get_db_conn_state():
         connection_info = [dict(row) for row in connection_info]
 
     return {"open_connections": num_connections, "connection_info": connection_info}, False
+
+def _get_db_ipld_block_state():
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        # Fetch latest block from DB
+        db_ipld_block_max = session.query(sqlalchemy.func.max(BlacklistedIPLD.blocknumber)).scalar()
+        return db_ipld_block_max 
+
+# Get the max blocknumber indexed in ipld blacklist table. Uses redis cache by default.
+def get_latest_ipld_indexed_block(use_redis_cache=True):
+    latest_indexed_ipld_block_num = None
+
+    if use_redis_cache:
+        latest_indexed_ipld_block_num = redis.get(
+            most_recent_indexed_ipld_block_redis_key
+        )
+        if latest_indexed_ipld_block_num is not None:
+            latest_indexed_ipld_block_num = int(latest_indexed_ipld_block_num)
+
+    if latest_indexed_ipld_block_num is None:
+        latest_indexed_ipld_block_num = _get_db_ipld_block_state() or 0
+        redis = redis_connection.get_redis()
+        redis.set(most_recent_indexed_ipld_block_redis_key, latest_indexed_ipld_block_num)
+
+    return latest_indexed_ipld_block_num
 
 
 def get_health(args, use_redis_cache=True):

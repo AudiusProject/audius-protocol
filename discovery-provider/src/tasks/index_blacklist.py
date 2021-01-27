@@ -294,7 +294,7 @@ def update_ipld_blacklist_task(self):
 
                     if parent_query.count() == 0:
                         logger.info(
-                            f"IPLDBLACKLIST |Special case exit traverse block parenthash - {traverse_block.parenthash}"
+                            f"IPLDBLACKLIST | Special case exit traverse block parenthash - {traverse_block.parenthash}"
                         )
                         break
                     traverse_block = parent_query[0]

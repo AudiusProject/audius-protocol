@@ -1,4 +1,5 @@
 FROM node:10.16 as builder
+RUN apt-get install make
 
 WORKDIR /app
 COPY package*.json ./
