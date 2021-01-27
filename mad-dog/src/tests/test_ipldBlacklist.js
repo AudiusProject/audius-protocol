@@ -26,506 +26,531 @@ const {
 const ipfs = require('../ipfsClient')
 const { logger } = require('../logger.js')
 
+const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
+
 const BLACKLISTER_INDEX = 0 // blacklister wallet address = 0th libs instance (see index.js)
 const CREATOR_INDEX = 1
-const IPLD_CYCLE = 61000 // ms
-
-const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
+const IPLD_CYCLE = 15000 // ms
 
 const IpldBlacklistTest = {}
 
 // TEST NEW TRACK FLOW -- METADATA
-// IpldBlacklistTest.newTrackMetadata = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   let trackTxReceipt
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+IpldBlacklistTest.newTrackMetadata = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  let trackTxReceipt
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // generate and add cid to be blacklisted as ipld blacklist txn
-//     const blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    // generate and add cid to be blacklisted as ipld blacklist txn
+    const blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
 
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait for ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE)
+    // wait for ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    })
 
-//     // add track with blacklisted cid
-//     trackTxReceipt = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return addTrackToChain(libsWrapper, userId, {
-//         digest: trackMultihashDecoded.digest,
-//         hashFn: trackMultihashDecoded.hashFn,
-//         size: trackMultihashDecoded.size
-//       })
-//     })
-//   } catch (e) {
-//     return {
-//       error: `Error with IPLD Blacklist test for new track with blacklisted metadata CID: ${e.message}`
-//     }
-//   }
+    // add track with blacklisted cid
+    trackTxReceipt = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return addTrackToChain(libsWrapper, userId, {
+        digest: trackMultihashDecoded.digest,
+        hashFn: trackMultihashDecoded.hashFn,
+        size: trackMultihashDecoded.size
+      })
+    })
+  } catch (e) {
+    return {
+      error: `Error with IPLD Blacklist test for new track with blacklisted metadata CID: ${e.message}`
+    }
+  }
 
-//   // wait for track indexing cycle
-//   await waitForLatestBlock(executeOne)
+  // wait for track indexing cycle
+  await waitForLatestBlock({ executeOne })
 
-//   // check that dp indexing doesnt occur for this track
-//   try {
-//     await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getTrackMetadata(libsWrapper, trackTxReceipt.trackId)
-//     })
+  // check that dp indexing doesnt occur for this track
+  try {
+    await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getTrackMetadata(libsWrapper, trackTxReceipt.trackId)
+    })
 
-//     return {
-//       error:
-//         'New track with blacklisted metadata CID should not have been indexed.'
-//     }
-//   } catch (e) {
-//     if (e.message !== 'No tracks returned.') {
-//       return { error: `Error with querying for track: ${e.message}` }
-//     }
-//   }
-// }
+    return {
+      error:
+        'New track with blacklisted metadata CID should not have been indexed.'
+    }
+  } catch (e) {
+    if (e.message !== 'No tracks returned.') {
+      return { error: `Error with querying for track: ${e.message}` }
+    }
+  }
+}
 
-// // TEST UPDATE TRACK FLOW -- METADATA
-// IpldBlacklistTest.updateTrackMetadata = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+// TEST UPDATE TRACK FLOW -- METADATA
+IpldBlacklistTest.updateTrackMetadata = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // create and upload track
-//     const track = getRandomTrackMetadata(userId)
-//     const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
+    // create and upload track
+    const track = getRandomTrackMetadata(userId)
+    const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
 
-//     const trackId = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return uploadTrack(libsWrapper, track, randomTrackFilePath)
-//     })
+    const trackId = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return uploadTrack(libsWrapper, track, randomTrackFilePath)
+    })
 
-//     // keep track of original metadata CID
-//     let uploadedTrack = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getTrackMetadata(libsWrapper, trackId)
-//     })
-//     const originalMetadataCID = uploadedTrack.metadata_multihash
+    // keep track of original metadata CID
+    let uploadedTrack = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getTrackMetadata(libsWrapper, trackId)
+    })
+    const originalMetadataCID = uploadedTrack.metadata_multihash
 
-//     // wait for track indexing cycle
-//     await waitForLatestBlock(executeOne)
+    // wait for track indexing cycle
+    await waitForLatestBlock({ executeOne })
 
-//     // generate and add cid to be blacklisted as ipld blacklist txn
-//     const blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    // generate and add cid to be blacklisted as ipld blacklist txn
+    const blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait an ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE) // 60 sec
+    // wait an ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    }) // 60 sec
 
-//     // update track with blacklisted cid
-//     await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return updateTrackOnChain(libsWrapper, trackId, userId, {
-//         digest: trackMultihashDecoded.digest,
-//         hashFn: trackMultihashDecoded.hashFn,
-//         size: trackMultihashDecoded.size
-//       })
-//     })
+    // update track with blacklisted cid
+    await executeOne(CREATOR_INDEX, libsWrapper => {
+      return updateTrackOnChain(libsWrapper, trackId, userId, {
+        digest: trackMultihashDecoded.digest,
+        hashFn: trackMultihashDecoded.hashFn,
+        size: trackMultihashDecoded.size
+      })
+    })
 
-//     // wait for track indexing cycle
-//     await waitForLatestBlock(executeOne)
+    // wait for track indexing cycle
+    await waitForLatestBlock({ executeOne })
 
-//     // ensure that the track has original metadata cid
-//     uploadedTrack = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getTrackMetadata(libsWrapper, trackId)
-//     })
+    // ensure that the track has original metadata cid
+    uploadedTrack = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getTrackMetadata(libsWrapper, trackId)
+    })
 
-//     if (originalMetadataCID !== uploadedTrack.metadata_multihash) {
-//       return {
-//         error: 'Update track with blacklisted metadata CID should not have been indexed.'
-//       }
-//     }
-//   } catch (e) {
-//     let error = e
-//     if (e.message) {
-//       error = e.message
-//     }
+    if (originalMetadataCID !== uploadedTrack.metadata_multihash) {
+      return {
+        error: 'Update track with blacklisted metadata CID should not have been indexed.'
+      }
+    }
+  } catch (e) {
+    let error = e
+    if (e.message) {
+      error = e.message
+    }
 
-//     return {
-//       error: `Error with IPLD Blacklist test for update track with blacklisted metadata CID: ${error}`
-//     }
-//   } finally {
-//     await fs.remove(TEMP_STORAGE_PATH)
-//   }
-// }
+    return {
+      error: `Error with IPLD Blacklist test for update track with blacklisted metadata CID: ${error}`
+    }
+  } finally {
+    await fs.remove(TEMP_STORAGE_PATH)
+  }
+}
 
-// // TEST NEW TRACK FLOW -- COVER PHOTO CID
-// IpldBlacklistTest.newTrackCoverPhoto = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   let trackTxReceipt
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+// TEST NEW TRACK FLOW -- COVER PHOTO CID
+IpldBlacklistTest.newTrackCoverPhoto = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  let trackTxReceipt
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // generate and add cid to be blacklisted as ipld blacklist txn
-//     const blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    // generate and add cid to be blacklisted as ipld blacklist txn
+    const blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait an ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE) // 60 sec
+    // wait an ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    }) // 60 sec
 
-//     // generate metadata object with CID constant for cover photo
-//     const metadataObject = getRandomTrackMetadata(userId)
-//     metadataObject.cover_art = blacklistedCID
+    // generate metadata object with CID constant for cover photo
+    const metadataObject = getRandomTrackMetadata(userId)
+    metadataObject.cover_art = blacklistedCID
 
-//     // add metadata object to ipfs to get metadata CID
-//     const metadataCID = await addContentToIpfs(metadataObject)
+    // add metadata object to ipfs to get metadata CID
+    const metadataCID = await addContentToIpfs(metadataObject)
 
-//     // upload track with metadata CID
-//     const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
-//     trackTxReceipt = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return addTrackToChain(libsWrapper, userId, {
-//         digest: metadataCIDDecoded.digest,
-//         hashFn: metadataCIDDecoded.hashFn,
-//         size: metadataCIDDecoded.size
-//       })
-//     })
-//   } catch (e) {
-//     return {
-//       error: `Error with IPLD Blacklist test for new track with blacklisted cover photo: ${e.message}`
-//     }
-//   }
+    // upload track with metadata CID
+    const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
+    trackTxReceipt = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return addTrackToChain(libsWrapper, userId, {
+        digest: metadataCIDDecoded.digest,
+        hashFn: metadataCIDDecoded.hashFn,
+        size: metadataCIDDecoded.size
+      })
+    })
+  } catch (e) {
+    return {
+      error: `Error with IPLD Blacklist test for new track with blacklisted cover photo: ${e.message}`
+    }
+  }
 
-//   // wait for track indexing cycle to occur
-//   await waitForLatestBlock(executeOne)
+  // wait for track indexing cycle to occur
+  await waitForLatestBlock({ executeOne })
 
-//   // check that indexing did not occur
-//   try {
-//     const resp = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getTrackMetadata(libsWrapper, trackTxReceipt.trackId)
-//     })
+  // check that indexing did not occur
+  try {
+    const resp = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getTrackMetadata(libsWrapper, trackTxReceipt.trackId)
+    })
 
-//     return {
-//       error:
-//         'New track with blacklisted cover photo should not have been indexed.'
-//     }
-//   } catch (e) {
-//     if (e.message !== 'No tracks returned.') {
-//       return { error: `Error with querying for track: ${e.message}` }
-//     }
-//   }
-// }
+    return {
+      error:
+        'New track with blacklisted cover photo should not have been indexed.'
+    }
+  } catch (e) {
+    if (e.message !== 'No tracks returned.') {
+      return { error: `Error with querying for track: ${e.message}` }
+    }
+  }
+}
 
-// // TEST UPDATE TRACK FLOW -- COVER PHOTO CID
-// IpldBlacklistTest.updateTrackCoverPhoto = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   let trackId
-//   let blacklistedCID
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+// TEST UPDATE TRACK FLOW -- COVER PHOTO CID
+IpldBlacklistTest.updateTrackCoverPhoto = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  let trackId
+  let blacklistedCID
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // create and upload track
-//     const track = getRandomTrackMetadata(userId)
-//     const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
-//     trackId = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return uploadTrack(libsWrapper, track, randomTrackFilePath)
-//     })
+    // create and upload track
+    const track = getRandomTrackMetadata(userId)
+    const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
+    trackId = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return uploadTrack(libsWrapper, track, randomTrackFilePath)
+    })
 
-//     // wait one indexing cycle
-//     await waitForLatestBlock(executeOne)
+    // wait one indexing cycle
+    await waitForLatestBlock({ executeOne })
 
-//     // generate and add cid to be blacklisted as ipld blacklist txn
-//     blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    // generate and add cid to be blacklisted as ipld blacklist txn
+    blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait an ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE) // 60 sec
+    // wait an ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    }) // 60 sec
 
-//     // generate metadata object with blacklisted CID for cover photo
-//     const metadataObject = getRandomTrackMetadata(userId)
-//     metadataObject.cover_art = blacklistedCID
-//     const metadataCID = await addContentToIpfs(metadataObject)
-//     const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
+    // generate metadata object with blacklisted CID for cover photo
+    const metadataObject = getRandomTrackMetadata(userId)
+    metadataObject.cover_art = blacklistedCID
+    const metadataCID = await addContentToIpfs(metadataObject)
+    const metadataCIDDecoded = Utils.decodeMultihash(metadataCID)
 
-//     // update track with blacklisted cover photo cid
-//     await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return updateTrackOnChain(libsWrapper, trackId, userId, {
-//         digest: metadataCIDDecoded.digest,
-//         hashFn: metadataCIDDecoded.hashFn,
-//         size: metadataCIDDecoded.size
-//       })
-//     })
+    // update track with blacklisted cover photo cid
+    await executeOne(CREATOR_INDEX, libsWrapper => {
+      return updateTrackOnChain(libsWrapper, trackId, userId, {
+        digest: metadataCIDDecoded.digest,
+        hashFn: metadataCIDDecoded.hashFn,
+        size: metadataCIDDecoded.size
+      })
+    })
 
-//     // wait for track indexing cycle
-//     await waitForLatestBlock(executeOne)
-//   } catch (e) {
-//     let error = e
-//     if (e.message) {
-//       error = e.message
-//     }
-//     return {
-//       error: `Error with IPLD Blacklist test for update track cover photo: ${error}`
-//     }
-//   }
+    // wait for track indexing cycle
+    await waitForLatestBlock({ executeOne })
+  } catch (e) {
+    let error = e
+    if (e.message) {
+      error = e.message
+    }
+    return {
+      error: `Error with IPLD Blacklist test for update track cover photo: ${error}`
+    }
+  }
 
-//   // check that indexing did not occur
-//   try {
-//     const track = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getTrackMetadata(libsWrapper, trackId)
-//     })
+  // check that indexing did not occur
+  try {
+    const track = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getTrackMetadata(libsWrapper, trackId)
+    })
 
-//     if (
-//       track.cover_art === blacklistedCID ||
-//       track.cover_art_sizes === blacklistedCID
-//     ) {
-//       return {
-//         error:
-//           'Update track with blacklisted cover photo should not have been indexed.'
-//       }
-//     }
-//   } catch (e) {
-//     return {
-//       error: `Error with getting track metadata: ${e.message}`
-//     }
-//   } finally {
-//     await fs.remove(TEMP_STORAGE_PATH)
-//   }
-// }
+    if (
+      track.cover_art === blacklistedCID ||
+      track.cover_art_sizes === blacklistedCID
+    ) {
+      return {
+        error:
+          'Update track with blacklisted cover photo should not have been indexed.'
+      }
+    }
+  } catch (e) {
+    return {
+      error: `Error with getting track metadata: ${e.message}`
+    }
+  } finally {
+    await fs.remove(TEMP_STORAGE_PATH)
+  }
+}
 
-// // TEST UPDATE USER METADATA CID FLOW
-// IpldBlacklistTest.updateUserMetadata = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+// TEST UPDATE USER METADATA CID FLOW
+IpldBlacklistTest.updateUserMetadata = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // generate and add cid to be blacklisted as ipld blacklist txn
-//     const blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    // generate and add cid to be blacklisted as ipld blacklist txn
+    const blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait an ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE)
+    // wait an ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    })
 
-//     // Update user with blacklisted metadata
-//     const updateUserMetadataTxReceipt = await executeOne(
-//       CREATOR_INDEX,
-//       libsWrapper => {
-//         return updateMultihash(
-//           libsWrapper,
-//           userId,
-//           trackMultihashDecoded.digest
-//         )
-//       }
-//     )
+    // Update user with blacklisted metadata
+    const updateUserMetadataTxReceipt = await executeOne(
+      CREATOR_INDEX,
+      libsWrapper => {
+        return updateMultihash(
+          libsWrapper,
+          userId,
+          trackMultihashDecoded.digest
+        )
+      }
+    )
 
-//     // wait for user indexing cycle
-//     await waitForLatestBlock(executeOne)
+    // wait for user indexing cycle
+    await waitForLatestBlock({ executeOne })
 
-//     // check that user does not have updated blacklisted metadata
-//     const user = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getUser(libsWrapper, userId)
-//     })
+    // check that user does not have updated blacklisted metadata
+    const user = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getUser(libsWrapper, userId)
+    })
 
-//     // if metadata cid update occurred, return error
-//     if (user.metadata_multihash === blacklistedCID) {
-//       return {
-//         error:
-//           'Update user with blacklisted metadata CID should not have been indexed.'
-//       }
-//     }
-//   } catch (e) {
-//     return {
-//       error: `Error with IPLD Blacklist test for update user metadata CID: ${e.message}`
-//     }
-//   }
-// }
+    // if metadata cid update occurred, return error
+    if (user.metadata_multihash === blacklistedCID) {
+      return {
+        error:
+          'Update user with blacklisted metadata CID should not have been indexed.'
+      }
+    }
+  } catch (e) {
+    return {
+      error: `Error with IPLD Blacklist test for update user metadata CID: ${e.message}`
+    }
+  }
+}
 
-// // TEST UPDATE USER PROFILE PHOTO FLOW
-// IpldBlacklistTest.updateUserProfilePhoto = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+// TEST UPDATE USER PROFILE PHOTO FLOW
+IpldBlacklistTest.updateUserProfilePhoto = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // Add blacklisted metadata to ipld blacklist
-//     const blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    // Add blacklisted metadata to ipld blacklist
+    const blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait an ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE)
+    // wait an ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    })
 
-//     // Update user with blacklisted metadata
-//     const updateUserMetadataTxReceipt = await executeOne(
-//       CREATOR_INDEX,
-//       libsWrapper => {
-//         return updateProfilePhoto(
-//           libsWrapper,
-//           userId,
-//           trackMultihashDecoded.digest
-//         )
-//       }
-//     )
+    // Update user with blacklisted metadata
+    const updateUserMetadataTxReceipt = await executeOne(
+      CREATOR_INDEX,
+      libsWrapper => {
+        return updateProfilePhoto(
+          libsWrapper,
+          userId,
+          trackMultihashDecoded.digest
+        )
+      }
+    )
 
-//     // wait for user indexing cycle
-//     await waitForLatestBlock(executeOne)
+    // wait for user indexing cycle
+    await waitForLatestBlock({ executeOne })
 
-//     // check that user does not have updated blacklisted metadata
-//     const user = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getUser(libsWrapper, userId)
-//     })
+    // check that user does not have updated blacklisted metadata
+    const user = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getUser(libsWrapper, userId)
+    })
 
-//     // if metadata cid update occurred, return error
-//     if (user.profile_picture === blacklistedCID) {
-//       return {
-//         error:
-//           'Update user with blacklisted metadata CID should not have been indexed.'
-//       }
-//     }
-//   } catch (e) {
-//     return {
-//       error: `Error with IPLD Blacklist test for update user profile photo: ${e.message}`
-//     }
-//   }
-// }
+    // if metadata cid update occurred, return error
+    if (user.profile_picture === blacklistedCID) {
+      return {
+        error:
+          'Update user with blacklisted metadata CID should not have been indexed.'
+      }
+    }
+  } catch (e) {
+    return {
+      error: `Error with IPLD Blacklist test for update user profile photo: ${e.message}`
+    }
+  }
+}
 
-// // TEST UPDATE USER COVER PHOTO FLOW
-// IpldBlacklistTest.updateUserCoverPhoto = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+// TEST UPDATE USER COVER PHOTO FLOW
+IpldBlacklistTest.updateUserCoverPhoto = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // Add blacklisted metadata to ipld blacklist
-//     const blacklistedCID = await addContentToIpfs({
-//       someData: 'data' + genRandomString(8)
-//     })
-//     const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
-//     logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
-//     })
+    // Add blacklisted metadata to ipld blacklist
+    const blacklistedCID = await addContentToIpfs({
+      someData: 'data' + genRandomString(8)
+    })
+    const trackMultihashDecoded = Utils.decodeMultihash(blacklistedCID)
+    logger.info(`Adding CID ${blacklistedCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
+    })
 
-//     // wait an ipld indexing cycle
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE)
+    // wait an ipld indexing cycle
+    await waitForLatestBlock({
+      executeOne,
+      maxIndexingTimeout: IPLD_CYCLE,
+      checkIpldBlockNumber: true
+    })
 
-//     // Update user with blacklisted metadata
-//     const updateUserMetadataTxReceipt = await executeOne(
-//       CREATOR_INDEX,
-//       libsWrapper => {
-//         return updateCoverPhoto(
-//           libsWrapper,
-//           userId,
-//           trackMultihashDecoded.digest
-//         )
-//       }
-//     )
+    // Update user with blacklisted metadata
+    const updateUserMetadataTxReceipt = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return updateCoverPhoto(
+        libsWrapper,
+        userId,
+        trackMultihashDecoded.digest
+      )
+    })
 
-//     // wait for user indexing cycle
-//     await waitForLatestBlock(executeOne)
+    // wait for user indexing cycle
+    await waitForLatestBlock({ executeOne })
 
-//     // check that user does not have updated blacklisted metadata
-//     const user = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getUser(libsWrapper, userId)
-//     })
+    // check that user does not have updated blacklisted metadata
+    const user = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getUser(libsWrapper, userId)
+    })
 
-//     // if metadata cid update occurred, return error
-//     if (user.cover_photo === blacklistedCID) {
-//       return {
-//         error:
-//           'Update user with blacklisted metadata CID should not have been indexed.'
-//       }
-//     }
-//   } catch (e) {
-//     return {
-//       error: `Error with IPLD Blacklist test for update user cover photo: ${e.message}`
-//     }
-//   }
-// }
+    // if metadata cid update occurred, return error
+    if (user.cover_photo === blacklistedCID) {
+      return {
+        error:
+          'Update user with blacklisted metadata CID should not have been indexed.'
+      }
+    }
+  } catch (e) {
+    return {
+      error: `Error with IPLD Blacklist test for update user cover photo: ${e.message}`
+    }
+  }
+}
 
 // TEST UPDATE PLAYLIST COVER PHOTO FLOW
 IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
@@ -646,7 +671,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 //     })
 
 //     // wait for indexing cycle (5s)
-//     await waitForLatestBlock(executeOne)
+//     await waitForLatestBlock({executeOne})
 
 //     // generate random CID to blacklist and add to blacklist
 //     const randomCID = await addContentToIpfs({
@@ -666,7 +691,11 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 //     const trackMultihashDecoded = Utils.decodeMultihash(cid)
 
 //     // wait for indexing cycle (60s)
-//     await waitForLatestBlock(executeOne, IPLD_CYCLE)
+// //     await waitForLatestBlock({
+//       executeOne,
+//       maxIndexingTimeout: IPLD_CYCLE,
+//       checkIpldBlockNumber: true
+//     })
 
 //     // update playlist with blacklisted CID cover photo
 //     const updatePlaylistTxReceipt = await executeOne(
@@ -681,7 +710,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 //     )
 
 //     // wait for indexing cycle (5s)
-//     await waitForLatestBlock(executeOne)
+//     await waitForLatestBlock({executeOne})
 
 //     // query playlist and check that new cover photo not indexed
 //     const playlists = await executeOne(CREATOR_INDEX, libsWrapper => {

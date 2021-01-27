@@ -280,6 +280,8 @@ def configure_celery(flask_app, celery, test_config=None):
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
 
+    ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_window"])
+
     # Update celery configuration
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
@@ -293,7 +295,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
-                "schedule": timedelta(seconds=60),
+                "schedule": timedelta(seconds=ipld_interval),
             },
             "update_play_count": {
                 "task": "update_play_count",

@@ -342,6 +342,10 @@ const getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => 
  * @param {number} maxIndexingTimeout default 5000ms
  */
 const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = 5000, checkIpldBlockNumber = false }) => {
+  // Note: this is /not/ the block of which a certain txn occurred. This is just the
+  // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
+  // might be 83). This method is the quickest way to attempt to poll up to a reasonably
+  // close block without having to change libs API.
   const latestBlockOnChain = await executeOne(0, libsWrapper => {
     return getLatestBlockOnChain(libsWrapper)
   })
