@@ -5,6 +5,7 @@ const { logger } = require('../logger.js')
 const {
   addAndUpgradeUsers
 } = require('../helpers.js')
+const { exec } = require('child_process')
 
 const DEFAULT_INDEX = 1
 
@@ -58,9 +59,9 @@ const verifyUserReplicaSetStatus = async (
       throw new Error(`Mismatch primaryId values. Expected ${primaryId}, found ${usrReplicaInfoFromContract.primary}`)
     }
 
-    console.log(`userId: ${userId} Replica Set Info: ${primaryId}, ${usrQueryInfo.secondaries}`)
-    console.log(`userId: ${userId} Replica Set String: ${usrQueryInfo.creator_node_endpoint}`)
-    console.log(`userId: ${userId} primaryId: ${primaryId} primaryIdFromEndointStr: ${primaryInfo.spID}`)
+    logger.info(`userId: ${userId} Replica Set Info: ${primaryId}, ${usrQueryInfo.secondaries}`)
+    logger.info(`userId: ${userId} Replica Set String: ${usrQueryInfo.creator_node_endpoint}`)
+    logger.info(`userId: ${userId} primaryId: ${primaryId} primaryIdFromEndointStr: ${primaryInfo.spID}`)
 
     // Throw if array lengths do not match for secondaries
     if (secondaryEndpointStrings.length !== usrQueryInfo.secondaries.length) {
@@ -73,7 +74,7 @@ const verifyUserReplicaSetStatus = async (
       let secondaryEndpoint = secondaryEndpointStrings[i]
       let secondaryInfoFromStr = contentNodeEndpointToInfoMapping[secondaryEndpoint]
       let secondaryIdFromStr = secondaryInfoFromStr.spID
-      console.log(`userId: ${userId} secondaryId: ${secondaryId} secondaryIdFromEndpointStr: ${secondaryIdFromStr}`)
+      logger.info(`userId: ${userId} secondaryId: ${secondaryId} secondaryIdFromEndpointStr: ${secondaryIdFromStr}`)
       // Throw if the ID array does not match the ID mapped to the 
       // endpoint in the legacy creator_node_endpoint 
       if (secondaryId !== secondaryIdFromStr) {
@@ -112,7 +113,7 @@ const waitForBlock = async (libs, targetBlockNumber) => {
       return true
     }
   }
-  console.log(`Exiting...reached ${targetBlockNumber}`)
+  logger.info(`Exiting...reached ${targetBlockNumber}`)
 }
 
 const verifyUserReplicaSets = async(executeAll) => {
@@ -122,6 +123,52 @@ const verifyUserReplicaSets = async(executeAll) => {
     // NOTE - It might be easier to just create a map of wallets instead of using 'index'
     const userId = walletIndexToUserIdMap[i]
     await verifyUserReplicaSetStatus(userId, libs) 
+  })
+}
+
+// Promote each user's secondary1 to primary
+// Replica set transitions: (P=Primary, S1=Secondary1, S2 = Secondary2)
+// P->S1, S1->P, S2->S2
+const promoteSecondary1ToPrimary = async(executeAll) => {
+  await executeAll(async (libs, i) => {
+    // Retrieve user id if known from walletIndexToUserIdMap
+    // NOTE - It might be easier to just create a map of wallets instead of using 'index'
+    const userId = walletIndexToUserIdMap[i]
+    let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
+    logger.info(`Reordering ${userId}`)
+    let primary = usrReplicaInfoFromContract.primary
+    let secondaries = usrReplicaInfoFromContract.secondaries
+
+    let newPrimary = parseInt(secondaries[0])
+    let newSecondaries = [primary, secondaries[1]].map(x=>parseInt(x))
+    logger.info(`userId: ${userId} | P: ${primary}->${newPrimary}`)
+    logger.info(`userId: ${userId} | S1: ${secondaries[0]}->${newSecondaries[0]}`)
+    logger.info(`userId: ${userId} | S2: ${secondaries[1]}->${newSecondaries[1]}`)
+    let tx = await libs.updateReplicaSet(userId, newPrimary, newSecondaries)
+    await waitForBlock(libs, tx.blockNumber)
+  })
+}
+
+// Promote each user's secondary2 to primary
+// Replica set transitions: (P=Primary, S1=Secondary1, S2 = Secondary2)
+// P->S2, S1->S1, S2->P
+const promoteSecondary2ToPrimary = async(executeAll) => {
+  await executeAll(async (libs, i) => {
+    // Retrieve user id if known from walletIndexToUserIdMap
+    // NOTE - It might be easier to just create a map of wallets instead of using 'index'
+    const userId = walletIndexToUserIdMap[i]
+    let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
+    logger.info(`Reordering ${userId}`)
+    let primary = usrReplicaInfoFromContract.primary
+    let secondaries = usrReplicaInfoFromContract.secondaries
+
+    let newPrimary = parseInt(secondaries[1])
+    let newSecondaries = [secondaries[1], primary].map(x=>parseInt(x))
+    logger.info(`userId: ${userId} | P: ${primary}->${newPrimary}`)
+    logger.info(`userId: ${userId} | S1: ${secondaries[0]}->${newSecondaries[0]}`)
+    logger.info(`userId: ${userId} | S2: ${secondaries[1]}->${newSecondaries[1]}`)
+    let tx = await libs.updateReplicaSet(userId, newPrimary, newSecondaries)
+    await waitForBlock(libs, tx.blockNumber)
   })
 }
 
@@ -154,28 +201,9 @@ const userReplicaSetManagerTest = async ({
   })
 
   await verifyUserReplicaSets(executeAll)
-
-  // Promote each user's secondary1 to primary
-  // Replica set transitions: (P=Primary, S1=Secondary1, S2 = Secondary2)
-  // P->S1, S1->P, S2->S2
-  await executeAll(async (libs, i) => {
-    // Retrieve user id if known from walletIndexToUserIdMap
-    // NOTE - It might be easier to just create a map of wallets instead of using 'index'
-    const userId = walletIndexToUserIdMap[i]
-    let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
-    console.log(`Reordering ${userId}`)
-    let primary = usrReplicaInfoFromContract.primary
-    let secondaries = usrReplicaInfoFromContract.secondaries
-
-    let newPrimary = parseInt(secondaries[0])
-    let newSecondaries = [primary, secondaries[1]].map(x=>parseInt(x))
-    console.log(`userId: ${userId} | P: ${primary}->${newPrimary}`)
-    console.log(`userId: ${userId} | S1: ${secondaries[0]}->${newSecondaries[0]}`)
-    console.log(`userId: ${userId} | S2: ${secondaries[1]}->${newSecondaries[1]}`)
-    let tx = await libs.updateReplicaSet(userId, newPrimary, newSecondaries)
-    await waitForBlock(libs, tx.blockNumber)
-  })
-
+  await promoteSecondary1ToPrimary(executeAll)
+  await verifyUserReplicaSets(executeAll)
+  await promoteSecondary2ToPrimary(executeAll)
   await verifyUserReplicaSets(executeAll)
 }
 
