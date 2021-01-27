@@ -541,6 +541,18 @@ function LibsWrapper (walletIndex = 0) {
   this.getUserReplicaSet = async (userId) => {
     return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   }
+
+  this.updateReplicaSet = async (userId, primary, secondaries) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primary,
+      secondaries
+    )
+  }
+
+  this.getDiscoveryNodeEndpoint = () => {
+    return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
+  }
 }
 
 module.exports = { LibsWrapper, Utils }
