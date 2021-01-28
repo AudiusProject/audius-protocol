@@ -80,12 +80,16 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
             wallet, user_id = user.wallet, user.user_id
             wallet = eth_web3.toChecksumAddress(wallet)
 
-            # get balance
-            balance = token_contract.functions.balanceOf(wallet).call()
+            try:
+                # get balance
+                balance = token_contract.functions.balanceOf(wallet).call()
 
-            # update the balance on the user model
-            user_balance = needs_refresh_map[user_id]
-            user_balance.balance = balance
+                # update the balance on the user model
+                user_balance = needs_refresh_map[user_id]
+                user_balance.balance = balance
+
+            except Exception as e:
+                logger.error(f"cache_user_balance.py | Error fetching balance for user {user.user_id}: {(e)}")
 
         # Commit the new balances
         session.commit()
