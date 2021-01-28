@@ -29,6 +29,7 @@ module.exports = function (app) {
 
     const maxExportClockValueRange = config.get('maxExportClockValueRange')
 
+    // Define clock range (min and max) for export
     const requestedClockRangeMin = parseInt(req.query.clock_range_min) || 0
     const requestedClockRangeMax = requestedClockRangeMin + (maxExportClockValueRange - 1)
 
@@ -219,12 +220,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   const start = Date.now()
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
-  let errorObj = null // object to track if the function errored, returned at the end of the function
+  // object to track if the function errored, returned at the end of the function
+  let errorObj = null
 
-  // ensure access to each wallet, then acquire redis lock for duration of sync
+  /**
+   * Ensure access to each wallet, then acquire redis lock for duration of sync
+   */
   const redisClient = req.app.get('redisClient')
   const redisLock = redisClient.lock
-
   let redisKey
   for (let wallet of walletPublicKeys) {
     redisKey = redisClient.getNodeSyncRedisKey(wallet)
@@ -235,6 +238,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     await redisLock.setLock(redisKey)
   }
 
+  /**
+   * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
+   */
   try {
     // Query own latest clockValue and call export with that value + 1; export from 0 for first time sync
     const cnodeUser = await models.CNodeUser.findOne({
@@ -242,7 +248,11 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     })
     const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
 
-    // Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
+    /**
+     * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
+     */
+
+    // Build export query params
     const exportQueryParams = {
       wallet_public_key: walletPublicKeys,
       clock_range_min: (localMaxClockVal + 1)
@@ -251,6 +261,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
     }
 
+    // Make export request to endpoint
     const resp = await axios({
       method: 'get',
       baseURL: creatorNodeEndpoint,
@@ -272,9 +283,11 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         resp.data = JSON.parse(resp.request.responseText)
       } else throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
+
     if (!resp.data.hasOwnProperty('cnodeUsers') || !resp.data.hasOwnProperty('ipfsIDObj') || !resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
+
     req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
 
     // Attempt to connect directly to target CNode's IPFS node.
@@ -294,7 +307,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       const fetchedWalletPublicKey = fetchedCNodeUser.walletPublicKey
 
       /**
-       * TODO
+       * Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS
        */
       try {
         const myCnodeEndpoint = await getOwnEndpoint(req)
@@ -315,7 +328,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-        req.logger.error(redisKey, `Couldn't get user's replica sets, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`)
+        req.logger.error(redisKey, `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`)
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
@@ -342,16 +355,27 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       // All DB updates must happen in single atomic tx - partial state updates will lead to data loss
       const transaction = await models.sequelize.transaction()
 
+      /**
+       * Process all DB updates for cnodeUser
+       */
       try {
         req.logger.info(redisKey, `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`)
 
-        // Update CNodeUser entry if exists else create
-        // Cannot use upsert since it fails to use default value for cnodeUserUUID per this issue https://github.com/sequelize/sequelize/issues/3247
+        /**
+         * Update CNodeUser entry if exists else create new
+         *
+         * Cannot use upsert since it fails to use default value for cnodeUserUUID per this issue https://github.com/sequelize/sequelize/issues/3247
+         */
+
+        let cnodeUser
+
+        // Fetch current cnodeUser from DB
         const cnodeUserRecord = await models.CNodeUser.findOne({
           where: { walletPublicKey: fetchedWalletPublicKey },
           transaction
         })
-        let cnodeUser
+
+        // Update existing entry if found, else create new
         if (cnodeUserRecord) {
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {
@@ -367,11 +391,14 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
               transaction
             }
           )
+
+          // Error if update failed
           if (numRowsUpdated !== 1 || respObj.length !== 1) {
-            throw new Error('Failed to update cnodeUser row TODO fix error msg')
+            throw new Error(`Failed to update cnodeUser row for cnodeUser wallet ${fetchedWalletPublicKey}`)
           }
           cnodeUser = respObj[0]
         } else {
+          // Will throw error if creation fails
           cnodeUser = await models.CNodeUser.create(
             {
               walletPublicKey: fetchedWalletPublicKey,
@@ -386,6 +413,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
             }
           )
         }
+
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
         req.logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`)
 
