@@ -98,7 +98,7 @@ jobs:
             - creator-node/node_modules
           key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
 
-      # discovery node
+      # discovery node -- slightly trickier. will
       # - restore_cache:
       #     keys:
       #       - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
@@ -184,22 +184,22 @@ jobs:
             nvm install v10.16
             nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
-            cd /home/circleci/project/libs/	
-            npm link	
-            cd /home/circleci/project/service-commands/	
-            npm link	
-            npm link @audius/libs	
-            cd /home/circleci/project/mad-dog/	
-            npm link @audius/libs	
-            npm link @audius/service-commands	
+            cd /home/circleci/project/libs/
+            npm link
+            cd /home/circleci/project/service-commands/
+            npm link
+            npm link @audius/libs
+            cd /home/circleci/project/mad-dog/
+            npm link @audius/libs
+            npm link @audius/service-commands
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             "$(which node)" setup.js up -nc 3
-            docker ps -a
-            cd /home/circleci/project/mad-dog/	
-            export ipfsHost="localhost"	
-            export ipfsPort=6001	
+            cd /home/circleci/project/mad-dog/
+            docker ps
+            export ipfsHost="localhost"
+            export ipfsPort=6001
             npm run start test-ci
 
   test-libs:
@@ -234,9 +234,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-libs-{{ checksum "libs/package-lock.json" }}
+          - v1-dependencies-{{ checksum "libs/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-libs-
+          - v1-dependencies-
       - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
       - run: |
           cd libs
@@ -244,12 +244,12 @@ jobs:
       - save_cache:
           paths:
             - libs/node_modules
-          key: v1-libs-{{ checksum "libs/package-lock.json" }}
+          key: v1-dependencies-{{ checksum "libs/package.json" }}
 
       - restore_cache:
           keys:
-          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
-          - v1-data-contracts- 
+          - data-contracts-{{ checksum "contracts/package.json" }}
+          - data-contracts-
       - run:
           name: contract repo init
           command: |
@@ -258,12 +258,12 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
+          key: data-contracts-{{ checksum "contracts/package.json" }}
 
       - restore_cache:
           keys:
-          - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
-          - v1-eth-contracts-
+          - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+          - eth-contracts-
       - run:
           name: eth-contracts repo init
           command: |
@@ -273,7 +273,7 @@ jobs:
       - save_cache:
           paths:
             - eth-contracts/node_modules
-          key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
+          key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
 
       # run tests!
       - run:
@@ -299,9 +299,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-libs-{{ checksum "contracts/package-lock.json" }}
+          - v1-dependencies-{{ checksum "contracts/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-libs-
+          - v1-dependencies-
 
       - run:
           name: installation
@@ -312,7 +312,7 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: v1-libs-{{ checksum "contracts/package-lock.json" }}
+          key: v1-dependencies-{{ checksum "contracts/package.json" }}
 
       # run tests!
       - run:
@@ -340,9 +340,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-libs-{{ checksum "eth-contracts/package-lock.json" }}
+          - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-libs-
+          - v1-dependencies-
       - run:
           name: installation
           command: |
@@ -352,7 +352,7 @@ jobs:
       - save_cache:
           paths:
             - eth-contracts/node_modules
-          key: v1-libs-{{ checksum "eth-contracts/package-lock.json" }}
+          key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
       - run:
           name: run_lint
           command: |
@@ -392,7 +392,7 @@ jobs:
       # Download and cache dependencies
       # - restore_cache:
       #     keys:
-      #     - content-service-{{ checksum "content-service/package-lock.json" }}
+      #     - content-service-{{ checksum "content-service/package.json" }}
       #     # fallback to using the latest cache if no exact match is found
       #     - content-service-
       - run:
@@ -403,7 +403,7 @@ jobs:
       # - save_cache:
       #     paths:
       #       - content-service/node_modules
-      #     key: content-service-{{ checksum "content-service/package-lock.json" }}
+      #     key: content-service-{{ checksum "content-service/package.json" }}
       - run:
           name: run tests
           command: |
@@ -432,20 +432,20 @@ jobs:
           steps:
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-content-node-
+      # - restore_cache:
+      #     keys:
+      #     - v1-dependencies-{{ checksum "creator-node/package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - v1-dependencies-
       - run:
           name: setup
           command: |
             cd creator-node
             npm install
-      - save_cache:
-          paths:
-            - creator-node/node_modules
-          key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
+      # - save_cache:
+      #     paths:
+      #       - creator-node/node_modules
+      #     key: v1-dependencies-{{ checksum "creator-node/package.json" }}
       - run:
           name: run creator node tests
           command: |
@@ -485,8 +485,8 @@ jobs:
             - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
       - restore_cache:
           keys:
-            - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
-            - v1-discovery-node- 
+            - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+            - disc-prov-1-
       - run:
           name: python-setup
           command: |
@@ -497,7 +497,7 @@ jobs:
       - save_cache:
           paths:
             - discovery-provider/venv/
-          key: v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}
+          key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
       - run:
           name: python-lint
           command: |
@@ -506,7 +506,7 @@ jobs:
             python ./scripts/lint.py
       - restore_cache:
           keys:
-          - disc-prov-contracts-{{ checksum "contracts/package-lock.json" }}
+          - disc-prov-contracts-{{ checksum "contracts/package.json" }}
           # fallback to using the latest cache if no exact match is found
           - disc-prov-contracts-
       - run:
@@ -517,7 +517,7 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: disc-prov-contracts-{{ checksum "contracts/package-lock.json" }}
+          key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
       - run:
           name: discovery provider tests
           command: |
@@ -555,8 +555,8 @@ jobs:
       # restores data-contracts
       - restore_cache:
           keys:
-          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
-          - v1-data-contracts- 
+          - data-contracts-{{ checksum "contracts/package.json" }}
+          - data-contracts-
       - run:
           name: contract repo init
           command: |
@@ -565,7 +565,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - identity-service-dep1-{{ checksum "identity-service/package-lock.json" }}
+          - identity-service-dep1-{{ checksum "identity-service/package.json" }}
           # fallback to using the latest cache if no exact match is found
           - identity-service-dep1-
       - run:
@@ -577,7 +577,7 @@ jobs:
       - save_cache:
           paths:
             - identity-service/node_modules
-          key: identity-service-dep1-{{ checksum "identity-service/package-lock.json" }}
+          key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
       - run:
           name: run identity service tests
           command: |
