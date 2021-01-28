@@ -54,7 +54,7 @@ class ServiceProvider extends Base {
 
     let services = {}
     timings.forEach(timing => {
-      if (timing.response) services[timing.request.id] = timing.response.data
+      if (timing.response) services[timing.request.id] = timing.response.data.data
     })
 
     return services
