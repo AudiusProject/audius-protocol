@@ -317,37 +317,30 @@ class CreatorNode {
 
   /**
    * Given a particular endpoint to a creator node, check whether
-   * this user has a sync in progress on that node and return sync status info.
-   * Throws if no current user is set or if sync_status request fails
+   * this user has a sync in progress on that node.
    * @param {string} endpoint
    * @param {number?} timeout ms
    */
   async getSyncStatus (endpoint, timeout = null) {
     const user = this.userStateManager.getCurrentUser()
-
-    if (!user) {
-      throw new Error(`No current user`)
+    if (user) {
+      const req = {
+        baseURL: endpoint,
+        url: `/sync_status/${user.wallet}`,
+        method: 'get'
+      }
+      if (timeout) req.timeout = timeout
+      const status = await axios(req)
+      return {
+        status: status.data,
+        userBlockNumber: user.blocknumber,
+        trackBlockNumber: user.track_blocknumber,
+        // Whether or not the endpoint is behind in syncing
+        isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
+        isConfigured: status.data.latestBlockNumber !== -1
+      }
     }
-
-    const req = {
-      baseURL: endpoint,
-      url: `/sync_status/${user.wallet}`,
-      method: 'get'
-    }
-
-    if (timeout) req.timeout = timeout
-
-    // axios request will throw error on non-200 response code
-    const status = await axios(req)
-
-    return {
-      status: status.data,
-      userBlockNumber: user.blocknumber,
-      trackBlockNumber: user.track_blocknumber,
-      // Whether or not the endpoint is behind in syncing
-      isBehind: status.data.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
-      isConfigured: status.data.latestBlockNumber !== -1
-    }
+    throw new Error(`No current user`)
   }
 
   /**
