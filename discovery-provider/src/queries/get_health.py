@@ -52,10 +52,11 @@ def _get_db_ipld_block_state():
     with db.scoped_session() as session:
         # Fetch latest block from DB
         db_ipld_block_max = session.query(sqlalchemy.func.max(BlacklistedIPLD.blocknumber)).scalar()
-        return db_ipld_block_max 
+        return db_ipld_block_max
 
 # Get the max blocknumber indexed in ipld blacklist table. Uses redis cache by default.
 def get_latest_ipld_indexed_block(use_redis_cache=True):
+    redis = redis_connection.get_redis()
     latest_indexed_ipld_block_num = None
 
     if use_redis_cache:

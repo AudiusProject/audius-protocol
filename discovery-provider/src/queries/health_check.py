@@ -84,5 +84,5 @@ def ipld_block_check():
     use_redis_cache = parse_bool_param(request.args.get("use_cache"))
     latest_ipld_indexed_block = get_latest_ipld_indexed_block(use_redis_cache)
     return success_response(
-       {"block": latest_ipld_indexed_block}
+        {"block": latest_ipld_indexed_block}
     )
