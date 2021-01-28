@@ -177,7 +177,6 @@ class SnapbackSM {
     secondaryEndpoint,
     userWallet,
     primaryClockValue,
-    secondaryClockValue,
     priority,
     syncType = SyncType.Recurring
   }) {
@@ -197,8 +196,7 @@ class SnapbackSM {
       {
         syncRequestParameters,
         startTime: Date.now(),
-        primaryClockValue,
-        secondaryClockValue
+        primaryClockValue
       },
       { priority }
     )
@@ -343,7 +341,6 @@ class SnapbackSM {
                 secondaryEndpoint: secondary1,
                 primaryEndpoint: this.endpoint,
                 primaryClockValue,
-                secondaryClockValue: secondary1ClockValue,
                 priority: SyncPriority.Low
               })
               numSyncsIssued += 1
@@ -355,7 +352,6 @@ class SnapbackSM {
                 secondaryEndpoint: secondary2,
                 primaryEndpoint: this.endpoint,
                 primaryClockValue,
-                secondaryClockValue: secondary1ClockValue,
                 priority: SyncPriority.Low
               })
               numSyncsIssued += 1
@@ -381,7 +377,7 @@ class SnapbackSM {
    * Track an ongoing sync operation for a given secondaryUrl and user wallet
    * Poll repeatedly until secondary has synced up to given primaryClockValue or max duration has been exceeded
    */
-  async monitorSecondarySync (userWallet, primaryClockValue, secondaryClockValue, secondaryUrl) {
+  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl) {
     const startTime = Date.now()
 
     // Define axios request object for secondary sync status request
@@ -408,7 +404,7 @@ class SnapbackSM {
         if (respData.clockValue >= primaryClockValue) {
           secondaryClockValAfterSync = respData.clockValue
 
-          this.log(`Sync for ${userWallet} at ${secondaryUrl} from ${secondaryClockValue} to ${secondaryClockValAfterSync} for primaryClockVal ${primaryClockValue} completed in ${Date.now() - startTime}ms`)
+          this.log(`Sync for ${userWallet} at ${secondaryUrl} to clock value ${secondaryClockValAfterSync} for primaryClockVal ${primaryClockValue} completed in ${Date.now() - startTime}ms`)
           syncAttemptCompleted = true
           break
         }
@@ -435,7 +431,6 @@ class SnapbackSM {
         secondaryEndpoint: secondaryUrl,
         primaryEndpoint: this.endpoint,
         primaryClockValue,
-        secondaryClockValue: secondaryClockValAfterSync || -1,
         priority: SyncPriority.Low
       })
     }
@@ -467,7 +462,6 @@ class SnapbackSM {
 
     const syncWallet = syncRequestParameters.data.wallet[0]
     const primaryClockValue = job.data.primaryClockValue
-    const secondaryClockValue = job.data.secondaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
     this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${jobType} | priority: ${priorityMap[priority]} | jobID: ${id} ------------------`)
 
@@ -475,7 +469,7 @@ class SnapbackSM {
     await axios(syncRequestParameters)
 
     // Wait until has sync has completed (up to a timeout) before moving on
-    await this.monitorSecondarySync(syncWallet, primaryClockValue, secondaryClockValue, secondaryUrl)
+    await this.monitorSecondarySync(syncWallet, primaryClockValue, secondaryUrl)
 
     // Exit when sync status is computed
     this.log(`------------------END Process SYNC | jobID: ${id}------------------`)

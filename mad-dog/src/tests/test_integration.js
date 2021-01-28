@@ -265,7 +265,7 @@ module.exports = coreIntegration = async ({
 
     logger.info(`userId ${userId} wallet ${wallet} rset ${userMetadata.creator_node_endpoint}`)
 
-    // Define new rset
+    // Define new rset by swapping primary and first secondary
     const newRSet = (secondaries.length) ? [secondaries[0], primary].concat(secondaries.slice(1)) : [primary]
 
     // Update libs instance with new endpoint
@@ -283,6 +283,8 @@ module.exports = coreIntegration = async ({
 
   // Check all user replicas until they are synced up to primary
   await ensureSecondariesAreUpToDate({walletIdMap, executeOne})
+
+  // TODO call export on each node and verify equality
 
   // TODO Upload more content to new primary + verify
 
