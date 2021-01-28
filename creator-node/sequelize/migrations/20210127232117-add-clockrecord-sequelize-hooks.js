@@ -1,22 +1,31 @@
 'use strict'
 
 /**
- * TODO comment
+ * Adds Sequelize hooks for beforeCreate(ClockRecord) and beforeBulkCreate(ClockRecord).
+ * Hooks enforce these ClockRecord rules:
+ * - each clock > 0
+ * - initial clock = 1
+ * - each subsequent clock = (1 + previous clock)
  */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.sequelize.addHook('beforeCreate', 'clockRecordBeforeCreate', async function (instance, options) {
-      if (instance.constructor.name !== 'ClockRecord') { return }
+      if (instance.constructor.name !== 'ClockRecord') {
+        return
+      }
 
+      // clockRecord is the instance passed in the current sequelize CREATE query
       const clockRecord = instance
+
       const clock = clockRecord.clock
 
-      // DBManager calls ClockRecord.create() with a subquery for clock, which breaks this pattern
+      // DBManager calls ClockRecord.create() with a subquery for clock value instead of a number literal.
+      // Short-circuit in that case since no validation is required.
       if (typeof clock !== 'number') {
         return
       }
 
-      // clockValue must be > 0
+      // clock value must be > 0
       if (clock <= 0) {
         return queryInterface.sequelize.Promise.reject('Clock value must be > 0')
       }
@@ -33,7 +42,7 @@ module.exports = {
         return queryInterface.sequelize.Promise.reject('First clockRecord for cnodeUser must have clock value 1')
       }
 
-      // error if new entry.clock is not previous.clock + 1
+      // If not first clockRecord entry, clock value must be (previous.clock + 1)
       if (currentMaxClock && clock !== currentMaxClock + 1) {
         return queryInterface.sequelize.Promise.reject('Can only insert contiguous clock values')
       }
@@ -44,6 +53,7 @@ module.exports = {
         return
       }
 
+      // clockRecords are the instances passed in the current sequelize BULK CREATE query
       const clockRecords = instances
 
       // Ensure first clockRecord meets all above rules
@@ -52,7 +62,13 @@ module.exports = {
         const clockRecord = clockRecords[0]
         const clock = clockRecord.clock
 
-        // clockValue must be > 0
+        // DBManager calls ClockRecord.create() with a subquery for clock value instead of a number literal.
+        // Short-circuit in that case since no validation is required.
+        if (typeof clock !== 'number') {
+          return
+        }
+
+        // clock value must be > 0
         if (clock <= 0) {
           return queryInterface.sequelize.Promise.reject('Clock value must be > 0')
         }
@@ -69,7 +85,7 @@ module.exports = {
           return queryInterface.sequelize.Promise.reject('First clockRecord for cnodeUser must have clock value 1')
         }
 
-        // error if new entry.clock is not previous.clock + 1
+        // If not first clockRecord entry, clock value must be (previous.clock + 1)
         if (currentMaxClock && clock !== currentMaxClock + 1) {
           return queryInterface.sequelize.Promise.reject('Can only insert contiguous clock values')
         }

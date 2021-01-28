@@ -84,8 +84,8 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * 1. do the prep work to save the file to the local file system including
  * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
  * 2. attempt to fetch the CID from a variety of sources
- * 3. throws error if failure, couldn't find the file or file contents don't match CID,
- * returns expectedStoragePath if successful
+ * 3. throws error if failure, couldn't find the file or file contents don't match CID;
+ *    returns expectedStoragePath if successful
  * @param {Object} req request object
  * @param {String} multihash IPFS cid
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
@@ -229,7 +229,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         }
       }
     } catch (e) {
-      // throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
+      throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
     return expectedStoragePath
