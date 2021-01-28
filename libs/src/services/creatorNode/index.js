@@ -624,8 +624,8 @@ function _handleErrorHelper (e, requestUrl) {
     // delete headers, may contain tokens
     if (e.config && e.config.headers) delete e.config.headers
 
-    console.error(`Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\nError: ${e}`)
-    throw new Error(`Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\nError: ${e}`)
+    console.error(`Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\nError:`, e)
+    throw new Error(`Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\nError:`, e)
   } else {
     throw e
   }
