@@ -354,7 +354,7 @@ const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
       secondary1ClockValue = replicaSetClockValues[1].clockValue
       secondary2ClockValue = replicaSetClockValues[2].clockValue
 
-      logger.info(`Monitoring sync for ${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
+      logger.info(`Monitoring sync for user=${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
 
       if (secondary1ClockValue === primaryClockValue && secondary2ClockValue && primaryClockValue) {
         synced = true
