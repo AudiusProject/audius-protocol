@@ -28,7 +28,7 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
-const MAX_INDEXING_TIMEOUT = 60000 // extra second of buffer....
+const MAX_INDEXING_TIMEOUT = 10000 // max wait time for block polling
 const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
 
 /**
@@ -341,7 +341,8 @@ const getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => 
  * @param {*} libsWrapper
  * @param {number} maxIndexingTimeout default 5000ms
  */
-const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = 5000, checkIpldBlockNumber = false }) => {
+const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXING_TIMEOUT, checkIpldBlockNumber = false }) => {
+  const blockCheckLabel = checkIpldBlockNumber ? 'IPLD ' : ''
   // Note: this is /not/ the block of which a certain txn occurred. This is just the
   // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
   // might be 83). This method is the quickest way to attempt to poll up to a reasonably
@@ -350,7 +351,7 @@ const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = 5000, check
     return getLatestBlockOnChain(libsWrapper)
   })
 
-  logger.info(`Waiting for latest block #${latestBlockOnChain} to be indexed...`)
+  logger.info(`[${blockCheckLabel}Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
 
   let latestIndexedBlock = -1
   const startTime = Date.now()
@@ -358,12 +359,12 @@ const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = 5000, check
     if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
     else latestIndexedBlock = await getLatestIndexedBlock()
     if (latestIndexedBlock >= latestBlockOnChain) {
-      logger.info(`Discovery Node has indexed block #${latestBlockOnChain}!`)
+      logger.info(`[${blockCheckLabel}Block Check] Discovery Node has indexed block #${latestBlockOnChain}!`)
       return true
     }
   }
 
-  logger.warn(`Could not index latest block #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+  logger.warn(`[${blockCheckLabel}Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
   return false
 }
 
