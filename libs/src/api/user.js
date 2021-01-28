@@ -693,6 +693,20 @@ class Users extends Base {
   }
 
   async _updateReplicaSet (userId, metadata) {
+    // Attempt to update through UserReplicaSetManagerClient if present  
+    if (!this.contracts.UserReplicaSetManagerClient) {
+      await this.contracts.initUserReplicaSetManagerClient()
+    }
+
+    // If still uninitialized, proceed with legacy update - else move forward with new contract update 
+    if (!this.contracts.UserReplicaSetManagerClient) {
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
+        userId,
+        metadata['creator_node_endpoint']
+      )
+      return updateEndpointTxReceipt
+    }
+
     let primaryEndpoint = CreatorNode.getPrimary(metadata['creator_node_endpoint'])
     let secondaries = CreatorNode.getSecondaries(metadata['creator_node_endpoint'])
     let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)

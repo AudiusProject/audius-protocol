@@ -59,6 +59,10 @@ class ContractClient {
     try {
       if (!this._contractAddress) {
         this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+        if (this._contractAddress === "0x0000000000000000000000000000000000000000") {
+          this._isInitializing = false
+          throw new Error(`Failed retrieve address for ${this.contractRegistryKey}`)
+        }
       }
       const web3 = this.web3Manager.getWeb3()
       this._contract = new web3.eth.Contract(
@@ -70,7 +74,7 @@ class ContractClient {
     } catch (e) {
       // If using ethWeb3Manager or useExternalWeb3 is true, do not do reselect provider logic and fail
       if (!this.providerSelector) {
-        console.error(`Failed to initialize ${this.contractRegistryKey} contract ${JSON.stringify(this.contractABI)}`, e)
+        console.error(`Failed to initialize ${this.contractRegistryKey} contract`, e)
         return
       }
 
