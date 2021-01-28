@@ -179,7 +179,7 @@ jobs:
           command: |
             set -e
             export PROTOCOL_DIR=/home/circleci/project
-            export audius_index_ipld_blacklist_interval=5
+            export audius_discprov_blacklist_block_indexing_window=5
             source ~/.bash_profile
             nvm install v10.16
             nvm use 10.16
