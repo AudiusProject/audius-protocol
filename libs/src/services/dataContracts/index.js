@@ -105,8 +105,8 @@ class AudiusContracts {
   async initUserReplicaSetManagerClient () {
     try {
       if (
-        this.UserReplicaSetManagerClient && 
-        this.UserReplicaSetManagerClient._contractAddress !== "0x0000000000000000000000000000000000000000"
+        this.UserReplicaSetManagerClient &&
+        this.UserReplicaSetManagerClient._contractAddress !== '0x0000000000000000000000000000000000000000'
       ) {
         return
       }
@@ -118,7 +118,7 @@ class AudiusContracts {
         this.getRegistryAddressForContract
       )
       await this.UserReplicaSetManagerClient.init()
-      if (this.UserReplicaSetManagerClient._contractAddress === "0x0000000000000000000000000000000000000000") {
+      if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
         throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
       }
     } catch (e) {

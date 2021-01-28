@@ -59,7 +59,7 @@ class ContractClient {
     try {
       if (!this._contractAddress) {
         this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
-        if (this._contractAddress === "0x0000000000000000000000000000000000000000") {
+        if (this._contractAddress === '0x0000000000000000000000000000000000000000') {
           this._isInitializing = false
           throw new Error(`Failed retrieve address for ${this.contractRegistryKey}`)
         }

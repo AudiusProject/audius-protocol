@@ -696,12 +696,12 @@ class Users extends Base {
   }
 
   async _updateReplicaSet (userId, metadata) {
-    // Attempt to update through UserReplicaSetManagerClient if present  
+    // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
     }
 
-    // If still uninitialized, proceed with legacy update - else move forward with new contract update 
+    // If still uninitialized, proceed with legacy update - else move forward with new contract update
     if (!this.contracts.UserReplicaSetManagerClient) {
       const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
         userId,
