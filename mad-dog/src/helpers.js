@@ -14,7 +14,8 @@ const {
   uploadProfileImagesAndAddUser,
   upgradeToCreator,
   getLibsUserInfo,
-  getLatestBlockOnChain
+  getLatestBlockOnChain,
+  getClockValuesFromReplicaSet
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -28,8 +29,9 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
-const MAX_INDEXING_TIMEOUT = 10000 // max wait time for block polling
 const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
+const MAX_INDEXING_TIMEOUT = 10000
+const MAX_SYNC_TIMEOUT = 60000
 
 /**
  * Adds and upgrades `userCount` users.
@@ -334,6 +336,38 @@ const getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => 
   })).data.data.block
 }
 
+const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
+  let primary, secondary1, secondary2, primaryClockValue, secondary1ClockValue, secondary2ClockValue
+  const userId = libs.userId
+  let synced = false
+  const startTime = Date.now()
+  while (!synced && Date.now() - startTime <= MAX_SYNC_TIMEOUT) {
+    try {
+      const replicaSetClockValues = await executeOne(i, libsWrapper => {
+        return getClockValuesFromReplicaSet(libsWrapper)
+      })
+
+      primary = replicaSetClockValues[0].endpoint
+      secondary1 = replicaSetClockValues[1].endpoint
+      secondary2 = replicaSetClockValues[2].endpoint
+      primaryClockValue = replicaSetClockValues[0].clockValue
+      secondary1ClockValue = replicaSetClockValues[1].clockValue
+      secondary2ClockValue = replicaSetClockValues[2].clockValue
+
+      logger.info(`Monitoring sync for ${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
+
+      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue && primaryClockValue) {
+        synced = true
+        logger.info(`Sync completed for user=${userId}!`)
+      }
+    } catch (e) {
+      logger.info(e)
+      throw new Error(`Failed sync monitoring for user=${userId}`)
+    }
+    if (!synced) { await delay(1000) }
+  }
+}
+
 /**
  * Wait for the discovery node to catch up to the latest block on chain up to a max
  * indexing timeout of default 5000ms.
@@ -368,10 +402,6 @@ const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXIN
   return false
 }
 
-const waitForSync = async (waitTime = 20000) => {
-  logger.info(`Pausing ${waitTime}ms for sync to occur...`)
-  await delay(waitTime)
-}
 /**
  * Handy helper function for executing an operation against
  * an array of libs wrappers in parallel.
@@ -396,7 +426,7 @@ module.exports = {
   getRandomTrackFilePath,
   delay,
   waitForLatestBlock,
-  waitForSync,
+  monitorAllUsersSyncStatus,
   makeExecuteAll,
   makeExecuteOne,
   r6,

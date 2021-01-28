@@ -14,12 +14,11 @@ const ServiceCommands = require('@audius/service-commands')
 const MadDog = require('../madDog.js')
 const { EmitterBasedTest, Event } = require('../emitter.js')
 const {
-  addAndUpgradeUsers,
   getRandomTrackMetadata,
   getRandomTrackFilePath,
   addUsers,
   r6,
-  waitForSync,
+  monitorAllUsersSyncStatus,
   upgradeUsersToCreators
 } = require('../helpers.js')
 const { getContentNodeEndpoints } = require('@audius/service-commands')
@@ -29,7 +28,6 @@ const {
   getUser,
   getUsers,
   verifyCIDExistsOnCreatorNode,
-  getClockValuesFromReplicaSet,
   uploadPhotoAndUpdateMetadata
 } = ServiceCommands
 
@@ -191,8 +189,6 @@ module.exports = coreIntegration = async ({
     }
   })
 
-  await waitForSync()
-
   // Check user metadata is proper and that the clock values across the replica set is consistent
   try {
     await checkUserMetadataAndClockValues({
@@ -200,7 +196,8 @@ module.exports = coreIntegration = async ({
       walletIdMap,
       userMetadatas,
       picturePath: SECOND_USER_PIC_PATH,
-      executeOne
+      executeOne,
+      executeAll
     })
   } catch (e) {
     return {
@@ -278,8 +275,6 @@ module.exports = coreIntegration = async ({
     }
   })
 
-  await waitForSync()
-
   // Check user metadata is proper and that the clock values across the replica set is consistent
   try {
     await checkUserMetadataAndClockValues({
@@ -287,9 +282,11 @@ module.exports = coreIntegration = async ({
       walletIdMap,
       userMetadatas,
       picturePath: THIRD_USER_PIC_PATH,
-      executeOne
+      executeOne,
+      executeAll
     })
   } catch (e) {
+    console.log(e)
     return {
       error: `User post track upload -- ${e.message}`
     }
@@ -358,61 +355,55 @@ async function checkUserMetadataAndClockValues ({
   walletIdMap,
   userMetadatas,
   picturePath,
-  executeOne
+  executeOne,
+  executeAll
 }) {
-  for (let i = 0; i < walletIndexes.length; i++) {
-    // 2. Check that the clock values across replica set are equal
-    await checkClockValuesAcrossReplicaSet({
-      executeOne,
-      indexOfLibsInstance: i,
-      userId: walletIdMap[i]
-    })
+  try {
+    await executeAll(async (libs, i) => {
+      // 2. Check that the clock values across replica set are equal
+      await monitorAllUsersSyncStatus({ i, executeOne, libs })
 
-    // 3. Check that the metadata object in CN across replica set is what we expect it to be
-    const replicaSetEndpoints = await executeOne(i, libsWrapper =>
-      getContentNodeEndpoints(libsWrapper, userMetadatas[i].creator_node_endpoint)
-    )
+      // 3. Check that the metadata object in CN across replica set is what we expect it to be
+      const replicaSetEndpoints = await executeOne(i, libs =>
+        getContentNodeEndpoints(libs, userMetadatas[i].creator_node_endpoint)
+      )
 
-    await checkMetadataEquality({
-      endpoints: replicaSetEndpoints,
-      metadataMultihash: userMetadatas[i].metadata_multihash,
-      userId: walletIdMap[i]
-    })
+      await checkMetadataEquality({
+        endpoints: replicaSetEndpoints,
+        metadataMultihash: userMetadatas[i].metadata_multihash,
+        userId: libs.userId
+      })
 
-    // 4. Update MD (bio + photo) and check that 2 and 3 are correct
-    const updatedBio = 'i am so cool ' + r6()
-    await executeOne(i, async libsWrapper => {
-      // Update bio
-      const newMetadata = { ...userMetadatas[i] }
-      newMetadata.bio = updatedBio
+      // 4. Update MD (bio + photo) and check that 2 and 3 are correct
+      const updatedBio = 'i am so cool ' + r6()
+      await executeOne(i, async libs => {
+        const newMetadata = { ...userMetadatas[i] }
+        newMetadata.bio = updatedBio
 
-      // Update profile picture and metadata accordingly
-      logger.info(`Updating metadata for user ${userMetadatas[i].user_id}...`)
-      await uploadPhotoAndUpdateMetadata({
-        libsWrapper,
-        metadata: newMetadata,
-        userId: userMetadatas[i].user_id,
-        picturePath,
-        updateCoverPhoto: false
+        // Update profile picture and metadata accordingly
+        logger.info(`Updating metadata for user ${libs.userId}...`)
+        await uploadPhotoAndUpdateMetadata({
+          libsWrapper: libs,
+          metadata: newMetadata,
+          userId: libs.userId,
+          picturePath,
+          updateCoverPhoto: false
+        })
+      })
+
+      await monitorAllUsersSyncStatus({ i, libs, executeOne })
+
+      // 6. Check that the updated MD is correct with the updated bio and profile picture
+      const updatedUser = await executeOne(i, libs => getUser(libs, libs.userId))
+      await checkMetadataEquality({
+        endpoints: replicaSetEndpoints,
+        metadataMultihash: updatedUser.metadata_multihash,
+        userId: libs.userId
       })
     })
-
-    await waitForSync()
-
-    // 5. Check that clock values are consistent among replica set
-    await checkClockValuesAcrossReplicaSet({
-      executeOne,
-      indexOfLibsInstance: i,
-      userId: walletIdMap[i]
-    })
-
-    // 6. Check that the updated MD is correct with the updated bio and profile picture
-    const updatedUser = await executeOne(i, libsWrapper => getUser(libsWrapper, userMetadatas[i].user_id))
-    await checkMetadataEquality({
-      endpoints: replicaSetEndpoints,
-      metadataMultihash: updatedUser.metadata_multihash,
-      userId: walletIdMap[i]
-    })
+  } catch (e) {
+    console.log(e)
+    throw e
   }
 }
 
@@ -447,19 +438,4 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
       )
     }
   })
-}
-
-async function checkClockValuesAcrossReplicaSet ({ executeOne, indexOfLibsInstance, userId }) {
-  logger.info(`Checking clock values for user ${userId}...`)
-  const replicaSetClockValues = await executeOne(indexOfLibsInstance, libsWrapper => {
-    return getClockValuesFromReplicaSet(libsWrapper)
-  })
-
-  const primaryClockValue = replicaSetClockValues[0].clockValue
-  const secondary1ClockValue = replicaSetClockValues[1].clockValue
-  const secondary2ClockValue = replicaSetClockValues[2].clockValue
-
-  if (primaryClockValue !== secondary1ClockValue || primaryClockValue !== secondary2ClockValue) {
-    throw new Error(`Clock values are out of sync:\nPrimary: ${primaryClockValue}\nSecondary 1: ${secondary1ClockValue}\nSecondary 2: ${secondary2ClockValue}`)
-  }
 }

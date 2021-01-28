@@ -90,6 +90,7 @@ function LibsWrapper (walletIndex = 0) {
 
     const walletAddress = config.get('data_wallets')[walletIndex]
     this.walletAddress = walletAddress
+    this.walletIndex = walletIndex
     this.userId = null // to be updated on init
 
     const web3Config = await AudiusLibs.configExternalWeb3(
