@@ -157,7 +157,7 @@ class SnapbackSM {
   }) {
     try {
       const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
-      return this.enqueueSecondarySync({
+      return this.issueSecondarySync({
         userWallet,
         secondaryEndpoint,
         primaryEndpoint,
@@ -172,7 +172,7 @@ class SnapbackSM {
 
   // Enqueue a sync request to a particular secondary.
   // Returns the added job
-  async enqueueSecondarySync ({
+  async issueSecondarySync ({
     primaryEndpoint,
     secondaryEndpoint,
     userWallet,
@@ -336,7 +336,7 @@ class SnapbackSM {
             this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
             // Enqueue sync for secondary1 if required
             if (secondary1SyncRequired && secondary1 != null) {
-              await this.enqueueSecondarySync({
+              await this.issueSecondarySync({
                 userWallet,
                 secondaryEndpoint: secondary1,
                 primaryEndpoint: this.endpoint,
@@ -347,7 +347,7 @@ class SnapbackSM {
             }
             // Enqueue sync for secondary2 if required
             if (secondary2SyncRequired && secondary2 != null) {
-              await this.enqueueSecondarySync({
+              await this.issueSecondarySync({
                 userWallet,
                 secondaryEndpoint: secondary2,
                 primaryEndpoint: this.endpoint,
@@ -426,7 +426,7 @@ class SnapbackSM {
     // enqueue another sync if secondary is still behind
     // TODO max retry limit
     if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
-      await this.enqueueSecondarySync({
+      await this.issueSecondarySync({
         userWallet,
         secondaryEndpoint: secondaryUrl,
         primaryEndpoint: this.endpoint,
@@ -568,12 +568,11 @@ class SnapbackSM {
   }
 
   async getSyncQueueJobs () {
-    const [waiting, active] = await Promise.all([
+    const [pending, active] = await Promise.all([
       this.syncQueue.getJobs(['waiting']),
       this.syncQueue.getJobs(['active'])
     ])
-    const counts = await this.syncQueue.getJobCounts()
-    return { waiting, active, counts }
+    return { pending, active }
   }
 }
 

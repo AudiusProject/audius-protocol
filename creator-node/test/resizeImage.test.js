@@ -29,7 +29,7 @@ const CID_640 = 'QmQmsktPHnTvneXpYYLCMmbE8xVp7wRGvmw1nX4zX2dS3v'
 const CID_2000 = 'QmdjTLFVyGyzG3pVRsQLSGQq9bK2T2bdth65wrW8xMQZDg'
 const CID_ORIGINAL = 'QmWAMpnZo2TC45mnENxXsPPdCDk5osDKEt7vY1FEU3x28L'
 
-describe('test resizeImage', async function () {
+describe('test resizeImage', () => {
   afterEach(function () {
     sinon.restore()
   })

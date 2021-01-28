@@ -11,13 +11,13 @@ const getCNodeUser = async (cnodeUserUUID) => {
   return dataValues
 }
 
-const destroyUsers = async () => {
-  await CNodeUser.destroy({
+const destroyUsers = async () => (
+  CNodeUser.destroy({
     where: {},
     truncate: true,
     cascade: true // cascades delete to all rows with foreign key on cnodeUser
   })
-}
+)
 
 async function createStarterCNodeUser () {
   return createStarterCNodeUserWithKey(testEthereumConstants.pubKey.toLowerCase())

@@ -3,7 +3,7 @@ const assert = require('assert')
 const config = require('./config')
 const path = require('path')
 
-describe('Test DiskManager', async function () {
+describe('Test DiskManager', function () {
   before(function () {
     // stub out this function which ensures the directory path exists to return true
     DiskManager.ensureDirPathExists = async () => true
@@ -12,14 +12,14 @@ describe('Test DiskManager', async function () {
   /**
    * getConfigStoragePath
    */
-  it('Should pass if storagePath is correctly set', async function () {
+  it('Should pass if storagePath is correctly set', function () {
     assert.deepStrictEqual(config.get('storagePath'), DiskManager.getConfigStoragePath())
   })
 
   /**
    * getTmpTrackUploadArtifactsPath
    */
-  it('Should pass if storagePath is correctly set', async function () {
+  it('Should pass if storagePath is correctly set', function () {
     const tmpTrackArtifactPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'tmp_track_artifacts')
     assert.deepStrictEqual(tmpTrackArtifactPath, DiskManager.getTmpTrackUploadArtifactsPath())
   })
@@ -27,13 +27,13 @@ describe('Test DiskManager', async function () {
   /**
    * computeFilePath
    */
-  it('Should pass if computeFilePath returns the correct path', async function () {
+  it('Should pass if computeFilePath returns the correct path', function () {
     const fullPath = DiskManager.computeFilePath('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     const validPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'muU', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(fullPath, validPath)
   })
 
-  it('Should fail if fileName is not passed into computeFilePath', async function () {
+  it('Should fail if fileName is not passed into computeFilePath', function () {
     try {
       DiskManager.computeFilePath()
     } catch (e) {
@@ -41,7 +41,7 @@ describe('Test DiskManager', async function () {
     }
   })
 
-  it(`Should fail if fileName doesn't contain the appropriate amount of characters`, async function () {
+  it(`Should fail if fileName doesn't contain the appropriate amount of characters`, function () {
     try {
       DiskManager.computeFilePath('asd')
     } catch (e) {
@@ -49,7 +49,7 @@ describe('Test DiskManager', async function () {
     }
   })
 
-  it(`Should fail if fileName contains a slash`, async function () {
+  it(`Should fail if fileName contains a slash`, function () {
     try {
       DiskManager.computeFilePath('/file_storage/asdf')
     } catch (e) {
@@ -60,13 +60,13 @@ describe('Test DiskManager', async function () {
   /**
    * computeFilePathInDir
    */
-  it('Should pass if computeFilePathInDir returns the correct path', async function () {
+  it('Should pass if computeFilePathInDir returns the correct path', function () {
     const fullPath = DiskManager.computeFilePathInDir('QmRSvU8NtadxPPrP4M72wUPBiTqykqziWDuGr6q2arsYW4', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     const validPath = path.join(DiskManager.getConfigStoragePath(), 'files', 'sYW', 'QmRSvU8NtadxPPrP4M72wUPBiTqykqziWDuGr6q2arsYW4', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     assert.deepStrictEqual(fullPath, validPath)
   })
 
-  it('Should fail if dirName and fileName are not passed into computeFilePathInDir', async function () {
+  it('Should fail if dirName and fileName are not passed into computeFilePathInDir', function () {
     try {
       DiskManager.computeFilePathInDir()
     } catch (e) {
@@ -74,7 +74,7 @@ describe('Test DiskManager', async function () {
     }
   })
 
-  it('Should fail if dirName or fileName are not a CID passed into computeFilePathInDir', async function () {
+  it('Should fail if dirName or fileName are not a CID passed into computeFilePathInDir', function () {
     try {
       DiskManager.computeFilePathInDir('Qmdirhash', 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     } catch (e) {
@@ -85,7 +85,7 @@ describe('Test DiskManager', async function () {
   /**
    * extractCIDsFromFSPath
    */
-  it('Should pass if extractCIDsFromFSPath is passed in a directory and file', async function () {
+  it('Should pass if extractCIDsFromFSPath is passed in a directory and file', function () {
     const path = '/file_storage/files/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grouter/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
     const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj.isDir, true)
@@ -93,7 +93,7 @@ describe('Test DiskManager', async function () {
     assert.deepStrictEqual(matchObj.inner, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner')
   })
 
-  it('Should pass if extractCIDsFromFSPath is passed in just a file', async function () {
+  it('Should pass if extractCIDsFromFSPath is passed in just a file', function () {
     const path = '/file_storage/files/QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3Grinner'
     const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj.isDir, false)
@@ -101,7 +101,7 @@ describe('Test DiskManager', async function () {
     assert.deepStrictEqual(matchObj.inner, null)
   })
 
-  it('Should return null if extractCIDsFromFSPath is passed in no valid CID', async function () {
+  it('Should return null if extractCIDsFromFSPath is passed in no valid CID', function () {
     const path = '/file_storage/files/QMcidhere'
     const matchObj = DiskManager.extractCIDsFromFSPath(path)
     assert.deepStrictEqual(matchObj, null)

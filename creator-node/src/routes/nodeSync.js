@@ -16,6 +16,9 @@ module.exports = function (app) {
   /**
    * Exports all db data (not files) associated with walletPublicKey[] as JSON.
    * Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
+   *
+   * This route is only run on a user's primary, to export data to the user's secondaries.
+   *
    * @return {
    *  cnodeUsers Map Object containing all db data keyed on cnodeUserUUID
    *  ipfsIDObj Object containing IPFS Node's peer ID
@@ -151,6 +154,8 @@ module.exports = function (app) {
   /**
    * Given walletPublicKeys array and target creatorNodeEndpoint, will request export
    * of all user data, update DB state accordingly, fetch all files and make them available.
+   *
+   * This route is only run on secondaries, to export and sync data from a user's primary.
    */
   app.post('/sync', handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
@@ -216,6 +221,19 @@ module.exports = function (app) {
   }))
 }
 
+/**
+ * Internal helper function for /sync route above.
+ * This function is only run on secondaries, to export and sync data from a user's primary.
+ *
+ * @notice - By design, will reject any syncs with non-contiguous clock values. For now,
+ *    any data corruption from primary needs to be handled separately and should not be replicated.
+ *
+ * @notice - There is a maxExportClockValueRange enforced in export, meaning that some syncs will
+ *    only replicate partial data state. This is by design, and Snapback will trigger repeated syncs
+ *    with progressively increasing clock values until secondaries have completely synced up.
+ *    Secondaries have no knowledge of the current data state on primary, they simply replicate
+ *    what they receive in each export.
+ */
 async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   const start = Date.now()
   req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
@@ -250,6 +268,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
+     *
+     * Secondary requests export of new data by passing its current max clock value in the request.
+     * Primary builds an export object of all data beginning from the next clock value.
      */
 
     // Build export query params
@@ -308,6 +329,8 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
       /**
        * Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS
+       *
+       * Note that sync is only called on secondaries so `myCnodeEndpoint` below always represents a secondary.
        */
       let userReplicaSet = []
       try {
@@ -335,6 +358,11 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
         throw new Error(`Malformed response from ${creatorNodeEndpoint}. Returned data for walletPublicKey that was not requested.`)
       }
+
+      /**
+       * This node (secondary) must compare its local clock state against clock state received in export from primary.
+       * Only allow sync if received clock state contains new data and is contiguous with existing data.
+       */
 
       const {
         latestBlockNumber: fetchedLatestBlockNumber,
@@ -376,7 +404,10 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
           transaction
         })
 
-        // Update existing entry if found, else create new
+        /**
+         * The first sync for a user will enter else case where no local cnodeUserRecord is found, creating a new entry.
+         * Every subsequent sync will enter the if case and update the existing local cnodeUserRecord.
+         */
         if (cnodeUserRecord) {
           const [numRowsUpdated, respObj] = await models.CNodeUser.update(
             {

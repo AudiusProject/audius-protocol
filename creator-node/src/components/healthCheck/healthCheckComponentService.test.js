@@ -19,7 +19,7 @@ const mockLogger = {
   warn: () => {}
 }
 
-describe('Test Health Check', async function () {
+describe('Test Health Check', function () {
   it('Should pass', async function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)

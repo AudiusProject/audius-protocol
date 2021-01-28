@@ -4,11 +4,11 @@ const path = require('path')
 const fs = require('fs')
 const assert = require('assert')
 
-describe('test segmentFile()', async function () {
+describe('test segmentFile()', () => {
   // Create the segments directory to store segments in.
   // Middleware would normally handle this, however, in this test
   // context, segmentFile() is unit tested directly without the middleware.
-  before(async function () {
+  before(() => {
     const segmentsDirPath = path.join(__dirname, 'segments')
     if (!fs.existsSync(segmentsDirPath)) {
       try {
@@ -24,7 +24,7 @@ describe('test segmentFile()', async function () {
    * When: track segmenting occurs
    * Then: an error is thrown
    */
-  it('should throw an error if ffmpeg reads bad params', async function () {
+  it('should throw an error if ffmpeg reads bad params', async () => {
     try {
       await segmentFile(null, null, {})
       assert.fail('Should have thrown error with bad params')
@@ -38,7 +38,7 @@ describe('test segmentFile()', async function () {
    * Then: an error is thrown
    * When: it is segmented
   */
-  it('should throw an error if ffmpeg reads a bad track file (image)', async function () {
+  it('should throw an error if ffmpeg reads a bad track file (image)', async () => {
     const fileDir = __dirname
     const fileName = 'testTrackWrongFormat.jpg'
 
@@ -55,7 +55,7 @@ describe('test segmentFile()', async function () {
    * When: it is segmented
    * Then: there are 32 proper track segments present in tests/segments
   */
-  it('should properly segment track', async function () {
+  it('should properly segment track', async () => {
     const fileDir = __dirname
     const fileName = 'testTrack.mp3'
 

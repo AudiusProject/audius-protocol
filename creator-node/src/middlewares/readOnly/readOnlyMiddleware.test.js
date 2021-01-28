@@ -3,12 +3,12 @@ const assert = require('assert')
 const config = require('../../config')
 const { resFactory, loggerFactory } = require('../../../test/lib/reqMock')
 
-describe('Test read-only middleware', async function () {
+describe('Test read-only middleware', function () {
   beforeEach(function () {
     config.reset('isReadOnlyMode')
   })
 
-  it('Should pass if read-only enabled and is GET request', async function () {
+  it('Should pass if read-only enabled and is GET request', function () {
     const method = 'GET'
     const isReadOnlyMode = true
     config.set('isReadOnlyMode', isReadOnlyMode)
@@ -22,7 +22,7 @@ describe('Test read-only middleware', async function () {
     assert.deepStrictEqual(nextCalled, true)
   })
 
-  it('Should fail if read-only enabled and is not GET request', async function () {
+  it('Should fail if read-only enabled and is not GET request', function () {
     const isReadOnlyMode = true
     const method = 'POST'
     config.set('isReadOnlyMode', isReadOnlyMode)
@@ -44,7 +44,7 @@ describe('Test read-only middleware', async function () {
     assert.deepStrictEqual(nextCalled, false)
   })
 
-  it('Should pass if read-only not enabled and is POST request', async function () {
+  it('Should pass if read-only not enabled and is POST request', function () {
     const method = 'POST'
     const isReadOnlyMode = false
     config.set('isReadOnlyMode', isReadOnlyMode)
