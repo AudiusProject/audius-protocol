@@ -309,6 +309,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       /**
        * Retrieve user's replica set to use as gateways for content fetching in saveFileForMultihashToFS
        */
+      let userReplicaSet = []
       try {
         const myCnodeEndpoint = await getOwnEndpoint(req)
         userReplicaSet = await getCreatorNodeEndpoints({

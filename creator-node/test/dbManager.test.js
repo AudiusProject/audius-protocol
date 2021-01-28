@@ -11,7 +11,6 @@ const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/da
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { after } = require('lodash')
 
 describe('Test createNewDataRecord()', async function () {
   const req = {

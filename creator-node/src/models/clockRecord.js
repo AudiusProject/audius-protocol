@@ -48,24 +48,24 @@ module.exports = (sequelize, DataTypes) => {
 
         // clock value must be > 0
         if (clock <= 0) {
-          return queryInterface.sequelize.Promise.reject('Clock value must be > 0')
+          return sequelize.Promise.reject('Clock value must be > 0')
         }
 
         // get previous clockRecord for cnodeUser
         // this query is very fast because (cnodeUserUUID, clock) is indexed
-        const currentMaxClock = await queryInterface.sequelize.models.ClockRecord.max('clock', {
+        const currentMaxClock = await sequelize.models.ClockRecord.max('clock', {
           where: { cnodeUserUUID: clockRecord.cnodeUserUUID },
           transaction: options.transaction
         })
 
         // If first clockRecord entry, clock value must be 1
         if (!currentMaxClock && clockRecord.clock !== 1) {
-          return queryInterface.sequelize.Promise.reject('First clockRecord for cnodeUser must have clock value 1')
+          return sequelize.Promise.reject('First clockRecord for cnodeUser must have clock value 1')
         }
 
         // If not first clockRecord entry, clock value must be (previous.clock + 1)
         if (currentMaxClock && clock !== currentMaxClock + 1) {
-          return queryInterface.sequelize.Promise.reject('Can only insert contiguous clock values')
+          return sequelize.Promise.reject('Can only insert contiguous clock values')
         }
       },
 
@@ -88,24 +88,24 @@ module.exports = (sequelize, DataTypes) => {
 
           // clock value must be > 0
           if (clock <= 0) {
-            return queryInterface.sequelize.Promise.reject('Clock value must be > 0')
+            return sequelize.Promise.reject('Clock value must be > 0')
           }
 
           // get previous clockRecord for cnodeUser
           // this query is very fast because (cnodeUserUUID, clock) is indexed
-          const currentMaxClock = await queryInterface.sequelize.models.ClockRecord.max('clock', {
+          const currentMaxClock = await sequelize.models.ClockRecord.max('clock', {
             where: { cnodeUserUUID: clockRecord.cnodeUserUUID },
             transaction: options.transaction
           })
 
           // If first clockRecord entry, clock value must be 1
           if (!currentMaxClock && clockRecord.clock !== 1) {
-            return queryInterface.sequelize.Promise.reject('First clockRecord for cnodeUser must have clock value 1')
+            return sequelize.Promise.reject('First clockRecord for cnodeUser must have clock value 1')
           }
 
           // If not first clockRecord entry, clock value must be (previous.clock + 1)
           if (currentMaxClock && clock !== currentMaxClock + 1) {
-            return queryInterface.sequelize.Promise.reject('Can only insert contiguous clock values')
+            return sequelize.Promise.reject('Can only insert contiguous clock values')
           }
 
           previousClock = clock
@@ -117,7 +117,7 @@ module.exports = (sequelize, DataTypes) => {
 
           // error if new clock is not previousClock + 1
           if (previousClock && clock !== previousClock + 1) {
-            return queryInterface.sequelize.Promise.reject('Can only insert contiguous clock values')
+            return sequelize.Promise.reject('Can only insert contiguous clock values')
           }
 
           previousClock = clock
