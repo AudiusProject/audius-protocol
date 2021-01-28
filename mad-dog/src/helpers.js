@@ -359,7 +359,7 @@ const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXIN
     if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
     else latestIndexedBlock = await getLatestIndexedBlock()
     if (latestIndexedBlock >= latestBlockOnChain) {
-      logger.info(`[${blockCheckLabel}Block Check] Discovery Node has indexed block #${latestBlockOnChain}!`)
+      logger.info(`[${blockCheckLabel}Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
       return true
     }
   }
