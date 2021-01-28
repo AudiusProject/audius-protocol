@@ -30,7 +30,7 @@ describe('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '1.2.3',
@@ -41,7 +41,7 @@ describe('test CreatorNodeSelection', () => {
 
     const healthyButSlow = 'https://healthybutslow.audius.co'
     nock(healthyButSlow)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(100)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -53,7 +53,7 @@ describe('test CreatorNodeSelection', () => {
 
     const healthyButSlowest = 'https://healthybutslowest.audius.co'
     nock(healthyButSlowest)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(200)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -95,7 +95,7 @@ describe('test CreatorNodeSelection', () => {
   it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
     const upToDate = 'https://upToDate.audius.co'
     nock(upToDate)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '1.2.3',
@@ -106,7 +106,7 @@ describe('test CreatorNodeSelection', () => {
 
     const behindMajor = 'https://behindMajor.audius.co'
     nock(behindMajor)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '0.2.3',
@@ -117,7 +117,7 @@ describe('test CreatorNodeSelection', () => {
 
     const behindMinor = 'https://behindMinor.audius.co'
     nock(behindMinor)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '1.0.3',
@@ -128,7 +128,7 @@ describe('test CreatorNodeSelection', () => {
 
     const behindPatch = 'https://behindPatch.audius.co'
     nock(behindPatch)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '1.2.0',
@@ -168,30 +168,30 @@ describe('test CreatorNodeSelection', () => {
   it('select from unhealthy if all are unhealthy', async () => {
     const unhealthy1 = 'https://unhealthy1.audius.co'
     nock(unhealthy1)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(500, { })
 
     const unhealthy2 = 'https://unhealthy2.audius.co'
     nock(unhealthy2)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(100)
       .reply(500, { })
 
     const unhealthy3 = 'https://unhealthy3.audius.co'
     nock(unhealthy3)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(200)
       .reply(500, { })
 
     const unhealthy4 = 'https://unhealthy4.audius.co'
     nock(unhealthy4)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(300)
       .reply(500, { })
 
     const unhealthy5 = 'https://unhealthy5.audius.co'
     nock(unhealthy5)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(400)
       .reply(500, { })
 
@@ -225,7 +225,7 @@ describe('test CreatorNodeSelection', () => {
     // the cream of the crop -- up to date version, slow. you want this
     const shouldBePrimary = 'https://shouldBePrimary.audius.co'
     nock(shouldBePrimary)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(200)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -238,7 +238,7 @@ describe('test CreatorNodeSelection', () => {
     // cold, overnight pizza -- behind by minor version, fast. nope
     const unhealthy2 = 'https://unhealthy2.audius.co'
     nock(unhealthy2)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
         version: '1.0.3',
@@ -250,7 +250,7 @@ describe('test CreatorNodeSelection', () => {
     // stale chips from 2 weeks ago -- behind by major version, kinda slow. still nope
     const unhealthy3 = 'https://unhealthy3.audius.co'
     nock(unhealthy3)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(100)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -263,13 +263,13 @@ describe('test CreatorNodeSelection', () => {
     // moldy canned beans -- not available/up at all. for sure nope
     const unhealthy1 = 'https://unhealthy1.audius.co'
     nock(unhealthy1)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(500, { })
 
     // your house mate's leftovers from her team outing -- behind by patch, kinda slow. solid
     const shouldBeSecondary = 'https://secondary.audius.co'
     nock(shouldBeSecondary)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(100)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -321,7 +321,7 @@ describe('test CreatorNodeSelection', () => {
       const healthyUrl = `https://healthy${i}.audius.co`
       nock(healthyUrl)
         .persist()
-        .get('/version')
+        .get('/health_check/verbose')
         .reply(200, { data: {
           service: CREATOR_NODE_SERVICE_NAME,
           version: '1.2.3',
@@ -358,10 +358,10 @@ describe('test CreatorNodeSelection', () => {
     }
   })
 
-  it.only('selects 1 secondary if only 1 secondary is available', async () => {
+  it('selects 1 secondary if only 1 secondary is available', async () => {
     const shouldBePrimary = 'https://shouldBePrimary.audius.co'
     nock(shouldBePrimary)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(200)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -373,7 +373,7 @@ describe('test CreatorNodeSelection', () => {
 
     const shouldBeSecondary = 'https://secondary.audius.co'
     nock(shouldBeSecondary)
-      .get('/version')
+      .get('/health_check/verbose')
       .delay(100)
       .reply(200, { data: {
         service: CREATOR_NODE_SERVICE_NAME,
@@ -385,7 +385,7 @@ describe('test CreatorNodeSelection', () => {
 
     const unhealthy = 'https://unhealthy.audius.co'
     nock(unhealthy)
-      .get('/version')
+      .get('/health_check/verbose')
       .reply(500, { })
 
     const cns = new CreatorNodeSelection({
