@@ -27,7 +27,7 @@ jobs:
       - restore_cache:
           name: Restore libs cache
           keys:
-          - v1-libs-{{ checksum "libs/package.json" }}
+          - v1-libs-{{ checksum "libs/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-libs-
       - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
@@ -38,7 +38,7 @@ jobs:
             npm install
       - save_cache:
           name: Save libs cache
-          key: v1-libs-{{ checksum "libs/package.json" }}
+          key: v1-libs-{{ checksum "libs/package-lock.json" }}
           paths:
             - libs/node_modules
 
@@ -46,7 +46,7 @@ jobs:
       - restore_cache:
           name: Restore contracts cache 
           keys:
-          - v1-data-contracts-{{ checksum "contracts/package.json" }}
+          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
           - v1-data-contracts- 
       - run:
           name: contract repo init
@@ -57,13 +57,13 @@ jobs:
           name: Save contracts cache
           paths:
             - contracts/node_modules
-          key: v1-data-contracts-{{ checksum "contracts/package.json" }}
+          key: v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
 
       # eth contracts
       - restore_cache:
           name: Restore eth-contracts cache
           keys:
-          - v1-eth-contracts-{{ checksum "eth-contracts/package.json" }}
+          - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
           - v1-eth-contracts-
       - run:
           name: eth-contracts repo init
@@ -77,13 +77,13 @@ jobs:
           name: Save eth-contracts cache
           paths:
             - eth-contracts/node_modules
-          key: v1-eth-contracts-{{ checksum "eth-contracts/package.json" }}
+          key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
 
       # content node
       - restore_cache:
           name: Restore content-node cache
           keys:
-          - v1-content-node-{{ checksum "creator-node/package.json" }}
+          - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
           - v1-content-node- 
       - run:
           name: content-node repo init
@@ -96,7 +96,7 @@ jobs:
           name: Save content-node cache
           paths:
             - creator-node/node_modules
-          key: v1-content-node-{{ checksum "creator-node/package.json" }}
+          key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
 
       # discovery node
       # - restore_cache:
@@ -125,7 +125,7 @@ jobs:
       - restore_cache:
           name: Restore identity-service cache
           keys:
-          - v1-identity-service-{{ checksum "identity-service/package.json" }}
+          - v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
           - v1-identity-service-
       - run:
           name: identity-service repo init
@@ -136,13 +136,13 @@ jobs:
           name: Save identity-service cache
           paths:
             - identity-service/node_modules
-          key: v1-identity-service-{{ checksum "identity-service/package.json" }} 
+          key: v1-identity-service-{{ checksum "identity-service/package-lock.json" }} 
 
       # mad-dog
       - restore_cache:
           name: Restore mad-dog cache
           keys:
-          - v1-mad-dog-{{ checksum "mad-dog/package.json" }}
+          - v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
           - v1-mad-dog-
       - run:
           name: mad-dog repo init
@@ -153,13 +153,13 @@ jobs:
           name: Save mad-dog cache
           paths:
             - mad-dog/node_modules
-          key: v1-mad-dog-{{ checksum "mad-dog/package.json" }} 
+          key: v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }} 
 
       # service commands
       - restore_cache:
           name: Restore service-commands cache
           keys:
-          - v1-service-commands-{{ checksum "service-commands/package.json" }}
+          - v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
           - v1-service-commands-
       - run:
           name: service-commands repo init
@@ -172,7 +172,7 @@ jobs:
           name: Save service-commands cache
           paths:
             - service-commands/node_modules
-          key: v1-service-commands-{{ checksum "service-commands/package.json" }} 
+          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }} 
 
       - run:
           name: execute
@@ -234,7 +234,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-libs-{{ checksum "libs/package.json" }}
+          - v1-libs-{{ checksum "libs/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-libs-
       - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
@@ -244,11 +244,11 @@ jobs:
       - save_cache:
           paths:
             - libs/node_modules
-          key: v1-libs-{{ checksum "libs/package.json" }}
+          key: v1-libs-{{ checksum "libs/package-lock.json" }}
 
       - restore_cache:
           keys:
-          - v1-data-contracts-{{ checksum "contracts/package.json" }}
+          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
           - v1-data-contracts- 
       - run:
           name: contract repo init
@@ -258,11 +258,11 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: v1-data-contracts-{{ checksum "contracts/package.json" }}
+          key: v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
 
       - restore_cache:
           keys:
-          - v1-eth-contracts-{{ checksum "eth-contracts/package.json" }}
+          - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
           - v1-eth-contracts-
       - run:
           name: eth-contracts repo init
@@ -273,7 +273,7 @@ jobs:
       - save_cache:
           paths:
             - eth-contracts/node_modules
-          key: v1-eth-contracts-{{ checksum "eth-contracts/package.json" }}
+          key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
 
       # run tests!
       - run:
@@ -299,7 +299,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-libs-{{ checksum "contracts/package.json" }}
+          - v1-libs-{{ checksum "contracts/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-libs-
 
@@ -312,7 +312,7 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: v1-libs-{{ checksum "contracts/package.json" }}
+          key: v1-libs-{{ checksum "contracts/package-lock.json" }}
 
       # run tests!
       - run:
@@ -340,7 +340,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-libs-{{ checksum "eth-contracts/package.json" }}
+          - v1-libs-{{ checksum "eth-contracts/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-libs-
       - run:
@@ -352,7 +352,7 @@ jobs:
       - save_cache:
           paths:
             - eth-contracts/node_modules
-          key: v1-libs-{{ checksum "eth-contracts/package.json" }}
+          key: v1-libs-{{ checksum "eth-contracts/package-lock.json" }}
       - run:
           name: run_lint
           command: |
@@ -392,7 +392,7 @@ jobs:
       # Download and cache dependencies
       # - restore_cache:
       #     keys:
-      #     - content-service-{{ checksum "content-service/package.json" }}
+      #     - content-service-{{ checksum "content-service/package-lock.json" }}
       #     # fallback to using the latest cache if no exact match is found
       #     - content-service-
       - run:
@@ -403,7 +403,7 @@ jobs:
       # - save_cache:
       #     paths:
       #       - content-service/node_modules
-      #     key: content-service-{{ checksum "content-service/package.json" }}
+      #     key: content-service-{{ checksum "content-service/package-lock.json" }}
       - run:
           name: run tests
           command: |
@@ -434,7 +434,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-content-node-{{ checksum "creator-node/package.json" }}
+          - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-content-node-
       - run:
@@ -445,7 +445,7 @@ jobs:
       - save_cache:
           paths:
             - creator-node/node_modules
-          key: v1-content-node-{{ checksum "creator-node/package.json" }}
+          key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
       - run:
           name: run creator node tests
           command: |
@@ -506,7 +506,7 @@ jobs:
             python ./scripts/lint.py
       - restore_cache:
           keys:
-          - disc-prov-contracts-{{ checksum "contracts/package.json" }}
+          - disc-prov-contracts-{{ checksum "contracts/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - disc-prov-contracts-
       - run:
@@ -517,7 +517,7 @@ jobs:
       - save_cache:
           paths:
             - contracts/node_modules
-          key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
+          key: disc-prov-contracts-{{ checksum "contracts/package-lock.json" }}
       - run:
           name: discovery provider tests
           command: |
@@ -555,7 +555,7 @@ jobs:
       # restores data-contracts
       - restore_cache:
           keys:
-          - v1-data-contracts-{{ checksum "contracts/package.json" }}
+          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
           - v1-data-contracts- 
       - run:
           name: contract repo init
@@ -565,7 +565,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - identity-service-dep1-{{ checksum "identity-service/package.json" }}
+          - identity-service-dep1-{{ checksum "identity-service/package-lock.json" }}
           # fallback to using the latest cache if no exact match is found
           - identity-service-dep1-
       - run:
@@ -577,7 +577,7 @@ jobs:
       - save_cache:
           paths:
             - identity-service/node_modules
-          key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
+          key: identity-service-dep1-{{ checksum "identity-service/package-lock.json" }}
       - run:
           name: run identity service tests
           command: |
