@@ -30,7 +30,6 @@ const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
 const BLACKLISTER_INDEX = 0 // blacklister wallet address = 0th libs instance (see index.js)
 const CREATOR_INDEX = 1
-const IPLD_CYCLE = 15000 // ms
 
 const IpldBlacklistTest = {}
 
@@ -61,10 +60,8 @@ IpldBlacklistTest.newTrackMetadata = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait for ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
     })
 
@@ -82,7 +79,6 @@ IpldBlacklistTest.newTrackMetadata = async ({
     }
   }
 
-  // wait for track indexing cycle
   await waitForLatestBlock({ executeOne })
 
   // check that dp indexing doesnt occur for this track
@@ -131,7 +127,6 @@ IpldBlacklistTest.updateTrackMetadata = async ({
     })
     const originalMetadataCID = uploadedTrack.metadata_multihash
 
-    // wait for track indexing cycle
     await waitForLatestBlock({ executeOne })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
@@ -144,12 +139,10 @@ IpldBlacklistTest.updateTrackMetadata = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait an ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
-    }) // 60 sec
+    })
 
     // update track with blacklisted cid
     await executeOne(CREATOR_INDEX, libsWrapper => {
@@ -160,7 +153,6 @@ IpldBlacklistTest.updateTrackMetadata = async ({
       })
     })
 
-    // wait for track indexing cycle
     await waitForLatestBlock({ executeOne })
 
     // ensure that the track has original metadata cid
@@ -213,12 +205,10 @@ IpldBlacklistTest.newTrackCoverPhoto = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait an ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
-    }) // 60 sec
+    })
 
     // generate metadata object with CID constant for cover photo
     const metadataObject = getRandomTrackMetadata(userId)
@@ -242,12 +232,11 @@ IpldBlacklistTest.newTrackCoverPhoto = async ({
     }
   }
 
-  // wait for track indexing cycle to occur
   await waitForLatestBlock({ executeOne })
 
   // check that indexing did not occur
   try {
-    const resp = await executeOne(CREATOR_INDEX, libsWrapper => {
+    await executeOne(CREATOR_INDEX, libsWrapper => {
       return getTrackMetadata(libsWrapper, trackTxReceipt.trackId)
     })
 
@@ -286,7 +275,6 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
       return uploadTrack(libsWrapper, track, randomTrackFilePath)
     })
 
-    // wait one indexing cycle
     await waitForLatestBlock({ executeOne })
 
     // generate and add cid to be blacklisted as ipld blacklist txn
@@ -299,12 +287,10 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait an ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
-    }) // 60 sec
+    })
 
     // generate metadata object with blacklisted CID for cover photo
     const metadataObject = getRandomTrackMetadata(userId)
@@ -321,7 +307,6 @@ IpldBlacklistTest.updateTrackCoverPhoto = async ({
       })
     })
 
-    // wait for track indexing cycle
     await waitForLatestBlock({ executeOne })
   } catch (e) {
     let error = e
@@ -382,10 +367,8 @@ IpldBlacklistTest.updateUserMetadata = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait an ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
     })
 
@@ -401,7 +384,6 @@ IpldBlacklistTest.updateUserMetadata = async ({
       }
     )
 
-    // wait for user indexing cycle
     await waitForLatestBlock({ executeOne })
 
     // check that user does not have updated blacklisted metadata
@@ -448,10 +430,8 @@ IpldBlacklistTest.updateUserProfilePhoto = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait an ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
     })
 
@@ -467,7 +447,6 @@ IpldBlacklistTest.updateUserProfilePhoto = async ({
       }
     )
 
-    // wait for user indexing cycle
     await waitForLatestBlock({ executeOne })
 
     // check that user does not have updated blacklisted metadata
@@ -514,10 +493,8 @@ IpldBlacklistTest.updateUserCoverPhoto = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait an ipld indexing cycle
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
     })
 
@@ -530,7 +507,6 @@ IpldBlacklistTest.updateUserCoverPhoto = async ({
       )
     })
 
-    // wait for user indexing cycle
     await waitForLatestBlock({ executeOne })
 
     // check that user does not have updated blacklisted metadata
@@ -581,7 +557,6 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
       )
     })
 
-    // wait for indexing cycle (5s)
     await waitForLatestBlock({ executeOne })
 
     // generate random CID to blacklist and add to blacklist
@@ -594,10 +569,8 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
       return addIPLDToBlacklist(libsWrapper, trackMultihashDecoded.digest)
     })
 
-    // wait for indexing cycle (5s)
     await waitForLatestBlock({
       executeOne,
-      maxIndexingTimeout: IPLD_CYCLE,
       checkIpldBlockNumber: true
     })
 
@@ -613,7 +586,6 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
       }
     )
 
-    // wait for indexing cycle (60s)
     await waitForLatestBlock({ executeOne })
 
     // query playlist and check that new cover photo not indexed
@@ -670,7 +642,6 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 //       )
 //     })
 
-//     // wait for indexing cycle (5s)
 //     await waitForLatestBlock({executeOne})
 
 //     // generate random CID to blacklist and add to blacklist
@@ -690,10 +661,8 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 
 //     const trackMultihashDecoded = Utils.decodeMultihash(cid)
 
-//     // wait for indexing cycle (60s)
 // //     await waitForLatestBlock({
 //       executeOne,
-//       maxIndexingTimeout: IPLD_CYCLE,
 //       checkIpldBlockNumber: true
 //     })
 
@@ -709,7 +678,6 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 //       }
 //     )
 
-//     // wait for indexing cycle (5s)
 //     await waitForLatestBlock({executeOne})
 
 //     // query playlist and check that new cover photo not indexed

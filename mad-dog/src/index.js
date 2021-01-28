@@ -62,7 +62,7 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWalle
 }
 
 const testRunner = async tests => {
-  const failedTests = []
+  let failedTests = []
 
   // Run each test
   for (let { testName, test, numUsers, useZeroIndexedWallet } of tests) {
@@ -160,8 +160,7 @@ async function main () {
           })
       )
 
-      // const tests = [coreIntegrationTests, ...blacklistTests]
-      const tests = [...blacklistTests]
+      const tests = [coreIntegrationTests, ...blacklistTests]
 
       try {
         await testRunner(tests)

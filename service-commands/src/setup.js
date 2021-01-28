@@ -95,7 +95,7 @@ const execShellCommands = async (commands, service, { verbose }) => {
   }
 }
 
-// API !!
+// API
 
 /**
  * SetupCommand enum.
