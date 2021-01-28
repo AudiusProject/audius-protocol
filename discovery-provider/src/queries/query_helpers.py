@@ -7,7 +7,7 @@ from flask import request
 from src import exceptions
 from src.queries import response_name_constants
 from src.models import User, Track, Repost, RepostType, Follow, \
-    Playlist, Save, SaveType, Remix, AggregatePlays, UserBalance
+    Playlist, Save, SaveType, Remix, AggregatePlays
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_balances import get_balances, enqueue_balance_refresh

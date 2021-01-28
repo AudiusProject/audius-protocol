@@ -16,7 +16,7 @@ BALANCE_REFRESH_SEC_EMPTY_USER = 12 * 60 * 60
 
 REDIS_PREFIX = "USER_BALANCE_REFRESH"
 
-def does_user_balance_need_refresh(user_balance, is_current_user = True):
+def does_user_balance_need_refresh(user_balance, is_current_user=True):
     '''Returns whether a given user_balance needs update.
     Very heuristic-y:
         - If we're the current_user, update on the shortest interval
@@ -75,7 +75,8 @@ def get_balances(session, redis, user_ids):
     session.add_all(new_user_balances)
 
     # Get old balances that need refresh
-    needs_refresh = [user_balance.user_id for user_balance in query if does_user_balance_need_refresh(user_balance, False)]
+    needs_refresh = [user_balance.user_id for user_balance in query
+                     if does_user_balance_need_refresh(user_balance, False)]
 
     # Enqueue new balances to Redis refresh queue
     enqueue_balance_refresh(redis, list(needs_balance_set) + needs_refresh)
