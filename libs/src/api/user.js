@@ -596,13 +596,11 @@ class Users extends Base {
   async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
     let isUpdated = false
     while (!isUpdated) {
-      const userList = (await this.discoveryProvider.getUsers(1, 0, [userId]))
-      if (!userList || userList.length === 0) {
-        await Utils.wait(500)
-        continue
+      const userList = await this.discoveryProvider.getUsers(1, 0, [userId])
+      if (userList) {
+        const user = userList[0]
+        if (user && user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
       }
-      const user = userList[0]
-      if (user && user.creator_node_endpoint === creatorNodeEndpoint) isUpdated = true
       await Utils.wait(500)
     }
   }
