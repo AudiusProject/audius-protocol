@@ -8,6 +8,10 @@ User.addUser = async (libsWrapper, metadata) => {
   if (error) {
     throw new Error(`Adding user error: ${error} in phase: ${phase}`)
   }
+
+  // Update libs instance with associated userId
+  libsWrapper.userId = userId
+
   return userId
 }
 
