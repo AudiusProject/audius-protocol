@@ -8,7 +8,6 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import add_query_pagination, get_pagination_vars, parse_sort_param, \
   populate_track_metadata, get_users_ids, get_users_by_id
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
-from src.queries.get_balances import enqueue_balance_refresh
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +125,6 @@ def get_tracks(args):
 
         # bundle peripheral info into track results
         current_user_id = args.get("current_user_id")
-
-        if current_user_id:
-            enqueue_balance_refresh(redis, [current_user_id])
 
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 

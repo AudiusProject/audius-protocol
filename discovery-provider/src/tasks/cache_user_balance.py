@@ -8,11 +8,13 @@ from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFI
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
 
+REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
+
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
 # and current users (logged in dapp users, who might be changing their balance) on an interval.
 #
-# - In populate_track_metadata, look up User_Balance entry in db.
+# - In populate_user_metadata, look up User_Balance entry in db.
 #       If it doesn't exist, return 0, persist a User_Balance row with 0,
 #       & enqueue in Redis the user ID for later balance lookup.
 # - On track get endpoints, if current_user exists, enqueue balance lookup
@@ -55,7 +57,6 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
             logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
 
         # Filter only user_balances that still need refresh
-        # This includes new balances
         needs_refresh = list(filter(does_user_balance_need_refresh, query))
         needs_refresh += new_balances
 
@@ -94,6 +95,8 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         logger.info(f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis.")
         if to_remove:
             redis.srem(REDIS_PREFIX, *to_remove)
+            # Add the count of the balances
+            redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(to_remove))
 
 def get_token_contract(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(

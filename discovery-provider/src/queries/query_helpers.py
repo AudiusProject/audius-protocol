@@ -10,9 +10,11 @@ from src.models import User, Track, Repost, RepostType, Follow, \
     Playlist, Save, SaveType, Remix, AggregatePlays, UserBalance
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
-from src.queries.get_balances import get_balances
+from src.queries.get_balances import get_balances, enqueue_balance_refresh
 
 logger = logging.getLogger(__name__)
+
+redis = redis_connection.get_redis()
 
 
 ######## VARS ########
@@ -96,6 +98,10 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows
 def populate_user_metadata(session, user_ids, users, current_user_id, with_track_save_count=False):
+    # Always enqueue balance refresh for current user
+    if current_user_id:
+        enqueue_balance_refresh(redis, [current_user_id])
+
     # build dict of user id --> track count
     track_counts = (
         session.query(
@@ -355,8 +361,6 @@ def get_track_play_count_dict(session, track_ids):
     track_play_counts = session.execute(query, {"ids": track_ids}).fetchall()
     track_play_dict = dict(track_play_counts)
     return track_play_dict
-
-redis = redis_connection.get_redis()
 
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
