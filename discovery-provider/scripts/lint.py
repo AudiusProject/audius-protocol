@@ -13,4 +13,4 @@ def lint_directory(directory):
 
 
 lint_directory("src/queries/")
-# lint_directory("tests/")
+lint_directory("tests/")
