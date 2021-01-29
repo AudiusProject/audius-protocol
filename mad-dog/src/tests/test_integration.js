@@ -28,7 +28,9 @@ const {
   getUser,
   getUsers,
   verifyCIDExistsOnCreatorNode,
-  uploadPhotoAndUpdateMetadata
+  uploadPhotoAndUpdateMetadata,
+  setCreatorNodeEndpoint,
+  updateCreator
 } = ServiceCommands
 
 // NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
@@ -217,7 +219,15 @@ module.exports = coreIntegration = async ({
   await emitterTest.start()
   logger.info('Emitter test exited')
 
-  // Verify results
+  /**
+   * Verify results
+   */
+
+  // Check all user replicas until they are synced up to primary
+  // await monitorAllUsersSyncStatus({ walletIdMap, executeOne })
+  await executeAll(async (libs, i) => {
+    await monitorAllUsersSyncStatus({ i, executeOne, libs })
+  })
 
   // create array of track upload info to verify
   const trackUploadInfo = []
@@ -234,6 +244,7 @@ module.exports = coreIntegration = async ({
     }
   }
 
+  // Ensure all CIDs exist on all replicas
   const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
   if (!allCIDsExistOnCNodes) {
     return { error: 'Not all CIDs exist on creator nodes.' }
@@ -244,6 +255,40 @@ module.exports = coreIntegration = async ({
     const userIds = failedWallets.map(w => walletIdMap[w])
     logger.warn(`Uploads failed for user IDs: [${userIds}]`)
   }
+
+  // Switch user primary (above tests have already confirmed all secondaries have latest state)
+  for await (const walletIndex of Object.keys(walletIdMap)) {
+    const userId = walletIdMap[walletIndex]
+    const userMetadata = await executeOne(walletIndex, l => getUser(l, userId))
+    const wallet = userMetadata.wallet
+    const [primary, ...secondaries] = userMetadata.creator_node_endpoint.split(',')
+
+    logger.info(`userId ${userId} wallet ${wallet} rset ${userMetadata.creator_node_endpoint}`)
+
+    // Define new rset by swapping primary and first secondary
+    const newRSet = (secondaries.length) ? [secondaries[0], primary].concat(secondaries.slice(1)) : [primary]
+
+    // Update libs instance with new endpoint
+    await executeOne(walletIndex, libs => setCreatorNodeEndpoint(libs, newRSet[0]))
+
+    // Update user metadata obj
+    const newMetadata = { ...userMetadata }
+    newMetadata.creator_node_endpoint = newRSet.join(',')
+
+    // Update creator state on CN and chain
+    await executeOne(walletIndex, libs => updateCreator(libs, userId, newMetadata))
+
+    logger.info(`Successfully updated creator with id ${userId} on CN and Chain`)
+  }
+
+  // Check all user replicas until they are synced up to primary
+  await executeAll(async (libs, i) => {
+    await monitorAllUsersSyncStatus({ i, executeOne, libs })
+  })
+
+  // TODO call export on each node and verify equality
+
+  // TODO Upload more content to new primary + verify
 
   // Remove temp storage dir
   await fs.remove(TEMP_STORAGE_PATH)
@@ -322,29 +367,26 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
     userIdRSetMap[userId] = user.creator_node_endpoint.split(',')
   }
 
-  // Now, confirm each of these CIDs are on the file
-  // system of the user's primary CNode.
-  // TODO - currently only verifies CID on user's primary, need to add verification
-  //    against secondaries as well. This is difficult because of sync non-determinism + time lag.
+  // Now, confirm each of these CIDs are on each user replica
   const failedCIDs = []
   for (const userId of userIds) {
     const userRSet = userIdRSetMap[userId]
-    const endpoint = userRSet[0]
     const cids = userCIDMap[userId]
 
     if (!cids) continue
-    for (const cid of cids) {
-      logger.info(`Verifying CID ${cid} for userID ${userId} on primary: [${endpoint}]`)
 
-      // TODO: add `fromFS` option when this is merged back into CN.
-      const exists = await verifyCIDExistsOnCreatorNode(cid, endpoint)
+    await Promise.all(cids.map(async (cid) => {
+      await Promise.all(userRSet.map(async (replica) => {
+        // TODO: add `fromFS` option when this is merged back into CN.
+        const exists = await verifyCIDExistsOnCreatorNode(cid, replica)
 
-      logger.info(`Verified CID ${cid} for userID ${userId} on primary: [${endpoint}]!`)
-      if (!exists) {
-        logger.warn('Found a non-existent cid!')
-        failedCIDs.push(cid)
-      }
-    }
+        logger.info(`Verified CID ${cid} for userID ${userId} on replica [${replica}]!`)
+        if (!exists) {
+          logger.warn(`Could not find CID ${cid} for userID ${userId} on replica ${replica}`)
+          failedCIDs.push(cid)
+        }
+      }))
+    }))
   }
   logger.info('Completed verifying CIDs')
   return !failedCIDs.length
