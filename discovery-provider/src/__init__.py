@@ -280,7 +280,7 @@ def configure_celery(flask_app, celery, test_config=None):
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
 
-    ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_window"])
+    ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
 
     # Update celery configuration
     celery.conf.update(
