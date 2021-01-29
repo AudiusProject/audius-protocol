@@ -186,6 +186,16 @@ function LibsWrapper (walletIndex = 0) {
     })
   }
 
+  this.setCreatorNodeEndpoint = async (primary) => {
+    assertLibsDidInit()
+    return this.libsInstance.creatorNode.setEndpoint(primary)
+  }
+
+  this.updateCreator = async (userId, metadata) => {
+    assertLibsDidInit()
+    return this.libsInstance.User.updateCreator(userId, metadata)
+  }
+
   /**
    * Upload a track.
    *

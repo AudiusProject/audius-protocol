@@ -125,6 +125,15 @@ const config = convict({
     env: 'logLevel',
     default: null
   },
+
+  maxExportClockValueRange: {
+    doc: 'Maximum range of clock values to export at once to prevent process OOM',
+    format: Number,
+    env: 'maxExportClockValueRange',
+    default: 10000
+  },
+
+  // Rate limit configs
   endpointRateLimits: {
     doc: `A serialized objects of rate limits with the form {
       <req.path>: {
@@ -174,6 +183,7 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
     format: 'nat',
@@ -264,6 +274,7 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+
   spID: {
     doc: 'ID of creator node in ethContracts ServiceProviderFactory',
     format: Number,
@@ -337,7 +348,7 @@ const config = convict({
     default: ''
   },
   debounceTime: {
-    doc: 'sync debounce time',
+    doc: 'sync debounce time in ms',
     format: 'nat',
     env: 'debounceTime',
     default: 30000 // 30000ms = 30s
@@ -366,6 +377,7 @@ const config = convict({
     env: 'creatorNodeEndpoint',
     default: null
   },
+
   // Service selection
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
