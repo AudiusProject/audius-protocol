@@ -163,7 +163,7 @@ const promoteSecondary2ToPrimary = async(executeAll) => {
     let secondaries = usrReplicaInfoFromContract.secondaries
 
     let newPrimary = parseInt(secondaries[1])
-    let newSecondaries = [secondaries[1], primary].map(x=>parseInt(x))
+    let newSecondaries = [secondaries[0], primary].map(x=>parseInt(x))
     logger.info(`userId: ${userId} | P: ${primary}->${newPrimary}`)
     logger.info(`userId: ${userId} | S1: ${secondaries[0]}->${newSecondaries[0]}`)
     logger.info(`userId: ${userId} | S2: ${secondaries[1]}->${newSecondaries[1]}`)
