@@ -21,7 +21,7 @@ type TotalStakedStatProps = OwnProps
 
 const TotalStakedStat: React.FC<TotalStakedStatProps> = () => {
   const { status, users } = useUsers()
-  const isLoading = status === Status.Loading
+  const isLoading = !status || status === Status.Loading
 
   let stat: ReactNode = null
 
