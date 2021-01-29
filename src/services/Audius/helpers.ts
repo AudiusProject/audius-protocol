@@ -79,10 +79,7 @@ export async function getBlockNearTimestamp(
   return targetBlock
 }
 
-export function toChecksumAddress(
-  this: AudiusClient,
-  wallet: string
-) {
+export function toChecksumAddress(this: AudiusClient, wallet: string) {
   // NOTE: This is kinda a hack
   // but b/c we load in web3 before the js bundle it will work
   const web3 = window.Web3

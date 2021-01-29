@@ -1,4 +1,4 @@
-import { ApolloProvider } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client'
 import React from 'react'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
@@ -54,7 +54,11 @@ const Root = () => (
                 exact
                 component={ContentNodes}
               />
-              <Route path={routes.SERVICES_CONTENT_NODE} exact component={Node} />
+              <Route
+                path={routes.SERVICES_CONTENT_NODE}
+                exact
+                component={Node}
+              />
               <Route
                 path={routes.SERVICES_SERVICE_PROVIDERS}
                 exact
@@ -65,7 +69,11 @@ const Root = () => (
                 exact
                 component={ServiceUsers}
               />
-              <Route path={routes.SERVICES_ACCOUNT_USER} exact component={User} />
+              <Route
+                path={routes.SERVICES_ACCOUNT_USER}
+                exact
+                component={User}
+              />
               <Route
                 path={routes.SERVICES_ACCOUNT_OPERATOR}
                 exact

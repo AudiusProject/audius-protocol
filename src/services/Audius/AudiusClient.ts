@@ -66,7 +66,7 @@ export class AudiusClient {
   getAverageBlockTime = getAverageBlockTime
   getBlockNearTimestamp = getBlockNearTimestamp
   getBlock = getBlock
-  toChecksumAddress = toChecksumAddress 
+  toChecksumAddress = toChecksumAddress
 
   // Static Util Functions
   static getBNPercentage = getBNPercentage

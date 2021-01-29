@@ -36,7 +36,7 @@ const gqlUri = process.env.REACT_APP_GQL_URI
 export const client = new ApolloClient({
   uri: gqlUri,
   cache: new InMemoryCache()
-});
+})
 
 const aud = new Audius()
 window.aud = aud

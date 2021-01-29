@@ -31,7 +31,7 @@ import {
 import { useAccountUser } from 'store/account/hooks'
 import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
 import getActiveStake from 'utils/activeStake'
-import { 
+import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
 } from './graphHooks'

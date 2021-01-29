@@ -4,20 +4,16 @@ import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 import BN from 'bn.js'
 import { getUserProfile as get3BoxProfile } from 'services/3box'
-import {
-  Status,
-  User,
-  Vote, 
-  ServiceType,
-  Operator
-} from 'types'
+import { Status, User, Vote, ServiceType, Operator } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { setLoading, setUsers } from './slice'
 import { useEffect, useState } from 'react'
 
-
-const formatUser =  async (aud: Audius, user: FullUser): Promise<User | Operator> => {
+const formatUser = async (
+  aud: Audius,
+  user: FullUser
+): Promise<User | Operator> => {
   const userWallet = aud.toChecksumAddress(user.id)
   const profile = await get3BoxProfile(userWallet)
 
@@ -33,13 +29,14 @@ const formatUser =  async (aud: Audius, user: FullUser): Promise<User | Operator
     wallet: userWallet,
     audToken: new BN(user.balance),
     totalDelegatorStake: new BN(user.delegationSentAmount),
-    delegates: user.delegateTo?.map((delegate, i) => ({
-      wallet: aud.toChecksumAddress(delegate.toUser.id),
-      amount: new BN(delegate.amount),
-      activeAmount: new BN(delegate.claimableAmount),
-      name: delegatesProfiles[i].name,
-      img: delegatesProfiles[i].image
-    })) ?? [],
+    delegates:
+      user.delegateTo?.map((delegate, i) => ({
+        wallet: aud.toChecksumAddress(delegate.toUser.id),
+        amount: new BN(delegate.amount),
+        activeAmount: new BN(delegate.claimableAmount),
+        name: delegatesProfiles[i].name,
+        img: delegatesProfiles[i].image
+      })) ?? [],
     events: [],
     voteHistory: user.votes.map(vote => ({
       proposalId: parseInt(vote.proposal.id),
@@ -48,11 +45,13 @@ const formatUser =  async (aud: Audius, user: FullUser): Promise<User | Operator
       blockNumber: parseInt(vote.updatedBlockNumber),
       vote: (vote.vote === 1 ? 'No' : 'Yes') as Vote
     })),
-    pendingUndelegateRequest: user.pendingUndelegateStake ? {
-      amount: new BN(user.pendingUndelegateStake.amount),
-      lockupExpiryBlock: parseInt(user.pendingUndelegateStake.expiryBlock),
-      target: user.pendingUndelegateStake.serviceProvider.id
-    } : { amount: new BN(0), lockupExpiryBlock: 0, target: '' },
+    pendingUndelegateRequest: user.pendingUndelegateStake
+      ? {
+          amount: new BN(user.pendingUndelegateStake.amount),
+          lockupExpiryBlock: parseInt(user.pendingUndelegateStake.expiryBlock),
+          target: user.pendingUndelegateStake.serviceProvider.id
+        }
+      : { amount: new BN(0), lockupExpiryBlock: 0, target: '' }
   }
 
   if (user.services.length === 0) return formattedUser
@@ -60,9 +59,9 @@ const formatUser =  async (aud: Audius, user: FullUser): Promise<User | Operator
   // TODO: Make this part faster
   const delegatorProfiles = await Promise.all(
     (user.delegateFrom || [])
-    .map(delegate => delegate.fromUser.id)
-    .map(id => get3BoxProfile(aud.toChecksumAddress(id)))
-    )
+      .map(delegate => delegate.fromUser.id)
+      .map(id => get3BoxProfile(aud.toChecksumAddress(id)))
+  )
 
   return {
     ...formattedUser,
@@ -75,20 +74,29 @@ const formatUser =  async (aud: Audius, user: FullUser): Promise<User | Operator
       numberOfEndpoints: user.services?.length ?? 0,
       validBounds: user.validBounds
     },
-    delegators: user.delegateFrom?.map((delegate, i) => ({
-      wallet: aud.toChecksumAddress(delegate.fromUser.id),
-      amount: new BN(delegate.amount),
-      activeAmount: new BN(delegate.claimableAmount),
-      name: delegatorProfiles[i].name,
-      img: delegatorProfiles[i].image
-    })) ?? [],
+    delegators:
+      user.delegateFrom?.map((delegate, i) => ({
+        wallet: aud.toChecksumAddress(delegate.fromUser.id),
+        amount: new BN(delegate.amount),
+        activeAmount: new BN(delegate.claimableAmount),
+        name: delegatorProfiles[i].name,
+        img: delegatorProfiles[i].image
+      })) ?? [],
     delegatedTotal: new BN(user.delegationReceivedAmount),
-    discoveryProviders: user.services?.filter(({ type: { id } }) => id === ServiceType.DiscoveryProvider).map(service => parseInt(service.spId)) ?? [],
-    contentNodes: user.services?.filter(({ type: { id } }) => id === ServiceType.ContentNode).map(service => parseInt(service.spId)) ?? [],
-    pendingDecreaseStakeRequest: user.pendingDecreaseStake ? {
-      amount: new BN(user.pendingDecreaseStake.decreaseAmount),
-      lockupExpiryBlock: parseInt(user.pendingDecreaseStake.expiryBlock)
-    } : { amount: new BN(0), lockupExpiryBlock: 0 }
+    discoveryProviders:
+      user.services
+        ?.filter(({ type: { id } }) => id === ServiceType.DiscoveryProvider)
+        .map(service => parseInt(service.spId)) ?? [],
+    contentNodes:
+      user.services
+        ?.filter(({ type: { id } }) => id === ServiceType.ContentNode)
+        .map(service => parseInt(service.spId)) ?? [],
+    pendingDecreaseStakeRequest: user.pendingDecreaseStake
+      ? {
+          amount: new BN(user.pendingDecreaseStake.decreaseAmount),
+          lockupExpiryBlock: parseInt(user.pendingDecreaseStake.expiryBlock)
+        }
+      : { amount: new BN(0), lockupExpiryBlock: 0 }
   }
 }
 
@@ -101,13 +109,18 @@ function populateUsers(
     try {
       if (setStatus) setStatus(Status.Loading)
       else dispatch(setLoading())
-      const formattedUsers = await Promise.all(users.map(user => formatUser(aud, user)))
+      const formattedUsers = await Promise.all(
+        users.map(user => formatUser(aud, user))
+      )
       dispatch(
         setUsers({
-          users: formattedUsers.reduce((users: {[id: string]: User | Operator}, user) => {
-            users[user.wallet] = user
-            return users
-          }, {}),
+          users: formattedUsers.reduce(
+            (users: { [id: string]: User | Operator }, user) => {
+              users[user.wallet] = user
+              return users
+            },
+            {}
+          ),
           ...(setStatus ? {} : { status: Status.Success })
         })
       )
@@ -119,8 +132,8 @@ function populateUsers(
 }
 
 const GET_USERS = gql`
-  query users ($where: User_filter!, $orderBy: User_orderBy!) {
-    users (where: $where, orderBy: $orderBy, orderDirection: desc) {
+  query users($where: User_filter!, $orderBy: User_orderBy!) {
+    users(where: $where, orderBy: $orderBy, orderDirection: desc) {
       id
       balance
       totalClaimableAmount
@@ -130,13 +143,17 @@ const GET_USERS = gql`
       claimableStakeAmount
       claimableDelegationSentAmount
       claimableDelegationReceivedAmount
-      deployerCut,
-      minAccountStake,
-      maxAccountStake,
-      validBounds,
+      deployerCut
+      minAccountStake
+      maxAccountStake
+      validBounds
 
       # Get the delegations received
-      delegateFrom(orderBy: claimableAmount, orderDirection: desc, where: { amount_gt: 0 }) {
+      delegateFrom(
+        orderBy: claimableAmount
+        orderDirection: desc
+        where: { amount_gt: 0 }
+      ) {
         claimableAmount
         amount
         fromUser {
@@ -145,7 +162,11 @@ const GET_USERS = gql`
       }
 
       # Get the delegations sent
-      delegateTo(orderBy: claimableAmount, orderDirection: desc, where: { amount_gt: 0 }) {
+      delegateTo(
+        orderBy: claimableAmount
+        orderDirection: desc
+        where: { amount_gt: 0 }
+      ) {
         claimableAmount
         amount
         toUser {
@@ -163,12 +184,16 @@ const GET_USERS = gql`
         id
         amount
         expiryBlock
-        serviceProvider { id }
+        serviceProvider {
+          id
+        }
       }
       pendingRemoveDelegator {
         id
         expiryBlock
-        delegator { id }
+        delegator {
+          id
+        }
       }
       pendingUpdateDeployerCut {
         id
@@ -177,8 +202,10 @@ const GET_USERS = gql`
       }
 
       # Fetch the user's services
-      services (where: { isRegistered: true }) {
-        type { id }
+      services(where: { isRegistered: true }) {
+        type {
+          id
+        }
         spId
         endpoint
         delegateOwnerWallet
@@ -189,12 +216,13 @@ const GET_USERS = gql`
         vote
         magnitude
         updatedBlockNumber
-        proposal { id }
+        proposal {
+          id
+        }
       }
     }
   }
-`;
-
+`
 
 interface FullUser {
   id: string
@@ -218,7 +246,7 @@ interface FullUser {
       id: string
     }
   }[]
-  
+
   delegateFrom?: {
     claimableAmount: string
     amount: string
@@ -252,7 +280,7 @@ interface FullUser {
   services: {
     type: { id: string }
     endpoint: string
-    spId: string,
+    spId: string
     delegateOwnerWallet: string
   }[]
 
@@ -263,7 +291,6 @@ interface FullUser {
     updatedBlockNumber: string
     proposal: { id: string }
   }[]
-
 }
 
 interface UsersData {
@@ -277,9 +304,15 @@ interface UsersVars {
 
 // -------------------------------- Hooks  --------------------------------
 export const useUsers = (status: Status | undefined) => {
-  const { error: gqlError, data: gqlData } = useQuery<UsersData, UsersVars>(GET_USERS, {
-    variables: { orderBy: "totalClaimableAmount", where: { hasStakeOrDelegation: true } }
-  })
+  const { error: gqlError, data: gqlData } = useQuery<UsersData, UsersVars>(
+    GET_USERS,
+    {
+      variables: {
+        orderBy: 'totalClaimableAmount',
+        where: { hasStakeOrDelegation: true }
+      }
+    }
+  )
   const dispatch = useDispatch()
   useEffect(() => {
     if (status !== Status.Loading && status !== Status.Success && gqlData) {
@@ -287,15 +320,14 @@ export const useUsers = (status: Status | undefined) => {
     }
   }, [gqlData, dispatch, status])
 
-  return { 
+  return {
     error: gqlError
   }
 }
 
-
 const GET_USER = gql`
-  query user ($id: String!) {
-    user (id: $id) {
+  query user($id: String!) {
+    user(id: $id) {
       id
       balance
       totalClaimableAmount
@@ -305,13 +337,17 @@ const GET_USER = gql`
       claimableStakeAmount
       claimableDelegationSentAmount
       claimableDelegationReceivedAmount
-      deployerCut,
-      minAccountStake,
-      maxAccountStake,
-      validBounds,
+      deployerCut
+      minAccountStake
+      maxAccountStake
+      validBounds
 
       # Get the delegations received
-      delegateFrom(orderBy: claimableAmount, orderDirection: desc, where: { amount_gt: 0 }) {
+      delegateFrom(
+        orderBy: claimableAmount
+        orderDirection: desc
+        where: { amount_gt: 0 }
+      ) {
         claimableAmount
         amount
         fromUser {
@@ -320,7 +356,11 @@ const GET_USER = gql`
       }
 
       # Get the delegations sent
-      delegateTo(orderBy: claimableAmount, orderDirection: desc, where: { amount_gt: 0 }) {
+      delegateTo(
+        orderBy: claimableAmount
+        orderDirection: desc
+        where: { amount_gt: 0 }
+      ) {
         claimableAmount
         amount
         toUser {
@@ -338,12 +378,16 @@ const GET_USER = gql`
         id
         amount
         expiryBlock
-        serviceProvider { id }
+        serviceProvider {
+          id
+        }
       }
       pendingRemoveDelegator {
         id
         expiryBlock
-        delegator { id }
+        delegator {
+          id
+        }
       }
       pendingUpdateDeployerCut {
         id
@@ -352,8 +396,10 @@ const GET_USER = gql`
       }
 
       # Fetch the user's services
-      services (where: { isRegistered: true }) {
-        type { id }
+      services(where: { isRegistered: true }) {
+        type {
+          id
+        }
         spId
         endpoint
         delegateOwnerWallet
@@ -364,7 +410,9 @@ const GET_USER = gql`
         vote
         magnitude
         updatedBlockNumber
-        proposal { id }
+        proposal {
+          id
+        }
       }
     }
   }
@@ -378,11 +426,17 @@ interface UserVars {
   id: string
 }
 
-export const useUser = (wallet: string, setStatus: (status: Status) => void) => {
+export const useUser = (
+  wallet: string,
+  setStatus: (status: Status) => void
+) => {
   const [didFetch, setDidFetch] = useState(false)
-  const { error: gqlError, data: gqlData } = useQuery<UserData, UserVars>(GET_USER, {
-    variables: { id: wallet.toLowerCase() }
-  })
+  const { error: gqlError, data: gqlData } = useQuery<UserData, UserVars>(
+    GET_USER,
+    {
+      variables: { id: wallet.toLowerCase() }
+    }
+  )
 
   useEffect(() => {
     setDidFetch(false)
@@ -396,7 +450,7 @@ export const useUser = (wallet: string, setStatus: (status: Status) => void) => 
     }
   }, [gqlData, dispatch, setStatus, didFetch, setDidFetch])
 
-  return { 
+  return {
     error: gqlError
   }
 }
