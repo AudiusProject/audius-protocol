@@ -140,47 +140,21 @@ def get_endpoint_string_from_sp_ids(
     endpoint_string = None
     primary_endpoint = None
     try:
-        # Get primary cache key
-        primary_cache_key = get_sp_id_key(primary)
-        # Attempt to fetch from cache
-        primary_info_cached = get_pickled_key(update_task.redis, primary_cache_key)
-        if primary_info_cached:
-            primary_endpoint = primary_info_cached[1]
-            logger.info(f"user_replica_set.py | CACHE HIT FOR {primary_cache_key}, found {primary_info_cached}")
-
-        # If cache miss, fetch from eth-contract
-        if not primary_endpoint:
-            logger.info(f"user_replica_set.py | CACHE MISS FOR {primary_cache_key}, found {primary_info_cached}")
-            if sp_factory_inst is None:
-                sp_factory_inst = get_sp_factory_inst(self, update_task)
-            primary_cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
-                content_node_service_type,
-                primary
-            ).call()
-            logger.info(primary_cn_endpoint_info)
-            primary_endpoint = primary_cn_endpoint_info[1]
-
+        sp_factory_inst, primary_endpoint = get_endpoint_from_id(
+            self,
+            update_task,
+            sp_factory_inst,
+            primary
+        )
         endpoint_string = "{}".format(primary_endpoint)
         for secondary_id in secondaries:
             secondary_endpoint = None
-            secondary_cache_key = get_sp_id_key(secondary_id)
-            secondary_info_cached = get_pickled_key(update_task.redis, secondary_cache_key)
-            if secondary_info_cached:
-                secondary_endpoint = secondary_info_cached[1]
-                logger.info(f"user_replica_set.py | CACHE HIT FOR {secondary_cache_key}, found {secondary_info_cached}")
-
-            if not secondary_endpoint:
-                logger.info(
-                    f"user_replica_set.py | CACHE MISS FOR {secondary_cache_key}, found {secondary_info_cached}"
-                )
-                if sp_factory_inst is None:
-                    sp_factory_inst = get_sp_factory_inst(self, update_task)
-                secondary_info = sp_factory_inst.functions.getServiceEndpointInfo(
-                    content_node_service_type,
-                    secondary_id
-                ).call()
-                secondary_endpoint = secondary_info[1]
-
+            sp_factory_inst, secondary_endpoint = get_endpoint_from_id(
+                self,
+                update_task,
+                sp_factory_inst,
+                secondary_id
+            )
             if secondary_endpoint:
                 endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
             else:
@@ -189,6 +163,33 @@ def get_endpoint_string_from_sp_ids(
         logger.error(f"user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}")
     logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}")
     return endpoint_string
+
+# Initializes sp_factory if necessary and retrieves spID
+# Returns initialized instance of contract and endpoint
+def get_endpoint_from_id(self, update_task, sp_factory_inst, sp_id):
+    endpoint = None
+    # Get sp_id cache key
+    cache_key = get_sp_id_key(sp_id)
+    # Attempt to fetch from cache
+    sp_info_cached = get_pickled_key(update_task.redis, cache_key)
+    if sp_info_cached:
+        endpoint = sp_info_cached[1]
+        logger.info(f"user_replica_set.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}")
+        return sp_factory_inst, endpoint
+
+    if not endpoint:
+        logger.info(f"user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}")
+        if sp_factory_inst is None:
+            sp_factory_inst = get_sp_factory_inst(self, update_task)
+
+        cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
+            content_node_service_type,
+            sp_id
+        ).call()
+        logger.info(cn_endpoint_info)
+        endpoint = cn_endpoint_info[1]
+
+    return sp_factory_inst, endpoint
 
 # Return instance of ServiceProviderFactory initialized with configs
 def get_sp_factory_inst(self, update_task):
