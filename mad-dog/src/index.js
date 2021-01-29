@@ -6,6 +6,7 @@ const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
 const {
   coreIntegration,
   snapbackSMParallelSyncTest,
+  userReplicaSetManagerTest,
   IpldBlacklistTest
 } = require('./tests/tests')
 
@@ -145,6 +146,17 @@ async function main () {
           numUsers: snapbackNumUsers
         }
       )
+      await testRunner([test])
+      break
+    }
+    case 'test-usrm': {
+      const usrmUsers = 4
+      const test = makeTest(
+        'userReplicaSetManager',
+        userReplicaSetManagerTest,
+        {
+          numUsers: usrmUsers
+        })
       await testRunner([test])
       break
     }
