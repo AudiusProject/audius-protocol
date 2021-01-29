@@ -511,7 +511,7 @@ class SnapbackSM {
   /**
    * Initialize the state machine
    *
-   * @notice - Optionally accepts `maxSyncJobs` to override sync concurrency limit `MaxParallelSyncJobs`
+   * @param - Optionally accepts `maxSyncJobs` to override sync concurrency limit `MaxParallelSyncJobs`
    */
   async init (maxSyncJobs) {
     await this.stateMachineQueue.empty()

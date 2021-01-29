@@ -125,6 +125,7 @@ class DBManager {
       }
     } finally {
       // Rollback transaction on error for external or internal transaction
+      // TODO - consider not rolling back in case of external transaction, and just throwing instead
       if (error) {
         await transaction.rollback()
         this.log(`deleteAllCNodeUserDataFromDB || rolling back transaction due to error ${error}`)
