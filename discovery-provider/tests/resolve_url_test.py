@@ -1,9 +1,6 @@
 from datetime import datetime
-from flask import Flask
-import pytest
 from src.models import User, Block
 from src.api.v1.utils.resolve_url import resolve_url
-from src.api.v1 import api as api_v1
 from src.utils.db_session import get_db
 
 
@@ -60,10 +57,9 @@ def test_resolve_user_url(app):
                 handle_lc="urbanbankai",
                 user_id=42727,
                 primary=1,
-                secondaries=[2,3]
+                secondaries=[2, 3]
             ))
             url = 'https://audius.co/urbanbankai'
             resolved_url = resolve_url(session, url)
 
             assert resolved_url == '/v1/users/DE677'
-
