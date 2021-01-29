@@ -705,13 +705,13 @@ class Users extends Base {
     if (!this.contracts.UserReplicaSetManagerClient) {
       const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
         userId,
-        metadata['creator_node_endpoint']
+        metadata.creator_node_endpoint]
       )
       return updateEndpointTxReceipt
     }
 
-    let primaryEndpoint = CreatorNode.getPrimary(metadata['creator_node_endpoint'])
-    let secondaries = CreatorNode.getSecondaries(metadata['creator_node_endpoint'])
+    let primaryEndpoint = CreatorNode.getPrimary(metadata.creator_node_endpoint)
+    let secondaries = CreatorNode.getSecondaries(metadata.creator_node_endpoint)
     let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)
     let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
     let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
