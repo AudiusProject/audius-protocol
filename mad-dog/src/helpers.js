@@ -122,9 +122,6 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           userId = newUserId
         }
 
-        // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
-        // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-        // await waitForIndexing()
         await waitForLatestBlock({ executeOne })
 
         // add to wallet index to userId mapping
@@ -135,7 +132,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         logger.info(`Existing users, userIds=${existingUserIds}`)
       } catch (e) {
         logger.error('GOT ERR CREATING USER')
-        logger.error(e.message)
+        console.error(e) // this prints out the stack trace
         throw e
       }
     })
@@ -165,7 +162,7 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
-      logger.error(e.message)
+      console.error(e)
       throw e
     }
     await waitForLatestBlock({ executeOne })
@@ -184,7 +181,8 @@ const logOps = async (name, work) => {
     logger.info(`Finished: [${name}].`)
     return res
   } catch (e) {
-    logger.error(`Error in [${name}], [${e.message}]`)
+    logger.error(`Error in [${name}]`)
+    console.error(e)
     throw e
   }
 }
@@ -203,9 +201,9 @@ const getUser = async ({ executeOne, walletIndex }) => {
     })
   } catch (e) {
     if (e.message !== 'No users!') {
-      throw new Error(
-        `Error with getting user with wallet index ${walletIndex}: ${e.message}`
-      )
+      logger.error(`Error with getting user with wallet index ${walletIndex}`)
+      console.error(e)
+      throw e
     }
   }
 
@@ -290,9 +288,10 @@ const getRandomTrackFilePath = async localDirPath => {
 
     logger.info(`Wrote track to temp local storage at ${targetFilePath}`)
   } catch (e) {
-    const error = `Error with writing track to path ${localDirPath}: ${e.message}`
-    logger.error(error)
-    throw new Error(error)
+    const errorMsg = `Error with writing track to path ${localDirPath}`
+    logger.error(errorMsg)
+    console.error(e)
+    throw new Error(`${errorMsg}: ${e.message}`)
   }
 
   // Return full file path
@@ -361,8 +360,10 @@ const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
         logger.info(`Sync completed for user=${userId}!`)
       }
     } catch (e) {
-      logger.info(e)
-      throw new Error(`Failed sync monitoring for user=${userId}`)
+      const errorMsg = `Failed sync monitoring for user=${userId}`
+      logger.error(errorMsg)
+      console.error(e)
+      throw new Error(`${errorMsg}: ${e.message}`)
     }
     if (!synced) { await delay(1000) }
   }
@@ -377,29 +378,33 @@ const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
  */
 const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXING_TIMEOUT, checkIpldBlockNumber = false }) => {
   const blockCheckLabel = checkIpldBlockNumber ? 'IPLD ' : ''
-  // Note: this is /not/ the block of which a certain txn occurred. This is just the
-  // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
-  // might be 83). This method is the quickest way to attempt to poll up to a reasonably
-  // close block without having to change libs API.
-  const latestBlockOnChain = await executeOne(0, libsWrapper => {
-    return getLatestBlockOnChain(libsWrapper)
-  })
+  try {
+    // Note: this is /not/ the block of which a certain txn occurred. This is just the
+    // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
+    // might be 83). This method is the quickest way to attempt to poll up to a reasonably
+    // close block without having to change libs API.
+    const latestBlockOnChain = await executeOne(0, libsWrapper => {
+      return getLatestBlockOnChain(libsWrapper)
+    })
 
-  logger.info(`[${blockCheckLabel}Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+    logger.info(`[${blockCheckLabel}Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
 
-  let latestIndexedBlock = -1
-  const startTime = Date.now()
-  while (Date.now() - startTime < maxIndexingTimeout) {
-    if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
-    else latestIndexedBlock = await getLatestIndexedBlock()
-    if (latestIndexedBlock >= latestBlockOnChain) {
-      logger.info(`[${blockCheckLabel}Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
-      return true
+    let latestIndexedBlock = -1
+    const startTime = Date.now()
+    while (Date.now() - startTime < maxIndexingTimeout) {
+      if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
+      else latestIndexedBlock = await getLatestIndexedBlock()
+      if (latestIndexedBlock >= latestBlockOnChain) {
+        logger.info(`[${blockCheckLabel}Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+        return
+      }
     }
+  } catch (e) {
+    logger.error(`[${blockCheckLabel}Block Check] Error with checking latest indexed block`)
+    console.error(e)
+    throw e
   }
-
   logger.warn(`[${blockCheckLabel}Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
-  return false
 }
 
 /**

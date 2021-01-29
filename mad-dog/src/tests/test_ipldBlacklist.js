@@ -613,91 +613,90 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
 
 // SAD PATH -- IPLD BLACKLIST HAS NO HITS
 
-// TODO: test is a bit outdated - needs to actually upload an image causes incorrect failure
 // TEST UPDATE PLAYLIST COVER PHOTO FLOW
-// IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
-//   numUsers,
-//   executeAll,
-//   executeOne,
-//   numCreatorNodes
-// }) => {
-//   try {
-//     const userId = await getCreatorId({
-//       numUsers,
-//       executeAll,
-//       executeOne,
-//       numCreatorNodes
-//     })
+IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
+  numUsers,
+  executeAll,
+  executeOne,
+  numCreatorNodes
+}) => {
+  try {
+    const userId = await getCreatorId({
+      numUsers,
+      executeAll,
+      executeOne,
+      numCreatorNodes
+    })
 
-//     // create playlist under userId
-//     const randomPlaylistName = 'playlist_' + genRandomString(8)
-//     const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return createPlaylist(
-//         libsWrapper,
-//         userId,
-//         randomPlaylistName,
-//         false,
-//         false,
-//         []
-//       )
-//     })
+    // create playlist under userId
+    const randomPlaylistName = 'playlist_' + genRandomString(8)
+    const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return createPlaylist(
+        libsWrapper,
+        userId,
+        randomPlaylistName,
+        false,
+        false,
+        []
+      )
+    })
 
-//     await waitForLatestBlock({executeOne})
+    await waitForLatestBlock({executeOne})
 
-//     // generate random CID to blacklist and add to blacklist
-//     const randomCID = await addContentToIpfs({
-//       randomData: 'random' + randomPlaylistName
-//     })
-//     const randomCIDDecoded = Utils.decodeMultihash(randomCID)
-//     logger.info(`Adding CID ${randomCID} to the IPLD Blacklist!`)
-//     const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
-//       return addIPLDToBlacklist(libsWrapper, randomCIDDecoded.digest)
-//     })
+    // generate random CID to blacklist and add to blacklist
+    const randomCID = await addContentToIpfs({
+      randomData: 'random' + randomPlaylistName
+    })
+    const randomCIDDecoded = Utils.decodeMultihash(randomCID)
+    logger.info(`Adding CID ${randomCID} to the IPLD Blacklist!`)
+    const ipldTxReceipt = await executeOne(BLACKLISTER_INDEX, libsWrapper => {
+      return addIPLDToBlacklist(libsWrapper, randomCIDDecoded.digest)
+    })
 
-//     // generate actual CID to use as update cover photo
-//     const cid = await addContentToIpfs({
-//       randomData: 'actual' + randomPlaylistName
-//     })
+    // generate actual CID to use as update cover photo
+    const cid = await addContentToIpfs({
+      randomData: 'actual' + randomPlaylistName
+    })
 
-//     const trackMultihashDecoded = Utils.decodeMultihash(cid)
+    const trackMultihashDecoded = Utils.decodeMultihash(cid)
 
-// //     await waitForLatestBlock({
-//       executeOne,
-//       checkIpldBlockNumber: true
-//     })
+    await waitForLatestBlock({
+      executeOne,
+      checkIpldBlockNumber: true
+    })
 
-//     // update playlist with blacklisted CID cover photo
-//     const updatePlaylistTxReceipt = await executeOne(
-//       CREATOR_INDEX,
-//       libsWrapper => {
-//         return updatePlaylistCoverPhoto(
-//           libsWrapper,
-//           playlistId,
-//           trackMultihashDecoded.digest
-//         )
-//       }
-//     )
+    // update playlist with not-blacklisted CID for cover photo
+    const updatePlaylistTxReceipt = await executeOne(
+      CREATOR_INDEX,
+      libsWrapper => {
+        return updatePlaylistCoverPhoto(
+          libsWrapper,
+          playlistId,
+          trackMultihashDecoded.digest
+        )
+      }
+    )
 
-//     await waitForLatestBlock({executeOne})
+    await waitForLatestBlock({executeOne})
 
-//     // query playlist and check that new cover photo not indexed
-//     const playlists = await executeOne(CREATOR_INDEX, libsWrapper => {
-//       return getPlaylists(libsWrapper, 1, 0, [playlistId], userId, false)
-//     })
+    // query playlist and check that new cover photo not indexed
+    const playlists = await executeOne(CREATOR_INDEX, libsWrapper => {
+      return getPlaylists(libsWrapper, 1, 0, [playlistId], userId, false)
+    })
 
-//     const playlist = playlists[0]
-//     if (playlist.playlist_image_multihash !== cid) {
-//       return {
-//         error:
-//           'Playlist update with blacklisted cover photo CID should have been indexed.'
-//       }
-//     }
-//   } catch (e) {
-//     return {
-//       error: `Error with IPLD Blacklist test for update playlist cover photo: ${e.message}`
-//     }
-//   }
-// }
+    const playlist = playlists[0]
+    if (playlist.playlist_image_sizes_multihash !== cid) {
+      return {
+        error:
+          'Playlist update with blacklisted cover photo CID should have been indexed.'
+      }
+    }
+  } catch (e) {
+    return {
+      error: `Error with IPLD Blacklist test for update playlist cover photo: ${e.message}`
+    }
+  }
+}
 
 // Get the userId that is a creator with wallet index 1
 async function getCreatorId ({
@@ -724,9 +723,10 @@ async function addContentToIpfs (contentObject) {
   try {
     buffer = Buffer.from(JSON.stringify(contentObject))
   } catch (e) {
-    throw new Error(
-      `Could not stringify content ${contentObject}: ${e.message}`
-    )
+    const errorMsg = `Could not stringify content ${contentObject}` 
+    logger.error(errorMsg)
+    console.error(e)
+    throw new Error(`${errorMsg}: ${e.message}`)
   }
 
   // add metadata object to ipfs to get CID
@@ -736,7 +736,10 @@ async function addContentToIpfs (contentObject) {
       pin: false
     })
   } catch (e) {
-    throw new Error(`Could not add content to IPFS: ${e.message}`)
+    const errorMsg = `Could not add content to IPFS`
+    logger.error(errorMsg)
+    console.error(e)
+    throw new Error(`${errorMsg}: ${e.message}`)
   }
 
   // return CID
