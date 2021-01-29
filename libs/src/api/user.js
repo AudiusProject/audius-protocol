@@ -705,7 +705,7 @@ class Users extends Base {
     if (!this.contracts.UserReplicaSetManagerClient) {
       const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
         userId,
-        metadata.creator_node_endpoint]
+        metadata.creator_node_endpoint
       )
       return updateEndpointTxReceipt
     }
