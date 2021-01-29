@@ -27,6 +27,7 @@ REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 #        a) new (created_at == updated_at)
 #        b) not new, but stale: last updated prior to (now - threshold)
 #     we look up said users, adding User_Balance rows, and removing them from Redis.
+#     Users with zero balance are refreshed at a slower rate than users with a non-zero balance.
 #
 #     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
@@ -60,8 +61,6 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         needs_refresh = list(filter(does_user_balance_need_refresh, query))
         needs_refresh += new_balances
 
-        logger.info(f"cache_user_balance.py | needs refresh: {needs_refresh}")
-
         # map user_id -> user_balance
         needs_refresh_map = {user.user_id: user for user in needs_refresh}
 
@@ -78,9 +77,10 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         # Fetch balances
         for user in user_query:
             wallet, user_id = user.wallet, user.user_id
-            wallet = eth_web3.toChecksumAddress(wallet)
 
             try:
+                wallet = eth_web3.toChecksumAddress(wallet)
+
                 # get balance
                 balance = token_contract.functions.balanceOf(wallet).call()
 

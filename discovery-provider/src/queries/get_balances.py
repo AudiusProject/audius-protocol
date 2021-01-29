@@ -19,6 +19,7 @@ REDIS_PREFIX = "USER_BALANCE_REFRESH"
 def does_user_balance_need_refresh(user_balance, is_current_user=True):
     '''Returns whether a given user_balance needs update.
     Very heuristic-y:
+        - If we've never updated before (new balance entry), update now
         - If we're the current_user, update on the shortest interval
         - If we're not the current user but we have some balance, update on medium interval
         - If we're not the current user and we have no balance, update on slowest interval
