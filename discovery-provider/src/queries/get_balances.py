@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 BALANCE_REFRESH_SEC_CURRENT_USER = 5 * 60
 
 # How stale of a non-zero user balance we tolerate before refreshing
-BALANCE_REFRESH_SEC_NONEMPTY_USER = 30 * 60
+BALANCE_REFRESH_SEC_NONEMPTY_USER = 15 * 60
 
 # How stale of a zero user balance we tolerate before refreshing
-BALANCE_REFRESH_SEC_EMPTY_USER = 12 * 60 * 60
+BALANCE_REFRESH_SEC_EMPTY_USER = 1 * 60 * 60
 
 REDIS_PREFIX = "USER_BALANCE_REFRESH"
 
