@@ -47,14 +47,14 @@ class ServiceProvider extends Base {
     const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
-        url: `${node.endpoint}/version`
+        url: `${node.endpoint}/health_check/verbose`
       })),
       timeout
     )
 
     let services = {}
     timings.forEach(timing => {
-      if (timing.response) services[timing.request.id] = timing.response.data
+      if (timing.response) services[timing.request.id] = timing.response.data.data
     })
 
     return services

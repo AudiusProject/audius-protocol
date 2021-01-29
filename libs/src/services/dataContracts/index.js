@@ -85,27 +85,46 @@ class AudiusContracts {
       this.getRegistryAddressForContract
     )
 
-    this.UserReplicaSetManagerClient = new UserReplicaSetManagerClient(
-      this.web3Manager,
-      UserReplicaSetManagerABI,
-      UserReplicaSetManagerRegistryKey,
-      this.getRegistryAddressForContract
-    )
-
     this.contractClients = [
       this.UserFactoryClient,
       this.TrackFactoryClient,
       this.SocialFeatureFactoryClient,
       this.PlaylistFactoryClient,
       this.UserLibraryFactoryClient,
-      this.IPLDBlacklistFactoryClient,
-      this.UserReplicaSetManagerClient
+      this.IPLDBlacklistFactoryClient
     ]
   }
 
   async init () {
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
+      await this.initUserReplicaSetManagerClient()
+    }
+  }
+
+  async initUserReplicaSetManagerClient () {
+    try {
+      if (
+        this.UserReplicaSetManagerClient &&
+        this.UserReplicaSetManagerClient._contractAddress !== '0x0000000000000000000000000000000000000000'
+      ) {
+        return
+      }
+
+      this.UserReplicaSetManagerClient = new UserReplicaSetManagerClient(
+        this.web3Manager,
+        UserReplicaSetManagerABI,
+        UserReplicaSetManagerRegistryKey,
+        this.getRegistryAddressForContract
+      )
+      await this.UserReplicaSetManagerClient.init()
+      if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
+      }
+    } catch (e) {
+      // Nullify failed attempt to initialize
+      console.log(`Failed to initialize UserReplicaSetManagerClient`)
+      this.UserReplicaSetManagerClient = null
     }
   }
 

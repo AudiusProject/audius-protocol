@@ -237,12 +237,9 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
 
     return user_metadata
 
+# Determine whether this user has identity established on 
 def user_replica_set_upgraded(user_record):
-    primary_replica_set_configured = user_record.primary is not None
-    if primary_replica_set_configured:
-        primary_replica_set_configured = user_record.primary > 0
-    secondary_replica_set_configured = user_record.secondaries is not None 
-    if secondary_replica_set_configured:
-        secondary_replica_set_configured = len(user_record.secondaries) > 0
+    primary_replica_set_configured = (user_record.primary is not None and user_record.primary > 0)
+    secondary_replica_set_configured = (user_record.secondaries is not None and len(user_record.secondaries) > 0) 
     upgraded_replica_set = primary_replica_set_configured or secondary_replica_set_configured
     return upgraded_replica_set

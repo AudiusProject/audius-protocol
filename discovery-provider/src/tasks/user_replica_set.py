@@ -22,10 +22,10 @@ def user_replica_set_state_update(
 ):
     """Return int representing number of User model state changes found in transaction."""
 
-    num_total_changes = 0
+    num_user_replica_set_changes = 0
     user_ids = set()
     if not user_replica_set_mgr_txs:
-        return num_total_changes, user_ids
+        return num_user_replica_set_changes, user_ids
 
     user_replica_set_manager_abi = update_task.abi_values["UserReplicaSetManager"]["abi"]
     user_contract = update_task.web3.eth.contract(
@@ -63,9 +63,8 @@ def user_replica_set_state_update(
                     ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
                     user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
-                # def lookup_poa_cnode_record(self, update_task, session, entry, block_number, block_timestamp):
                 if cnode_id and (cnode_id not in cnode_events_lookup):
-                    ret_cnode = lookup_poa_cnode_record(
+                    ret_cnode = lookup_usrm_cnode(
                         self,
                         update_task,
                         session,
@@ -99,7 +98,7 @@ def user_replica_set_state_update(
                     user_replica_set_events_lookup[user_id]["events"].append(event_type)
                 # Process L2 Content Node operations
                 elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
-                    cnode_record = parse_poa_cnode_record(
+                    cnode_record = parse_usrm_cnode_record(
                         self,
                         update_task,
                         session,
@@ -109,7 +108,7 @@ def user_replica_set_state_update(
                     if cnode_record is not None:
                         cnode_events_lookup[cnode_id]["content_node"] = cnode_record
                         cnode_events_lookup[cnode_id]["events"].append(event_type)
-            num_total_changes += len(user_events_tx)
+            num_user_replica_set_changes += len(user_events_tx)
 
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
@@ -123,7 +122,7 @@ def user_replica_set_state_update(
         invalidate_old_cnode_record(session, content_node_id)
         session.add(value_obj["content_node"])
 
-    return num_total_changes, user_ids
+    return num_user_replica_set_changes, user_ids
 
 # Reconstruct endpoint string from primary and secondary IDs
 # Note that this is BEST EFFORT and may fail, however unlikely
@@ -141,47 +140,21 @@ def get_endpoint_string_from_sp_ids(
     endpoint_string = None
     primary_endpoint = None
     try:
-        # Get primary cache key
-        primary_cache_key = get_sp_id_key(primary)
-        # Attempt to fetch from cache
-        primary_info_cached = get_pickled_key(update_task.redis, primary_cache_key)
-        if primary_info_cached:
-            primary_endpoint = primary_info_cached[1]
-            logger.info(f"user_replica_set.py | CACHE HIT FOR {primary_cache_key}, found {primary_info_cached}")
-
-        # If cache miss, fetch from eth-contract
-        if not primary_endpoint:
-            logger.info(f"user_replica_set.py | CACHE MISS FOR {primary_cache_key}, found {primary_info_cached}")
-            if sp_factory_inst is None:
-                sp_factory_inst = get_sp_factory_inst(self, update_task)
-            primary_cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
-                content_node_service_type,
-                primary
-            ).call()
-            logger.info(primary_cn_endpoint_info)
-            primary_endpoint = primary_cn_endpoint_info[1]
-
+        sp_factory_inst, primary_endpoint = get_endpoint_from_id(
+            self,
+            update_task,
+            sp_factory_inst,
+            primary
+        )
         endpoint_string = "{}".format(primary_endpoint)
         for secondary_id in secondaries:
             secondary_endpoint = None
-            secondary_cache_key = get_sp_id_key(secondary_id)
-            secondary_info_cached = get_pickled_key(update_task.redis, secondary_cache_key)
-            if secondary_info_cached:
-                secondary_endpoint = secondary_info_cached[1]
-                logger.info(f"user_replica_set.py | CACHE HIT FOR {secondary_cache_key}, found {secondary_info_cached}")
-
-            if not secondary_endpoint:
-                logger.info(
-                    f"user_replica_set.py | CACHE MISS FOR {secondary_cache_key}, found {secondary_info_cached}"
-                )
-                if sp_factory_inst is None:
-                    sp_factory_inst = get_sp_factory_inst(self, update_task)
-                secondary_info = sp_factory_inst.functions.getServiceEndpointInfo(
-                    content_node_service_type,
-                    secondary_id
-                ).call()
-                secondary_endpoint = secondary_info[1]
-
+            sp_factory_inst, secondary_endpoint = get_endpoint_from_id(
+                self,
+                update_task,
+                sp_factory_inst,
+                secondary_id
+            )
             if secondary_endpoint:
                 endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
             else:
@@ -191,6 +164,34 @@ def get_endpoint_string_from_sp_ids(
     logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}")
     return endpoint_string
 
+# Initializes sp_factory if necessary and retrieves spID
+# Returns initialized instance of contract and endpoint
+def get_endpoint_from_id(self, update_task, sp_factory_inst, sp_id):
+    endpoint = None
+    # Get sp_id cache key
+    cache_key = get_sp_id_key(sp_id)
+    # Attempt to fetch from cache
+    sp_info_cached = get_pickled_key(update_task.redis, cache_key)
+    if sp_info_cached:
+        endpoint = sp_info_cached[1]
+        logger.info(f"user_replica_set.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}")
+        return sp_factory_inst, endpoint
+
+    if not endpoint:
+        logger.info(f"user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}")
+        if sp_factory_inst is None:
+            sp_factory_inst = get_sp_factory_inst(self, update_task)
+
+        cn_endpoint_info = sp_factory_inst.functions.getServiceEndpointInfo(
+            content_node_service_type,
+            sp_id
+        ).call()
+        logger.info(cn_endpoint_info)
+        endpoint = cn_endpoint_info[1]
+
+    return sp_factory_inst, endpoint
+
+# Return instance of ServiceProviderFactory initialized with configs
 def get_sp_factory_inst(self, update_task):
     shared_config = update_task.shared_config
     eth_web3 = update_task.eth_web3
@@ -208,21 +209,18 @@ def get_sp_factory_inst(self, update_task):
     )
     return sp_factory_inst
 
-def parse_poa_cnode_record(self, update_task, session, entry, cnode_record):
+# Update cnode_record with event arguments
+def parse_usrm_cnode_record(self, update_task, session, entry, cnode_record):
     event_args = entry["args"]
-    delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
-    sp_ids = event_args._proposerSpIds
-    proposer_1 = event_args._proposer1Address
-    proposer_2 = event_args._proposer2Address
-    proposer_3 = event_args._proposer3Address
-    cnode_record.delegate_owner_wallet = delegate_owner_wallet
-    cnode_record.proposer_1_address = proposer_1
-    cnode_record.proposer_2_address = proposer_2
-    cnode_record.proposer_3_address = proposer_3
-    cnode_record.proposer_sp_ids = sp_ids
+    cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet 
+    cnode_record.proposer_1_address = event_args._proposer1Address
+    cnode_record.proposer_2_address = event_args._proposer2Address
+    cnode_record.proposer_3_address = event_args._proposer3Address
+    cnode_record.proposer_sp_ids = event_args._proposerSpIds
     return cnode_record
 
-def lookup_poa_cnode_record(self, update_task, session, entry, block_number, block_timestamp):
+# Return or create instance of record pointing to this content_node
+def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_timestamp):
     event_blockhash = update_task.web3.toHex(entry.blockHash)
     event_args = entry["args"]
 
@@ -230,8 +228,6 @@ def lookup_poa_cnode_record(self, update_task, session, entry, block_number, blo
     cnode_id = event_args._cnodeId
 
     cnode_record_exists = session.query(L2ContentNode).filter_by(cnode_id=cnode_id).count() > 0
-    logger.error(f"lookup_poa_cnode_record | {cnode_id} record exists={cnode_record_exists}")
-    logger.error(f"{event_args}")
     cnode_record = None
     if cnode_record_exists:
         cnode_record = (
@@ -251,7 +247,6 @@ def lookup_poa_cnode_record(self, update_task, session, entry, block_number, blo
         )
     # update these fields regardless of type
     cnode_record.blockhash = event_blockhash
-    # cnode_record.cnode_id = cnode_id
     return cnode_record
 
 def invalidate_old_cnode_record(session, cnode_id):
