@@ -9,7 +9,7 @@ const { coreIntegration, snapbackSMParallelSyncTest, IpldBlacklistTest } = requi
 // Should be CLI configurable in the future.
 const DEFAULT_NUM_CREATOR_NODES = 3
 const DEFAULT_NUM_USERS = 2
-const SNAPBACK_NUM_USERS = 40
+const SNAPBACK_NUM_USERS = 10
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
