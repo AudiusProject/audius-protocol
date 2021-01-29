@@ -250,21 +250,19 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint, dbOnlySync
         resp.data = JSON.parse(resp.request.responseText)
       } else throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
-    const { data: body } = resp
-
-    if (!body.data.hasOwnProperty('cnodeUsers') || !body.data.hasOwnProperty('ipfsIDObj') || !body.data.ipfsIDObj.hasOwnProperty('addresses')) {
+    if (!resp.data.hasOwnProperty('cnodeUsers') || !resp.data.hasOwnProperty('ipfsIDObj') || !resp.data.ipfsIDObj.hasOwnProperty('addresses')) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
     req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
 
     if (!dbOnlySync) {
       // Attempt to connect directly to target CNode's IPFS node.
-      await _initBootstrapAndRefreshPeers(req, body.data.ipfsIDObj.addresses, redisKey)
+      await _initBootstrapAndRefreshPeers(req, resp.data.ipfsIDObj.addresses, redisKey)
       req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
     }
 
     // For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
-    for (const fetchedCNodeUser of Object.values(body.data.cnodeUsers)) {
+    for (const fetchedCNodeUser of Object.values(resp.data.cnodeUsers)) {
       // Since different nodes may assign different cnodeUserUUIDs to a given walletPublicKey,
       // retrieve local cnodeUserUUID from fetched walletPublicKey and delete all associated data.
       if (!fetchedCNodeUser.hasOwnProperty('walletPublicKey')) {

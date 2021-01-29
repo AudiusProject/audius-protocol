@@ -270,14 +270,14 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
-    let body = (await axios({
+    let discProvHealthCheck = (await axios({
       method: 'get',
       url: `${notifDiscProv}/health_check`
     })).data
-    let discProvDbHighestBlock = body.data['db']['number']
+    let discProvDbHighestBlock = discProvHealthCheck['db']['number']
     let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
     let resp = {
-      'discProv': body.data,
+      'discProv': discProvHealthCheck,
       'identity': highestBlockNumber,
       'notifBlockDiff': notifBlockDiff
     }
