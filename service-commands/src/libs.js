@@ -533,6 +533,26 @@ function LibsWrapper (walletIndex = 0) {
   this.getWalletAddress = () => {
     return this.libsInstance.web3Manager.getWalletAddress()
   }
+
+  this.getServices = async (type) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
+  }
+
+  this.getUserReplicaSet = async (userId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  }
+
+  this.updateReplicaSet = async (userId, primary, secondaries) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primary,
+      secondaries
+    )
+  }
+
+  this.getDiscoveryNodeEndpoint = () => {
+    return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
+  }
 }
 
 module.exports = { LibsWrapper, Utils }
