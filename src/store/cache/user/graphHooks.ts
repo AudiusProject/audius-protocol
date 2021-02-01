@@ -82,6 +82,7 @@ const formatUser = async (
         name: delegatorProfiles[i].name,
         img: delegatorProfiles[i].image
       })) ?? [],
+    totalStakedFor: (new BN(user.stakeAmount)).add(new BN(user.delegationReceivedAmount)),
     delegatedTotal: new BN(user.delegationReceivedAmount),
     discoveryProviders:
       user.services
