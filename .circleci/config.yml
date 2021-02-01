@@ -559,7 +559,7 @@ workflows:
           #   - hold-test-mad-dog-e2e
           filters:
             branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/|(.*?hotfix(.*)?)/
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
 
 
 
