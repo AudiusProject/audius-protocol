@@ -390,7 +390,7 @@ const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXIN
 
     logger.info(`[${blockCheckLabel}Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
 
-    let latestIndexedBlock = -1
+    latestIndexedBlock = -1
     const startTime = Date.now()
     while (Date.now() - startTime < maxIndexingTimeout) {
       if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
