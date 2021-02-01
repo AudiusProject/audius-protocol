@@ -58,8 +58,9 @@ def _get_db_ipld_block_state():
         db_ipld_block_max = session.query(sqlalchemy.func.max(BlacklistedIPLD.blocknumber)).scalar()
         # If a number is found, return the block number and its hash
         if db_ipld_block_max is not None:
-            db_ipld_block_row = session.query(BlacklistedIPLD)
-                .filter(BlacklistedIPLD.blocknumber == db_ipld_block_max).one()
+            db_ipld_block_row = session.query(BlacklistedIPLD).filter(
+                BlacklistedIPLD.blocknumber == db_ipld_block_max
+            ).one()
             ipld_block_number = db_ipld_block_row.blocknumber
             ipld_block_hash = db_ipld_block_row.blockhash
 
