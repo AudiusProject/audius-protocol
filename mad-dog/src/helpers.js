@@ -12,10 +12,7 @@ const {
   addUser,
   uploadProfileImagesAndAddUser,
   upgradeToCreator,
-  getLibsUserInfo,
-  getUserAccount,
-  getLibsWalletAddress,
-  setCurrentUserAndUpdateLibs
+  getLibsUserInfo
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -102,7 +99,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         const existingUser = await getUser({ executeOne, walletIndex: i })
         let userId
         if (existingUser) {
-          logger.info(`Found existing user: ${existingUser.user_id}`)
+          logger.info(`Found existing user with id ${existingUser.user_id}`)
           existingUserIds.push(existingUser.user_id)
           userId = existingUser.user_id
         } else {
@@ -127,8 +124,8 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         walletIndexToUserIdMap[i] = userId
 
         // print userIds that exist and were added
-        logger.info(`Added users, userIds=${addedUserIds}`)
-        logger.info(`Existing users, userIds=${existingUserIds}`)
+        if (addedUserIds.length) logger.info(`Added users, userIds=${addedUserIds}`)
+        if (existingUserIds.length) logger.info(`Existing users, userIds=${existingUserIds}`)
       } catch (e) {
         logger.error('GOT ERR CREATING USER')
         logger.error(e.message)
@@ -335,6 +332,7 @@ const makeExecuteAll = libsArray => async operation => {
 }
 
 const makeExecuteOne = libsArray => async (index, operation) => {
+  if (index > libsArray.length) throw new Error(`Cannot execute operation - index ${index} out of bounds`)
   return operation(libsArray[index])
 }
 

@@ -26,7 +26,7 @@ function getLibsMock () {
     delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
   })
   libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://localhost:5000', 'blocknumber': 10, 'track_blocknumber': 10 }])
-  libsMock.User.getUsers.atMost(10)
+  libsMock.User.getUsers.atLeast(1)
 
   return libsMock
 }
