@@ -82,7 +82,8 @@ def play_check():
 @bp.route("/ipld_block_check", methods=["GET"])
 def ipld_block_check():
     use_redis_cache = parse_bool_param(request.args.get("use_cache"))
-    latest_ipld_indexed_block = get_latest_ipld_indexed_block(use_redis_cache)
+    latest_ipld_indexed_block, latest_indexed_ipld_block_hash = get_latest_ipld_indexed_block(use_redis_cache)
+
     return success_response(
-        {"block": latest_ipld_indexed_block}
+        {"db":{"number": latest_ipld_indexed_block, "blockhash": latest_indexed_ipld_block_hash}}
     )
