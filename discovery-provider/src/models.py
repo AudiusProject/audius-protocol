@@ -627,3 +627,18 @@ is_current={self.is_current},cnode_id={self.cnode_id},\
 delegate_owner_wallet={self.delegate_owner_wallet}, proposer_sp_ids={self.proposer_sp_ids},\
 proposer_1_address={self.proposer_1_address},proposer_2_address={self.proposer_2_address},\
 proposer_3_address={self.proposer_3_address})>"
+
+class UserBalance(Base):
+    __tablename__ = "user_balances"
+
+    user_id = Column(Integer, nullable=False, primary_key=True)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    # balance in Wei
+    balance = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f"<UserBalance(\
+user_id={self.user_id},\
+balance={self.balance}>"

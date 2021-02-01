@@ -41,6 +41,7 @@ repost_count = 'repost_count'  # integer - total count of reposts by given user
 track_blocknumber = 'track_blocknumber'
 windowed_repost_count = 'windowed_repost_count'
 windowed_save_count = 'windowed_save_count'
+balance = 'balance'
 
 # current user specific
 # boolean - does current user follow given user

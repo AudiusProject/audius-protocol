@@ -183,11 +183,11 @@ describe('Test AudiusUsers with real IPFS', function () {
     assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 
-  it('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
+  it.skip('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
 
   })
 
-  it('TODO - multiple uploads', async function () {
+  it.skip('TODO - multiple uploads', async function () {
 
   })
 })

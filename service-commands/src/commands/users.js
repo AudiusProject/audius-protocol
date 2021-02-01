@@ -93,6 +93,14 @@ User.autoSelectCreatorNodes = async (
   })
 }
 
+User.setCreatorNodeEndpoint = async (libsWrapper, primary) => {
+  return libsWrapper.setCreatorNodeEndpoint(primary)
+}
+
+User.updateCreator = async (libsWrapper, userId, metadata) => {
+  return libsWrapper.updateCreator(userId, metadata)
+}
+
 User.getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
