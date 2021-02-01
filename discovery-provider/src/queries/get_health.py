@@ -47,7 +47,7 @@ def _get_db_conn_state():
 
     return {"open_connections": num_connections, "connection_info": connection_info}, False
 
-# Returns the max block number in ipld blacklist table and the associated block hash 
+# Returns the max block number in ipld blacklist table and the associated block hash
 def _get_db_ipld_block_state():
     ipld_block_number = 0
     ipld_block_hash = ''
@@ -58,10 +58,11 @@ def _get_db_ipld_block_state():
         db_ipld_block_max = session.query(sqlalchemy.func.max(BlacklistedIPLD.blocknumber)).scalar()
         # If a number is found, return the block number and its hash
         if db_ipld_block_max is not None:
-            db_ipld_block_row = session.query(BlacklistedIPLD).filter(BlacklistedIPLD.blocknumber == db_ipld_block_max).one()
+            db_ipld_block_row = session.query(BlacklistedIPLD)
+                .filter(BlacklistedIPLD.blocknumber == db_ipld_block_max).one()
             ipld_block_number = db_ipld_block_row.blocknumber
             ipld_block_hash = db_ipld_block_row.blockhash
-        
+
         return ipld_block_number, ipld_block_hash
 
 # Get the max blocknumber indexed in ipld blacklist table. Uses redis cache by default.
@@ -85,9 +86,9 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
 
         # If there are no entries in the table, default to these values
         if latest_indexed_ipld_block_num is None:
-            latest_indexed_block_num = 0
+            latest_indexed_ipld_block_num = 0
         if latest_indexed_ipld_block_hash is None:
-            latest_indexed_block_hash = ''
+            latest_indexed_ipld_block_hash = ''
 
         redis.set(most_recent_indexed_ipld_block_redis_key, latest_indexed_ipld_block_num, ex=300) # 30s
         redis.set(most_recent_indexed_ipld_block_hash_redis_key, latest_indexed_ipld_block_hash, ex=300) # 30s
