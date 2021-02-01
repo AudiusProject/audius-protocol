@@ -332,7 +332,7 @@ const getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => 
     method: 'get',
     baseURL: endpoint,
     url: '/ipld_block_check'
-  })).data.data.block
+  })).data.data.db.number
 }
 
 const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
@@ -378,12 +378,13 @@ const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
  */
 const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXING_TIMEOUT, checkIpldBlockNumber = false }) => {
   const blockCheckLabel = checkIpldBlockNumber ? 'IPLD ' : ''
+  let latestBlockOnChain
   try {
     // Note: this is /not/ the block of which a certain txn occurred. This is just the
     // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
     // might be 83). This method is the quickest way to attempt to poll up to a reasonably
     // close block without having to change libs API.
-    const latestBlockOnChain = await executeOne(0, libsWrapper => {
+    latestBlockOnChain = await executeOne(0, libsWrapper => {
       return getLatestBlockOnChain(libsWrapper)
     })
 
