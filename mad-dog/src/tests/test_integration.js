@@ -170,7 +170,7 @@ module.exports = coreIntegration = async ({
 
   // Check that certain MD fields in disc prov are what we expected it to be
   userMetadatas.forEach(user => {
-    logger.info(`Checking initial metadata on signup for user ${user.user_id}...`)
+    logger.info(`Checking initial metadata on signup for user=${user.user_id}...`)
     if (user.is_creator) {
       return {
         error: `New user ${user.user_id} should not be a creator immediately after sign-up.`
@@ -252,7 +252,7 @@ module.exports = coreIntegration = async ({
   if (failedWallets.length) {
     logger.info({ failedWallets, failedUploads })
     const userIds = failedWallets.map(w => walletIdMap[w])
-    logger.warn(`Uploads failed for user IDs: [${userIds}]`)
+    logger.warn(`Uploads failed for user IDs=[${userIds}]`)
   }
 
   // Switch user primary (above tests have already confirmed all secondaries have latest state)
@@ -298,7 +298,7 @@ module.exports = coreIntegration = async ({
 
   // Check that certain MD fields in disc node are what we expected it to be after uploading first track
   userMetadatas.forEach(user => {
-    logger.info(`Checking post track upload metadata for user ${user.user_id}...`)
+    logger.info(`Checking post track upload metadata for user=${user.user_id}...`)
     if (user.is_creator) {
       return {
         error: `User ${user.user_id} should be a creator after track upload.`
@@ -378,9 +378,9 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
         // TODO: add `fromFS` option when this is merged back into CN.
         const exists = await verifyCIDExistsOnCreatorNode(cid, replica)
 
-        logger.info(`Verified CID ${cid} for userID ${userId} on replica [${replica}]!`)
+        logger.info(`Verified CID ${cid} for user=${userId} on replica [${replica}]!`)
         if (!exists) {
-          logger.warn(`Could not find CID ${cid} for userID ${userId} on replica ${replica}`)
+          logger.warn(`Could not find CID ${cid} for user=${userId} on replica ${replica}`)
           failedCIDs.push(cid)
         }
       }))
@@ -421,7 +421,7 @@ async function checkUserMetadataAndClockValues ({
         newMetadata.bio = updatedBio
 
         // Update profile picture and metadata accordingly
-        logger.info(`Updating metadata for user ${libs.userId}...`)
+        logger.info(`Updating metadata for user=${libs.userId}...`)
         await uploadPhotoAndUpdateMetadata({
           libsWrapper: libs,
           metadata: newMetadata,
@@ -448,7 +448,7 @@ async function checkUserMetadataAndClockValues ({
 }
 
 async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) {
-  logger.info(`Checking metadata across replica set is consistent for user ${userId}...`)
+  logger.info(`Checking metadata across replica set is consistent user=${userId}...`)
   const replicaSetMetadatas = (await Promise.all(
     endpoints.map(endpoint => {
       return axios({

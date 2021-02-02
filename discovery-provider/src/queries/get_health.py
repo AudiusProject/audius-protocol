@@ -66,7 +66,7 @@ def _get_db_ipld_block_state():
 
     return ipld_block_number, ipld_block_hash
 
-# Get the max blocknumber indexed in ipld blacklist table. Uses redis cache by default.
+# Get the max blocknumber and blockhash indexed in ipld blacklist table. Uses redis cache by default.
 def get_latest_ipld_indexed_block(use_redis_cache=True):
     redis = redis_connection.get_redis()
     latest_indexed_ipld_block_num = None
