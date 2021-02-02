@@ -101,7 +101,9 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         const existingUser = await getUser({ executeOne, walletIndex: i })
         let userId
         if (existingUser) {
-          logger.info(`Found existing user with id ${existingUser.user_id}`)
+          logger.info(`Found existing user=${existingUser.user_id}`)
+          // Update libs instance with existing user's userId
+          libs.userId = existingUser.user_id
           existingUserIds.push(existingUser.user_id)
           userId = existingUser.user_id
         } else {
@@ -113,7 +115,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           } else {
             newUserId = await addUser(libs, userMetadata)
           }
-          logger.info(`Created new user: ${newUserId}`)
+          logger.info(`Created new user=${newUserId}`)
           addedUserIds.push(newUserId)
           userId = newUserId
         }

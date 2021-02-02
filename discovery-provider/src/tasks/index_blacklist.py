@@ -3,6 +3,8 @@ from src import contract_addresses
 from src.models import IPLDBlacklistBlock, BlacklistedIPLD
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
+from src.utils.redis_constants import most_recent_indexed_ipld_block_redis_key, \
+    most_recent_indexed_ipld_block_hash_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +79,7 @@ def get_latest_blacklist_block(db):
     return latest_block
 
 def index_blocks(self, db, blocks_list):
+    redis = update_ipld_blacklist_task.redis
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
@@ -131,6 +134,10 @@ def index_blocks(self, db, blocks_list):
             ipld_blacklist_state_update(
                 self, update_ipld_blacklist_task, session, ipld_blacklist_factory_txs, block_number, block_timestamp
             )
+        
+        # Add the block number of the most recently processed ipld block to redis
+        redis.set(most_recent_indexed_ipld_block_redis_key, block_number)
+        redis.set(most_recent_indexed_ipld_block_hash_redis_key, block.hash.hex())
 
     if num_blocks > 0:
         logger.info(f"IPLDBLACKLIST | Indexed {num_blocks} blocks")

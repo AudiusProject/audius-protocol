@@ -2,7 +2,7 @@ import logging
 import os
 import sqlalchemy
 
-from src.models import Block, BlacklistedIPLD
+from src.models import Block, IPLDBlacklistBlock
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
@@ -47,22 +47,20 @@ def _get_db_conn_state():
 
     return {"open_connections": num_connections, "connection_info": connection_info}, False
 
-# Returns the max block number in ipld blacklist table and the associated block hash
+# Returns the most current block in ipld blocks table and its associated block hash
 def _get_db_ipld_block_state():
     ipld_block_number = 0
     ipld_block_hash = ''
 
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        # Fetch the row with the largest indexed block number
-        db_ipld_block_max = session.query(sqlalchemy.func.max(BlacklistedIPLD.blocknumber)).scalar()
-        # If a number is found, return the block number and its hash
-        if db_ipld_block_max is not None:
-            db_ipld_block_row = session.query(BlacklistedIPLD).filter(
-                BlacklistedIPLD.blocknumber == db_ipld_block_max
-            ).one()
-            ipld_block_number = db_ipld_block_row.blocknumber
-            ipld_block_hash = db_ipld_block_row.blockhash
+        db_ipld_block_query = session.query(IPLDBlacklistBlock).filter(
+            IPLDBlacklistBlock.is_current == True
+        ).all()
+        assert len(db_ipld_block_query) == 1, "Expected SINGLE row in IPLD Blocks table marked as current"
+        
+        ipld_block_number = db_ipld_block_query[0].number
+        ipld_block_hash = db_ipld_block_query[0].blockhash
 
     return ipld_block_number, ipld_block_hash
 
@@ -90,9 +88,6 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
             latest_indexed_ipld_block_num = 0
         if latest_indexed_ipld_block_hash is None:
             latest_indexed_ipld_block_hash = ''
-
-        redis.set(most_recent_indexed_ipld_block_redis_key, latest_indexed_ipld_block_num)
-        redis.set(most_recent_indexed_ipld_block_hash_redis_key, latest_indexed_ipld_block_hash)
 
     return latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash
 
