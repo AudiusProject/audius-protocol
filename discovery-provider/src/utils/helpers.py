@@ -251,7 +251,7 @@ def get_ipfs_info_from_cnode_endpoint(url, self_multiaddr):
         timeout=5,
         params=data
     )
-    json_resp = resp.json()
+    json_resp = resp.json()['data']
     valid_multiaddr = get_valid_multiaddr_from_id_json(json_resp)
     if valid_multiaddr is None:
         raise Exception('Failed to find valid multiaddr')
