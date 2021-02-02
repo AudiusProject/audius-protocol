@@ -607,8 +607,8 @@ tag={self.tag},\
 track_id={self.track_id},\
 owner_id={self.owner_id}>"
 
-class L2ContentNode(Base):
-    __tablename__ = "l2_content_nodes"
+class USRMContentNode(Base):
+    __tablename__ = "usrm_content_nodes"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     is_current = Column(Boolean, nullable=False)
     cnode_id = Column(Integer, nullable=False)
@@ -622,7 +622,7 @@ class L2ContentNode(Base):
     PrimaryKeyConstraint(is_current, cnode_id, blockhash)
 
     def __repr__(self):
-        return f"<L2ContentNode(blockhash={self.blockhash},\
+        return f"<USRMContentNode(blockhash={self.blockhash},\
 is_current={self.is_current},cnode_id={self.cnode_id},\
 delegate_owner_wallet={self.delegate_owner_wallet}, proposer_sp_ids={self.proposer_sp_ids},\
 proposer_1_address={self.proposer_1_address},proposer_2_address={self.proposer_2_address},\

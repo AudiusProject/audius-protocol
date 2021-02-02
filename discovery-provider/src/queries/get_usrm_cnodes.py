@@ -1,19 +1,19 @@
-from src.models import L2ContentNode
+from src.models import USRMContentNode
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import paginate_query
 
-def get_l2_cnodes():
-    l2_content_nodes = []
+def get_usrm_cnodes():
+    usrm_content_nodes = []
     db = get_db_read_replica()
     with db.scoped_session() as session:
         query = (
-            session.query(L2ContentNode)
+            session.query(USRMContentNode)
             .filter(
-                L2ContentNode.is_current == True,
+                USRMContentNode.is_current == True,
             )
         )
         query_results = paginate_query(query).all()
-        l2_content_nodes = helpers.query_result_to_list(query_results)
+        usrm_content_nodes = helpers.query_result_to_list(query_results)
 
-    return l2_content_nodes
+    return usrm_content_nodes

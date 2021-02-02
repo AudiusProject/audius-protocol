@@ -59,7 +59,6 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // Get all the Content Node endpoints on chain and filter
     let services = await this.getServices()
-    console.log(contentNodeEndpointToSpID)
     this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
 
     if (this.whitelist) { services = this.filterToWhitelist(services) }
@@ -84,6 +83,7 @@ class CreatorNodeSelection extends ServiceSelection {
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
     })
 
+    console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
     return { primary, secondaries, services: servicesMap }
   }
 

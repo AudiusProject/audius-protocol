@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses, eth_abi_values
-from src.models import L2ContentNode
+from src.models import USRMContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
 from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, \
@@ -227,12 +227,12 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     # Arguments from the event
     cnode_id = event_args._cnodeId
 
-    cnode_record_exists = session.query(L2ContentNode).filter_by(cnode_id=cnode_id).count() > 0
+    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_id=cnode_id).count() > 0
     cnode_record = None
     if cnode_record_exists:
         cnode_record = (
-            session.query(L2ContentNode)
-            .filter(L2ContentNode.cnode_id == cnode_id, L2ContentNode.is_current == True)
+            session.query(USRMContentNode)
+            .filter(USRMContentNode.cnode_id == cnode_id, USRMContentNode.is_current == True)
             .first()
         )
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
@@ -240,7 +240,7 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
         session.expunge(cnode_record)
         make_transient(cnode_record)
     else:
-        cnode_record = L2ContentNode(
+        cnode_record = USRMContentNode(
             is_current=True,
             cnode_id=cnode_id,
             created_at=datetime.utcfromtimestamp(block_timestamp)
@@ -250,11 +250,11 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     return cnode_record
 
 def invalidate_old_cnode_record(session, cnode_id):
-    cnode_record_exists = session.query(L2ContentNode).filter_by(cnode_id=cnode_id).count() > 0
+    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_id=cnode_id).count() > 0
     if cnode_record_exists:
         num_invalidated_records = (
-            session.query(L2ContentNode)
-            .filter(L2ContentNode.cnode_id == cnode_id, L2ContentNode.is_current == True)
+            session.query(USRMContentNode)
+            .filter(USRMContentNode.cnode_id == cnode_id, USRMContentNode.is_current == True)
             .update({"is_current": False})
         )
         assert (
