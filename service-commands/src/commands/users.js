@@ -9,9 +9,6 @@ User.addUser = async (libsWrapper, metadata) => {
     throw new Error(`Adding user error: ${error} in phase: ${phase}`)
   }
 
-  // Update libs instance with associated userId
-  libsWrapper.userId = userId
-
   return userId
 }
 

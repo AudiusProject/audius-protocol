@@ -149,7 +149,7 @@ function LibsWrapper (walletIndex = 0) {
    */
   this.signUp = async ({ metadata }) => {
     assertLibsDidInit()
-    return await this.libsInstance.Account.signUp(
+    const signUpResp = await this.libsInstance.Account.signUp(
       metadata.email,
       metadata.password,
       metadata,
@@ -158,6 +158,11 @@ function LibsWrapper (walletIndex = 0) {
       false /* has wallet */,
       null /* host */
     )
+
+    // Update libs instance with associated userId
+    if (!signUpResp.error) this.userId = signUpResp.userId
+
+    return signUpResp
   }
 
   /**
@@ -387,6 +392,9 @@ function LibsWrapper (walletIndex = 0) {
     if (!users.length) {
       throw new Error('No users!')
     }
+
+    if (!this.userId) this.userId = users[0].user_id
+
     return users[0]
   }
 

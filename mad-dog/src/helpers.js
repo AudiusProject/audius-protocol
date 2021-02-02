@@ -102,8 +102,6 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         let userId
         if (existingUser) {
           logger.info(`Found existing user=${existingUser.user_id}`)
-          // Update libs instance with existing user's userId
-          libs.userId = existingUser.user_id
           existingUserIds.push(existingUser.user_id)
           userId = existingUser.user_id
         } else {
