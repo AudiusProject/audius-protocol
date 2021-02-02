@@ -49,8 +49,8 @@ def add_to_blacklist(self, ipld_blacklist_contract, task, session, tx_receipt, b
 
         # add the block number of the most recently processed ipld block to redis
         redis = task.redis
-        redis.set(most_recent_indexed_ipld_block_redis_key, block_number, ex=600) # 600s = 10 min
-        redis.set(most_recent_indexed_ipld_block_hash_redis_key, event_blockhash, ex=600) # 600s = 10 min
+        redis.set(most_recent_indexed_ipld_block_redis_key, block_number)
+        redis.set(most_recent_indexed_ipld_block_hash_redis_key, event_blockhash)
 
         if ipld_blacklist_exists:
             continue

@@ -64,8 +64,8 @@ def _get_db_ipld_block_state():
             ipld_block_number = db_ipld_block_row.blocknumber
             ipld_block_hash = db_ipld_block_row.blockhash
 
-        return ipld_block_number, ipld_block_hash
 
+    return ipld_block_number, ipld_block_hash
 # Get the max blocknumber indexed in ipld blacklist table. Uses redis cache by default.
 def get_latest_ipld_indexed_block(use_redis_cache=True):
     redis = redis_connection.get_redis()
@@ -91,8 +91,8 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
         if latest_indexed_ipld_block_hash is None:
             latest_indexed_ipld_block_hash = ''
 
-        redis.set(most_recent_indexed_ipld_block_redis_key, latest_indexed_ipld_block_num, ex=600) # 600s = 10 min
-        redis.set(most_recent_indexed_ipld_block_hash_redis_key, latest_indexed_ipld_block_hash, ex=600) # 600s = 10 min
+        redis.set(most_recent_indexed_ipld_block_redis_key, latest_indexed_ipld_block_num)
+        redis.set(most_recent_indexed_ipld_block_hash_redis_key, latest_indexed_ipld_block_hash)
 
     return latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash
 
