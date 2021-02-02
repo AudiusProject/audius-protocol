@@ -94,7 +94,7 @@ class MonitoringQueue {
     redis.set(key, value)
 
     if (monitor.ttl) {
-      // Set a TTL key to track when this value needs refreshing.
+      // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
       redis.set(ttlKey, 1, 'EX', monitor.ttl)
@@ -113,9 +113,13 @@ class MonitoringQueue {
   /**
    * Starts the monitoring queue on an every minute cron.
    */
-  start () {
-    this.queue.add(PROCESS_NAMES.monitor, {}, { repeat: { cron: '* * * * *' } })
+  async start () {
+    try {
+      await this.queue.add(PROCESS_NAMES.monitor, {}, { repeat: { cron: '* * * * *' } })
+    } catch (e) {
+      this.logStatus('Startup failed!')
+    }
   }
 }
 
-module.exports = new MonitoringQueue()
+module.exports = MonitoringQueue

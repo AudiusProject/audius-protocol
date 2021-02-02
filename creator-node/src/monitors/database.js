@@ -6,7 +6,7 @@ const getDatabaseSize = async () => {
 }
 
 const getDatabaseConnections = async () => {
-  const connections = await sequelize.query("SELECT numbackends from pg_stat_database where datname = current_database()")
+  const connections = await sequelize.query('SELECT numbackends from pg_stat_database where datname = current_database()')
   return connections[0][0].numbackends
 }
 
