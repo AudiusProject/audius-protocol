@@ -1,4 +1,3 @@
-const axios = require('axios')
 const { _ } = require('lodash')
 const fs = require('fs-extra')
 const path = require('path')
@@ -14,7 +13,6 @@ const {
   uploadProfileImagesAndAddUser,
   upgradeToCreator,
   getLibsUserInfo,
-  getLatestBlockOnChain,
   getClockValuesFromReplicaSet
 } = ServiceCommands
 
@@ -29,8 +27,6 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
-const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
-const MAX_INDEXING_TIMEOUT = 10000
 const MAX_SYNC_TIMEOUT = 60000
 
 /**
@@ -122,7 +118,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           userId = newUserId
         }
 
-        await waitForLatestBlock({ executeOne })
+        await executeOne(i, libs => libs.waitForLatestBlock())
 
         // add to wallet index to userId mapping
         walletIndexToUserIdMap[i] = userId
@@ -159,13 +155,15 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
         // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
         await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
         logger.info(`Finished upgrading creator for user ${existingUser.user_id}`)
+
+        // Wait until upgrade txn has been indexed
+        await executeOne(i, libs => libs.waitForLatestBlock())
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
       console.error(e)
       throw e
     }
-    await waitForLatestBlock({ executeOne })
   })
 }
 
@@ -319,23 +317,7 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 /** Delay execution for n ms */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-const getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
-  return (await axios({
-    method: 'get',
-    baseURL: endpoint,
-    url: '/health_check'
-  })).data.latest_indexed_block
-}
-
-const getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
-  return (await axios({
-    method: 'get',
-    baseURL: endpoint,
-    url: '/ipld_block_check'
-  })).data.data.db.number
-}
-
-const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
+const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
   let primary, secondary1, secondary2, primaryClockValue, secondary1ClockValue, secondary2ClockValue
   const userId = libs.userId
   let synced = false
@@ -370,45 +352,6 @@ const monitorAllUsersSyncStatus = async ({ i, libs, executeOne }) => {
 }
 
 /**
- * Wait for the discovery node to catch up to the latest block on chain up to a max
- * indexing timeout of default 5000ms.
- * @param {*} executeOne
- * @param {*} libsWrapper
- * @param {number} maxIndexingTimeout default 5000ms
- */
-const waitForLatestBlock = async ({ executeOne, maxIndexingTimeout = MAX_INDEXING_TIMEOUT, checkIpldBlockNumber = false }) => {
-  const blockCheckLabel = checkIpldBlockNumber ? 'IPLD ' : ''
-  let latestBlockOnChain
-  try {
-    // Note: this is /not/ the block of which a certain txn occurred. This is just the
-    // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
-    // might be 83). This method is the quickest way to attempt to poll up to a reasonably
-    // close block without having to change libs API.
-    latestBlockOnChain = await executeOne(0, libsWrapper => {
-      return getLatestBlockOnChain(libsWrapper)
-    })
-
-    logger.info(`[${blockCheckLabel}Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
-
-    let latestIndexedBlock = -1
-    const startTime = Date.now()
-    while (Date.now() - startTime < maxIndexingTimeout) {
-      if (checkIpldBlockNumber) latestIndexedBlock = await getLatestIndexedIpldBlock()
-      else latestIndexedBlock = await getLatestIndexedBlock()
-      if (latestIndexedBlock >= latestBlockOnChain) {
-        logger.info(`[${blockCheckLabel}Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
-        return
-      }
-    }
-  } catch (e) {
-    logger.error(`[${blockCheckLabel}Block Check] Error with checking latest indexed block`)
-    console.error(e)
-    throw e
-  }
-  logger.warn(`[${blockCheckLabel}Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
-}
-
-/**
  * Handy helper function for executing an operation against
  * an array of libs wrappers in parallel.
  */
@@ -432,8 +375,7 @@ module.exports = {
   genRandomString,
   getRandomTrackFilePath,
   delay,
-  waitForLatestBlock,
-  monitorAllUsersSyncStatus,
+  ensureReplicaSetSyncIsConsistent,
   makeExecuteAll,
   makeExecuteOne,
   r6,

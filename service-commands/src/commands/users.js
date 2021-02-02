@@ -1,10 +1,7 @@
-const axios = require('axios')
 const config = require('../../config/config')
 const fs = require('fs')
 
 const User = {}
-const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
-const MAX_INDEXING_TIMEOUT = 5000
 
 User.addUser = async (libsWrapper, metadata) => {
   const { error, phase, userId } = await libsWrapper.signUp({ metadata })
@@ -28,8 +25,8 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   // Sign user up
   const userId = await User.addUser(libsWrapper, metadata)
 
-  // Wait for disc prov to index user
-  await waitForLatestBlock(libsWrapper)
+  // Wait for discovery node to index user
+  await libsWrapper.waitForLatestBlock()
 
   metadata = await User.getUser(libsWrapper, userId)
 
@@ -163,44 +160,6 @@ User.getContentNodeEndpoints = (libsWrapper, contentNodeEndpointField) => {
 
 User.getClockValuesFromReplicaSet = async libsWrapper => {
   return libsWrapper.getClockValuesFromReplicaSet()
-}
-
-const getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
-  return (await axios({
-    method: 'get',
-    baseURL: endpoint,
-    url: '/health_check'
-  })).data.latest_indexed_block
-}
-
-/**
- * Wait for the discovery node to catch up to the latest block on chain up to a max
- * indexing timeout of default 5000ms.
- * @param {*} executeOne
- * @param {*} libsWrapper
- * @param {number} maxIndexingTimeout default 5000ms
- */
-const waitForLatestBlock = async (libsWrapper) => {
-  // Note: this is /not/ the block of which a certain txn occurred. This is just the
-  // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain)
-  // might be 83). This method is the quickest way to attempt to poll up to a reasonably
-  // close block without having to change libs API.
-  const latestBlockOnChain = await libsWrapper.getLatestBlockOnChain()
-
-  console.info(`[Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
-
-  let latestIndexedBlock = -1
-  const startTime = Date.now()
-  while (Date.now() - startTime < MAX_INDEXING_TIMEOUT) {
-    latestIndexedBlock = await getLatestIndexedBlock()
-    if (latestIndexedBlock >= latestBlockOnChain) {
-      console.info(`[Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
-      return true
-    }
-  }
-
-  console.warn(`[Block Check] Did not index #${latestBlockOnChain} within ${MAX_INDEXING_TIMEOUT}ms. Latest block: ${latestIndexedBlock}`)
-  return false
 }
 
 module.exports = User

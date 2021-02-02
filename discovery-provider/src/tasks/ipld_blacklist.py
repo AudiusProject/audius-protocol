@@ -2,7 +2,8 @@ import logging
 from src import contract_addresses
 from src.utils import helpers
 from src.models import BlacklistedIPLD
-from src.utils.redis_constants import most_recent_indexed_ipld_block_redis_key
+from src.utils.redis_constants import most_recent_indexed_ipld_block_redis_key, \
+    most_recent_indexed_ipld_block_hash_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,8 @@ def add_to_blacklist(self, ipld_blacklist_contract, task, session, tx_receipt, b
 
         # add the block number of the most recently processed ipld block to redis
         redis = task.redis
-        redis.set(most_recent_indexed_ipld_block_redis_key, block_number)
+        redis.set(most_recent_indexed_ipld_block_redis_key, block_number, ex=600) # 600s = 10 min
+        redis.set(most_recent_indexed_ipld_block_hash_redis_key, event_blockhash, ex=600) # 600s = 10 min
 
         if ipld_blacklist_exists:
             continue

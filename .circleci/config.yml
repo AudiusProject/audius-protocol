@@ -98,7 +98,7 @@ jobs:
             - creator-node/node_modules
           key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
 
-      # discovery node -- slightly trickier. will
+      # discovery node -- slightly trickier. will revisit
       # - restore_cache:
       #     keys:
       #       - v1-discovery-node-{{ checksum "discovery-provider/requirements.txt" }}

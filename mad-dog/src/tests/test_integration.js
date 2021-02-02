@@ -18,7 +18,7 @@ const {
   getRandomTrackFilePath,
   addUsers,
   r6,
-  monitorAllUsersSyncStatus,
+  ensureReplicaSetSyncIsConsistent,
   upgradeUsersToCreators
 } = require('../helpers.js')
 const { getContentNodeEndpoints } = require('@audius/service-commands')
@@ -168,7 +168,7 @@ module.exports = coreIntegration = async ({
     return getUsers(libsWrapper, userIds)
   })
 
-  // 1. Check that certain MD fields in disc prov are what we expected it to be
+  // Check that certain MD fields in disc prov are what we expected it to be
   userMetadatas.forEach(user => {
     logger.info(`Checking initial metadata on signup for user ${user.user_id}...`)
     if (user.is_creator) {
@@ -224,9 +224,8 @@ module.exports = coreIntegration = async ({
    */
 
   // Check all user replicas until they are synced up to primary
-  // await monitorAllUsersSyncStatus({ walletIdMap, executeOne })
   await executeAll(async (libs, i) => {
-    await monitorAllUsersSyncStatus({ i, executeOne, libs })
+    await ensureReplicaSetSyncIsConsistent({ i, executeOne, libs })
   })
 
   // create array of track upload info to verify
@@ -283,7 +282,7 @@ module.exports = coreIntegration = async ({
 
   // Check all user replicas until they are synced up to primary
   await executeAll(async (libs, i) => {
-    await monitorAllUsersSyncStatus({ i, executeOne, libs })
+    await ensureReplicaSetSyncIsConsistent({ i, executeOne, libs })
   })
 
   // TODO call export on each node and verify equality
@@ -293,12 +292,11 @@ module.exports = coreIntegration = async ({
   // Remove temp storage dir
   await fs.remove(TEMP_STORAGE_PATH)
 
-  // 7. do 1-6 again after track upload with certain checks
   userMetadatas = await executeOne(walletIndexes[0], libsWrapper => {
     return getUsers(libsWrapper, userIds)
   })
 
-  // 8. Check that certain MD fields in disc prov are what we expected it to be
+  // Check that certain MD fields in disc node are what we expected it to be after uploading first track
   userMetadatas.forEach(user => {
     logger.info(`Checking post track upload metadata for user ${user.user_id}...`)
     if (user.is_creator) {
@@ -402,10 +400,10 @@ async function checkUserMetadataAndClockValues ({
 }) {
   try {
     await executeAll(async (libs, i) => {
-      // 2. Check that the clock values across replica set are equal
-      await monitorAllUsersSyncStatus({ i, executeOne, libs })
+      // Check that the clock values across replica set are equal
+      await ensureReplicaSetSyncIsConsistent({ i, executeOne, libs })
 
-      // 3. Check that the metadata object in CN across replica set is what we expect it to be
+      // Check that the metadata object in CN across replica set is what we expect it to be
       const replicaSetEndpoints = await executeOne(i, libs =>
         getContentNodeEndpoints(libs, userMetadatas[i].creator_node_endpoint)
       )
@@ -416,7 +414,7 @@ async function checkUserMetadataAndClockValues ({
         userId: libs.userId
       })
 
-      // 4. Update MD (bio + photo) and check that 2 and 3 are correct
+      // Update MD (bio + photo) and check that 2 and 3 are correct
       const updatedBio = 'i am so cool ' + r6()
       await executeOne(i, async libs => {
         const newMetadata = { ...userMetadatas[i] }
@@ -433,9 +431,9 @@ async function checkUserMetadataAndClockValues ({
         })
       })
 
-      await monitorAllUsersSyncStatus({ i, libs, executeOne })
+      await ensureReplicaSetSyncIsConsistent({ i, libs, executeOne })
 
-      // 6. Check that the updated MD is correct with the updated bio and profile picture
+      // Check that the updated MD is correct with the updated bio and profile picture
       const updatedUser = await executeOne(i, libs => getUser(libs, libs.userId))
       await checkMetadataEquality({
         endpoints: replicaSetEndpoints,

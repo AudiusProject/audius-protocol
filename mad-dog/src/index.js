@@ -110,7 +110,7 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
     new LibsWrapper(i + accountOffset)
   ))
 
-  return await Promise.all(
+  return Promise.all(
     libsInstances.map(async instance => {
       await instance.initLibs()
       return instance

@@ -102,7 +102,7 @@ const snapbackSMParallelSyncTest = async ({
         )
       )
       const duration = Date.now() - startTime
-      logger.info(`Uploaded track for userId:${userId} (${libs.walletAddress}), trackId=${trackId} in ${duration}ms`)
+      logger.info(`Uploaded track for userId=${userId}, trackId=${trackId} in ${duration}ms`)
     } catch (e) {
       logger.error(`Error uploading track for userId:${userId} :${e}`)
     }
