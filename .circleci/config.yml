@@ -176,7 +176,7 @@ jobs:
             docker ps
             export ipfsHost="localhost"
             export ipfsPort=6001
-            npm run start test
+            npm run start test-ci
 
   test-libs:
     docker:

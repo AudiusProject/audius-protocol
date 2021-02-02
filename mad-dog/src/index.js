@@ -118,52 +118,80 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
   )
 }
 
+// This should go away when we have multiple tests.
+//
+// Currently there's a bug where standing up services
+// in the same run as running the tests
+// causes libs init failures, so we stand up services
+// with a separate command.
 async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
   const cmd = process.argv[3]
 
-  switch (cmd) {
-    case 'up': {
-      await setupAllServices()
-      break
-    }
-    case 'down': {
-      await tearDownAllServices()
-      break
-    }
-    case 'test': {
-      const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
-        numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
-        numUsers: DEFAULT_NUM_USERS
-      })
+  try {
+    switch (cmd) {
+      case 'up': {
+        await setupAllServices()
+        break
+      }
+      case 'down': {
+        await tearDownAllServices()
+        break
+      }
+      case 'test': {
+        const test = makeTest('consistency', coreIntegration, {
+          numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+          numUsers: DEFAULT_NUM_USERS
+        })
+        await testRunner([test])
+        break
+      }
+      case 'test-snapback': {
+        const snapbackNumUsers = 40
+        const test = makeTest(
+          'snapback',
+          snapbackSMParallelSyncTest,
+          {
+            numUsers: snapbackNumUsers
+          }
+        )
+        await testRunner([test])
+        break
+      }
+      case 'test-ci': {
+        const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
+          numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+          numUsers: DEFAULT_NUM_USERS
+        })
 
-      const snapbackTest = makeTest('snapback', snapbackSMParallelSyncTest, {
-        numUsers: SNAPBACK_NUM_USERS
-      })
+        const snapbackTest = makeTest('snapback', snapbackSMParallelSyncTest, {
+          numUsers: SNAPBACK_NUM_USERS
+        })
 
-      const blacklistTests = Object.entries(IpldBlacklistTest).map(
-        ([testName, testLogic]) =>
-          makeTest(testName, testLogic, {
-            numCreatorNodes: 1,
-            numUsers: DEFAULT_NUM_USERS,
-            useZeroIndexedWallet: true
-          })
-      )
+        // dynamically create ipld tests
+        const blacklistTests = Object.entries(IpldBlacklistTest).map(
+          ([testName, testLogic]) =>
+            makeTest(testName, testLogic, {
+              numCreatorNodes: 1,
+              numUsers: DEFAULT_NUM_USERS,
+              useZeroIndexedWallet: true
+            })
+        )
 
-      const tests = [coreIntegrationTests, snapbackTest, ...blacklistTests]
+        const tests = [coreIntegrationTests, snapbackTest, ...blacklistTests]
 
-      try {
         await testRunner(tests)
         logger.info('Exiting testrunner')
-        process.exit()
-      } catch (e) {
-        logger.error('Exiting testrunner with errors')
-        logger.error(e.message)
-        process.exit(1)
+        break
       }
+      default:
+        logger.error('Usage: one of either `up`, `down`, `test`, or `test-ci`.')
     }
-    default:
-      logger.error('Usage: one of either `up`, `down`, or `test`.')
+    process.exit()
+  } catch (e) {
+    logger.error('Exiting testrunner with errors')
+    logger.error(e.message)
+    process.exit(1)
   }
 }
 

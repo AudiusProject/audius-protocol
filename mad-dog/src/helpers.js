@@ -147,14 +147,14 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
       await executeAll(async (libs, i) => {
         // Check if existing users are already creators. If so, don't upgrade
         const existingUser = await getUser({ executeOne, walletIndex: i })
-        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with walletIndex ${i}`)
+        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with wallet=${libs.walletAddress}`)
         if (existingUser.tracks > 0) {
           logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
           return
         }
         // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
         await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
-        logger.info(`Finished upgrading creator for user ${existingUser.user_id}`)
+        logger.info(`Finished upgrading creator for user=${existingUser.user_id}`)
 
         // Wait until upgrade txn has been indexed
         await executeOne(i, libs => libs.waitForLatestBlock())

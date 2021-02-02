@@ -262,7 +262,7 @@ module.exports = coreIntegration = async ({
     const wallet = userMetadata.wallet
     const [primary, ...secondaries] = userMetadata.creator_node_endpoint.split(',')
 
-    logger.info(`userId ${userId} wallet ${wallet} rset ${userMetadata.creator_node_endpoint}`)
+    logger.info(`userId=${userId} wallet=${wallet} rset=${userMetadata.creator_node_endpoint}`)
 
     // Define new rset by swapping primary and first secondary
     const newRSet = (secondaries.length) ? [secondaries[0], primary].concat(secondaries.slice(1)) : [primary]
@@ -277,7 +277,7 @@ module.exports = coreIntegration = async ({
     // Update creator state on CN and chain
     await executeOne(walletIndex, libs => updateCreator(libs, userId, newMetadata))
 
-    logger.info(`Successfully updated creator with id ${userId} on CN and Chain`)
+    logger.info(`Successfully updated creator with userId=${userId} on CN and Chain`)
   }
 
   // Check all user replicas until they are synced up to primary
