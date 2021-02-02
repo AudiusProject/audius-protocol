@@ -8,6 +8,7 @@ User.addUser = async (libsWrapper, metadata) => {
   if (error) {
     throw new Error(`Adding user error: ${error} in phase: ${phase}`)
   }
+
   return userId
 }
 
@@ -21,8 +22,9 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   // Sign user up
   const userId = await User.addUser(libsWrapper, metadata)
 
-  // Wait for disc prov to index user
-  await waitForIndexing()
+  // Wait for discovery node to index user
+  await libsWrapper.waitForLatestBlock()
+
   metadata = await User.getUser(libsWrapper, userId)
 
   // Upload photo for profile picture
@@ -155,17 +157,6 @@ User.getContentNodeEndpoints = (libsWrapper, contentNodeEndpointField) => {
 
 User.getClockValuesFromReplicaSet = async libsWrapper => {
   return libsWrapper.getClockValuesFromReplicaSet()
-}
-
-/** Delay execution for n ms */
-function delay (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-/** Wrapper for custom delay time */
-async function waitForIndexing (waitTime = 5000) {
-  console.info(`Pausing ${waitTime}ms for discprov indexing...`)
-  await delay(waitTime)
 }
 
 module.exports = User
