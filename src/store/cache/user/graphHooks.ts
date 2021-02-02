@@ -43,7 +43,7 @@ const formatUser = async (
       voter: aud.toChecksumAddress(user.id),
       voterStake: new BN(vote.magnitude),
       blockNumber: parseInt(vote.updatedBlockNumber),
-      vote: (vote.vote === 1 ? 'No' : 'Yes') as Vote
+      vote: vote.vote
     })),
     pendingUndelegateRequest: user.pendingUndelegateStake
       ? {
@@ -287,7 +287,7 @@ interface FullUser {
 
   votes: {
     id: string
-    vote: number
+    vote: Vote
     magnitude: string
     updatedBlockNumber: string
     proposal: { id: string }
