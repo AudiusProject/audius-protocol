@@ -69,13 +69,6 @@ export const getMobileOS = () => {
   return null
 }
 
-export const getIsReadOnlyClient = () => {
-  const userAgent = navigator.userAgent || navigator.vendor || window.opera
-
-  if (/.*ogle.*/i.test(userAgent)) return true
-  return false
-}
-
 export const getClient = () => {
   return isElectron()
     ? Client.ELECTRON
