@@ -45,7 +45,7 @@ const verifyUserReplicaSetStatus = async (
     let primaryEndpointString = replicaEndpointArray[0]
     let secondaryEndpointStrings = replicaEndpointArray.slice(1)
     let primaryInfo = contentNodeEndpointToInfoMapping[primaryEndpointString]
-    let primaryID = usrQueryInfo.primaryID
+    let primaryID = usrQueryInfo.primary_id
 
     // Throw if mismatch between queried primaryID and assigned 
     //    spID on chain for this endpoint
@@ -54,22 +54,22 @@ const verifyUserReplicaSetStatus = async (
     }
 
     // Throw if mismatch between primaryID from discovery-node and primaryID in UserReplicaSetManager
-    if (primaryID !== parseInt(usrReplicaInfoFromContract.primary)) {
-      throw new Error(`Mismatch primaryID values. Expected ${primaryID}, found ${usrReplicaInfoFromContract.primary}`)
+    if (primaryID !== parseInt(usrReplicaInfoFromContract.primaryId)) {
+      throw new Error(`Mismatch primaryID values. Expected ${primaryID}, found ${usrReplicaInfoFromContract.primaryId}`)
     }
 
-    logger.info(`userId: ${userId} Replica Set Info: ${primaryID}, ${usrQueryInfo.secondaryIDs}`)
+    logger.info(`userId: ${userId} Replica Set Info: ${primaryID}, ${usrQueryInfo.secondary_ids}`)
     logger.info(`userId: ${userId} Replica Set String: ${usrQueryInfo.creator_node_endpoint}`)
     logger.info(`userId: ${userId} primaryID: ${primaryID} primaryIdFromEndointStr: ${primaryInfo.spID}`)
 
-    // Throw if array lengths do not match for secondaryIDs
-    if (secondaryEndpointStrings.length !== usrQueryInfo.secondaryIDs.length) {
+    // Throw if array lengths do not match for secondary_ids
+    if (secondaryEndpointStrings.length !== usrQueryInfo.secondary_ids.length) {
       throw new Error('Mismatched secondary status')
     }
 
     // Compare secondary replica ID values
-    for (var i = 0; i < usrQueryInfo.secondaryIDs.length; i++) {
-      let secondaryId = usrQueryInfo.secondaryIDs[i]
+    for (var i = 0; i < usrQueryInfo.secondary_ids.length; i++) {
+      let secondaryId = usrQueryInfo.secondary_ids[i]
       let secondaryEndpoint = secondaryEndpointStrings[i]
       let secondaryInfoFromStr = contentNodeEndpointToInfoMapping[secondaryEndpoint]
       let secondaryIdFromStr = secondaryInfoFromStr.spID
@@ -81,7 +81,7 @@ const verifyUserReplicaSetStatus = async (
       }
       // Throw if mismatch between secondaryId from discovery-node and secondaryId in UserReplicaSetManager
       // Index into the array is taken into account here as well
-      if (secondaryId !== parseInt(usrReplicaInfoFromContract.secondaries[i])) {
+      if (secondaryId !== parseInt(usrReplicaInfoFromContract.secondaryIds[i])) {
         throw new Error(`Mismatch secondaryId values. Expected ${secondaryId}, found ${usrReplicaInfoFromContract.secondaryIDs[i]}`)
       }
     }
@@ -135,8 +135,8 @@ const promoteSecondary1ToPrimary = async(executeAll) => {
     const userId = walletIndexToUserIdMap[i]
     let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
     logger.info(`userId: ${userId}: promoteSecondary1ToPrimary`)
-    let primary = usrReplicaInfoFromContract.primary
-    let secondaries = usrReplicaInfoFromContract.secondaries
+    let primary = usrReplicaInfoFromContract.primaryId
+    let secondaries = usrReplicaInfoFromContract.secondaryIds
 
     let newPrimary = parseInt(secondaries[0])
     let newSecondaries = [primary, secondaries[1]].map(x=>parseInt(x))
@@ -158,8 +158,8 @@ const promoteSecondary2ToPrimary = async(executeAll) => {
     const userId = walletIndexToUserIdMap[i]
     let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
     logger.info(`userId: ${userId}: promoteSecondary2ToPrimary`)
-    let primary = usrReplicaInfoFromContract.primary
-    let secondaries = usrReplicaInfoFromContract.secondaries
+    let primary = usrReplicaInfoFromContract.primaryId
+    let secondaries = usrReplicaInfoFromContract.secondaryIds
 
     let newPrimary = parseInt(secondaries[1])
     let newSecondaries = [secondaries[0], primary].map(x=>parseInt(x))
@@ -181,8 +181,8 @@ const swapSecondaries = async(executeAll) => {
     const userId = walletIndexToUserIdMap[i]
     let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
     logger.info(`userId: ${userId}: swapSecondaries`)
-    let primary = usrReplicaInfoFromContract.primary
-    let secondaries = usrReplicaInfoFromContract.secondaries
+    let primary = usrReplicaInfoFromContract.primaryId
+    let secondaries = usrReplicaInfoFromContract.secondaryIds
     let newPrimary = primary
     let newSecondaries = [secondaries[1], secondaries[0]].map(x=>parseInt(x))
     logger.info(`userId: ${userId} | P: ${primary}->${newPrimary}`)
