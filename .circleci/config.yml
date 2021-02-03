@@ -16,7 +16,7 @@ jobs:
       - add_ssh_keys
       - checkout
       - setup_remote_docker:
-        docker_layer_caching: true
+          docker_layer_caching: true
 
       - run:
           name: clone tooling and mad dog
