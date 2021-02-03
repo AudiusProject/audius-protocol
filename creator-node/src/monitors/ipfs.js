@@ -35,6 +35,7 @@ const getIPFSReadWriteStatus = async () => {
  * Performs a diagnostic test on IPFS operations to
  * confirm functionality:
  *   - Pins a file
+ * Note: Not currently used as we don't pin.
  */
 const getIPFSPinStatus = async () => {
   try {

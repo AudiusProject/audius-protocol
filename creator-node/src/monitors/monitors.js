@@ -18,8 +18,7 @@ const {
   getRedisTotalMemory
 } = require('./redis')
 const {
-  getIPFSReadWriteStatus,
-  getIPFSPinStatus
+  getIPFSReadWriteStatus
 } = require('./ipfs')
 const redis = require('../redis')
 
@@ -125,11 +124,6 @@ const IPFS_READ_WRITE_STATUS = {
   func: getIPFSReadWriteStatus,
   ttl: 60 * 5
 }
-const IPFS_PIN_STATUS = {
-  name: 'IPFSPinStatus',
-  func: getIPFSPinStatus,
-  ttl: 60 * 5
-}
 
 const MONITORS = {
   DATABASE_LIVENESS,
@@ -149,8 +143,7 @@ const MONITORS = {
   REDIS_NUM_KEYS,
   REDIS_USED_MEMORY,
   REDIS_TOTAL_MEMORY,
-  IPFS_READ_WRITE_STATUS,
-  IPFS_PIN_STATUS
+  IPFS_READ_WRITE_STATUS
 }
 
 const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
