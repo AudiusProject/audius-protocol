@@ -1,11 +1,7 @@
-import { ThunkAction } from 'redux-thunk'
-import { Action } from 'redux'
 import BN from 'bn.js'
 import { getUserProfile as get3BoxProfile } from 'services/3box'
-import { Status, User, ServiceType, Operator } from 'types'
+import { User, ServiceType, Operator } from 'types'
 import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { setLoading, setUsers } from '../slice'
 import { FullUser } from './types'
 
 export const formatUser = async (
