@@ -157,7 +157,8 @@ class UserReplicaSetManagerClient extends ContractClient {
   async getContentNodeWallet (spId) {
     const method = await this.getMethod('getContentNodeWallet', spId)
     let currentWallet = this.web3Manager.getWalletAddressString()
-    return method.call({ from: currentWallet })
+    console.log(`Querying ${spId} from ${currentWallet}`)
+     return method.call({ from: currentWallet })
   }
 }
 

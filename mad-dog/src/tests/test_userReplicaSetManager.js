@@ -193,6 +193,29 @@ const swapSecondaries = async(executeAll) => {
   })
 }
 
+// Verify indexed state matches content nodes registered in UserReplicaSetManager
+const verifyUsrmContentNodes = async (executeOne) => {
+  await executeOne(DEFAULT_INDEX + 1, async (libs)=> {
+    let queriedContentNodes = (await axios({
+      method: 'get',
+      baseURL: libs.getDiscoveryNodeEndpoint(),
+      url: '/usrm_content_nodes'
+    })).data.data
+    console.log('0000')
+    console.log(queriedContentNodes)
+    await Promise.all(queriedContentNodes.forEach(async (x)=>{
+      console.log(x)
+      let spID = x.cnode_id
+      let wallet = x.delegate_owner_wallet
+      console.log(`${spID}:${wallet}`)
+
+      let queriedFromChain = await libs.getContentNodeWallet(spID) 
+      console.log(queriedFromChain)
+      console.log('---')
+    }))
+  })
+}
+
 const userReplicaSetManagerTest = async ({
   numUsers,
   executeAll,
@@ -221,6 +244,28 @@ const userReplicaSetManagerTest = async ({
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
 
+  await executeOne(DEFAULT_INDEX + 1, async (libs)=> {
+    let queriedContentNodes = (await axios({
+      method: 'get',
+      baseURL: libs.getDiscoveryNodeEndpoint(),
+      url: '/usrm_content_nodes'
+    })).data.data
+    console.log('0000')
+    console.log(queriedContentNodes)
+    await Promise.all(queriedContentNodes.forEach(async (x)=>{
+      console.log(x)
+      let spID = x.cnode_id
+      let wallet = x.delegate_owner_wallet
+      console.log(`${spID}:${wallet}`)
+
+      let queriedFromChain = await libs.getContentNodeWallet(spID) 
+      console.log(queriedFromChain)
+      console.log('---')
+    }))
+  })
+  
+
+  /*
   // Start of actual test logic
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary1ToPrimary(executeAll)
@@ -229,6 +274,7 @@ const userReplicaSetManagerTest = async ({
   await verifyUserReplicaSets(executeAll)
   await swapSecondaries(executeAll)
   await verifyUserReplicaSets(executeAll)
+  */
 }
 
 module.exports = {

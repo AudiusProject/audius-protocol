@@ -68,6 +68,8 @@ if (args.length < 3) {
 const run = async () => {
   try {
     let audiusLibs = await initAudiusLibs(true)
+    // A separate libs instance
+    let userReplicaBootstrapAddressLibs
     let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
     const ethAccounts = await ethWeb3.eth.getAccounts()
     let envPath
@@ -160,7 +162,7 @@ const run = async () => {
 
       case 'query-user-replica-set':
         console.log(`Usage: node local.js query-user-replica-set userId=1`)
-        let userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
+        userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
         let userReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
           parseInt(
             args[3].split('=')[1]
@@ -168,6 +170,17 @@ const run = async () => {
         )
         console.log(userReplicaSet)
         break
+
+      case 'query-usrm-content-node-wallet':
+          console.log(`Usage: node local.js query-usrm-content-node-wallet spId=1`)
+          userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
+          let contentNodeWallet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(
+            parseInt(
+              args[3].split('=')[1]
+            )
+          )
+          console.log(contentNodeWallet)
+          break
 
       case 'add-l2-content-node':
         console.log(`Usage: node local.js add-l2-content-node spId=4 delegateWallet=0x95b6A2Be3423dF7D5774...`)
