@@ -8,7 +8,7 @@ const {
   snapbackSMParallelSyncTest,
   userReplicaSetManagerTest,
   IpldBlacklistTest
-} = require('./tests/tests')
+} = require('./tests/')
 
 // Configuration.
 // Should be CLI configurable in the future.

@@ -78,8 +78,8 @@ def user_replica_set_state_update(
                 # ensuring that multiple events for a single user result in only 1 row insert operation
                 # (even if multiple operations are present)
                 if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
-                    primary = args._primary
-                    secondaries = args._secondaries
+                    primary = args._primaryId
+                    secondaries = args._secondaryIds
                     user_record = user_replica_set_events_lookup[user_id]["user"]
                     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
                     user_record.primaryID = primary

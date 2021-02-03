@@ -16,8 +16,8 @@ class UserReplicaSetManagerClient extends ContractClient {
       userId,
       primary,
       secondaries,
-      existingReplicaSetInfo.primary,
-      existingReplicaSetInfo.secondaries
+      existingReplicaSetInfo.primaryId,
+      existingReplicaSetInfo.secondaryIds
     )
   }
 
