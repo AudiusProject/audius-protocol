@@ -21,22 +21,41 @@ const processNotifications = require('./processNotifications/index.js')
 const { indexTrendingTracks } = require('./trendingTrackProcessing')
 const sendNotifications = require('./sendNotifications/index.js')
 
+
+// Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
+const defaultJobOptions = {
+  removeOnComplete: true,
+  removeOnFail: true
+}
+
 class NotificationProcessor {
   constructor () {
     this.notifQueue = new Bull(
-      'notification-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      `notification-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
       })
     this.emailQueue = new Bull(
-      'email-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      `email-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
       })
     this.announcementQueue = new Bull(
-      'announcement-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      `announcement-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
       })
   }
 
@@ -90,6 +109,8 @@ class NotificationProcessor {
         await this.notifQueue.add({
           type: notificationJobType,
           minBlock: maxBlockNumber
+        }, {
+          jobId: `${notificationJobType}:${Date.now()}`
         })
       } catch (e) {
         logger.error(`Restarting due to error indexing notifications : ${e}`)
@@ -97,6 +118,8 @@ class NotificationProcessor {
         await this.notifQueue.add({
           type: notificationJobType,
           minBlock: minBlock
+        }, {
+          jobId: `${notificationJobType}:${Date.now()}`
         })
       }
       // Delay 3s
@@ -110,6 +133,10 @@ class NotificationProcessor {
       logger.info('processEmailNotifications')
       await processEmailNotifications(expressApp, audiusLibs)
       await processDownloadAppEmail(expressApp, audiusLibs)
+
+      // Wait 10 minutes before re-running the job
+      await new Promise(resolve => setTimeout(resolve, 10*60*1000))
+      await this.emailQueue.add({ type: unreadEmailJob }, { jobId: `${unreadEmailJob}:${Date.now()}` })
       done()
     })
 
@@ -117,8 +144,8 @@ class NotificationProcessor {
     this.announcementQueue.process(async (job, done) => {
       await pushAnnouncementNotifications()
       // Delay 30s
-      await new Promise(resolve => setTimeout(resolve, 30000))
-      await this.announcementQueue.add({ type: announcementJobType })
+      await new Promise(resolve => setTimeout(resolve, 30 * 1000))
+      await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
       done()
     })
 
@@ -127,19 +154,18 @@ class NotificationProcessor {
     }
 
     // Every 10 minutes cron: '*/10 * * * *'
-    this.emailQueue.add(
-      { type: 'unreadEmailJob' },
-      { repeat: { cron: '*/10 * * * *' } }
-    )
+    this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: Date.now() })
 
     let startBlock = await getHighestBlockNumber()
     logger.info(`Starting with ${startBlock}`)
     await this.notifQueue.add({
       minBlock: startBlock,
       type: notificationJobType
+    }, {
+      jobId: `${notificationJobType}:${Date.now()}`
     })
 
-    await this.announcementQueue.add({ type: announcementJobType })
+    await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
   }
 
   /**
