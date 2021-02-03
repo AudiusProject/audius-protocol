@@ -38,6 +38,7 @@ export const get3BoxProfile = async (wallet: Address): Promise<User> => {
   }
 }
 
+// NOTE: Look into storing the profiles in localstorage oir indexdb.
 const cache3box: {
   [address: string]: User
 } = {}

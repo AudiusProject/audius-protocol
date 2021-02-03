@@ -34,7 +34,7 @@ import getActiveStake from 'utils/activeStake'
 import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
-} from './graphHooks'
+} from './graph/hooks'
 
 type UseUsersProp = {
   sortBy?: SortUser
