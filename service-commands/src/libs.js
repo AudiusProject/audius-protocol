@@ -1,9 +1,13 @@
+const untildify = require('untildify')
+const Web3 = require('web3')
+const axios = require('axios')
 const AudiusLibs = require('@audius/libs')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const Utils = require('@audius/libs/src/utils')
 const config = require('../config/config')
-const untildify = require('untildify')
-const Web3 = require('web3')
+
+const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
+const MAX_INDEXING_TIMEOUT = 10000
 
 /**
  * Picks up envvars written by contracts init and loads them into convict
@@ -91,6 +95,7 @@ function LibsWrapper (walletIndex = 0) {
     const walletAddress = config.get('data_wallets')[walletIndex]
     this.walletAddress = walletAddress
     this.walletIndex = walletIndex
+    this.userId = null // to be updated on init
 
     const web3Config = await AudiusLibs.configExternalWeb3(
       REGISTRY_ADDRESS,
@@ -132,13 +137,19 @@ function LibsWrapper (walletIndex = 0) {
     }
   }
 
+  this.getLatestBlockOnChain = async () => {
+    assertLibsDidInit()
+    const { number: latestBlock } = await this.libsInstance.web3Manager.web3.eth.getBlock('latest')
+    return latestBlock
+  }
+
   /**
    * Signs up a user.
    * @param {*} args metadata describing a user.
    */
   this.signUp = async ({ metadata }) => {
     assertLibsDidInit()
-    return await this.libsInstance.Account.signUp(
+    const signUpResp = await this.libsInstance.Account.signUp(
       metadata.email,
       metadata.password,
       metadata,
@@ -147,6 +158,11 @@ function LibsWrapper (walletIndex = 0) {
       false /* has wallet */,
       null /* host */
     )
+
+    // Update libs instance with associated userId
+    if (!signUpResp.error) this.userId = signUpResp.userId
+
+    return signUpResp
   }
 
   /**
@@ -376,6 +392,9 @@ function LibsWrapper (walletIndex = 0) {
     if (!users.length) {
       throw new Error('No users!')
     }
+
+    if (!this.userId) this.userId = users[0].user_id
+
     return users[0]
   }
 
@@ -562,6 +581,90 @@ function LibsWrapper (walletIndex = 0) {
 
   this.getDiscoveryNodeEndpoint = () => {
     return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
+  }
+
+  /**
+  * Wait for the discovery node to catch up to the latest block on chain up to a max
+  * indexing timeout of default 10000ms. Used to check regular block indexing.
+  * @param {number} [maxIndexingTimeout=10000] max time indexing window
+  */
+  this.waitForLatestBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+    let latestBlockOnChain = -1
+    let latestIndexedBlock = -1
+
+    try {
+      // Note: this is /not/ the block of which a certain txn occurred. This is just the
+      // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain
+      // might be 83). This method is the quickest way to attempt to poll up to a reasonably
+      // close block without having to change libs API.
+      latestBlockOnChain = await this.getLatestBlockOnChain()
+
+      console.log(`[Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+
+      const startTime = Date.now()
+      while (Date.now() - startTime < maxIndexingTimeout) {
+        latestIndexedBlock = await this._getLatestIndexedBlock()
+        if (latestIndexedBlock >= latestBlockOnChain) {
+          console.log(`[Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+          return
+        }
+      }
+    } catch (e) {
+      const errorMsg = '[Block Check] Error with checking latest indexed block'
+      console.error(errorMsg, e)
+      throw new Error(`${errorMsg}\n${e}`)
+    }
+    console.warn(`[Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+  }
+
+  /**
+  * Wait for the discovery node to catch up to the latest block on chain up to a max
+  * indexing timeout of default 10000ms. Used to check IPLD block indexing.
+  * @param {number} [maxIndexingTimeout=10000] max time indexing window
+  */
+  this.waitForLatestIPLDBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+    let latestBlockOnChain = -1
+    let latestIndexedBlock = -1
+
+    try {
+      // Note: this is /not/ the block of which a certain txn occurred. This is just the
+      // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain
+      // might be 83). This method is the quickest way to attempt to poll up to a reasonably
+      // close block without having to change libs API.
+      latestBlockOnChain = await this.getLatestBlockOnChain()
+
+      console.log(`[IPLD Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+
+      const startTime = Date.now()
+      while (Date.now() - startTime < maxIndexingTimeout) {
+        latestIndexedBlock = await this._getLatestIndexedIpldBlock()
+        if (latestIndexedBlock >= latestBlockOnChain) {
+          console.log(`[IPLD Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+          return
+        }
+      }
+    } catch (e) {
+      const errorMsg = '[IPLD Block Check] Error with checking latest indexed block'
+      console.error(errorMsg, e)
+      throw new Error(`${errorMsg}\n${e}`)
+    }
+    console.warn(`[IPLD Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+  }
+
+  this._getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
+    return (await axios({
+      method: 'get',
+      baseURL: endpoint,
+      url: '/health_check'
+    })).data.latest_indexed_block
+  }
+
+  this._getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
+    return (await axios({
+      method: 'get',
+      baseURL: endpoint,
+      url: '/ipld_block_check'
+    })).data.data.db.number
   }
 }
 

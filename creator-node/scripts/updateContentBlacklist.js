@@ -298,7 +298,7 @@ async function getSegments (type, values) {
     }
     allSegments = allSegmentObjs.map(segmentObj => segmentObj.multihash)
   } catch (e) {
-    throw new Error(`Error with fetching segments for verifcation: ${e}`)
+    throw new Error(`Error with fetching segments for verification: ${e}`)
   }
   return allSegments
 }
