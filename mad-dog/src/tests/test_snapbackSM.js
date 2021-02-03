@@ -6,14 +6,11 @@ const {
   addAndUpgradeUsers,
   getRandomTrackMetadata,
   getRandomTrackFilePath,
-  delay,
-  genRandomString
+  delay
 } = require('../helpers.js')
 const {
   uploadTrack,
-  getTrackMetadata,
-  getUser,
-  verifyCIDExistsOnCreatorNode
+  getUser
 } = ServiceCommands
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
@@ -93,7 +90,7 @@ const snapbackSMParallelSyncTest = async ({
     const newTrackMetadata = getRandomTrackMetadata(userId)
     const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
     logger.info(
-            `Uploading Track for userIndex:${i}, userId:${userId}, ${randomTrackFilePath}, ${JSON.stringify(newTrackMetadata)}`
+      `Uploading Track for userId:${userId} (${libs.walletAddress}), ${randomTrackFilePath}, ${JSON.stringify(newTrackMetadata)}`
     )
     try {
       const startTime = Date.now()
@@ -105,7 +102,7 @@ const snapbackSMParallelSyncTest = async ({
         )
       )
       const duration = Date.now() - startTime
-      logger.info(`Uploaded track for userId:${userId}, trackId=${trackId} in ${duration}ms`)
+      logger.info(`Uploaded track for userId=${userId}, trackId=${trackId} in ${duration}ms`)
     } catch (e) {
       logger.error(`Error uploading track for userId:${userId} :${e}`)
     }
