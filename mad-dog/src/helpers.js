@@ -12,7 +12,8 @@ const {
   addUser,
   uploadProfileImagesAndAddUser,
   upgradeToCreator,
-  getLibsUserInfo
+  getLibsUserInfo,
+  getClockValuesFromReplicaSet
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -26,6 +27,7 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
+const MAX_SYNC_TIMEOUT = 60000
 
 /**
  * Adds and upgrades `userCount` users.
@@ -99,7 +101,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         const existingUser = await getUser({ executeOne, walletIndex: i })
         let userId
         if (existingUser) {
-          logger.info(`Found existing user with id ${existingUser.user_id}`)
+          logger.info(`Found existing user=${existingUser.user_id}`)
           existingUserIds.push(existingUser.user_id)
           userId = existingUser.user_id
         } else {
@@ -111,14 +113,12 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
           } else {
             newUserId = await addUser(libs, userMetadata)
           }
-          logger.info(`Created new user: ${newUserId}`)
+          logger.info(`Created new user=${newUserId}`)
           addedUserIds.push(newUserId)
           userId = newUserId
         }
 
-        // Wait 1 indexing cycle to get all proper and expected user metadata, as the starter metadata
-        // does not contain all necessary fields (blocknumber, track_blocknumber, ...)
-        await waitForIndexing()
+        await executeOne(i, libs => libs.waitForLatestBlock())
 
         // add to wallet index to userId mapping
         walletIndexToUserIdMap[i] = userId
@@ -128,7 +128,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         if (existingUserIds.length) logger.info(`Existing users, userIds=${existingUserIds}`)
       } catch (e) {
         logger.error('GOT ERR CREATING USER')
-        logger.error(e.message)
+        console.error(e) // this prints out the stack trace
         throw e
       }
     })
@@ -147,21 +147,23 @@ async function upgradeUsersToCreators (executeAll, executeOne) {
       await executeAll(async (libs, i) => {
         // Check if existing users are already creators. If so, don't upgrade
         const existingUser = await getUser({ executeOne, walletIndex: i })
-        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with walletIndex ${i}`)
+        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with wallet=${libs.walletAddress}`)
         if (existingUser.tracks > 0) {
           logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
           return
         }
         // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
         await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
-        logger.info(`Finished upgrading creator for user ${existingUser.user_id}`)
+        logger.info(`Finished upgrading creator for user=${existingUser.user_id}`)
+
+        // Wait until upgrade txn has been indexed
+        await executeOne(i, libs => libs.waitForLatestBlock())
       })
     } catch (e) {
       logger.error('GOT ERR UPGRADING USER TO CREATOR')
-      logger.error(e.message)
+      console.error(e)
       throw e
     }
-    await waitForIndexing()
   })
 }
 
@@ -177,7 +179,8 @@ const logOps = async (name, work) => {
     logger.info(`Finished: [${name}].`)
     return res
   } catch (e) {
-    logger.error(`Error in [${name}], [${e.message}]`)
+    logger.error(`Error in [${name}]`)
+    console.error(e)
     throw e
   }
 }
@@ -196,9 +199,9 @@ const getUser = async ({ executeOne, walletIndex }) => {
     })
   } catch (e) {
     if (e.message !== 'No users!') {
-      throw new Error(
-        `Error with getting user with wallet index ${walletIndex}: ${e.message}`
-      )
+      logger.error(`Error with getting user with wallet index ${walletIndex}`)
+      console.error(e)
+      throw e
     }
   }
 
@@ -283,9 +286,10 @@ const getRandomTrackFilePath = async localDirPath => {
 
     logger.info(`Wrote track to temp local storage at ${targetFilePath}`)
   } catch (e) {
-    const error = `Error with writing track to path ${localDirPath}: ${e.message}`
-    logger.error(error)
-    throw new Error(error)
+    const errorMsg = `Error with writing track to path ${localDirPath}`
+    logger.error(errorMsg)
+    console.error(e)
+    throw new Error(`${errorMsg}: ${e.message}`)
   }
 
   // Return full file path
@@ -313,16 +317,40 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 /** Delay execution for n ms */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-/** Wrapper for custom delay time */
-const waitForIndexing = async (waitTime = 5000) => {
-  logger.info(`Pausing ${waitTime}ms for discprov indexing...`)
-  await delay(waitTime)
+const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
+  let primary, secondary1, secondary2, primaryClockValue, secondary1ClockValue, secondary2ClockValue
+  const userId = libs.userId
+  let synced = false
+  const startTime = Date.now()
+  while (!synced && Date.now() - startTime <= MAX_SYNC_TIMEOUT) {
+    try {
+      const replicaSetClockValues = await executeOne(i, libsWrapper => {
+        return getClockValuesFromReplicaSet(libsWrapper)
+      })
+
+      primary = replicaSetClockValues[0].endpoint
+      secondary1 = replicaSetClockValues[1].endpoint
+      secondary2 = replicaSetClockValues[2].endpoint
+      primaryClockValue = replicaSetClockValues[0].clockValue
+      secondary1ClockValue = replicaSetClockValues[1].clockValue
+      secondary2ClockValue = replicaSetClockValues[2].clockValue
+
+      logger.info(`Monitoring sync for user=${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
+
+      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue && primaryClockValue) {
+        synced = true
+        logger.info(`Sync completed for user=${userId}!`)
+      }
+    } catch (e) {
+      const errorMsg = `Failed sync monitoring for user=${userId}`
+      logger.error(errorMsg)
+      console.error(e)
+      throw new Error(`${errorMsg}: ${e.message}`)
+    }
+    if (!synced) { await delay(1000) }
+  }
 }
 
-const waitForSync = async (waitTime = 20000) => {
-  logger.info(`Pausing ${waitTime}ms for sync to occur...`)
-  await delay(waitTime)
-}
 /**
  * Handy helper function for executing an operation against
  * an array of libs wrappers in parallel.
@@ -347,8 +375,7 @@ module.exports = {
   genRandomString,
   getRandomTrackFilePath,
   delay,
-  waitForIndexing,
-  waitForSync,
+  ensureReplicaSetSyncIsConsistent,
   makeExecuteAll,
   makeExecuteOne,
   r6,

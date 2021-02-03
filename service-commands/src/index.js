@@ -9,6 +9,7 @@ const Track = require('./commands/tracks')
 const File = require('./commands/files')
 const IpldBlacklist = require('./commands/ipldBlacklist')
 const Playlist = require('./commands/playlists')
+const DataContracts = require('./commands/dataContracts')
 
 module.exports = {
   LibsWrapper,
@@ -18,5 +19,6 @@ module.exports = {
   ...Track,
   ...File,
   ...IpldBlacklist,
-  ...Playlist
+  ...Playlist,
+  ...DataContracts
 }
