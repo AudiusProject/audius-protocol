@@ -3,16 +3,12 @@ const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
-<<<<<<< HEAD
 const {
   coreIntegration,
   snapbackSMParallelSyncTest,
   userReplicaSetManagerTest,
   IpldBlacklistTest
 } = require('./tests/tests')
-=======
-const { coreIntegration, snapbackSMParallelSyncTest, IpldBlacklistTest } = require('./tests')
->>>>>>> @{-1}
 
 // Configuration.
 // Should be CLI configurable in the future.
