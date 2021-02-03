@@ -57,7 +57,9 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // TODO: add a sample size selection round to not send requests to all available nodes
 
+    // Check to see if cnodes are currently syncing. If so, filter out as selectable cnodes
     if (performSyncCheck) { services = await this._performSyncChecks(services, this.timeout) }
+    // Check to see if cnodes fail the health check. If so, filter out as selectable cnodes
     const { healthyServicesList, healthyServicesMap: servicesMap } = await this._performHealthChecks(services)
     services = healthyServicesList
 
