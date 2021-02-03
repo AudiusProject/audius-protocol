@@ -15,7 +15,6 @@ const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, announcementJobType } = require('./constants')
 const { drainPublishedMessages } = require('./notificationQueue')
-const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
 const { indexTrendingTracks } = require('./trendingTrackProcessing')
@@ -25,18 +24,21 @@ class NotificationProcessor {
   constructor () {
     this.notifQueue = new Bull(
       'notification-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      {
+        redis:
+          { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.emailQueue = new Bull(
       'email-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      {
+        redis:
+          { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.announcementQueue = new Bull(
       'announcement-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      {
+        redis:
+          { port: config.get('redisPort'), host: config.get('redisHost') }
       })
   }
 
@@ -51,6 +53,8 @@ class NotificationProcessor {
    * @param {Object} redis redis connection
    */
   async init (audiusLibs, expressApp, redis) {
+    const discProv = audiusLibs.discoveryProvider.discoveryProviderEndpoint
+
     // Clear any pending notif jobs
     await this.notifQueue.empty()
     await this.emailQueue.empty()
@@ -58,7 +62,7 @@ class NotificationProcessor {
     this.mg = expressApp.get('mailgun')
 
     // Index all blockchain ids
-    this.idUpdateTask = updateBlockchainIds()
+    this.idUpdateTask = updateBlockchainIds(discProv)
 
     // Notification processing job
     // Indexes network notifications
@@ -153,6 +157,7 @@ class NotificationProcessor {
   async indexAll (audiusLibs, minBlock, oldMaxBlockNumber) {
     const startDate = Date.now()
     const startTime = process.hrtime()
+    const discProv = audiusLibs.discoveryProvider.discoveryProviderEndpoint
 
     logger.info({ minBlock, oldMaxBlockNumber, startDate }, `${new Date()} - notifications main indexAll job`)
 
@@ -169,7 +174,7 @@ class NotificationProcessor {
 
     let reqObj = {
       method: 'get',
-      url: `${notifDiscProv}/notifications`,
+      url: `${discProv}/notifications`,
       params,
       timeout: 10000
     }

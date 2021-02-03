@@ -5,7 +5,6 @@ const Hashids = require('hashids/cjs')
 const { logger } = require('../logging')
 
 // default configs
-const notifDiscProv = config.get('notificationDiscoveryProvider')
 const startBlock = config.get('notificationStartBlock')
 // Number of tracks to fetch for new listens on each poll
 const trackListenMilestonePollCount = 100
@@ -13,7 +12,7 @@ const trackListenMilestonePollCount = 100
 /**
  * For any users missing blockchain id, here we query the values from discprov and fill them in
  */
-async function updateBlockchainIds () {
+async function updateBlockchainIds (discProv) {
   let usersWithoutBlockchainId = await models.User.findAll({
     attributes: ['walletAddress', 'handle'],
     where: { blockchainUserId: null }
@@ -24,7 +23,7 @@ async function updateBlockchainIds () {
       logger.info(`Updating user with wallet ${walletAddress}`)
       const response = await axios({
         method: 'get',
-        url: `${notifDiscProv}/users`,
+        url: `${discProv}/users`,
         params: {
           wallet: walletAddress
         }

@@ -3,7 +3,7 @@ const moment = require('moment')
 
 const models = require('../models')
 const { logger } = require('../logging')
-const config = require('../config.js')
+
 const {
   deviceType,
   notificationTypes
@@ -19,8 +19,6 @@ const {
   notificationResponseTitleMap,
   pushNotificationMessagesMap
 } = require('./formatNotificationMetadata')
-
-const notifDiscProv = config.get('notificationDiscoveryProvider')
 
 const TRENDING_TIME = Object.freeze({
   DAY: 'day',
@@ -41,7 +39,7 @@ const TRENDING_INTERVAL_HOURS = 3
 // The highest rank for which a notification will be sent
 const MAX_TOP_TRACK_RANK = 10
 
-async function getTrendingTracks () {
+async function getTrendingTracks (discProv) {
   try {
     // The owner info is then used to target listenCount milestone notifications
     let params = new URLSearchParams()
@@ -50,7 +48,7 @@ async function getTrendingTracks () {
 
     const trendingTracksResponse = await axios({
       method: 'get',
-      url: `${notifDiscProv}/v1/full/tracks/trending?time=week`,
+      url: `${discProv}/v1/full/tracks/trending?time=week`,
       params,
       timeout: 10000
     })
@@ -171,7 +169,8 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
 
 async function indexTrendingTracks (audiusLibs, tx) {
   try {
-    const { trendingTracks, blocknumber } = await getTrendingTracks()
+    const discProv = audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    const { trendingTracks, blocknumber } = await getTrendingTracks(discProv)
     await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
   } catch (err) {
     logger.error(`Unable to process trending track notifications: ${err.message}`)
