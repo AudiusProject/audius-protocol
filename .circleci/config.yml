@@ -149,7 +149,10 @@ jobs:
           name: Save service-commands cache
           paths:
             - service-commands/node_modules
-          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }} 
+          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
+          
+      - setup_remote_docker:
+        docker_layer_caching: true
 
       - run:
           name: execute
