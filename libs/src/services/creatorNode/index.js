@@ -97,7 +97,7 @@ class CreatorNode {
     }
   }
 
-  /** Establishes a connection to a creator node endpoint */
+  /** Establishes a connection to a content node endpoint */
   async connect () {
     this.connecting = true
     await this._signupNodeUser(this.web3Manager.getWalletAddress())
