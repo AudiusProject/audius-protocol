@@ -135,7 +135,7 @@ class NotificationProcessor {
 
       // Wait 10 minutes before re-running the job
       await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000))
-      await this.emailQueue.add({ type: unreadEmailJob }, { jobId: `${unreadEmailJob}:${Date.now()}` })
+      await this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: `unreadEmailJob:${Date.now()}` })
       done()
     })
 
