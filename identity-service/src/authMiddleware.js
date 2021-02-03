@@ -2,20 +2,17 @@ const axios = require('axios')
 const { recoverPersonalSignature } = require('eth-sig-util')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
-const config = require('./config.js')
 const models = require('./models')
-
-const notifDiscProv = config.get('notificationDiscoveryProvider')
 
 /**
  * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
  * @param {string} walletAddress
  * @returns {object} User Metadata object
  */
-const queryDiscprovForUserId = async (walletAddress, handle) => {
+const queryDiscprovForUserId = async (walletAddress, handle, discProv) => {
   const response = await axios({
     method: 'get',
-    url: `${notifDiscProv}/users`,
+    url: `${discProv}/users`,
     params: {
       wallet: walletAddress
     }
@@ -47,6 +44,7 @@ async function authMiddleware (req, res, next) {
   try {
     const encodedDataMessage = req.get('Encoded-Data-Message')
     const signature = req.get('Encoded-Data-Signature')
+    const audiusLibs = req.app.get('audiusLibs')
     const handle = req.query.handle
 
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
@@ -63,7 +61,7 @@ async function authMiddleware (req, res, next) {
       req.user = user
       next()
     } else {
-      const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
+      const discprovUser = await queryDiscprovForUserId(walletAddress, handle, audiusLibs.discoveryProvider.discoveryProviderEndpoint)
       await user.update({ blockchainUserId: discprovUser.user_id })
       req.user = user
       next()
