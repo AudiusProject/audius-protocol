@@ -1,3 +1,4 @@
+import { ApolloClient, InMemoryCache } from '@apollo/client'
 import {
   combineReducers,
   createStore as createReduxStore,
@@ -25,12 +26,23 @@ import pageHistory from 'store/pageHistory/slice'
 declare global {
   interface Window {
     aud: any
+    store: any
+    client: ApolloClient<any>
   }
 }
+
+const gqlUri = process.env.REACT_APP_GQL_URI
+
+export const client = new ApolloClient({
+  uri: gqlUri,
+  cache: new InMemoryCache()
+})
 
 const aud = new Audius()
 window.aud = aud
 aud.setup()
+
+window.client = client
 
 const getReducer = (history: History) => {
   return combineReducers({
@@ -60,6 +72,7 @@ export const createStore = (history: History) => {
   const storeReducer = getReducer(history)
   const middlewares = getMiddlewares(history)
   let store = createReduxStore(storeReducer, composeEnhancers(middlewares))
+  window.store = store
   return store
 }
 

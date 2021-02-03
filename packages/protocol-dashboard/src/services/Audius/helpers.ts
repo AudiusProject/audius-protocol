@@ -79,6 +79,13 @@ export async function getBlockNearTimestamp(
   return targetBlock
 }
 
+export function toChecksumAddress(this: AudiusClient, wallet: string) {
+  // NOTE: This is kinda a hack
+  // but b/c we load in web3 before the js bundle it will work
+  const web3 = window.Web3
+  return web3.utils.toChecksumAddress(wallet)
+}
+
 // Static Helpers
 export function getBNPercentage(n1: BigNumber, n2: BigNumber): number {
   if (n2.toString() === '0') return 0

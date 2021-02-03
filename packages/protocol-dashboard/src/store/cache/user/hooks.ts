@@ -31,6 +31,10 @@ import {
 import { useAccountUser } from 'store/account/hooks'
 import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
 import getActiveStake from 'utils/activeStake'
+import {
+  useUser as useGraphUser,
+  useUsers as useGraphUsers
+} from './graph/hooks'
 
 type UseUsersProp = {
   sortBy?: SortUser
@@ -81,8 +85,8 @@ const getUserMetadata = async (wallet: Address, aud: Audius): Promise<User> => {
 
   const user = {
     wallet,
-    image: getRandomDefaultImage(wallet),
-    ...profile,
+    name: profile.name,
+    image: profile.image || getRandomDefaultImage(wallet),
     totalDelegatorStake,
     pendingUndelegateRequest,
     audToken,
@@ -279,12 +283,15 @@ export const useUsers = ({ limit, sortBy, filter }: UseUsersProp = {}) => {
   const status = useSelector(getStatus)
   const users = useSelector(getUsers({ limit, sortBy, filter }))
 
+  const { error } = useGraphUsers(status)
+
   const dispatch = useDispatch()
   useEffect(() => {
-    if (!status) {
+    if (error && !status) {
       dispatch(fetchUsers())
     }
-  }, [status, limit, sortBy, dispatch])
+  }, [error, status, limit, sortBy, dispatch])
+
   return { status, users }
 }
 
@@ -306,12 +313,14 @@ export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {
     if (status !== Status.Loading && !user) setStatus(Status.Loading)
   }, [wallet, user, status])
 
+  const { error } = useGraphUser(wallet, setStatus)
+
   const dispatch = useDispatch()
   useEffect(() => {
-    if (!user && status !== Status.Failure) {
+    if (error && !user && status !== Status.Failure) {
       dispatch(fetchUser(wallet, setStatus))
     }
-  }, [wallet, user, setStatus, status, dispatch])
+  }, [error, wallet, user, setStatus, status, dispatch])
   if (user) {
     if (status !== Status.Success) setStatus(Status.Success)
     return { user, status: Status.Success }
