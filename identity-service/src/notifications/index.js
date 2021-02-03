@@ -21,7 +21,6 @@ const processNotifications = require('./processNotifications/index.js')
 const { indexTrendingTracks } = require('./trendingTrackProcessing')
 const sendNotifications = require('./sendNotifications/index.js')
 
-
 // Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
 const defaultJobOptions = {
   removeOnComplete: true,
@@ -135,7 +134,7 @@ class NotificationProcessor {
       await processDownloadAppEmail(expressApp, audiusLibs)
 
       // Wait 10 minutes before re-running the job
-      await new Promise(resolve => setTimeout(resolve, 10*60*1000))
+      await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000))
       await this.emailQueue.add({ type: unreadEmailJob }, { jobId: `${unreadEmailJob}:${Date.now()}` })
       done()
     })
