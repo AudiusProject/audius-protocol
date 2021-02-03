@@ -4,7 +4,6 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import paginate_query
 
 def get_usrm_cnodes():
-    usrm_content_nodes = []
     db = get_db_read_replica()
     with db.scoped_session() as session:
         query = (

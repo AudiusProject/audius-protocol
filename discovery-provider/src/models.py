@@ -152,8 +152,8 @@ class User(Base):
     creator_node_endpoint = Column(String)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
-    primaryID = Column(Integer, nullable=True)
-    secondaryIDs = Column(postgresql.ARRAY(Integer), nullable=True)
+    primary_id = Column(Integer, nullable=True)
+    secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
@@ -183,8 +183,8 @@ bio={self.bio},\
 location={self.location},\
 metadata_multihash={self.metadata_multihash},\
 creator_node_endpoint={self.creator_node_endpoint},\
-primaryID={self.primaryID},\
-secondaryIDs={self.secondaryIDs},\
+primary_id={self.primary_id},\
+secondary_ids={self.secondary_ids},\
 updated_at={self.updated_at},\
 created_at={self.created_at})>"
 

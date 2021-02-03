@@ -5,8 +5,10 @@ from src import contract_addresses, eth_abi_values
 from src.models import USRMContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
-from src.utils.user_event_constants import user_replica_set_manager_event_types_arr, \
-        user_replica_set_manager_event_types_lookup
+from src.utils.user_event_constants import (
+    user_replica_set_manager_event_types_arr,
+    user_replica_set_manager_event_types_lookup
+)
 from src.utils.redis_cache import get_pickled_key, get_sp_id_key
 
 logger = logging.getLogger(__name__)
@@ -50,7 +52,8 @@ def user_replica_set_state_update(
                 # Check if _userId is present
                 # If user id is found in the event args, update the local lookup object
                 user_id = args._userId if "_userId" in args else None
-                user_ids.add(user_id)
+                if user_id:
+                    user_ids.add(user_id)
 
                 # Check if cnodeId is present
                 # If cnode id is found in event args, update local lookup object
@@ -78,12 +81,12 @@ def user_replica_set_state_update(
                 # ensuring that multiple events for a single user result in only 1 row insert operation
                 # (even if multiple operations are present)
                 if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
-                    primary = args._primaryId
-                    secondaries = args._secondaryIds
+                    primary = args._primary_id
+                    secondaries = args._secondary_ids
                     user_record = user_replica_set_events_lookup[user_id]["user"]
                     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
-                    user_record.primaryID = primary
-                    user_record.secondaryIDs = secondaries
+                    user_record.primary_id = primary
+                    user_record.secondary_ids = secondaries
 
                     # Update cnode endpoint string reconstructed from sp ID
                     creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
@@ -125,10 +128,13 @@ def user_replica_set_state_update(
     return num_user_replica_set_changes, user_ids
 
 # Reconstruct endpoint string from primary and secondary IDs
-# Note that this is BEST EFFORT and may fail, however unlikely
-# In the case of failure where a given user has valid primary/secondaries but no
-# endpoint string, a client must fetch the endpoint associated with ID
-# Indexing CANNOT block on this endpoint string optimization.
+# Attempt to retrieve from cached values populated in index_network_peers.py
+# If unavailable, then a fallback to ethereum mainnet contracts will occur
+# Note that in the case of an invalid spID - one that is not yet registered on 
+# the ethereum mainnet contracts, there will be an empty value in the returned
+# creator_node_endpoint
+# If this discrepancy occurs, a client replica set health check sweep will 
+# result in a client-initiated failover operation to a valid set of replicas
 def get_endpoint_string_from_sp_ids(
         self,
         update_task,

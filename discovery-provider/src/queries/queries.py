@@ -552,7 +552,7 @@ def get_creator_node_users():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
-@bp.route("/l2/content_node", methods=("GET",))
+@bp.route("/usrm_content_nodes", methods=("GET",))
 def get_l2_content_nodes():
     try:
         cnodes = get_usrm_cnodes()
