@@ -62,7 +62,7 @@ class ServiceProvider extends Base {
 
   /**
    * Fetches healthy Content Nodes and autoselects a primary
-   * and two secondaries
+   * and two secondaries.
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
