@@ -101,34 +101,3 @@ export const formatUser = async (
       : { amount: new BN(0), lockupExpiryBlock: 0 }
   }
 }
-
-// Async function to get
-export function populateUsers(
-  users: FullUser[],
-  setStatus?: (status: Status) => void
-): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
-    try {
-      if (setStatus) setStatus(Status.Loading)
-      else dispatch(setLoading())
-      const formattedUsers = await Promise.all(
-        users.map(user => formatUser(aud, user))
-      )
-      dispatch(
-        setUsers({
-          users: formattedUsers.reduce(
-            (users: { [id: string]: User | Operator }, user) => {
-              users[user.wallet] = user
-              return users
-            },
-            {}
-          ),
-          ...(setStatus ? {} : { status: Status.Success })
-        })
-      )
-      if (setStatus) setStatus(Status.Success)
-    } catch (err) {
-      console.log({ err })
-    }
-  }
-}
