@@ -104,12 +104,12 @@
         },
         {
           "indexed": false,
-          "name": "_primary",
+          "name": "_primaryId",
           "type": "uint256"
         },
         {
           "indexed": false,
-          "name": "_secondaries",
+          "name": "_secondaryIds",
           "type": "uint256[]"
         }
       ],
@@ -282,11 +282,11 @@
           "type": "uint256"
         },
         {
-          "name": "_primary",
+          "name": "_primaryId",
           "type": "uint256"
         },
         {
-          "name": "_secondaries",
+          "name": "_secondaryIds",
           "type": "uint256[]"
         },
         {
@@ -337,11 +337,11 @@
       "name": "getUserReplicaSet",
       "outputs": [
         {
-          "name": "primary",
+          "name": "primaryId",
           "type": "uint256"
         },
         {
-          "name": "secondaries",
+          "name": "secondaryIds",
           "type": "uint256[]"
         }
       ],
