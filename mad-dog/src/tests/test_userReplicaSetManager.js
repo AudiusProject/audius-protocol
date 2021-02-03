@@ -36,7 +36,6 @@ const verifyUserReplicaSetStatus = async (
   try {
     // Query user replica set from on chain contract
     let usrReplicaInfoFromContract = await libs.getUserReplicaSet(userId)
-    // console.log(usrReplicaInfoFromContract)
 
     // Query user object
     let usrQueryInfo = await getUser(libs, userId)
@@ -46,31 +45,31 @@ const verifyUserReplicaSetStatus = async (
     let primaryEndpointString = replicaEndpointArray[0]
     let secondaryEndpointStrings = replicaEndpointArray.slice(1)
     let primaryInfo = contentNodeEndpointToInfoMapping[primaryEndpointString]
-    let primaryId = usrQueryInfo.primary
+    let primaryID = usrQueryInfo.primaryID
 
-    // Throw if mismatch between queried primaryId and assigned 
+    // Throw if mismatch between queried primaryID and assigned 
     //    spID on chain for this endpoint
-    if (primaryId !== primaryInfo.spID) {
-      throw new Error(`Mismatch spID values. Expected endpoint for ${primaryId}, found ${primaryInfo.spID}`)
+    if (primaryID !== primaryInfo.spID) {
+      throw new Error(`Mismatch spID values. Expected endpoint for ${primaryID}, found ${primaryInfo.spID}`)
     }
 
-    // Throw if mismatch between primaryId from discovery-node and primaryId in UserReplicaSetManager
-    if (primaryId !== parseInt(usrReplicaInfoFromContract.primary)) {
-      throw new Error(`Mismatch primaryId values. Expected ${primaryId}, found ${usrReplicaInfoFromContract.primary}`)
+    // Throw if mismatch between primaryID from discovery-node and primaryID in UserReplicaSetManager
+    if (primaryID !== parseInt(usrReplicaInfoFromContract.primary)) {
+      throw new Error(`Mismatch primaryID values. Expected ${primaryID}, found ${usrReplicaInfoFromContract.primary}`)
     }
 
-    logger.info(`userId: ${userId} Replica Set Info: ${primaryId}, ${usrQueryInfo.secondaries}`)
+    logger.info(`userId: ${userId} Replica Set Info: ${primaryID}, ${usrQueryInfo.secondaryIDs}`)
     logger.info(`userId: ${userId} Replica Set String: ${usrQueryInfo.creator_node_endpoint}`)
-    logger.info(`userId: ${userId} primaryId: ${primaryId} primaryIdFromEndointStr: ${primaryInfo.spID}`)
+    logger.info(`userId: ${userId} primaryID: ${primaryID} primaryIdFromEndointStr: ${primaryInfo.spID}`)
 
-    // Throw if array lengths do not match for secondaries
-    if (secondaryEndpointStrings.length !== usrQueryInfo.secondaries.length) {
+    // Throw if array lengths do not match for secondaryIDs
+    if (secondaryEndpointStrings.length !== usrQueryInfo.secondaryIDs.length) {
       throw new Error('Mismatched secondary status')
     }
 
     // Compare secondary replica ID values
-    for (var i = 0; i < usrQueryInfo.secondaries.length; i++) {
-      let secondaryId = usrQueryInfo.secondaries[i]
+    for (var i = 0; i < usrQueryInfo.secondaryIDs.length; i++) {
+      let secondaryId = usrQueryInfo.secondaryIDs[i]
       let secondaryEndpoint = secondaryEndpointStrings[i]
       let secondaryInfoFromStr = contentNodeEndpointToInfoMapping[secondaryEndpoint]
       let secondaryIdFromStr = secondaryInfoFromStr.spID
@@ -83,7 +82,7 @@ const verifyUserReplicaSetStatus = async (
       // Throw if mismatch between secondaryId from discovery-node and secondaryId in UserReplicaSetManager
       // Index into the array is taken into account here as well
       if (secondaryId !== parseInt(usrReplicaInfoFromContract.secondaries[i])) {
-        throw new Error(`Mismatch secondaryId values. Expected ${secondaryId}, found ${usrReplicaInfoFromContract.secondaries[i]}`)
+        throw new Error(`Mismatch secondaryId values. Expected ${secondaryId}, found ${usrReplicaInfoFromContract.secondaryIDs[i]}`)
       }
     }
   } catch (e) {

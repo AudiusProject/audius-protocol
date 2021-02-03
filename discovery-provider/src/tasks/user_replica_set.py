@@ -82,8 +82,8 @@ def user_replica_set_state_update(
                     secondaries = args._secondaries
                     user_record = user_replica_set_events_lookup[user_id]["user"]
                     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
-                    user_record.primary = primary
-                    user_record.secondaries = secondaries
+                    user_record.primaryID = primary
+                    user_record.secondaryIDs = secondaries
 
                     # Update cnode endpoint string reconstructed from sp ID
                     creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
