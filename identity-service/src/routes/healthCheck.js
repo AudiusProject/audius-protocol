@@ -8,8 +8,6 @@ const Web3 = require('web3')
 
 const axios = require('axios')
 
-let notifDiscProv = config.get('notificationDiscoveryProvider')
-
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
@@ -261,6 +259,9 @@ module.exports = function (app) {
   }))
 
   app.get('/notification_check', handleResponse(async (req, res) => {
+    const audiusLibs = req.app.get('audiusLibs')
+    const discProv = audiusLibs.discoveryProvider.discoveryProviderEndpoint
+
     let highestBlockNumber = await models.NotificationAction.max('blocknumber')
     if (!highestBlockNumber) {
       highestBlockNumber = config.get('notificationStartBlock')
@@ -270,14 +271,14 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
-    let body = (await axios({
+    let discProvHealthCheck = (await axios({
       method: 'get',
-      url: `${notifDiscProv}/health_check`
+      url: `${discProv}/health_check`
     })).data
-    let discProvDbHighestBlock = body.data['db']['number']
+    let discProvDbHighestBlock = discProvHealthCheck['db']['number']
     let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
     let resp = {
-      'discProv': body.data,
+      'discProv': discProvHealthCheck,
       'identity': highestBlockNumber,
       'notifBlockDiff': notifBlockDiff
     }
