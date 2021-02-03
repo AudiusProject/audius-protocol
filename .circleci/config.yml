@@ -15,6 +15,9 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
+      - setup_remote_docker:
+        docker_layer_caching: true
+
       - run:
           name: clone tooling and mad dog
           command: |
@@ -151,9 +154,6 @@ jobs:
             - service-commands/node_modules
           key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
           
-      - setup_remote_docker:
-        docker_layer_caching: true
-
       - run:
           name: execute
           command: |
