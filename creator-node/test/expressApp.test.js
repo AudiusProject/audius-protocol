@@ -48,7 +48,7 @@ describe('test expressApp', async function () {
       .expect(401)
   })
 
-  it('succeeds health check', async function () {
+  it.only('succeeds health check', async function () {
     await request(app)
       .get('/health_check')
       .expect(200)
