@@ -1,9 +1,8 @@
 const express = require('express')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse, errorResponseServerError } = require('../../apiHelpers')
-const { healthCheck, healthCheckDuration } = require('./healthCheckComponentService')
+const { healthCheck, healthCheckVerbose, healthCheckDuration } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
-const { sequelize } = require('../../models')
 
 const { recoverWallet } = require('../../apiSigning')
 const { handleTrackContentUpload, removeTrackFolder } = require('../../fileManager')
@@ -51,7 +50,7 @@ const healthCheckController = async (req) => {
   }
 
   const logger = req.logger
-  const response = await healthCheck(serviceRegistry, logger, sequelize)
+  const response = await healthCheck(serviceRegistry, logger)
   return successResponse(response)
 }
 
@@ -82,14 +81,11 @@ const healthCheckDurationController = async (req) => {
  */
 const healthCheckVerboseController = async (req) => {
   const logger = req.logger
-  const healthCheckResponse = await healthCheck(serviceRegistry, logger, sequelize)
+  const healthCheckResponse = await healthCheckVerbose(serviceRegistry, logger)
 
   // TODO: add disk usage, current load, and/or node details to response
   return successResponse({
-    ...healthCheckResponse,
-    country: config.get('serviceCountry'),
-    latitude: config.get('serviceLatitude'),
-    longitude: config.get('serviceLongitude')
+    ...healthCheckResponse
   })
 }
 
