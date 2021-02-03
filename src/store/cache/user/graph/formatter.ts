@@ -6,9 +6,7 @@ import { Status, User, ServiceType, Operator } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { setLoading, setUsers } from '../slice'
-import {
-  FullUser
-} from './types'
+import { FullUser } from './types'
 
 export const formatUser = async (
   aud: Audius,
@@ -54,7 +52,8 @@ export const formatUser = async (
       : { amount: new BN(0), lockupExpiryBlock: 0, target: '' }
   }
 
-  if (user.services.length === 0 && user.stakeAmount === '0') return formattedUser
+  if (user.services.length === 0 && user.stakeAmount === '0')
+    return formattedUser
 
   // TODO: Make this part faster
   const delegatorProfiles = await Promise.all(
@@ -82,7 +81,9 @@ export const formatUser = async (
         name: delegatorProfiles[i].name,
         img: delegatorProfiles[i].image
       })) ?? [],
-    totalStakedFor: (new BN(user.stakeAmount)).add(new BN(user.delegationReceivedAmount)),
+    totalStakedFor: new BN(user.stakeAmount).add(
+      new BN(user.delegationReceivedAmount)
+    ),
     delegatedTotal: new BN(user.delegationReceivedAmount),
     discoveryProviders:
       user.services

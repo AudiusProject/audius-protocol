@@ -4,10 +4,9 @@ import { useUsers } from 'store/cache/user/hooks'
 import getActiveStake from 'utils/activeStake'
 import { Status } from 'types'
 
-
 const GET_TOTAL_CLAIMABLE = gql`
   query totalClaimable($id: String!) {
-    audiusNetwork (id: $id) {
+    audiusNetwork(id: $id) {
       totalTokensClaimable
     }
   }
@@ -25,8 +24,10 @@ interface TotalClaimableVars {
 
 // -------------------------------- Hooks  --------------------------------
 export const useTotalStaked = () => {
-
-  const { error: gqlError, data: gqlData } = useQuery<TotalClaimable, TotalClaimableVars>(GET_TOTAL_CLAIMABLE, {
+  const { error: gqlError, data: gqlData } = useQuery<
+    TotalClaimable,
+    TotalClaimableVars
+  >(GET_TOTAL_CLAIMABLE, {
     variables: { id: '1' }
   })
   const { status, users } = useUsers()

@@ -7,16 +7,8 @@ import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { setLoading, setUsers } from '../slice'
 import { useEffect, useState } from 'react'
-import { 
-  FullUser,
-  UsersData,
-  UsersVars,
-  UserData,
-  UserVars
-} from './types'
-import {
-  formatUser
-} from './formatter'
+import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
+import { formatUser } from './formatter'
 import { GET_USERS, GET_USER } from './queries'
 
 // Async function to get
@@ -72,7 +64,6 @@ export const useUsers = (status: Status | undefined) => {
     error: gqlError
   }
 }
-
 
 export const useUser = (
   wallet: string,

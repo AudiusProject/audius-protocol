@@ -1,6 +1,5 @@
 import { useQuery, gql } from '@apollo/client'
 
-
 const HEALTH_CHECK = gql`
   query healthCheck($subgraphName: String!) {
     indexingStatusForCurrentVersion(subgraphName: $subgraphName) {
@@ -39,14 +38,14 @@ interface HealthCheck {
         }
       }[]
       fatalError?: {
-        message: string,
+        message: string
         block: {
           number: string
           hash: string
         }
         handler: string
-      },
-      health: Health,
+      }
+      health: Health
       synced: boolean
     }
   }

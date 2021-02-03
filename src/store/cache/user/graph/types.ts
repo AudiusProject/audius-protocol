@@ -85,4 +85,3 @@ export interface UserData {
 export interface UserVars {
   id: string
 }
-
