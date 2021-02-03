@@ -66,10 +66,10 @@ export const assertEqualValues = (tx, name, properties) => {
       case '_trackId':
       case '_playlistId':
       case '_followeeUserId':
-      case '_primary':
+      case '_primaryId':
         assert.equal(tx.event.args[p].toNumber(), properties[p], 'Expected same ' + p)
         break
-      case '_secondaries':
+      case '_secondaryIds':
         let secondariesFromChain = tx.event.args[p]
         let secondaries = properties[p]
         assert.isTrue(
