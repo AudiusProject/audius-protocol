@@ -2,7 +2,7 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const config = require('../config.js')
 const versionInfo = require('../../.version.json')
 const {
-  getMonitor,
+  getMonitors,
   MONITORS
 } = require('../monitors/monitors')
 
@@ -20,12 +20,12 @@ module.exports = function (app) {
       return errorResponseServerError()
     }
 
-    const value = await getMonitor(MONITORS.IPFS_READ_WRITE_STATUS)
+    const [value] = await getMonitors([MONITORS.IPFS_READ_WRITE_STATUS])
     if (!value) {
       return errorResponseServerError({ error: 'IPFS not healthy' })
     }
 
-    const { hash, duration } = JSON.parse(value)
+    const { hash, duration } = value
     return successResponse({ hash, duration })
   }))
 
@@ -38,12 +38,14 @@ module.exports = function (app) {
     const maxConnections = parseInt(req.query.maxConnections) || MAX_DB_CONNECTIONS
 
     // Get number of open DB connections
-    const numConnections = parseInt(await getMonitor(MONITORS.DATABASE_CONNECTIONS))
+    const [numConnections, connectionInfo] = await getMonitors([
+      MONITORS.DATABASE_CONNECTIONS,
+      MONITORS.DATABASE_CONNECTION_INFO
+    ])
 
     // Get detailed connection info
     let activeConnections = null
     let idleConnections = null
-    const connectionInfo = JSON.parse(await getMonitor(MONITORS.DATABASE_CONNECTION_INFO))
     if (connectionInfo) {
       activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length
       idleConnections = (connectionInfo.filter(conn => conn.state === 'idle')).length
@@ -87,8 +89,10 @@ module.exports = function (app) {
     const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
 
     const storagePath = DiskManager.getConfigStoragePath()
-    const total = await getMonitor(MONITORS.STORAGE_PATH_SIZE)
-    const used = await getMonitor(MONITORS.STORAGE_PATH_USED)
+    const [ total, used ] = await getMonitors([
+      MONITORS.STORAGE_PATH_SIZE,
+      MONITORS.STORAGE_PATH_USED
+    ])
     const available = total - used
 
     const usagePercent = Math.round(used * 100 / total)
