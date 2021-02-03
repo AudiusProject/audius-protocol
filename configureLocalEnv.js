@@ -27,6 +27,7 @@ try {
   const REACT_APP_ETH_NETWORK_ID = 1602058537970
 
   const REACT_APP_AUDIUS_URL = 'http://localhost:3000'
+  const REACT_APP_GQL_URI = 'http://localhost:8000/subgraphs/name/AudiusProject/audius-subgraph'
 
   const contents = `
   # DO NOT MODIFY. SEE /scripts/configureLocalEnv.sh
@@ -50,6 +51,7 @@ try {
   REACT_APP_ETH_NETWORK_ID=${REACT_APP_ETH_NETWORK_ID}
 
   REACT_APP_AUDIUS_URL=${REACT_APP_AUDIUS_URL}
+  REACT_APP_GQL_URI=${REACT_APP_GQL_URI}
   `
 
   // Note .env.development.local takes precidence over .env.development

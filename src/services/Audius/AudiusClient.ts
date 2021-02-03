@@ -20,7 +20,8 @@ import {
   getNodeVersion,
   getEthWallet,
   getBlock,
-  getBlockNearTimestamp
+  getBlockNearTimestamp,
+  toChecksumAddress
 } from './helpers'
 import { getUserDelegates } from './wrappers'
 
@@ -65,6 +66,7 @@ export class AudiusClient {
   getAverageBlockTime = getAverageBlockTime
   getBlockNearTimestamp = getBlockNearTimestamp
   getBlock = getBlock
+  toChecksumAddress = toChecksumAddress
 
   // Static Util Functions
   static getBNPercentage = getBNPercentage

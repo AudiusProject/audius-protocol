@@ -1,3 +1,4 @@
+import { ApolloProvider } from '@apollo/client'
 import React from 'react'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
@@ -17,7 +18,7 @@ import ServiceUsers from 'containers/ServiceUsers'
 import Analytics from 'containers/Analytics'
 import * as routes from 'utils/routes'
 
-import { createStore } from './store'
+import { client, createStore } from './store'
 import desktopStyles from './App.module.css'
 import mobileStyles from './AppMobile.module.css'
 import NotFound from 'containers/NotFound'
@@ -29,59 +30,69 @@ const history = createBrowserHistory()
 const store = createStore(history)
 
 const Root = () => (
-  <Provider store={store}>
-    <ConnectedRouter history={history}>
-      <div className={styles.appContainer}>
-        <Header />
-        <div className={styles.appContent}>
-          <Switch>
-            <Route path={routes.HOME} exact component={Home} />
-            <Route path={routes.SERVICES} exact component={Services} />
-            <Route
-              path={routes.SERVICES_DISCOVERY_PROVIDER}
-              exact
-              component={DiscoveryProviders}
-            />
-            <Route
-              path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
-              exact
-              component={Node}
-            />
-            <Route
-              path={routes.SERVICES_CONTENT}
-              exact
-              component={ContentNodes}
-            />
-            <Route path={routes.SERVICES_CONTENT_NODE} exact component={Node} />
-            <Route
-              path={routes.SERVICES_SERVICE_PROVIDERS}
-              exact
-              component={ServiceOperators}
-            />
-            <Route
-              path={routes.SERVICES_USERS}
-              exact
-              component={ServiceUsers}
-            />
-            <Route path={routes.SERVICES_ACCOUNT_USER} exact component={User} />
-            <Route
-              path={routes.SERVICES_ACCOUNT_OPERATOR}
-              exact
-              component={User}
-            />
-            <Route path={routes.GOVERNANCE} exact component={Governance} />
-            <Route
-              path={routes.GOVERNANCE_PROPOSAL}
-              exact
-              component={Proposal}
-            />
-            <Route path={routes.ANALYTICS} exact component={Analytics} />
-            <Route component={NotFound} />
-          </Switch>
+  <ApolloProvider client={client}>
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        <div className={styles.appContainer}>
+          <Header />
+          <div className={styles.appContent}>
+            <Switch>
+              <Route path={routes.HOME} exact component={Home} />
+              <Route path={routes.SERVICES} exact component={Services} />
+              <Route
+                path={routes.SERVICES_DISCOVERY_PROVIDER}
+                exact
+                component={DiscoveryProviders}
+              />
+              <Route
+                path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
+                exact
+                component={Node}
+              />
+              <Route
+                path={routes.SERVICES_CONTENT}
+                exact
+                component={ContentNodes}
+              />
+              <Route
+                path={routes.SERVICES_CONTENT_NODE}
+                exact
+                component={Node}
+              />
+              <Route
+                path={routes.SERVICES_SERVICE_PROVIDERS}
+                exact
+                component={ServiceOperators}
+              />
+              <Route
+                path={routes.SERVICES_USERS}
+                exact
+                component={ServiceUsers}
+              />
+              <Route
+                path={routes.SERVICES_ACCOUNT_USER}
+                exact
+                component={User}
+              />
+              <Route
+                path={routes.SERVICES_ACCOUNT_OPERATOR}
+                exact
+                component={User}
+              />
+              <Route path={routes.GOVERNANCE} exact component={Governance} />
+              <Route
+                path={routes.GOVERNANCE_PROPOSAL}
+                exact
+                component={Proposal}
+              />
+              <Route path={routes.ANALYTICS} exact component={Analytics} />
+              <Route component={NotFound} />
+            </Switch>
+          </div>
         </div>
-      </div>
-    </ConnectedRouter>
-  </Provider>
+      </ConnectedRouter>
+    </Provider>
+  </ApolloProvider>
 )
 
 export default Root
