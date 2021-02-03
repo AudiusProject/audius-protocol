@@ -119,7 +119,7 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
   return (
     <Table
       title={messages.topAddresses}
-      isLoading={status === Status.Loading}
+      isLoading={!status || status === Status.Loading}
       className={clsx(styles.topAddressesTable, {
         [className!]: !!className
       })}
