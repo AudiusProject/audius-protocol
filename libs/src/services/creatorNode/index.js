@@ -36,7 +36,7 @@ class CreatorNode {
 
   /**
    * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
-   * @param {string} endpoint creator node endpoint
+   * @param {string} endpoint content node endpoint
    * @param {string} wallet user wallet address
    */
   static async getClockValue (endpoint, wallet, timeout) {
