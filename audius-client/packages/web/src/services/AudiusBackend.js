@@ -44,11 +44,6 @@ const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
 const IMAGE_CACHE_MAX_SIZE = 200
 
-const DISCOVERY_PROVIDER_FALLBACKS = process.env
-  .REACT_APP_DISCOVERY_PROVIDER_FALLBACKS
-  ? new Set(process.env.REACT_APP_DISCOVERY_PROVIDER_FALLBACKS.split(','))
-  : null
-
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const AUDIUS_ORIGIN = `${process.env.REACT_APP_PUBLIC_PROTOCOL}//${process.env.REACT_APP_PUBLIC_HOSTNAME}`
 
@@ -367,26 +362,6 @@ class AudiusBackend {
     // Web3Error allows for metamask to be improperly configured
     // but reads to still work in app. libsError should be treated as fatal.
     return { web3Error, libsError }
-  }
-
-  static async setupReadOnly() {
-    try {
-      audiusLibs = new AudiusLibs({
-        identityServiceConfig: AudiusLibs.configIdentityService(
-          IDENTITY_SERVICE
-        ),
-        discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
-          DISCOVERY_PROVIDER_FALLBACKS.values().next().value,
-          getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
-          AudiusBackend.discoveryProviderSelectionCallback
-        )
-      })
-      await audiusLibs.init()
-      window.audiusLibs = audiusLibs
-    } catch (err) {
-      console.error('Libs error', err)
-    }
-    return {}
   }
 
   static getEthWeb3Config() {

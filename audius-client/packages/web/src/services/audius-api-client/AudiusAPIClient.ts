@@ -14,7 +14,10 @@ import {
 } from './types'
 import * as adapter from './ResponseAdapter'
 import AudiusBackend from 'services/AudiusBackend'
-import { getEagerDiscprov } from 'services/audius-backend/eagerLoadUtils'
+import {
+  getEagerDiscprov,
+  waitForLibsInit
+} from 'services/audius-backend/eagerLoadUtils'
 import { encodeHashId } from 'utils/route/hashIds'
 import { StemTrackMetadata } from 'models/Track'
 import { SearchKind } from 'containers/search-page/store/types'
@@ -798,12 +801,14 @@ class AudiusAPIClient {
 
     // Set the state to the eager discprov
     const eagerDiscprov = getEagerDiscprov()
-    const fullDiscprov = this._formatEndpoint(eagerDiscprov)
-    console.debug(`APIClient: setting to eager discprov: ${fullDiscprov}`)
-    this.initializationState = {
-      state: 'initialized',
-      endpoint: fullDiscprov,
-      type: 'manual'
+    if (eagerDiscprov) {
+      const fullDiscprov = this._formatEndpoint(eagerDiscprov)
+      console.debug(`APIClient: setting to eager discprov: ${fullDiscprov}`)
+      this.initializationState = {
+        state: 'initialized',
+        endpoint: fullDiscprov,
+        type: 'manual'
+      }
     }
 
     // Listen for libs on chain selection
@@ -816,6 +821,7 @@ class AudiusAPIClient {
         type: 'libs'
       }
     })
+
     console.debug('APIClient: Initialized')
   }
 
@@ -847,13 +853,25 @@ class AudiusAPIClient {
       return { data } as any
     }
 
+    // Initialization type is manual. Make requests with fetch and handle failures.
     const resource = this._constructUrl(path, params)
-    const response = await fetch(resource)
-    if (!response.ok) {
-      if (response.status === 404) return null
-      throw new Error(response.statusText)
+    try {
+      const response = await fetch(resource)
+      if (!response.ok) {
+        if (response.status === 404) return null
+        throw new Error(response.statusText)
+      }
+      return response.json()
+    } catch (e) {
+      // Something went wrong with the request and we should wait for the libs
+      // initialization state
+      if (this.initializationState.type === 'manual') {
+        await waitForLibsInit()
+        return this._getResponse(path, params, retry)
+      }
+      // Something is just broken, propagate the error out
+      throw e
     }
-    return response.json()
   }
 
   _formatPath(path: string) {

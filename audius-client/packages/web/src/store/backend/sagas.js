@@ -17,7 +17,6 @@ import * as reachabilityActions from 'store/reachability/actions'
 import { watchBackendErrors } from './errorSagas'
 import { getIsReachable } from 'store/reachability/selectors'
 import { hydrateStoreFromCache } from 'store/cache/sagas'
-import { getIsReadOnlyClient } from 'utils/clientUtil'
 import { RequestNetworkConnected } from 'services/native-mobile-interface/lifecycle'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
@@ -77,24 +76,16 @@ export function* setupBackend() {
 
   // Init APICLient
   yield call(() => apiClient.init())
-
-  if (getIsReadOnlyClient()) {
-    // Read only clients do a paired down version of libs init
-    // (no account, no creator nodes, etc.).
-    yield call(AudiusBackend.setupReadOnly)
-    yield put(backendActions.setupBackendSucceeded())
-  } else {
-    yield put(accountActions.fetchAccount())
-    const { web3Error, libsError } = yield call(AudiusBackend.setup)
-    if (libsError) {
-      yield put(accountActions.fetchAccountFailed())
-      yield put(backendActions.setupBackendFailed())
-      yield put(backendActions.libsError(libsError))
-      return
-    }
-    yield spawn(hydrateStoreFromCache)
-    yield put(backendActions.setupBackendSucceeded(web3Error))
+  yield put(accountActions.fetchAccount())
+  const { web3Error, libsError } = yield call(AudiusBackend.setup)
+  if (libsError) {
+    yield put(accountActions.fetchAccountFailed())
+    yield put(backendActions.setupBackendFailed())
+    yield put(backendActions.libsError(libsError))
+    return
   }
+  yield spawn(hydrateStoreFromCache)
+  yield put(backendActions.setupBackendSucceeded(web3Error))
 }
 
 function* watchSetupBackend() {

@@ -12,9 +12,8 @@ export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
 const user = getAudiusAccountUser()
 const cachedDiscprov = getCachedDiscoveryProvider()
 
-const DISCOVERY_PROVIDER_FALLBACKS = process.env
-  .REACT_APP_DISCOVERY_PROVIDER_FALLBACKS
-  ? process.env.REACT_APP_DISCOVERY_PROVIDER_FALLBACKS.split(',')
+const EAGER_DISCOVERY_NODES = process.env.REACT_APP_EAGER_DISCOVERY_NODES
+  ? process.env.REACT_APP_EAGER_DISCOVERY_NODES.split(',')
   : []
 
 // Set the eager discprov to use to either
@@ -26,8 +25,8 @@ if (cachedDiscprov) {
   eagerDiscprov = cachedDiscprov.endpoint
 } else {
   eagerDiscprov =
-    DISCOVERY_PROVIDER_FALLBACKS[
-      Math.floor(Math.random() * DISCOVERY_PROVIDER_FALLBACKS.length)
+    EAGER_DISCOVERY_NODES[
+      Math.floor(Math.random() * EAGER_DISCOVERY_NODES.length)
     ]
 }
 
