@@ -198,15 +198,18 @@ contract('UserReplicaSetManager', async (accounts) => {
             senderAcct
         )
         let replicaSetFromChain = await userReplicaSetManager.getUserReplicaSet(userId)
-        assert.isTrue(replicaSetFromChain.primary.eq(newPrimary), 'Primary mismatch')
-        assert.isTrue(replicaSetFromChain.secondaries.every((replicaId, i) => replicaId.eq(newSecondaries[i])), 'Secondary mismatch')
+        assert.isTrue(replicaSetFromChain.primaryId.eq(newPrimary), 'Primary mismatch')
+        assert.isTrue(
+            replicaSetFromChain.secondaryIds.every((replicaId, i) => replicaId.eq(newSecondaries[i])),
+            'Secondary mismatch'
+        )
         await expectEvent.inTransaction(
             updateTxResp.tx,
             UserReplicaSetManager,
             'UpdateReplicaSet',
             {
                 _userId: toBN(userId),
-                _primary: toBN(newPrimary),
+                _primaryId: toBN(newPrimary),
             }
         )
     }
@@ -458,6 +461,21 @@ contract('UserReplicaSetManager', async (accounts) => {
         user1Primary = oldPrimary // No primary change
         user1Secondaries = toBNArray([4, 1])
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode2Account)
+    })
+
+    it('Configure replica set with duplicate IDs', async () => {
+        // Validate behavior when >1 replica ID is duplicated in a single user's replica set
+        let user1Primary = toBN(1)
+        let user1Secondaries = toBNArray([1, 3])
+        // Issue initial replica set selection from 1
+        await expectRevert(
+            updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1),
+            'Distinct replica IDs expected'
+        )
+        // Confirm distinct update still works
+        user1Primary = toBN(1)
+        user1Secondaries = toBNArray([2, 3])
+        updateReplicaSet(userId1, user1Primary, user1Secondaries, 0, [], userAcct1)
     })
 
     it('userReplicaBootstrapAddress functionality', async () => {
