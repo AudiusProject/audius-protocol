@@ -20,13 +20,7 @@ module.exports = function (app) {
       return errorResponseServerError()
     }
 
-    let value
-    if (req.query.pin === 'true') {
-      value = await getMonitor(MONITORS.IPFS_PIN_STATUS)
-    } else {
-      value = await getMonitor(MONITORS.IPFS_READ_WRITE_STATUS)
-    }
-
+    const value = await getMonitor(MONITORS.IPFS_READ_WRITE_STATUS)
     if (!value) {
       return errorResponseServerError({ error: 'IPFS not healthy' })
     }
