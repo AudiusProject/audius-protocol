@@ -1,4 +1,4 @@
-const { getDatabaseSize, getDatabaseConnections } = require('./database')
+const { getDatabaseSize, getDatabaseConnections, getDatabaseConnectionInfo, getDatabaseLiveness } = require('./database')
 const { getTotalMemory, getUsedMemory } = require('./memory')
 const {
   getStoragePathSize,
@@ -21,10 +21,24 @@ const {
   getIPFSReadWriteStatus,
   getIPFSPinStatus
 } = require('./ipfs')
+const redis = require('../redis')
 
 // Prefix used to key each monitored value in redis
 const MONITORING_REDIS_PREFIX = 'monitoring'
 
+/**
+ * List of all monitors to run, containing:
+ *  @param {string} name A unique name for the metric (for caching in redis)
+ *  @param {function} func The actual work to compute a value. The return value is what is cached.
+ *  @param {number?} ttl TTL in seconds for how long a cached value is good for.
+ *    Since the job runs on a cron, the min TTL a metric can be refreshed is 60s.
+ *    If a TTL isn't provided, the metric is refreshed every 60s.
+ */
+
+const DATABASE_LIVENESS = {
+  name: 'databaseLiveness',
+  func: getDatabaseLiveness
+}
 const DATABASE_SIZE = {
   name: 'databaseSize',
   func: getDatabaseSize,
@@ -33,6 +47,10 @@ const DATABASE_SIZE = {
 const DATABASE_CONNECTIONS = {
   name: 'databaseConnections',
   func: getDatabaseConnections
+}
+const DATABASE_CONNECTION_INFO = {
+  name: 'databaseConnectionInfo',
+  func: getDatabaseConnectionInfo
 }
 
 const TOTAL_MEMORY = {
@@ -113,17 +131,11 @@ const IPFS_PIN_STATUS = {
   ttl: 60 * 5
 }
 
-/**
- * List of all monitors to run, containing:
- *  @param {string} name A unique name for the metric (for caching in redis)
- *  @param {function} func The actual work to compute a value. The return value is what is cached.
- *  @param {number?} ttl TTL in seconds for how long a cached value is good for.
- *    Since the job runs on a cron, the min TTL a metric can be refreshed is 60s.
- *    If a TTL isn't provided, the metric is refreshed every 60s.
- */
-const MONITORS = [
+const MONITORS = {
+  DATABASE_LIVENESS,
   DATABASE_SIZE,
   DATABASE_CONNECTIONS,
+  DATABASE_CONNECTION_INFO,
   TOTAL_MEMORY,
   USED_MEMORY,
   STORAGE_PATH_SIZE,
@@ -139,11 +151,17 @@ const MONITORS = [
   REDIS_TOTAL_MEMORY,
   IPFS_READ_WRITE_STATUS,
   IPFS_PIN_STATUS
-]
+}
 
 const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
 
+const getMonitor = async (monitor) => {
+  const key = getMonitorRedisKey(monitor)
+  return redis.get(key)
+}
+
 module.exports = {
   MONITORS,
-  getMonitorRedisKey
+  getMonitorRedisKey,
+  getMonitor
 }

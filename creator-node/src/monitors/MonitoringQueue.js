@@ -45,7 +45,7 @@ class MonitoringQueue {
 
           // Iterate over each monitor and set a new value if the cached
           // value is not fresh.
-          MONITORS.forEach(async monitor => {
+          MONITORS.values().forEach(async monitor => {
             try {
               await this.refresh(monitor)
             } catch (e) {
