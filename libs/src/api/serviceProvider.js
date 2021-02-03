@@ -11,8 +11,8 @@ const CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT = 7500
 /**
  * API methods to interact with Audius service providers.
  * Types of services include:
- *    - Creator Node (host creator content)
- *    - Discovery Provider (index and make content queryable)
+ *    - Content Node (host creator content)
+ *    - Discovery Node (index and make content queryable)
  * Retrieving lists of available services, etc. are found here.
  */
 class ServiceProvider extends Base {
