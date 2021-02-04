@@ -42,7 +42,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
  * @param {*} logger
  */
 const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors) => {
-  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors)
+  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
 
   // Location information
   const country = config.get('serviceCountry')

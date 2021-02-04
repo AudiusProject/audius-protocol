@@ -72,7 +72,7 @@ describe('Test Health Check', function () {
   })
 
   it('Should handle no libs', async function () {
-    const res = await healthCheck({}, mockLogger, getMonitorsMock)
+    const res = await healthCheck({}, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'content-node',
@@ -92,7 +92,7 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
 
-    const res = await healthCheckVerbose({}, mockLogger, getMonitorsMock)
+    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'content-node',
