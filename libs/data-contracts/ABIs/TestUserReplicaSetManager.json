@@ -265,11 +265,11 @@
           "type": "uint256[]"
         },
         {
-          "name": "_oldPrimary",
+          "name": "_oldPrimaryId",
           "type": "uint256"
         },
         {
-          "name": "_oldSecondaries",
+          "name": "_oldSecondaryIds",
           "type": "uint256[]"
         },
         {
