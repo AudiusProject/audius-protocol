@@ -225,9 +225,9 @@ schemas.proposeAddOrUpdateCreatorNode = [
 schemas.updateReplicaSet = [
   { name: 'userId', type: 'uint' },
   { name: 'primary', type: 'uint' },
-  { name: 'secondariesHash', type: 'bytes32' },
+  { name: 'secondaryIdsHash', type: 'bytes32' },
   { name: 'oldPrimary', type: 'uint' },
-  { name: 'oldSecondariesHash', type: 'bytes32' },
+  { name: 'oldSecondaryIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
@@ -824,17 +824,17 @@ generators.getUpdateReplicaSetRequestData = function (
   contractAddress,
   userId,
   primary,
-  secondariesHash,
+  secondaryIdsHash,
   oldPrimary,
-  oldSecondariesHash,
+  oldSecondaryIdsHash,
   nonce
 ) {
   const message = {
     userId,
     primary,
-    secondariesHash,
+    secondaryIdsHash,
     oldPrimary,
-    oldSecondariesHash,
+    oldSecondaryIdsHash,
     nonce
   }
   return getRequestData(
