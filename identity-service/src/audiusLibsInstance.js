@@ -4,6 +4,16 @@ const config = require('./config')
 const registryAddress = config.get('registryAddress')
 const web3ProviderUrl = config.get('web3Provider')
 
+class AudiusLibsWrapper {
+  constructor () {
+    this.audiusLibsInstance = null
+  }
+
+  async init () {
+    this.audiusLibsInstance = await initAudiusLibs()
+  }
+}
+
 async function initAudiusLibs () {
   const dataWeb3 = await AudiusLibs.Utils.configureWeb3(web3ProviderUrl, null, false)
   if (!dataWeb3) throw new Error('Web3 incorrectly configured')
@@ -35,4 +45,6 @@ async function initAudiusLibs () {
   return audiusInstance
 }
 
-module.exports = initAudiusLibs
+const audiusLibsWrapper = new AudiusLibsWrapper()
+
+module.exports = audiusLibsWrapper

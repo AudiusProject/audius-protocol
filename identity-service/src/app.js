@@ -7,7 +7,6 @@ const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
-const initAudiusLibs = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
@@ -45,9 +44,7 @@ class App {
 
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
-      const audiusInstance = await this.configureAudiusInstance()
       await this.notificationProcessor.init(
-        audiusInstance,
         this.express,
         this.redisClient
       )
@@ -87,12 +84,6 @@ class App {
       mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
     }
     this.express.set('mailgun', mg)
-  }
-
-  async configureAudiusInstance () {
-    const audiusInstance = await initAudiusLibs()
-    this.express.set('audiusLibs', audiusInstance)
-    return audiusInstance
   }
 
   async runMigrations () {
