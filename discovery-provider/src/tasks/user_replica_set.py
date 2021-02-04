@@ -130,10 +130,10 @@ def user_replica_set_state_update(
 # Reconstruct endpoint string from primary and secondary IDs
 # Attempt to retrieve from cached values populated in index_network_peers.py
 # If unavailable, then a fallback to ethereum mainnet contracts will occur
-# Note that in the case of an invalid spID - one that is not yet registered on 
+# Note that in the case of an invalid spID - one that is not yet registered on
 # the ethereum mainnet contracts, there will be an empty value in the returned
 # creator_node_endpoint
-# If this discrepancy occurs, a client replica set health check sweep will 
+# If this discrepancy occurs, a client replica set health check sweep will
 # result in a client-initiated failover operation to a valid set of replicas
 def get_endpoint_string_from_sp_ids(
         self,
@@ -218,7 +218,7 @@ def get_sp_factory_inst(self, update_task):
 # Update cnode_record with event arguments
 def parse_usrm_cnode_record(self, update_task, session, entry, cnode_record):
     event_args = entry["args"]
-    cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet 
+    cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
     cnode_record.proposer_1_address = event_args._proposer1Address
     cnode_record.proposer_2_address = event_args._proposer2Address
     cnode_record.proposer_3_address = event_args._proposer3Address
