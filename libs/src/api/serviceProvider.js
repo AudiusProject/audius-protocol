@@ -11,19 +11,19 @@ const CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT = 7500
 /**
  * API methods to interact with Audius service providers.
  * Types of services include:
- *    - Creator Node (host creator content)
- *    - Discovery Provider (index and make content queryable)
+ *    - Content Node (host creator content)
+ *    - Discovery Node (index and make content queryable)
  * Retrieving lists of available services, etc. are found here.
  */
 class ServiceProvider extends Base {
-  /* ------- CREATOR NODE  ------- */
+  /* ------- Content Node  ------- */
 
   async listCreatorNodes () {
     return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CONTENT_NODE_SERVICE_NAME)
   }
 
   /**
-   * Fetches healthy creator nodes filtered down to a given whitelist and blacklist
+   * Fetches healthy Content Nodes filtered down to a given whitelist and blacklist
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
    */
@@ -61,8 +61,8 @@ class ServiceProvider extends Base {
   }
 
   /**
-   * Fetches healthy creator nodes and autoselects a primary
-   * and two secondaries
+   * Fetches healthy Content Nodes and autoselects a primary
+   * and two secondaries.
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
@@ -93,7 +93,7 @@ class ServiceProvider extends Base {
     return { primary, secondaries, services }
   }
 
-  /* ------- DISCOVERY PROVIDER ------ */
+  /* ------- Discovery Node ------ */
 
   async listDiscoveryProviders () {
     return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_NODE_SERVICE_NAME)
