@@ -57,7 +57,7 @@ def user_replica_set_state_update(
 
                 # Check if cnodeId is present
                 # If cnode id is found in event args, update local lookup object
-                cnode_sp_id = args._cnodeId if "_cnodeId" in args else None
+                cnode_sp_id = args._cnodeSpId if "_cnodeSpId" in args else None
 
                 # if the user id is not in the lookup object, it hasn't been initialized yet
                 # first, get the user object from the db(if exists or create a new one)
@@ -231,7 +231,7 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     event_args = entry["args"]
 
     # Arguments from the event
-    cnode_sp_id = event_args._cnodeId
+    cnode_sp_id = event_args._cnodeSpId
 
     cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     cnode_record = None
