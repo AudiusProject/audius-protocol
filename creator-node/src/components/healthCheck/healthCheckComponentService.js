@@ -1,10 +1,7 @@
 const versionInfo = require('../../../.version.json')
 const config = require('../../config')
 const utils = require('../../utils.js')
-const {
-  getMonitors: getMonitorValues,
-  MONITORS
-} = require('../../monitors/monitors')
+const { MONITORS } = require('../../monitors/monitors')
 
 /**
  * Perform a basic health check, returning the
@@ -82,6 +79,65 @@ const healthCheckVerbose = async ({ libs } = {}, logger, getMonitors = getMonito
     latitude,
     longitude,
     databaseConnections,
+    totalMemory,
+    usedMemory,
+    storagePathSize,
+    storagePathUsed,
+    maxFileDescriptors,
+    allocatedFileDescriptors,
+    receivedBytesPerSec,
+    transferredBytesPerSec
+  }
+
+  return response
+}
+
+/**
+ * Perform a verbose health check, returning health check results
+ * as well as location info, and system info.
+ * @param {*} ServiceRegistry
+ * @param {*} logger
+ */
+const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors) => {
+  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors)
+
+  // Location information
+  const country = config.get('serviceCountry')
+  const latitude = config.get('serviceLatitude')
+  const longitude = config.get('serviceLongitude')
+
+  // System information
+  const [
+    databaseConnections,
+    databaseSize,
+    totalMemory,
+    usedMemory,
+    storagePathSize,
+    storagePathUsed,
+    maxFileDescriptors,
+    allocatedFileDescriptors,
+    receivedBytesPerSec,
+    transferredBytesPerSec
+  ] = await getMonitors([
+    MONITORS.DATABASE_CONNECTIONS,
+    MONITORS.DATABASE_SIZE,
+    MONITORS.TOTAL_MEMORY,
+    MONITORS.USED_MEMORY,
+    MONITORS.STORAGE_PATH_SIZE,
+    MONITORS.STORAGE_PATH_USED,
+    MONITORS.MAX_FILE_DESCRIPTORS,
+    MONITORS.ALLOCATED_FILE_DESCRIPTORS,
+    MONITORS.RECEIVED_BYTES_PER_SEC,
+    MONITORS.TRANSFERRED_BYTES_PER_SEC
+  ])
+
+  const response = {
+    ...basicHealthCheck,
+    country,
+    latitude,
+    longitude,
+    databaseConnections,
+    databaseSize,
     totalMemory,
     usedMemory,
     storagePathSize,
