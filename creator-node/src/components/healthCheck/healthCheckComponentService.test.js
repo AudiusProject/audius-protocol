@@ -19,6 +19,8 @@ const getMonitorsMock = async (monitors) => {
         return true
       case MONITORS.DATABASE_CONNECTIONS.name:
         return 5
+      case MONITORS.DATABASE_SIZE.name:
+        return 1102901
       case MONITORS.TOTAL_MEMORY.name:
         return 6237151232
       case MONITORS.USED_MEMORY.name:
@@ -100,6 +102,7 @@ describe('Test Health Check Verbose', function () {
       latitude: '37.7749',
       longitude: '-122.4194',
       databaseConnections: 5,
+      databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
       storagePathSize: 62725623808,

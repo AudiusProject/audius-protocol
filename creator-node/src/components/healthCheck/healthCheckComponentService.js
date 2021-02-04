@@ -56,6 +56,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, getMonitors = getMonito
   // System information
   const [
     databaseConnections,
+    databaseSize,
     totalMemory,
     usedMemory,
     storagePathSize,
@@ -66,6 +67,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, getMonitors = getMonito
     transferredBytesPerSec
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
+    MONITORS.DATABASE_SIZE,
     MONITORS.TOTAL_MEMORY,
     MONITORS.USED_MEMORY,
     MONITORS.STORAGE_PATH_SIZE,
@@ -82,6 +84,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, getMonitors = getMonito
     latitude,
     longitude,
     databaseConnections,
+    databaseSize,
     totalMemory,
     usedMemory,
     storagePathSize,
