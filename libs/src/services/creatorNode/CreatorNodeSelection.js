@@ -7,10 +7,8 @@ class CreatorNodeSelection extends ServiceSelection {
     creatorNode,
     numberOfNodes,
     ethContracts,
-    whitelist,
-    blacklist,
-    timeout = null,
-    maxStorageUsedPercent = 90
+    maxStorageUsedPercent = 90,
+    timeout = null
   }) {
     super({
       getServices: async () => {
@@ -18,8 +16,8 @@ class CreatorNodeSelection extends ServiceSelection {
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
         return services.map(e => e.endpoint)
       },
-      whitelist,
-      blacklist
+      whitelist: creatorNode.passList,
+      blacklist: creatorNode.blockList
     })
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
@@ -215,6 +213,30 @@ class CreatorNodeSelection extends ServiceSelection {
     })
 
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: healthyServicesList })
+
+    // Record metrics
+    if (this.creatorNode.monitoringCallbacks.healthCheck) {
+      healthCheckedServices.forEach(check => {
+        const url = new URL(check.request.url)
+        const data = check.response.data.data
+        this.creatorNode.monitoringCallbacks.healthCheck({
+          endpoint: url.origin,
+          pathname: url.pathname,
+          version: data.version,
+          git: data.git,
+          selectedDiscoveryNode: data.selectedDiscoveryProvider,
+          databaseSize: data.databaseSize,
+          totalMemory: data.totalMemory,
+          usedMemory: data.usedMemory,
+          totalStorage: data.storagePathSize,
+          usedStorage: data.storagePathUsed,
+          maxFileDescriptors: data.maxFileDescriptors,
+          allocatedFileDescriptors: data.allocatedFileDescriptors,
+          receivedBytesPerSec: data.receivedBytesPerSec,
+          transferredBytesPerSec: data.transferredBytesPerSec
+        })
+      })
+    }
 
     return { healthyServicesList, healthyServicesMap: servicesMap }
   }

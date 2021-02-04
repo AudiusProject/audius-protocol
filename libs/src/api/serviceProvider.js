@@ -64,8 +64,6 @@ class ServiceProvider extends Base {
    * Fetches healthy Content Nodes and autoselects a primary
    * and two secondaries.
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
-   * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
-   * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
    * @param {boolean} performSyncCheck whether or not to perform sync check
    * @param {number?} timeout ms applied to each request made to a content node
    * @returns { primary, secondaries, services }
@@ -75,8 +73,6 @@ class ServiceProvider extends Base {
    */
   async autoSelectCreatorNodes ({
     numberOfNodes = 3,
-    whitelist = null,
-    blacklist = null,
     performSyncCheck = true,
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   }) {
@@ -84,8 +80,6 @@ class ServiceProvider extends Base {
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
-      whitelist,
-      blacklist,
       timeout
     })
 

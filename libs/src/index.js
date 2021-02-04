@@ -55,9 +55,20 @@ class AudiusLibs {
    * @param {string} fallbackUrl creator node endpoint to fall back to on requests
    * @param {boolean} lazyConnect whether to delay connection to the node until the first
    * request that requires a connection is made.
+   * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
+   * @param {Set<string>?} blockList whether or not to exclude any nodes (default null)
+   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   *    @param {function} monitoringCallbacks.request
+   *    @param {function} monitoringCallbacks.healthCheck
    */
-  static configCreatorNode (fallbackUrl, lazyConnect = false) {
-    return { fallbackUrl, lazyConnect }
+  static configCreatorNode (
+    fallbackUrl,
+    lazyConnect = false,
+    passList = null,
+    blockList = null,
+    monitoringCallbacks = null
+  ) {
+    return { fallbackUrl, lazyConnect, passList, blockList, monitoringCallbacks }
   }
 
   /**
@@ -269,7 +280,11 @@ class AudiusLibs {
         this.isServer,
         this.userStateManager,
         this.creatorNodeConfig.lazyConnect,
-        this.schemas)
+        this.schemas,
+        this.creatorNodeConfig.passList,
+        this.creatorNodeConfig.blockList,
+        this.creatorNodeConfig.monitoringCallbacks
+      )
       await this.creatorNode.init()
     }
 
