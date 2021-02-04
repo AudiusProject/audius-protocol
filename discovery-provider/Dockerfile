@@ -1,5 +1,5 @@
 # requires authentication to Dockerhub
-FROM audius/contracts:user-replica-set-manager-12-16-20 as contracts
+FROM audius/contracts:v2.0.0-rc1 as contracts
 
 FROM python:3.7.0-alpine
 MAINTAINER Hareesh Nagaraj <hareesh@audius.co>
