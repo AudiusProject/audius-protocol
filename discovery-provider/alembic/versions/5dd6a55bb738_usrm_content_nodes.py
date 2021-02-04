@@ -22,13 +22,13 @@ def upgrade():
         sa.Column('blockhash', sa.String(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('is_current', sa.Boolean(), nullable=False),
-        sa.Column('cnode_id', sa.Integer(), nullable=False),
+        sa.Column('cnode_sp_id', sa.Integer(), nullable=False),
         sa.Column('delegate_owner_wallet', sa.String(), nullable=False),
         sa.Column('proposer_sp_ids', sa.ARRAY(sa.Integer()), nullable=False),
         sa.Column('proposer_1_address', sa.String(), nullable=False),
         sa.Column('proposer_2_address', sa.String(), nullable=False),
         sa.Column('proposer_3_address', sa.String(), nullable=False),
-        sa.PrimaryKeyConstraint('is_current', 'cnode_id', 'blockhash')
+        sa.PrimaryKeyConstraint('is_current', 'cnode_sp_id', 'blockhash')
     )
     # ### end Alembic commands ###
 

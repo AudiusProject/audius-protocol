@@ -11,6 +11,7 @@ def get_usrm_cnodes():
             .filter(
                 USRMContentNode.is_current == True,
             )
+            .order_by(USRMContentNode.cnode_sp_id)
         )
         query_results = paginate_query(query).all()
         usrm_content_nodes = helpers.query_result_to_list(query_results)

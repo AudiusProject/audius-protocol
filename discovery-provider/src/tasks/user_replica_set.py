@@ -41,7 +41,7 @@ def user_replica_set_state_update(
     user_replica_set_events_lookup = {}
 
     # This stores the state of the cnode object along with all events applied
-    # Data format is {"cnode_id": {"cnode_record", "events":[]}}
+    # Data format is {"cnode_sp_id": {"cnode_record", "events":[]}}
     cnode_events_lookup = {}
 
     for tx_receipt in user_replica_set_mgr_txs:
@@ -57,7 +57,7 @@ def user_replica_set_state_update(
 
                 # Check if cnodeId is present
                 # If cnode id is found in event args, update local lookup object
-                cnode_id = args._cnodeId if "_cnodeId" in args else None
+                cnode_sp_id = args._cnodeId if "_cnodeId" in args else None
 
                 # if the user id is not in the lookup object, it hasn't been initialized yet
                 # first, get the user object from the db(if exists or create a new one)
@@ -66,7 +66,7 @@ def user_replica_set_state_update(
                     ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
                     user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
-                if cnode_id and (cnode_id not in cnode_events_lookup):
+                if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
                     ret_cnode = lookup_usrm_cnode(
                         self,
                         update_task,
@@ -75,7 +75,7 @@ def user_replica_set_state_update(
                         block_number,
                         block_timestamp
                     )
-                    cnode_events_lookup[cnode_id] = {"content_node": ret_cnode, "events": []}
+                    cnode_events_lookup[cnode_sp_id] = {"content_node": ret_cnode, "events": []}
 
                 # Add or update the value of the user record for this block in user_replica_set_events_lookup,
                 # ensuring that multiple events for a single user result in only 1 row insert operation
@@ -106,11 +106,11 @@ def user_replica_set_state_update(
                         update_task,
                         session,
                         entry,
-                        cnode_events_lookup[cnode_id]["content_node"]
+                        cnode_events_lookup[cnode_sp_id]["content_node"]
                     )
                     if cnode_record is not None:
-                        cnode_events_lookup[cnode_id]["content_node"] = cnode_record
-                        cnode_events_lookup[cnode_id]["events"].append(event_type)
+                        cnode_events_lookup[cnode_sp_id]["content_node"] = cnode_record
+                        cnode_events_lookup[cnode_sp_id]["events"].append(event_type)
             num_user_replica_set_changes += len(user_events_tx)
 
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
@@ -231,14 +231,14 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     event_args = entry["args"]
 
     # Arguments from the event
-    cnode_id = event_args._cnodeId
+    cnode_sp_id = event_args._cnodeId
 
-    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_id=cnode_id).count() > 0
+    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     cnode_record = None
     if cnode_record_exists:
         cnode_record = (
             session.query(USRMContentNode)
-            .filter(USRMContentNode.cnode_id == cnode_id, USRMContentNode.is_current == True)
+            .filter(USRMContentNode.cnode_sp_id == cnode_sp_id, USRMContentNode.is_current == True)
             .first()
         )
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
@@ -248,19 +248,19 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     else:
         cnode_record = USRMContentNode(
             is_current=True,
-            cnode_id=cnode_id,
+            cnode_sp_id=cnode_sp_id,
             created_at=datetime.utcfromtimestamp(block_timestamp)
         )
     # update these fields regardless of type
     cnode_record.blockhash = event_blockhash
     return cnode_record
 
-def invalidate_old_cnode_record(session, cnode_id):
-    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_id=cnode_id).count() > 0
+def invalidate_old_cnode_record(session, cnode_sp_id):
+    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     if cnode_record_exists:
         num_invalidated_records = (
             session.query(USRMContentNode)
-            .filter(USRMContentNode.cnode_id == cnode_id, USRMContentNode.is_current == True)
+            .filter(USRMContentNode.cnode_sp_id == cnode_sp_id, USRMContentNode.is_current == True)
             .update({"is_current": False})
         )
         assert (
