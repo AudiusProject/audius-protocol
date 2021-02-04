@@ -27,6 +27,8 @@ class CreatorNodeSelection extends ServiceSelection {
     this.healthCheckPath = 'health_check/verbose'
     // String array of healthy Content Node endpoints
     this.backupsList = []
+    // Max percentage (represented out of 100) allowed before determining CN is unsuitable for selection
+    this.maxStoragePathUsage = 90
   }
 
   /**
@@ -215,7 +217,7 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 
   _hasEnoughStorageSpace ({ storagePathSize, storagePathUsed }) {
-    return Math.round(100 * (storagePathUsed / storagePathSize)) < 90
+    return Math.round(100 * (storagePathUsed / storagePathSize)) < this.maxStoragePathUsage
   }
 }
 
