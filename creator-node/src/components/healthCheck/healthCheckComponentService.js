@@ -1,6 +1,10 @@
 const versionInfo = require('../../../.version.json')
 const config = require('../../config')
 const utils = require('../../utils.js')
+const {
+  getMonitors: getMonitorValues,
+  MONITORS
+} = require('../../monitors/monitors')
 
 /**
  * Perform a basic health check, returning the
@@ -9,7 +13,7 @@ const utils = require('../../utils.js')
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize) => {
+const healthCheck = async ({ libs } = {}, logger, getMonitors = getMonitorValues) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -29,7 +33,64 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
   // we have a /db_check route for more granular detail, but the service health check should
   // also check that the db connection is good. having this in the health_check
   // allows us to get auto restarts from liveness probes etc if the db connection is down
-  await sequelize.query('SELECT 1')
+  const [ databaseLiveness ] = await getMonitors([MONITORS.DATABASE_LIVENESS])
+  if (!databaseLiveness) throw new Error('Database connection failed')
+
+  return response
+}
+
+/**
+ * Perform a verbose health check, returning health check results
+ * as well as location info, and system info.
+ * @param {*} ServiceRegistry
+ * @param {*} logger
+ */
+const healthCheckVerbose = async ({ libs } = {}, logger, getMonitors = getMonitorValues) => {
+  const basicHealthCheck = await healthCheck({ libs }, logger, getMonitors)
+
+  // Location information
+  const country = config.get('serviceCountry')
+  const latitude = config.get('serviceLatitude')
+  const longitude = config.get('serviceLongitude')
+
+  // System information
+  const [
+    databaseConnections,
+    totalMemory,
+    usedMemory,
+    storagePathSize,
+    storagePathUsed,
+    maxFileDescriptors,
+    allocatedFileDescriptors,
+    receivedBytesPerSec,
+    transferredBytesPerSec
+  ] = await getMonitors([
+    MONITORS.DATABASE_CONNECTIONS,
+    MONITORS.TOTAL_MEMORY,
+    MONITORS.USED_MEMORY,
+    MONITORS.STORAGE_PATH_SIZE,
+    MONITORS.STORAGE_PATH_USED,
+    MONITORS.MAX_FILE_DESCRIPTORS,
+    MONITORS.ALLOCATED_FILE_DESCRIPTORS,
+    MONITORS.RECEIVED_BYTES_PER_SEC,
+    MONITORS.TRANSFERRED_BYTES_PER_SEC
+  ])
+
+  const response = {
+    ...basicHealthCheck,
+    country,
+    latitude,
+    longitude,
+    databaseConnections,
+    totalMemory,
+    usedMemory,
+    storagePathSize,
+    storagePathUsed,
+    maxFileDescriptors,
+    allocatedFileDescriptors,
+    receivedBytesPerSec,
+    transferredBytesPerSec
+  }
 
   return response
 }
@@ -48,5 +109,6 @@ const healthCheckDuration = async () => {
 
 module.exports = {
   healthCheck,
+  healthCheckVerbose,
   healthCheckDuration
 }
