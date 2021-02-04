@@ -29,15 +29,14 @@ const NavBanner = props => {
           })}
         >
           <div className={styles.tabs}>{props.tabs}</div>
-          <div className={styles.dropdown}>
-            {props.dropdownDisabled ? null : (
-              <Dropdown
-                variant='border'
-                menu={menu}
-                disabled={props.dropdownDisabled}
-              />
-            )}
-          </div>
+
+          {props.isArtist && (
+            <div className={styles.dropdown}>
+              {!props.dropdownDisabled && (
+                <Dropdown variant='border' menu={menu} disabled={false} />
+              )}
+            </div>
+          )}
         </div>
       ) : null}
     </div>
@@ -52,7 +51,8 @@ NavBanner.propTypes = {
   onSortByRecent: PropTypes.func,
   onSortByPopular: PropTypes.func,
   shouldMaskContent: PropTypes.bool,
-  activeTab: PropTypes.string
+  activeTab: PropTypes.string,
+  isArtist: PropTypes.bool
 }
 
 NavBanner.defaultProps = {

@@ -102,7 +102,7 @@
     "start:mobile-stage": "env-cmd ./.env/.env.mobile npm run start:stage",
     "prebuild": "npm run publish-scripts",
     "build": "react-scripts --max_old_space_size=8192 build",
-    "build:dev": "npm run write-sha && env-cmd ./.env/.env.dev env-cmd ./.env/.env.git npm run build && rm -rf build-staging && mv build build-development",
+    "build:dev": "npm run write-sha && env-cmd ./.env/.env.dev env-cmd ./.env/.env.git npm run build && rm -rf build-development && mv build build-development",
     "build:stage": "npm run write-sha && env-cmd ./.env/.env.stage env-cmd ./.env/.env.git npm run build && rm -rf build-staging && mv build build-staging",
     "build:ci": "npm run write-sha && env-cmd ./.env/.env.ci env-cmd ./.env/.env.git npm run build && rm -rf build-ci && mv build build-ci",
     "build:demo": "npm run write-sha && env-cmd ./.env/.env.stage env-cmd ./.env/.env.git npm run build && rm -rf build-demo && mv build build-demo",
