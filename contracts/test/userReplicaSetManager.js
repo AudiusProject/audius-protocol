@@ -110,7 +110,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _cnodeId: toBN(cnode1SpID),
+                _cnodeSpId: toBN(cnode1SpID),
                 _cnodeDelegateOwnerWallet: cnode1Account,
                 _proposer1Address: addressZero,
                 _proposer2Address: addressZero,
@@ -122,7 +122,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _cnodeId: toBN(cnode2SpID),
+                _cnodeSpId: toBN(cnode2SpID),
                 _cnodeDelegateOwnerWallet: cnode2Account,
                 _proposer1Address: addressZero,
                 _proposer2Address: addressZero,
@@ -134,7 +134,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _cnodeId: toBN(cnode3SpID),
+                _cnodeSpId: toBN(cnode3SpID),
                 _cnodeDelegateOwnerWallet: cnode3Account,
                 _proposer1Address: addressZero,
                 _proposer2Address: addressZero,
@@ -336,7 +336,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             UserReplicaSetManager,
             'AddOrUpdateContentNode',
             {
-                _cnodeId: toBN(newCNodeSPId),
+                _cnodeSpId: toBN(newCNodeSPId),
                 _cnodeDelegateOwnerWallet: newCnodeDelegateWallet,
                 _proposer1Address: cnode1Account,
                 _proposer2Address: cnode2Account,

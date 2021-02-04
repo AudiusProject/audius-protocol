@@ -26,7 +26,7 @@ export const addOrUpdateCreatorNode = async (userReplicaSetManager, cnodeId, cno
   parseTxWithAssertsAndResp(
     tx,
     'AddOrUpdateCreatorNode',
-    { _cnodeId: cnodeId, _cnodeDelegateOwnerWallet: cnodeDelegateOwnerWallet, _proposerSpId: proposerId }
+    { _cnodeSpId: cnodeId, _cnodeDelegateOwnerWallet: cnodeDelegateOwnerWallet, _proposerSpId: proposerId }
   )
   return tx
 }
