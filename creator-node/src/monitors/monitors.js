@@ -32,36 +32,18 @@ const MONITORING_REDIS_PREFIX = 'monitoring'
  *  @param {number?} ttl TTL in seconds for how long a cached value is good for.
  *    Since the job runs on a cron, the min TTL a metric can be refreshed is 60s.
  *    If a TTL isn't provided, the metric is refreshed every 60s.
-<<<<<<< HEAD
-=======
  *  @param {string?} type Optional type that the value should be parsed to (default is string)
  *    Options are bool, int, float, string, json
->>>>>>> rj-aud-142-3
  */
 
 const DATABASE_LIVENESS = {
   name: 'databaseLiveness',
-<<<<<<< HEAD
-  func: getDatabaseLiveness
-=======
   func: getDatabaseLiveness,
   type: 'bool'
->>>>>>> rj-aud-142-3
 }
 const DATABASE_SIZE = {
   name: 'databaseSize',
   func: getDatabaseSize,
-<<<<<<< HEAD
-  ttl: 60 * 2
-}
-const DATABASE_CONNECTIONS = {
-  name: 'databaseConnections',
-  func: getDatabaseConnections
-}
-const DATABASE_CONNECTION_INFO = {
-  name: 'databaseConnectionInfo',
-  func: getDatabaseConnectionInfo
-=======
   ttl: 60 * 2,
   type: 'int'
 }
@@ -74,89 +56,56 @@ const DATABASE_CONNECTION_INFO = {
   name: 'databaseConnectionInfo',
   func: getDatabaseConnectionInfo,
   type: 'json'
->>>>>>> rj-aud-142-3
 }
 
 const TOTAL_MEMORY = {
   name: 'totalMemory',
   func: getTotalMemory,
-<<<<<<< HEAD
-  ttl: 60 * 2
-=======
   ttl: 60 * 2,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 const USED_MEMORY = {
   name: 'usedMemory',
   func: getUsedMemory,
-<<<<<<< HEAD
-  ttl: 60 * 2
-=======
   ttl: 60 * 2,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 
 const STORAGE_PATH_SIZE = {
   name: 'storagePathSize',
   func: getStoragePathSize,
-<<<<<<< HEAD
-  ttl: 60 * 5
-=======
   ttl: 60 * 5,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 const STORAGE_PATH_USED = {
   name: 'storagePathUsed',
   func: getStoragePathUsed,
-<<<<<<< HEAD
-  ttl: 60 * 5
-=======
   ttl: 60 * 5,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 const FILESYSTEM_SIZE = {
   name: 'filesystemSize',
   func: getFilesystemSize,
-<<<<<<< HEAD
-  ttl: 60 * 5
-=======
   ttl: 60 * 5,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 const FILESYSTEM_USED = {
   name: 'filesystemUsed',
   func: getFilesystemUsed,
-<<<<<<< HEAD
-  ttl: 60 * 5
-=======
   ttl: 60 * 5,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 const MAX_FILE_DESCRIPTORS = {
   name: 'maxFileDescriptors',
   func: getMaxFileDescriptors,
-<<<<<<< HEAD
-  ttl: 60 * 5
-=======
   ttl: 60 * 5,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 const ALLOCATED_FILE_DESCRIPTORS = {
   name: 'allocatedFileDescriptors',
   func: getAllocatedFileDescriptors,
-<<<<<<< HEAD
-  ttl: 60 * 5
-=======
   ttl: 60 * 5,
   type: 'int'
->>>>>>> rj-aud-142-3
 }
 
 const RECEIVED_BYTES_PER_SEC = {
