@@ -33,8 +33,7 @@ const healthCheck = async ({ libs } = {}, logger, getMonitors = getMonitorValues
   // we have a /db_check route for more granular detail, but the service health check should
   // also check that the db connection is good. having this in the health_check
   // allows us to get auto restarts from liveness probes etc if the db connection is down
-  const [ databaseLiveness ] = await getMonitors([MONITORS.DATABASE_LIVENESS])
-  if (!databaseLiveness) throw new Error('Database connection failed')
+  await sequelize.query('SELECT 1')
 
   return response
 }
