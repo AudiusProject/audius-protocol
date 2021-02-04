@@ -1,10 +1,7 @@
 const versionInfo = require('../../../.version.json')
 const config = require('../../config')
 const utils = require('../../utils.js')
-const {
-  getMonitors: getMonitorValues,
-  MONITORS
-} = require('../../monitors/monitors')
+const { MONITORS } = require('../../monitors/monitors')
 
 /**
  * Perform a basic health check, returning the
@@ -13,7 +10,7 @@ const {
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = async ({ libs } = {}, logger, getMonitors = getMonitorValues) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -44,8 +41,8 @@ const healthCheck = async ({ libs } = {}, logger, getMonitors = getMonitorValues
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheckVerbose = async ({ libs } = {}, logger, getMonitors = getMonitorValues) => {
-  const basicHealthCheck = await healthCheck({ libs }, logger, getMonitors)
+const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors) => {
+  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors)
 
   // Location information
   const country = config.get('serviceCountry')

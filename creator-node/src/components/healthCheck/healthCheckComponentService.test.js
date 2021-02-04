@@ -12,6 +12,10 @@ const libsMock = {
   }
 }
 
+const sequelizeMock = {
+  'query': async () => Promise.resolve()
+}
+
 const getMonitorsMock = async (monitors) => {
   return monitors.map(monitor => {
     switch (monitor.name) {
@@ -54,7 +58,7 @@ describe('Test Health Check', function () {
     let expectedEndpoint = config.get('creatorNodeEndpoint')
     let expectedSpID = config.get('spID')
     let expectedSpOwnerWallet = config.get('spOwnerWallet')
-    const res = await healthCheck({ libs: libsMock }, mockLogger, getMonitorsMock)
+    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
     assert.deepStrictEqual(res, {
       ...version,
       service: 'content-node',
