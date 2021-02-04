@@ -129,7 +129,6 @@ class BlacklistedIPLD(Base):
 blocknumber={self.blocknumber},ipld={self.ipld}\
 is_blacklisted={self.is_blacklisted}, is_current={self.is_current})>"
 
-
 class User(Base):
     __tablename__ = "users"
 
@@ -153,6 +152,8 @@ class User(Base):
     creator_node_endpoint = Column(String)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
+    primary_id = Column(Integer, nullable=True)
+    secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
@@ -182,6 +183,8 @@ bio={self.bio},\
 location={self.location},\
 metadata_multihash={self.metadata_multihash},\
 creator_node_endpoint={self.creator_node_endpoint},\
+primary_id={self.primary_id},\
+secondary_ids={self.secondary_ids},\
 updated_at={self.updated_at},\
 created_at={self.created_at})>"
 
@@ -603,6 +606,27 @@ class TagTrackUserMatview(Base):
 tag={self.tag},\
 track_id={self.track_id},\
 owner_id={self.owner_id}>"
+
+class USRMContentNode(Base):
+    __tablename__ = "usrm_content_nodes"
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    cnode_id = Column(Integer, nullable=False)
+    delegate_owner_wallet = Column(String, nullable=False)
+    proposer_sp_ids = Column(postgresql.ARRAY(Integer), nullable=False)
+    proposer_1_address = Column(String, nullable=False)
+    proposer_2_address = Column(String, nullable=False)
+    proposer_3_address = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+
+    PrimaryKeyConstraint(is_current, cnode_id, blockhash)
+
+    def __repr__(self):
+        return f"<USRMContentNode(blockhash={self.blockhash},\
+is_current={self.is_current},cnode_id={self.cnode_id},\
+delegate_owner_wallet={self.delegate_owner_wallet}, proposer_sp_ids={self.proposer_sp_ids},\
+proposer_1_address={self.proposer_1_address},proposer_2_address={self.proposer_2_address},\
+proposer_3_address={self.proposer_3_address})>"
 
 class UserBalance(Base):
     __tablename__ = "user_balances"
