@@ -617,6 +617,7 @@ const ProfilePage = ({
               dropdownDisabled={dropdownDisabled}
               onChange={changeTab}
               activeTab={activeTab}
+              isArtist={isArtist}
               onSortByRecent={onSortByRecent}
               onSortByPopular={onSortByPopular}
               shouldMaskContent={shouldMaskContent}

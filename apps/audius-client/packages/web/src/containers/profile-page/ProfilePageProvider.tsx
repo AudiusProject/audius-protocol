@@ -620,7 +620,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   getIsArtist = () => {
     const { profile } = this.props.profile
-    return !!profile && profile.is_creator && profile.track_count > 0
+    return !!profile && profile.track_count > 0
   }
 
   getIsOwner = () => {

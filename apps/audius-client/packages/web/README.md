@@ -78,7 +78,7 @@ npm run test
 
 ```bash
 npm run lint  # Show lint errors
-npm run lint-fix  # Fix lint errors
+npm run lint:fix  # Fix lint errors
 ```
 
 ### Web Workers
