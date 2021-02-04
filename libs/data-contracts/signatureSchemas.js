@@ -216,7 +216,7 @@ schemas.addIPLDBlacklist = [
 
 // User replica set manager schemas
 schemas.proposeAddOrUpdateCreatorNode = [
-  { name: 'cnodeId', type: 'uint' },
+  { name: 'cnodeSpId', type: 'uint' },
   { name: 'cnodeDelegateOwnerWallet', type: 'address' },
   { name: 'proposerSpId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
@@ -224,9 +224,9 @@ schemas.proposeAddOrUpdateCreatorNode = [
 
 schemas.updateReplicaSet = [
   { name: 'userId', type: 'uint' },
-  { name: 'primary', type: 'uint' },
+  { name: 'primaryId', type: 'uint' },
   { name: 'secondaryIdsHash', type: 'bytes32' },
-  { name: 'oldPrimary', type: 'uint' },
+  { name: 'oldPrimaryId', type: 'uint' },
   { name: 'oldSecondaryIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
@@ -798,13 +798,13 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
 generators.getProposeAddOrUpdateContentNodeRequestData = function (
   chainId,
   contractAddress,
-  cnodeId,
+  cnodeSpId,
   cnodeDelegateOwnerWallet,
   proposerSpId,
   nonce
 ) {
   const message = {
-    cnodeId,
+    cnodeSpId,
     cnodeDelegateOwnerWallet,
     proposerSpId,
     nonce
@@ -823,17 +823,17 @@ generators.getUpdateReplicaSetRequestData = function (
   chainId,
   contractAddress,
   userId,
-  primary,
+  primaryId,
   secondaryIdsHash,
-  oldPrimary,
+  oldPrimaryId,
   oldSecondaryIdsHash,
   nonce
 ) {
   const message = {
     userId,
-    primary,
+    primaryId,
     secondaryIdsHash,
-    oldPrimary,
+    oldPrimaryId,
     oldSecondaryIdsHash,
     nonce
   }

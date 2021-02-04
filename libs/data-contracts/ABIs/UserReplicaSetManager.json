@@ -121,7 +121,7 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_cnodeId",
+          "name": "_cnodeSpId",
           "type": "uint256"
         },
         {
@@ -240,7 +240,7 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_cnodeId",
+          "name": "_cnodeSpId",
           "type": "uint256"
         },
         {
