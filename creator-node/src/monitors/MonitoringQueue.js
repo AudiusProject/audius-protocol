@@ -4,6 +4,8 @@ const config = require('../config')
 const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')
 
+const QUEUE_INTERVAL_MS = 60 * 1000
+
 const PROCESS_NAMES = Object.freeze({
   monitor: 'monitor'
 })
@@ -102,7 +104,13 @@ class MonitoringQueue {
       await this.queue.add(PROCESS_NAMES.monitor)
 
       // Then enqueue the job to run on a regular interval
-      await this.queue.add(PROCESS_NAMES.monitor, {}, { repeat: { cron: '* * * * *' } })
+      setInterval(async () => {
+        try {
+          await this.queue.add(PROCESS_NAMES.monitor)
+        } catch (e) {
+          this.logStatus('Failed to enqueue!')
+        }
+      }, QUEUE_INTERVAL_MS)
     } catch (e) {
       this.logStatus('Startup failed!')
     }
