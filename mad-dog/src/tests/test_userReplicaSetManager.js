@@ -194,26 +194,36 @@ const swapSecondaries = async(executeAll) => {
 }
 
 // Verify indexed state matches content nodes registered in UserReplicaSetManager
+// Also confirms UserReplicaSetManager state maches eth-contracts
 const verifyUsrmContentNodes = async (executeOne) => {
-  await executeOne(DEFAULT_INDEX + 1, async (libs)=> {
+  logger.info(`Validating content-nodes on UserReplicaSetManager`)
+  await executeOne(DEFAULT_INDEX, async (libs)=> {
     let queriedContentNodes = (await axios({
       method: 'get',
       baseURL: libs.getDiscoveryNodeEndpoint(),
       url: '/usrm_content_nodes'
     })).data.data
-    console.log('0000')
-    console.log(queriedContentNodes)
-    await Promise.all(queriedContentNodes.forEach(async (x)=>{
-      console.log(x)
-      let spID = x.cnode_id
-      let wallet = x.delegate_owner_wallet
-      console.log(`${spID}:${wallet}`)
-
-      let queriedFromChain = await libs.getContentNodeWallet(spID) 
-      console.log(queriedFromChain)
-      console.log('---')
+    await Promise.all(queriedContentNodes.map(async (queriedNodeInfo)=>{
+      let spID = queriedNodeInfo.cnode_id
+      let wallet = queriedNodeInfo.delegate_owner_wallet
+      let walletFromChain = await libs.getContentNodeWallet(spID) 
+      if (wallet !== walletFromChain) {
+        throw new Error(
+          `Mismatch between UserReplicaSetManager chain wallet: ${walletFromChain} and queried wallet: ${wallet}`
+        )
+      }
+      // Query eth-contracts and confirm IDs
+      logger.info(`Found UserReplicaSetManager and Discovery Provider match for spID=${spID}, delegateWallet=${wallet}`)
+      let ethSpInfo = await libs.getServiceEndpointInfo('content-node', spID)
+      if (walletFromChain !== ethSpInfo.delegateOwnerWallet) {
+        throw new Error(
+          `Mismatch between UserReplicaSetManager chain wallet: ${walletFromChain} and SP eth-contracts wallet: ${ethSpInfo.delegateOwnerWallet}`
+        )
+      }
+      logger.info(`Found UserReplicaSetManager and ServiceProviderFactory match for spID=${spID}, delegateWallet=${walletFromChain}`)
     }))
   })
+  logger.info(`Finished validating content-nodes on UserReplicaSetManager`)
 }
 
 const userReplicaSetManagerTest = async ({
@@ -236,36 +246,14 @@ const userReplicaSetManagerTest = async ({
   }
 
   let contentNodeList = await executeOne(DEFAULT_INDEX, async (libsWrapper) => {
-    //   console.log(libsWrapper)
     let endpointsList = await libsWrapper.getServices('content-node') 
     return endpointsList
   })
   contentNodeList.forEach((info)=>{
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
-
-  await executeOne(DEFAULT_INDEX + 1, async (libs)=> {
-    let queriedContentNodes = (await axios({
-      method: 'get',
-      baseURL: libs.getDiscoveryNodeEndpoint(),
-      url: '/usrm_content_nodes'
-    })).data.data
-    console.log('0000')
-    console.log(queriedContentNodes)
-    await Promise.all(queriedContentNodes.forEach(async (x)=>{
-      console.log(x)
-      let spID = x.cnode_id
-      let wallet = x.delegate_owner_wallet
-      console.log(`${spID}:${wallet}`)
-
-      let queriedFromChain = await libs.getContentNodeWallet(spID) 
-      console.log(queriedFromChain)
-      console.log('---')
-    }))
-  })
   
-
-  /*
+  await verifyUsrmContentNodes(executeOne)
   // Start of actual test logic
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary1ToPrimary(executeAll)
@@ -274,7 +262,6 @@ const userReplicaSetManagerTest = async ({
   await verifyUserReplicaSets(executeAll)
   await swapSecondaries(executeAll)
   await verifyUserReplicaSets(executeAll)
-  */
 }
 
 module.exports = {

@@ -567,15 +567,19 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
   }
 
+  this.getServiceEndpointInfo = async (serviceType, serviceId) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+      serviceType,
+      serviceId
+    )
+  }
+
   this.getUserReplicaSet = async (userId) => {
     return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   }
 
   this.getContentNodeWallet = async (cnodeId) => {
-    console.log('here')
-    let resp =  await this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallet(cnodeId)
-    console.log('here2')
-    return resp
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallet(cnodeId)
   }
 
   this.updateReplicaSet = async (userId, primary, secondaries) => {
