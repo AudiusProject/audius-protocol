@@ -56,8 +56,8 @@ def test_resolve_user_url(app):
                 handle="Urbanbankai",
                 handle_lc="urbanbankai",
                 user_id=42727,
-                primary=1,
-                secondaries=[2, 3]
+                primary_id=1,
+                secondary_ids=[2, 3]
             ))
             url = 'https://audius.co/urbanbankai'
             resolved_url = resolve_url(session, url)
