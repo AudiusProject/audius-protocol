@@ -172,15 +172,15 @@ const run = async () => {
         break
 
       case 'query-usrm-content-node-wallet':
-          console.log(`Usage: node local.js query-usrm-content-node-wallet spId=1`)
-          userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
-          let contentNodeWallet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(
-            parseInt(
-              args[3].split('=')[1]
-            )
+        console.log(`Usage: node local.js query-usrm-content-node-wallet spId=1`)
+        userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
+        let contentNodeWallet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(
+          parseInt(
+            args[3].split('=')[1]
           )
-          console.log(contentNodeWallet)
-          break
+        )
+        console.log(contentNodeWallet)
+        break
 
       case 'add-l2-content-node':
         console.log(`Usage: node local.js add-l2-content-node spId=4 delegateWallet=0x95b6A2Be3423dF7D5774...`)
