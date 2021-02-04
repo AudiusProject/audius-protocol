@@ -214,7 +214,13 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
     }
 
-    let generateProposeAddOrUpdateContentNodeData = async (chainId, newCNodeSPId, newCnodeDelegateWallet, proposerSpId, proposerAccount) => {
+    let generateProposeAddOrUpdateContentNodeData = async (
+        chainId,
+        newCNodeSPId,
+        newCnodeDelegateWallet,
+        proposerSpId,
+        proposerAccount
+    ) => {
         const nonce = signatureSchemas.getNonce()
         const signatureData = signatureSchemas.generators.getProposeAddOrUpdateContentNodeRequestData(
             chainId,
