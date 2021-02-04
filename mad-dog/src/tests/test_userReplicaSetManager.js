@@ -203,7 +203,7 @@ const verifyUsrmContentNodes = async (executeOne) => {
       baseURL: libs.getDiscoveryNodeEndpoint(),
       url: '/usrm_content_nodes'
     })).data.data
-    await Promise.all(queriedContentNodes.map(async (queriedNodeInfo)=>{
+    await Promise.all(queriedContentNodes.map(async (queriedNodeInfo) => {
       let spID = queriedNodeInfo.cnode_id
       let wallet = queriedNodeInfo.delegate_owner_wallet
       let walletFromChain = await libs.getContentNodeWallet(spID) 
