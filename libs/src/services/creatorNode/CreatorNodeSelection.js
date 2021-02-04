@@ -9,7 +9,8 @@ class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
-    timeout = null
+    timeout = null,
+    maxStorageUsedPercent = 90
   }) {
     super({
       getServices: async () => {
@@ -28,7 +29,7 @@ class CreatorNodeSelection extends ServiceSelection {
     // String array of healthy Content Node endpoints
     this.backupsList = []
     // Max percentage (represented out of 100) allowed before determining CN is unsuitable for selection
-    this.maxStoragePathUsage = 90
+    this.maxStorageUsedPercent = maxStorageUsedPercent
   }
 
   /**
@@ -203,8 +204,6 @@ class CreatorNodeSelection extends ServiceSelection {
       return isHealthy
     })
 
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: services })
-
     // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
     // Also update services to be healthy services
     let servicesMap = {}
@@ -213,11 +212,21 @@ class CreatorNodeSelection extends ServiceSelection {
       return service.request.id
     })
 
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: healthyServicesList })
+
     return { healthyServicesList, healthyServicesMap: servicesMap }
   }
 
   _hasEnoughStorageSpace ({ storagePathSize, storagePathUsed }) {
-    return Math.round(100 * (storagePathUsed / storagePathSize)) < this.maxStoragePathUsage
+    // If for any reason these values off the response is falsy value, default to enough storage
+    if (
+      storagePathSize === null ||
+      storagePathSize === undefined ||
+      storagePathUsed === null ||
+      storagePathUsed === undefined
+    ) { return true }
+
+    return Math.ceil(100 * (storagePathUsed / storagePathSize)) < this.maxStorageUsedPercent
   }
 }
 

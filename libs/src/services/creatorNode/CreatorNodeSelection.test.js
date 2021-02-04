@@ -41,7 +41,7 @@ let defaultHealthCheckData = {
   'storagePathUsed': 14723018752,
   'maxFileDescriptors': 524288,
   'allocatedFileDescriptors': 2912,
-  'receivedBytesPerSec': null,
+  'receivedBytesPerSec': 776.7638177541248,
   'transferredBytesPerSec': 39888.88888888889
 }
 
@@ -392,6 +392,178 @@ describe('test CreatorNodeSelection', () => {
       ethContracts: mockEthContracts([shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used95PercentStorage, used99PercentStorage], '1.2.3'),
       whitelist: null,
       blacklist: null
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('filters out CNs that have used up 89.xx% of storage', async () => {
+    const shouldBePrimary = 'https://primary.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary1 = 'https://secondary1.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary2 = 'https://secondary2.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const usedAlmost90PercentStorage1 = 'https://usedAlmost90PercentStorage1.audius.co'
+    nock(usedAlmost90PercentStorage1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 89.95, storagePathSize: 100 } })
+
+    const usedAlmost90PercentStorage2 = 'https://usedAlmost90PercentStorage2.audius.co'
+    nock(usedAlmost90PercentStorage2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 89.01, storagePathSize: 100 } })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, usedAlmost90PercentStorage1, usedAlmost90PercentStorage2],
+        '1.2.3'
+      ),
+      whitelist: null,
+      blacklist: null
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('allows custom maxStorageUsedPercent as constructor param', async () => {
+    const shouldBePrimary = 'https://primary.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary1 = 'https://secondary1.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary2 = 'https://secondary2.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const used50PercentStorage = 'https://used95PercentStorage.audius.co'
+    nock(used50PercentStorage)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 50, storagePathSize: 100 } })
+
+    const used70PercentStorage = 'https://used70PercentStorage.audius.co'
+    nock(used70PercentStorage)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 70, storagePathSize: 100 } })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used50PercentStorage, used70PercentStorage],
+        '1.2.3'
+      ),
+      whitelist: null,
+      blacklist: null,
+      maxStorageUsedPercent: 50
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('allows Content Node to be selected if storage information is unavailable (undefined or null)', async () => {
+    const healthCheckDataWithNoStorageInfo = {
+      ...defaultHealthCheckData
+    }
+    delete healthCheckDataWithNoStorageInfo.storagePathSize
+    healthCheckDataWithNoStorageInfo.storagePathUsed = null
+
+    const shouldBePrimary = 'https://missingStoragePathUsedAndStoragePathSize.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: healthCheckDataWithNoStorageInfo })
+
+    const shouldBeSecondary1 = 'https://missingStoragePathUsed.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.1', storagePathSize: 100 } })
+
+    const shouldBeSecondary2 = 'https://missingStoragePathSize.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.0', storagePathUsed: 30 } })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2],
+        '1.2.3'
+      ),
+      whitelist: null,
+      blacklist: null,
+      maxStorageUsedPercent: 50
     })
 
     const { primary, secondaries, services } = await cns.select()
