@@ -288,7 +288,7 @@ def index_blocks(self, db, blocks_list):
                     redis
                 )
             )
-            user_replica_set_state_changed = total_user_replica_set_changes > 0 
+            user_replica_set_state_changed = total_user_replica_set_changes > 0
 
             # Playlist state operations processed in bulk
             total_playlist_changes, playlist_ids = playlist_state_update(
