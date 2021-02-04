@@ -191,7 +191,9 @@ class CreatorNodeSelection extends ServiceSelection {
           this.currentVersion,
           resp.response.data.data.version
         )
-        isHealthy = isUp && versionIsUpToDate
+        const { storagePathSize, storagePathUsed } = resp.response.data.data
+        const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
+        isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
       }
 
       if (!isHealthy) { this.addUnhealthy(endpoint) }
@@ -199,7 +201,7 @@ class CreatorNodeSelection extends ServiceSelection {
       return isHealthy
     })
 
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: services })
 
     // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
     // Also update services to be healthy services
@@ -210,6 +212,10 @@ class CreatorNodeSelection extends ServiceSelection {
     })
 
     return { healthyServicesList, healthyServicesMap: servicesMap }
+  }
+
+  _hasEnoughStorageSpace ({ storagePathSize, storagePathUsed }) {
+    return Math.round(100 * (storagePathUsed / storagePathSize)) < 90
   }
 }
 
