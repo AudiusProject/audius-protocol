@@ -352,7 +352,7 @@ describe('test CreatorNodeSelection', () => {
     healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
-  it.only('filters out nodes if over 90% of storage is used', async () => {
+  it('filters out nodes if over 90% of storage is used', async () => {
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
       .get('/health_check/verbose')
