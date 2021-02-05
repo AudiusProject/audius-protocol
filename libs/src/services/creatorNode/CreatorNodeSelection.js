@@ -186,8 +186,10 @@ class CreatorNodeSelection extends ServiceSelection {
       const endpoint = resp.request.id
       let isHealthy = false
 
-      // Check that the health check responded with status code 200 and that the
-      // version is up to date on major and minor
+      // Check that the health check:
+      // 1. Responded with status code 200 and that the
+      // 2. Version is up to date on major and minor
+      // 3. Has enough storage space -- max capacity defined at the variable `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
