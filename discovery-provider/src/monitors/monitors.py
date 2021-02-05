@@ -44,7 +44,7 @@ DATABASE_LIVENESS = {
 DATABASE_SIZE = {
     'name': 'database_size',
     'func': get_database_size,
-    # 'ttl': 60 * 2,
+    'ttl': 60 * 2,
     'type': 'int'
 }
 DATABASE_CONNECTIONS = {
@@ -61,28 +61,28 @@ DATABASE_CONNECTION_INFO = {
 TOTAL_MEMORY = {
     'name': 'total_memory',
     'func': get_total_memory,
-    # 'ttl': 60 * 2,
+    'ttl': 60 * 2,
     'type': 'int'
 
 }
 USED_MEMORY = {
     'name': 'used_memory',
     'func': get_used_memory,
-    # 'ttl': 60 * 2,
+    'ttl': 60 * 2,
     'type': 'int'
 }
 
 FILESYSTEM_SIZE = {
     'name': 'filesystem_size',
     'func': get_filesystem_size,
-    # 'ttl': 60 * 5,
+    'ttl': 60 * 5,
     'type': 'int'
 
 }
 FILESYSTEM_USED = {
     'name': 'filesystem_used',
     'func': get_filesystem_used,
-    # 'ttl': 60 * 5,
+    'ttl': 60 * 5,
     'type': 'int'
 }
 
@@ -101,19 +101,19 @@ TRANSFERRED_BYTES_PER_SEC = {
 REDIS_NUM_KEYS = {
     'name': 'redis_num_keys',
     'func': get_redis_num_keys,
-    # 'ttl': 60 * 5,
+    'ttl': 60 * 5,
     'type': 'int'
 }
 REDIS_USED_MEMORY = {
     'name': 'redis_used_memory',
     'func': get_redis_used_memory,
-    # 'ttl': 60 * 5,
+    'ttl': 60 * 5,
     'type': 'int'
 }
 REDIS_TOTAL_MEMORY = {
     'name': 'redis_total_memory',
     'func': get_redis_total_memory,
-    # 'ttl': 60 * 5,
+    'ttl': 60 * 5,
     'type': 'int'
 }
 

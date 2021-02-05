@@ -293,7 +293,7 @@ def configure_celery(flask_app, celery, test_config=None):
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=60),
+                "schedule": timedelta(seconds=5),
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
@@ -325,7 +325,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "monitoring_queue": {
                 "task": "monitoring_queue",
-                "schedule": timedelta(seconds=5)
+                "schedule": timedelta(seconds=60)
             }
         },
         task_serializer="json",

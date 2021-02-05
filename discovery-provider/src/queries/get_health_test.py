@@ -273,7 +273,8 @@ def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_m
         ))
 
     args = {}
-    health_results = get_health(args)
+    health_results, error = get_health(args)
+    assert error == False
     assert health_results['database_connections'] == 2
     assert health_results['filesystem_size'] == 62725623808
     assert health_results['filesystem_used'] == 50381168640
