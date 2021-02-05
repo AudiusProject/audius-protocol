@@ -15,7 +15,9 @@ type UserWithCache = User & {
   noCache?: boolean
 }
 
-export const get3BoxProfile = async (wallet: Address): Promise<UserWithCache> => {
+export const get3BoxProfile = async (
+  wallet: Address
+): Promise<UserWithCache> => {
   const image = getRandomDefaultImage(wallet)
   try {
     const user: User = { image }
