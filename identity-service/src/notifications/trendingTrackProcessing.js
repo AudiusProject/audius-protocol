@@ -3,7 +3,6 @@ const moment = require('moment')
 
 const models = require('../models')
 const { logger } = require('../logging')
-const config = require('../config.js')
 const {
   deviceType,
   notificationTypes
@@ -19,8 +18,7 @@ const {
   notificationResponseTitleMap,
   pushNotificationMessagesMap
 } = require('./formatNotificationMetadata')
-
-const notifDiscProv = config.get('notificationDiscoveryProvider')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const TRENDING_TIME = Object.freeze({
   DAY: 'day',
@@ -48,9 +46,11 @@ async function getTrendingTracks () {
     params.append('time', TRENDING_TIME.WEEK)
     params.append('limit', MAX_TOP_TRACK_RANK)
 
+    const { discoveryProvider } = await audiusLibsWrapper.getAudiusLibs()
+
     const trendingTracksResponse = await axios({
       method: 'get',
-      url: `${notifDiscProv}/v1/full/tracks/trending?time=week`,
+      url: `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending?time=week`,
       params,
       timeout: 10000
     })

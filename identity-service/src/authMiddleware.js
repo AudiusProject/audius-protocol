@@ -2,10 +2,9 @@ const axios = require('axios')
 const { recoverPersonalSignature } = require('eth-sig-util')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
-const config = require('./config.js')
 const models = require('./models')
 
-const notifDiscProv = config.get('notificationDiscoveryProvider')
+const audiusLibsWrapper = require('./audiusLibsInstance')
 
 /**
  * queryDiscprovForUserId - Queries the discovery provider for the user w/ the walletaddress
@@ -13,9 +12,11 @@ const notifDiscProv = config.get('notificationDiscoveryProvider')
  * @returns {object} User Metadata object
  */
 const queryDiscprovForUserId = async (walletAddress, handle) => {
+  const { discoveryProvider } = await audiusLibsWrapper.getAudiusLibs()
+
   const response = await axios({
     method: 'get',
-    url: `${notifDiscProv}/users`,
+    url: `${discoveryProvider.discoveryProviderEndpoint}/users`,
     params: {
       wallet: walletAddress
     }

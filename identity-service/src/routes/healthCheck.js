@@ -5,10 +5,9 @@ const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const axios = require('axios')
-
-let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
@@ -270,9 +269,12 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
+
+    const { discoveryProvider } = await audiusLibsWrapper.getAudiusLibs()
+
     let body = (await axios({
       method: 'get',
-      url: `${notifDiscProv}/health_check`
+      url: `${discoveryProvider.discoveryProviderEndpoint}/health_check`
     })).data
     let discProvDbHighestBlock = body.data['db']['number']
     let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
