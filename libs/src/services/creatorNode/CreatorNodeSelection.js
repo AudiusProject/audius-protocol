@@ -226,7 +226,7 @@ class CreatorNodeSelection extends ServiceSelection {
       storagePathUsed === undefined
     ) { return true }
 
-    return Math.ceil(100 * (storagePathUsed / storagePathSize)) < this.maxStorageUsedPercent
+    return (100 * storagePathUsed / storagePathSize) < this.maxStorageUsedPercent
   }
 }
 
