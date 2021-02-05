@@ -253,6 +253,7 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
         )
     # update these fields regardless of type
     cnode_record.blockhash = event_blockhash
+    cnode_record.blocknumber = block_number
     return cnode_record
 
 def invalidate_old_cnode_record(session, cnode_sp_id):
