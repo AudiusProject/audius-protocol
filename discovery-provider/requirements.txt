@@ -24,3 +24,4 @@ jsonformatter==0.3.0
 py-cid==0.3.0
 pytest-postgresql==2.4.1
 eventlet==0.28.0
+psutil==5.8.0

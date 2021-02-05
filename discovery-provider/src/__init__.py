@@ -288,12 +288,12 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_plays", "src.tasks.index_metrics",
                  "src.tasks.index_materialized_views",
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
-                 "src.tasks.cache_user_balance"
+                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue"
                  ],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=60),
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
@@ -322,6 +322,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_user_balances": {
                 "task": "update_user_balances",
                 "schedule": timedelta(minutes=5)
+            },
+            "monitoring_queue": {
+                "task": "monitoring_queue",
+                "schedule": timedelta(seconds=5)
             }
         },
         task_serializer="json",
