@@ -20,7 +20,7 @@ const messages = {
 
 type Delegator = {
   img: string
-  name: string | undefined
+  name?: string
   address: Address
   amount: BN
 }
