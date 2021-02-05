@@ -99,12 +99,16 @@ def init_contracts():
         address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
     )
 
-    user_replica_set_manager_address = registry_instance.functions.getContract(
-        bytes("UserReplicaSetManager", "utf-8")
-    ).call()
-    user_replica_set_manager_inst = web3.eth.contract(
-        address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
-    )
+    try:
+        user_replica_set_manager_address = registry_instance.functions.getContract(
+            bytes("UserReplicaSetManager", "utf-8")
+        ).call()
+        user_replica_set_manager_inst = web3.eth.contract(
+            address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
+        )
+    except Exception as e:
+        logger.error(f"Failed to initialize UserReplicaSetManager address", exc_info=True)
+        user_replica_set_manager_address = "0x0000000000000000000000000000000000000000"
 
     contract_address_dict = {
         "registry": registry_address,
