@@ -58,7 +58,7 @@ def _get_db_ipld_block_state():
             IPLDBlacklistBlock.is_current == True
         ).all()
         assert len(db_ipld_block_query) == 1, "Expected SINGLE row in IPLD Blocks table marked as current"
-        
+
         ipld_block_number = db_ipld_block_query[0].number
         ipld_block_hash = db_ipld_block_query[0].blockhash
 
