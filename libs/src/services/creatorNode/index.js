@@ -36,7 +36,7 @@ class CreatorNode {
 
   /**
    * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
-   * @param {string} endpoint creator node endpoint
+   * @param {string} endpoint content node endpoint
    * @param {string} wallet user wallet address
    */
   static async getClockValue (endpoint, wallet, timeout) {
@@ -97,7 +97,7 @@ class CreatorNode {
     }
   }
 
-  /** Establishes a connection to a creator node endpoint */
+  /** Establishes a connection to a content node endpoint */
   async connect () {
     this.connecting = true
     await this._signupNodeUser(this.web3Manager.getWalletAddress())

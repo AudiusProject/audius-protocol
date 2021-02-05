@@ -1,34 +1,14 @@
 const Bull = require('bull')
 const redis = require('../redis')
 const config = require('../config')
+const { MONITORS, getMonitorRedisKey } = require('./monitors')
 const { logger } = require('../logging')
-const { getDatabaseSize, getDatabaseConnections } = require('./database')
 
-const MONITORING_REDIS_PREFIX = 'monitoring'
+const QUEUE_INTERVAL_MS = 60 * 1000
+
 const PROCESS_NAMES = Object.freeze({
   monitor: 'monitor'
 })
-
-/**
- * List of all monitors to run, containing:
- *  @param {string} name A unique name for the metric (for caching in redis)
- *  @param {function} func The actual work to compute a value. The return value is what is cached.
- *  @param {number?} ttl TTL in seconds for how long a cached value is good for.
- *    Since the job runs on a cron, the min TTL a metric can be refreshed is 60s.
- *    If a TTL isn't provided, the metric is refreshed every 60s.
- */
-const MONITORS = [
-  {
-    name: 'databaseSize',
-    func: getDatabaseSize,
-    ttl: 120
-  },
-  {
-    name: 'databaseConnections',
-    func: getDatabaseConnections
-  }
-  // TODO: Add more monitors
-]
 
 /**
  * A persistent cron-style queue that periodically monitors various
@@ -62,25 +42,30 @@ class MonitoringQueue {
       PROCESS_NAMES.monitor,
       /* concurrency */ 1,
       async (job, done) => {
-        this.logStatus('Starting')
+        try {
+          this.logStatus('Starting')
 
-        // Iterate over each monitor and set a new value if the cached
-        // value is not fresh.
-        MONITORS.forEach(async monitor => {
-          try {
-            await this.refresh(monitor)
-          } catch (e) {
-            this.logStatus(`Error on ${monitor.name} ${e}`)
-          }
-        })
+          // Iterate over each monitor and set a new value if the cached
+          // value is not fresh.
+          Object.values(MONITORS).forEach(async monitor => {
+            try {
+              await this.refresh(monitor)
+            } catch (e) {
+              this.logStatus(`Error on ${monitor.name} ${e}`)
+            }
+          })
 
-        done(null, {})
+          done(null, {})
+        } catch (e) {
+          this.logStatus(`Error ${e}`)
+          done(e)
+        }
       }
     )
   }
 
   async refresh (monitor) {
-    const key = `${MONITORING_REDIS_PREFIX}:${monitor.name}`
+    const key = getMonitorRedisKey(monitor)
     const ttlKey = `${key}:ttl`
 
     // If the value is fresh, exit early
@@ -115,7 +100,17 @@ class MonitoringQueue {
    */
   async start () {
     try {
-      await this.queue.add(PROCESS_NAMES.monitor, {}, { repeat: { cron: '* * * * *' } })
+      // Run the job immediately
+      await this.queue.add(PROCESS_NAMES.monitor)
+
+      // Then enqueue the job to run on a regular interval
+      setInterval(async () => {
+        try {
+          await this.queue.add(PROCESS_NAMES.monitor)
+        } catch (e) {
+          this.logStatus('Failed to enqueue!')
+        }
+      }, QUEUE_INTERVAL_MS)
     } catch (e) {
       this.logStatus('Startup failed!')
     }

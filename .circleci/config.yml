@@ -683,17 +683,17 @@ workflows:
           filters:
             branches:
               ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - hold-test-mad-dog-e2e:
-          type: approval
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+      # - hold-test-mad-dog-e2e:
+      #     type: approval
+      #     filters:
+      #       branches:
+      #         ignore: /(^master$)|(.*?mad-?dog(.*)?)/
       - test-mad-dog-e2e:
-          requires:
-            - hold-test-mad-dog-e2e
+          # requires:
+          #   - hold-test-mad-dog-e2e
           filters:
             branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
 
 
 
