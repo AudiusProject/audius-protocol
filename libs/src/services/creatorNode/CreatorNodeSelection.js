@@ -7,6 +7,8 @@ class CreatorNodeSelection extends ServiceSelection {
     creatorNode,
     numberOfNodes,
     ethContracts,
+    whitelist,
+    blacklist,
     maxStorageUsedPercent = 90,
     timeout = null
   }) {
@@ -16,8 +18,9 @@ class CreatorNodeSelection extends ServiceSelection {
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
         return services.map(e => e.endpoint)
       },
-      whitelist: creatorNode.passList,
-      blacklist: creatorNode.blockList
+      // Use the content node's configured whitelist if not provided
+      whitelist: whitelist || creatorNode.passList,
+      blacklist: whitelist || creatorNode.blockList
     })
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes

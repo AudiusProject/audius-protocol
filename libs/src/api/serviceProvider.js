@@ -73,6 +73,8 @@ class ServiceProvider extends Base {
    */
   async autoSelectCreatorNodes ({
     numberOfNodes = 3,
+    whitelist = null,
+    blacklist = null,
     performSyncCheck = true,
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   }) {
@@ -80,6 +82,8 @@ class ServiceProvider extends Base {
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
+      whitelist,
+      blacklist,
       timeout
     })
 
