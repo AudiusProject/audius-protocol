@@ -24,8 +24,9 @@ import {
   getIndex,
   getSource,
   getRepeat,
-  getOvershot,
-  getUndershot
+  getUndershot,
+  getLength,
+  getOvershot
 } from 'store/queue/selectors'
 import { getId } from 'store/cache/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
@@ -35,16 +36,19 @@ import {
   getTrackId as getPlayerTrackId
 } from 'store/player/selectors'
 import { Kind } from 'store/types'
-import { RepeatMode } from 'store/queue/types'
+import { Queueable, RepeatMode, Source } from 'store/queue/types'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import { Uid } from 'utils/uid'
+import { makeUid, Uid } from 'utils/uid'
 import mobileSagas from './mobileSagas'
 import { make } from 'store/analytics/actions'
 import { Name, PlaybackSource } from 'services/analytics'
 import { UID, ID } from 'models/common/Identifiers'
+import Track from '../../models/Track'
+import { fetchRandomTracks } from '../recommendation/sagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
+const AUTOPLAY_LIMIT = 2
 
 export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
   if (entry.kind === Kind.COLLECTIONS) {
@@ -204,7 +208,12 @@ export function* watchNext() {
       yield put(next({ skip }))
     } else {
       const index = yield select(getIndex)
+      const length = yield select(getLength)
       if (index >= 0) {
+        if (index + 1 >= length) {
+          const randomTracks: Queueable[] = yield call(getQueueAutoplay)
+          yield put(add({ entries: randomTracks }))
+        }
         const uid = yield select(getUid)
         yield put(play({ uid, trackId: id, source }))
 
@@ -279,6 +288,15 @@ export function* watchRemove() {
       ])
     )
   })
+}
+
+export function* getQueueAutoplay(): Generator<any, Queueable[], any> {
+  const tracks: Track[] = yield call(fetchRandomTracks, AUTOPLAY_LIMIT)
+  return tracks.map(({ track_id }) => ({
+    id: track_id,
+    uid: makeUid(Kind.TRACKS, track_id),
+    source: Source.RANDOM_TRACKS
+  }))
 }
 
 const sagas = () => {

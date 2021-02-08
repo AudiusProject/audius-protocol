@@ -19,6 +19,8 @@ type State = {
   // Ordering of the indexes of the queue to shuffle through
   shuffleOrder: number[]
 
+  queueAutoplay: boolean
+
   // Whether or not a `next` was fired on the queue that overshoots
   // the length of the queue (`next` from the last track).
   // Reset to false on the next play.
@@ -38,6 +40,7 @@ export const initialState: State = {
   shuffle: false,
   shuffleIndex: -1,
   shuffleOrder: [],
+  queueAutoplay: true,
   overshot: false,
   undershot: false
 }
@@ -117,18 +120,17 @@ const slice = createSlice({
       }
 
       // Next on end of queue
-      if (
-        state.index + 1 >= state.order.length ||
-        (state.index === state.order.length - 1 && skip)
-      ) {
+      if (state.index + 1 >= state.order.length) {
         if (state.repeat === RepeatMode.ALL) {
           // Repeat
           state.index = 0
           return
         }
-        // Reset to last track
-        state.overshot = true
-        return
+        if (!state.queueAutoplay) {
+          // Reset to last track
+          state.overshot = true
+          return
+        }
       }
 
       state.index = state.index + 1
