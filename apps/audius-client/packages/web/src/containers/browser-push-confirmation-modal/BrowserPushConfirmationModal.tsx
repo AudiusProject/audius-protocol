@@ -19,7 +19,7 @@ import {
 import { getBrowserNotificationSettings } from 'containers/settings-page/store/selectors'
 import styles from './BrowserPushConfirmationModal.module.css'
 
-type BrowerPushConfirmationModal = ReturnType<typeof mapStateToProps> &
+type BrowserPushConfirmationModal = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const messages = {
@@ -48,7 +48,7 @@ const ConnectedBrowserPushConfirmationModal = ({
   browserNotificationSettings,
   setBrowserNotificationPermission,
   subscribeBrowserPushNotifications
-}: BrowerPushConfirmationModal) => {
+}: BrowserPushConfirmationModal) => {
   const { permission } = browserNotificationSettings
   const [pushPermission] = useState(permission)
 

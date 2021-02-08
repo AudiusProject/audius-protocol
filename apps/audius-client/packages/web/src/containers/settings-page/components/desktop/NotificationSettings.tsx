@@ -17,7 +17,7 @@ import { Permission } from 'utils/browserNotifications'
 
 const messages = {
   title: 'NOTIFICATIONS',
-  browserPushNotifications: 'Brower Push Notifications',
+  browserPushNotifications: 'Browser Push Notifications',
   milestonesAndAchievements: 'Milestones and Achievements',
   followers: 'New Followers',
   reposts: 'Reposts',
