@@ -5,10 +5,8 @@ const { sequelize } = require('./models')
 const { logger } = require('./logging')
 const config = require('./config')
 const App = require('./app')
-const audiusLibsWrapper = require('./audiusLibsInstance')
 
 const start = async () => {
-  await audiusLibsWrapper.init()
   const port = config.get('port')
   const app = new App(port)
   const { server } = await app.init()

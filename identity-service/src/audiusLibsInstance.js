@@ -38,7 +38,7 @@ class AudiusLibsWrapper {
     this.audiusLibsInstance = initAudiusLibs()
   }
 
-  async getAudiusLibs () {
+  getAudiusLibs () {
     return this.audiusLibsInstance
   }
 }
