@@ -20,7 +20,7 @@ class CreatorNodeSelection extends ServiceSelection {
       },
       // Use the content node's configured whitelist if not provided
       whitelist: whitelist || creatorNode.passList,
-      blacklist: whitelist || creatorNode.blockList
+      blacklist: blacklist || creatorNode.blockList
     })
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
