@@ -35,11 +35,11 @@ async function initAudiusLibs () {
 
 class AudiusLibsWrapper {
   constructor () {
-    this.audiusLibsInstance = initAudiusLibs()
+    this.audiusLibsInstance = null
   }
 
-  getAudiusLibs () {
-    return this.audiusLibsInstance
+  async init () {
+    this.audiusLibsInstance = await initAudiusLibs()
   }
 }
 

@@ -167,7 +167,7 @@ class NotificationProcessor {
     trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
     params.append('min_block_number', minBlock)
 
-    const { discoveryProvider } = await audiusLibsWrapper.getAudiusLibs()
+    const { discoveryProvider } = audiusLibsWrapper.audiusLibsInstance
 
     let reqObj = {
       method: 'get',
