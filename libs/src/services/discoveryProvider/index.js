@@ -523,16 +523,21 @@ class DiscoveryProvider {
       parsedResponse = Utils.parseDataFromResponse(response)
 
       if (this.monitoringCallbacks.request) {
-        this.monitoringCallbacks.request({
-          endpoint: url.origin,
-          pathname: url.pathname,
-          queryString: url.search,
-          signer: response.data.signer,
-          signature: response.data.signature,
-          requestMethod: axiosRequest.method,
-          status: response.status,
-          responseTimeMillis: duration
-        })
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            signer: response.data.signer,
+            signature: response.data.signature,
+            requestMethod: axiosRequest.method,
+            status: response.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
       }
     } catch (e) {
       const resp = e.response || {}
@@ -541,14 +546,19 @@ class DiscoveryProvider {
       console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(errMsg)}`)
 
       if (this.monitoringCallbacks.request) {
-        this.monitoringCallbacks.request({
-          endpoint: url.origin,
-          pathname: url.pathname,
-          queryString: url.search,
-          requestMethod: axiosRequest.method,
-          status: resp.status,
-          responseTimeMillis: duration
-        })
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            requestMethod: axiosRequest.method,
+            status: resp.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
       }
 
       if (retry) {

@@ -122,24 +122,29 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
     if (this.monitoringCallbacks.healthCheck) {
       const url = new URL(response.config.url)
-      this.monitoringCallbacks.healthCheck({
-        endpoint: url.origin,
-        pathname: url.pathname,
-        queryString: url.search,
-        version,
-        git: data.data.git,
-        blockDifference: blockDiff,
-        databaseBlockNumber: data.data.db.number,
-        webBlockNumber: data.data.web.blocknumber,
-        databaseSize: data.data.database_size,
-        databaseConnections: data.data.database_connections,
-        totalMemory: data.data.total_memory,
-        usedMemory: data.data.used_memory,
-        totalStorage: data.data.filesystem_size,
-        usedStorage: data.data.filesystem_used,
-        receivedBytesPerSec: data.received_bytes_per_sec,
-        transferredBytesPerSec: data.transferred_bytes_per_sec
-      })
+      try {
+        this.monitoringCallbacks.healthCheck({
+          endpoint: url.origin,
+          pathname: url.pathname,
+          queryString: url.search,
+          version,
+          git: data.data.git,
+          blockDifference: blockDiff,
+          databaseBlockNumber: data.data.db.number,
+          webBlockNumber: data.data.web.blocknumber,
+          databaseSize: data.data.database_size,
+          databaseConnections: data.data.database_connections,
+          totalMemory: data.data.total_memory,
+          usedMemory: data.data.used_memory,
+          totalStorage: data.data.filesystem_size,
+          usedStorage: data.data.filesystem_used,
+          receivedBytesPerSec: data.received_bytes_per_sec,
+          transferredBytesPerSec: data.transferred_bytes_per_sec
+        })
+      } catch (e) {
+        // Swallow errors -- this method should not throw generally
+        console.error(e)
+      }
     }
 
     if (status !== 200) return false

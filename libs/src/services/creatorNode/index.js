@@ -577,16 +577,21 @@ class CreatorNode {
       const duration = Date.now() - start
 
       if (this.monitoringCallbacks.request) {
-        this.monitoringCallbacks.request({
-          endpoint: url.origin,
-          pathname: url.pathname,
-          queryString: url.search,
-          signer: resp.data.signer,
-          signature: resp.data.signature,
-          requestMethod: axiosRequestObj.method,
-          status: resp.status,
-          responseTimeMillis: duration
-        })
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            signer: resp.data.signer,
+            signature: resp.data.signature,
+            requestMethod: axiosRequestObj.method,
+            status: resp.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
       }
       // Axios `data` field gets the response body
       return resp.data
@@ -595,14 +600,19 @@ class CreatorNode {
       const duration = Date.now() - start
 
       if (this.monitoringCallbacks.request) {
-        this.monitoringCallbacks.request({
-          endpoint: url.origin,
-          pathname: url.pathname,
-          queryString: url.search,
-          requestMethod: axiosRequestObj.method,
-          status: resp.status,
-          responseTimeMillis: duration
-        })
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            requestMethod: axiosRequestObj.method,
+            status: resp.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
       }
 
       _handleErrorHelper(e, axiosRequestObj.url)

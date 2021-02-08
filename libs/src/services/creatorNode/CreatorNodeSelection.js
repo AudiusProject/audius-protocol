@@ -222,24 +222,29 @@ class CreatorNodeSelection extends ServiceSelection {
       healthCheckedServices.forEach(check => {
         const url = new URL(check.request.url)
         const data = check.response.data.data
-        this.creatorNode.monitoringCallbacks.healthCheck({
-          endpoint: url.origin,
-          pathname: url.pathname,
-          queryString: url.queryrString,
-          version: data.version,
-          git: data.git,
-          selectedDiscoveryNode: data.selectedDiscoveryProvider,
-          databaseSize: data.databaseSize,
-          databaseConnections: data.databaseConnections,
-          totalMemory: data.totalMemory,
-          usedMemory: data.usedMemory,
-          totalStorage: data.storagePathSize,
-          usedStorage: data.storagePathUsed,
-          maxFileDescriptors: data.maxFileDescriptors,
-          allocatedFileDescriptors: data.allocatedFileDescriptors,
-          receivedBytesPerSec: data.receivedBytesPerSec,
-          transferredBytesPerSec: data.transferredBytesPerSec
-        })
+        try {
+          this.creatorNode.monitoringCallbacks.healthCheck({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.queryrString,
+            version: data.version,
+            git: data.git,
+            selectedDiscoveryNode: data.selectedDiscoveryProvider,
+            databaseSize: data.databaseSize,
+            databaseConnections: data.databaseConnections,
+            totalMemory: data.totalMemory,
+            usedMemory: data.usedMemory,
+            totalStorage: data.storagePathSize,
+            usedStorage: data.storagePathUsed,
+            maxFileDescriptors: data.maxFileDescriptors,
+            allocatedFileDescriptors: data.allocatedFileDescriptors,
+            receivedBytesPerSec: data.receivedBytesPerSec,
+            transferredBytesPerSec: data.transferredBytesPerSec
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
       })
     }
 
