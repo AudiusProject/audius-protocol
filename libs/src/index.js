@@ -29,9 +29,17 @@ class AudiusLibs {
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
+   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   *    @param {function} monitoringCallbacks.request
+   *    @param {function} monitoringCallbacks.healthCheck
    */
-  static configDiscoveryProvider (whitelist = null, reselectTimeout = null, selectionCallback = null) {
-    return { whitelist, reselectTimeout, selectionCallback }
+  static configDiscoveryProvider (
+    whitelist = null,
+    reselectTimeout = null,
+    selectionCallback = null,
+    monitoringCallbacks = {}
+  ) {
+    return { whitelist, reselectTimeout, selectionCallback, monitoringCallbacks }
   }
 
   /**
@@ -66,7 +74,7 @@ class AudiusLibs {
     lazyConnect = false,
     passList = null,
     blockList = null,
-    monitoringCallbacks = null
+    monitoringCallbacks = {}
   ) {
     return { fallbackUrl, lazyConnect, passList, blockList, monitoringCallbacks }
   }
@@ -262,7 +270,8 @@ class AudiusLibs {
         this.ethContracts,
         this.web3Manager,
         this.discoveryProviderConfig.reselectTimeout,
-        this.discoveryProviderConfig.selectionCallback
+        this.discoveryProviderConfig.selectionCallback,
+        this.discoveryProviderConfig.monitoringCallbacks
       )
       await this.discoveryProvider.init()
     }

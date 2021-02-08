@@ -80,7 +80,7 @@ class CreatorNode {
    * @param {Web3Manager} web3Manager
    * @param {string} creatorNodeEndpoint fallback creator node endpoint (to be deprecated)
    * @param {boolean} isServer
-   * @param {UserStateManager} userStateManager
+   * @param {UserStateManager} userStateManagern  singleton UserStateManager instance
    * @param {boolean} lazyConnect whether or not to lazy connect (sign in) on load
    * @param {*} schemas
    * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
@@ -570,6 +570,7 @@ class CreatorNode {
     axiosRequestObj.baseURL = this.creatorNodeEndpoint
 
     // Axios throws for non-200 responses
+    const url = new URL(axiosRequestObj.baseURL + axiosRequestObj.url)
     const start = Date.now()
     try {
       const resp = await axios(axiosRequestObj)
@@ -577,8 +578,9 @@ class CreatorNode {
 
       if (this.monitoringCallbacks.request) {
         this.monitoringCallbacks.request({
-          endpoint: axiosRequestObj.baseURL,
-          pathname: axiosRequestObj.url,
+          endpoint: url.origin,
+          pathname: url.pathname,
+          queryString: url.search,
           signer: resp.data.signer,
           signature: resp.data.signature,
           requestMethod: axiosRequestObj.method,
@@ -594,8 +596,9 @@ class CreatorNode {
 
       if (this.monitoringCallbacks.request) {
         this.monitoringCallbacks.request({
-          endpoint: axiosRequestObj.baseURL,
-          pathname: axiosRequestObj.url,
+          endpoint: url.origin,
+          pathname: url.pathname,
+          queryString: url.search,
           requestMethod: axiosRequestObj.method,
           status: resp.status,
           responseTimeMillis: duration
