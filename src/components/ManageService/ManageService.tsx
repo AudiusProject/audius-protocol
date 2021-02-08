@@ -10,7 +10,7 @@ import TransactionStatus from 'components/TransactionStatus'
 import {
   useAccount,
   useAccountUser,
-  useHasPendingDecreaseTx
+  useHasPendingDecreaseStakeTx
 } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
 import { Address, Status, Operator } from 'types'
@@ -220,7 +220,7 @@ const ManageService: React.FC<ManageServiceProps> = (
   const isDelegator =
     userStatus === Status.Success && 'delegates' in accountUser
 
-  const hasPendingDecreaseTx = useHasPendingDecreaseTx()
+  const hasPendingDecreaseTx = useHasPendingDecreaseStakeTx()
   let increaseStakeDisabled = !isServiceProvider
   const decreaseStakeDisabled =
     !isServiceProvider ||
