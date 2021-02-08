@@ -10,8 +10,9 @@ import Button, { ButtonType } from 'components/Button'
 import { IconArrowWhite } from '@audius/stems'
 import { useModalControls } from 'utils/hooks'
 import UpdateDelegationModal from 'components/UpdateDelegationModal'
-import { Address } from 'types'
+import { Address, Status } from 'types'
 import { formatWei, formatShortAud } from 'utils/format'
+import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
 
 const messages = {
   title: 'Manage Delegation',
@@ -106,6 +107,10 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
   wallet,
   delegates
 }: DelegateSectionProps) => {
+  const useHasPendingDecrease = useHasPendingDecreaseDelegationTx()
+  const isDecreaseDelegationDisabled =
+    useHasPendingDecrease.status !== Status.Success ||
+    useHasPendingDecrease.hasPendingDecreaseTx
   return (
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       <div className={styles.title}>{messages.title} </div>
@@ -131,7 +136,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           <DecreaseDelegation
             wallet={wallet}
             delegates={delegates}
-            isDisabled={false}
+            isDisabled={isDecreaseDelegationDisabled}
             className={styles.decreaseBtn}
           />
         </div>
