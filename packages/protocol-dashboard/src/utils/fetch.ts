@@ -1,5 +1,5 @@
 const DEFAULT_TIMEOUT_MS = 7500
-const TIMED_OUT_ERROR = 'Request Timed Out'
+export const TIMED_OUT_ERROR = 'Request Timed Out'
 
 export const fetchWithTimeout = async (
   url: string,

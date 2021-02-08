@@ -8,7 +8,7 @@ import ModalTable from 'components/ModalTable'
 import Tooltip from 'components/Tooltip'
 import BN from 'bn.js'
 import { Delegate, Address } from 'types'
-import { formatWei } from 'utils/format'
+import { formatShortWallet, formatWei } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
 
@@ -20,6 +20,7 @@ const messages = {
 
 type Delegator = {
   img: string
+  name?: string
   address: Address
   amount: BN
 }
@@ -41,6 +42,7 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
   const data = (delegates as Delegate[]).map(delegate => {
     return {
       img: delegate.img,
+      name: delegate.name,
       address: delegate.wallet,
       amount: delegate.amount
     }
@@ -55,7 +57,7 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
           alt={'User Profile'}
         />
         <div className={clsx(styles.rowCol, styles.colAddress)}>
-          {data.address}
+          {data.name || formatShortWallet(data.address)}
         </div>
         <Tooltip
           className={clsx(styles.rowCol, styles.colAmount)}
