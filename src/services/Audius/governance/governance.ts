@@ -19,7 +19,8 @@ import {
 } from 'models/TimelineEvents'
 import { RawProposal, RawVoteEvent } from './types'
 
-/* Types */
+// NOTE: Temporary fix- Set the start query block so that the getPastEvent does not error
+const QUERY_PROPOSAL_START_BLOCK = parseInt(process.env.REACT_APP_QUERY_PROPOSAL_START_BLOCK || '0')
 
 export default class Governance {
   public aud: AudiusClient
@@ -38,10 +39,11 @@ export default class Governance {
     return formatProposal(proposal)
   }
 
-  async getProposalSubmissionById(proposalId: ProposalId) {
+  async getProposalSubmissionById(proposalId: ProposalId, queryStartBlock = QUERY_PROPOSAL_START_BLOCK) {
     await this.aud.hasPermissions()
     const proposal: ProposalEvent = await this.getContract().getProposalSubmission(
-      proposalId
+      proposalId,
+      queryStartBlock
     )
     return proposal
   }
@@ -54,10 +56,11 @@ export default class Governance {
     return contractHash
   }
 
-  async getProposalEvaluationBlock(proposalId: ProposalId) {
+  async getProposalEvaluationBlock(proposalId: ProposalId, queryStartBlock = QUERY_PROPOSAL_START_BLOCK) {
     await this.aud.hasPermissions()
     const evaluation = await this.getContract().getProposalEvaluation(
-      proposalId
+      proposalId,
+      queryStartBlock
     )
     const web3 = this.aud.libs.ethWeb3Manager.web3
     const blockNumber = evaluation[0]?.blockNumber
@@ -109,7 +112,7 @@ export default class Governance {
   }
 
   /** Gets all vote submission events for a given proposal */
-  async getVotesForProposal(proposalId: ProposalId, queryStartBlock?: number) {
+  async getVotesForProposal(proposalId: ProposalId, queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK) {
     await this.aud.hasPermissions()
     const votes: RawVoteEvent[] = await this.getContract().getVotes({
       proposalId,
@@ -121,7 +124,7 @@ export default class Governance {
   /** Gets all vote update events for a given proposal */
   async getVoteUpdatesForProposal(
     proposalId: ProposalId,
-    queryStartBlock?: number
+    queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ) {
     await this.aud.hasPermissions()
     const votes: RawVoteEvent[] = await this.getContract().getVoteUpdates({
@@ -132,7 +135,7 @@ export default class Governance {
   }
 
   /** Gets all vote submission events on any proposal by addresses */
-  async getVotesByAddress(addresses: Address[], queryStartBlock?: number) {
+  async getVotesByAddress(addresses: Address[], queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK) {
     await this.aud.hasPermissions()
     const votes: RawVoteEvent[] = await this.getContract().getVoteSubmissionsByAddress(
       { addresses, queryStartBlock }
@@ -142,7 +145,7 @@ export default class Governance {
 
   async getVoteEventsByAddress(
     addresses: Address[],
-    queryStartBlock?: number
+    queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ): Promise<GovernanceVoteEvent[]> {
     const votes = await this.getVotesByAddress(addresses, queryStartBlock)
     return votes.map(v => ({
@@ -154,7 +157,7 @@ export default class Governance {
   /** Gets all vote update events on any proposal by addresses */
   async getVoteUpdatesByAddress(
     addresses: Address[],
-    queryStartBlock?: number
+    queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ) {
     await this.aud.hasPermissions()
     const votes: RawVoteEvent[] = await this.getContract().getVoteUpdatesByAddress(
@@ -165,7 +168,7 @@ export default class Governance {
 
   async getVoteUpdateEventsByAddress(
     addresses: Address[],
-    queryStartBlock?: number
+    queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ): Promise<GovernanceVoteUpdateEvent[]> {
     const votes = await this.getVoteUpdatesByAddress(addresses, queryStartBlock)
     return votes.map(v => ({
@@ -174,21 +177,21 @@ export default class Governance {
     }))
   }
 
-  async getProposals() {
+  async getProposals(queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK) {
     await this.aud.hasPermissions()
-    const proposals = await this.getContract().getProposals()
+    const proposals = await this.getContract().getProposals(queryStartBlock)
     return proposals
   }
 
-  async getInProgressProposalIds() {
+  async getInProgressProposalIds(queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK) {
     await this.aud.hasPermissions()
-    const proposals: ProposalId[] = await this.getContract().getInProgressProposals()
+    const proposals: ProposalId[] = await this.getContract().getInProgressProposals(queryStartBlock)
     return proposals
   }
 
   async getProposalsForAddresses(
     addresses: Address[],
-    queryStartBlock?: number
+    queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ): Promise<GovernanceProposalEvent[]> {
     await this.aud.hasPermissions()
     const proposals: ProposalEvent[] = await this.getContract().getProposalsForAddresses(
