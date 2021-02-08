@@ -171,12 +171,24 @@ export const usePendingTransactions = () => {
   return pendingTransactions
 }
 
-export const useHasPendingDecreaseTx = () => {
+export const useHasPendingDecreaseStakeTx = () => {
   const pendingTransactions = usePendingTransactions()
   if (pendingTransactions.status === Status.Success) {
     const hasPendingDecreaseTx =
       pendingTransactions.transactions?.some(tx => {
         return tx.name === PendingTransactionName.DecreaseStake
+      }) ?? false
+    return { status: Status.Success, hasPendingDecreaseTx }
+  }
+  return { status: Status.Loading, hasPendingDecreaseTx: true }
+}
+
+export const useHasPendingDecreaseDelegationTx = () => {
+  const pendingTransactions = usePendingTransactions()
+  if (pendingTransactions.status === Status.Success) {
+    const hasPendingDecreaseTx =
+      pendingTransactions.transactions?.some(tx => {
+        return tx.name === PendingTransactionName.Undelegate
       }) ?? false
     return { status: Status.Success, hasPendingDecreaseTx }
   }
