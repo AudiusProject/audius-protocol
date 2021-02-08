@@ -17,9 +17,9 @@ import { getAccountStatus } from 'store/account/selectors'
 import { setSmartCollection } from 'containers/collection-page/store/actions'
 import Track from 'models/Track'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import AudiusBackend from 'services/AudiusBackend'
 import { Status } from 'store/types'
 import { EXPLORE_PAGE } from 'utils/route'
+import { fetchRandomTracks } from 'store/recommendation/sagas'
 
 const COLLECTIONS_LIMIT = 25
 
@@ -94,17 +94,7 @@ function* fetchMostLoved() {
 }
 
 function* fetchFeelingLucky() {
-  const latestTrackID = yield call(Explore.getLatestTrackID)
-  const ids = Array.from({ length: COLLECTIONS_LIMIT }, () =>
-    Math.floor(Math.random() * latestTrackID)
-  )
-  const tracks = yield call(AudiusBackend.getAllTracks, {
-    offset: 0,
-    limit: COLLECTIONS_LIMIT,
-    idsArray: ids,
-    filterDeletes: true
-  })
-  yield call(processAndCacheTracks, tracks)
+  const tracks = yield call(fetchRandomTracks, COLLECTIONS_LIMIT)
 
   const trackIds = tracks.map((track: Track) => ({
     time: track.created_at,
