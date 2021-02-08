@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { all, fork, call, put, select, takeEvery } from 'redux-saga/effects'
+import { fork, call, put, select, takeEvery } from 'redux-saga/effects'
 
 import tracksSagas from 'containers/track-page/store/lineups/tracks/sagas'
 import * as trackPageActions from './actions'
@@ -14,49 +14,8 @@ import { retrieveTracks } from 'store/cache/tracks/utils'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 import { getUsers } from 'store/cache/users/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import TimeRange from 'models/TimeRange'
-import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
-import { getRemoteVar, BooleanKeys } from 'services/remote-config'
 
 export const TRENDING_BADGE_LIMIT = 10
-
-/**
- * Get the trending track ranks by requesting trending for
- * each time frame
- */
-function* legacyGetTrendingTrackBadges() {
-  yield call(waitForBackendSetup)
-  const [
-    weeklyTrendingTracks,
-    monthlyTrendingTracks,
-    yearlyTrendingTracks
-  ] = yield all([
-    call(retrieveTrending, {
-      timeRange: TimeRange.WEEK,
-      offset: 0,
-      limit: TRENDING_BADGE_LIMIT,
-      genre: null
-    }),
-    call(retrieveTrending, {
-      timeRange: TimeRange.MONTH,
-      offset: 0,
-      limit: TRENDING_BADGE_LIMIT,
-      genre: null
-    }),
-    call(retrieveTrending, {
-      timeRange: TimeRange.YEAR,
-      offset: 0,
-      limit: TRENDING_BADGE_LIMIT,
-      genre: null
-    })
-  ])
-  const mapTrackToId = track => track.track_id
-  return {
-    week: weeklyTrendingTracks.map(mapTrackToId),
-    month: monthlyTrendingTracks.map(mapTrackToId),
-    year: yearlyTrendingTracks.map(mapTrackToId)
-  }
-}
 
 function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
@@ -64,19 +23,9 @@ function* watchTrackBadge() {
       yield call(waitForBackendSetup)
       let trendingTrackRanks = yield select(getTrendingTrackRanks)
       if (!trendingTrackRanks) {
-        const useOptimizedTrendingIds = getRemoteVar(
-          BooleanKeys.OPTIMIZED_TRENDING_BADGE_ENDPOINT
-        )
-        /**
-         * Use the legacy get trending track ranks if the optimizely
-         * flag OPTIMIZED_TRENDING_BADGE_ENDPOINT is set to false
-         * Relies on Protocol changes https://github.com/AudiusProject/audius-protocol/pull/1137
-         */
-        const trendingRanks = useOptimizedTrendingIds
-          ? yield apiClient.getTrendingIds({
-              limit: TRENDING_BADGE_LIMIT
-            })
-          : yield call(legacyGetTrendingTrackBadges)
+        const trendingRanks = yield apiClient.getTrendingIds({
+          limit: TRENDING_BADGE_LIMIT
+        })
 
         yield put(trackPageActions.setTrackTrendingRanks(trendingRanks))
         trendingTrackRanks = yield select(getTrendingTrackRanks)
