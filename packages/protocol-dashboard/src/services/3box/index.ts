@@ -1,5 +1,5 @@
 import { Address } from 'types'
-import { fetchWithTimeout } from 'utils/fetch'
+import { fetchWithTimeout, TIMED_OUT_ERROR } from 'utils/fetch'
 import { getRandomDefaultImage } from 'utils/identicon'
 
 const api3Box = 'https://ipfs.3box.io'
@@ -11,7 +11,13 @@ type User = {
   image: string
 }
 
-export const get3BoxProfile = async (wallet: Address): Promise<User> => {
+type UserWithCache = User & {
+  noCache?: boolean
+}
+
+export const get3BoxProfile = async (
+  wallet: Address
+): Promise<UserWithCache> => {
   const image = getRandomDefaultImage(wallet)
   try {
     const user: User = { image }
@@ -33,7 +39,10 @@ export const get3BoxProfile = async (wallet: Address): Promise<User> => {
     // return the user
     return user
   } catch (err) {
-    console.log(err)
+    if (err.message.includes(TIMED_OUT_ERROR)) {
+      // Response timed out - do not cache response
+      return { image, noCache: true }
+    }
     return { image }
   }
 }
@@ -46,8 +55,11 @@ const cache3box: {
 export const getUserProfile = async (wallet: string): Promise<User> => {
   if (wallet in cache3box) return cache3box[wallet]
   const profile = await get3BoxProfile(wallet)
-  cache3box[wallet] = profile
-  return profile
+  if (!profile.noCache) cache3box[wallet] = profile
+  return {
+    name: profile.name,
+    image: profile.image
+  }
 }
 
 export default getUserProfile
