@@ -110,8 +110,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
   const useHasPendingDecrease = useHasPendingDecreaseDelegationTx()
   const isDecreaseDelegationDisabled =
     useHasPendingDecrease.status !== Status.Success ||
-    (useHasPendingDecrease.status === Status.Success &&
-      useHasPendingDecrease.hasPendingDecreaseTx)
+    useHasPendingDecrease.hasPendingDecreaseTx
   return (
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       <div className={styles.title}>{messages.title} </div>
