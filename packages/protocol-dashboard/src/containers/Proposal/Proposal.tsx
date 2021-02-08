@@ -1,4 +1,6 @@
 import React from 'react'
+import ReactMarkdown from 'react-markdown'
+import gfm from 'remark-gfm'
 import Page from 'components/Page'
 import { RouteComponentProps } from 'react-router-dom'
 import ProposalHero from 'components/ProposalHero'
@@ -55,9 +57,13 @@ const Proposal: React.FC<ProposalProps> = (props: ProposalProps) => {
           </div>
         </div>
         {proposal ? (
-          <div className={styles.descriptionBody}>{proposal.description}</div>
+          <div className={styles.descriptionBody}>
+            <ReactMarkdown plugins={[gfm]} linkTarget="_blank">
+              {proposal.description || ''}
+            </ReactMarkdown>
+          </div>
         ) : (
-          <Loading />
+          <Loading className={styles.loading} />
         )}
       </Paper>
       <div className={styles.votes}>

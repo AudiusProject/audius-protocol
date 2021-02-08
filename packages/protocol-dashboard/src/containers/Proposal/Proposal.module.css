@@ -26,12 +26,16 @@
 .descriptionBody {
   box-sizing: border-box;
   padding: 0 32px;
-  margin-top: 24px;
+  margin: 8px 0;
   font-weight: normal;
   font-size: 16px;
   line-height: 20px;
   width: 100%;
   text-align: left;
+}
+
+.descriptionBody a {
+  color: var(--primary-dark-1);
 }
 
 .votes {
@@ -50,4 +54,8 @@
 
 .votes > *:last-child {
   margin-left: 8px;
+}
+
+.loading {
+  margin-top: 22px;
 }
