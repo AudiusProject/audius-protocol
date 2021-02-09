@@ -1,5 +1,6 @@
 import logging
 import time
+from src.monitors import monitor_names
 from src.monitors.monitors import MONITORS, get_monitor_redis_key
 from src.tasks.celery_app import celery
 
@@ -24,8 +25,8 @@ def refresh(redis, db, monitor):
 
     # Invoke the monitor function with kwargs for db and redis.
     # This allows any monitor to access the db and/or redis connection.
-    value = monitor['func'](db=db, redis=redis)
-    logger.info(f"monitoring_queue.py | Computed value for {monitor['name']} {value}")
+    value = monitor[monitor_names.func](db=db, redis=redis)
+    logger.info(f"monitoring_queue.py | Computed value for {monitor[monitor_names.name]} {value}")
 
     redis.set(key, value)
 

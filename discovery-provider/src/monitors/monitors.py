@@ -133,7 +133,7 @@ MONITORS = {
 }
 
 def get_monitor_redis_key(monitor):
-    return f"{MONITORING_REDIS_PREFIX}:{monitor['name']}"
+    return f"{MONITORING_REDIS_PREFIX}:{monitor[monitor_names.name]}"
 
 def parse_value(monitor, value):
     """
@@ -144,13 +144,13 @@ def parse_value(monitor, value):
         value: string The value to parse
     """
     try:
-        if monitor['type'] == 'bool':
+        if monitor[monitor_names.type] == 'bool':
             return value == 'True'
-        elif monitor['type'] == 'int':
+        elif monitor[monitor_names.type] == 'int':
             return int(value)
-        elif monitor['type'] == 'float':
+        elif monitor[monitor_names.type] == 'float':
             return float(value)
-        elif monitor['type'] == 'json':
+        elif monitor[monitor_names.type] == 'json':
             return json.loads(value)
         else: # string
             return str(value)
@@ -172,5 +172,5 @@ def get_monitors(monitors):
     ret = {}
     results = pipe.execute()
     for i, result in enumerate(results):
-        ret[monitors[i]['name']] = parse_value(monitors[i], result)
+        ret[monitors[i][monitor_names.name]] = parse_value(monitors[i], result)
     return ret
