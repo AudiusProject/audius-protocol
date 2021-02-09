@@ -840,11 +840,17 @@ class AudiusAPIClient {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
 
+    // If a param has a null value, remove it
+    const sanitizedParams = Object.keys(params).reduce((acc, cur) => {
+      const val = params[cur]
+      if (val === null || val === undefined) return acc
+      return { ...acc, [cur]: val }
+    }, {})
     if (this.initializationState.type === 'libs' && window.audiusLibs) {
       const data = await window.audiusLibs.discoveryProvider._makeRequest(
         {
           endpoint: this._formatPath(path),
-          queryParams: params
+          queryParams: sanitizedParams
         },
         retry
       )
@@ -854,7 +860,7 @@ class AudiusAPIClient {
     }
 
     // Initialization type is manual. Make requests with fetch and handle failures.
-    const resource = this._constructUrl(path, params)
+    const resource = this._constructUrl(path, sanitizedParams)
     try {
       const response = await fetch(resource)
       if (!response.ok) {
@@ -867,7 +873,7 @@ class AudiusAPIClient {
       // initialization state
       if (this.initializationState.type === 'manual') {
         await waitForLibsInit()
-        return this._getResponse(path, params, retry)
+        return this._getResponse(path, sanitizedParams, retry)
       }
       // Something is just broken, propagate the error out
       throw e
