@@ -91,7 +91,7 @@ fi
 mkdir -p $storagePath
 
 # linter
-./node_modules/.bin/standard
+# ./node_modules/.bin/standard
 
 # setting delegate keys for app to start
 export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
