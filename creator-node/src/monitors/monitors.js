@@ -22,6 +22,8 @@ const {
 } = require('./ipfs')
 const redis = require('../redis')
 
+const Monitors = {}
+
 // Prefix used to key each monitored value in redis
 const MONITORING_REDIS_PREFIX = 'monitoring'
 
@@ -166,8 +168,11 @@ const MONITORS = {
   IPFS_READ_WRITE_STATUS
 }
 
+Monitors.MONITORS = MONITORS
+
 const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
 
+Monitors.getMonitorRedisKey = getMonitorRedisKey
 /**
  * Parses a string value into the corresponding type
  * @param {Object} monitor
@@ -213,8 +218,12 @@ const getMonitors = async (monitors) => {
     .then((result) => result.map((r, i) => parseValue(monitors[i], r[1])))
 }
 
-module.exports = {
-  MONITORS,
-  getMonitorRedisKey,
-  getMonitors
-}
+Monitors.getMonitors = getMonitors
+
+module.exports = Monitors
+
+// module.exports = {
+//   MONITORS,
+//   getMonitorRedisKey,
+//   getMonitors
+// }

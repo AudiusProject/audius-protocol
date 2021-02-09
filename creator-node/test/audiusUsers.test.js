@@ -9,6 +9,7 @@ const ipfsClient = require('../src/ipfsClient')
 const config = require('../src/config')
 const BlacklistManager = require('../src/blacklistManager')
 const DiskManager = require('../src/diskManager')
+const Monitors = require('../src/monitors/monitors')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -30,6 +31,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
   })
 
   beforeEach(async () => {
+    sinon.stub(Monitors, 'getMonitors').returns(Promise.resolve([10, 100]))
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
@@ -46,8 +48,10 @@ describe('test AudiusUsers with mocked IPFS', function () {
     await server.close()
   })
 
-  it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
+  it.only('successfully creates Audius user (POST /audius_users/metadata)', async function () {
     const metadata = { test: 'field1' }
+
+    console.log('what tuhewatuewiahteawiu', await Monitors.getMonitors('blah'))
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
 

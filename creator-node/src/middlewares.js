@@ -101,15 +101,15 @@ async function ensurePrimaryMiddleware (req, res, next) {
   next()
 }
 
-/** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
+/** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity */
 async function ensureStorageMiddleware (req, res, next) {
-  const { getMonitors, MONITORS } = Monitors
+  // const { getMonitors, MONITORS } = Monitors
 
   console.log('in middleware.js', Monitors.getMonitors)
   // Get storage data and max storage percentage allowed
-  const [storagePathSize, storagePathUsed] = await getMonitors([
-    MONITORS.STORAGE_PATH_SIZE,
-    MONITORS.STORAGE_PATH_USED
+  const [storagePathSize, storagePathUsed] = await Monitors.getMonitors([
+    Monitors.MONITORS.STORAGE_PATH_SIZE,
+    Monitors.MONITORS.STORAGE_PATH_USED
   ])
 
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
@@ -118,8 +118,8 @@ async function ensureStorageMiddleware (req, res, next) {
   let hasEnoughStorage = CreatorNode.hasEnoughStorageSpace({
     storagePathSize,
     storagePathUsed,
-    // maxStorageUsedPercent
-    maxStorageUsedPercent: 10
+    maxStorageUsedPercent
+    // maxStorageUsedPercent: 10
   })
 
   if (hasEnoughStorage) {
