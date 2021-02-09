@@ -38,7 +38,9 @@ def fetch_cnode_info(sp_id, sp_factory_instance):
         sp_id
     ).call()
     pickle_and_set(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
-    logger.info(f"index_network_peers.py | Configured redis cache with {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}")
+    logger.info(
+        f"index_network_peers.py | Configured redis cache with {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
+    )
     return cn_endpoint_info
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
