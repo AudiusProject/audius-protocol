@@ -2,7 +2,7 @@ import logging
 import os
 
 from src.models import Block, IPLDBlacklistBlock
-from src.monitors import monitors
+from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
@@ -31,8 +31,8 @@ def _get_db_block_state():
 # Returns number of and info on open db connections
 def _get_db_conn_state():
     conn_state = monitors.get_monitors([
-        MONITORS['DATABASE_CONNECTIONS'],
-        MONITORS['DATABASE_CONNECTION_INFO']
+        MONITORS[monitor_names.database_connections],
+        MONITORS[monitor_names.database_connection_info]
     ])
 
     return conn_state, False
@@ -149,14 +149,15 @@ def get_health(args, use_redis_cache=True):
 
     # Get system information monitor values
     sys_info = monitors.get_monitors([
-        MONITORS['DATABASE_SIZE'],
-        MONITORS['DATABASE_CONNECTIONS'],
-        MONITORS['TOTAL_MEMORY'],
-        MONITORS['USED_MEMORY'],
-        MONITORS['FILESYSTEM_SIZE'],
-        MONITORS['FILESYSTEM_USED'],
-        MONITORS['RECEIVED_BYTES_PER_SEC'],
-        MONITORS['TRANSFERRED_BYTES_PER_SEC']
+        MONITORS[monitor_names.database_size],
+        MONITORS[monitor_names.database_connections],
+        MONITORS[monitor_names.total_memory],
+        MONITORS[monitor_names.used_memory],
+        MONITORS[monitor_names.filesystem_size],
+        MONITORS[monitor_names.filesystem_used],
+        MONITORS[monitor_names.received_bytes_per_sec],
+        MONITORS[monitor_names.transferred_bytes_per_sec],
+        MONITORS[monitor_names.redis_total_memory]
     ])
 
     health_results = {

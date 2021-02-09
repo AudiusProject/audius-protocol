@@ -10,6 +10,13 @@ bytes_recv_time = None
 
 
 def get_received_bytes_per_sec(**kwargs):
+    """
+    Gets the rate of received bytes per sec over the network
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
     # pylint: disable=W0603
     global bytes_recv, bytes_recv_time
 
@@ -28,6 +35,13 @@ def get_received_bytes_per_sec(**kwargs):
 
 
 def get_transferred_bytes_per_sec(**kwargs):
+    """
+    Gets the rate of transferred bytes per sec over the network
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
     # pylint: disable=W0603
     global bytes_sent, bytes_sent_time
 

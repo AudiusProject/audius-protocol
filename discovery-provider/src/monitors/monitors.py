@@ -1,4 +1,5 @@
 import json
+from src.monitors import monitor_names
 from src.monitors.database import \
     get_database_connection_info, \
     get_database_connections, \
@@ -37,100 +38,98 @@ MONITORING_REDIS_PREFIX = 'monitoring'
 """
 
 DATABASE_LIVENESS = {
-    'name': 'database_liveness',
-    'func': get_database_liveness,
-    'type': 'bool'
+    monitor_names.name: monitor_names.database_liveness,
+    monitor_names.func: get_database_liveness,
+    monitor_names.type: 'bool'
 }
 DATABASE_SIZE = {
-    'name': 'database_size',
-    'func': get_database_size,
-    'ttl': 60 * 2,
-    'type': 'int'
+    monitor_names.name: monitor_names.database_size,
+    monitor_names.func: get_database_size,
+    monitor_names.ttl: 60 * 2,
+    monitor_names.type: 'int'
 }
 DATABASE_CONNECTIONS = {
-    'name': 'database_connections',
-    'func': get_database_connections,
-    'type': 'int'
+    monitor_names.name: monitor_names.database_connections,
+    monitor_names.func: get_database_connections,
+    monitor_names.type: 'int'
 }
 DATABASE_CONNECTION_INFO = {
-    'name': 'database_connection_info',
-    'func': get_database_connection_info,
-    'type': 'json'
+    monitor_names.name: monitor_names.database_connection_info,
+    monitor_names.func: get_database_connection_info,
+    monitor_names.type: 'json'
 }
 
 TOTAL_MEMORY = {
-    'name': 'total_memory',
-    'func': get_total_memory,
-    'ttl': 60 * 2,
-    'type': 'int'
-
+    monitor_names.name: monitor_names.total_memory,
+    monitor_names.func: get_total_memory,
+    monitor_names.ttl: 60 * 2,
+    monitor_names.type: 'int'
 }
 USED_MEMORY = {
-    'name': 'used_memory',
-    'func': get_used_memory,
-    'ttl': 60 * 2,
-    'type': 'int'
+    monitor_names.name: monitor_names.used_memory,
+    monitor_names.func: get_used_memory,
+    monitor_names.ttl: 60 * 2,
+    monitor_names.type: 'int'
 }
 
 FILESYSTEM_SIZE = {
-    'name': 'filesystem_size',
-    'func': get_filesystem_size,
-    'ttl': 60 * 5,
-    'type': 'int'
-
+    monitor_names.name: monitor_names.filesystem_size,
+    monitor_names.func: get_filesystem_size,
+    monitor_names.ttl: 60 * 5,
+    monitor_names.type: 'int'
 }
 FILESYSTEM_USED = {
-    'name': 'filesystem_used',
-    'func': get_filesystem_used,
-    'ttl': 60 * 5,
-    'type': 'int'
+    monitor_names.name: monitor_names.filesystem_used,
+    monitor_names.func: get_filesystem_used,
+    monitor_names.ttl: 60 * 5,
+    monitor_names.type: 'int'
 }
 
 RECEIVED_BYTES_PER_SEC = {
-    'name': 'received_bytes_per_sec',
-    'func': get_received_bytes_per_sec,
-    'type': 'float'
+    monitor_names.name: monitor_names.received_bytes_per_sec,
+    monitor_names.func: get_received_bytes_per_sec,
+    monitor_names.type: 'float'
 }
 
 TRANSFERRED_BYTES_PER_SEC = {
-    'name': 'transferred_bytes_per_sec',
-    'func': get_transferred_bytes_per_sec,
-    'type': 'float'
+    monitor_names.name: monitor_names.transferred_bytes_per_sec,
+    monitor_names.func: get_transferred_bytes_per_sec,
+    monitor_names.type: 'float'
 }
 
 REDIS_NUM_KEYS = {
-    'name': 'redis_num_keys',
-    'func': get_redis_num_keys,
-    'ttl': 60 * 5,
-    'type': 'int'
+    monitor_names.name: monitor_names.redis_num_keys,
+    monitor_names.func: get_redis_num_keys,
+    monitor_names.ttl: 60 * 5,
+    monitor_names.type: 'int'
 }
 REDIS_USED_MEMORY = {
-    'name': 'redis_used_memory',
-    'func': get_redis_used_memory,
-    'ttl': 60 * 5,
-    'type': 'int'
+    monitor_names.name: monitor_names.redis_used_memory,
+    monitor_names.func: get_redis_used_memory,
+    monitor_names.ttl: 60 * 5,
+    monitor_names.type: 'int'
 }
 REDIS_TOTAL_MEMORY = {
-    'name': 'redis_total_memory',
-    'func': get_redis_total_memory,
-    'ttl': 60 * 5,
-    'type': 'int'
+    monitor_names.name: monitor_names.redis_total_memory,
+    monitor_names.func: get_redis_total_memory,
+    monitor_names.ttl: 60 * 5,
+    monitor_names.type: 'int'
 }
 
 MONITORS = {
-    'DATABASE_LIVENESS': DATABASE_LIVENESS,
-    'DATABASE_SIZE': DATABASE_SIZE,
-    'DATABASE_CONNECTIONS': DATABASE_CONNECTIONS,
-    'DATABASE_CONNECTION_INFO': DATABASE_CONNECTION_INFO,
-    'TOTAL_MEMORY': TOTAL_MEMORY,
-    'USED_MEMORY': USED_MEMORY,
-    'FILESYSTEM_SIZE': FILESYSTEM_SIZE,
-    'FILESYSTEM_USED': FILESYSTEM_USED,
-    'RECEIVED_BYTES_PER_SEC': RECEIVED_BYTES_PER_SEC,
-    'TRANSFERRED_BYTES_PER_SEC': TRANSFERRED_BYTES_PER_SEC,
-    'REDIS_NUM_KEYS': REDIS_NUM_KEYS,
-    'REDIS_USED_MEMORY': REDIS_USED_MEMORY,
-    'REDIS_TOTAL_MEMORY': REDIS_TOTAL_MEMORY
+    monitor_names.database_liveness: DATABASE_LIVENESS,
+    monitor_names.database_size: DATABASE_SIZE,
+    monitor_names.database_connections: DATABASE_CONNECTIONS,
+    monitor_names.database_connection_info: DATABASE_CONNECTION_INFO,
+    monitor_names.total_memory: TOTAL_MEMORY,
+    monitor_names.used_memory: USED_MEMORY,
+    monitor_names.filesystem_size: FILESYSTEM_SIZE,
+    monitor_names.filesystem_used: FILESYSTEM_USED,
+    monitor_names.received_bytes_per_sec: RECEIVED_BYTES_PER_SEC,
+    monitor_names.transferred_bytes_per_sec: TRANSFERRED_BYTES_PER_SEC,
+    monitor_names.redis_num_keys: REDIS_NUM_KEYS,
+    monitor_names.redis_used_memory: REDIS_USED_MEMORY,
+    monitor_names.redis_total_memory: REDIS_TOTAL_MEMORY
 }
 
 def get_monitor_redis_key(monitor):

@@ -22,6 +22,8 @@ def refresh(redis, db, monitor):
     if is_fresh:
         return
 
+    # Invoke the monitor function with kwargs for db and redis.
+    # This allows any monitor to access the db and/or redis connection.
     value = monitor['func'](db=db, redis=redis)
     logger.info(f"monitoring_queue.py | Computed value for {monitor['name']} {value}")
 

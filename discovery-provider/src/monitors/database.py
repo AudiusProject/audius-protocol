@@ -6,6 +6,13 @@ logger = logging.getLogger(__name__)
 
 
 def get_database_liveness(**kwargs):
+    """
+    Gets database liveness with a `select 1` query
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
     db = kwargs['db']
     try:
         with db.scoped_session() as session:
@@ -19,6 +26,13 @@ def get_database_liveness(**kwargs):
 
 
 def get_database_size(**kwargs):
+    """
+    Gets the size of the database in bytes
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
     db = kwargs['db']
     with db.scoped_session() as session:
         q = sqlalchemy.text(
@@ -29,6 +43,13 @@ def get_database_size(**kwargs):
 
 
 def get_database_connections(**kwargs):
+    """
+    Gets the number of active database connections
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
     db = kwargs['db']
     with db.scoped_session() as session:
         q = sqlalchemy.text(
@@ -39,6 +60,13 @@ def get_database_connections(**kwargs):
 
 
 def get_database_connection_info(**kwargs):
+    """
+    Gets full database query connection information (waits, state, query string)
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
     db = kwargs['db']
     with db.scoped_session() as session:
         q = sqlalchemy.text(
