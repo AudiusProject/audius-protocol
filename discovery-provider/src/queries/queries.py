@@ -553,7 +553,7 @@ def get_creator_node_users():
         return api_helpers.error_response(str(e), 400)
 
 @bp.route("/usrm_content_nodes", methods=("GET",))
-def get_l2_content_nodes():
+def get_usrm_content_nodes():
     try:
         cnodes = get_usrm_cnodes()
         return api_helpers.success_response(cnodes)

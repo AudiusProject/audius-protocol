@@ -22,7 +22,7 @@ def user_replica_set_state_update(
         block_timestamp,
         redis
 ):
-    """Return int representing number of User model state changes found in transaction."""
+    """Return int representing number of User model state changes found in transaction and set of user_id values"""
 
     num_user_replica_set_changes = 0
     user_ids = set()
@@ -102,9 +102,6 @@ def user_replica_set_state_update(
                 # Process L2 Content Node operations
                 elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
                     cnode_record = parse_usrm_cnode_record(
-                        self,
-                        update_task,
-                        session,
                         entry,
                         cnode_events_lookup[cnode_sp_id]["content_node"]
                     )
@@ -152,7 +149,7 @@ def get_endpoint_string_from_sp_ids(
             sp_factory_inst,
             primary
         )
-        endpoint_string = "{}".format(primary_endpoint)
+        endpoint_string = f"{primary_endpoint}"
         for secondary_id in secondaries:
             secondary_endpoint = None
             sp_factory_inst, secondary_endpoint = get_endpoint_from_id(
@@ -162,7 +159,7 @@ def get_endpoint_string_from_sp_ids(
                 secondary_id
             )
             if secondary_endpoint:
-                endpoint_string = "{},{}".format(endpoint_string, secondary_endpoint)
+                endpoint_string = f"{endpoint_string},{secondary_endpoint}"
             else:
                 logger.info(f"user_replica_set.py | Failed to find secondary info for {secondary_endpoint}")
     except Exception as exc:
@@ -216,7 +213,7 @@ def get_sp_factory_inst(self, update_task):
     return sp_factory_inst
 
 # Update cnode_record with event arguments
-def parse_usrm_cnode_record(self, update_task, session, entry, cnode_record):
+def parse_usrm_cnode_record(entry, cnode_record):
     event_args = entry["args"]
     cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
     cnode_record.proposer_1_address = event_args._proposer1Address
