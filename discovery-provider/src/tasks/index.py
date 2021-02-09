@@ -153,8 +153,11 @@ def update_user_replica_set_manager_address_if_necessary(self):
         user_replica_set_manager_address = registry_instance.functions.getContract(
             bytes("UserReplicaSetManager", "utf-8")
         ).call()
-        contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
-        logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
+        if user_replica_set_manager_address != "0x0000000000000000000000000000000000000000":
+            contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
+            logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
+        else:
+            logger.info(f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address} from registry")
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
