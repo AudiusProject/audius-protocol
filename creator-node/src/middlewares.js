@@ -1,9 +1,12 @@
-const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
+const CreatorNode = require('@audius/libs/src/services/creatorNode')
+
+const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError, errorResponseBadRequest } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
 const { serviceRegistry } = require('./serviceRegistry')
+const Monitors = require('./monitors/monitors')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -96,6 +99,40 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
   next()
+}
+
+/** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
+async function ensureStorageMiddleware (req, res, next) {
+  const { getMonitors, MONITORS } = Monitors
+
+  console.log('in middleware.js', Monitors.getMonitors)
+  // Get storage data and max storage percentage allowed
+  const [storagePathSize, storagePathUsed] = await getMonitors([
+    MONITORS.STORAGE_PATH_SIZE,
+    MONITORS.STORAGE_PATH_USED
+  ])
+
+  const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
+
+  // Check to see if CNode has enough storage
+  let hasEnoughStorage = CreatorNode.hasEnoughStorageSpace({
+    storagePathSize,
+    storagePathUsed,
+    // maxStorageUsedPercent
+    maxStorageUsedPercent: 10
+  })
+
+  if (hasEnoughStorage) {
+    next()
+  } else {
+    const errorMsg = `Node is reaching storage space capacity. Current usage=${(storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
+    req.logger.error(errorMsg)
+    return sendResponse(
+      req,
+      res,
+      errorResponseBadRequest(errorMsg)
+    )
+  }
 }
 
 /**
@@ -306,4 +343,12 @@ function _isFQDN (url) {
   return FQDN.test(url)
 }
 
-module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware, getOwnEndpoint, getCreatorNodeEndpoints }
+module.exports = {
+  authMiddleware,
+  ensurePrimaryMiddleware,
+  ensureStorageMiddleware,
+  triggerSecondarySyncs,
+  syncLockMiddleware,
+  getOwnEndpoint,
+  getCreatorNodeEndpoints
+}

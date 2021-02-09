@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const config = require('../config')
-const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../middlewares')
+const { getOwnEndpoint, getCreatorNodeEndpoints, ensureStorageMiddleware } = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
