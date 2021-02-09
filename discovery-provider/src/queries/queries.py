@@ -8,6 +8,7 @@ from src.queries.get_users import get_users
 from src.queries.get_tracks import get_tracks
 from src.queries.get_playlists import get_playlists
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
+from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_stems_of import get_stems_of
 from src.queries.get_feed import get_feed
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -109,6 +110,17 @@ def get_tracks_including_unlisted_route():
     identifiers = request.get_json()["tracks"]
     args["identifiers"] = identifiers
     tracks = get_tracks_including_unlisted(args)
+    return api_helpers.success_response(tracks)
+
+
+# Get random tracks for a genre and exclude tracks in the exclusion list.
+# Expects a JSON body of shape:
+#   { "tracks": [{ "id": number, "url_title": string, "handle": string }]}
+@bp.route("/tracks/random", methods=("GET",))
+@record_metrics
+def get_random_tracks_route():
+    args = to_dict(request.args)
+    tracks = get_random_tracks(args)
     return api_helpers.success_response(tracks)
 
 

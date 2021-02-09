@@ -65,6 +65,18 @@ module.exports.getTracksIncludingUnlisted = (identifiers, withUsers = false) => 
   return req
 }
 
+module.exports.getRandomTracks = (genre, limit, exclusionList) => {
+  let req = {
+    endpoint: 'random_tracks',
+    queryParams: {
+      genre,
+      limit,
+      exclusionList
+    }
+  }
+  return req
+}
+
 module.exports.getStemsForTrack = (trackId) => {
   const req = {
     endpoint: `stems/${trackId}`,
