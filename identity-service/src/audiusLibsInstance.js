@@ -41,6 +41,10 @@ class AudiusLibsWrapper {
   async init () {
     this.audiusLibsInstance = await initAudiusLibs()
   }
+
+  get audiusLibs () {
+    return this.audiusLibsInstance
+  }
 }
 
 const audiusLibsWrapper = new AudiusLibsWrapper()

@@ -91,7 +91,7 @@ class App {
 
   async configureAudiusInstance () {
     await audiusLibsWrapper.init()
-    const audiusInstance = audiusLibsWrapper.audiusLibsInstance
+    const audiusInstance = audiusLibsWrapper.audiusLibs
     this.express.set('audiusLibs', audiusInstance)
     return audiusInstance
   }

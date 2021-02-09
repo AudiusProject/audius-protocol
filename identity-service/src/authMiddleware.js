@@ -12,7 +12,7 @@ const audiusLibsWrapper = require('./audiusLibsInstance')
  * @returns {object} User Metadata object
  */
 const queryDiscprovForUserId = async (walletAddress, handle) => {
-  const { discoveryProvider } = audiusLibsWrapper.audiusLibsInstance
+  const { discoveryProvider } = audiusLibsWrapper.audiusLibs
 
   const response = await axios({
     method: 'get',
