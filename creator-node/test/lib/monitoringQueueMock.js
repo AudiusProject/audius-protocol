@@ -9,6 +9,10 @@ class MonitoringQueueMock {
       'true'
     )
   }
+
+  async setValue(key, value) {
+    redisClient.set(key, value)
+  }
 }
 
 module.exports = MonitoringQueueMock

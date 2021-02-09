@@ -1,6 +1,7 @@
 const request = require('supertest')
 const assert = require('assert')
 const sinon = require('sinon')
+const proxyquire = require('proxyquire')
 const fs = require('fs')
 
 const models = require('../src/models')
@@ -31,7 +32,6 @@ describe('test AudiusUsers with mocked IPFS', function () {
   })
 
   beforeEach(async () => {
-    sinon.stub(Monitors, 'getMonitors').returns(Promise.resolve([10, 100]))
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
@@ -40,6 +40,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
 
     app = appInfo.app
     server = appInfo.server
+    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser()
   })
 
@@ -50,8 +51,20 @@ describe('test AudiusUsers with mocked IPFS', function () {
 
   it.only('successfully creates Audius user (POST /audius_users/metadata)', async function () {
     const metadata = { test: 'field1' }
+    // const stub = sinon.stub().resolves([10, 100])
+    // const Monitors = {
+    //   getMonitors: async () => {
+    //     console.log('\n\n\n\n\wtf')
+    //     return stub
+    //   }
+    // }
+    // proxyquire('../src/middlewares', { './monitors/monitors': Monitors })
+    mockServiceRegistry.monitoringQueue.setValue(
+      Monitors.getMonitorRedisKey(Monitors.MONITORS.STORAGE_PATH_SIZE), 50
+    )
 
-    console.log('what tuhewatuewiahteawiu', await Monitors.getMonitors('blah'))
+
+    // console.log('what tuhewatuewiahteawiu', await Monitors.getMonitors('blah'))
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
     ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
 

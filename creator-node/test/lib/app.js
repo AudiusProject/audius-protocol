@@ -27,6 +27,7 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
   }
 
   const appInfo = require('../../src/app')(8000, mockServiceRegistry)
+  appInfo.mockServiceRegistry = mockServiceRegistry
 
   return appInfo
 }
