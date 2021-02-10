@@ -73,6 +73,25 @@ class CreatorNode {
     return null
   }
 
+  /**
+   * Checks to see if the Content Node has enough Storage
+   * @param {Object} param
+   * @param {number} param.storagePathSize total size of storage
+   * @param {number} param.storagePathUsed total used storage
+   * @param {number} param.maxStorageUsedPercent max percentage of storage allowed to be used before blocking writes
+   */
+  static hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUsedPercent }) {
+    // If for any reason these values off the response is a falsy value, default to enough storage
+    if (
+      storagePathSize === null ||
+      storagePathSize === undefined ||
+      storagePathUsed === null ||
+      storagePathUsed === undefined
+    ) { return true }
+
+    return (100 * storagePathUsed / storagePathSize) < maxStorageUsedPercent
+  }
+
   /* -------------- */
 
   constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {

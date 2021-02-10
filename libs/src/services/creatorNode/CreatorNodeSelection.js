@@ -1,4 +1,5 @@
 const ServiceSelection = require('../../service-selection/ServiceSelection')
+const CreatorNode = require('../../services/creatorNode/index')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
@@ -197,7 +198,11 @@ class CreatorNodeSelection extends ServiceSelection {
           resp.response.data.data.version
         )
         const { storagePathSize, storagePathUsed } = resp.response.data.data
-        const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
+        const hasEnoughStorage = CreatorNode.hasEnoughStorageSpace({
+          storagePathSize,
+          storagePathUsed,
+          maxStorageUsedPercent: this.maxStorageUsedPercent
+        })
         isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
       }
 
@@ -217,18 +222,6 @@ class CreatorNodeSelection extends ServiceSelection {
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: healthyServicesList })
 
     return { healthyServicesList, healthyServicesMap: servicesMap }
-  }
-
-  _hasEnoughStorageSpace ({ storagePathSize, storagePathUsed }) {
-    // If for any reason these values off the response is falsy value, default to enough storage
-    if (
-      storagePathSize === null ||
-      storagePathSize === undefined ||
-      storagePathUsed === null ||
-      storagePathUsed === undefined
-    ) { return true }
-
-    return (100 * storagePathUsed / storagePathSize) < this.maxStorageUsedPercent
   }
 }
 
