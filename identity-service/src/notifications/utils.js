@@ -14,7 +14,7 @@ const trackListenMilestonePollCount = 100
  * For any users missing blockchain id, here we query the values from discprov and fill them in
  */
 async function updateBlockchainIds () {
-  const { discoveryProvider } = audiusLibsWrapper.audiusLibs
+  const { discoveryProvider } = audiusLibsWrapper.audiusLibs()
 
   let usersWithoutBlockchainId = await models.User.findAll({
     attributes: ['walletAddress', 'handle'],
