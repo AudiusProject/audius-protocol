@@ -30,8 +30,8 @@ class AudiusLibs {
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   *    @param {function} monitoringCallbacks.request
-   *    @param {function} monitoringCallbacks.healthCheck
+   * @param {function} monitoringCallbacks.request
+   * @param {function} monitoringCallbacks.healthCheck
    */
   static configDiscoveryProvider (
     whitelist = null,
@@ -66,8 +66,8 @@ class AudiusLibs {
    * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
    * @param {Set<string>?} blockList whether or not to exclude any nodes (default null)
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   *    @param {function} monitoringCallbacks.request
-   *    @param {function} monitoringCallbacks.healthCheck
+   * @param {function} monitoringCallbacks.request
+   * @param {function} monitoringCallbacks.healthCheck
    */
   static configCreatorNode (
     fallbackUrl,

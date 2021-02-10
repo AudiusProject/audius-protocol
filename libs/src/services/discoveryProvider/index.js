@@ -24,8 +24,8 @@ const MAX_MAKE_REQUEST_RETRY_COUNT = 5
  * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
  * @param {function} selectionCallback invoked when a discovery node is selected
  * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
- *    @param {function} monitoringCallbacks.request
- *    @param {function} monitoringCallbacks.healthCheck
+ * @param {function} monitoringCallbacks.request
+ * @param {function} monitoringCallbacks.healthCheck
  */
 class DiscoveryProvider {
   constructor (

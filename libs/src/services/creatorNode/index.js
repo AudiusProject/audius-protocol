@@ -86,8 +86,8 @@ class CreatorNode {
    * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
    * @param {Set<string>?} blockList whether or not to exclude any nodes (default null)
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   *    @param {function} monitoringCallbacks.request
-   *    @param {function} monitoringCallbacks.healthCheck
+   * @param {function} monitoringCallbacks.request
+   * @param {function} monitoringCallbacks.healthCheck
    */
   constructor (
     web3Manager,
