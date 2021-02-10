@@ -118,17 +118,20 @@ async function ensureStorageMiddleware (req, res, next) {
     maxStorageUsedPercent
   })
 
-  req.logger.info(`Current usage=${(storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`)
-
   if (hasEnoughStorage) {
     next()
   } else {
-    const errorMsg = `Node is reaching storage space capacity. Current usage=${(storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
+    const errorMsg = `Node is reaching storage space capacity. Current usage=${(100 * storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
     req.logger.error(errorMsg)
     return sendResponse(
       req,
       res,
-      errorResponseBadRequest(errorMsg)
+      errorResponseBadRequest(
+        {
+          msg: errorMsg,
+          state: 'NODE_REACHED_CAPACITY'
+        }
+      )
     )
   }
 }

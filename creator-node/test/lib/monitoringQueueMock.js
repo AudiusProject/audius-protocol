@@ -20,8 +20,12 @@ class MonitoringQueueMock {
     )
   }
 
-  async setRedisValues (key, value) {
+  async setRedisValue (key, value) {
     redisClient.set(key, value)
+  }
+
+  async getRedisValue (key, value) {
+    return redisClient.get(key)
   }
 }
 
