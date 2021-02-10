@@ -4,7 +4,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { push as pushRoute, replace } from 'connected-react-router'
 import moment from 'moment'
 import { UnregisterCallback } from 'history'
-import { AppState, Status } from 'store/types'
+import { AppState, Kind, Status } from 'store/types'
 import { Dispatch } from 'redux'
 import { Tabs, FollowType, TracksSortMode } from './store/types'
 import { ID, UID } from 'models/common/Identifiers'
@@ -46,6 +46,8 @@ import { make, TrackEvent } from 'store/analytics/actions'
 import { Name, FollowSource, ShareSource } from 'services/analytics'
 import { parseUserRoute } from 'utils/route/userRouteParser'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
+import { makeKindId } from 'utils/uid'
+import { getIsDone } from 'store/confirmer/selectors'
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -828,6 +830,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const mobileProps = {
       trackIsActive: !!currentQueueItem,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
+      isUserConfirming: this.props.isUserConfirming,
       hasMadeEdit:
         updatedName !== null ||
         updatedBio !== null ||
@@ -889,7 +892,10 @@ function makeMapStateToProps() {
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
-    pathname: getLocationPathname(state)
+    pathname: getLocationPathname(state),
+    isUserConfirming: !getIsDone(state, {
+      uid: makeKindId(Kind.USERS, getAccountUser(state)?.user_id)
+    })
   })
   return mapStateToProps
 }
