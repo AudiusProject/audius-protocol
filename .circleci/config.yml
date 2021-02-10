@@ -474,12 +474,14 @@ jobs:
           paths:
             - discovery-provider/venv/
           key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
-      # - run:
-      #     name: python-lint
-      #     command: |
-      #       cd discovery-provider
-      #       source venv/bin/activate
-      #       python ./scripts/lint.py
+      - run:
+          name: python-lint
+          command: |
+            cd discovery-provider
+            source venv/bin/activate
+            pylint src/
+            pylint tests/
+            # python ./scripts/lint.py
       - restore_cache:
           keys:
           - disc-prov-contracts-{{ checksum "contracts/package.json" }}
