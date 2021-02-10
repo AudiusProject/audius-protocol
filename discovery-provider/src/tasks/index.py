@@ -158,7 +158,8 @@ def update_user_replica_set_manager_address_if_necessary(self):
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
         else:
             logger.info(
-                f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address} from registry"
+                f"index.py | No update to user_replica_set_manager address, queried "
+                f"{user_replica_set_manager_address} from registry"
             )
 
 def index_blocks(self, db, blocks_list):
@@ -472,7 +473,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 # Remove track entries
                 logger.info(f"Reverting track: {track_to_revert}")
                 session.delete(track_to_revert)
-            
+
             for usrm_content_node_to_revert in revert_usrm_content_node_entries:
                 cnode_sp_id = usrm_content_node_to_revert.cnode_sp_id
                 previous_usrm_content_node_entry = (
