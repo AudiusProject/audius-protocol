@@ -490,10 +490,10 @@ jobs:
           command: |
             cd contracts
             npm install
-      - save_cache:
-          paths:
-            - contracts/node_modules
-          key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
+      # - save_cache:
+      #     paths:
+      #       - contracts/node_modules
+      #     key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
       - run:
           name: discovery provider tests
           command: |
