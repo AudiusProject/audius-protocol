@@ -17,9 +17,16 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /// @notice Address permissioned to update user replica sets
     address userReplicaSetBootstrapAddress;
 
+    /// @notice Struct used to represent the ownerWallet,delegateOwnerWallet tuple
+    ///         for a given spID
+    struct ContentNodeWallets {
+        address ownerWallet;
+        address delegateOwnerWallet;
+    }
+
     /// @notice ServiceProvider ID to ServiceProvider delegateOwnerWallet,
     ///     reflecting registered values on Audius Ethereum L1 contracts
-    mapping (uint => address) spIdToContentNodeDelegateWallet;
+    mapping (uint => ContentNodeWallets) spIdToContentNodeDelegateWallet;
 
     /// @notice Struct used to represent replica sets
     //          Each uint represents the spID registered on eth-contracts
@@ -44,6 +51,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     event AddOrUpdateContentNode(
         uint _cnodeSpId,
         address _cnodeDelegateOwnerWallet,
+        address _cnodeOwnerWallet,
         uint[3] _proposerSpIds,
         address _proposer1Address,
         address _proposer2Address,
@@ -53,7 +61,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /// @notice EIP-712 Typehash definitions
     //          Used to validate identity with gasless transaction submission
     bytes32 constant PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-        "ProposeAddOrUpdateContentNode(uint cnodeSpId,address cnodeDelegateOwnerWallet,uint proposerSpId,bytes32 nonce)"
+        "ProposeAddOrUpdateContentNode(uint cnodeSpId,address cnodeDelegateOwnerWallet,address cnodeOwnerWallet, uint proposerSpId,bytes32 nonce)"
     );
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primaryId,bytes32 secondaryIdsHash,uint oldPrimaryId,bytes32 oldSecondaryIdsHash,bytes32 nonce)"
@@ -89,7 +97,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
      */
     function seedBootstrapNodes(
         uint[] calldata _bootstrapSPIds,
-        address[] calldata _bootstrapNodeDelegateWallets
+        address[] calldata _bootstrapNodeDelegateWallets,
+        address[] calldata _bootstrapNodeOwnerWallets
     ) external
     {
         require(
@@ -103,10 +112,14 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             "Mismatched bootstrap array lengths"
         );
         for (uint i = 0; i < _bootstrapSPIds.length; i++) {
-            spIdToContentNodeDelegateWallet[_bootstrapSPIds[i]] = _bootstrapNodeDelegateWallets[i];
+            spIdToContentNodeDelegateWallet[_bootstrapSPIds[i]] = ContentNodeWallets({
+                delegateOwnerWallet: _bootstrapNodeDelegateWallets[i], 
+                ownerWallet: _bootstrapNodeOwnerWallets[i] 
+            });
             emit AddOrUpdateContentNode(
                 _bootstrapSPIds[i],
                 _bootstrapNodeDelegateWallets[i],
+                _bootstrapNodeOwnerWallets[i],
                 emptyProposerIds,
                 address(0x00),
                 address(0x00),
@@ -125,7 +138,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
      *         content node mappings to this contract.
      * @dev Multiple distinct parties must sign and submit signatures as part of this request
      * @param _cnodeSpId - Incoming spID
-     * @param _cnodeDelegateOwnerWallet - Incoming SP delegateOwnerWallet
+     * @param _cnodeWallets - Incoming wallets array - [0] = incoming delegateOwnerWallet, [1] = incoming ownerWallet
      * @param _proposerSpIds - Array of 3 spIDs proposing new node
      * @param _proposerNonces - Array of 3 nonces, each index corresponding to _proposerSpIds
      * @param _proposer1Sig - Signature from first proposing node
@@ -134,7 +147,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
      */
     function addOrUpdateContentNode(
         uint _cnodeSpId,
-        address _cnodeDelegateOwnerWallet,
+        address[2] calldata _cnodeWallets,
         uint[3] calldata _proposerSpIds,
         bytes32[3] calldata _proposerNonces,
         bytes calldata _proposer1Sig,
@@ -148,35 +161,54 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
         address proposer1Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
-            _cnodeDelegateOwnerWallet,
+            _cnodeWallets[0],
             _proposerSpIds[0],
             _proposerNonces[0],
             _proposer1Sig
         );
         address proposer2Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
-            _cnodeDelegateOwnerWallet,
+            _cnodeWallets[0],
             _proposerSpIds[1],
             _proposerNonces[1],
             _proposer2Sig
         );
         address proposer3Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
-            _cnodeDelegateOwnerWallet,
+            _cnodeWallets[0],
             _proposerSpIds[2],
             _proposerNonces[2],
             _proposer3Sig
         );
-        _validateUpdateOperation(
-            proposer1Address,
-            proposer2Address,
-            proposer3Address,
-            _proposerSpIds
+        require(
+            (proposer1Address != proposer2Address) &&
+            (proposer1Address != proposer3Address) &&
+            (proposer2Address != proposer3Address),
+            "Distinct proposers required"
         );
-        spIdToContentNodeDelegateWallet[_cnodeSpId] = _cnodeDelegateOwnerWallet;
+        // TODO: Enforce 3 distinct ownerWallets
+        require(
+            spIdToContentNodeDelegateWallet[_proposerSpIds[0]].delegateOwnerWallet == proposer1Address,
+            "Invalid wallet provided for 1st proposer"
+        );
+        require(
+            spIdToContentNodeDelegateWallet[_proposerSpIds[1]].delegateOwnerWallet == proposer2Address,
+            "Invalid wallet provided for 2nd proposer"
+        );
+        require(
+            spIdToContentNodeDelegateWallet[_proposerSpIds[2]].delegateOwnerWallet == proposer3Address,
+            "Invalid wallet provided for 3rd proposer"
+        );
+
+        spIdToContentNodeDelegateWallet[_cnodeSpId] = ContentNodeWallets({
+            delegateOwnerWallet: _cnodeWallets[0],
+            ownerWallet: _cnodeWallets[1]
+        });
+
         emit AddOrUpdateContentNode(
             _cnodeSpId,
-            _cnodeDelegateOwnerWallet,
+            _cnodeWallets[0],
+            _cnodeWallets[1],
             _proposerSpIds,
             proposer1Address,
             proposer2Address,
@@ -234,7 +266,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
 
         // Valid updaters include userWallet (artist account), existing primary, existing secondary, or contract deployer
         if (signer == userWallet ||
-            signer == spIdToContentNodeDelegateWallet[_oldPrimaryId] ||
+            signer == spIdToContentNodeDelegateWallet[_oldPrimaryId].delegateOwnerWallet ||
             signer == userReplicaSetBootstrapAddress
            )
         {
@@ -257,10 +289,13 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         require(validUpdater == true, "Invalid update operation");
 
         // Confirm primary and every incoming secondary is valid
-        require(spIdToContentNodeDelegateWallet[_primaryId] != address(0x00), "Primary must exist");
+        require(
+            spIdToContentNodeDelegateWallet[_primaryId].delegateOwnerWallet != address(0x00),
+            "Primary must exist"
+        );
         for (uint i = 0; i < _secondaryIds.length; i++) {
             require(
-                spIdToContentNodeDelegateWallet[_secondaryIds[i]] != address(0x00),
+                spIdToContentNodeDelegateWallet[_secondaryIds[i]].delegateOwnerWallet != address(0x00),
                 "Secondary must exist"
             );
         }
@@ -310,10 +345,13 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     }
 
     /// @notice Get wallet registered on chain corresponding to Content Node spID
-    function getContentNodeWallet(uint _spID) external view
-    returns (address wallet)
+    function getContentNodeWallets(uint _spID) external view
+    returns (address delegateOwnerWallet, address ownerWallet)
     {
-        return spIdToContentNodeDelegateWallet[_spID];
+        return (
+            spIdToContentNodeDelegateWallet[_spID].delegateOwnerWallet,
+            spIdToContentNodeDelegateWallet[_spID].ownerWallet
+        );
     }
 
     /// @notice Get userReplicaSetBootstrapAddress
@@ -406,41 +444,11 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
                 userReplicaSets[_userId].secondaryIds[i] == _oldSecondaryIds[i],
                 "Invalid prior secondary configuration"
             );
-            if (signer == spIdToContentNodeDelegateWallet[_oldSecondaryIds[i]]) {
+            if (signer == spIdToContentNodeDelegateWallet[_oldSecondaryIds[i]].delegateOwnerWallet) {
                 secondarySenderFound = true;
             }
         }
         return secondarySenderFound;
-    }
-
-    // Confirm sender is valid
-    function _validateUpdateOperation (
-        address _proposer1Address,
-        address _proposer2Address,
-        address _proposer3Address,
-        uint[3] memory _proposerSpIds
-    ) internal view
-    {
-        // Require distinct proposer addresses
-        require(
-            (_proposer1Address != _proposer2Address) &&
-            (_proposer1Address != _proposer3Address) &&
-            (_proposer2Address != _proposer3Address),
-            "Distinct proposers required"
-        );
-        // Confirm addresses and inputted spID values match expected values on chain
-        require(
-            spIdToContentNodeDelegateWallet[_proposerSpIds[0]] == _proposer1Address,
-            "Invalid wallet provided for 1st proposer"
-        );
-        require(
-            spIdToContentNodeDelegateWallet[_proposerSpIds[1]] == _proposer2Address,
-            "Invalid wallet provided for 2nd proposer"
-        );
-        require(
-            spIdToContentNodeDelegateWallet[_proposerSpIds[2]] == _proposer3Address,
-            "Invalid wallet provided for 3rd proposer"
-        );
     }
 
     function _requireSeed () internal view {
