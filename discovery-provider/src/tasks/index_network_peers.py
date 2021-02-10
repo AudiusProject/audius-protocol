@@ -66,6 +66,7 @@ def retrieve_peers_from_eth_contracts(self):
                     eth_cn_endpoints_set.add(cn_endpoint_info[1])
             except Exception as exc:
                 logger.error(f"index_network_peers.py | fetch_cnode_futures {single_cnode_fetch_op} generated {exc}")
+                print("there's an error here")
    # Return dictionary with key = endpoint, formatted as { endpoint: True }
     return eth_cn_endpoints_set
 
