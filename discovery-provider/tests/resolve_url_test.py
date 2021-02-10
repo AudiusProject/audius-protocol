@@ -1,43 +1,52 @@
 from datetime import datetime
-from flask import Flask
-import pytest
-from src.models import User
+from src.models import User, Block
 from src.api.v1.utils.resolve_url import resolve_url
-from src.api.v1 import api as api_v1
+from src.utils.db_session import get_db
 
 
-@pytest.fixture
-def app():
-    a = Flask(__name__)
-    a.register_blueprint(api_v1.bp)
-    yield a
-
-
-def test_resolve_track_url(db_mock, app):
+def test_resolve_track_url(app):
     """Tests that it resolves a track url"""
     with app.test_request_context():
-        with db_mock.scoped_session() as session:
+        db = get_db()
+        with db.scoped_session() as session:
             url = 'https://audius.co/urbanbankai/mb-shola-vivienne-%22westwood%22-87325'
             resolved_url = resolve_url(session, url)
 
             assert resolved_url == '/v1/tracks/799Yv'
 
 
-def test_resolve_playlist_url(db_mock, app):
+def test_resolve_playlist_url(app):
     """Tests that it resolves a playlist url"""
     with app.test_request_context():
-        with db_mock.scoped_session() as session:
+        db = get_db()
+        with db.scoped_session() as session:
             url = 'https://audius.co/urbanbankai/playlist/up-next-atl-august-2020-9801'
             resolved_url = resolve_url(session, url)
 
             assert resolved_url == '/v1/playlists/ePkW0'
 
+def test_resolve_non_fully_qualified_url(app):
+    """Tests that it resolves a track url when not fully qualified"""
+    with app.test_request_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            url = '/urbanbankai/mb-shola-vivienne-%22westwood%22-87325'
+            resolved_url = resolve_url(session, url)
 
-def test_resolve_user_url(db_mock, app):
+            assert resolved_url == '/v1/tracks/799Yv'
+
+def test_resolve_user_url(app):
     """Tests that it resolves a user url"""
     with app.test_request_context():
-        with db_mock.scoped_session() as session:
-            User.__table__.create(db_mock._engine)
+        db = get_db()
+        with db.scoped_session() as session:
+            session.add(Block(
+                blockhash="0x2969e88561fac17ca19c1749cb3e614211ba15c8e471be55de47d0b8ca6acf5f",
+                parenthash="0x0000000000000000000000000000000000000000",
+                number=16914541,
+                is_current=True
+            ))
+            session.flush()
             session.add(User(
                 blockhash="0x2969e88561fac17ca19c1749cb3e614211ba15c8e471be55de47d0b8ca6acf5f",
                 is_current=True,
@@ -46,19 +55,11 @@ def test_resolve_user_url(db_mock, app):
                 blocknumber=16914541,
                 handle="Urbanbankai",
                 handle_lc="urbanbankai",
-                user_id=42727
+                user_id=42727,
+                primary_id=1,
+                secondary_ids=[2, 3]
             ))
             url = 'https://audius.co/urbanbankai'
             resolved_url = resolve_url(session, url)
 
             assert resolved_url == '/v1/users/DE677'
-
-
-def test_resolve_non_fully_qualified_url(db_mock, app):
-    """Tests that it resolves a track url when not fully qualified"""
-    with app.test_request_context():
-        with db_mock.scoped_session() as session:
-            url = '/urbanbankai/mb-shola-vivienne-%22westwood%22-87325'
-            resolved_url = resolve_url(session, url)
-
-            assert resolved_url == '/v1/tracks/799Yv'

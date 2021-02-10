@@ -13,4 +13,4 @@ function main {
   pytest -s -v --fulltrace
 }
 
-main 
+main

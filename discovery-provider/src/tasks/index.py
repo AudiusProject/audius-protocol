@@ -4,13 +4,14 @@ import concurrent.futures
 import requests
 
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save
+from src.models import Block, User, Track, Repost, Follow, Playlist, Save, USRMContentNode
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
+from src.tasks.user_replica_set import user_replica_set_state_update
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
     most_recent_indexed_block_redis_key
@@ -133,6 +134,33 @@ def fetch_tx_receipts(self, block_transactions):
         raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
     return block_tx_with_receipts
 
+# During each indexing iteration, check if the address for UserReplicaSetManager
+# has been set in the L2 contract registry - if so, update the global contract_addresses object
+# This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
+# added to the registry.
+def update_user_replica_set_manager_address_if_necessary(self):
+    web3 = update_task.web3
+    shared_config = update_task.shared_config
+    abi_values = update_task.abi_values
+    user_replica_set_manager_address = contract_addresses["user_replica_set_manager"]
+    if user_replica_set_manager_address == "0x0000000000000000000000000000000000000000":
+        registry_address = web3.toChecksumAddress(
+            shared_config["contracts"]["registry"]
+        )
+        registry_instance = web3.eth.contract(
+            address=registry_address, abi=abi_values["Registry"]["abi"]
+        )
+        user_replica_set_manager_address = registry_instance.functions.getContract(
+            bytes("UserReplicaSetManager", "utf-8")
+        ).call()
+        if user_replica_set_manager_address != "0x0000000000000000000000000000000000000000":
+            contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
+            logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
+        else:
+            logger.info(
+                f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address} from registry"
+            )
+
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
@@ -174,6 +202,7 @@ def index_blocks(self, db, blocks_list):
             social_feature_factory_txs = []
             playlist_factory_txs = []
             user_library_factory_txs = []
+            user_replica_set_manager_txs = []
 
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
@@ -189,7 +218,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle user operations
                 if tx_target_contract_address == contract_addresses["user_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | UserFactory contract addr: {tx_target_contract_address}"
+                        f"index.py | UserFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}, adding to user_factory_txs to process in bulk"
                     )
                     user_factory_txs.append(tx_receipt)
@@ -197,7 +226,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle track operations
                 if tx_target_contract_address == contract_addresses["track_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | TrackFactory contract addr: {tx_target_contract_address}"
+                        f"index.py | TrackFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     # Track state operations
@@ -206,7 +235,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle social operations
                 if tx_target_contract_address == contract_addresses["social_feature_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | Social feature contract addr: {tx_target_contract_address}"
+                        f"index.py | Social feature contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     social_feature_factory_txs.append(tx_receipt)
@@ -214,7 +243,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle repost operations
                 if tx_target_contract_address == contract_addresses["playlist_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | Playlist contract addr: {tx_target_contract_address}"
+                        f"index.py | Playlist contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     playlist_factory_txs.append(tx_receipt)
@@ -222,10 +251,18 @@ def index_blocks(self, db, blocks_list):
                 # Handle User Library operations
                 if tx_target_contract_address == contract_addresses["user_library_factory"]:
                     logger.info(
-                        f"index.py | index_blocks | User Library contract addr: {tx_target_contract_address}"
+                        f"index.py | User Library contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
                     )
                     user_library_factory_txs.append(tx_receipt)
+
+                # Handle UserReplicaSetManager operations
+                if tx_target_contract_address == contract_addresses["user_replica_set_manager"]:
+                    logger.info(
+                        f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
+                        f"tx from block - {tx}, receipt - {tx_receipt}"
+                    )
+                    user_replica_set_manager_txs.append(tx_receipt)
 
             # bulk process operations once all tx's for block have been parsed
             total_user_changes, user_ids = user_state_update(
@@ -244,6 +281,20 @@ def index_blocks(self, db, blocks_list):
                 > 0
             )
 
+            # Index UserReplicaSet changes
+            total_user_replica_set_changes, replica_user_ids = (
+                user_replica_set_state_update(
+                    self,
+                    update_task,
+                    session,
+                    user_replica_set_manager_txs,
+                    block_number,
+                    block_timestamp,
+                    redis
+                )
+            )
+            user_replica_set_state_changed = total_user_replica_set_changes > 0
+
             # Playlist state operations processed in bulk
             total_playlist_changes, playlist_ids = playlist_state_update(
                 self, update_task, session, playlist_factory_txs, block_number, block_timestamp
@@ -259,6 +310,9 @@ def index_blocks(self, db, blocks_list):
             if user_state_changed:
                 if user_ids:
                     remove_cached_user_ids(redis, user_ids)
+            if user_replica_set_state_changed:
+                if replica_user_ids:
+                    remove_cached_user_ids(redis, replica_user_ids)
             if track_lexeme_state_changed:
                 if track_ids:
                     remove_cached_track_ids(redis, track_ids)
@@ -331,6 +385,9 @@ def revert_blocks(self, db, revert_blocks_list):
             )
             revert_user_entries = (
                 session.query(User).filter(User.blockhash == revert_hash).all()
+            )
+            revert_usrm_content_node_entries = (
+                session.query(USRMContentNode).filter(USRMContentNode.blockhash == revert_hash).all()
             )
 
             # revert all of above transactions
@@ -415,6 +472,21 @@ def revert_blocks(self, db, revert_blocks_list):
                 # Remove track entries
                 logger.info(f"Reverting track: {track_to_revert}")
                 session.delete(track_to_revert)
+            
+            for usrm_content_node_to_revert in revert_usrm_content_node_entries:
+                cnode_sp_id = usrm_content_node_to_revert.cnode_sp_id
+                previous_usrm_content_node_entry = (
+                    session.query(USRMContentNode)
+                    .filter(USRMContentNode.cnode_sp_id == cnode_sp_id)
+                    .filter(USRMContentNode.blocknumber < revert_block_number)
+                    .order_by(USRMContentNode.blocknumber.desc())
+                    .first()
+                )
+                if previous_usrm_content_node_entry:
+                    previous_usrm_content_node_entry.is_current = True
+                # Remove previous USRM Content Node entires
+                logger.info(f"Reverting USRM Content Node: {usrm_content_node_to_revert}")
+                session.delete(usrm_content_node_to_revert)
 
             # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
             for user_to_revert in revert_user_entries:
@@ -481,6 +553,7 @@ def update_task(self):
         if have_lock:
             logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
+            update_user_replica_set_manager_address_if_necessary(self)
 
             latest_block = get_latest_block(db)
 

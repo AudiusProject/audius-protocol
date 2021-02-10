@@ -125,6 +125,8 @@ def get_track_id_cache_key(id):
 def get_playlist_id_cache_key(id):
     return "playlist:id:{}".format(id)
 
+def get_sp_id_key(id):
+    return "sp:id:{}".format(id)
 
 def remove_cached_user_ids(redis, user_ids):
     try:

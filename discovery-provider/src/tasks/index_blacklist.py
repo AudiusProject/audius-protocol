@@ -134,7 +134,7 @@ def index_blocks(self, db, blocks_list):
             ipld_blacklist_state_update(
                 self, update_ipld_blacklist_task, session, ipld_blacklist_factory_txs, block_number, block_timestamp
             )
-        
+
         # Add the block number of the most recently processed ipld block to redis
         redis.set(most_recent_indexed_ipld_block_redis_key, block_number)
         redis.set(most_recent_indexed_ipld_block_hash_redis_key, block.hash.hex())
