@@ -48,7 +48,7 @@ user_replica_set_manager = None
 contract_addresses = None
 
 logger = logging.getLogger(__name__)
-
+logger.info("hello") # will be removed, just for testing this branch
 
 def init_contracts():
     registry_address = web3.toChecksumAddress(
