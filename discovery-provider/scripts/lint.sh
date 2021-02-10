@@ -1,0 +1,2 @@
+pylint src/
+pylint tests/
