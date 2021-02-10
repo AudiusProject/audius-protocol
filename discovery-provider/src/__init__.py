@@ -29,6 +29,7 @@ from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 
+print('hello')
 # these global vars will be set in create_celery function
 web3endpoint = None
 web3 = None
