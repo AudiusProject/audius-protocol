@@ -479,7 +479,9 @@ jobs:
           command: |
             cd discovery-provider
             source venv/bin/activate
-            python ./scripts/lint.py
+            pylint src/
+            pylint tests/
+            # python ./scripts/lint.py
       # - restore_cache:
       #     keys:
       #     - disc-prov-contracts-{{ checksum "contracts/package.json" }}
