@@ -39,8 +39,7 @@ def fetch_cnode_info(sp_id, sp_factory_instance):
     ).call()
     pickle_and_set(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
     logger.info(
-        f"index_network_peers.py | Configured redis cache with "
-        f"{sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
+        f"index_network_peers.py | Configured redis cache with {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
     )
     return cn_endpoint_info
 
