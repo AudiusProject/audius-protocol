@@ -37,6 +37,9 @@ npm run truffle-migrate
 
 cd ../libs/
 
+# Run unit tests
+npm run test:units
+
 # Migrate data & eth contracts
 # - Copy contracts build dir + create config files
 # - Data contracts config: registry contract & owner wallet addresses
