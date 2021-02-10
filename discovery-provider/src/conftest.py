@@ -59,3 +59,19 @@ def redis_mock(monkeypatch):
         get_redis
     )
     return redis
+
+
+# Test fixture that mocks getting monitor values
+@pytest.fixture()
+def get_monitors_mock(monkeypatch):
+    mock_get_monitors = MagicMock()
+
+    def get_monitors(monitors):
+        return mock_get_monitors()
+
+    monkeypatch.setattr(
+        src.monitors.monitors,
+        'get_monitors',
+        get_monitors
+    )
+    return mock_get_monitors
