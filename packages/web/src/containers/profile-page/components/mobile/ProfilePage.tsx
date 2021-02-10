@@ -76,6 +76,7 @@ export type ProfilePageProps = {
   onClickMobileOverflow: (userId: ID, overflowActions: OverflowAction[]) => void
   stats: Array<{ number: number; title: string; key: string }>
   trackIsActive: boolean
+  isUserConfirming: boolean
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -188,6 +189,7 @@ const ProfilePage = g(
     playlists,
     artistTracks,
     userFeed,
+    isUserConfirming,
     getLineupProps,
     loadMoreArtistTracks,
     loadMoreUserFeed,
@@ -555,7 +557,7 @@ const ProfilePage = g(
             fetchContent={asyncRefresh}
             shouldPad={false}
             overImage
-            isDisabled={isEditing}
+            isDisabled={isEditing || isUserConfirming}
           >
             <ProfileHeader
               name={name}
