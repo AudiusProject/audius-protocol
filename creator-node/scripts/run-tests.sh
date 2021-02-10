@@ -30,7 +30,7 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js' --exit
+  ./node_modules/mocha/bin/mocha test/ensureStorageMiddleware.test.js --exit
 }
 
 run_integration_tests () {
@@ -101,7 +101,7 @@ export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 
 # tests
 run_unit_tests
-run_integration_tests
+# run_integration_tests
 
 rm -r $storagePath
 

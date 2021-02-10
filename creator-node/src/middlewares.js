@@ -6,7 +6,7 @@ const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
 const { serviceRegistry } = require('./serviceRegistry')
-const Monitors = require('./monitors/monitors')
+const { getMonitors, MONITORS } = require('./monitors/monitors')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -103,9 +103,6 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
 /** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
 async function ensureStorageMiddleware (req, res, next) {
-  const { getMonitors, MONITORS } = Monitors
-
-  console.log('in middleware.js', Monitors.getMonitors)
   // Get storage data and max storage percentage allowed
   const [storagePathSize, storagePathUsed] = await getMonitors([
     MONITORS.STORAGE_PATH_SIZE,
@@ -118,9 +115,10 @@ async function ensureStorageMiddleware (req, res, next) {
   let hasEnoughStorage = CreatorNode.hasEnoughStorageSpace({
     storagePathSize,
     storagePathUsed,
-    // maxStorageUsedPercent
-    maxStorageUsedPercent: 10
+    maxStorageUsedPercent
   })
+
+  req.logger.info(`Current usage=${(storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`)
 
   if (hasEnoughStorage) {
     next()
