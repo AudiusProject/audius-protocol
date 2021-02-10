@@ -5,7 +5,7 @@ const { promisify } = require('util')
 const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('../models')
-const { authMiddleware, syncLockMiddleware, ensureStorageMiddleware } = require('../middlewares')
+const { authMiddleware, syncLockMiddleware } = require('../middlewares')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
@@ -15,10 +15,6 @@ const CHALLENGE_TTL_SECONDS = 120
 const CHALLENGE_PREFIX = 'userLoginChallenge:'
 
 module.exports = function (app) {
-  app.post('/vicky', ensureStorageMiddleware, handleResponse(async (req, res) => {
-    return successResponse({ msg: 'do not show me if storage is over the cap!!!!' })
-  }))
-
   /**
    * Creates CNodeUser table entry if one doesn't already exist
    */
