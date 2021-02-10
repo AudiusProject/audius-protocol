@@ -25,18 +25,21 @@ class NotificationProcessor {
   constructor () {
     this.notifQueue = new Bull(
       'notification-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      {
+        redis:
+          { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.emailQueue = new Bull(
       'email-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      {
+        redis:
+          { port: config.get('redisPort'), host: config.get('redisHost') }
       })
     this.announcementQueue = new Bull(
       'announcement-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      {
+        redis:
+          { port: config.get('redisPort'), host: config.get('redisHost') }
       })
   }
 
@@ -167,7 +170,7 @@ class NotificationProcessor {
     trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
     params.append('min_block_number', minBlock)
 
-    const { discoveryProvider } = audiusLibsWrapper.audiusLibs()
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
     let reqObj = {
       method: 'get',

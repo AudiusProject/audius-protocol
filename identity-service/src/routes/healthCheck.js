@@ -270,7 +270,7 @@ module.exports = function (app) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
 
-    const { discoveryProvider } = audiusLibsWrapper.audiusLibs()
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
     let body = (await axios({
       method: 'get',

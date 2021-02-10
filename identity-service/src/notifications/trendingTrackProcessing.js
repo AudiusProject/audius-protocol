@@ -46,7 +46,7 @@ async function getTrendingTracks () {
     params.append('time', TRENDING_TIME.WEEK)
     params.append('limit', MAX_TOP_TRACK_RANK)
 
-    const { discoveryProvider } = audiusLibsWrapper.audiusLibs()
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
     const trendingTracksResponse = await axios({
       method: 'get',

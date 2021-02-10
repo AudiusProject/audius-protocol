@@ -37,7 +37,7 @@ class AudiusLibsWrapper {
     this.audiusLibsInstance = audiusInstance
   }
 
-  audiusLibs () {
+  getAudiusLibs () {
     return this.audiusLibsInstance
   }
 }
