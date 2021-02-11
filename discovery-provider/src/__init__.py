@@ -238,7 +238,7 @@ def configure_flask(test_config, app, mode="app"):
         alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
         alembic_config.set_main_option("sqlalchemy.url", str(database_url))
         with helpers.cd(alembic_dir):
-            # run migrations unless `run_migrations` overridden to false. default value is true
+            # run db migrations unless `run_migrations` overridden to false. default value is true
             # need to call with getboolean because configparser doesn't allow you to
             # store non string types and it coerces into bool for you
             if shared_config.getboolean("db", "run_migrations"):
