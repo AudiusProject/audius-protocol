@@ -1,10 +1,9 @@
-const CreatorNode = require('@audius/libs/src/services/creatorNode')
-
 const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError, errorResponseBadRequest } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
+const { hasEnoughStorageSpace } = require('./fileManager')
 const { serviceRegistry } = require('./serviceRegistry')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 
@@ -112,7 +111,7 @@ async function ensureStorageMiddleware (req, res, next) {
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
   // Check to see if CNode has enough storage
-  let hasEnoughStorage = CreatorNode.hasEnoughStorageSpace({
+  let hasEnoughStorage = hasEnoughStorageSpace({
     storagePathSize,
     storagePathUsed,
     maxStorageUsedPercent

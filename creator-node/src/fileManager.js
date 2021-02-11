@@ -376,6 +376,18 @@ function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
 
+function hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUsedPercent }) {
+  if (
+    storagePathSize === null ||
+    storagePathSize === undefined ||
+    storagePathUsed === null ||
+    storagePathUsed === undefined
+  ) { return false }
+
+  if (cne && cne === 'http://cn2_creator-node_1:4001') return false
+  return (100 * storagePathUsed / storagePathSize) < maxStorageUsedPercent
+}
+
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
   saveFileToIPFSFromFS,
@@ -384,5 +396,6 @@ module.exports = {
   upload,
   uploadTempDiskStorage,
   trackFileUpload,
-  handleTrackContentUpload
+  handleTrackContentUpload,
+  hasEnoughStorageSpace
 }
