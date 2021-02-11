@@ -1,12 +1,9 @@
 import logging  # pylint: disable=C0302
 
-from src.queries.get_trending_tracks import get_trending_tracks
+from src.queries.get_trending_tracks import get_trending_tracks, TRENDING_LIMIT
 from src.api.v1.helpers import extend_track, decode_string_id
 
 logger = logging.getLogger(__name__)
-
-TRENDING_LIMIT = 100
-TRENDING_TTL_SEC = 30 * 60
 
 def get_trending(args):
     """Get Trending, shared between full and regular endpoints."""

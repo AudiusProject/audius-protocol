@@ -23,7 +23,9 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
-from src.queries.get_trending import TRENDING_LIMIT, TRENDING_TTL_SEC, get_trending
+from src.queries.get_trending import get_trending
+from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_random_tracks import get_random_tracks, DEFAULT_RANDOM_LIMIT
 
 logger = logging.getLogger(__name__)
 
@@ -273,6 +275,69 @@ class FullTrending(Resource):
                 key, TRENDING_TTL_SEC, lambda: get_trending(args))
         trending = full_trending[offset: limit + offset]
         return success_response(trending)
+
+
+# Get random tracks for a genre and exclude tracks in the exclusion list
+random_track_parser = reqparse.RequestParser()
+random_track_parser.add_argument('genre', required=False)
+random_track_parser.add_argument('limit', type=int, required=False)
+random_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
+random_track_parser.add_argument('time', required=False)
+
+@ns.route("/random")
+class RandomTrack(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Random Tracks""",
+        params={
+            'genre': 'Random trending tracks for a specified genre',
+            'limit': 'Number of random tracks to fetch',
+            'exclusion_list': 'List of track ids to exclude',
+            'time': 'Trending tracks over a specified time range (week, month, allTime)'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=TRENDING_TTL_SEC)
+    def get(self):
+        args = random_track_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
+        args['limit'] = max(TRENDING_LIMIT, limit)
+        tracks = get_random_tracks(args)
+        return success_response(tracks[:limit])
+
+full_random_track_parser = random_track_parser.copy()
+full_random_track_parser.add_argument('user_id', required=False)
+
+@full_ns.route("/random")
+class FullRandomTrack(Resource):
+    def get_cache_key(self):
+        """Construct a cache key from genre + exclusion list + user + time"""
+        request_items = to_dict(request.args)
+        request_items.pop('limit', None)
+        key = extract_key(request.path, request_items.items())
+        return key
+
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        args = full_random_track_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
+        args['limit'] = max(TRENDING_LIMIT, limit)
+        key = self.get_cache_key()
+
+        # Attempt to use the cached tracks list
+        if args['user_id'] is not None:
+            full_random = get_random_tracks(args)
+        else:
+            full_random = use_redis_cache(
+                key, TRENDING_TTL_SEC, lambda: get_random_tracks(args))
+        random = full_random[:limit]
+        return success_response(random)
 
 
 trending_ids_route_parser = reqparse.RequestParser()
