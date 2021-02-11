@@ -61,7 +61,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /// @notice EIP-712 Typehash definitions
     //          Used to validate identity with gasless transaction submission
     bytes32 constant PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH = keccak256(
-        "ProposeAddOrUpdateContentNode(uint cnodeSpId,address cnodeDelegateOwnerWallet,address cnodeOwnerWallet, uint proposerSpId,bytes32 nonce)"
+        "ProposeAddOrUpdateContentNode(uint cnodeSpId,address cnodeDelegateOwnerWallet,address cnodeOwnerWallet,uint proposerSpId,bytes32 nonce)"
     );
     bytes32 constant UPDATE_REPLICA_SET_REQUEST_TYPEHASH = keccak256(
         "UpdateReplicaSet(uint userId,uint primaryId,bytes32 secondaryIdsHash,uint oldPrimaryId,bytes32 oldSecondaryIdsHash,bytes32 nonce)"
@@ -108,7 +108,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         require(seedComplete == false, "Seed operation already completed");
         uint256[3] memory emptyProposerIds = [uint256(0), uint256(0), uint256(0)];
         require(
-            _bootstrapSPIds.length == _bootstrapNodeDelegateWallets.length,
+            (_bootstrapSPIds.length == _bootstrapNodeDelegateWallets.length) &&
+            (_bootstrapSPIds.length == _bootstrapNodeOwnerWallets.length),
             "Mismatched bootstrap array lengths"
         );
         for (uint i = 0; i < _bootstrapSPIds.length; i++) {
@@ -162,6 +163,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address proposer1Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
             _cnodeWallets[0],
+            _cnodeWallets[1],
             _proposerSpIds[0],
             _proposerNonces[0],
             _proposer1Sig
@@ -169,6 +171,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address proposer2Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
             _cnodeWallets[0],
+            _cnodeWallets[1],
             _proposerSpIds[1],
             _proposerNonces[1],
             _proposer2Sig
@@ -176,6 +179,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address proposer3Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
             _cnodeWallets[0],
+            _cnodeWallets[1],
             _proposerSpIds[2],
             _proposerNonces[2],
             _proposer3Sig
@@ -372,7 +376,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /* EIP712 - Signer recovery */
     function _recoverProposeAddOrUpdateContentNodeSignerAddress(
         uint _cnodeSpId,
-        address _cnodeWallet,
+        address _cnodeDelegateOwnerWallet,
+        address _cnodeOwnerWallet,
         uint _proposerId,
         bytes32 _nonce,
         bytes memory _subjectSig
@@ -383,7 +388,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
                 abi.encode(
                     PROPOSE_ADD_UPDATE_CNODE_REQUEST_TYPEHASH,
                     _cnodeSpId,
-                    _cnodeWallet,
+                    _cnodeDelegateOwnerWallet,
+                    _cnodeOwnerWallet,
                     _proposerId,
                     _nonce
                 )

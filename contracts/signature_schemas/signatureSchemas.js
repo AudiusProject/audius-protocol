@@ -215,9 +215,11 @@ schemas.addIPLDBlacklist = [
 ]
 
 // User replica set manager schemas
+// TODO: RENAME
 schemas.proposeAddOrUpdateCreatorNode = [
   { name: 'cnodeSpId', type: 'uint' },
   { name: 'cnodeDelegateOwnerWallet', type: 'address' },
+  { name: 'cnodeOwnerWallet', type: 'address' },
   { name: 'proposerSpId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
@@ -800,12 +802,14 @@ generators.getProposeAddOrUpdateContentNodeRequestData = function (
   contractAddress,
   cnodeSpId,
   cnodeDelegateOwnerWallet,
+  cnodeOwnerWallet,
   proposerSpId,
   nonce
 ) {
   const message = {
     cnodeSpId,
     cnodeDelegateOwnerWallet,
+    cnodeOwnerWallet,
     proposerSpId,
     nonce
   }

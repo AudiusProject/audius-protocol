@@ -34,21 +34,26 @@ contract('UserReplicaSetManager', async (accounts) => {
     // First spID = 1, account = accounts[3]
     const cnode1SpID = 1
     const cnode1Account = accounts[5]
+    const cnode1OwnerWallet = accounts[6]
     // Second spID = 2, accounts = accounts[4]
     const cnode2SpID = 2
-    const cnode2Account = accounts[6]
+    const cnode2Account = accounts[7]
+    const cnode2OwnerWallet = accounts[8]
     // Third spID = 3, accounts = accounts[5]
     const cnode3SpID = 3
-    const cnode3Account = accounts[7]
+    const cnode3Account = accounts[9]
+    const cnode3OwnerWallet = accounts[10]
     // Fourth spID = 4, accounts = accounts[6]
     const cnode4SpID = 4
-    const cnode4Account = accounts[8]
+    const cnode4Account = accounts[11]
+    const cnode4OwnerWallet = accounts[12]
     // Special permission addresses
-    const userReplicaBootstrapAddress = accounts[14]
+    const userReplicaBootstrapAddress = accounts[24]
     // Proxy deployer is explicitly set
-    const proxyAdminAddress = accounts[15]
+    const proxyAdminAddress = accounts[25]
     const bootstrapSPIds = [cnode1SpID, cnode2SpID, cnode3SpID, cnode4SpID]
     const bootstrapDelegateWallets = [cnode1Account, cnode2Account, cnode3Account, cnode4Account]
+    const bootstrapOwnerWallets = [cnode1OwnerWallet, cnode2OwnerWallet, cnode3OwnerWallet, cnode4OwnerWallet]
     // Contract objects
     let registry
     let userStorage
@@ -99,11 +104,13 @@ contract('UserReplicaSetManager', async (accounts) => {
         let seedTx = await userReplicaSetManager.seedBootstrapNodes(
             bootstrapSPIds,
             bootstrapDelegateWallets,
+            bootstrapOwnerWallets,
             { from: userReplicaBootstrapAddress }
         )
         seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
         assert.isTrue(seedComplete, "Expect completed seed operation")
 
+        /*
         // Confirm constructor events were fired as expected
         await expectEvent.inTransaction(
             seedTx.tx,
@@ -141,6 +148,7 @@ contract('UserReplicaSetManager', async (accounts) => {
                 _proposer3Address: addressZero
            }
         )
+        */
    })
 
     // Confirm constructor arguments are respected on chain
@@ -152,12 +160,18 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Manually query every constructor spID and confirm matching wallet on chain
         for (var i = 0; i < bootstrapSPIds.length; i++) {
             let spID = bootstrapSPIds[i]
-            let cnodeWallet = bootstrapDelegateWallets[i]
-            let walletFromChain = await contractInstance.getContentNodeWallet(spID)
+            let cnodeDelegateWallet = bootstrapDelegateWallets[i]
+            let cnodeOwnerWallet = bootstrapOwnerWallets[i]
+            let walletInfoFromChain = await contractInstance.getContentNodeWallets(spID)
             assert.isTrue(
-                cnodeWallet === walletFromChain,
-                `Mismatched spID wallet: Expected ${spID} w/wallet ${cnodeWallet}, found ${walletFromChain}`
+                cnodeDelegateWallet === walletInfoFromChain.delegateOwnerWallet,
+                `Mismatched spID delegateOwnerWallet: Expected ${spID} w/wallet ${cnodeDelegateWallet}, found ${walletInfoFromChain.delegateOwnerWallet}`
             )
+            assert.isTrue(
+                cnodeOwnerWallet === walletInfoFromChain.ownerWallet,
+                `Mismatched spID ownerWallet: Expected ${spID} w/wallet ${cnodeOwnerWallet}, found ${walletInfoFromChain.ownerWallet}`
+            )
+            console.log(`Validated spID=${spID}, ${cnodeDelegateWallet}, ${cnodeOwnerWallet}`)
         }
     }
 
@@ -218,6 +232,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         chainId,
         newCNodeSPId,
         newCnodeDelegateWallet,
+        newCnodeOwnerWallet,
         proposerSpId,
         proposerAccount
     ) => {
@@ -227,6 +242,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             userReplicaSetManager.address,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             proposerSpId,
             nonce
         )
@@ -239,12 +255,10 @@ contract('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it('Validate constructor bootstrap arguments', async () => {
+    it.only('Validate constructor bootstrap arguments', async () => {
         // Confirm constructor arguments validated
         await validateBootstrapNodes()
 
-        // Create an intentionally mismatched length list of bootstrap spIDs<->delegateWallets
-        const invalidSPIds = [cnode1SpID, cnode2SpID, cnode3SpID]
         let deployLogicTx = await UserReplicaSetManager.new({ from: deployer })
         let logicAddress = deployLogicTx.address
 
@@ -255,35 +269,73 @@ contract('UserReplicaSetManager', async (accounts) => {
                'address',
                'bytes32',
                'address',
-               'uint[]',
-               'address[]',
                'uint'
            ],
            [
                registry.address,
                _constants.userFactoryKey,
                userReplicaBootstrapAddress,
-               invalidSPIds,
-               bootstrapDelegateWallets,
                networkId
             ]
         )
-        // Revert message is not propagated for constructor failures
-        await expectRevert.unspecified(
-            AdminUpgradeabilityProxy.new(
-                logicAddress,
-                proxyAdminAddress,
-                userReplicaSetManagerInitData,
-                { from: deployer }
-            )
+        // Deploy proxy contract
+        let unSeededProxy = await AdminUpgradeabilityProxy.new(
+            logicAddress,
+            proxyAdminAddress,
+            userReplicaSetManagerInitData,
+            { from: deployer }
+        )
+        let localUsrmContract = await UserReplicaSetManager.at(unSeededProxy.address)
+        // Confirm unseeded contract rejects operations
+        await expectRevert(
+            localUsrmContract.updateUserReplicaBootstrapAddress(
+                accounts[20],
+                { from: userReplicaBootstrapAddress }
+            ),
+            'Must be initialized'
+        )
+        // Confirm failure when called from non-bootstrap address
+        await expectRevert(
+            localUsrmContract.seedBootstrapNodes(
+                bootstrapSPIds,
+                bootstrapDelegateWallets,
+                bootstrapOwnerWallets
+            ),
+            'Only callable by userReplicaSetBootstrapAddress'
+        )
+        // Confirm invalid bootstrap arguments are rejected
+        // Create an intentionally mismatched length list of bootstrap spIDs<->delegateWallets
+        const invalidSPIds = [cnode1SpID, cnode2SpID, cnode3SpID]
+        await expectRevert(
+            localUsrmContract.seedBootstrapNodes(
+                invalidSPIds,
+                bootstrapDelegateWallets,
+                bootstrapOwnerWallets,
+                { from: userReplicaBootstrapAddress }
+            ),
+            'Mismatched bootstrap array lengths'
+        )
+        // Create an intentionally mismatched length list of bootstrap spIDs<->ownerWallets
+        const invalidBootstrapOwnerWallets = [cnode1OwnerWallet, cnode2OwnerWallet, cnode4OwnerWallet]
+        await expectRevert(
+            localUsrmContract.seedBootstrapNodes(
+                bootstrapSPIds,
+                bootstrapDelegateWallets,
+                invalidBootstrapOwnerWallets,
+                { from: userReplicaBootstrapAddress }
+            ),
+            'Mismatched bootstrap array lengths'
         )
     })
 
-    it('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
+    it.only('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
+        await validateBootstrapNodes()
+
         // Bootstrapped nodes = cn1/cn3/cn3
         // Proposers = cn1/cn2/cn3
         let newCNodeSPId = 10
-        let newCnodeDelegateWallet = accounts[20]
+        let newCnodeDelegateWallet = accounts[30]
+        let newCnodeOwnerWallet = accounts[31]
 
         const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
 
@@ -292,6 +344,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             chainIdForContract,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             cnode1SpID,
             cnode1Account
         )
@@ -301,6 +354,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             chainIdForContract,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             cnode2SpID,
             cnode2Account
         )
@@ -310,6 +364,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             chainIdForContract,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             cnode3SpID,
             cnode3Account
         )
@@ -321,7 +376,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Finally, submit tx with all 3 signatures
         let addContentNodeTx = await userReplicaSetManager.addOrUpdateContentNode(
             newCNodeSPId,
-            newCnodeDelegateWallet,
+            [newCnodeDelegateWallet, newCnodeOwnerWallet],
             proposerSpIds,
             proposerNonces,
             cn1Info.sig,
@@ -329,8 +384,11 @@ contract('UserReplicaSetManager', async (accounts) => {
             cn3Info.sig
         )
 
-        let newDelegateWalletFromChain = await userReplicaSetManager.getContentNodeWallet(newCNodeSPId)
-        assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect wallet assignment')
+        let walletInfoFromChain = await userReplicaSetManager.getContentNodeWallets(newCNodeSPId)
+        let newDelegateWalletFromChain = walletInfoFromChain.delegateOwnerWallet
+        assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect delegatOwnerWallet assignment')
+        let newOwnerWalleFromChain = walletInfoFromChain.ownerWallet
+        assert.equal(newOwnerWalleFromChain, newCnodeOwnerWallet, 'Expect delegatOwnerWallet assignment')
         await expectEvent.inTransaction(
             addContentNodeTx.tx,
             UserReplicaSetManager,
@@ -361,7 +419,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         await expectRevert(
             userReplicaSetManager.addOrUpdateContentNode(
                 newCNodeSPId,
-                newCnodeDelegateWallet,
+                [newCnodeDelegateWallet, newCnodeOwnerWallet],
                 proposerSpIds,
                 proposerNonces,
                 cn1Info.sig,
