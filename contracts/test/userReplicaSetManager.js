@@ -33,15 +33,15 @@ contract('UserReplicaSetManager', async (accounts) => {
     const userAcct2 = accounts[4]
     // First spID = 1, account = accounts[3]
     const cnode1SpID = 1
-    const cnode1Account = accounts[5]
+    const cnode1DelegateOwnerWallet = accounts[5]
     const cnode1OwnerWallet = accounts[6]
     // Second spID = 2, accounts = accounts[4]
     const cnode2SpID = 2
-    const cnode2Account = accounts[7]
+    const cnode2DelegateOwnerWallet = accounts[7]
     const cnode2OwnerWallet = accounts[8]
     // Third spID = 3, accounts = accounts[5]
     const cnode3SpID = 3
-    const cnode3Account = accounts[9]
+    const cnode3DelegateOwnerWallet = accounts[9]
     const cnode3OwnerWallet = accounts[10]
     // Fourth spID = 4, accounts = accounts[6]
     const cnode4SpID = 4
@@ -52,7 +52,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     // Proxy deployer is explicitly set
     const proxyAdminAddress = accounts[25]
     const bootstrapSPIds = [cnode1SpID, cnode2SpID, cnode3SpID, cnode4SpID]
-    const bootstrapDelegateWallets = [cnode1Account, cnode2Account, cnode3Account, cnode4Account]
+    const bootstrapDelegateWallets = [cnode1DelegateOwnerWallet, cnode2DelegateOwnerWallet, cnode3DelegateOwnerWallet, cnode4Account]
     const bootstrapOwnerWallets = [cnode1OwnerWallet, cnode2OwnerWallet, cnode3OwnerWallet, cnode4OwnerWallet]
     // Contract objects
     let registry
@@ -117,10 +117,10 @@ contract('UserReplicaSetManager', async (accounts) => {
             'AddOrUpdateContentNode',
             {
                 _cnodeSpId: toBN(cnode1SpID),
-                _cnodeDelegateOwnerWallet: cnode1Account,
-                _proposer1Address: addressZero,
-                _proposer2Address: addressZero,
-                _proposer3Address: addressZero
+                _cnodeDelegateOwnerWallet: cnode1DelegateOwnerWallet,
+                _proposer1DelegateOwnerWallet: addressZero,
+                _proposer2DelegateOwnerWallet: addressZero,
+                _proposer3DelegateOwnerWallet: addressZero
            }
         )
         await expectEvent.inTransaction(
@@ -129,10 +129,10 @@ contract('UserReplicaSetManager', async (accounts) => {
             'AddOrUpdateContentNode',
             {
                 _cnodeSpId: toBN(cnode2SpID),
-                _cnodeDelegateOwnerWallet: cnode2Account,
-                _proposer1Address: addressZero,
-                _proposer2Address: addressZero,
-                _proposer3Address: addressZero
+                _cnodeDelegateOwnerWallet: cnode2DelegateOwnerWallet,
+                _proposer1DelegateOwnerWallet: addressZero,
+                _proposer2DelegateOwnerWallet: addressZero,
+                _proposer3DelegateOwnerWallet: addressZero
            }
         )
         await expectEvent.inTransaction(
@@ -141,10 +141,10 @@ contract('UserReplicaSetManager', async (accounts) => {
             'AddOrUpdateContentNode',
             {
                 _cnodeSpId: toBN(cnode3SpID),
-                _cnodeDelegateOwnerWallet: cnode3Account,
-                _proposer1Address: addressZero,
-                _proposer2Address: addressZero,
-                _proposer3Address: addressZero
+                _cnodeDelegateOwnerWallet: cnode3DelegateOwnerWallet,
+                _proposer1DelegateOwnerWallet: addressZero,
+                _proposer2DelegateOwnerWallet: addressZero,
+                _proposer3DelegateOwnerWallet: addressZero
            }
         )
    })
@@ -343,7 +343,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             newCnodeOwnerWallet,
             cnode1SpID,
-            cnode1Account
+            cnode1DelegateOwnerWallet
         )
 
         // Generate proposer 2 relevant information (cn2)
@@ -353,7 +353,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             newCnodeOwnerWallet,
             cnode2SpID,
-            cnode2Account
+            cnode2DelegateOwnerWallet
         )
 
         // Generate proposer 3 relevant information (cn3)
@@ -363,7 +363,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             newCnodeOwnerWallet,
             cnode3SpID,
-            cnode3Account
+            cnode3DelegateOwnerWallet
         )
 
         // Generate arguments for proposal
@@ -393,9 +393,9 @@ contract('UserReplicaSetManager', async (accounts) => {
             {
                 _cnodeSpId: toBN(newCNodeSPId),
                 _cnodeDelegateOwnerWallet: newCnodeDelegateWallet,
-                _proposer1Address: cnode1Account,
-                _proposer2Address: cnode2Account,
-                _proposer3Address: cnode3Account
+                _proposer1DelegateOwnerWallet: cnode1DelegateOwnerWallet,
+                _proposer2DelegateOwnerWallet: cnode2DelegateOwnerWallet,
+                _proposer3DelegateOwnerWallet: cnode3DelegateOwnerWallet
             }
         )
         // Validate array emitted from event
@@ -427,7 +427,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
     })
 
-    it('Fail to register additional nodes w/duplicate bootstrap signers', async () => {
+    it('Fail to register additional nodes w/duplicate proposing delegateOwnerWallets', async () => {
         // Bootstrapped nodes = cn1/cn3/cn3
         // Proposers = cn1/cn2/cn3
         let newCNodeSPId = 10
@@ -442,7 +442,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             newCnodeOwnerWallet,
             cnode1SpID,
-            cnode1Account
+            cnode1DelegateOwnerWallet
         )
         // Generate proposer 2 relevant information (cn2)
         const cn2Info = await generateProposeAddOrUpdateContentNodeData(
@@ -451,7 +451,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             newCnodeOwnerWallet,
             cnode2SpID,
-            cnode2Account
+            cnode2DelegateOwnerWallet
         )
         // Generate 2nd proposer 2 relevant information, used to submit duplicate valid signature
         const cn2InfoDupe = await generateProposeAddOrUpdateContentNodeData(
@@ -460,7 +460,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             newCnodeDelegateWallet,
             newCnodeOwnerWallet,
             cnode2SpID,
-            cnode2Account
+            cnode2DelegateOwnerWallet
         )
         // Generate arguments for proposal
         // Include duplicate proposer - slots 2/3 are the same
@@ -477,7 +477,151 @@ contract('UserReplicaSetManager', async (accounts) => {
                 cn2Info.sig,
                 cn2InfoDupe.sig
             ),
-            "Distinct proposers required"
+            "Distinct proposer delegateOwnerWallets required"
+        )
+    })
+
+    it('Fail to register additional node w/duplicate proposing ownerWallet', async () => {
+        // Register a new node with a duplicate ownerWallet
+        // This is acceptable as there is a 1:many relationship in eth-contracts between
+        //  ownerWallet -> delegateWallet
+                // Bootstrapped nodes = cn1/cn3/cn3
+        // Proposers = cn1/cn2/cn3
+        const newCNodeSPId = 10
+        const newCnodeDelegateWallet = accounts[30]
+        // Shared ownerWallet with cn3
+        const newCnodeOwnerWallet = cnode3OwnerWallet
+
+        const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
+
+        // Generate proposer 1 relevant information (cn1)
+        const cn1Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
+            cnode1SpID,
+            cnode1DelegateOwnerWallet
+        )
+
+        // Generate proposer 2 relevant information (cn2)
+        const cn2Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
+            cnode2SpID,
+            cnode2DelegateOwnerWallet
+        )
+
+        // Generate proposer 3 relevant information (cn3)
+        const cn3Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            newCNodeSPId,
+            newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
+            cnode3SpID,
+            cnode3DelegateOwnerWallet
+        )
+
+        // Generate arguments for proposal
+        const proposerSpIds = [cnode1SpID, cnode2SpID, cnode3SpID]
+        const proposerNonces = [cn1Info.nonce, cn2Info.nonce, cn3Info.nonce]
+
+        // Finally, submit tx with all 3 signatures
+        let addContentNodeTx = await userReplicaSetManager.addOrUpdateContentNode(
+            newCNodeSPId,
+            [newCnodeDelegateWallet, newCnodeOwnerWallet],
+            proposerSpIds,
+            proposerNonces,
+            cn1Info.sig,
+            cn2Info.sig,
+            cn3Info.sig
+        )
+        let walletInfoFromChain = await userReplicaSetManager.getContentNodeWallets(newCNodeSPId)
+        let newDelegateWalletFromChain = walletInfoFromChain.delegateOwnerWallet
+        assert.equal(newDelegateWalletFromChain, newCnodeDelegateWallet, 'Expect delegatOwnerWallet assignment')
+        let newOwnerWalleFromChain = walletInfoFromChain.ownerWallet
+        assert.equal(newOwnerWalleFromChain, newCnodeOwnerWallet, 'Expect delegatOwnerWallet assignment')
+        await expectEvent.inTransaction(
+            addContentNodeTx.tx,
+            UserReplicaSetManager,
+            'AddOrUpdateContentNode',
+            {
+                _cnodeSpId: toBN(newCNodeSPId),
+                _cnodeDelegateOwnerWallet: newCnodeDelegateWallet,
+                _proposer1DelegateOwnerWallet: cnode1DelegateOwnerWallet,
+                _proposer2DelegateOwnerWallet: cnode2DelegateOwnerWallet,
+                _proposer3DelegateOwnerWallet: cnode3DelegateOwnerWallet
+            }
+        )
+        // Validate array emitted from event
+        let eventArgs = addContentNodeTx.logs[0].args
+        let eventProposerSpIds = eventArgs._proposerSpIds
+        assert.equal(
+            eventProposerSpIds.length,
+            proposerSpIds.length,
+            "Expect correct number of proposer IDs in AddOrUpdateContentNode event"
+        )
+        // Manually verify each ID from event
+        const proposerSpIdsBn = proposerSpIds.map(x=>toBN(x))
+        for (var i = 0; i < proposerSpIdsBn.length; i++){
+            assert.isTrue(eventProposerSpIds[i].eq(proposerSpIdsBn[i]))
+        }
+
+        // Now, propose another node using newCnodeSpId=${newCNodeSPId} with ownerWallet=${newCnodeOwnerWallet}
+
+        // Incoming node has no shared ownerWallet
+        let secondNewCNodeSPId = 11
+        let secondNewCnodeDelegateWallet = accounts[34]
+        let secondNewCnodeOwnerWallet = accounts[40]
+
+        // Generate proposer 1 relevant information spID=1
+        const proposer1Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            secondNewCNodeSPId,
+            secondNewCnodeDelegateWallet,
+            secondNewCnodeOwnerWallet,
+            cnode1SpID,
+            cnode1DelegateOwnerWallet
+        )
+
+        // Generate proposer 2 relevant information spID=3
+        const proposer2Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            secondNewCNodeSPId,
+            secondNewCnodeDelegateWallet,
+            secondNewCnodeOwnerWallet,
+            cnode3SpID,
+            cnode3DelegateOwnerWallet
+        )
+
+        // Generate proposer 3 relevant information spID=10 
+        // Duplicate owner wallet as spID=3
+        const proposer3Info = await generateProposeAddOrUpdateContentNodeData(
+            chainIdForContract,
+            secondNewCNodeSPId,
+            secondNewCnodeDelegateWallet,
+            secondNewCnodeOwnerWallet,
+            newCNodeSPId,
+            newCnodeDelegateWallet
+        )
+
+        const secondProposerSpIds = [cnode1SpID, cnode3SpID, newCNodeSPId]
+        const secondProposerNonces = [proposer1Info.nonce, proposer2Info.nonce, proposer3Info.nonce]
+
+        // Confirm failure due to shared ownerWallet between proposer3 and proposer2 above
+        await expectRevert(
+            userReplicaSetManager.addOrUpdateContentNode(
+                secondNewCNodeSPId,
+                [secondNewCnodeDelegateWallet, secondNewCnodeOwnerWallet],
+                secondProposerSpIds,
+                secondProposerNonces,
+                proposer1Info.sig,
+                proposer2Info.sig,
+                proposer3Info.sig
+            ),
+            'Distinct proposer ownerWallets required'
         )
     })
 
@@ -508,7 +652,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         let invalidUser1Secondaries = toBNArray([3, 5])
         // 5 is an invalid ID, confirm failure to update
         await expectRevert(
-          updateReplicaSet(userId1, user1Primary, invalidUser1Secondaries, oldPrimary, oldSecondaries, cnode3Account),
+          updateReplicaSet(userId1, user1Primary, invalidUser1Secondaries, oldPrimary, oldSecondaries, cnode3DelegateOwnerWallet),
           'Secondary must exist'
         )
         // Perform secondary update from another valid secondary, cn3
@@ -519,14 +663,14 @@ contract('UserReplicaSetManager', async (accounts) => {
           updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode4Account),
           'Invalid update operation'
         )
-        await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3Account)
+        await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3DelegateOwnerWallet)
 
         // Next, remove cn3 and add cn5 as a secondary from the PRIMARY account cn2
         oldPrimary = user1Primary
         oldSecondaries = user1Secondaries
         user1Primary = oldPrimary // No primary change
         user1Secondaries = toBNArray([4, 1])
-        await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode2Account)
+        await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode2DelegateOwnerWallet)
     })
 
     it('Configure replica set with duplicate IDs', async () => {

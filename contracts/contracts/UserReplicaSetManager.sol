@@ -53,9 +53,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         address _cnodeDelegateOwnerWallet,
         address _cnodeOwnerWallet,
         uint[3] _proposerSpIds,
-        address _proposer1Address,
-        address _proposer2Address,
-        address _proposer3Address
+        address _proposer1DelegateOwnerWallet,
+        address _proposer2DelegateOwnerWallet,
+        address _proposer3DelegateOwnerWallet
     );
 
     /// @notice EIP-712 Typehash definitions
@@ -160,7 +160,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         // For every entry in spIds/Nonces/Sigs
         //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
-        address proposer1Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
+        address proposer1DelegateOwnerWallet = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
             _cnodeWallets[0],
             _cnodeWallets[1],
@@ -168,7 +168,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             _proposerNonces[0],
             _proposer1Sig
         );
-        address proposer2Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
+        address proposer2DelegateOwnerWallet = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
             _cnodeWallets[0],
             _cnodeWallets[1],
@@ -176,7 +176,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             _proposerNonces[1],
             _proposer2Sig
         );
-        address proposer3Address = _recoverProposeAddOrUpdateContentNodeSignerAddress(
+        address proposer3DelegateOwnerWallet = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
             _cnodeWallets[0],
             _cnodeWallets[1],
@@ -185,23 +185,31 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             _proposer3Sig
         );
         require(
-            (proposer1Address != proposer2Address) &&
-            (proposer1Address != proposer3Address) &&
-            (proposer2Address != proposer3Address),
-            "Distinct proposers required"
+            (proposer1DelegateOwnerWallet != proposer2DelegateOwnerWallet) &&
+            (proposer1DelegateOwnerWallet != proposer3DelegateOwnerWallet) &&
+            (proposer2DelegateOwnerWallet != proposer3DelegateOwnerWallet),
+            "Distinct proposer delegateOwnerWallets required"
         );
         // TODO: Enforce 3 distinct ownerWallets
         require(
-            spIdToContentNodeWallets[_proposerSpIds[0]].delegateOwnerWallet == proposer1Address,
+            spIdToContentNodeWallets[_proposerSpIds[0]].delegateOwnerWallet == proposer1DelegateOwnerWallet,
             "Invalid wallet provided for 1st proposer"
         );
         require(
-            spIdToContentNodeWallets[_proposerSpIds[1]].delegateOwnerWallet == proposer2Address,
+            spIdToContentNodeWallets[_proposerSpIds[1]].delegateOwnerWallet == proposer2DelegateOwnerWallet,
             "Invalid wallet provided for 2nd proposer"
         );
         require(
-            spIdToContentNodeWallets[_proposerSpIds[2]].delegateOwnerWallet == proposer3Address,
+            spIdToContentNodeWallets[_proposerSpIds[2]].delegateOwnerWallet == proposer3DelegateOwnerWallet,
             "Invalid wallet provided for 3rd proposer"
+        );
+
+        // Require distinct ownerWallet for each proposer
+        require(
+            (spIdToContentNodeWallets[_proposerSpIds[0]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[1]].ownerWallet) &&
+            (spIdToContentNodeWallets[_proposerSpIds[1]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[2]].ownerWallet) &&
+            (spIdToContentNodeWallets[_proposerSpIds[0]].ownerWallet != spIdToContentNodeWallets[_proposerSpIds[2]].ownerWallet),
+            "Distinct proposer ownerWallets required"
         );
 
         spIdToContentNodeWallets[_cnodeSpId] = ContentNodeWallets({
@@ -214,9 +222,9 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             _cnodeWallets[0],
             _cnodeWallets[1],
             _proposerSpIds,
-            proposer1Address,
-            proposer2Address,
-            proposer3Address
+            proposer1DelegateOwnerWallet,
+            proposer2DelegateOwnerWallet,
+            proposer3DelegateOwnerWallet
         );
     }
 
