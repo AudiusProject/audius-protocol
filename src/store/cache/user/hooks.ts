@@ -313,7 +313,7 @@ export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {
     if (status !== Status.Loading && !user) setStatus(Status.Loading)
   }, [wallet, user, status])
 
-  const { error } = useGraphUser(wallet, setStatus)
+  const { error } = useGraphUser(wallet, setStatus, !!user)
 
   const dispatch = useDispatch()
   useEffect(() => {
