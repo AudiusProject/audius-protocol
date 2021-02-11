@@ -110,7 +110,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
         assert.isTrue(seedComplete, "Expect completed seed operation")
 
-        /*
         // Confirm constructor events were fired as expected
         await expectEvent.inTransaction(
             seedTx.tx,
@@ -148,7 +147,6 @@ contract('UserReplicaSetManager', async (accounts) => {
                 _proposer3Address: addressZero
            }
         )
-        */
    })
 
     // Confirm constructor arguments are respected on chain
@@ -171,7 +169,6 @@ contract('UserReplicaSetManager', async (accounts) => {
                 cnodeOwnerWallet === walletInfoFromChain.ownerWallet,
                 `Mismatched spID ownerWallet: Expected ${spID} w/wallet ${cnodeOwnerWallet}, found ${walletInfoFromChain.ownerWallet}`
             )
-            console.log(`Validated spID=${spID}, ${cnodeDelegateWallet}, ${cnodeOwnerWallet}`)
         }
     }
 
@@ -255,7 +252,7 @@ contract('UserReplicaSetManager', async (accounts) => {
     }
 
     /** Test Cases **/
-    it.only('Validate constructor bootstrap arguments', async () => {
+    it('Validate constructor bootstrap arguments', async () => {
         // Confirm constructor arguments validated
         await validateBootstrapNodes()
 
@@ -328,7 +325,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
     })
 
-    it.only('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
+    it('Register additional nodes w/multiple signers (bootstrap nodes)', async () => {
         await validateBootstrapNodes()
 
         // Bootstrapped nodes = cn1/cn3/cn3
@@ -435,12 +432,15 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Proposers = cn1/cn2/cn3
         let newCNodeSPId = 10
         let newCnodeDelegateWallet = accounts[20]
+        let newCnodeOwnerWallet = accounts[31]
+
         const chainIdForContract = getNetworkIdForContractInstance(userReplicaSetManager)
         // Generate proposer 1 relevant information (cn1)
         const cn1Info = await generateProposeAddOrUpdateContentNodeData(
             chainIdForContract,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             cnode1SpID,
             cnode1Account
         )
@@ -449,6 +449,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             chainIdForContract,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             cnode2SpID,
             cnode2Account
         )
@@ -457,6 +458,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             chainIdForContract,
             newCNodeSPId,
             newCnodeDelegateWallet,
+            newCnodeOwnerWallet,
             cnode2SpID,
             cnode2Account
         )
@@ -468,7 +470,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         await expectRevert(
             userReplicaSetManager.addOrUpdateContentNode(
                 newCNodeSPId,
-                newCnodeDelegateWallet,
+                [newCnodeDelegateWallet, newCnodeOwnerWallet],
                 proposerSpIds,
                 proposerNonces,
                 cn1Info.sig,
