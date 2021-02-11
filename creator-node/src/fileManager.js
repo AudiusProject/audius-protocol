@@ -124,6 +124,8 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${matchObj.outer}/${fileNameForImage}`)
     }
 
+    req.logger.info(`Calling saveFileForMultihashToFS for multihash ${multihash}, with gatewaysToTry: ${JSON.stringify(gatewaysToTry)}, with expectedStoragePath ${expectedStoragePath} `)
+
     /**
      * Attempts to fetch CID:
      *  - If file already stored on disk, return immediately and store to disk.
