@@ -243,7 +243,7 @@ def configure_flask(test_config, app, mode="app"):
             # into bool for you
             if shared_config.getboolean("db", "run_migrations"):
                 logger.error('running migrations')
-                # alembic.command.upgrade(alembic_config, "head")
+                alembic.command.upgrade(alembic_config, "head")
 
     if test_config is not None:
         # load the test config if passed in
