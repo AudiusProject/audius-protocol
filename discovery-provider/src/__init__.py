@@ -242,7 +242,7 @@ def configure_flask(test_config, app, mode="app"):
             # need to call with getboolean because configparser doesn't allow you to store non string types and it coerces
             # into bool for you
             if shared_config.getboolean("db", "run_migrations"):
-                logger.error('running migrations')
+                logger.info('running alembic db migrations')
                 alembic.command.upgrade(alembic_config, "head")
 
     if test_config is not None:
