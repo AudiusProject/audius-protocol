@@ -384,7 +384,6 @@ function hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUs
     storagePathUsed === undefined
   ) { return false }
 
-  if (cne && cne === 'http://cn2_creator-node_1:4001') return false
   return (100 * storagePathUsed / storagePathSize) < maxStorageUsedPercent
 }
 
