@@ -41,7 +41,7 @@ describe('test ensureStorageMiddleware', () => {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .send({ test: 'IMA STARBOY' })
-      .expect(400)
+      .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
     assert(errorObj.error.state === 'NODE_REACHED_CAPACITY')
@@ -59,7 +59,7 @@ describe('test ensureStorageMiddleware', () => {
       .attach('file', file, { filename: 'abel.jpg' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(400)
+      .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
     assert(errorObj.error.state === 'NODE_REACHED_CAPACITY')
@@ -77,7 +77,7 @@ describe('test ensureStorageMiddleware', () => {
         creator_node_endpoint: 'http://i-am-definitely-a-real-node.co',
         immediate: true
       })
-      .expect(400)
+      .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
     assert(errorObj.error.state === 'NODE_REACHED_CAPACITY')
@@ -95,7 +95,7 @@ describe('test ensureStorageMiddleware', () => {
       .attach('file', file, { filename: 'STARBOY.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(400)
+      .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
     assert(errorObj.error.state === 'NODE_REACHED_CAPACITY')
@@ -122,7 +122,7 @@ describe('test ensureStorageMiddleware', () => {
           source_file: file
         }
       )
-      .expect(400)
+      .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
     assert(errorObj.error.state === 'NODE_REACHED_CAPACITY')

@@ -376,7 +376,17 @@ function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
 
+/**
+ * Checks if the Content Node storage has reached the `maxStorageUsedPercent` defined in the config. `storagePathSize`
+ * and `storagePathUsed` are values taken off of the Content Node monitoring system.
+ * @param {Object} param
+ * @param {number} param.storagePathSize size of total storage
+ * @param {number} param.storagePathUsed size of used storage
+ * @param {number} param.maxStorageUsedPercent max storage percentage allowed in a CNode
+ * @returns {boolean} true if enough storage; false if storage is equal to or over `maxStorageUsedPercent`
+ */
 function hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUsedPercent }) {
+  // If these values are not present, the Content Node did not initialize properly.
   if (
     storagePathSize === null ||
     storagePathSize === undefined ||

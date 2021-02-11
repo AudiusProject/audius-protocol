@@ -1,4 +1,4 @@
-const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError, errorResponseBadRequest } = require('./apiHelpers')
+const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
@@ -125,7 +125,7 @@ async function ensureStorageMiddleware (req, res, next) {
     return sendResponse(
       req,
       res,
-      errorResponseBadRequest(
+      errorResponseServerError(
         {
           msg: errorMsg,
           state: 'NODE_REACHED_CAPACITY'
