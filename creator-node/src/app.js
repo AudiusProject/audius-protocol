@@ -18,6 +18,7 @@ const {
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
+const utils = require('./utils')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
@@ -48,8 +49,9 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, serviceRegistry) => {
+const initializeApp = async (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()
+
   // TODO: Can remove these when all routes
   // consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
@@ -64,6 +66,7 @@ const initializeApp = (port, serviceRegistry) => {
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
 
+  // TODOSID need to make sure this is awaited
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
   // Increase from 2min default to accommodate long-lived requests.
@@ -71,6 +74,11 @@ const initializeApp = (port, serviceRegistry) => {
   server.timeout = config.get('timeout')
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')
+
+  // initialize USRMService (requires server and /health_check to already be available)
+  await utils.timeout(1000)
+  console.info(`SIDTEST ABOUT TO RUN USRMSERVICE INIT`)
+  await serviceRegistry.USRMService.init()
 
   return { app: app, server: server }
 }

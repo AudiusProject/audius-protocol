@@ -321,6 +321,7 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
     [Service.DISCOVERY_PROVIDER, SetupCommand.UP],
     [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
     [
@@ -338,8 +339,7 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
-    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
   ]
 
   const start = Date.now()

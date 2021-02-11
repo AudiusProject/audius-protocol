@@ -465,6 +465,11 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getUSRMContentNodes () {
+    const req = Requests.getUSRMContentNodes()
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node

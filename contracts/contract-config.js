@@ -4,8 +4,8 @@ module.exports = {
   development: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     blacklisterAddress: null,
-    bootstrapSPIds: [],
-    bootstrapSPDelegateWallets: [],
+    bootstrapSPIds: [1,2,3],
+    bootstrapSPDelegateWallets: ['0xf76cbC1d6fDF3C64E71ac6D0b521e56b352b9984', '0x3b45AC3f2FE5384D01199d396C51C09dec22c3F9', '0x6f0afCFD66cabb96b23EFf57cA9893138463d3ec'],
     userReplicaSetBootstrapAddress: null
   },
   test_local: {

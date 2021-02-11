@@ -70,9 +70,10 @@ const startApp = async () => {
     await logIpfsPeerIds()
 
     await serviceRegistry.initServices()
-    logger.info('Initialized services!')
+    logger.info('Initialized services')
 
-    appInfo = initializeApp(config.get('port'), serviceRegistry)
+    appInfo = await initializeApp(config.get('port'), serviceRegistry)
+    logger.info('Initialized app and server')
   }
 
   // when app terminates, close down any open DB connections gracefully

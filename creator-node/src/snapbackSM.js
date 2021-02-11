@@ -500,8 +500,8 @@ class SnapbackSM {
     // A returned spID of 0 means this this.endpoint is currently not registered on chain
     // In this case, the stateMachine is considered to be 'uninitialized'
     if (recoveredSpID === 0) {
-      this.initialized = false
       this.log(`Failed to recover spID for ${this.endpoint}, received ${config.get('spID')}`)
+      this.initialized = false
       return
     }
     this.initialized = true
@@ -531,6 +531,7 @@ class SnapbackSM {
         } catch (e) {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {
+          // Set timeout before re-adding job to queue. devMode runs with much shorter timeout.
           if (config.get('snapbackDevModeEnabled')) {
             this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
             await utils.timeout(DevDelayInMS)

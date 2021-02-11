@@ -4,6 +4,7 @@ const BlacklistManager = require('./blacklistManager')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
+const USRMService = require('./USRMService')
 const config = require('./config')
 
 /**
@@ -26,12 +27,12 @@ class ServiceRegistry {
     this.ipfsLatest = ipfsLatest
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
+    this.nodeConfig = config
 
-    // this.audiusLibs isn't initialized until
-    // `initServices` is called.
+    // below properties aren't initialized until 'initServices' is called
     this.audiusLibs = null
-    // this.snapbackSM isn't initialized until 'initServices'
     this.snapbackSM = null
+    this.USRMService = null
   }
 
   /**
@@ -43,12 +44,14 @@ class ServiceRegistry {
     this.redis.set('ipfsStandaloneReqs', 0)
 
     await this.blacklistManager.init()
-    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-    this.libs = audiusLibs
-    // Conditionally initialize state machine
+
     if (!config.get('isUserMetadataNode')) {
-      this.snapbackSM = new SnapbackSM(this.libs)
+      this.audiusLibs = await initAudiusLibs()
+
+      this.snapbackSM = new SnapbackSM(this.audiusLibs)
       await this.snapbackSM.init()
+      
+      this.USRMService = new USRMService(this.nodeConfig, this.audiusLibs)
     }
 
     this.monitoringQueue.start()
@@ -92,6 +95,7 @@ const initAudiusLibs = async () => {
     identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
     isDebug: config.get('creatorNodeIsDebug')
   })
+
   await audiusLibs.init()
   return audiusLibs
 }
