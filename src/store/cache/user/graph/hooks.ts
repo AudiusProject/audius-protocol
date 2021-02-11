@@ -67,7 +67,8 @@ export const useUsers = (status: Status | undefined) => {
 
 export const useUser = (
   wallet: string,
-  setStatus: (status: Status) => void
+  setStatus: (status: Status) => void,
+  hasUser: boolean
 ) => {
   const [didFetch, setDidFetch] = useState(false)
   const { error: gqlError, data: gqlData } = useQuery<UserData, UserVars>(
@@ -80,14 +81,13 @@ export const useUser = (
   useEffect(() => {
     setDidFetch(false)
   }, [wallet, setDidFetch])
-
   const dispatch = useDispatch()
   useEffect(() => {
-    if (!didFetch && gqlData) {
+    if (!didFetch && !hasUser && gqlData) {
       setDidFetch(true)
       dispatch(populateUsers([gqlData.user], setStatus))
     }
-  }, [gqlData, dispatch, setStatus, didFetch, setDidFetch])
+  }, [hasUser, gqlData, dispatch, setStatus, didFetch, setDidFetch])
 
   return {
     error: gqlError
