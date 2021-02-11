@@ -20,6 +20,7 @@ docker run \
   -p 5000:5000 \
   -e audius_db_url=$DB_URL \
   -e audius_db_url_read_replica=$DB_URL \
+  -e audius_db_run_migrations=false \
   discprov_read_only  /bin/bash -c ./scripts/dev-server.sh --build web-server
 
 trap stop EXIT
