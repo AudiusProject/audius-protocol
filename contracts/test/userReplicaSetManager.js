@@ -118,6 +118,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             {
                 _cnodeSpId: toBN(cnode1SpID),
                 _cnodeDelegateOwnerWallet: cnode1DelegateOwnerWallet,
+                _cnodeOwnerWallet: cnode1OwnerWallet,
                 _proposer1DelegateOwnerWallet: addressZero,
                 _proposer2DelegateOwnerWallet: addressZero,
                 _proposer3DelegateOwnerWallet: addressZero
@@ -130,6 +131,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             {
                 _cnodeSpId: toBN(cnode2SpID),
                 _cnodeDelegateOwnerWallet: cnode2DelegateOwnerWallet,
+                _cnodeOwnerWallet: cnode2OwnerWallet,
                 _proposer1DelegateOwnerWallet: addressZero,
                 _proposer2DelegateOwnerWallet: addressZero,
                 _proposer3DelegateOwnerWallet: addressZero
@@ -142,6 +144,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             {
                 _cnodeSpId: toBN(cnode3SpID),
                 _cnodeDelegateOwnerWallet: cnode3DelegateOwnerWallet,
+                _cnodeOwnerWallet: cnode3OwnerWallet,
                 _proposer1DelegateOwnerWallet: addressZero,
                 _proposer2DelegateOwnerWallet: addressZero,
                 _proposer3DelegateOwnerWallet: addressZero
@@ -485,7 +488,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Register a new node with a duplicate ownerWallet
         // This is acceptable as there is a 1:many relationship in eth-contracts between
         //  ownerWallet -> delegateWallet
-                // Bootstrapped nodes = cn1/cn3/cn3
+        // Bootstrapped nodes = cn1/cn3/cn3
         // Proposers = cn1/cn2/cn3
         const newCNodeSPId = 10
         const newCnodeDelegateWallet = accounts[30]
@@ -596,7 +599,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             cnode3DelegateOwnerWallet
         )
 
-        // Generate proposer 3 relevant information spID=10 
+        // Generate proposer 3 relevant information spID=10
         // Duplicate owner wallet as spID=3
         const proposer3Info = await generateProposeAddOrUpdateContentNodeData(
             chainIdForContract,

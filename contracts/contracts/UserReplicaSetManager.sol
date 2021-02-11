@@ -114,8 +114,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         );
         for (uint i = 0; i < _bootstrapSPIds.length; i++) {
             spIdToContentNodeWallets[_bootstrapSPIds[i]] = ContentNodeWallets({
-                delegateOwnerWallet: _bootstrapNodeDelegateWallets[i], 
-                ownerWallet: _bootstrapNodeOwnerWallets[i] 
+                delegateOwnerWallet: _bootstrapNodeDelegateWallets[i],
+                ownerWallet: _bootstrapNodeOwnerWallets[i]
             });
             emit AddOrUpdateContentNode(
                 _bootstrapSPIds[i],
@@ -134,8 +134,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
      * @notice Chain of trust based authentication scheme
      *         Nodes are required to have an identity in Audius L2 and this function enables
      *         known entities to register other known entities on L2 contracts.
-     *         By requiring 3 distinct proposers that are already known on-chain, 
-     *         a single compromised wallet will not be able to arbitrarily add 
+     *         By requiring 3 distinct proposers that are already known on-chain,
+     *         a single compromised wallet will not be able to arbitrarily add
      *         content node mappings to this contract.
      * @dev Multiple distinct parties must sign and submit signatures as part of this request
      * @param _cnodeSpId - Incoming spID
@@ -190,7 +190,6 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             (proposer2DelegateOwnerWallet != proposer3DelegateOwnerWallet),
             "Distinct proposer delegateOwnerWallets required"
         );
-        // TODO: Enforce 3 distinct ownerWallets
         require(
             spIdToContentNodeWallets[_proposerSpIds[0]].delegateOwnerWallet == proposer1DelegateOwnerWallet,
             "Invalid wallet provided for 1st proposer"
@@ -231,10 +230,11 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     /**
      * @notice Function used to perform updates to a given user's replica set
      *         A valid updater can either be the user's wallet, an old primary
-     *         node, an old secondary node, or the replica set bootstrap address.
-     *         By requiring an existing on-chain "old" replica or the user's wallet 
-     *         directly, the contract can validate that the submitting entity is 
-     *         known within the protocol. 
+     *         node delegateOwnerWallet, an old secondary node delegateOwnerWallet,
+     *         or the replica set bootstrap address.
+     *         By requiring an existing on-chain "old" replica or the user's wallet
+     *         directly, the contract can validate that the submitting entity is
+     *         known within the protocol.
      * @param _userId - User for whom this update operation is being performed
      * @param _primaryId - Incoming primary for _userId
      * @param _secondaryIds - Incoming array of n secondary spIDs for _userId
@@ -264,11 +264,6 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             _subjectSig
         );
 
-        // A valid updater can be one of the following:
-        //     - userWallet
-        //     - user old primary node
-        //     - user old secondary node
-        //     - replica set bootstrap address
         bool validUpdater = false;
         // Get user object from UserFactory
         (address userWallet, ) = UserFactory(
