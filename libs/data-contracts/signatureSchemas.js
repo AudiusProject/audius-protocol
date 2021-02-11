@@ -215,19 +215,20 @@ schemas.addIPLDBlacklist = [
 ]
 
 // User replica set manager schemas
-schemas.proposeAddOrUpdateCreatorNode = [
-  { name: 'newCnodeId', type: 'uint' },
-  { name: 'newCnodeDelegateOwnerWallet', type: 'address' },
+schemas.proposeAddOrUpdateContentNode = [
+  { name: 'cnodeSpId', type: 'uint' },
+  { name: 'cnodeDelegateOwnerWallet', type: 'address' },
+  { name: 'cnodeOwnerWallet', type: 'address' },
   { name: 'proposerSpId', type: 'uint' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
 schemas.updateReplicaSet = [
   { name: 'userId', type: 'uint' },
-  { name: 'primary', type: 'uint' },
-  { name: 'secondariesHash', type: 'bytes32' },
-  { name: 'oldPrimary', type: 'uint' },
-  { name: 'oldSecondariesHash', type: 'bytes32' },
+  { name: 'primaryId', type: 'uint' },
+  { name: 'secondaryIdsHash', type: 'bytes32' },
+  { name: 'oldPrimaryId', type: 'uint' },
+  { name: 'oldSecondaryIdsHash', type: 'bytes32' },
   { name: 'nonce', type: 'bytes32' }
 ]
 
@@ -798,14 +799,16 @@ generators.addIPLDToBlacklistRequestData = function (chainId, contractAddress, m
 generators.getProposeAddOrUpdateContentNodeRequestData = function (
   chainId,
   contractAddress,
-  newCnodeId,
-  newCnodeDelegateOwnerWallet,
+  cnodeSpId,
+  cnodeDelegateOwnerWallet,
+  cnodeOwnerWallet,
   proposerSpId,
   nonce
 ) {
   const message = {
-    newCnodeId,
-    newCnodeDelegateOwnerWallet,
+    cnodeSpId,
+    cnodeDelegateOwnerWallet,
+    cnodeOwnerWallet,
     proposerSpId,
     nonce
   }
@@ -814,7 +817,7 @@ generators.getProposeAddOrUpdateContentNodeRequestData = function (
     chainId,
     contractAddress,
     'ProposeAddOrUpdateContentNode',
-    schemas.proposeAddOrUpdateCreatorNode,
+    schemas.proposeAddOrUpdateContentNode,
     message
   )
 }
@@ -823,18 +826,18 @@ generators.getUpdateReplicaSetRequestData = function (
   chainId,
   contractAddress,
   userId,
-  primary,
-  secondariesHash,
-  oldPrimary,
-  oldSecondariesHash,
+  primaryId,
+  secondaryIdsHash,
+  oldPrimaryId,
+  oldSecondaryIdsHash,
   nonce
 ) {
   const message = {
     userId,
-    primary,
-    secondariesHash,
-    oldPrimary,
-    oldSecondariesHash,
+    primaryId,
+    secondaryIdsHash,
+    oldPrimaryId,
+    oldSecondaryIdsHash,
     nonce
   }
   return getRequestData(

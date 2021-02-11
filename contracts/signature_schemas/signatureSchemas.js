@@ -215,7 +215,6 @@ schemas.addIPLDBlacklist = [
 ]
 
 // User replica set manager schemas
-// TODO: RENAME
 schemas.proposeAddOrUpdateContentNode = [
   { name: 'cnodeSpId', type: 'uint' },
   { name: 'cnodeDelegateOwnerWallet', type: 'address' },
