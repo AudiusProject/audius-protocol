@@ -26,6 +26,16 @@ const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   }
 })
 
+const mockCreatorNode = {
+  getSyncStatus: async () => {
+    return {
+      isBehind: false,
+      isConfigured: true
+    }
+  },
+  monitoringCallbacks: {}
+}
+
 // Add fields as necessary
 let defaultHealthCheckData = {
   'service': CREATOR_NODE_SERVICE_NAME,
@@ -66,15 +76,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: defaultHealthCheckData })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts([healthy, healthyButSlow, healthyButSlowest], '1.2.3'),
       whitelist: null,
@@ -116,15 +118,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts([upToDate, behindMajor, behindMinor, behindPatch], '1.2.3'),
       whitelist: null,
@@ -174,15 +168,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(500, { })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts([unhealthy1, unhealthy2, unhealthy3, unhealthy4, unhealthy5], '1.2.3'),
       whitelist: null,
@@ -234,15 +220,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts([unhealthy1, shouldBePrimary, unhealthy2, unhealthy3, shouldBeSecondary], '1.2.3'),
       whitelist: null,
@@ -283,15 +261,7 @@ describe('test CreatorNodeSelection', () => {
     let cns
     for (let i = 0; i < numNodes; i++) {
       cns = new CreatorNodeSelection({
-      // Mock Creator Node
-        creatorNode: {
-          getSyncStatus: async () => {
-            return {
-              isBehind: false,
-              isConfigured: true
-            }
-          }
-        },
+        creatorNode: mockCreatorNode,
         numberOfNodes: numNodes - i,
         ethContracts: mockEthContracts(contentNodes, '1.2.3'),
         whitelist: null,
@@ -325,15 +295,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(500, { })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts([unhealthy, shouldBePrimary, shouldBeSecondary], '1.2.3'),
       whitelist: null,
@@ -379,15 +341,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 99, storagePathSize: 100 } })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts([shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used95PercentStorage, used99PercentStorage], '1.2.3'),
       whitelist: null,
@@ -434,15 +388,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 70.546, storagePathSize: 100 } })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts(
         [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used50PercentStorage, used70PercentStorage],
@@ -489,15 +435,7 @@ describe('test CreatorNodeSelection', () => {
       .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.0', storagePathUsed: 30 } })
 
     const cns = new CreatorNodeSelection({
-      // Mock Creator Node
-      creatorNode: {
-        getSyncStatus: async () => {
-          return {
-            isBehind: false,
-            isConfigured: true
-          }
-        }
-      },
+      creatorNode: mockCreatorNode,
       numberOfNodes: 3,
       ethContracts: mockEthContracts(
         [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2],
