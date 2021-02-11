@@ -144,6 +144,7 @@ def parse_value(monitor, value):
         value: string The value to parse
     """
     try:
+        # pylint: disable=R1705
         if monitor[monitor_names.type] == 'bool':
             return value == 'True'
         elif monitor[monitor_names.type] == 'int':
@@ -154,7 +155,7 @@ def parse_value(monitor, value):
             return json.loads(value)
         else: # string
             return str(value)
-    except Exception as e:
+    except Exception:
         return str(value)
 
 
