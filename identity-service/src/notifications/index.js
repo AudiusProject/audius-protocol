@@ -15,11 +15,11 @@ const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, announcementJobType } = require('./constants')
 const { drainPublishedMessages } = require('./notificationQueue')
-const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
 const { indexTrendingTracks } = require('./trendingTrackProcessing')
 const sendNotifications = require('./sendNotifications/index.js')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 // Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
 const defaultJobOptions = {
@@ -192,9 +192,11 @@ class NotificationProcessor {
     trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
     params.append('min_block_number', minBlock)
 
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
     let reqObj = {
       method: 'get',
-      url: `${notifDiscProv}/notifications`,
+      url: `${discoveryProvider.discoveryProviderEndpoint}/notifications`,
       params,
       timeout: 10000
     }
