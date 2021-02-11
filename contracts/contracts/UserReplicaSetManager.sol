@@ -26,7 +26,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
 
     /// @notice ServiceProvider ID to ServiceProvider delegateOwnerWallet,
     ///     reflecting registered values on Audius Ethereum L1 contracts
-    mapping (uint => ContentNodeWallets) spIdToContentNodeDelegateWallet;
+    mapping (uint => ContentNodeWallets) spIdToContentNodeWallets;
 
     /// @notice Struct used to represent replica sets
     //          Each uint represents the spID registered on eth-contracts
@@ -113,7 +113,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             "Mismatched bootstrap array lengths"
         );
         for (uint i = 0; i < _bootstrapSPIds.length; i++) {
-            spIdToContentNodeDelegateWallet[_bootstrapSPIds[i]] = ContentNodeWallets({
+            spIdToContentNodeWallets[_bootstrapSPIds[i]] = ContentNodeWallets({
                 delegateOwnerWallet: _bootstrapNodeDelegateWallets[i], 
                 ownerWallet: _bootstrapNodeOwnerWallets[i] 
             });
@@ -192,19 +192,19 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         );
         // TODO: Enforce 3 distinct ownerWallets
         require(
-            spIdToContentNodeDelegateWallet[_proposerSpIds[0]].delegateOwnerWallet == proposer1Address,
+            spIdToContentNodeWallets[_proposerSpIds[0]].delegateOwnerWallet == proposer1Address,
             "Invalid wallet provided for 1st proposer"
         );
         require(
-            spIdToContentNodeDelegateWallet[_proposerSpIds[1]].delegateOwnerWallet == proposer2Address,
+            spIdToContentNodeWallets[_proposerSpIds[1]].delegateOwnerWallet == proposer2Address,
             "Invalid wallet provided for 2nd proposer"
         );
         require(
-            spIdToContentNodeDelegateWallet[_proposerSpIds[2]].delegateOwnerWallet == proposer3Address,
+            spIdToContentNodeWallets[_proposerSpIds[2]].delegateOwnerWallet == proposer3Address,
             "Invalid wallet provided for 3rd proposer"
         );
 
-        spIdToContentNodeDelegateWallet[_cnodeSpId] = ContentNodeWallets({
+        spIdToContentNodeWallets[_cnodeSpId] = ContentNodeWallets({
             delegateOwnerWallet: _cnodeWallets[0],
             ownerWallet: _cnodeWallets[1]
         });
@@ -270,7 +270,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
 
         // Valid updaters include userWallet (artist account), existing primary, existing secondary, or contract deployer
         if (signer == userWallet ||
-            signer == spIdToContentNodeDelegateWallet[_oldPrimaryId].delegateOwnerWallet ||
+            signer == spIdToContentNodeWallets[_oldPrimaryId].delegateOwnerWallet ||
             signer == userReplicaSetBootstrapAddress
            )
         {
@@ -294,12 +294,12 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
 
         // Confirm primary and every incoming secondary is valid
         require(
-            spIdToContentNodeDelegateWallet[_primaryId].delegateOwnerWallet != address(0x00),
+            spIdToContentNodeWallets[_primaryId].delegateOwnerWallet != address(0x00),
             "Primary must exist"
         );
         for (uint i = 0; i < _secondaryIds.length; i++) {
             require(
-                spIdToContentNodeDelegateWallet[_secondaryIds[i]].delegateOwnerWallet != address(0x00),
+                spIdToContentNodeWallets[_secondaryIds[i]].delegateOwnerWallet != address(0x00),
                 "Secondary must exist"
             );
         }
@@ -353,8 +353,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     returns (address delegateOwnerWallet, address ownerWallet)
     {
         return (
-            spIdToContentNodeDelegateWallet[_spID].delegateOwnerWallet,
-            spIdToContentNodeDelegateWallet[_spID].ownerWallet
+            spIdToContentNodeWallets[_spID].delegateOwnerWallet,
+            spIdToContentNodeWallets[_spID].ownerWallet
         );
     }
 
@@ -450,7 +450,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
                 userReplicaSets[_userId].secondaryIds[i] == _oldSecondaryIds[i],
                 "Invalid prior secondary configuration"
             );
-            if (signer == spIdToContentNodeDelegateWallet[_oldSecondaryIds[i]].delegateOwnerWallet) {
+            if (signer == spIdToContentNodeWallets[_oldSecondaryIds[i]].delegateOwnerWallet) {
                 secondarySenderFound = true;
             }
         }
