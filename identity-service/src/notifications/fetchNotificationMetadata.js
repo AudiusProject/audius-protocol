@@ -5,9 +5,11 @@ const NotificationType = require('../routes/notifications').NotificationType
 const Entity = require('../routes/notifications').Entity
 const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
 const { formatNotificationProps } = require('./formatNotificationMetadata')
-const audiusLibsWrapper = require('../audiusLibsInstance')
 
+const config = require('../config.js')
 const { logger } = require('../logging')
+
+const USER_NODE_IPFS_GATEWAY = config.get('environment').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
 
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 const DEFAULT_TRACK_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageTrackEmpty.jpg'
@@ -290,14 +292,10 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
   }
 }
 
-const formatGateway = (creatorNodeEndpoint) => {
-  const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-  const USER_NODE_IPFS_GATEWAY = discoveryProvider.discoveryProviderEndpoint.includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
-
-  return creatorNodeEndpoint
+const formatGateway = (creatorNodeEndpoint) =>
+  creatorNodeEndpoint
     ? `${creatorNodeEndpoint.split(',')[0]}/ipfs/`
     : USER_NODE_IPFS_GATEWAY
-}
 
 const getImageUrl = (cid, gateway, defaultImg) =>
   cid
