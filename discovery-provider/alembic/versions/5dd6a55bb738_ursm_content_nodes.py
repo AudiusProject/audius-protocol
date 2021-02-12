@@ -30,6 +30,7 @@ def upgrade():
         sa.Column('proposer_1_delegate_owner_wallet', sa.String(), nullable=False),
         sa.Column('proposer_2_delegate_owner_wallet', sa.String(), nullable=False),
         sa.Column('proposer_3_delegate_owner_wallet', sa.String(), nullable=False),
+        sa.Column('endpoint', sa.String(), nullable=True),
         sa.ForeignKeyConstraint(['blockhash'], ['blocks.blockhash'], ),
         sa.ForeignKeyConstraint(['blocknumber'], ['blocks.number'], ),
         sa.PrimaryKeyConstraint('is_current', 'cnode_sp_id', 'blockhash')

@@ -619,6 +619,7 @@ class URSMContentNode(Base):
     proposer_1_delegate_owner_wallet = Column(String, nullable=False)
     proposer_2_delegate_owner_wallet = Column(String, nullable=False)
     proposer_3_delegate_owner_wallet = Column(String, nullable=False)
+    endpoint = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash)
@@ -633,7 +634,8 @@ owner_wallet={self.owner_wallet},\
 proposer_sp_ids={self.proposer_sp_ids},\
 proposer_1_delegate_owner_wallet={self.proposer_1_delegate_owner_wallet},\
 proposer_2_delegate_owner_wallet={self.proposer_2_delegate_owner_wallet},\
-proposer_3_delegate_owner_wallet={self.proposer_3_delegate_owner_wallet})>"
+proposer_3_delegate_owner_wallet={self.proposer_3_delegate_owner_wallet},\
+endpoint={self.endpoint})>"
 
 class UserBalance(Base):
     __tablename__ = "user_balances"
