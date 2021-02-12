@@ -607,31 +607,33 @@ tag={self.tag},\
 track_id={self.track_id},\
 owner_id={self.owner_id}>"
 
-class USRMContentNode(Base):
-    __tablename__ = "usrm_content_nodes"
+class URSMContentNode(Base):
+    __tablename__ = "ursm_content_nodes"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     is_current = Column(Boolean, nullable=False)
     cnode_sp_id = Column(Integer, nullable=False)
     delegate_owner_wallet = Column(String, nullable=False)
+    owner_wallet = Column(String, nullable=False)
     proposer_sp_ids = Column(postgresql.ARRAY(Integer), nullable=False)
-    proposer_1_address = Column(String, nullable=False)
-    proposer_2_address = Column(String, nullable=False)
-    proposer_3_address = Column(String, nullable=False)
+    proposer_1_delegate_owner_wallet = Column(String, nullable=False)
+    proposer_2_delegate_owner_wallet = Column(String, nullable=False)
+    proposer_3_delegate_owner_wallet = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash)
 
     def __repr__(self):
-        return f"<USRMContentNode(blockhash={self.blockhash},\
+        return f"<URSMContentNode(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
 is_current={self.is_current},\
 cnode_sp_id={self.cnode_sp_id},\
 delegate_owner_wallet={self.delegate_owner_wallet},\
+owner_wallet={self.owner_wallet},\
 proposer_sp_ids={self.proposer_sp_ids},\
-proposer_1_address={self.proposer_1_address},\
-proposer_2_address={self.proposer_2_address},\
-proposer_3_address={self.proposer_3_address})>"
+proposer_1_delegate_owner_wallet={self.proposer_1_delegate_owner_wallet},\
+proposer_2_delegate_owner_wallet={self.proposer_2_delegate_owner_wallet},\
+proposer_3_delegate_owner_wallet={self.proposer_3_delegate_owner_wallet})>"
 
 class UserBalance(Base):
     __tablename__ = "user_balances"

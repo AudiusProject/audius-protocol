@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses, eth_abi_values
-from src.models import USRMContentNode
+from src.models import URSMContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key
 from src.utils.user_event_constants import (
@@ -216,9 +216,10 @@ def get_sp_factory_inst(self, update_task):
 def parse_usrm_cnode_record(entry, cnode_record):
     event_args = entry["args"]
     cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
-    cnode_record.proposer_1_address = event_args._proposer1Address
-    cnode_record.proposer_2_address = event_args._proposer2Address
-    cnode_record.proposer_3_address = event_args._proposer3Address
+    cnode_record.owner_wallet = event_args._cnodeOwnerWallet
+    cnode_record.proposer_1_delegate_owner_wallet = event_args._proposer1DelegateOwnerWallet
+    cnode_record.proposer_2_delegate_owner_wallet = event_args._proposer2DelegateOwnerWallet
+    cnode_record.proposer_3_delegate_owner_wallet = event_args._proposer3DelegateOwnerWallet
     cnode_record.proposer_sp_ids = event_args._proposerSpIds
     return cnode_record
 
@@ -230,12 +231,12 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     # Arguments from the event
     cnode_sp_id = event_args._cnodeSpId
 
-    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
+    cnode_record_exists = session.query(URSMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     cnode_record = None
     if cnode_record_exists:
         cnode_record = (
-            session.query(USRMContentNode)
-            .filter(USRMContentNode.cnode_sp_id == cnode_sp_id, USRMContentNode.is_current == True)
+            session.query(URSMContentNode)
+            .filter(URSMContentNode.cnode_sp_id == cnode_sp_id, URSMContentNode.is_current == True)
             .first()
         )
         # expunge the result from sqlalchemy so we can modify it without UPDATE statements being made
@@ -243,7 +244,7 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
         session.expunge(cnode_record)
         make_transient(cnode_record)
     else:
-        cnode_record = USRMContentNode(
+        cnode_record = URSMContentNode(
             is_current=True,
             cnode_sp_id=cnode_sp_id,
             created_at=datetime.utcfromtimestamp(block_timestamp)
@@ -254,11 +255,11 @@ def lookup_usrm_cnode(self, update_task, session, entry, block_number, block_tim
     return cnode_record
 
 def invalidate_old_cnode_record(session, cnode_sp_id):
-    cnode_record_exists = session.query(USRMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
+    cnode_record_exists = session.query(URSMContentNode).filter_by(cnode_sp_id=cnode_sp_id).count() > 0
     if cnode_record_exists:
         num_invalidated_records = (
-            session.query(USRMContentNode)
-            .filter(USRMContentNode.cnode_sp_id == cnode_sp_id, USRMContentNode.is_current == True)
+            session.query(URSMContentNode)
+            .filter(URSMContentNode.cnode_sp_id == cnode_sp_id, URSMContentNode.is_current == True)
             .update({"is_current": False})
         )
         assert (

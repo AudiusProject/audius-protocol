@@ -33,8 +33,7 @@ from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_t
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
-from src.queries.get_usrm_cnodes import get_usrm_cnodes
-
+from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -552,10 +551,10 @@ def get_creator_node_users():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
-@bp.route("/usrm_content_nodes", methods=("GET",))
-def get_usrm_content_nodes():
+@bp.route("/ursm_content_nodes", methods=("GET",))
+def get_ursm_content_nodes():
     try:
-        cnodes = get_usrm_cnodes()
+        cnodes = get_ursm_cnodes()
         return api_helpers.success_response(cnodes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

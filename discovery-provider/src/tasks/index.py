@@ -4,7 +4,7 @@ import concurrent.futures
 import requests
 
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save, USRMContentNode
+from src.models import Block, User, Track, Repost, Follow, Playlist, Save, URSMContentNode
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -387,7 +387,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(User).filter(User.blockhash == revert_hash).all()
             )
             revert_usrm_content_node_entries = (
-                session.query(USRMContentNode).filter(USRMContentNode.blockhash == revert_hash).all()
+                session.query(URSMContentNode).filter(URSMContentNode.blockhash == revert_hash).all()
             )
 
             # revert all of above transactions
@@ -476,10 +476,10 @@ def revert_blocks(self, db, revert_blocks_list):
             for usrm_content_node_to_revert in revert_usrm_content_node_entries:
                 cnode_sp_id = usrm_content_node_to_revert.cnode_sp_id
                 previous_usrm_content_node_entry = (
-                    session.query(USRMContentNode)
-                    .filter(USRMContentNode.cnode_sp_id == cnode_sp_id)
-                    .filter(USRMContentNode.blocknumber < revert_block_number)
-                    .order_by(USRMContentNode.blocknumber.desc())
+                    session.query(URSMContentNode)
+                    .filter(URSMContentNode.cnode_sp_id == cnode_sp_id)
+                    .filter(URSMContentNode.blocknumber < revert_block_number)
+                    .order_by(URSMContentNode.blocknumber.desc())
                     .first()
                 )
                 if previous_usrm_content_node_entry:
