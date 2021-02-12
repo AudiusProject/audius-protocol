@@ -24,7 +24,19 @@ export enum IntKeys {
   /**
    * Frequency (in ms) to poll for notifications from identity service.
    */
-  NOTIFICATION_POLLING_FREQ_MS = 'NOTIFICATION_POLLING_FREQ_MS'
+  NOTIFICATION_POLLING_FREQ_MS = 'NOTIFICATION_POLLING_FREQ_MS',
+
+  /**
+   * Service monitoring health check analytics sample rate (int out of 100). A value of 50
+   * means that half of health checks are recorded.
+   */
+  SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE = 'SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE',
+
+  /**
+   * Service monitoring request analytics sample rate (int out of 100). A value of 50
+   * means that half of all requests are recorded.
+   */
+  SERVICE_MONITOR_REQUEST_SAMPLE_RATE = 'SERVICE_MONITOR_REQUEST_SAMPLE_RATE'
 }
 
 export enum BooleanKeys {
