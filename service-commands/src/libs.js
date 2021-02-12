@@ -578,8 +578,8 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   }
 
-  this.getContentNodeWallet = async (cnodeId) => {
-    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallet(cnodeId)
+  this.getContentNodeWallets = async (cnodeId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnodeId)
   }
 
   this.updateReplicaSet = async (userId, primary, secondaries) => {
