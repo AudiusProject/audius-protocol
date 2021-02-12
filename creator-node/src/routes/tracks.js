@@ -289,7 +289,7 @@ module.exports = function (app) {
    * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
    * and associates segment & image file entries with track. Ends track creation/update process.
    */
-  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainTrackId, blockNumber, metadataFileUUID, transcodedTrackUUID } = req.body
 
     // Input validation

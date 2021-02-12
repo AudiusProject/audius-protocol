@@ -5,7 +5,7 @@ const { promisify } = require('util')
 const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('../models')
-const { authMiddleware, syncLockMiddleware } = require('../middlewares')
+const { authMiddleware, syncLockMiddleware, ensureStorageMiddleware } = require('../middlewares')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
 const utils = require('../utils')
@@ -18,7 +18,7 @@ module.exports = function (app) {
   /**
    * Creates CNodeUser table entry if one doesn't already exist
    */
-  app.post('/users', handleResponse(async (req, res, next) => {
+  app.post('/users', ensureStorageMiddleware, handleResponse(async (req, res, next) => {
     let walletAddress = req.body.walletAddress
     if (!ethereumUtils.isValidAddress(walletAddress)) {
       return errorResponseBadRequest('Ethereum address is invalid')
@@ -45,7 +45,7 @@ module.exports = function (app) {
   }))
 
   // TODO: to deprecate; leaving here for backwards compatibility
-  app.post('/users/login', handleResponse(async (req, res, next) => {
+  app.post('/users/login', ensureStorageMiddleware, handleResponse(async (req, res, next) => {
     const { signature, data } = req.body
 
     if (!signature || !data) {
@@ -79,7 +79,7 @@ module.exports = function (app) {
    * Return a challenge used for validating user login. Challenge value
    * is also set in redis cache with the key 'userLoginChallenge:<wallet>'.
    */
-  app.get('/users/login/challenge', handleResponse(async (req, res, next) => {
+  app.get('/users/login/challenge', ensureStorageMiddleware, handleResponse(async (req, res, next) => {
     let walletPublicKey = req.query.walletPublicKey
 
     if (!walletPublicKey) {
@@ -106,7 +106,7 @@ module.exports = function (app) {
    * If request challenge matches what we have, remove instance from redis to
    * prevent replay attacks. Return sessionToken upon success.
    */
-  app.post('/users/login/challenge', handleResponse(async (req, res, next) => {
+  app.post('/users/login/challenge', ensureStorageMiddleware, handleResponse(async (req, res, next) => {
     const { signature, data: theirChallenge } = req.body
 
     if (!signature || !theirChallenge) {

@@ -62,7 +62,7 @@ module.exports = function (app) {
    * Given audiusUser blockchainUserId, blockNumber, and metadataFileUUID, creates/updates AudiusUser DB entry
    * and associates image file entries with audiusUser. Ends audiusUser creation/update process.
    */
-  app.post('/audius_users', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/audius_users', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainUserId || !blockNumber || !metadataFileUUID) {
