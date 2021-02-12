@@ -41,6 +41,7 @@ const ExplorePage = ({
       <Card
         key={playlist.playlist_id}
         id={playlist.playlist_id}
+        userId={playlist.playlist_owner_id}
         imageSize={playlist._cover_art_sizes}
         primaryText={playlist.playlist_name}
         secondaryText={playlist.user.name}

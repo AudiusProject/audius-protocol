@@ -2,13 +2,15 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styles from './ArtistCard.module.css'
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import FollowButton from 'components/general/FollowButton'
 import Stats from 'components/general/Stats'
 
 import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
 import { WidthSizes, SquareSizes } from 'models/common/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import UserBadges from 'containers/user-badges/UserBadges'
+
+const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0, 0.005) 67.71%, rgba(0, 0, 0, 0.15) 79.17%, rgba(0, 0, 0, 0.25) 100%)`
 
 const ArtistCover = props => {
   const coverPhoto = useUserCoverPhoto(
@@ -21,10 +23,13 @@ const ArtistCover = props => {
     props.profilePictureSizes,
     SquareSizes.SIZE_150_BY_150
   )
+
+  const darkenedCoverPhoto = `${gradient}, url(${coverPhoto})`
+
   return (
     <DynamicImage
       wrapperClassName={styles.artistCoverPhoto}
-      image={coverPhoto}
+      image={darkenedCoverPhoto}
       immediate
     >
       <div className={styles.coverPhotoContentContainer}>
@@ -40,9 +45,12 @@ const ArtistCover = props => {
             <div className={styles.artistName} onClick={props.onNameClick}>
               {props.name}
             </div>
-            {props.isVerified ? (
-              <IconVerified className={styles.iconVerified} />
-            ) : null}
+            <UserBadges
+              userId={props.userId}
+              badgeSize={14}
+              className={styles.iconVerified}
+              useSVGTiers
+            />
           </div>
           <div
             className={styles.artistHandle}
@@ -143,7 +151,6 @@ ArtistCard.propTypes = {
   profilePictureSizes: PropTypes.object,
   coverPhotoSizes: PropTypes.object,
   isArtist: PropTypes.bool,
-  isVerified: PropTypes.bool,
 
   onNameClick: PropTypes.func,
   following: PropTypes.bool,
@@ -160,7 +167,6 @@ ArtistCard.defaultProps = {
   followingCount: 0,
   name: '',
   handle: '',
-  isVerified: true,
   onNameClick: () => {},
   following: false,
   onFollow: () => {},

@@ -76,6 +76,7 @@ const AddToPlaylist = g(
         <Card
           key={playlist.playlist_id}
           id={playlist.playlist_id}
+          userId={playlist.owner_id}
           imageSize={playlist._cover_art_sizes}
           primaryText={playlist.playlist_name}
           secondaryText={playlist.ownerName}

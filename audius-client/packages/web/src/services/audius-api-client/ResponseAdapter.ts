@@ -22,6 +22,7 @@ import {
   APISearchAutocomplete,
   APISearchPlaylist
 } from './types'
+import { StringWei } from 'store/wallet/slice'
 
 export const makeUser = (
   user: APISearchUser | APIUser
@@ -31,6 +32,7 @@ export const makeUser = (
     return undefined
   }
 
+  const balance = user.balance as StringWei
   const album_count = 'album_count' in user ? user.album_count : 0
   const followee_count = 'followee_count' in user ? user.followee_count : 0
   const follower_count = 'follower_count' in user ? user.follower_count : 0
@@ -46,6 +48,7 @@ export const makeUser = (
 
   const newUser = {
     ...user,
+    balance,
     album_count,
     followee_count,
     follower_count,

@@ -4,7 +4,8 @@ import styles from './HoverInfo.module.css'
 
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { ID } from 'models/common/Identifiers'
 
 const messages = {
   coSign: 'Co-Sign',
@@ -15,16 +16,16 @@ const messages = {
 
 type HoverInfoProps = {
   coSignName: string
-  isVerified: boolean
   hasFavorited: boolean
   hasReposted: boolean
+  userId: ID
 }
 
 const HoverInfo = ({
   coSignName,
-  isVerified,
   hasFavorited,
-  hasReposted
+  hasReposted,
+  userId
 }: HoverInfoProps) => {
   let icons
   let text
@@ -61,7 +62,11 @@ const HoverInfo = ({
         <div className={styles.text}>
           <div className={styles.name}>
             {coSignName}
-            {isVerified && <IconVerified className={styles.iconVerified} />}
+            <UserBadges
+              userId={userId}
+              badgeSize={10}
+              className={styles.iconVerified}
+            />
           </div>
           {text}
         </div>

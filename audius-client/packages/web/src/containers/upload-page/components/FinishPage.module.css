@@ -1,4 +1,4 @@
-.buttons {
+sbuttons {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -74,4 +74,13 @@
 
 .trackListContainer {
   background: var(--white);
+}
+
+.userName {
+  display: flex;
+  align-items: center;
+}
+
+.iconVerified {
+  margin-left: 4px;
 }

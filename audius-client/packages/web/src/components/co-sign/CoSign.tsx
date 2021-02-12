@@ -8,30 +8,31 @@ import { Size } from './types'
 
 import styles from './CoSign.module.css'
 import { useIsMobile } from 'utils/clientUtil'
+import { ID } from 'models/common/Identifiers'
 
 const CoSignCheck = ({
   coSignName,
-  isVerified,
   hasReposted,
   hasFavorited,
-  size
+  size,
+  userId
 }: {
   coSignName: string
-  isVerified: boolean
   hasFavorited: boolean
   hasReposted: boolean
   size: Size
+  userId: ID
 }) => {
   const tooltipText = useMemo(() => {
     return (
       <HoverInfo
         coSignName={coSignName}
-        isVerified={isVerified}
         hasReposted={hasReposted}
         hasFavorited={hasFavorited}
+        userId={userId}
       />
     )
-  }, [coSignName, isVerified, hasReposted, hasFavorited])
+  }, [coSignName, hasReposted, hasFavorited, userId])
 
   return (
     <Tooltip
@@ -52,7 +53,7 @@ const CoSignCheck = ({
 type CoSignProps =
   | {
       coSignName: string
-      isVerified: boolean
+      userId: ID
       hasFavorited: boolean
       hasReposted: boolean
       hideTooltip?: boolean
@@ -78,10 +79,10 @@ const CoSign = (props: CoSignProps) => {
     ) : (
       <CoSignCheck
         coSignName={props.coSignName}
-        isVerified={props.isVerified}
         hasFavorited={props.hasFavorited}
         hasReposted={props.hasReposted}
         size={size}
+        userId={props.userId}
       />
     )
 

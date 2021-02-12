@@ -18,7 +18,7 @@
 
 .navColumn .logo {
   display: block;
-  height: 25px;	
+  height: 25px;
   margin-top: 16px;
   margin-bottom: 16px;
   cursor: pointer;
@@ -137,6 +137,12 @@ svg.logo path {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  margin-left: 4px;
 }
 
 .navColumn .accountWrapper .userInfoWrapper .name:hover {
@@ -212,7 +218,7 @@ svg.logo path {
   height: 5px;
   width: 9px;
 }
- 
+
 .menuItem {
   display: flex;
   align-items: center;
@@ -249,8 +255,8 @@ svg.logo path {
 .navColumn .links .groupHeader {
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: var(--font-l); 
-  font-weight: var(--font-heavy); 
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
   line-height: 22px;
   padding-bottom: 8px;
   padding-left: 16px;

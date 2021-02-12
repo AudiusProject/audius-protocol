@@ -2,11 +2,11 @@ import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import styles from './TrackInfo.module.css'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import Skeleton from 'components/general/Skeleton'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 class TrackInfo extends PureComponent {
   onClickTrackName = e => {
@@ -24,7 +24,6 @@ class TrackInfo extends PureComponent {
   render() {
     const {
       contentTitle,
-      isVerified,
       isLoading,
       trackTitle,
       active,
@@ -35,7 +34,8 @@ class TrackInfo extends PureComponent {
       onClickTrackName,
       onClickArtistName,
       popover,
-      condense
+      condense,
+      userId
     } = this.props
 
     const style = {
@@ -107,7 +107,13 @@ class TrackInfo extends PureComponent {
                 {artistName}
               </span>
             )}
-            {isVerified && <IconVerified className={styles.iconVerified} />}
+            {
+              <UserBadges
+                userId={userId}
+                className={styles.iconVerified}
+                badgeSize={10}
+              />
+            }
           </div>
           {isLoading && <Skeleton width='60%' className={styles.skeleton} />}
         </div>
@@ -130,12 +136,11 @@ TrackInfo.propTypes = {
     'tiny',
     'miniscule'
   ]),
-  isVerified: PropTypes.bool,
-  active: PropTypes.bool,
   popover: PropTypes.bool,
   disabled: PropTypes.bool,
   onClickTrackName: PropTypes.func,
-  onClickArtistName: PropTypes.func
+  onClickArtistName: PropTypes.func,
+  userId: PropTypes.number
 }
 
 TrackInfo.defaultProps = {
@@ -143,7 +148,6 @@ TrackInfo.defaultProps = {
   artistName: '\u200B',
   artistHandle: '',
   size: 'medium',
-  isVerified: false,
   active: false,
   disabled: false,
   condense: false,

@@ -16,6 +16,7 @@ import EditPlaylistModal from 'containers/edit-playlist/desktop/EditPlaylistModa
 import { getClient } from 'utils/clientUtil'
 import Client from 'models/Client'
 import AppCTAModal from './app-cta-modal/AppCTAModal'
+import TierExplainerModal from './user-badges/TierExplainerModal'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -31,17 +32,27 @@ const Modals = () => {
       <FirstUploadModal />
       <UnloadDialog />
 
-      {!isMobileClient && <EmbedModal />}
-      {!isMobileClient && <EditPlaylistModal />}
-      {!isMobileClient && <ConnectedUserListModal />}
       {!NATIVE_MOBILE && client !== Client.ELECTRON && (
         <BrowserPushConfirmationModal />
       )}
-      {!isMobileClient && <AppCTAModal />}
 
-      {isMobileClient && <ConnectedMobileOverflowModal />}
-      {isMobileClient && <UnfollowConfirmationModal />}
-      {isMobileClient && <DeletePlaylistConfirmationModal />}
+      {!isMobileClient && (
+        <>
+          <EmbedModal />
+          <EditPlaylistModal />
+          <ConnectedUserListModal />
+          <AppCTAModal />
+          <TierExplainerModal />
+        </>
+      )}
+
+      {isMobileClient && (
+        <>
+          <ConnectedMobileOverflowModal />
+          <UnfollowConfirmationModal />
+          <DeletePlaylistConfirmationModal />
+        </>
+      )}
     </>
   )
 }

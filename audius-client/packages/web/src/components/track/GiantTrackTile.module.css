@@ -85,11 +85,12 @@
 }
 
 .artistWrapper .artist {
-  display: inline;
+  display: inline-flex;
   color: var(--secondary);
   font-size: var(--font-l);
   font-weight: var(--font-medium);
   padding-left: 4px;
+  align-items: center;
 }
 
 .artistWrapper .artist:hover {
@@ -217,9 +218,10 @@
 }
 
 .verified {
-  height: 16px;
-  width: 16px;
   margin-left: 8px;
+  display: inline-block;
+  position: relative;
+  top: 2px;
 }
 
 .makePublicButton {

@@ -15,11 +15,11 @@ import { useUserProfilePicture } from 'hooks/useImageSize'
 import { SquareSizes } from 'models/common/ImageSizes'
 
 import styles from './FirstUploadModal.module.css'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { openTwitterLink } from 'utils/tweet'
 import { fullProfilePage } from 'utils/route'
 import { useRecord, make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   first: 'You just uploaded your first track to Audius!',
@@ -81,9 +81,11 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
             <DynamicImage image={image} wrapperClassName={styles.image} />
             <div className={styles.name}>
               <span>{account.name}</span>
-              {account.is_verified && (
-                <IconVerified className={styles.iconVerified} />
-              )}
+              <UserBadges
+                userId={account.user_id}
+                className={styles.iconVerified}
+                badgeSize={12}
+              />
             </div>
             <div className={styles.handle}>{`@${account.handle}`}</div>
           </div>

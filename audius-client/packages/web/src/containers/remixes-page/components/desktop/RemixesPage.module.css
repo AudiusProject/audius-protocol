@@ -30,9 +30,7 @@
 }
 
 .headerSecondary .iconVerified {
-  height: 12px;
-  width: 12px;
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 .headerSecondary .link {
@@ -40,6 +38,8 @@
   margin: 0px 4px;
   color: var(--secondary);
   transition: all 0.18s ease-in-out;
+  display: flex;
+  align-items: center;
 }
 
 .headerSecondary .link:hover {

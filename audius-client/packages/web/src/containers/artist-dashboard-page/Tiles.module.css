@@ -129,7 +129,7 @@
 
 /* Explainer Tile */
 .explainerTile {
-  min-height: 520px;
+  height: 331px;
   background-color: var(--white);
   display: inline-flex;
   flex-wrap: wrap;
@@ -140,27 +140,12 @@
   text-align: left;
 }
 
-.platformToken {
-  height: 393px;
-  flex: 0 0 362px;
-  width: 362px;
-  position: relative;
-}
-
-.platformTokenImage {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 448px;
-  height: 448px;
-}
-
 .whatIsAudioContainer {
   flex: 1;
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 32px 72px 0px 32px;
+  padding: 44px 0px;
   margin-bottom: 74px;
 }
 
@@ -192,20 +177,21 @@
 
 .description {
   font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
-  line-height: 24px;
+  font-size: 20px;
+  line-height: 160%;
   color: var(--neutral);
   margin-bottom: 16px;
+  max-width: 640px;
 }
 
 .learnMore {
   font-weight: var(--font-bold);
-  font-size: var(--font-m);
+  font-size: 20px;
   line-height: 17px;
   text-align: right;
   letter-spacing: 0.5px;
   color: var(--secondary);
-  margin-bottom: 8px;
+  margin: 10px 0px 8px;
   cursor: pointer;
 }
 
@@ -307,4 +293,9 @@
 
 .disabled {
   opacity: 0.5;
+}
+
+.tokenHero {
+  margin: 66px 64px 66px 102px;
+  cursor: pointer;
 }

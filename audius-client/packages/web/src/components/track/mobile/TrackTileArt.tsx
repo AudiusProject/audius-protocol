@@ -46,8 +46,8 @@ const TrackTileArt = ({
       className={cn(styles.container, className)}
       hasFavorited={coSign.has_remix_author_saved}
       hasReposted={coSign.has_remix_author_reposted}
-      isVerified={coSign.user.is_verified}
       coSignName={coSign.user.name}
+      userId={coSign.user.user_id}
     >
       <DynamicImage
         image={showSkeleton ? '' : image}

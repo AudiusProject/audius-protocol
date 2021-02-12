@@ -4,7 +4,6 @@ import { push as pushRoute } from 'connected-react-router'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
 import styles from './UserArtCard.module.css'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -26,6 +25,7 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { withNullGuard } from 'utils/withNullGuard'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   followers: (count: number) => `${formatCount(count)} Followers`
@@ -64,8 +64,7 @@ const UserArtCard = g(
       _profile_picture_sizes,
       name,
       handle,
-      follower_count,
-      is_verified
+      follower_count
     } = user
 
     const goToProfile = useCallback(() => {
@@ -99,7 +98,11 @@ const UserArtCard = g(
         </PerspectiveCard>
         <div className={styles.userName} onClick={goToProfile}>
           <span>{name}</span>
-          {is_verified && <IconVerified className={styles.iconVerified} />}
+          <UserBadges
+            userId={user_id}
+            badgeSize={16}
+            className={styles.iconVerified}
+          />
         </div>
         <div className={styles.followerCount} onClick={onClickFollowers}>
           {messages.followers(follower_count as number)}

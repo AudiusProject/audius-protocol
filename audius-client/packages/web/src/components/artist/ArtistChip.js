@@ -8,8 +8,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SquareSizes } from 'models/common/ImageSizes'
 import { useUserProfilePicture } from 'hooks/useImageSize'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import styles from './ArtistChip.module.css'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const ArtistChip = props => {
   const profilePicture = useUserProfilePicture(
@@ -39,7 +39,11 @@ const ArtistChip = props => {
           ) : (
             props.name
           )}
-          {props.verified ? <IconVerified className={styles.verified} /> : null}
+          <UserBadges
+            userId={props.userId}
+            className={styles.verified}
+            badgeSize={10}
+          />
         </div>
         <div className={cn(styles.followers, 'followers')}>
           {formatCount(props.followers)}{' '}
@@ -57,7 +61,6 @@ ArtistChip.propTypes = {
   name: PropTypes.string,
   handle: PropTypes.string,
   followers: PropTypes.number,
-  verified: PropTypes.bool,
   onClickArtistName: PropTypes.func,
   showPopover: PropTypes.bool
 }
@@ -65,7 +68,6 @@ ArtistChip.propTypes = {
 ArtistChip.defaultProps = {
   name: '',
   followers: 0,
-  verified: false,
   showPopover: true
 }
 

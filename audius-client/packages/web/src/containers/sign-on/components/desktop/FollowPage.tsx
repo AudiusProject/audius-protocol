@@ -127,7 +127,6 @@ export const FollowPage = (props: FollowPageProps) => {
               imageSizes={user._profile_picture_sizes}
               selected={followedArtists.includes(user.user_id)}
               className={cn(styles.userCard)}
-              isVerified={user.is_verified}
               followers={user.follower_count}
               onClick={onToggleSelect(user.user_id)}
             />

@@ -50,6 +50,7 @@
 .userName {
   display: inline-flex;
   font-weight: var(--font-medium);
+  align-items: center;
 }
 
 .active .userName {
@@ -114,4 +115,9 @@
 .menuKebabContainer.small {
   height: 38px;
   min-width: 38px;
+}
+
+
+.badgeWrapper {
+  margin-left: 4px;
 }

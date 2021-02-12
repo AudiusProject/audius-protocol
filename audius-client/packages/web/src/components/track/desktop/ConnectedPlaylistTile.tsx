@@ -32,7 +32,6 @@ import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 import { OwnProps as CollectionkMenuProps } from 'containers/menu/CollectionMenu'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { isDarkMode } from 'utils/theme/theme'
 
@@ -73,6 +72,7 @@ import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
 import Menu from 'containers/menu/Menu'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 type OwnProps = {
   uid: UID
@@ -138,12 +138,7 @@ const ConnectedPlaylistTile = memo(
       has_current_user_saved: isFavorited
     } = getCollectionWithFallback(collection)
 
-    const {
-      name,
-      handle,
-      is_verified: isVerified,
-      is_creator: isCreator
-    } = getUserWithFallback(user)
+    const { name, handle, is_creator: isCreator } = getUserWithFallback(user)
     const isOwner = handle === userHandle
 
     const isActive = useMemo(() => {
@@ -292,7 +287,11 @@ const ConnectedPlaylistTile = memo(
               {name}
             </span>
           </ArtistPopover>
-          {isVerified && <IconVerified className={styles.iconVerified} />}
+          <UserBadges
+            userId={user?.user_id ?? 0}
+            className={styles.iconVerified}
+            badgeSize={14}
+          />
         </div>
       )
     }

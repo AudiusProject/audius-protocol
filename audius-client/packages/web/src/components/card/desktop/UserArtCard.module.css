@@ -4,7 +4,7 @@
 }
 
 .profilePicture {
-  box-shadow: 0 2px 8px -2px var(--image-shadow); 
+  box-shadow: 0 2px 8px -2px var(--image-shadow);
   width: 240px;
   height: 240px;
   border-radius: 50%;
@@ -20,6 +20,8 @@
   text-align: center;
   margin-top: 16px;
   position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 .followerCount {
@@ -53,8 +55,5 @@
 }
 
 .iconVerified {
-  height: 16px;
-  width: 16px;
-  position: absolute;
   margin-left: 4px;
 }

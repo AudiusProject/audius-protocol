@@ -292,6 +292,7 @@ class SearchBar extends Component {
                       : Kind.COLLECTIONS
                   }
                   id={opt.id}
+                  userId={opt.userId}
                   sizes={opt.sizes}
                   imageMultihash={opt.imageMultihash}
                   creatorNodeEndpoint={opt.creatorNodeEndpoint}

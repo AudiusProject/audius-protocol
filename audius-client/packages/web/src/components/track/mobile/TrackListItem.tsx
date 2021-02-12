@@ -15,6 +15,7 @@ import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
 import Lottie from 'react-lottie'
 import styles from './TrackListItem.module.css'
 import IconButton from 'components/general/IconButton'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 export enum TrackItemAction {
   Save = 'save',
@@ -107,6 +108,7 @@ export type TrackListItemProps = {
   artistHandle: string
   trackTitle: string
   trackId: ID
+  userId: ID
   uid?: string
   isReorderable?: boolean
   isDragging?: boolean
@@ -128,6 +130,7 @@ const TrackListItem = ({
   artistName,
   trackTitle,
   trackId,
+  userId,
   uid,
   coverArtSizes,
   isDeleted,
@@ -192,7 +195,14 @@ const TrackListItem = ({
           {trackTitle}
           {messages.deleted}
         </div>
-        <div className={styles.artistName}>{artistName}</div>
+        <div className={styles.artistName}>
+          {artistName}
+          <UserBadges
+            userId={userId}
+            badgeSize={12}
+            className={styles.badges}
+          />
+        </div>
       </div>
       {onSaveTrack && trackItemAction === TrackItemAction.Save && (
         <div className={styles.iconContainer} onClick={onSaveTrack}>

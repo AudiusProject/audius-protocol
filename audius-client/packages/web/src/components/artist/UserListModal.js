@@ -59,7 +59,6 @@ export const UserListModal = props => {
                 profilePictureSizes={user._profile_picture_sizes}
                 userId={user.user_id}
                 followers={user.follower_count}
-                verified={user.is_verified}
                 onClickArtistName={() => {
                   props.onClose()
                   props.onClickArtistName(user.handle)
@@ -105,8 +104,7 @@ UserListModal.propTypes = {
       id: PropTypes.number,
       name: PropTypes.string,
       follower_count: PropTypes.number,
-      following: PropTypes.bool,
-      verified: PropTypes.bool
+      following: PropTypes.bool
     })
   ),
   initialLoad: PropTypes.bool,

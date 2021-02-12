@@ -124,6 +124,7 @@ class SearchBar extends Component {
             return {
               key: profilePage(user.handle),
               primary: user.name || user.handle,
+              userId: user.user_id,
               id: user.user_id,
               imageMultihash:
                 user.profile_picture_sizes || user.profile_picture,
@@ -131,8 +132,7 @@ class SearchBar extends Component {
                 ? SquareSizes.SIZE_150_BY_150
                 : null,
               creatorNodeEndpoint: user.creator_node_endpoint,
-              defaultImage: profilePicEmpty,
-              isVerifiedUser: user.is_verified
+              defaultImage: profilePicEmpty
             }
           })
         },
@@ -146,13 +146,13 @@ class SearchBar extends Component {
               primary: track.title,
               secondary: track.user ? track.user.name : '',
               id: track.track_id,
+              userId: track.owner_id,
               imageMultihash: track.cover_art_sizes || track.cover_art,
               size: track.cover_art_sizes ? SquareSizes.SIZE_150_BY_150 : null,
               creatorNodeEndpoint: track.user
                 ? track.user.creator_node_endpoint
                 : '',
-              defaultImage: placeholderArt,
-              isVerifiedUser: track.user ? track.user.is_verified : false
+              defaultImage: placeholderArt
             }
           })
         },
@@ -170,6 +170,7 @@ class SearchBar extends Component {
                   )
                 : '',
               id: playlist.playlist_id,
+              userId: playlist.playlist_owner_id,
               imageMultihash: playlist.cover_art_sizes || playlist.cover_art,
               size: playlist.cover_art_sizes
                 ? SquareSizes.SIZE_150_BY_150
@@ -177,8 +178,7 @@ class SearchBar extends Component {
               defaultImage: placeholderArt,
               creatorNodeEndpoint: playlist.user
                 ? playlist.user.creator_node_endpoint
-                : '',
-              isVerifiedUser: playlist.user ? playlist.user.is_verified : false
+                : ''
             }
           })
         },
@@ -196,13 +196,13 @@ class SearchBar extends Component {
               primary: album.playlist_name,
               secondary: album.user ? album.user.name : '',
               id: album.playlist_id,
+              userId: album.playlist_owner_id,
               imageMultihash: album.cover_art_sizes || album.cover_art,
               size: album.cover_art_sizes ? SquareSizes.SIZE_150_BY_150 : null,
               defaultImage: placeholderArt,
               creatorNodeEndpoint: album.user
                 ? album.user.creator_node_endpoint
-                : '',
-              isVerifiedUser: album.user ? album.user.is_verified : false
+                : ''
             }
           })
         }

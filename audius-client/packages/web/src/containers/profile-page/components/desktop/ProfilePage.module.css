@@ -42,7 +42,7 @@
   width: 100%;
 }
 
-.nameWrapper > .handle { 
+.nameWrapper > .handle {
   color: #FAFAFA;
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);
@@ -179,7 +179,7 @@
   padding-top: 16px;
   box-sizing: content-box;
 }
-  
+
 @media screen and (min-width: 1218px) {
   .content {
     margin: 0 auto;
@@ -206,4 +206,8 @@
 
 .tabBody {
   margin: -6px;
+}
+
+.badge {
+  margin-bottom: 16px !important;
 }

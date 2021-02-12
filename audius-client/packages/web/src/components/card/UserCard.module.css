@@ -84,10 +84,8 @@
 
 .iconVerified {
   position: absolute;
-  top: 0px;
+  top: 2px;
   right: -12px;
-  width: 12px;
-  height: 12px;
 }
 
 svg.iconVerified path {

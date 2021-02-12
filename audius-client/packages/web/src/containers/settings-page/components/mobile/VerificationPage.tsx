@@ -16,8 +16,7 @@ import {
   ButtonSize,
   ButtonType,
   IconNote,
-  IconValidationX,
-  IconVerified
+  IconValidationX
 } from '@audius/stems'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -27,6 +26,7 @@ import { profilePage } from 'utils/route'
 import { ID } from 'models/common/Identifiers'
 import { BooleanKeys } from 'services/remote-config'
 import { useRemoteVar } from 'containers/remote-config/hooks'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   title: 'VERIFICATION',
@@ -138,7 +138,11 @@ const SuccessBody = ({
       />
       <div className={styles.displayName}>
         {name}
-        <IconVerified className={styles.iconVerified} />
+        <UserBadges
+          userId={userId}
+          badgeSize={12}
+          className={styles.iconVerified}
+        />
       </div>
       <div className={styles.handle}>{`@${handle}`}</div>
       <Button

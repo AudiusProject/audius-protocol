@@ -51,9 +51,9 @@ const ConnectedRemixCard = g(({ track, user, goToRoute }) => {
       coSign={track._co_sign}
       artistName={user.name}
       artistHandle={user.handle}
-      isVerified={user.is_verified}
       onClick={goToTrackPage}
       onClickArtistName={goToArtistPage}
+      userId={user.user_id}
     />
   )
 })

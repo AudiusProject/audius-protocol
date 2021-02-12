@@ -122,7 +122,7 @@
 
 .cryptoContentContainer {
   display: flex;
-  width: calc(100% + 24px);
+  width: 1104px;
   flex-wrap: wrap;
   margin: -18px -12px 16px -12px;
 }

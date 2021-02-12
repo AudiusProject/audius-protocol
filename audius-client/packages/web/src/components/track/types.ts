@@ -27,6 +27,7 @@ export type TileProps = {
   trackTileStyles?: {}
   uid: UID
   id: ID
+  userId: ID
   isActive: boolean
   isPlaying: boolean
   isLoading: boolean

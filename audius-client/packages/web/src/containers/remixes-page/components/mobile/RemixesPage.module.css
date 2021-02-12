@@ -30,14 +30,14 @@
 }
 
 .subHeader .track .iconVerified {
-  height: 8px;
-  width: 8px;
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 .subHeader .track .link {
   margin: 0px 4px;
   color: var(--secondary);
+  display: flex;
+  align-items: center;
 }
 
 .container {

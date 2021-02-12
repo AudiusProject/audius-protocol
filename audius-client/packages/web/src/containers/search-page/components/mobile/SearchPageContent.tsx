@@ -216,6 +216,7 @@ const CardSearchPage = ({
   const cards = entities.map(e => {
     const {
       id,
+      userId,
       route,
       primaryText,
       secondaryText,
@@ -228,6 +229,7 @@ const CardSearchPage = ({
           const followers = `${user.follower_count} ${cardSearchPageMessages.followers}`
           return {
             id: user.user_id,
+            userId: user.user_id,
             route: profilePage(user.handle),
             primaryText: user.name,
             secondaryText: followers,
@@ -241,6 +243,7 @@ const CardSearchPage = ({
             cardType === CardType.ALBUM ? albumPage : playlistPage
           const collection = e as UserCollection
           return {
+            userId: collection.playlist_owner_id,
             id: collection.playlist_id,
             route: routeFunc(
               collection.user.handle,
@@ -260,6 +263,7 @@ const CardSearchPage = ({
       <Card
         key={id}
         id={id}
+        userId={userId}
         isUser={cardType === CardType.USER}
         imageSize={imageSize}
         primaryText={primaryText}

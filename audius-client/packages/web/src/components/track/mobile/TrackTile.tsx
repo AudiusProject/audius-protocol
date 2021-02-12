@@ -5,7 +5,6 @@ import React, { useCallback, useState, useEffect } from 'react'
 import styles from './TrackTile.module.css'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import cn from 'classnames'
 import { formatCount } from 'utils/formatUtil'
@@ -16,6 +15,7 @@ import BottomButtons from './BottomButtons'
 import TrackTileArt from './TrackTileArt'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   artistPick: "Artist's Pick",
@@ -73,7 +73,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     onShare,
     onClickOverflow,
     coSign,
-    darkMode
+    darkMode,
+    userId
   } = props
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
@@ -151,9 +152,11 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               <span className={cn(fadeIn, styles.userName)}>
                 {props.artistName}
               </span>
-              {props.artistIsVerified && (
-                <IconVerified className={styles.iconVerified} />
-              )}
+              <UserBadges
+                userId={userId}
+                badgeSize={12}
+                className={styles.iconVerified}
+              />
               {(!artworkLoaded || showSkeleton) && (
                 <Skeleton
                   className={styles.skeleton}
@@ -171,9 +174,11 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           <div className={styles.coSignText}>
             <div className={styles.name}>
               {coSign.user.name}
-              {coSign.user.is_verified && (
-                <IconVerified className={styles.iconVerified} />
-              )}
+              <UserBadges
+                userId={coSign.user.user_id}
+                className={styles.iconVerified}
+                badgeSize={8}
+              />
             </div>
             {formatCoSign({
               hasReposted: coSign.has_remix_author_reposted,

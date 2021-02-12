@@ -78,9 +78,9 @@
 }
 
 .iconVerified {
-  height: 14px;
-  width: 14px;
   margin-left: 4px;
+  position: relative;
+  top: 2px;
 }
 
 .socialInfo {

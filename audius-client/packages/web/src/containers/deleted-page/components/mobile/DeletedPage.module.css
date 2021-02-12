@@ -62,7 +62,7 @@
   font-size: var(--font-l);
   font-weight: var(--font-bold);
   width: 100%;
-  position: relative; 
+  position: relative;
   margin-bottom: 24px;
 }
 
@@ -71,7 +71,8 @@
 }
 
 .artistWrapper .artist {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
   color: var(--secondary);
   font-size: var(--font-l);
   font-weight: var(--font-medium);
@@ -105,6 +106,5 @@
 }
 
 .verified {
-  width: 16px;
-  height: 16px;
+  margin-left: 4px;
 }

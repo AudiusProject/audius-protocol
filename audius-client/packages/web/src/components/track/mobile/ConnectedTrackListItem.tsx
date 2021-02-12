@@ -17,9 +17,14 @@ import { open } from 'store/application/ui/mobileOverflowModal/actions'
 
 import { ID } from 'models/common/Identifiers'
 import { FavoriteSource, RepostSource } from 'services/analytics'
+import { AppState } from 'store/types'
+import { getUserFromTrack } from 'store/cache/users/selectors'
 
-type ConnectedTrackListItemProps = TrackListItemProps &
-  ReturnType<typeof mapDispatchToProps>
+type OwnProps = Omit<TrackListItemProps, 'userId'>
+type StateProps = ReturnType<typeof mapStateToProps>
+type DispatchProps = ReturnType<typeof mapDispatchToProps>
+
+type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
   const onClickOverflow = () => {
@@ -34,7 +39,19 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     props.clickOverflow(props.trackId, overflowActions)
   }
 
-  return <TrackListItem {...props} onClickOverflow={onClickOverflow} />
+  return (
+    <TrackListItem
+      {...props}
+      userId={props.user?.user_id ?? 0}
+      onClickOverflow={onClickOverflow}
+    />
+  )
+}
+
+function mapStateToProps(state: AppState, ownProps: OwnProps) {
+  return {
+    user: getUserFromTrack(state, { id: ownProps.trackId })
+  }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
@@ -53,4 +70,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(null, mapDispatchToProps)(memo(ConnectedTrackListItem))
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(memo(ConnectedTrackListItem))

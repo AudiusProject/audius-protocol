@@ -4,14 +4,13 @@ import cn from 'classnames'
 import { formatCount } from 'utils/formatUtil'
 
 import styles from './UserCard.module.css'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SquareSizes } from 'models/common/ImageSizes'
 import { useUserProfilePicture } from 'hooks/useImageSize'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const UserCard = ({
   className,
-  isVerified,
   followers,
   id,
   imageSizes,
@@ -44,7 +43,11 @@ const UserCard = ({
       </div>
       <div className={styles.textContainer}>
         <div className={styles.primaryText}>{name}</div>
-        {isVerified ? <IconVerified className={styles.iconVerified} /> : null}
+        <UserBadges
+          userId={id}
+          className={styles.iconVerified}
+          badgeSize={12}
+        />
       </div>
       <div className={styles.secondaryText}>
         {`${formatCount(followers)} Followers`}
@@ -56,7 +59,6 @@ const UserCard = ({
 UserCard.propTypes = {
   className: PropTypes.string,
   name: PropTypes.string,
-  isVerified: PropTypes.bool,
   isMobile: PropTypes.bool,
   followers: PropTypes.number,
   onFollow: PropTypes.func,
@@ -64,7 +66,6 @@ UserCard.propTypes = {
 }
 
 UserCard.defaultProps = {
-  isVerified: true,
   onFollow: () => {},
   name: '',
   followers: 0,

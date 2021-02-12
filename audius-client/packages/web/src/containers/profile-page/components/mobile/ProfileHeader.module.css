@@ -97,6 +97,8 @@
   line-height: normal;
   margin-bottom: 4px;
   text-align: left;
+  display: flex;
+  align-items: center;
 }
 
 .artistName h1 {
@@ -104,9 +106,7 @@
   display: inline;
 }
 
-.artistName > .iconVerified svg {
-  height: 12px;
-  width: 12px;
+.artistName > .iconVerified {
   margin-left: 4px;
 }
 
@@ -158,6 +158,11 @@
 .socials {
   display: inline-flex;
   justify-content: flex-start;
+  align-items: center;
+}
+
+.badge {
+  margin-right: 32px;
 }
 
 .socialIcon {

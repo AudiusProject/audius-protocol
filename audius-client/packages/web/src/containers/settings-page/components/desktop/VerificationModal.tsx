@@ -27,6 +27,7 @@ import { useRemoteVar } from 'containers/remote-config/hooks'
 import { BooleanKeys } from 'services/remote-config'
 import { show as showMusicConfetti } from 'containers/music-confetti/store/slice'
 import { useDispatch } from 'react-redux'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   title: 'Verification',
@@ -139,7 +140,11 @@ const SuccessBody = ({
       />
       <div className={styles.displayName}>
         {name}
-        <IconVerified className={styles.iconVerified} />
+        <UserBadges
+          userId={userId}
+          badgeSize={12}
+          className={styles.iconVerified}
+        />
       </div>
       <div className={styles.handle}>{`@${handle}`}</div>
       <Button

@@ -128,9 +128,9 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
           </div>
           <div className={styles.trackInfo}>
             <TrackInfo
-              trackTitle={track ? track.title : ''}
-              artistName={user ? user.name : ''}
-              artistIsVerified={user && user.is_verified}
+              trackTitle={track?.title ?? ''}
+              artistName={user?.name ?? ''}
+              userId={user?.user_id ?? 0 }
               size={'extraLarge'}
               popover={false}
               shadow

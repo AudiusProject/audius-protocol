@@ -65,7 +65,7 @@
   transition: all 0.3s !important;
   display: inline-block !important;
 }
-:global(.ant-table-thead > tr > th .ant-table-column-sorter-up), 
+:global(.ant-table-thead > tr > th .ant-table-column-sorter-up),
 :global(.ant-table-thead > tr > th .ant-table-column-sorter-down) {
   color: var(--neutral-light-1) !important;
   font-size: 14px !important;
@@ -101,13 +101,9 @@
 }
 
 :global(.ant-table-tbody > tr > td) .textCell {
-  white-space: nowrap; 
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
 }
 
 /* Body Row Hover */
@@ -290,6 +286,11 @@ tr.deleted:hover td {
   height: 18px;
   border-radius: 4px;
   background-color: var(--skeleton);
+}
+
+.badges {
+  display: inline;
+  margin-left: 4px;
 }
 
 /* Drag + Drop */

@@ -36,7 +36,7 @@ type TileArtworkProps = {
   coSign?: {
     has_remix_author_saved: boolean
     has_remix_author_reposted: boolean
-    user: { name: string; is_verified: boolean }
+    user: { name: string; is_verified: boolean; user_id: ID }
   }
   callback: () => void
 }
@@ -121,7 +121,7 @@ const Artwork = memo(
         hasFavorited={coSign.has_remix_author_saved}
         hasReposted={coSign.has_remix_author_reposted}
         coSignName={coSign.user.name}
-        isVerified={coSign.user.is_verified}
+        userId={coSign.user?.user_id ?? 0}
         className={cn(styles.artworkInset, {
           [styles.small]: size === 'small',
           [styles.large]: size === 'large'
