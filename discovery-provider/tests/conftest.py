@@ -21,7 +21,12 @@ ENGINE_ARGS_LITERAL = '{ \
     "connect_args": {"options": "-c timezone=utc"},}'
 
 TEST_CONFIG_OVERRIDE = {
-    "db": {"url": DB_URL, "url_read_replica": DB_URL, "engine_args_literal": ENGINE_ARGS_LITERAL}
+    "db": {
+        "url": DB_URL,
+        "url_read_replica": DB_URL,
+        "engine_args_literal": ENGINE_ARGS_LITERAL,
+        "run_migrations": "true"
+    }
 }
 
 
