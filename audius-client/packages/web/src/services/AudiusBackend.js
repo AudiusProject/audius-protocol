@@ -23,6 +23,7 @@ import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/reque
 import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import { Timer } from 'utils/performance'
 import { waitForRemoteConfig } from './remote-config/Provider'
+import { monitoringCallbacks } from './serviceMonitoring'
 
 export const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 export const USER_NODE = process.env.REACT_APP_USER_NODE
@@ -333,6 +334,16 @@ class AudiusBackend {
     const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
     const { ethWeb3Config } = AudiusBackend.getEthWeb3Config()
 
+    let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
+    if (contentNodeBlockList) {
+      try {
+        contentNodeBlockList = new Set(contentNodeBlockList.split(','))
+      } catch (e) {
+        console.error(e)
+        contentNodeBlockList = null
+      }
+    }
+
     try {
       audiusLibs = new AudiusLibs({
         web3Config,
@@ -340,12 +351,19 @@ class AudiusBackend {
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
           null,
           getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
-          AudiusBackend.discoveryProviderSelectionCallback
+          AudiusBackend.discoveryProviderSelectionCallback,
+          monitoringCallbacks.discoveryNode
         ),
         identityServiceConfig: AudiusLibs.configIdentityService(
           IDENTITY_SERVICE
         ),
-        creatorNodeConfig: AudiusLibs.configCreatorNode(USER_NODE, true),
+        creatorNodeConfig: AudiusLibs.configCreatorNode(
+          USER_NODE,
+          /* lazyConnect */ true,
+          /* passList */ null,
+          contentNodeBlockList,
+          monitoringCallbacks.contentNode
+        ),
         comstockConfig: AudiusLibs.configComstock(COMSTOCK_URL),
         isServer: false
       })
@@ -434,20 +452,7 @@ class AudiusBackend {
   }
 
   static async autoSelectCreatorNodes() {
-    let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
-    if (contentNodeBlockList) {
-      try {
-        contentNodeBlockList = new Set(contentNodeBlockList.split(','))
-      } catch (e) {
-        console.error(e)
-        contentNodeBlockList = null
-      }
-    }
-    return audiusLibs.ServiceProvider.autoSelectCreatorNodes(
-      /* numberOfNodes */ 3,
-      /* whitelist */ null,
-      /* blacklist */ contentNodeBlockList
-    )
+    return audiusLibs.ServiceProvider.autoSelectCreatorNodes()
   }
 
   static async getSelectableCreatorNodes() {

@@ -7,7 +7,9 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE]: 20,
   [IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS]: 10 * 60 * 1000,
   [IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS]: 5000,
-  [IntKeys.NOTIFICATION_POLLING_FREQ_MS]: 60 * 1000
+  [IntKeys.NOTIFICATION_POLLING_FREQ_MS]: 60 * 1000,
+  [IntKeys.SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE]: 0,
+  [IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE]: 0
 }
 
 export const remoteConfigStringDefaults: {
