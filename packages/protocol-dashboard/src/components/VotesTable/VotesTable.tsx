@@ -20,7 +20,7 @@ const User = ({ wallet }: { wallet: Address }) => {
       <div className={styles.image}>
         {user?.image && <img src={user.image} alt="User" />}
       </div>
-      {formatShortWallet(wallet)}
+      {user?.name || formatShortWallet(wallet)}
     </div>
   )
 }
