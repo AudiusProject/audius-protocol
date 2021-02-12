@@ -135,7 +135,7 @@ const run = async () => {
         break
 
       case 'update-userreplicasetmanager-init-config':
-        await _updateUserReplicaSetAddresses(ethAccounts)
+        await _updateUserReplicaSetManagerBootstrapConfig(ethAccounts)
         break
       default:
         throwArgError()
@@ -273,7 +273,7 @@ const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ow
   console.log(`Updated ${writePath} with spOwnerWallet=${ownerWallet}\ndelegateOwnerWallet=${delegateOwnerWallet}\ndelegateWalletPkey=${delegateWalletPkey}\nendpoint=${endpoint}`)
 }
 
-const _updateUserReplicaSetAddresses = async (ethAccounts) => {
+const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
   const dataContractConfigPath = '../contracts/contract-config.js'
   const fileStream = fs.createReadStream(dataContractConfigPath)
   const rl = readline.createInterface({
@@ -284,8 +284,10 @@ const _updateUserReplicaSetAddresses = async (ethAccounts) => {
   const bootstrapSPDelegateWallets = bootstrapSPIds.map((id) => {
     return ethAccounts[id]
   })
+  const bootstrapSPOwnerWallets = bootstrapSPDelegateWallets
   const bootstrapSPIdsString = `    bootstrapSPIds: [${bootstrapSPIds}],`
   const bootstrapSPDelegateWalletsString = `    bootstrapSPDelegateWallets: ['${bootstrapSPDelegateWallets[0]}', '${bootstrapSPDelegateWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
+  const bootstrapSPOwnerWalletString = `    bootstrapSPOwnerWallets: ['${bootstrapSPOwnerWallets[0]}', '${bootstrapSPOwnerWallets[1]}', '${bootstrapSPDelegateWallets[2]}'],`
 
   let traversingDevelopmentConfigBlock = false
   let output = []
@@ -300,10 +302,12 @@ const _updateUserReplicaSetAddresses = async (ethAccounts) => {
       output.push(bootstrapSPIdsString)
     } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPDelegateWallets')) {
       output.push(bootstrapSPDelegateWalletsString)
+    } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPOwnerWallets')) {
+      output.push(bootstrapSPOwnerWalletString)
     } else {
       output.push(line)
     }
   }
   fs.writeFileSync(dataContractConfigPath, output.join('\n'))
-  console.log(`Updated ${dataContractConfigPath} with bootstrapSPIds=${bootstrapSPIds} and bootstrapSPDelegateWallets=${bootstrapSPDelegateWallets}`)
+  console.log(`Updated ${dataContractConfigPath} with \nbootstrapSPIds=${bootstrapSPIds}\nbootstrapSPDelegateWallets=${bootstrapSPDelegateWallets}\nbootstrapSPOwnerWallets:${bootstrapSPOwnerWallets}`)
 }

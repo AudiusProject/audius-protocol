@@ -6,6 +6,7 @@ module.exports = {
     blacklisterAddress: null,
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
+    bootstrapSPOwnerWallets: [],
     userReplicaSetBootstrapAddress: null
   },
   test_local: {
@@ -13,6 +14,7 @@ module.exports = {
     blacklisterAddress: null,
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
+    bootstrapSPOwnerWallets: [],
     userReplicaSetBootstrapAddress: null
   },
   audius_private: {
@@ -20,6 +22,7 @@ module.exports = {
     blacklisterAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
+    bootstrapSPOwnerWallets: [],
     userReplicaSetBootstrapAddress: null
   },
   poa_mainnet: {
@@ -27,6 +30,7 @@ module.exports = {
     blacklisterAddress: '0xfeebEA99dE524ac668B6f151177EcA60b30A09c9',
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
+    bootstrapSPOwnerWallets: [],
     userReplicaSetBootstrapAddress: null
   },
   poa_sokol: {
@@ -34,6 +38,7 @@ module.exports = {
     blacklisterAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
+    bootstrapSPOwnerWallets: [],
     userReplicaSetBootstrapAddress: null
   }
 }
