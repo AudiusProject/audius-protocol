@@ -16,7 +16,7 @@
   height: 136px !important;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;  
+  background-repeat: no-repeat;
   border-radius: 6px 6px 0px 0px;
   /* NOTE: the width and margin left are b/c antd calculated partial pixels to shift the artist card */
   width: calc(100% + 2px) !important;
@@ -104,14 +104,13 @@
 
 .iconVerified {
   margin: 0px 16px 8px 8px;
-  height: 14px;
-  width: 14px;
-  filter: drop-shadow(0 1px 2px rgba(39,31,71,.5));
 }
 
-.iconVerified g path {
-  fill: var(--static-white);
+.iconVerified svg {
+  filter: drop-shadow(0 1px 2px rgba(39,31,71,.5));
+  z-index: 10000;
 }
+
 
 .artistStatsContainer {
   display: inline-flex;

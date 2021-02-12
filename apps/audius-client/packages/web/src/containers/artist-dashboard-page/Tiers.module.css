@@ -1,0 +1,187 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--white);
+  min-width: 1080px;
+}
+
+.title {
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  line-height: 60px;
+  font-size: 48px;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 22px;
+  line-height: 35.2px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.titleContainer {
+  margin-bottom: 94px;
+  max-width: 752px;
+}
+
+.tierNumberText {
+  color: var(--neutral-light-6);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 17.6px;
+  letter-spacing: 0.15em;
+}
+
+.badgeTierText {
+  margin: 12px 0px;
+}
+
+.divider {
+  height: 1px;
+  width: 80px;
+  background-color: var(--neutral-light-6);
+  margin: 24px 0px;
+}
+
+.imageWrapper {
+  margin-bottom: 24px;
+}
+
+.imageWrapper img {
+  height: 108px;
+  width: 108px;
+}
+
+.tiersContainer {
+  display: flex;
+  align-items: center;
+}
+
+.tiersContainer > div {
+  margin: 0px 8px;
+}
+
+.tierContainer {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  width: 241px;
+  min-height: 547px;
+  padding: 40px 20px;
+  border-radius: 16px;
+  border: 2px solid rgba(214, 213, 223, 0.5);
+  background-color: var(--neutral-light-10);
+}
+
+.tierContainer.compact {
+  min-height: 338px;
+}
+
+.tierContainer.tierContainerActive {
+  border: none;
+  background-color: var(--white);
+}
+
+.tierContainerWrapper {
+  position: relative;
+}
+
+.tierContainerWrapper.tierContainerActive {
+  border-radius: 20px;
+  padding: 4px;
+  background-image: linear-gradient(315deg, #5B23E1 2.04%, #A22FEB 100%);
+  box-shadow: 0px 6px 15px rgba(173, 92, 237, 0.18);
+}
+
+.unlocks {
+  color: var(--neutral-light-4);
+  font-weight: 900;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.tierTextContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: 600;
+  font-size: 17px;
+  text-transform: capitalize;
+  width: 100%;
+}
+
+.tierTextContainer > * {
+  margin-bottom: 12px;
+  line-height: 160%;
+}
+
+.tierTextContainer span:not(.sparkles) i {
+  height: 18px !important;
+  width: 18px !important;
+}
+
+.discordButton {
+  background: transparent !important;
+  border: 1px solid var(--neutral-light-6);
+}
+
+.updateRole {
+  width: 100%;
+}
+
+.discordButton .iconDiscord {
+  height: 24px;
+  width: 24px;
+}
+
+.discordButton .iconDiscord path {
+  fill: var(--neutral);
+}
+
+.discordButton .discordButtonText {
+  color: var(--neutral) !important;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.currentTier {
+  position: absolute;
+  top: -35px;
+  right: calc(50% - 60px);
+  display: flex;
+  color: var(--secondary);
+  font-weight: 900;
+  font-size: 16px;
+  flex-direction: column;
+}
+
+.arrowWrapper {
+  transform: rotateZ(90deg);
+}
+
+.currentTier path {
+  fill: var(--secondary);
+}
+
+.buttonContainer {
+  display: flex;
+  margin: 48px 0px;
+}
+
+.buttonContainer > *:first-child {
+  margin-right: 16px;
+}
+
+.tierLevel {
+  color: var(--secondary);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+}

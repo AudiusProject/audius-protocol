@@ -55,6 +55,7 @@
   line-height: 18px;
   text-align: center;
   max-width: 128px;
+  display: flex;
 }
 
 .by {
@@ -87,6 +88,6 @@
 
 .iconVerified {
   margin-left: 4px;
-  height: 10px;
-  width: 10px;
+  position: relative;
+  top: 1px;
 }

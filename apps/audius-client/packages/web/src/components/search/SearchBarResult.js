@@ -2,7 +2,6 @@ import React, { useState, useEffect, memo } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import styles from './SearchBarResult.module.css'
 import searchBarStyles from './SearchBar.module.css'
 import placeholderArt from 'assets/img/imageBlank2x.png'
@@ -10,6 +9,7 @@ import AudiusBackend from 'services/AudiusBackend'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { Kind } from 'store/types'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const Image = memo(props => {
   const { defaultImage, imageMultihash, size, isUser } = props
@@ -51,8 +51,8 @@ const Image = memo(props => {
 const SearchBarResult = memo(props => {
   const {
     kind,
-    isVerifiedUser,
     id,
+    userId,
     sizes,
     primary,
     secondary,
@@ -80,8 +80,12 @@ const SearchBarResult = memo(props => {
           className={cn(styles.primaryContainer, searchBarStyles.resultText)}
         >
           <div className={styles.primaryText}>{primary}</div>
-          {isUser && isVerifiedUser && (
-            <IconVerified className={styles.verified} />
+          {isUser && (
+            <UserBadges
+              className={styles.verified}
+              userId={userId}
+              badgeSize={10}
+            />
           )}
         </span>
         {secondary ? (
@@ -92,8 +96,12 @@ const SearchBarResult = memo(props => {
             )}
           >
             {secondary}
-            {!isUser && isVerifiedUser && (
-              <IconVerified className={styles.verified} />
+            {!isUser && (
+              <UserBadges
+                className={styles.verified}
+                userId={userId}
+                badgeSize={8}
+              />
             )}
           </span>
         ) : null}
@@ -109,7 +117,6 @@ SearchBarResult.propTypes = {
   kind: PropTypes.string,
   id: PropTypes.string,
   sizes: PropTypes.object,
-  isVerifiedUser: PropTypes.bool,
   imageMultihash: PropTypes.string,
   creatorNodeEndpoint: PropTypes.string,
   size: PropTypes.string,
@@ -117,8 +124,7 @@ SearchBarResult.propTypes = {
 }
 
 SearchBarResult.defaultProps = {
-  imageUrl: placeholderArt,
-  isVerifiedUser: false
+  imageUrl: placeholderArt
 }
 
 export default SearchBarResult

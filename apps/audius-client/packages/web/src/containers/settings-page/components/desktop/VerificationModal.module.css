@@ -16,6 +16,9 @@
   font-size: var(--font-m);
   text-align: center;
   color: var(--neutral);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .container b {
@@ -30,7 +33,7 @@
 }
 
 .warning {
-  margin-top: 36px; 
+  margin-top: 36px;
 }
 
 .btnContainer {
@@ -105,6 +108,8 @@
   font-size: var(--font-xl);
   color: var(--neutral);
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .handle {
@@ -115,8 +120,6 @@
 }
 
 .iconVerified {
-  height: 12px;
-  width: 12px;
   margin-left: 4px;
 }
 

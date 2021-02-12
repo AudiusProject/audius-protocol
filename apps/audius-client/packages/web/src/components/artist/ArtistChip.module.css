@@ -18,7 +18,7 @@
   flex: 0 0 42px;
   border: 1px solid var(--neutral-light-8);
   border-radius: 50%;
-  
+
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -57,8 +57,6 @@
 }
 
 .text > .name > .verified {
-  height: 10px;
-  width: 10px;
   margin-left: 5px;
   flex: 0 0 15px;
 }

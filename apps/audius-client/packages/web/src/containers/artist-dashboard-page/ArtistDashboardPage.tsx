@@ -34,6 +34,7 @@ import { withClassNullGuard } from 'utils/withNullGuard'
 import lazyWithPreload from 'utils/lazyWithPreload'
 import { ClaimTile, ExplainerTile, WalletTile } from './Tiles'
 import WalletModal from './WalletModal'
+import Tiers from './Tiers'
 
 const TotalPlaysChart = lazyWithPreload(() =>
   import('./components/TotalPlaysChart')
@@ -349,6 +350,7 @@ export class ArtistDashboardPage extends Component<
         <ClaimTile />
         <WalletTile />
         <ExplainerTile className={styles.explainerTile} />
+        <Tiers />
       </div>
     )
   }

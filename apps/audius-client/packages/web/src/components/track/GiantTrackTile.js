@@ -15,7 +15,6 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import Badge from './Badge'
 import InfoLabel from './InfoLabel'
 import Tag from './Tag'
@@ -35,6 +34,7 @@ import { getCannonicalName } from 'utils/genres'
 import Skeleton from 'components/general/Skeleton'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import DownloadButtons from 'containers/download-buttons/DownloadButtons'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -363,7 +363,6 @@ class GiantTrackTile extends PureComponent {
       coverArtSizes,
       artistName,
       artistHandle,
-      artistVerified,
       description,
       duration,
       credits,
@@ -379,7 +378,8 @@ class GiantTrackTile extends PureComponent {
       isUnlisted,
       onExternalLinkClick,
       coSign,
-      loading
+      loading,
+      userId
     } = this.props
     const { artworkLoading } = this.state
 
@@ -440,9 +440,11 @@ class GiantTrackTile extends PureComponent {
                   <ArtistPopover handle={artistHandle}>
                     <h2 className={styles.artist} onClick={onClickArtistName}>
                       {artistName}
-                      {artistVerified && (
-                        <IconVerified className={styles.verified} />
-                      )}
+                      <UserBadges
+                        className={styles.verified}
+                        badgeSize={18}
+                        userId={userId}
+                      />
                     </h2>
                   </ArtistPopover>
                 </div>
@@ -527,6 +529,7 @@ class GiantTrackTile extends PureComponent {
 
 GiantTrackTile.propTypes = {
   currentUserId: PropTypes.number,
+  userId: PropTypes.number,
   loading: PropTypes.bool,
   playing: PropTypes.bool,
   active: PropTypes.bool,
@@ -534,7 +537,6 @@ GiantTrackTile.propTypes = {
   trackId: PropTypes.number,
   artistName: PropTypes.string,
   artistHandle: PropTypes.string,
-  artistVerified: PropTypes.bool,
   coverArtSizes: PropTypes.object,
   tags: PropTypes.string,
   description: PropTypes.string,
@@ -572,7 +574,6 @@ GiantTrackTile.defaultProps = {
   loading: false,
   playing: false,
   active: true,
-  artistVerified: false,
   tags: '',
   description: '',
   listenCount: 0,

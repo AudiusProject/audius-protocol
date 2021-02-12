@@ -53,7 +53,7 @@
   transition: all ease-in-out .18s;
   border-radius: 4px;
 }
-.artworkIcon > svg, 
+.artworkIcon > svg,
 .artworkIcon > div {
   position: absolute;
   top: 50%;
@@ -64,7 +64,7 @@
   transition: all ease-in-out .18s;
 }
 
-.artworkIcon > svg, 
+.artworkIcon > svg,
 .artworkIcon > div {
   width: 65%;
   height: 65%;
@@ -95,7 +95,7 @@
 
 /* Play Button */
 .playButtonContainer {
-  margin-right: 16px; 
+  margin-right: 16px;
 }
 
 /* Heart Icon */
@@ -145,7 +145,7 @@
   text-align: left;
   line-height: normal;
 
-  white-space: nowrap; 
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 2px;
@@ -159,9 +159,15 @@
   line-height: normal;
 
   text-align: left;
-  white-space: nowrap; 
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.badges {
+  margin-left: 4px;
 }
 
 .isActive {

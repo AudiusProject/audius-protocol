@@ -148,7 +148,7 @@ const SavedPage = ({
   )
 
   const cards = account
-    ? account.albums.map((album: any, i: number) => {
+    ? account.albums.map((album, i) => {
         return (
           <Card
             index={i}
@@ -156,6 +156,7 @@ const SavedPage = ({
             setDidLoad={setDidLoadAlbums}
             key={album.playlist_id}
             id={album.playlist_id}
+            userId={album.playlist_owner_id}
             imageSize={album._cover_art_sizes}
             size='medium'
             playlistName={album.playlist_name}

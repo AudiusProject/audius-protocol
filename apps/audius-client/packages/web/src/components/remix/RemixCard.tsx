@@ -2,12 +2,13 @@ import React from 'react'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Remix } from 'models/Track'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { Size } from 'components/co-sign/types'
 
 import styles from './RemixCard.module.css'
 import CoSign from 'components/co-sign/CoSign'
 import ArtistPopover from 'components/artist/ArtistPopover'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { ID } from 'models/common/Identifiers'
 
 const messages = {
   by: 'By '
@@ -19,9 +20,9 @@ type RemixCardProps = {
   coSign?: Remix | null
   artistName: string
   artistHandle: string
-  isVerified: boolean
   onClick: () => void
   onClickArtistName: () => void
+  userId: ID
 }
 
 const RemixCard = ({
@@ -30,9 +31,9 @@ const RemixCard = ({
   coSign,
   artistName,
   artistHandle,
-  isVerified,
   onClick,
-  onClickArtistName
+  onClickArtistName,
+  userId
 }: RemixCardProps) => {
   const images = (
     <div className={styles.images}>
@@ -51,9 +52,9 @@ const RemixCard = ({
           <CoSign
             size={Size.MEDIUM}
             coSignName={coSign.user.name}
-            isVerified={coSign.user.isVerified}
             hasFavorited={coSign.has_remix_author_saved}
             hasReposted={coSign.has_remix_author_reposted}
+            userId={coSign.user?.user_id ?? 0}
           >
             {images}
           </CoSign>
@@ -68,7 +69,11 @@ const RemixCard = ({
             <div className={styles.hoverable}>{artistName}</div>
           </div>
         </ArtistPopover>
-        {isVerified && <IconVerified className={styles.iconVerified} />}
+        <UserBadges
+          userId={userId}
+          badgeSize={12}
+          className={styles.iconVerified}
+        />
       </div>
     </div>
   )

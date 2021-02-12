@@ -216,6 +216,7 @@ const ExplorePage = ({
         <Card
           key={playlist.playlist_id}
           id={playlist.playlist_id}
+          userId={playlist.playlist_owner_id}
           imageSize={playlist._cover_art_sizes}
           primaryText={playlist.playlist_name}
           secondaryText={formatPlaylistCardSecondaryText(
@@ -247,6 +248,7 @@ const ExplorePage = ({
         <Card
           key={profile.user_id}
           id={profile.user_id}
+          userId={profile.user_id}
           imageSize={profile._profile_picture_sizes}
           isUser
           isVerified={profile.is_verified}

@@ -2,7 +2,7 @@
   cursor: pointer;
   position: relative;
   border: 1px solid var(--neutral-light-8);
-  border-radius: 8px;	
+  border-radius: 8px;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -23,8 +23,8 @@
 }
 
 .smallContainer {
-  height: 226px;	
-  width: 168px;    
+  height: 226px;
+  width: 168px;
 }
 
 .mediumContainer {
@@ -38,16 +38,16 @@
 }
 
 .coverArt {
-  box-sizing: border-box;	
-  border: 1px solid var(--neutral-light-8);	
+  box-sizing: border-box;
+  border: 1px solid var(--neutral-light-8);
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
 }
 
 .smallCoverArt {
-  height: 137px;	
-  width: 137px;	
+  height: 137px;
+  width: 137px;
   margin-top: 16px;
   margin-bottom: 10px;
 }
@@ -63,8 +63,8 @@
 }
 
 .largeCoverArt {
-  height: 218px;	
-  width: 218px;	
+  height: 218px;
+  width: 218px;
   margin-top: 16px;
   margin-bottom: 4px;
   border: 1px solid var(--neutral-light-8);
@@ -74,7 +74,7 @@
   width: 132px;
   height: 132px;
   border-radius: 50%;
-  border: 2px solid var(--white);	
+  border: 2px solid var(--white);
   box-shadow: 0 1px 3px -2px rgba(133,129,153,0.3);
   background-color: var(--default-profile-picture-background);
 }
@@ -106,7 +106,7 @@
   font-family: var(--font-family);
   font-size: var(--font-s);
   font-weight: var(--font-bold);
-  line-height: 18px;	
+  line-height: 18px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -122,13 +122,14 @@
   cursor: default;
   user-select: none;
   max-width: calc(100% - 18px);
+  display: flex;
 }
 
 .secondaryTextContent {
   font-family: var(--font-family);
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
-  line-height: 18px;	
+  line-height: 18px;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -182,11 +183,9 @@
 }
 
 .iconVerified {
-  position: absolute;
+  margin-left: 4px;
   top: 2px;
-  right: -16px;
-  width: 12px;
-  height: 12px;
+  position: relative;
 }
 
 .userImage {

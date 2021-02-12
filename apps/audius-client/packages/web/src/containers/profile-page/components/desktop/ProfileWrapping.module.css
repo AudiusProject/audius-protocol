@@ -22,7 +22,7 @@
   width: 100%;
 }
 
-.nameWrapper > .handle { 
+.nameWrapper > .handle {
   color: #FAFAFA;
   font-size: var(--font-m);
   font-weight: var(--font-demi-bold);

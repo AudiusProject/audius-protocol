@@ -87,9 +87,10 @@
 }
 
 .verified {
-  height: 12px;
-  width: 12px;
   margin-left: 8px;
+  display: inline;
+  position: relative;
+  top: 2px;
 }
 
 .buttonSection {

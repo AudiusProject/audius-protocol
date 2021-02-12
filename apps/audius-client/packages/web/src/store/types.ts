@@ -65,6 +65,7 @@ import StemsUploadReducer from 'store/application/ui/stemsUpload/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import ServiceSelectionReducer from 'containers/service-selection/store/slice'
 import averageColor from 'store/application/ui/average-color/slice'
+import modals from 'store/application/ui/modals/slice'
 
 import wallet from 'store/wallet/slice'
 
@@ -121,6 +122,7 @@ export type AppState = {
         typeof EnablePushNotificationsDrawer
       >
       averageColor: ReturnType<typeof averageColor>
+      modals: ReturnType<typeof modals>
     }
     pages: {
       explore: ExplorePageState

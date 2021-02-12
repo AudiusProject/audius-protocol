@@ -132,7 +132,6 @@ const CollectionPage = ({
     0
   )
 
-  const playlistOwnerIsVerified = user?.is_verified ?? false
   const playlistOwnerName = user?.name ?? ''
   const playlistOwnerHandle = user?.handle ?? ''
   const playlistOwnerId = user?.user_id ?? null
@@ -201,12 +200,12 @@ const CollectionPage = ({
           <div>
             <CollectionHeader
               collectionId={playlistId}
+              userId={user?.user_id ?? 0}
               loading={collectionLoading}
               tracksLoading={tracksLoading}
               type={type}
               title={playlistName}
               artistName={playlistOwnerName}
-              artistIsVerified={playlistOwnerIsVerified}
               artistHandle={playlistOwnerHandle}
               coverArtSizes={coverArtSizes}
               description={description}
