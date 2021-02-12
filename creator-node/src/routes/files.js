@@ -352,7 +352,6 @@ module.exports = function (app) {
 
       req.logger.debug('ipfs add resp', resizeResp)
     } catch (e) {
-      req.logger.error('image upload error', JSON.stringify(e))
       return errorResponseServerError(e)
     }
 
