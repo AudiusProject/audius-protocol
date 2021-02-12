@@ -242,8 +242,18 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_verbose(web3_mock, redis_mock, db_mock):
-    """Tests that the health check returns verbose db stats"""
+def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock):
+    """Tests that the health check returns monitor data"""
+    get_monitors_mock.return_value = {
+        'database_connections': 2,
+        'filesystem_size': 62725623808,
+        'filesystem_used': 50381168640,
+        'received_bytes_per_sec': 7942.038197103973,
+        'total_memory': 6237151232,
+        'used_memory': 3055149056,
+        'transferred_bytes_per_sec': 7340.780857447676
+    }
+
     # Set up web3 eth
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
@@ -254,27 +264,49 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock):
 
     # Set up db state
     with db_mock.scoped_session() as session:
-        # Set up mock PG stats
-        session.execute('CREATE TABLE pg_stat_database (numbackends INTEGER)')
-        session.execute(
-            'INSERT INTO pg_stat_database (numbackends) VALUES (1)')
-        session.execute(
-            'INSERT INTO pg_stat_database (numbackends) VALUES (1)')
+        Block.__table__.create(db_mock._engine)
+        session.add(Block(
+            blockhash='0x01',
+            number=1,
+            parenthash='0x01',
+            is_current=True,
+        ))
 
-        session.execute("""
-            CREATE TABLE pg_stat_activity (
-                datname STRING,
-                query STRING,
-                state STRING,
-                wait_event STRING,
-                wait_event_type STRING
-            )
-        """)
-        session.execute("""
-            INSERT INTO pg_stat_activity (datname, query, state, wait_event, wait_event_type)
-            VALUES ("audius_discovery", "COMMIT", "idle", "ClientRead", "Client")
-        """)
+    args = {}
+    health_results, error = get_health(args)
+    assert error == False
+    assert health_results['database_connections'] == 2
+    assert health_results['filesystem_size'] == 62725623808
+    assert health_results['filesystem_used'] == 50381168640
+    assert health_results['received_bytes_per_sec'] == 7942.038197103973
+    assert health_results['total_memory'] == 6237151232
+    assert health_results['used_memory'] == 3055149056
+    assert health_results['transferred_bytes_per_sec'] == 7340.780857447676
 
+
+def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
+    """Tests that the health check returns verbose db stats"""
+    get_monitors_mock.return_value = {
+        'database_connections': 2,
+        'database_connection_info': [{
+            'datname': 'audius_discovery',
+            'state': 'idle',
+            'query': 'COMMIT',
+            'wait_event_type': 'Client',
+            'wait_event': 'ClientRead'
+        }]
+    }
+
+    # Set up web3 eth
+    def getBlock(_u1, _u2):  # unused
+        block = MagicMock()
+        block.number = 2
+        block.hash = HexBytes(b"\x02")
+        return block
+    web3_mock.eth.getBlock = getBlock
+
+    # Set up db state
+    with db_mock.scoped_session() as session:
         Block.__table__.create(db_mock._engine)
         session.add(Block(
             blockhash='0x01',
@@ -296,8 +328,8 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock):
     assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
 
-    assert health_results["db_connections"]["open_connections"] == 2
-    assert health_results["db_connections"]["connection_info"] == [{
+    assert health_results["db_connections"]["database_connections"] == 2
+    assert health_results["db_connections"]["database_connection_info"] == [{
         'datname': 'audius_discovery',
         'state': 'idle',
         'query': 'COMMIT',

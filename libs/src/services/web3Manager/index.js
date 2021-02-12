@@ -159,6 +159,19 @@ class Web3Manager {
         signatureData
       )
     } else {
+      // Due to changes in ethereumjs-util's toBuffer method as of v6.2.0
+      // non hex-prefixed string values are not permitted and need to be
+      // provided directly as a buffer.
+      // https://github.com/ethereumjs/ethereumjs-util/releases/tag/v6.2.0
+      Object.keys(signatureData.message).forEach(key => {
+        if (
+          typeof signatureData.message[key] === 'string' &&
+          !signatureData.message[key].startsWith('0x')
+        ) {
+          signatureData.message[key] = Buffer.from(signatureData.message[key])
+        }
+      })
+
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
         { data: signatureData }

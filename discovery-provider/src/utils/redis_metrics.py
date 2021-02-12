@@ -34,8 +34,8 @@ def format_ip(ip):
     # Replace the `:` character with an `_`  because we use : as the redis key delimiter
     return ip.strip().replace(":", "_")
 
-def get_request_ip(incoming_request):
-    header_ips = incoming_request.headers.get('X-Forwarded-For', incoming_request.remote_addr)
+def get_request_ip(request_obj):
+    header_ips = request_obj.headers.get('X-Forwarded-For', request_obj.remote_addr)
     # Use the left most IP, representing the user's IP
     first_ip = header_ips.split(',')[0]
     return format_ip(first_ip)
