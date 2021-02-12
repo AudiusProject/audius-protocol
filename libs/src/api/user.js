@@ -201,13 +201,9 @@ class Users extends Base {
    * This creates a record for that user on the connected creator node.
    * @param {Object} param
    * @param {number} param.userId
-   * @param {Set<string>} param.[passList=null] whether or not to include only specified nodes
-   * @param {Set<string>} param.[blockList=null]  whether or not to exclude any nodes
    */
   async assignReplicaSet ({
-    userId,
-    passList = null,
-    blockList = null
+    userId
   }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
@@ -234,9 +230,7 @@ class Users extends Base {
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       phase = phases.AUTOSELECT_CONTENT_NODES
       const response = await this.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false,
-        whitelist: passList,
-        blacklist: blockList
+        performSyncCheck: false
       })
       // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
       // is chosen. If a primary was not selected (which also implies that secondaries were not chosen), throw

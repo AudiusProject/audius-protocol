@@ -36,7 +36,6 @@
   "minimumRelayerBalance": 1,
   "minimumFunderBalance": 1,
   "ethProviderUrl": "http://audius_ganache_cli_eth_contracts:8545",
-  "notificationDiscoveryProvider": "http://audius-disc-prov_web-server_1:5000",
   "notificationStartBlock": 0,
   "ethTokenAddress": "",
   "ethRegistryAddress": "",
