@@ -170,6 +170,7 @@ const ConnectedTrackTile = memo(
       <TrackTile
         uid={uid}
         id={track_id}
+        userId={user_id}
         index={index}
         key={`${index}`}
         showSkeleton={isLoading}

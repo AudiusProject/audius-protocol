@@ -3,7 +3,6 @@ import cn from 'classnames'
 
 import styles from './Card.module.css'
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import {
   ProfilePictureSizes,
@@ -19,6 +18,7 @@ import { pluralize } from 'utils/formatUtil'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const UserImage = (props: { id: ID; imageSize: ProfilePictureSizes }) => {
   const image = useUserProfilePicture(
@@ -49,6 +49,7 @@ const CollectionImage = (props: { id: ID; imageSize: CoverArtSizes }) => {
 type CardProps = {
   className?: string
   id: ID
+  userId: ID
   imageSize: ProfilePictureSizes | CoverArtSizes | null
   primaryText: string | React.ReactNode
   secondaryText: string | React.ReactNode
@@ -66,6 +67,7 @@ type CardProps = {
 const Card = ({
   className,
   id,
+  userId,
   imageSize = null,
   isUser,
   isVerified,
@@ -96,15 +98,13 @@ const Card = ({
       </div>
       <div className={styles.text}>
         <div className={styles.primaryText}>{primaryText}</div>
-        <div
-          className={cn(styles.secondaryText, {
-            [styles.verifiedUser]: isUser && isVerified
-          })}
-        >
+        <div className={styles.secondaryText}>
           {secondaryText}
-          {isUser && isVerified ? (
-            <IconVerified className={styles.iconVerified} />
-          ) : null}
+          <UserBadges
+            userId={userId}
+            className={styles.iconVerified}
+            badgeSize={12}
+          />
         </div>
         {(showRepostFavoriteStats || trackCount !== undefined) && (
           <div className={styles.menu}>

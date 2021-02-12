@@ -1,5 +1,5 @@
 import React from 'react'
-import { IconVerified, Button, ButtonType, IconUser } from '@audius/stems'
+import { Button, ButtonType, IconUser } from '@audius/stems'
 import Lineup, { LineupWithoutTile } from 'containers/lineup/Lineup'
 import { withNullGuard } from 'utils/withNullGuard'
 import User from 'models/User'
@@ -13,6 +13,7 @@ import ArtistPopover from 'components/artist/ArtistPopover'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Playable from 'models/Playable'
 import { NestedNonNullable } from 'utils/typeUtils'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   trackDeleted: 'Track [Deleted]',
@@ -124,9 +125,11 @@ const DeletedPage = g(
             <ArtistPopover handle={user.handle}>
               <h2 className={styles.artist} onClick={goToArtistPage}>
                 {user.name}
-                {user.is_verified && (
-                  <IconVerified className={styles.verified} />
-                )}
+                <UserBadges
+                  userId={user.user_id}
+                  badgeSize={16}
+                  className={styles.verified}
+                />
               </h2>
             </ArtistPopover>
           </div>

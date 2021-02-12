@@ -5,8 +5,6 @@ import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
 import { formatSeconds, formatDate } from 'utils/timeUtil'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
-
 import placeholderArt from 'assets/img/imageBlank2x.png'
 import styles from './TrackHeader.module.css'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -29,6 +27,7 @@ import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import DownloadButtons from 'containers/download-buttons/DownloadButtons'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   track: 'TRACK',
@@ -68,6 +67,7 @@ type TrackHeaderProps = {
   isFollowing: boolean
   title: string
   trackId: ID
+  userId: ID
   coverArtSizes: CoverArtSizes | null
   artistName: string
   artistVerified: boolean
@@ -102,6 +102,7 @@ type TrackHeaderProps = {
 const TrackHeader = ({
   title,
   trackId,
+  userId,
   coverArtSizes,
   artistName,
   artistVerified,
@@ -257,8 +258,8 @@ const TrackHeader = ({
       hasFavorited={coSign.has_remix_author_saved}
       hasReposted={coSign.has_remix_author_reposted}
       coSignName={coSign.user.name}
-      isVerified={coSign.user.is_verified}
       className={styles.coverArt}
+      userId={coSign.user.user_id}
     >
       <DynamicImage image={image} wrapperClassName={styles.imageWrapper} />
     </CoSign>
@@ -284,7 +285,11 @@ const TrackHeader = ({
       <h1 className={styles.title}>{title}</h1>
       <div className={styles.artist} onClick={onClickArtistName}>
         <h2>{artistName}</h2>
-        {artistVerified ? <IconVerified className={styles.verified} /> : null}
+        <UserBadges
+          className={styles.verified}
+          badgeSize={16}
+          userId={userId}
+        />
       </div>
       <div className={styles.buttonSection}>
         <PlayButton playing={isPlaying} onPlay={onPlay} />
@@ -308,9 +313,9 @@ const TrackHeader = ({
         <div className={styles.coSignInfo}>
           <HoverInfo
             coSignName={coSign.user.name}
-            isVerified={coSign.user.is_verified}
             hasFavorited={coSign.has_remix_author_saved}
             hasReposted={coSign.has_remix_author_reposted}
+            userId={coSign.user.user_id}
           />
         </div>
       )}

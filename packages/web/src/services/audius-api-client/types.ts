@@ -18,6 +18,7 @@ type PlaylistContents = {
 export type APIUser = {
   album_count: number
   blocknumber: number
+  balance: string
   bio: Nullable<string>
   cover_photo: CoverPhotoSizes
   followee_count: number

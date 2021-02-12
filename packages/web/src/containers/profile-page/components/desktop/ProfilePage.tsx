@@ -249,6 +249,7 @@ const ProfilePage = ({
         playlistName={album.playlist_name}
         playlistId={album.playlist_id}
         id={album.playlist_id}
+        userId={album.playlist_owner_id}
         isPublic={!album.is_private}
         imageSize={album._cover_art_sizes}
         isPlaylist={!album.is_album}
@@ -288,6 +289,7 @@ const ProfilePage = ({
         playlistName={playlist.playlist_name}
         playlistId={playlist.playlist_id}
         id={playlist.playlist_id}
+        userId={playlist.playlist_owner_id}
         imageSize={playlist._cover_art_sizes}
         isPublic={!playlist.is_private}
         // isAlbum={playlist.is_album}
@@ -428,11 +430,12 @@ const ProfilePage = ({
 
   const getUserProfileContent = () => {
     if (!profile || !playlists) return { headers: [], elements: [] }
-    const playlistCards = playlists.map((playlist: any, index: number) => (
+    const playlistCards = playlists.map((playlist, index) => (
       <Card
         key={index}
         size='medium'
         id={playlist.playlist_id}
+        userId={playlist.playlist_owner_id}
         imageSize={playlist._cover_art_sizes}
         handle={profile.handle}
         playlistId={playlist.playlist_id}

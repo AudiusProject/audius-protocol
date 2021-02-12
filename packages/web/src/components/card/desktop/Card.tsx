@@ -4,7 +4,6 @@ import Menu, { MenuOptionType } from 'containers/menu/Menu'
 import React, { MouseEvent, useState, useEffect, useCallback } from 'react'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
 import styles from './Card.module.css'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -22,6 +21,7 @@ import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { pluralize } from 'utils/formatUtil'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const cardSizeStyles = {
   small: {
@@ -47,13 +47,13 @@ const cardSizeStyles = {
 type CardProps = {
   className?: string
   id: ID
+  userId: ID
   imageSize: ProfilePictureSizes | CoverArtSizes | null
   primaryText: string | React.ReactNode
   secondaryText: string | React.ReactNode
   cardCoverImageSizes?: CoverArtSizes
   playlistName?: string
   isUser: boolean
-  isVerified: boolean
   isPlaylist: boolean // playlist or album
   isPublic?: boolean // only for playlist or album
   handle: string
@@ -127,8 +127,8 @@ const Card = ({
   index,
   setDidLoad,
   id,
+  userId,
   imageSize = null,
-  isVerified,
   isPlaylist,
   handle,
   isReposted,
@@ -234,7 +234,11 @@ const Card = ({
         <div className={styles.primaryText}>{primaryText}</div>
         <div className={styles.secondaryText}>
           <div className={styles.secondaryTextContent}>{secondaryText}</div>
-          {isVerified ? <IconVerified className={styles.iconVerified} /> : null}
+          <UserBadges
+            userId={userId}
+            badgeSize={12}
+            className={styles.iconVerified}
+          />
         </div>
         {showRepostFavoriteStats ? (
           <div className={styles.stats}>
@@ -264,7 +268,6 @@ Card.defaultProps = {
   primaryText: '',
   secondaryText: '',
   isUser: false,
-  isVerified: false,
   isPlaylist: true,
   isReposted: false,
   isLoading: false,

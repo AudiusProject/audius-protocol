@@ -52,13 +52,13 @@
   font-weight: 900;
   margin-bottom: 4px;
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .iconVerified {
   margin-left: 8px;
-  height: 12px;
-  width: 12px;
+  position: relative;
+  top: -2px;
 }
 
 .artistHandle {

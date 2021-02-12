@@ -7,14 +7,19 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { BADGE_LOCAL_STORAGE_KEY } from 'containers/artist-dashboard-page/Tiers'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const AUDIUS_EVENTS = 'events'
 const AUDIUS_USE_METAMASK = 'useMetaMask'
 
+const removeLocalStorageItems = () => {
+  const items = [AUDIUS_EVENTS, AUDIUS_USE_METAMASK, BADGE_LOCAL_STORAGE_KEY]
+  items.map(k => localStorage.removeItem(k))
+}
+
 export const signOut = () => {
-  localStorage.removeItem(AUDIUS_EVENTS)
-  localStorage.removeItem(AUDIUS_USE_METAMASK)
+  removeLocalStorageItems()
   clearAudiusAccount()
   clearAudiusAccountUser()
   removeHasRequestedBrowserPermission()

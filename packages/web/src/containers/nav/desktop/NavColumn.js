@@ -66,6 +66,7 @@ import { Name, CreatePlaylistSource } from 'services/analytics'
 import { Variant } from 'models/Collection'
 import { getClaimableBalance } from 'store/wallet/slice'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const NavColumn = ({
   account,
@@ -244,6 +245,11 @@ const NavColumn = ({
               <div className={styles.userInfoWrapper}>
                 <div className={styles.name} onClick={goToProfile}>
                   {name}
+                  <UserBadges
+                    userId={account.user_id}
+                    badgeSize={12}
+                    className={styles.badge}
+                  />
                 </div>
                 <div className={styles.handleContainer}>
                   <span

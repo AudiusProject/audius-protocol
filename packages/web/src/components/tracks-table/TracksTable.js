@@ -24,6 +24,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './TracksTable.module.css'
 import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 /**
  * Sorter for two items based on their alphanumeric (lowercase) value.
@@ -89,6 +90,11 @@ const artistNameCell = (val, record, props) => {
         }}
       >
         <div className={cn(styles.textCell, styles.artistName)}>{val}</div>
+        <UserBadges
+          userId={record.owner_id}
+          badgeSize={12}
+          className={styles.badges}
+        />
       </div>
     </ArtistPopover>
   )

@@ -8,10 +8,9 @@ import { ID } from 'models/common/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'models/common/ImageSizes'
 import { fullTrackPage } from 'utils/route'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
-
 import { useUserProfilePicture } from 'hooks/useImageSize'
 import styles from './PlayingTrackInfo.module.css'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 interface PlayingTrackInfoProps {
   trackId: number
@@ -97,7 +96,11 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
           <div className={styles.artistName} onClick={onClickArtistName}>
             {artistName}
           </div>
-          {isVerified && <IconVerified className={styles.iconVerified} />}
+          <UserBadges
+            userId={artistUserId}
+            badgeSize={10}
+            className={styles.iconVerified}
+          />
         </animated.div>
       </div>
     </div>

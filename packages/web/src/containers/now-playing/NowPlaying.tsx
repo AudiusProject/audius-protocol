@@ -44,7 +44,6 @@ import PreviousButton from 'components/play-bar/PreviousButton'
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import { isDarkMode } from 'utils/theme/theme'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
 import styles from './NowPlaying.module.css'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -67,6 +66,7 @@ import { AudioState } from 'store/player/types'
 import { withNullGuard } from 'utils/withNullGuard'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -329,8 +329,8 @@ const NowPlaying = g(
             hasFavorited={_co_sign.has_remix_author_saved}
             hasReposted={_co_sign.has_remix_author_reposted}
             coSignName={_co_sign.user.name}
-            isVerified={_co_sign.user.is_verified}
             forwardRef={artworkRef}
+            userId={_co_sign.user.user_id}
           >
             <div
               className={styles.image}
@@ -356,9 +356,11 @@ const NowPlaying = g(
           </div>
           <div className={styles.artist} onClick={goToProfilePage}>
             {name}
-            {user.is_verified ? (
-              <IconVerified className={styles.verified} />
-            ) : null}
+            <UserBadges
+              userId={owner_id}
+              badgeSize={16}
+              className={styles.verified}
+            />
           </div>
         </div>
         <div className={styles.timeControls}>

@@ -1,0 +1,8 @@
+.container {
+  display: flex;
+  overflow: visible;
+}
+
+.container svg {
+  margin-right: 4px !important;
+}

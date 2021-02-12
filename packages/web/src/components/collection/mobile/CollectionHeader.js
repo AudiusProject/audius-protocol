@@ -6,7 +6,6 @@ import { formatSecondsAsText, formatDate } from 'utils/timeUtil'
 import Skeleton from 'antd/lib/skeleton'
 
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 
 import styles from './CollectionHeader.module.css'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
@@ -22,6 +21,7 @@ import { isShareToastDisabled } from 'utils/clipboardUtil'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import { Variant } from 'models/Collection'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const messages = {
   privatePlaylist: 'Private Playlist',
@@ -73,9 +73,9 @@ const PlayButton = props => {
 const CollectionHeader = ({
   type,
   collectionId,
+  userId,
   title,
   coverArtSizes,
-  artistIsVerified,
   artistName,
   description,
   isOwner,
@@ -195,9 +195,11 @@ const CollectionHeader = ({
           {artistName && (
             <div className={styles.artist} onClick={onClickArtistName}>
               <h2>{artistName}</h2>
-              {artistIsVerified ? (
-                <IconVerified className={styles.verified} />
-              ) : null}
+              <UserBadges
+                userId={userId}
+                badgeSize={16}
+                className={styles.verified}
+              />
             </div>
           )}
           <div className={styles.buttonSection}>
@@ -268,6 +270,7 @@ const CollectionHeader = ({
 
 CollectionHeader.propTypes = {
   collectionId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  userId: PropTypes.number,
   loading: PropTypes.bool,
   tracksLoading: PropTypes.bool,
   playing: PropTypes.bool,
@@ -279,7 +282,6 @@ CollectionHeader.propTypes = {
   coverArtSizes: PropTypes.object,
   description: PropTypes.string,
 
-  artistIsVerified: PropTypes.bool,
   isOwner: PropTypes.bool,
   isAlbum: PropTypes.bool,
   isReposted: PropTypes.bool,

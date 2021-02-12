@@ -1,4 +1,4 @@
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import React from 'react'
 import { ModalBodyWrapper } from '../WalletModal'
 import ClickableAddress from './ClickableAddress'
@@ -12,7 +12,7 @@ type DiscordModalBodyProps = {
 
 const messages = {
   title:
-    'The Audius VIP Discord Bot will DM you for this code, provide it for access to a private token-holders only channel',
+    'To access the private token-holders only Discord channel and/or update your Discord role, send a DM to the Audius VIP Discord Bot (@Audius-bot) with this code',
   boxLabel: 'COPY THIS CODE',
   launch: 'LAUNCH THE VIP DISCORD'
 }
@@ -34,6 +34,7 @@ const DiscordModalBody = ({
         text={messages.launch}
         onClick={onClickLaunch}
         type={ButtonType.PRIMARY_ALT}
+        leftIcon={<IconDiscord />}
       />
     </ModalBodyWrapper>
   )

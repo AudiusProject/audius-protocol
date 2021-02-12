@@ -13,10 +13,11 @@
   height: 52px;
   line-height: normal;
   text-overflow: ellipsis;
-  overflow: hidden;
+  overflow: visible;
   white-space: nowrap;
   max-width: 100%;
   width: 100%;
+  display: flex;
 }
 .name > input {
   border: none;
@@ -27,25 +28,22 @@
   height: 50px;
   padding: 0 0 8px 0;
 }
+.iconVerified {
+  margin-left: 4px;
+}
 .name > .editNameContainer > .iconPencil {
   cursor: pointer;
 }
 .name > .editNameContainer > .iconPencil svg ,
 .name > .iconVerified svg {
-  height: 16px;
-  width: 16px;
   margin-left: 8px;
-  filter: drop-shadow(0 2px 7px rgba(0,0,0,0.75));
+  filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.7));
 }
 .name > .editNameContainer > .iconPencil svg {
   margin-bottom: 8px;
 }
-.name > .iconVerified svg {
-  margin-bottom: 16px;
-}
 
-.name > .editNameContainer > .iconPencil g path,
-.name > .iconVerified g path {
+.name > .editNameContainer > .iconPencil g path {
   fill: var(--static-white);
 }
 

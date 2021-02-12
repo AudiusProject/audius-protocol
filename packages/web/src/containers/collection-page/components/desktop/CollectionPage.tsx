@@ -151,7 +151,6 @@ const CollectionPage = ({
   const playlistOwnerId = user?.user_id ?? null
   const isOwner = userId === playlistOwnerId
   const isFollowing = user?.does_current_user_follow ?? false
-  const isVerified = user?.is_verified ?? false
   const isSaved =
     metadata?.has_current_user_saved || playlistId in userPlaylists
 
@@ -177,13 +176,13 @@ const CollectionPage = ({
   const topSection = (
     <CollectionHeader
       collectionId={playlistId}
+      userId={playlistOwnerId}
       loading={collectionLoading}
       tracksLoading={tracksLoading}
       type={type}
       title={playlistName}
       artistName={playlistOwnerName}
       artistHandle={playlistOwnerHandle}
-      isVerified={isVerified}
       coverArtSizes={coverArtSizes}
       description={description}
       isOwner={isOwner}

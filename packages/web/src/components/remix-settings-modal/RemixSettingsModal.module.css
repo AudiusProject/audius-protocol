@@ -75,12 +75,15 @@
 }
 
 .iconVerified {
-  height: 8px;
-  width: 8px;
   margin-left: 4px;
 }
 
 .doneButton {
   align-self: flex-end;
   margin: 16px;
+}
+
+.artistName {
+  display: inline-flex;
+  align-items: center;
 }

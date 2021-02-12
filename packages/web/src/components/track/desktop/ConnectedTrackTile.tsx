@@ -43,10 +43,10 @@ import { fullTrackPage, trackPage, profilePage } from 'utils/route'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import TrackTile from './TrackTile'
 import Draggable from 'containers/dragndrop/Draggable'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 type OwnProps = {
   uid: UID
@@ -109,12 +109,7 @@ const ConnectedTrackTile = memo(
       duration
     } = getTrackWithFallback(track)
 
-    const {
-      _artist_pick,
-      name,
-      handle,
-      is_verified: isVerified
-    } = getUserWithFallback(user)
+    const { _artist_pick, name, handle } = getUserWithFallback(user)
 
     const isActive = uid === playingUid
     const isTrackBuffering = isActive && isBuffering
@@ -221,7 +216,11 @@ const ConnectedTrackTile = memo(
               {name}
             </span>
           </ArtistPopover>
-          {isVerified && <IconVerified className={styles.iconVerified} />}
+          <UserBadges
+            userId={user?.user_id ?? 0}
+            badgeSize={14}
+            className={styles.badgeWrapper}
+          />
         </div>
       )
     }

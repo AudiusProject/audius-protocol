@@ -33,8 +33,8 @@ import { SquareSizes } from 'models/common/ImageSizes'
 import { squashNewLines } from 'utils/formatUtil'
 import Menu from 'containers/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { Variant } from 'models/Collection'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1148,
@@ -506,7 +506,6 @@ class CollectionHeader extends PureComponent {
       coverArtSizes,
       artistName,
       artistHandle,
-      isVerified,
       description,
       isOwner,
       isAlbum,
@@ -534,7 +533,8 @@ class CollectionHeader extends PureComponent {
       onUnfollow,
       variant,
       gradient,
-      icon
+      icon,
+      userId
     } = this.props
     const { artworkLoading } = this.state
     const isLoading = loading || artworkLoading
@@ -569,9 +569,11 @@ class CollectionHeader extends PureComponent {
                   <ArtistPopover handle={artistHandle}>
                     <h2 className={styles.artist} onClick={onClickArtistName}>
                       {artistName}
-                      {isVerified && (
-                        <IconVerified className={styles.verified} />
-                      )}
+                      <UserBadges
+                        userId={userId}
+                        badgeSize={16}
+                        className={styles.verified}
+                      />
                     </h2>
                   </ArtistPopover>
                 </div>
@@ -674,9 +676,9 @@ CollectionHeader.propTypes = {
   coverArtSizes: PropTypes.object,
   tags: PropTypes.array,
   description: PropTypes.string,
+  userId: PropTypes.number,
 
   isOwner: PropTypes.bool,
-  isVerified: PropTypes.bool,
   isAlbum: PropTypes.bool,
   hasTracks: PropTypes.bool,
   isPublished: PropTypes.bool,

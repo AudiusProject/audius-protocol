@@ -243,6 +243,7 @@ const ConnectedPlaylistTile = g(
       <PlaylistTile
         uid={uid}
         id={collection.playlist_id}
+        userId={collection.playlist_owner_id}
         index={index}
         key={`${index}-${collection.playlist_name}`}
         showSkeleton={isLoading}

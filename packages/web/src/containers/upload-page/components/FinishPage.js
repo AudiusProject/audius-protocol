@@ -20,8 +20,8 @@ import {
   TrackArtwork,
   CollectionArtwork
 } from 'components/track/desktop/Artwork'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import ProgressBar from 'components/upload/ProgressBar'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const TOAST_DELAY_MILLIS = 5 * 1000
 
@@ -149,9 +149,11 @@ class FinishPage extends Component {
         const userName = (
           <div className={styles.userName}>
             <span className={styles.createdBy}>{account.name}</span>
-            {account.is_verified && (
-              <IconVerified className={styles.iconVerified} />
-            )}
+            <UserBadges
+              userId={account.user_id}
+              className={styles.iconVerified}
+              badgeSize={12}
+            />
           </div>
         )
 
@@ -242,9 +244,11 @@ class FinishPage extends Component {
         <div className={styles.userName}>
           <span className={styles.createdBy}>{`Created by `}</span>
           <span className={styles.createdBy}>{account.name}</span>
-          {account.is_verified && (
-            <IconVerified className={styles.iconVerified} />
-          )}
+          <UserBadges
+            userId={account.user_id}
+            className={styles.iconVerified}
+            badgeSize={12}
+          />
         </div>
       )
 

@@ -79,10 +79,9 @@
 }
 
 .iconVerified {
-  flex: 0 0 10px;
   margin-left: 4px;
-  height: 10px;
-  width: 10px;
+  position: relative;
+  top: 1px;
 }
 
 .iconVerified path {

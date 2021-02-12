@@ -8,12 +8,12 @@ import User from 'models/User'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { SquareSizes } from 'models/common/ImageSizes'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 
 import styles from './RemixSettingsModal.module.css'
 import { withNullGuard } from 'utils/withNullGuard'
 import { ID } from 'models/common/Identifiers'
 import { fullTrackPage } from 'utils/route'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const INPUT_DEBOUNCE_MS = 1000
 
@@ -49,7 +49,11 @@ const TrackInfo = g(({ track, user }) => {
       <div className={styles.by}>{messages.by}</div>
       <div className={styles.artistName}>
         {user.name}
-        {user.is_verified && <IconVerified className={styles.iconVerified} />}
+        <UserBadges
+          className={styles.iconVerified}
+          userId={user.user_id}
+          badgeSize={8}
+        />
       </div>
     </div>
   )

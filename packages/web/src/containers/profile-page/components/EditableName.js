@@ -2,8 +2,8 @@ import React, { memo, useState, useRef, useEffect } from 'react'
 import styles from './EditableName.module.css'
 import cn from 'classnames'
 
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ReactComponent as IconPencil } from 'assets/img/iconPencil.svg'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const EditableName = props => {
   const [editing, setEditing] = useState(false)
@@ -45,11 +45,12 @@ const EditableName = props => {
       ) : (
         <>
           <h1>{props.name}</h1>
-          {props.verified ? (
-            <span className={styles.iconVerified}>
-              <IconVerified />
-            </span>
-          ) : null}
+          <UserBadges
+            userId={props.userId}
+            badgeSize={24}
+            className={styles.iconVerified}
+            useSVGTiers
+          />
         </>
       )}
     </div>
