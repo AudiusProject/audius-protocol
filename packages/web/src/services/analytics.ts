@@ -2,6 +2,7 @@ import TimeRange from 'models/TimeRange'
 import FeedFilter from 'models/FeedFilter'
 import { ID, PlayableType } from 'models/common/Identifiers'
 import { WalletAddress } from 'store/wallet/slice'
+import { MonitorPayload, ServiceMonitorType } from './serviceMonitoring'
 
 export const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -114,7 +115,11 @@ export enum Name {
   CLAIM_AUDIO_FAILURE = 'Claim $AUDIO: Failure',
   SEND_AUDIO_REQUEST = 'Send $AUDIO: Request',
   SEND_AUDIO_SUCCESS = 'Send $AUDIO: Success',
-  SEND_AUDIO_FAILURE = 'Send $AUDIO: Failure'
+  SEND_AUDIO_FAILURE = 'Send $AUDIO: Failure',
+
+  // Service monitoring
+  SERVICE_MONITOR_REQUEST = 'Service Monitor: Request',
+  SERVICE_MONITOR_HEALTH_CHECK = 'Service Monitor: Status'
 }
 
 type PageView = {
@@ -704,6 +709,16 @@ type SendAudioFailure = {
   recipient: WalletAddress
 }
 
+type ServiceMonitorRequest = {
+  eventName: Name.SERVICE_MONITOR_REQUEST
+  type: ServiceMonitorType
+} & MonitorPayload
+
+type ServiceMonitorHealthCheck = {
+  eventName: Name.SERVICE_MONITOR_HEALTH_CHECK
+  type: ServiceMonitorType
+} & MonitorPayload
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -806,3 +821,5 @@ export type AllTrackingEvents =
   | SendAudioRequest
   | SendAudioSuccess
   | SendAudioFailure
+  | ServiceMonitorRequest
+  | ServiceMonitorHealthCheck
