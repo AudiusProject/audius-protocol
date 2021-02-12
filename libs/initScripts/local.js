@@ -121,7 +121,7 @@ const run = async () => {
         await queryLocalServices(audiusLibs, serviceTypesList)
         break
 
-      case 'query-sps-usrm':
+      case 'query-sps-ursm':
         let usrmLibs = await getUsrmLibs(audiusLibs)
         await queryLocalServices(audiusLibs, serviceTypesList, usrmLibs)
         break
@@ -171,10 +171,10 @@ const run = async () => {
         console.log(userReplicaSet)
         break
 
-      case 'query-usrm-content-node-wallet':
-        console.log(`Usage: node local.js query-usrm-content-node-wallet spId=1`)
+      case 'query-ursm-content-node-wallet':
+        console.log(`Usage: node local.js query-ursm-content-node-wallet spId=1`)
         userReplicaBootstrapAddressLibs = await getUsrmLibs(audiusLibs, 9)
-        let contentNodeWallet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(
+        let contentNodeWallet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(
           parseInt(
             args[3].split('=')[1]
           )
@@ -188,6 +188,7 @@ const run = async () => {
         const spID = parseInt(spIdStr.split('=')[1])
         const delegateWalletStr = args[4]
         const delegateWallet = delegateWalletStr.split('=')[1]
+        const ownerWallet = delegateWallet
         console.log(`Configuring L2 ${spID} with wallet: ${delegateWallet}`)
         // Initialize from a different acct than proxy admin
         let queryLibs = await getUsrmLibs(audiusLibs, 9)
@@ -195,7 +196,8 @@ const run = async () => {
           queryLibs,
           ethAccounts,
           spID,
-          delegateWallet)
+          delegateWallet,
+          ownerWallet)
         break
       default:
         throwArgError()
@@ -217,9 +219,12 @@ const addL2ContentNode = async (
   audiusLibs,
   ethAccounts,
   newCnodeId,
-  newCnodeDelegateWallet
+  newCnodeDelegateWallet,
+  newCnodeOwnerWallet
 ) => {
-  const existingWalletToCnodeIdL2 = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(newCnodeId)
+  const incomingWallets = [newCnodeDelegateWallet, newCnodeOwnerWallet]
+  const existingWalletInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(newCnodeId)
+  const existingWalletToCnodeIdL2 = existingWalletInfo.delegateOwnerWallet
   const spIdToWalletPresent = (existingWalletToCnodeIdL2 === newCnodeDelegateWallet)
   if (spIdToWalletPresent) {
     console.log(`No update required! Found ${existingWalletToCnodeIdL2} for spId=${newCnodeId}, expected ${newCnodeDelegateWallet}`)
@@ -254,6 +259,7 @@ const addL2ContentNode = async (
   let proposer1SignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
     newCnodeId,
     newCnodeDelegateWallet,
+    newCnodeOwnerWallet,
     proposer1SpId,
     proposer1Wallet,
     proposer1EthWeb3
@@ -267,6 +273,7 @@ const addL2ContentNode = async (
   let proposer2SignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
     newCnodeId,
     newCnodeDelegateWallet,
+    newCnodeOwnerWallet,
     proposer2SpId,
     proposer2Wallet,
     proposer2EthWeb3
@@ -280,6 +287,7 @@ const addL2ContentNode = async (
   let proposer3SignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
     newCnodeId,
     newCnodeDelegateWallet,
+    newCnodeOwnerWallet,
     proposer3SpId,
     proposer3Wallet,
     proposer3EthWeb3
@@ -296,7 +304,7 @@ const addL2ContentNode = async (
 
   await audiusLibs.contracts.UserReplicaSetManagerClient.addOrUpdateContentNode(
     newCnodeId,
-    newCnodeDelegateWallet,
+    incomingWallets,
     proposerSpIds,
     proposerNonces,
     proposer1SignatureInfo.sig,

@@ -25,7 +25,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    * Add a new content node to the L2 layer of the protocol
    * Requires signatures from 3 existing nodes on the UserReplicaSetManager contract
    * @param {number} cnodeId
-   * @param {string} cnodeDelegateOwnerWallet
+   * @param {Array<string>} cnodeOwnerWallets - [0] = incoming delegateOwnerWallet, [1] = incoming ownerWallet
    * @param {Array<number>} proposerSpIds
    * @param {Array<string>} proposerNonces
    * @param {string} proposer1Sig
@@ -34,7 +34,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async addOrUpdateContentNode (
     cnodeId,
-    cnodeDelegateOwnerWallet,
+    cnodeOwnerWallets,
     proposerSpIds,
     proposerNonces,
     proposer1Sig,
@@ -45,7 +45,7 @@ class UserReplicaSetManagerClient extends ContractClient {
     const method = await this.getMethod(
       'addOrUpdateContentNode',
       cnodeId,
-      cnodeDelegateOwnerWallet,
+      cnodeOwnerWallets,
       proposerSpIds,
       proposerNonces,
       proposer1Sig,
@@ -73,6 +73,7 @@ class UserReplicaSetManagerClient extends ContractClient {
   async getProposeAddOrUpdateContentNodeRequestData (
     cnodeId,
     cnodeDelegateWallet,
+    cnodeOwnerWallet,
     proposerSpId,
     proposerWallet,
     ethWeb3
@@ -85,6 +86,7 @@ class UserReplicaSetManagerClient extends ContractClient {
       contractAddress,
       cnodeId,
       cnodeDelegateWallet,
+      cnodeOwnerWallet,
       proposerSpId,
       nonce
     )
@@ -154,8 +156,8 @@ class UserReplicaSetManagerClient extends ContractClient {
    * Return the current wallet address associated with a given spID
    * @param {number} userId
    */
-  async getContentNodeWallet (spId) {
-    const method = await this.getMethod('getContentNodeWallet', spId)
+  async getContentNodeWallets (spId) {
+    const method = await this.getMethod('getContentNodeWallets', spId)
     let currentWallet = this.web3Manager.getWalletAddressString()
     return method.call({ from: currentWallet })
   }
