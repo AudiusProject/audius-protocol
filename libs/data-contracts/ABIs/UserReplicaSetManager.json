@@ -131,22 +131,27 @@
         },
         {
           "indexed": false,
+          "name": "_cnodeOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "name": "_proposerSpIds",
           "type": "uint256[3]"
         },
         {
           "indexed": false,
-          "name": "_proposer1Address",
+          "name": "_proposer1DelegateOwnerWallet",
           "type": "address"
         },
         {
           "indexed": false,
-          "name": "_proposer2Address",
+          "name": "_proposer2DelegateOwnerWallet",
           "type": "address"
         },
         {
           "indexed": false,
-          "name": "_proposer3Address",
+          "name": "_proposer3DelegateOwnerWallet",
           "type": "address"
         }
       ],
@@ -228,6 +233,10 @@
         {
           "name": "_bootstrapNodeDelegateWallets",
           "type": "address[]"
+        },
+        {
+          "name": "_bootstrapNodeOwnerWallets",
+          "type": "address[]"
         }
       ],
       "name": "seedBootstrapNodes",
@@ -244,8 +253,8 @@
           "type": "uint256"
         },
         {
-          "name": "_cnodeDelegateOwnerWallet",
-          "type": "address"
+          "name": "_cnodeWallets",
+          "type": "address[2]"
         },
         {
           "name": "_proposerSpIds",
@@ -357,10 +366,14 @@
           "type": "uint256"
         }
       ],
-      "name": "getContentNodeWallet",
+      "name": "getContentNodeWallets",
       "outputs": [
         {
-          "name": "wallet",
+          "name": "delegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "name": "ownerWallet",
           "type": "address"
         }
       ],

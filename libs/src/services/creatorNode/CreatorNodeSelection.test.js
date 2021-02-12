@@ -26,42 +26,44 @@ const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   }
 })
 
+// Add fields as necessary
+let defaultHealthCheckData = {
+  'service': CREATOR_NODE_SERVICE_NAME,
+  'version': '1.2.3',
+  'healthy': true,
+  'country': 'US',
+  'latitude': '37.7749',
+  'longitude': '-122.4194',
+  'databaseConnections': 5,
+  'totalMemory': 6237552640,
+  'usedMemory': 6111436800,
+  'storagePathSize': 62725623808,
+  'storagePathUsed': 14723018752,
+  'maxFileDescriptors': 524288,
+  'allocatedFileDescriptors': 2912,
+  'receivedBytesPerSec': 776.7638177541248,
+  'transferredBytesPerSec': 39888.88888888889
+}
+
 describe('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
+
     nock(healthy)
       .get('/health_check/verbose')
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: defaultHealthCheckData })
 
     const healthyButSlow = 'https://healthybutslow.audius.co'
     nock(healthyButSlow)
       .get('/health_check/verbose')
       .delay(100)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: defaultHealthCheckData })
 
     const healthyButSlowest = 'https://healthybutslowest.audius.co'
     nock(healthyButSlowest)
       .get('/health_check/verbose')
       .delay(200)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: defaultHealthCheckData })
 
     const cns = new CreatorNodeSelection({
       // Mock Creator Node
@@ -96,46 +98,22 @@ describe('test CreatorNodeSelection', () => {
     const upToDate = 'https://upToDate.audius.co'
     nock(upToDate)
       .get('/health_check/verbose')
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: defaultHealthCheckData })
 
     const behindMajor = 'https://behindMajor.audius.co'
     nock(behindMajor)
       .get('/health_check/verbose')
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '0.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '0.2.3' } })
 
     const behindMinor = 'https://behindMinor.audius.co'
     nock(behindMinor)
       .get('/health_check/verbose')
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.0.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.0.3' } })
 
     const behindPatch = 'https://behindPatch.audius.co'
     nock(behindPatch)
       .get('/health_check/verbose')
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.0',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const cns = new CreatorNodeSelection({
       // Mock Creator Node
@@ -165,7 +143,7 @@ describe('test CreatorNodeSelection', () => {
     healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
-  it('select from unhealthy if all are unhealthy', async () => {
+  it('return nothing if no services are healthy', async () => {
     const unhealthy1 = 'https://unhealthy1.audius.co'
     nock(unhealthy1)
       .get('/health_check/verbose')
@@ -227,38 +205,20 @@ describe('test CreatorNodeSelection', () => {
     nock(shouldBePrimary)
       .get('/health_check/verbose')
       .delay(200)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: defaultHealthCheckData })
 
     // cold, overnight pizza -- behind by minor version, fast. nope
     const unhealthy2 = 'https://unhealthy2.audius.co'
     nock(unhealthy2)
       .get('/health_check/verbose')
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.0.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.0.3' } })
 
     // stale chips from 2 weeks ago -- behind by major version, kinda slow. still nope
     const unhealthy3 = 'https://unhealthy3.audius.co'
     nock(unhealthy3)
       .get('/health_check/verbose')
       .delay(100)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '0.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '0.2.3' } })
 
     // moldy canned beans -- not available/up at all. for sure nope
     const unhealthy1 = 'https://unhealthy1.audius.co'
@@ -271,13 +231,7 @@ describe('test CreatorNodeSelection', () => {
     nock(shouldBeSecondary)
       .get('/health_check/verbose')
       .delay(100)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.0',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const cns = new CreatorNodeSelection({
       // Mock Creator Node
@@ -322,13 +276,7 @@ describe('test CreatorNodeSelection', () => {
       nock(healthyUrl)
         .persist()
         .get('/health_check/verbose')
-        .reply(200, { data: {
-          service: CREATOR_NODE_SERVICE_NAME,
-          version: '1.2.3',
-          country: 'US',
-          latitude: '37.7058',
-          longitude: '-122.4619'
-        } })
+        .reply(200, { data: defaultHealthCheckData })
       contentNodes.push(healthyUrl)
     }
 
@@ -363,25 +311,13 @@ describe('test CreatorNodeSelection', () => {
     nock(shouldBePrimary)
       .get('/health_check/verbose')
       .delay(200)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.3',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: defaultHealthCheckData })
 
     const shouldBeSecondary = 'https://secondary.audius.co'
     nock(shouldBeSecondary)
       .get('/health_check/verbose')
       .delay(100)
-      .reply(200, { data: {
-        service: CREATOR_NODE_SERVICE_NAME,
-        version: '1.2.0',
-        country: 'US',
-        latitude: '37.7058',
-        longitude: '-122.4619'
-      } })
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const unhealthy = 'https://unhealthy.audius.co'
     nock(unhealthy)
@@ -413,6 +349,175 @@ describe('test CreatorNodeSelection', () => {
     const returnedHealthyServices = new Set(Object.keys(services))
     assert(returnedHealthyServices.size === 2)
     const healthyServices = [shouldBePrimary, shouldBeSecondary]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('filters out nodes if over 90% of storage is used', async () => {
+    const shouldBePrimary = 'https://primary.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary1 = 'https://secondary1.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary2 = 'https://secondary2.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const used95PercentStorage = 'https://used95PercentStorage.audius.co'
+    nock(used95PercentStorage)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 90.354, storagePathSize: 100 } })
+
+    const used99PercentStorage = 'https://used99PercentStorage.audius.co'
+    nock(used99PercentStorage)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 99, storagePathSize: 100 } })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts([shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used95PercentStorage, used99PercentStorage], '1.2.3'),
+      whitelist: null,
+      blacklist: null
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('allows custom maxStorageUsedPercent as constructor param', async () => {
+    const shouldBePrimary = 'https://primary.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary1 = 'https://secondary1.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const shouldBeSecondary2 = 'https://secondary2.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
+
+    const used50PercentStorage = 'https://used95PercentStorage.audius.co'
+    nock(used50PercentStorage)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 50, storagePathSize: 100 } })
+
+    const used70PercentStorage = 'https://used70PercentStorage.audius.co'
+    nock(used70PercentStorage)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 70.546, storagePathSize: 100 } })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2, used50PercentStorage, used70PercentStorage],
+        '1.2.3'
+      ),
+      whitelist: null,
+      blacklist: null,
+      maxStorageUsedPercent: 50
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('allows Content Node to be selected if storage information is unavailable (undefined or null)', async () => {
+    const healthCheckDataWithNoStorageInfo = {
+      ...defaultHealthCheckData
+    }
+    delete healthCheckDataWithNoStorageInfo.storagePathSize
+    healthCheckDataWithNoStorageInfo.storagePathUsed = null
+
+    const shouldBePrimary = 'https://missingStoragePathUsedAndStoragePathSize.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: healthCheckDataWithNoStorageInfo })
+
+    const shouldBeSecondary1 = 'https://missingStoragePathUsed.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.1', storagePathSize: 100 } })
+
+    const shouldBeSecondary2 = 'https://missingStoragePathSize.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.0', storagePathUsed: 30 } })
+
+    const cns = new CreatorNodeSelection({
+      // Mock Creator Node
+      creatorNode: {
+        getSyncStatus: async () => {
+          return {
+            isBehind: false,
+            isConfigured: true
+          }
+        }
+      },
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2],
+        '1.2.3'
+      ),
+      whitelist: null,
+      blacklist: null,
+      maxStorageUsedPercent: 50
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
     healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 })

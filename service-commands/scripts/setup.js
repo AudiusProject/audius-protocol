@@ -96,7 +96,6 @@ program
       let options = {}
 
       const serviceName = findService(service)
-      console.log('found service')
       const setupCommand = findCommand(command)
 
       if (serviceName === Service.CREATOR_NODE) {

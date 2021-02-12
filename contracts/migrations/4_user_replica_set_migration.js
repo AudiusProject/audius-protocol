@@ -31,9 +31,13 @@ module.exports = (deployer, network, accounts) => {
 
     const bootstrapSPIds = config.bootstrapSPIds
     const bootstrapNodeDelegateWallets = config.bootstrapSPDelegateWallets
-    if (network !== 'test_local' && (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length == 0)) {
+    const bootstrapSPOwnerWallets = config.bootstrapSPOwnerWallets
+    if (
+        network !== 'test_local' &&
+        (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length === 0 || bootstrapSPOwnerWallets.length === 0)
+      ) {
       throw new Error(
-        `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds} and bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}`
+        `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds}, bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}, bootstrapSPOwnerWallets=${bootstrapSPOwnerWallets}`
       )
     }
     console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
@@ -75,6 +79,7 @@ module.exports = (deployer, network, accounts) => {
     await userReplicaSetManagerInst.seedBootstrapNodes(
       bootstrapSPIds,
       bootstrapNodeDelegateWallets,
+      bootstrapSPOwnerWallets,
       { from: userReplicaSetBootstrapAddress }
     )
     seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
