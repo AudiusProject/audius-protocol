@@ -12,16 +12,14 @@ from src.utils.redis_cache import use_redis_cache
 logger = logging.getLogger(__name__)
 
 TRENDING_LIMIT = 100
+TRENDING_TTL_SEC = 30 * 60
 
 def make_trending_cache_key(time_range, genre):
     """Makes a cache key resembling `generated-trending:week:electronic`"""
     return f"generated-trending:{time_range}:{(genre.lower() if genre else '')}"
 
-def generate_unpopulated_trending(session, genre, time_range):
-    trending_tracks = generate_trending(
-        session, time_range, genre,
-        TRENDING_LIMIT, 0
-    )
+def generate_unpopulated_trending(session, genre, time_range, limit=TRENDING_LIMIT):
+    trending_tracks = generate_trending(session, time_range, genre, limit, 0)
 
     track_scores = [z(time_range, track) for track in trending_tracks['listen_counts']]
     sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
@@ -75,12 +73,12 @@ def get_trending_tracks(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         current_user_id, genre, time = args.get("current_user_id"), args.get("genre"), args.get("time", "week")
-        query_time = "week" if time not in ["week", "month", "year"] else time
-        key = make_trending_cache_key(query_time, genre)
+        time_range = "week" if time not in ["week", "month", "year"] else time
+        key = make_trending_cache_key(time_range, genre)
 
         # Will try to hit cached trending from task, falling back
         # to generating it here if necessary and storing it with no TTL
-        (tracks, track_ids) = use_redis_cache(key, None, make_generate_unpopulated_trending(session, genre, query_time))
+        (tracks, track_ids) = use_redis_cache(key, None, make_generate_unpopulated_trending(session, genre, time_range))
 
         # populate track metadata
         tracks = populate_track_metadata(

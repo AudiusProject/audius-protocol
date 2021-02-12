@@ -25,9 +25,8 @@ class Track extends Base {
     super(...args)
     this.getTracks = this.getTracks.bind(this)
     this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
-    this.getTracks = this.getTracks.bind(this)
-    this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
     this.getUnlistedTracks = this.getUnlistedTracks.bind(this)
+    this.getRandomTracks = this.getRandomTracks.bind(this)
     this.getStemsForTrack = this.getStemsForTrack.bind(this)
     this.getRemixesOfTrack = this.getRemixesOfTrack.bind(this)
     this.getRemixTrackParents = this.getRemixTrackParents.bind(this)
@@ -106,6 +105,22 @@ class Track extends Base {
   async getUnlistedTracks () {
     this.REQUIRES(Services.CREATOR_NODE)
     return this.creatorNode.getUnlistedTracks()
+  }
+
+  /**
+   * Gets random tracks from trending tracks for a given genre.
+   * If genre not given, will return trending tracks across all genres.
+   * Excludes specified track ids.
+   *
+   * @param {string} genre
+   * @param {number} limit
+   * @param {number[]} exclusionList
+   * @param {string} time
+   * @returns {(Array)} track
+   */
+  async getRandomTracks (genre, limit, exclusionList, time) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getRandomTracks(genre, limit, exclusionList, time)
   }
 
   /**
