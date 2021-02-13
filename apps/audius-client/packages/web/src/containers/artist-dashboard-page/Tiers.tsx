@@ -153,12 +153,10 @@ export const Tier = ({
             <div className={styles.tierTextContainer}>
               <span>
                 <i className='emoji large white-heavy-check-mark' />
-                &nbsp;
                 {messages.badgeType(tier)}
               </span>
               <span>
                 <i className='emoji large white-heavy-check-mark' />
-                &nbsp;
                 {messages.badgeRole(tier)}
               </span>
               {isActive && (
@@ -173,7 +171,6 @@ export const Tier = ({
               )}
               <span className={styles.sparkles}>
                 <i className='emoji large sparkles' />
-                &nbsp;
                 {messages.moreSoon}
               </span>
             </div>
