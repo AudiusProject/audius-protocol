@@ -5,7 +5,15 @@ import path from 'path'
 
 import { DEFAULT_IMAGE_URL } from '../utils/constants'
 import { formatDate, formatSeconds } from '../utils/format'
-import { formatGateway, getCollection, getImageUrl, getTrack, getUser, getUserByHandle } from '../utils/helpers'
+import {
+  formatGateway,
+  getCollection,
+  getExploreInfo,
+  getImageUrl,
+  getTrack,
+  getUser,
+  getUserByHandle
+} from '../utils/helpers'
 import { Context, MetaTagFormat, Playable } from './types'
 
 const CAN_EMBED_USER_AGENT_REGEX = /(twitter|discord)/
@@ -171,6 +179,14 @@ const getUploadContext = (): Context => {
   }
 }
 
+const getExploreContext = (type: string): Context => {
+  return {
+    format: MetaTagFormat.Explore,
+    thumbnail: true,
+    ...getExploreInfo(type)
+  }
+}
+
 const getDefaultContext = (): Context => {
   return {
     format: MetaTagFormat.Default,
@@ -191,6 +207,7 @@ const getResponse = async (
   const {
     title,
     handle,
+    type
   } = req.params
   const userAgent = req.get('User-Agent') || ''
   const canEmbed = CAN_EMBED_USER_AGENT_REGEX.test(userAgent.toLowerCase())
@@ -218,6 +235,10 @@ const getResponse = async (
     case MetaTagFormat.Upload:
       console.log('get upload', req.path, userAgent)
       context = await getUploadContext()
+      break
+    case MetaTagFormat.Explore:
+      console.log('get explore', req.path, userAgent)
+      context = await getExploreContext(type)
       break
     case MetaTagFormat.Error:
     default:

@@ -44,6 +44,16 @@ router.get([
   }
 )
 
+router.get([
+    '/explore',
+    '/explore/:type'
+  ], (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.Explore, req, res)
+  }
+)
+
 router.get('/error', (
   req: express.Request,
   res: express.Response) => {
