@@ -57,7 +57,7 @@ const initializeApp = async (port, serviceRegistry) => {
   app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
-  app.set('audiusLibs', serviceRegistry.libs)
+  app.set('audiusLibs', serviceRegistry.audiusLibs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property
@@ -75,10 +75,10 @@ const initializeApp = async (port, serviceRegistry) => {
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')
 
-  // initialize USRMService (requires server and /health_check to already be available)
-  await utils.timeout(1000)
-  console.info(`SIDTEST ABOUT TO RUN USRMSERVICE INIT`)
-  await serviceRegistry.USRMService.init()
+  // initialize URSMService (requires server and /health_check to already be available)
+  // await utils.timeout(1000)
+  // console.info(`SIDTEST ABOUT TO RUN URSMSERVICE INIT`)
+  // await serviceRegistry.URSMService.init()
 
   return { app: app, server: server }
 }

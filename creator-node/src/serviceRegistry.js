@@ -4,7 +4,7 @@ const BlacklistManager = require('./blacklistManager')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
-const USRMService = require('./USRMService')
+const URSMService = require('./URSMService')
 const config = require('./config')
 
 /**
@@ -32,7 +32,7 @@ class ServiceRegistry {
     // below properties aren't initialized until 'initServices' is called
     this.audiusLibs = null
     this.snapbackSM = null
-    this.USRMService = null
+    this.URSMService = null
   }
 
   /**
@@ -51,7 +51,8 @@ class ServiceRegistry {
       this.snapbackSM = new SnapbackSM(this.audiusLibs)
       await this.snapbackSM.init()
       
-      this.USRMService = new USRMService(this.nodeConfig, this.audiusLibs)
+      console.log('SIDTEST SUCCESSFULY INITED LIBS & SNAPBACK')
+      // this.URSMService = new URSMService(this.nodeConfig, this.audiusLibs)
     }
 
     this.monitoringQueue.start()

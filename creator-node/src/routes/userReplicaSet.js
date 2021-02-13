@@ -1,11 +1,15 @@
+const axios = require("axios")
 const { recoverPersonalSignature } = require("eth-sig-util")
-const { handleResponse, errorResponseBadRequest, successResponse } = require("../apiHelpers")
+const { handleResponse, errorResponseBadRequest, successResponse, parseCNodeResponse } = require("../apiHelpers")
+const { logger } = require('../logging')
 
 module.exports = function (app) {
 
   /**
    * TODO rate limit, maybe behind authMiddleware? prob not tho
    */
+
+
   /**
    * const spInfo = SPFactory.getServiceEndpointInfo('content-node', spID)
    * ensure non-empty resp
@@ -23,22 +27,65 @@ module.exports = function (app) {
    * 
    */
   app.get('/request_for_proposal', handleResponse(async (req, res, next) => {
-    const spID = req.query.spID
+    const libs = req.app.get('audiusLibs')
+
+    const spID = parseInt(req.query.spID)
+
+    if (!spID) {
+      return errorResponseBadRequest('Must provide spID query param')
+    }
 
     /**
-     * get info from chain
+     * Fetch node info from L1 ServiceProviderFactory
      */
+    const nodeSpInfoFromChain = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('content-node', spID)
+    if (!nodeSpInfoFromChain) {
+      return errorResponseBadRequest('SpID is not registered as valid SP on L1 ServiceProviderFactory')
+    }
+    const {
+      owner: ownerWalletFromChain,
+      delegateOwnerWallet: delegateOwnerWalletFromChain,
+      endpoint: nodeEndpointFromChain
+    } = nodeSpInfoFromChain
+    logger.info(`SIDTEST NODESPINFOFROMCHAIN: ${JSON.stringify(nodeSpInfoFromChain, null, 2)}`)
 
-    
-    /**
-     * make request to CN
-     * confirm all info matches
-     */
+    // Make request to node health check
+    let nodeHealthCheckResp = await axios({
+      baseURL: nodeEndpointFromChain,
+      url: '/health_check',
+      method: 'get',
+      timeout: 1000
+    })
+    nodeHealthCheckResp = parseCNodeResponse(nodeHealthCheckResp, ['healthy', 'creatorNodeEndpoint', 'spID', 'spOwnerWallet'])
+    logger.info(`SIDTEST NODEHEALTHCHECKRESP: ${JSON.stringify(nodeHealthCheckResp, null, 2)}`)
+
+    // Confirm health check returns healthy and data matches on-chain data
+    if (
+      !(nodeHealthCheckResp.healthy)
+      || (nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromChain)
+      || (nodeHealthCheckResp.spID !== spID)
+      || (nodeHealthCheckResp.spOwnerWallet !== ownerWalletFromChain)
+    ) {
+      return errorResponseBadRequest(`HEALTHCHECK INACURRATE:
+      \ ${(nodeHealthCheckResp.creatorNodeEndpoint != nodeEndpointFromChain)}
+      \ || ep1: ${nodeHealthCheckResp.creatorNodeEndpoint} ; ep2: ${nodeEndpointFromChain}
+      \ || ${(nodeHealthCheckResp.spID != spID)} \
+      \ || ${(nodeHealthCheckResp.spOwnerWallet != ownerWalletFromChain)}`)
+    }
+
+    return successResponse({
+      msg: `SIDTEST:`
+        + ` || ${!(nodeHealthCheckResp.healthy)}`
+        + ` || ${(nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromChain)}`
+        + ` || ${(nodeHealthCheckResp.spID !== spID)}`
+        + ` || ${(nodeHealthCheckResp.spOwnerWallet !== ownerWalletFromChain)}`
+        + ` || spow1: ${nodeHealthCheckResp.spOwnerWallet} ; spow2: ${ownerWalletFromChain}`
+    })
+    // Validate signature from health check
 
 
-    /**
-     * recover sig
-     */
+
+    // Validate signature from original request
     const encodedDataMsg = req.get('Encoded-Data-Message')
     const encodedDataSig = req.get('Encoded-Data-Signature')
     if (!encodedDataMsg || !encodedDataSig) {
@@ -46,13 +93,9 @@ module.exports = function (app) {
     }
     const delegateOwnerWallet = recoverPersonalSignature({ data: encodedDataMsg, sig: encodedDataSig })
 
-    /**
-     * ensure sig matches on-chain
-     */
-
-     return successResponse({
-       nonce,
-       sig
-     })
+    return successResponse({
+      nonce,
+      sig
+    })
   }))
 }

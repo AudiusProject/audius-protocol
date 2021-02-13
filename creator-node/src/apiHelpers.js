@@ -191,3 +191,15 @@ module.exports.errorResponseNotFound = (message) => {
 module.exports.errorResponseSocketTimeout = (socketTimeout) => {
   return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
 }
+
+module.exports.parseCNodeResponse = (respObj, requiredFields) => {
+  if (!respObj.data || !respObj.data.data) {
+    throw new Error('Missing')
+  }
+  requiredFields.map(requiredField => {
+    if (!respObj.data.data[requiredField]) {
+      throw new Error('Missing')
+    }
+  })
+  return respObj.data.data
+}

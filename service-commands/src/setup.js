@@ -321,7 +321,6 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
     [Service.DISCOVERY_PROVIDER, SetupCommand.UP],
     [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
     [
@@ -339,7 +338,9 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    // NOTE - this must run at the end since it requires all CN services to be up and registered on L1
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
 
   const start = Date.now()
