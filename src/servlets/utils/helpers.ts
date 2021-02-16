@@ -1,5 +1,10 @@
 import libs from '../../libs'
-import { DEFAULT_IMAGE_URL, USER_NODE_IPFS_GATEWAY } from './constants'
+import {
+  DEFAULT_IMAGE_URL,
+  ExploreInfoType,
+  exploreMap,
+  USER_NODE_IPFS_GATEWAY
+} from './constants'
 
 export const getTrack = async (id: number): Promise<any> => {
   const t = await libs.Track.getTracks(1, 0, [id])
@@ -45,6 +50,18 @@ export const formatGateway = (creatorNodeEndpoint: string, userId: number): stri
 export const getImageUrl = (cid: string, gateway: string | null): string => {
   if (!cid) return DEFAULT_IMAGE_URL
   return `${gateway}${cid}`
+}
+
+export const getExploreInfo = (type: string): ExploreInfoType => {
+  if (!Object.keys(exploreMap).includes(type)) {
+    return {
+      title: 'Just for you',
+      description: `Content curated for you based on your likes, reposts, and follows.
+                    Refreshes often so if you like a track, favorite it.`,
+      image: DEFAULT_IMAGE_URL
+    }
+  }
+  return exploreMap[type]
 }
 
 /**
