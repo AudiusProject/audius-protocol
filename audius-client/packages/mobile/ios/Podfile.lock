@@ -52,6 +52,9 @@ PODS:
     - boost-for-react-native
     - DoubleConversion
     - glog
+  - GCDWebServer (3.5.4):
+    - GCDWebServer/Core (= 3.5.4)
+  - GCDWebServer/Core (3.5.4)
   - glog (0.3.5)
   - google-cast-sdk-no-bluetooth (4.5.3):
     - google-cast-sdk-no-bluetooth/Core (= 4.5.3)
@@ -279,7 +282,8 @@ PODS:
     - React
   - react-native-netinfo (5.9.10):
     - React-Core
-  - react-native-static-server (0.4.2):
+  - react-native-static-server (0.5.0):
+    - GCDWebServer (~> 3.0)
     - React
   - react-native-version-number (0.3.6):
     - React
@@ -429,6 +433,7 @@ SPEC REPOS:
     - FirebaseCore
     - FirebaseCoreDiagnostics
     - FirebaseInstallations
+    - GCDWebServer
     - google-cast-sdk-no-bluetooth
     - GoogleAppMeasurement
     - GoogleDataTransport
@@ -542,6 +547,7 @@ SPEC CHECKSUMS:
   FirebaseCoreDiagnostics: d50e11039e5984d92c8a512be2395f13df747350
   FirebaseInstallations: 971df89b48ae5ee4cc2bf6935f3857a525d28550
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
+  GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
   google-cast-sdk-no-bluetooth: 815df973d547e06a90768f4a72220950cd32d8cb
   GoogleAppMeasurement: 8d3c0aeede16ab7764144b5a4ca8e1d4323841b7
@@ -568,7 +574,7 @@ SPEC CHECKSUMS:
   react-native-google-cast: 9ead682d0026c857318efa8ea9c6f58b6142651a
   react-native-music-control: e6ef45ab35dc42510fc1a632ad1c078047304b9f
   react-native-netinfo: 52cf0ee8342548a485e28f4b09e56b477567244d
-  react-native-static-server: af5ae03c8114e5756e27c7ae32a116002f23be02
+  react-native-static-server: 201b2a945a35096be3ae7f43e367c65bcbd61343
   react-native-version-number: 15563dc4145a94aabfc1faab2a9af10174a4204e
   react-native-video: 5673415bcb2e77e232decb11775c2a7fef60a615
   react-native-webview: b2542d6fd424bcc3e3b2ec5f854f0abb4ec86c87
