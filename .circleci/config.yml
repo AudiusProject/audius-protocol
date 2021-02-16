@@ -1,698 +1,1449 @@
-# Audius Protocol - CircleCI Config
-# - Installs dependencies and executes unit tests for all sub directories
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
-version: 2.1
-orbs:
-  aws-eks: circleci/aws-eks@0.1.0
-  helm: circleci/helm@0.1.2
-  kubernetes: circleci/kubernetes@0.3.0
-  coveralls: coveralls/coveralls@1.0.6
+# Orb 'circleci/aws-eks@0.1.0' resolved to 'circleci/aws-eks@0.1.0'
+# Orb 'circleci/helm@0.1.2' resolved to 'circleci/helm@0.1.2'
+# Orb 'circleci/kubernetes@0.3.0' resolved to 'circleci/kubernetes@0.3.0'
+# Orb 'coveralls/coveralls@1.0.6' resolved to 'coveralls/coveralls@1.0.6'
+version: 2
 jobs:
-  test-mad-dog-e2e:
-    machine:
-      image: ubuntu-1604:201903-01    # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
-    steps:
-      - add_ssh_keys
-      - checkout
-      - run:
-          name: clone tooling and mad dog
-          command: |
-            cd ../
-            mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
-      - run:
-          name: execute
-          command: |
-            set -e
-            export PROTOCOL_DIR=/home/circleci/project
-            source ~/.bash_profile
-            nvm install v10.16
-            nvm use 10.16
-            cd /home/circleci/project/service-commands/scripts/
-            sh init-repos.sh
-            cd /home/circleci/project/libs/
-            npm link
-            cd /home/circleci/project/service-commands/
-            npm link
-            npm link @audius/libs
-            cd /home/circleci/project/mad-dog/
-            npm link @audius/libs
-            npm link @audius/service-commands
-            cd /home/circleci/project/service-commands/scripts/
-            sudo "$(which node)" hosts.js add
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 3
-            cd /home/circleci/project/mad-dog/
-            docker ps
-            export ipfsHost="localhost"
-            export ipfsPort=6001
-            npm run start test-ci
-  test-libs:
+  build-creator-node:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:10.16
-      - image: trufflesuite/ganache-cli:latest
-        # https://discuss.circleci.com/t/docker-using-local-image/11581/9
-        # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-a", "50"]
-      - image: trufflesuite/ganache-cli:latest
-        # https://discuss.circleci.com/t/docker-using-local-image/11581/9
-        # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-p", "8546", "-a", "50"]
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-    parameters:
-      force:
-        type: boolean
-        default: false
+    - image: circleci/buildpack-deps:stretch
     steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
-      - setup_remote_docker
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Get tag or latest
+        command: |
+          # order of precendence for IMAGE tag is:
+          # 1. CIRCLE_TAG if defined,
+          # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+          # 3. 'latest', which is the default
+          echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+    - run:
+        name: Docker login
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker build creator-node
+        command: |
+          cd creator-node
+          docker build -t audius/creator-node:$IMAGE_TAG -t audius/creator-node:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+    - run:
+        name: Docker push creator-node
+        command: |
+          docker push audius/creator-node:$IMAGE_TAG
+          docker push audius/creator-node:$(git rev-parse HEAD)
+  test-creator-node-2:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: ipfs/go-ipfs:release
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_creator_node_test
+    - image: redis:5.0.4
+    steps:
+    - checkout
+    - run:
+        command: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
+    - run:
+        name: setup
+        command: |
+          cd creator-node
+          npm install
+    - run:
+        name: run creator node tests
+        command: |
+          export POSTGRES_TEST_PORT=5432
+          cd creator-node
+          export redisPort=6379
+          export spOwnerWallet='yes'
+          export isCIBuild=true
+          export delegateOwnerWallet=0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25
+          export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
+          export storagePath="test_file_storage"
+          export ipfsPort=5001
+          npm run test:unit
+          npm run test:ci
+  build-libs:
+    docker:
+    - image: circleci/buildpack-deps:stretch
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Get tag or latest
+        command: |
+          # order of precendence for IMAGE tag is:
+          # 1. CIRCLE_TAG if defined,
+          # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+          # 3. 'latest', which is the default
+          echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+    - run:
+        name: Docker login
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker build libs
+        command: |
+          cd libs
+          docker build -t audius/libs:$IMAGE_TAG -t audius/libs:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+    - run:
+        name: Docker push libs
+        command: |
+          docker push audius/libs:$IMAGE_TAG
+          docker push audius/libs:$(git rev-parse HEAD)
+  test-eth-contracts-2:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - --port=8546
+      - -a
+      - '50'
+      - -l
+      - '8000000'
+    steps:
+    - checkout
+    - run:
+        command: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+        - v1-dependencies-
+    - run:
+        name: installation
+        command: |
+          cd eth-contracts
+          npm install
+          cd ../
+    - save_cache:
+        paths:
+        - eth-contracts/node_modules
+        key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+    - run:
+        name: run_lint
+        command: |
+          cd eth-contracts
+          npm run lint-circle-ci
+          cd ../
+    - run:
+        name: run_tests
+        command: |
+          cd eth-contracts
+          npm run test-circle-ci
+          cd ../
+    - run:
+        name: Upload Coverage Result To Coveralls
+        command: |
+          if false; then
+            curl "https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN" \
+              -d "payload[build_num]=$CIRCLE_WORKFLOW_ID&payload[status]=done"
+            exit 0
+          fi
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "libs/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
-      - run: |
+          if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+
+          $SUDO npm install -g coveralls
+
+          if [ ! $COVERALLS_REPO_TOKEN ]; then
+            export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+          fi
+
+          export COVERALLS_ENDPOINT=https://coveralls.io
+
+          export COVERALLS_FLAG_NAME=""
+
+          if false; then
+            export COVERALLS_PARALLEL=true
+          fi
+
+          # check for lcov file presence:
+          if [ ! -r ./eth-contracts/coverage/lcov.info ]; then
+            echo "Please specify a valid 'path_to_lcov' parameter."
+            exit 1
+          fi
+
+          if false; then
+            cat ./eth-contracts/coverage/lcov.info | coveralls --verbose
+          else
+            cat ./eth-contracts/coverage/lcov.info | coveralls
+          fi
+  test-libs-1:
+    docker:
+    - image: circleci/node:10.16
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+      - -a
+      - '50'
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+      - -p
+      - '8546'
+      - -a
+      - '50'
+    steps:
+    - checkout
+    - setup_remote_docker
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "libs/package.json" }}
+        - v1-dependencies-
+    - run:
+        command: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
+    - run:
+        command: |
           cd libs
           npm install
-      - save_cache:
-          paths:
-            - libs/node_modules
-          key: v1-dependencies-{{ checksum "libs/package.json" }}
-
-      - restore_cache:
-          keys:
-          - data-contracts-{{ checksum "contracts/package.json" }}
-          - data-contracts-
-      - run:
-          name: contract repo init
-          command: |
-            cd contracts/
-            npm install
-      - save_cache:
-          paths:
-            - contracts/node_modules
-          key: data-contracts-{{ checksum "contracts/package.json" }}
-
-      - restore_cache:
-          keys:
-          - eth-contracts-{{ checksum "eth-contracts/package.json" }}
-          - eth-contracts-
-      - run:
-          name: eth-contracts repo init
-          command: |
-            cd eth-contracts/
-            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
-            npm install
-      - save_cache:
-          paths:
-            - eth-contracts/node_modules
-          key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
-
-      # run tests!
-      - run:
-          name: run tests
-          command: |
-            cd libs
-            npm run test-circle-ci
-
-  test-contracts:
+    - save_cache:
+        paths:
+        - libs/node_modules
+        key: v1-dependencies-{{ checksum "libs/package.json" }}
+    - restore_cache:
+        keys:
+        - data-contracts-{{ checksum "contracts/package.json" }}
+        - data-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts/
+          npm install
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: data-contracts-{{ checksum "contracts/package.json" }}
+    - restore_cache:
+        keys:
+        - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+        - eth-contracts-
+    - run:
+        name: eth-contracts repo init
+        command: |
+          cd eth-contracts/
+          rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+          npm install
+    - save_cache:
+        paths:
+        - eth-contracts/node_modules
+        key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
+    - run:
+        name: run tests
+        command: |
+          cd libs
+          npm run test-circle-ci
+  test-creator-node-1:
     docker:
-      - image: circleci/node:10.16.3
-      - image: trufflesuite/ganache-cli:latest
-    parameters:
-      force:
-        type: boolean
-        default: false
+    - image: circleci/node:10.16.3
+    - image: ipfs/go-ipfs:release
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_creator_node_test
+    - image: redis:5.0.4
     steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "contracts/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+    - checkout
+    - run:
+        name: setup
+        command: |
+          cd creator-node
+          npm install
+    - run:
+        name: run creator node tests
+        command: |
+          export POSTGRES_TEST_PORT=5432
+          cd creator-node
+          export redisPort=6379
+          export spOwnerWallet='yes'
+          export isCIBuild=true
+          export delegateOwnerWallet=0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25
+          export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
+          export storagePath="test_file_storage"
+          export ipfsPort=5001
+          npm run test:unit
+          npm run test:ci
+  test-eth-contracts-1:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - --port=8546
+      - -a
+      - '50'
+      - -l
+      - '8000000'
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+        - v1-dependencies-
+    - run:
+        name: installation
+        command: |
+          cd eth-contracts
+          npm install
+          cd ../
+    - save_cache:
+        paths:
+        - eth-contracts/node_modules
+        key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+    - run:
+        name: run_lint
+        command: |
+          cd eth-contracts
+          npm run lint-circle-ci
+          cd ../
+    - run:
+        name: run_tests
+        command: |
+          cd eth-contracts
+          npm run test-circle-ci
+          cd ../
+    - run:
+        name: Upload Coverage Result To Coveralls
+        command: |
+          if false; then
+            curl "https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN" \
+              -d "payload[build_num]=$CIRCLE_WORKFLOW_ID&payload[status]=done"
+            exit 0
+          fi
 
-      - run:
-          name: installation
-          command: |
-            cd contracts
-            npm install
-            cd ../
-      - save_cache:
-          paths:
-            - contracts/node_modules
-          key: v1-dependencies-{{ checksum "contracts/package.json" }}
+          if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
 
-      # run tests!
-      - run:
-          name: run_tests
-          command: |
-            cd contracts
-            npm run test-circle-ci
-            cd ../
+          $SUDO npm install -g coveralls
 
+          if [ ! $COVERALLS_REPO_TOKEN ]; then
+            export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+          fi
+
+          export COVERALLS_ENDPOINT=https://coveralls.io
+
+          export COVERALLS_FLAG_NAME=""
+
+          if false; then
+            export COVERALLS_PARALLEL=true
+          fi
+
+          # check for lcov file presence:
+          if [ ! -r ./eth-contracts/coverage/lcov.info ]; then
+            echo "Please specify a valid 'path_to_lcov' parameter."
+            exit 1
+          fi
+
+          if false; then
+            cat ./eth-contracts/coverage/lcov.info | coveralls --verbose
+          else
+            cat ./eth-contracts/coverage/lcov.info | coveralls
+          fi
   test-eth-contracts:
     docker:
-      - image: circleci/node:10.16.3
-      - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8546", "-a", "50", "-l", "8000000"]
-    parameters:
-      force:
-        type: boolean
-        default: false
+    - image: circleci/node:10.16.3
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - --port=8546
+      - -a
+      - '50'
+      - -l
+      - '8000000'
     steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run:
-          name: installation
-          command: |
-            cd eth-contracts
-            npm install
-            cd ../
-      - save_cache:
-          paths:
-            - eth-contracts/node_modules
-          key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
-      - run:
-          name: run_lint
-          command: |
-            cd eth-contracts
-            npm run lint-circle-ci
-            cd ../
-      - run:
-          name: run_tests
-          command: |
-            cd eth-contracts
-            npm run test-circle-ci
-            cd ../
-      - coveralls/upload:
-          path_to_lcov: ./eth-contracts/coverage/lcov.info
+    - checkout
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+        - v1-dependencies-
+    - run:
+        name: installation
+        command: |
+          cd eth-contracts
+          npm install
+          cd ../
+    - save_cache:
+        paths:
+        - eth-contracts/node_modules
+        key: v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+    - run:
+        name: run_lint
+        command: |
+          cd eth-contracts
+          npm run lint-circle-ci
+          cd ../
+    - run:
+        name: run_tests
+        command: |
+          cd eth-contracts
+          npm run test-circle-ci
+          cd ../
+    - run:
+        name: Upload Coverage Result To Coveralls
+        command: |
+          if false; then
+            curl "https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN" \
+              -d "payload[build_num]=$CIRCLE_WORKFLOW_ID&payload[status]=done"
+            exit 0
+          fi
 
-  # Disabled - not included in any workflows below
-  # Not removing code in case of potential re-enabling
-  test-content-service:
+          if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+
+          $SUDO npm install -g coveralls
+
+          if [ ! $COVERALLS_REPO_TOKEN ]; then
+            export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
+          fi
+
+          export COVERALLS_ENDPOINT=https://coveralls.io
+
+          export COVERALLS_FLAG_NAME=""
+
+          if false; then
+            export COVERALLS_PARALLEL=true
+          fi
+
+          # check for lcov file presence:
+          if [ ! -r ./eth-contracts/coverage/lcov.info ]; then
+            echo "Please specify a valid 'path_to_lcov' parameter."
+            exit 1
+          fi
+
+          if false; then
+            cat ./eth-contracts/coverage/lcov.info | coveralls --verbose
+          else
+            cat ./eth-contracts/coverage/lcov.info | coveralls
+          fi
+  test-discovery-provider-1:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:10.16.3
-      - image: ipfs/go-ipfs:release
-      - image: circleci/postgres:11.1
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: audius_content_service_test
-    parameters:
-      force:
-        type: boolean
-        default: false
+    - image: circleci/python:3.7-stretch-node-browsers-legacy
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_discovery
+    - image: ipfs/go-ipfs:release
+    - image: redis:3.0-alpine
+    - image: trufflesuite/ganache-cli:latest
     steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh content-service || (echo "no diff" && circleci-agent step halt)
-      # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #     - content-service-{{ checksum "content-service/package.json" }}
-      #     # fallback to using the latest cache if no exact match is found
-      #     - content-service-
-      - run:
-          name: configure content service
-          command: |
-            cd content-service/
-            npm install
-      # - save_cache:
-      #     paths:
-      #       - content-service/node_modules
-      #     key: content-service-{{ checksum "content-service/package.json" }}
-      - run:
-          name: run tests
-          command: |
-            cd content-service/
-            export POSTGRES_TEST_PORT=5432
-            npm run test
-
-  test-creator-node:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.16.3
-      - image: ipfs/go-ipfs:release
-      - image: circleci/postgres:11.1
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: audius_creator_node_test
-      - image: redis:5.0.4
-    parameters:
-      force:
-        type: boolean
-        default: false
-    steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
-      # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #     - v1-dependencies-{{ checksum "creator-node/package.json" }}
-      #     # fallback to using the latest cache if no exact match is found
-      #     - v1-dependencies-
-      - run:
-          name: setup
-          command: |
-            cd creator-node
-            npm install
-      # - save_cache:
-      #     paths:
-      #       - creator-node/node_modules
-      #     key: v1-dependencies-{{ checksum "creator-node/package.json" }}
-      - run:
-          name: run creator node tests
-          command: |
-            export POSTGRES_TEST_PORT=5432
-            cd creator-node
-            export redisPort=6379
-            export spOwnerWallet='yes'
-            export isCIBuild=true
-            export delegateOwnerWallet=0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25
-            export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
-            export storagePath="test_file_storage"
-            export ipfsPort=5001
-            npm run test:unit
-            npm run test:ci
-
-  test-discovery-provider:
-    docker:
-      - image: circleci/python:3.7-stretch-node-browsers-legacy
-        # Discovery provider dependencies
-      - image: circleci/postgres:11.1
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: audius_discovery
-      - image: ipfs/go-ipfs:release
-        # Bring up ganache
-      - image: redis:3.0-alpine
-      - image: trufflesuite/ganache-cli:latest
-    parameters:
-      force:
-        type: boolean
-        default: false
-    steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
-      - restore_cache:
-          keys:
-            - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
-            - disc-prov-1-
-      - run:
-          name: python-setup
-          command: |
-            cd discovery-provider
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-      - save_cache:
-          paths:
-            - discovery-provider/venv/
-          key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
-      - run:
-          name: python-lint
-          command: |
-            cd discovery-provider
-            source venv/bin/activate
-            python ./scripts/lint.py
-      - restore_cache:
-          keys:
-          - disc-prov-contracts-{{ checksum "contracts/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - disc-prov-contracts-
-      - run:
-          name: contract repo init
-          command: |
-            cd contracts
-            npm install
-      - save_cache:
-          paths:
-            - contracts/node_modules
-          key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
-      - run:
-          name: discovery provider tests
-          command: |
-            cd discovery-provider
-            export audius_ipfs_port=5001
-            export audius_redis_url=redis://localhost:6379/0
-            export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
-            export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
-            ./scripts/circle-ci.sh
-
+    - checkout
+    - restore_cache:
+        keys:
+        - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+        - disc-prov-1-
+    - run:
+        name: python-setup
+        command: |
+          cd discovery-provider
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+    - save_cache:
+        paths:
+        - discovery-provider/venv/
+        key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+    - run:
+        name: python-lint
+        command: |
+          cd discovery-provider
+          source venv/bin/activate
+          python ./scripts/lint.py
+    - restore_cache:
+        keys:
+        - disc-prov-contracts-{{ checksum "contracts/package.json" }}
+        - disc-prov-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts
+          npm install
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
+    - run:
+        name: discovery provider tests
+        command: |
+          cd discovery-provider
+          export audius_ipfs_port=5001
+          export audius_redis_url=redis://localhost:6379/0
+          export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
+          export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
+          ./scripts/circle-ci.sh
   test-identity-service:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:10.16.3
-      - image: ipfs/go-ipfs:release
-      - image: trufflesuite/ganache-cli:latest
-        # https://discuss.circleci.com/t/docker-using-local-image/11581/9
-        # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000"]
-      - image: circleci/postgres:11.1
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: audius_identity_service_test
-      - image: redis:5.0.4
-    parameters:
-      force:
-        type: boolean
-        default: false
+    - image: circleci/node:10.16.3
+    - image: ipfs/go-ipfs:release
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_identity_service_test
+    - image: redis:5.0.4
     steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
-      # restores data-contracts
-      - restore_cache:
-          keys:
-          - data-contracts-{{ checksum "contracts/package.json" }}
-          - data-contracts-
-      - run:
-          name: contract repo init
-          command: |
-            cd contracts/
-            npm install
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - identity-service-dep1-{{ checksum "identity-service/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - identity-service-dep1-
-      - run:
-          name: setup identity
-          command: |
-            cd identity-service/
-            rm -rf ./node_modules/websocket/.git
-            npm install --verbose
-      - save_cache:
-          paths:
-            - identity-service/node_modules
-          key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
-      - run:
-          name: run identity service tests
-          command: |
-            cd identity-service/
-            export POSTGRES_TEST_PORT=5432
-            export redisPort=6379
-            export isCIBuild=true
-            npm run test
-
-  docker-build-and-push:
+    - checkout
+    - restore_cache:
+        keys:
+        - data-contracts-{{ checksum "contracts/package.json" }}
+        - data-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts/
+          npm install
+    - restore_cache:
+        keys:
+        - identity-service-dep1-{{ checksum "identity-service/package.json" }}
+        - identity-service-dep1-
+    - run:
+        name: setup identity
+        command: |
+          cd identity-service/
+          rm -rf ./node_modules/websocket/.git
+          npm install --verbose
+    - save_cache:
+        paths:
+        - identity-service/node_modules
+        key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
+    - run:
+        name: run identity service tests
+        command: |
+          cd identity-service/
+          export POSTGRES_TEST_PORT=5432
+          export redisPort=6379
+          export isCIBuild=true
+          npm run test
+  test-mad-dog-e2e:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+    - add_ssh_keys
+    - checkout
+    - run:
+        name: clone tooling and mad dog
+        command: |
+          cd ../
+          mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+    - run:
+        name: execute
+        command: |
+          set -e
+          export PROTOCOL_DIR=/home/circleci/project
+          source ~/.bash_profile
+          nvm install v10.16
+          nvm use 10.16
+          cd /home/circleci/project/service-commands/scripts/
+          sh init-repos.sh
+          cd /home/circleci/project/libs/
+          npm link
+          cd /home/circleci/project/service-commands/
+          npm link
+          npm link @audius/libs
+          cd /home/circleci/project/mad-dog/
+          npm link @audius/libs
+          npm link @audius/service-commands
+          cd /home/circleci/project/service-commands/scripts/
+          sudo "$(which node)" hosts.js add
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          "$(which node)" setup.js up -nc 3
+          cd /home/circleci/project/mad-dog/
+          docker ps
+          export ipfsHost="localhost"
+          export ipfsPort=6001
+          npm run start test-ci
+  build-contracts:
     docker:
-      - image: circleci/buildpack-deps:stretch
-    parameters:
-      repo:
-        type: string
+    - image: circleci/buildpack-deps:stretch
     steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Get tag or latest
-          command: |
-            # order of precendence for IMAGE tag is:
-            # 1. CIRCLE_TAG if defined,
-            # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
-            # 3. 'latest', which is the default
-            echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
-      - run:
-          name: Docker login
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-      - run:
-          name: Docker build << parameters.repo >>
-          command: |
-            cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
-      - run:
-          name: Docker push << parameters.repo >>
-          command: |
-            docker push audius/<< parameters.repo >>:$IMAGE_TAG
-            docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
-
-  deploy:
-    executor: aws-eks/python3
-    parameters:
-      cluster-name:
-        type: string
-      aws-region:
-        type: string
-      deploy-args:
-        type: string
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Get tag or latest
+        command: |
+          # order of precendence for IMAGE tag is:
+          # 1. CIRCLE_TAG if defined,
+          # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+          # 3. 'latest', which is the default
+          echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+    - run:
+        name: Docker login
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker build contracts
+        command: |
+          cd contracts
+          docker build -t audius/contracts:$IMAGE_TAG -t audius/contracts:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+    - run:
+        name: Docker push contracts
+        command: |
+          docker push audius/contracts:$IMAGE_TAG
+          docker push audius/contracts:$(git rev-parse HEAD)
+  test-creator-node:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: ipfs/go-ipfs:release
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_creator_node_test
+    - image: redis:5.0.4
     steps:
-      - add_ssh_keys
-      - run:
-          command: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-      - run:
-          name: Clone audius-k8s repo
-          command: git clone git@github.com:AudiusProject/audius-k8s.git
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
-          aws-region: << parameters.aws-region >>
-          install-kubectl: true
-          verbose: true
-      - helm/install-helm-client
-      - run:
-          name: configure BASH_ENV
-          command: echo $'export TILLER_NAMESPACE=tiller\nexport HELM_HOST=:44134' >> $BASH_ENV
-      - run:
-          name: run local tiller
-          background: true
-          command: tiller -listen=localhost:44134 -storage=secret -logtostderr
-      - run:
-          name: deploy environment [<< parameters.cluster-name >>]
-          command: |
-            cd audius-k8s
-            ./ops/scripts/deploy.py << parameters.deploy-args >>
+    - checkout
+    - run:
+        name: setup
+        command: |
+          cd creator-node
+          npm install
+    - run:
+        name: run creator node tests
+        command: |
+          export POSTGRES_TEST_PORT=5432
+          cd creator-node
+          export redisPort=6379
+          export spOwnerWallet='yes'
+          export isCIBuild=true
+          export delegateOwnerWallet=0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25
+          export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
+          export storagePath="test_file_storage"
+          export ipfsPort=5001
+          npm run test:unit
+          npm run test:ci
+  test-identity-service-1:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: ipfs/go-ipfs:release
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_identity_service_test
+    - image: redis:5.0.4
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - data-contracts-{{ checksum "contracts/package.json" }}
+        - data-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts/
+          npm install
+    - restore_cache:
+        keys:
+        - identity-service-dep1-{{ checksum "identity-service/package.json" }}
+        - identity-service-dep1-
+    - run:
+        name: setup identity
+        command: |
+          cd identity-service/
+          rm -rf ./node_modules/websocket/.git
+          npm install --verbose
+    - save_cache:
+        paths:
+        - identity-service/node_modules
+        key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
+    - run:
+        name: run identity service tests
+        command: |
+          cd identity-service/
+          export POSTGRES_TEST_PORT=5432
+          export redisPort=6379
+          export isCIBuild=true
+          npm run test
+  test-libs-2:
+    docker:
+    - image: circleci/node:10.16
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+      - -a
+      - '50'
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+      - -p
+      - '8546'
+      - -a
+      - '50'
+    steps:
+    - checkout
+    - run:
+        command: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
+    - setup_remote_docker
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "libs/package.json" }}
+        - v1-dependencies-
+    - run:
+        command: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
+    - run:
+        command: |
+          cd libs
+          npm install
+    - save_cache:
+        paths:
+        - libs/node_modules
+        key: v1-dependencies-{{ checksum "libs/package.json" }}
+    - restore_cache:
+        keys:
+        - data-contracts-{{ checksum "contracts/package.json" }}
+        - data-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts/
+          npm install
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: data-contracts-{{ checksum "contracts/package.json" }}
+    - restore_cache:
+        keys:
+        - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+        - eth-contracts-
+    - run:
+        name: eth-contracts repo init
+        command: |
+          cd eth-contracts/
+          rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+          npm install
+    - save_cache:
+        paths:
+        - eth-contracts/node_modules
+        key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
+    - run:
+        name: run tests
+        command: |
+          cd libs
+          npm run test-circle-ci
+  build-identity-service:
+    docker:
+    - image: circleci/buildpack-deps:stretch
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Get tag or latest
+        command: |
+          # order of precendence for IMAGE tag is:
+          # 1. CIRCLE_TAG if defined,
+          # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+          # 3. 'latest', which is the default
+          echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+    - run:
+        name: Docker login
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker build identity-service
+        command: |
+          cd identity-service
+          docker build -t audius/identity-service:$IMAGE_TAG -t audius/identity-service:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+    - run:
+        name: Docker push identity-service
+        command: |
+          docker push audius/identity-service:$IMAGE_TAG
+          docker push audius/identity-service:$(git rev-parse HEAD)
+  test-contracts-2:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: trufflesuite/ganache-cli:latest
+    steps:
+    - checkout
+    - run:
+        command: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "contracts/package.json" }}
+        - v1-dependencies-
+    - run:
+        name: installation
+        command: |
+          cd contracts
+          npm install
+          cd ../
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: v1-dependencies-{{ checksum "contracts/package.json" }}
+    - run:
+        name: run_tests
+        command: |
+          cd contracts
+          npm run test-circle-ci
+          cd ../
+  deploy-ci:
+    docker:
+    - image: circleci/python:3
+    steps:
+    - add_ssh_keys
+    - run:
+        command: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - run:
+        name: Clone audius-k8s repo
+        command: git clone git@github.com:AudiusProject/audius-k8s.git
+    - run:
+        command: |
+          if [[ latest == "latest" ]]; then
+            # get latest kops release
+            KOPS_VERSION=$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)
+          else
+            KOPS_VERSION=latest
+          fi
 
+          PLATFORM="linux"
+          if [ -n "$(uname | grep "Darwin")" ]; then
+            PLATFORM="darwin"
+          fi
+
+          # download kops
+          curl -LO https://github.com/kubernetes/kops/releases/download/$KOPS_VERSION/kops-$PLATFORM-amd64
+
+          [ -w /usr/local/bin ] && SUDO="" || SUDO=sudo
+
+          $SUDO chmod +x kops-$PLATFORM-amd64
+
+          $SUDO mv kops-$PLATFORM-amd64 /usr/local/bin/kops
+        name: Install kops
+    - run:
+        command: |
+          if [[ latest == "latest" ]]; then
+            # get latest kubectl release
+            KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+          else
+            KUBECTL_VERSION=latest
+          fi
+
+          PLATFORM="linux"
+          if [ -n "$(uname | grep "Darwin")" ]; then
+            PLATFORM="darwin"
+          fi
+
+          # download kubectl
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/$KUBECTL_VERSION/bin/$PLATFORM/amd64/kubectl
+
+          [ -w /usr/local/bin ] && SUDO="" || SUDO=sudo
+
+          $SUDO chmod +x ./kubectl
+
+          $SUDO mv ./kubectl /usr/local/bin
+        name: Install kubectl
+    - run:
+        command: |
+          if which aws-iam-authenticator > /dev/null; then
+            echo "AWS IAM Authenticator for Kubernetes is already installed"
+            exit 0
+          fi
+
+          PLATFORM="linux"
+          if [ -n "$(uname | grep "Darwin")" ]; then
+            PLATFORM="darwin"
+          fi
+
+          RELEASE_TAG=""
+          RELEASE_URL="https://api.github.com/repos/kubernetes-sigs/aws-iam-authenticator/releases/latest"
+
+          if [ -n "${RELEASE_TAG}" ]; then
+            RELEASE_URL="https://api.github.com/repos/kubernetes-sigs/aws-iam-authenticator/releases/tags/${RELEASE_TAG}"
+          fi
+
+          DOWNLOAD_URL=$(curl -s --retry 5 "${RELEASE_URL}" \
+              | grep "${PLATFORM}" | awk '/browser_download_url/ {print $2}' | sed 's/"//g')
+
+          curl -L -o aws-iam-authenticator "$DOWNLOAD_URL"
+
+          chmod +x ./aws-iam-authenticator
+
+          SUDO=""
+          if [ $(id -u) -ne 0 ] && which sudo > /dev/null ; then
+            SUDO="sudo"
+          fi
+
+          $SUDO mv ./aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
+        name: Install the AWS IAM Authenticator for Kubernetes
+    - run:
+        name: Install AWS CLI
+        command: |
+          export PIP=$(which pip pip3 | head -1)
+          if [[ -n $PIP ]]; then
+            if which sudo > /dev/null; then
+              sudo $PIP install awscli --upgrade
+            else
+              # This installs the AWS CLI to ~/.local/bin. Make sure that ~/.local/bin is in your $PATH.
+              $PIP install aws --upgrade --user
+            fi
+          elif [[ $(which unzip curl | wc -l) -eq 2 ]]; then
+            cd
+            curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            unzip awscli-bundle.zip
+            if which sudo > /dev/null; then
+              sudo ~/awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+            else
+              # This installs the AWS CLI to the default location (~/.local/lib/aws) and create a symbolic link (symlink) at ~/bin/aws. Make sure that ~/bin is in your $PATH.
+              awscli-bundle/install -b ~/bin/aws
+            fi
+            rm -rf awscli-bundle*
+            cd -
+          else
+            echo "Unable to install AWS CLI. Please install pip."
+            exit 1
+          fi
+    - run:
+        command: |
+          CLUSTER_NAME="audius-ci"
+          AWS_REGION="us-west-2"
+          AWS_PROFILE=""
+          KUBECONFIG_FILE_PATH=""
+          ROLE_ARN=""
+          CLUSTER_CONTEXT_ALIAS=""
+          DRY_RUN="false"
+          VERBOSE="true"
+          if [ -n "${CLUSTER_NAME}" ]; then
+            set -- "$@" --name "${CLUSTER_NAME}"
+          fi
+          if [ -n "${AWS_REGION}" ]; then
+            set -- "$@" --region "${AWS_REGION}"
+          fi
+          if [ -n "${AWS_PROFILE}" ]; then
+            set -- "$@" --profile "${AWS_PROFILE}"
+          fi
+          if [ -n "${KUBECONFIG_FILE_PATH}" ]; then
+            set -- "$@" --kubeconfig "${KUBECONFIG_FILE_PATH}"
+          fi
+          if [ -n "${ROLE_ARN}" ]; then
+            set -- "$@" --role-arn "${ROLE_ARN}"
+          fi
+          if [ -n "${CLUSTER_CONTEXT_ALIAS}" ]; then
+            set -- "$@" --alias "${CLUSTER_CONTEXT_ALIAS}"
+          fi
+          if [ "${DRY_RUN}" == "true" ]; then
+            set -- "$@" --dry-run
+          fi
+          if [ "${VERBOSE}" == "true" ]; then
+            set -- "$@" --verbose
+          fi
+          aws eks update-kubeconfig "$@"
+        name: Update the kubectl configuration file to use the authenticator
+    - run:
+        command: |
+          if which helm > /dev/null; then
+            echo "helm is already installed"
+            exit 0
+          fi
+          VERSION=""
+          if [ -n "${VERSION}" ]; then
+            set -- "$@" --version "${VERSION}"
+          fi
+          INSTALL_SCRIPT="https://raw.githubusercontent.com/helm/helm/master/scripts/get"
+          curl "${INSTALL_SCRIPT}" > get_helm.sh
+          chmod 700 get_helm.sh
+          ./get_helm.sh "$@"
+          helm init --client-only
+        name: Install and init the helm client
+    - run:
+        name: configure BASH_ENV
+        command: echo $'export TILLER_NAMESPACE=tiller\nexport HELM_HOST=:44134' >> $BASH_ENV
+    - run:
+        name: run local tiller
+        background: true
+        command: tiller -listen=localhost:44134 -storage=secret -logtostderr
+    - run:
+        name: deploy environment [audius-ci]
+        command: |
+          cd audius-k8s
+          ./ops/scripts/deploy.py ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
+  build-discovery-provider:
+    docker:
+    - image: circleci/buildpack-deps:stretch
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Get tag or latest
+        command: |
+          # order of precendence for IMAGE tag is:
+          # 1. CIRCLE_TAG if defined,
+          # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+          # 3. 'latest', which is the default
+          echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+    - run:
+        name: Docker login
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker build discovery-provider
+        command: |
+          cd discovery-provider
+          docker build -t audius/discovery-provider:$IMAGE_TAG -t audius/discovery-provider:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+    - run:
+        name: Docker push discovery-provider
+        command: |
+          docker push audius/discovery-provider:$IMAGE_TAG
+          docker push audius/discovery-provider:$(git rev-parse HEAD)
+  test-identity-service-2:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: ipfs/go-ipfs:release
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_identity_service_test
+    - image: redis:5.0.4
+    steps:
+    - checkout
+    - run:
+        command: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+    - restore_cache:
+        keys:
+        - data-contracts-{{ checksum "contracts/package.json" }}
+        - data-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts/
+          npm install
+    - restore_cache:
+        keys:
+        - identity-service-dep1-{{ checksum "identity-service/package.json" }}
+        - identity-service-dep1-
+    - run:
+        name: setup identity
+        command: |
+          cd identity-service/
+          rm -rf ./node_modules/websocket/.git
+          npm install --verbose
+    - save_cache:
+        paths:
+        - identity-service/node_modules
+        key: identity-service-dep1-{{ checksum "identity-service/package.json" }}
+    - run:
+        name: run identity service tests
+        command: |
+          cd identity-service/
+          export POSTGRES_TEST_PORT=5432
+          export redisPort=6379
+          export isCIBuild=true
+          npm run test
+  test-contracts-1:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: trufflesuite/ganache-cli:latest
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "contracts/package.json" }}
+        - v1-dependencies-
+    - run:
+        name: installation
+        command: |
+          cd contracts
+          npm install
+          cd ../
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: v1-dependencies-{{ checksum "contracts/package.json" }}
+    - run:
+        name: run_tests
+        command: |
+          cd contracts
+          npm run test-circle-ci
+          cd ../
+  test-discovery-provider-2:
+    docker:
+    - image: circleci/python:3.7-stretch-node-browsers-legacy
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_discovery
+    - image: ipfs/go-ipfs:release
+    - image: redis:3.0-alpine
+    - image: trufflesuite/ganache-cli:latest
+    steps:
+    - checkout
+    - run:
+        command: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
+    - restore_cache:
+        keys:
+        - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+        - disc-prov-1-
+    - run:
+        name: python-setup
+        command: |
+          cd discovery-provider
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+    - save_cache:
+        paths:
+        - discovery-provider/venv/
+        key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+    - run:
+        name: python-lint
+        command: |
+          cd discovery-provider
+          source venv/bin/activate
+          python ./scripts/lint.py
+    - restore_cache:
+        keys:
+        - disc-prov-contracts-{{ checksum "contracts/package.json" }}
+        - disc-prov-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts
+          npm install
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
+    - run:
+        name: discovery provider tests
+        command: |
+          cd discovery-provider
+          export audius_ipfs_port=5001
+          export audius_redis_url=redis://localhost:6379/0
+          export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
+          export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
+          ./scripts/circle-ci.sh
+  test-contracts:
+    docker:
+    - image: circleci/node:10.16.3
+    - image: trufflesuite/ganache-cli:latest
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "contracts/package.json" }}
+        - v1-dependencies-
+    - run:
+        name: installation
+        command: |
+          cd contracts
+          npm install
+          cd ../
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: v1-dependencies-{{ checksum "contracts/package.json" }}
+    - run:
+        name: run_tests
+        command: |
+          cd contracts
+          npm run test-circle-ci
+          cd ../
+  test-discovery-provider:
+    docker:
+    - image: circleci/python:3.7-stretch-node-browsers-legacy
+    - image: circleci/postgres:11.1
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_DB: audius_discovery
+    - image: ipfs/go-ipfs:release
+    - image: redis:3.0-alpine
+    - image: trufflesuite/ganache-cli:latest
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+        - disc-prov-1-
+    - run:
+        name: python-setup
+        command: |
+          cd discovery-provider
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+    - save_cache:
+        paths:
+        - discovery-provider/venv/
+        key: disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
+    - run:
+        name: python-lint
+        command: |
+          cd discovery-provider
+          source venv/bin/activate
+          python ./scripts/lint.py
+    - restore_cache:
+        keys:
+        - disc-prov-contracts-{{ checksum "contracts/package.json" }}
+        - disc-prov-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts
+          npm install
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
+    - run:
+        name: discovery provider tests
+        command: |
+          cd discovery-provider
+          export audius_ipfs_port=5001
+          export audius_redis_url=redis://localhost:6379/0
+          export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
+          export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
+          ./scripts/circle-ci.sh
+  build-eth-contracts:
+    docker:
+    - image: circleci/buildpack-deps:stretch
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Get tag or latest
+        command: |
+          # order of precendence for IMAGE tag is:
+          # 1. CIRCLE_TAG if defined,
+          # 2. Branch name if 'hotfix' in branch name (branch name passed in via $CIRCLE_BRANCH)
+          # 3. 'latest', which is the default
+          echo "export IMAGE_TAG=`[ $CIRCLE_TAG ] && echo $(echo $CIRCLE_TAG | cut -d@ -f3) || [[ "$CIRCLE_BRANCH" =~ (hotfix) ]] && echo $CIRCLE_BRANCH || echo "latest" `" | tee -a $BASH_ENV
+    - run:
+        name: Docker login
+        command: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - run:
+        name: Docker build eth-contracts
+        command: |
+          cd eth-contracts
+          docker build -t audius/eth-contracts:$IMAGE_TAG -t audius/eth-contracts:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+    - run:
+        name: Docker push eth-contracts
+        command: |
+          docker push audius/eth-contracts:$IMAGE_TAG
+          docker push audius/eth-contracts:$(git rev-parse HEAD)
+  test-libs:
+    docker:
+    - image: circleci/node:10.16
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+      - -a
+      - '50'
+    - image: trufflesuite/ganache-cli:latest
+      command:
+      - -l
+      - '8000000'
+      - -p
+      - '8546'
+      - -a
+      - '50'
+    steps:
+    - checkout
+    - setup_remote_docker
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ checksum "libs/package.json" }}
+        - v1-dependencies-
+    - run:
+        command: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
+    - run:
+        command: |
+          cd libs
+          npm install
+    - save_cache:
+        paths:
+        - libs/node_modules
+        key: v1-dependencies-{{ checksum "libs/package.json" }}
+    - restore_cache:
+        keys:
+        - data-contracts-{{ checksum "contracts/package.json" }}
+        - data-contracts-
+    - run:
+        name: contract repo init
+        command: |
+          cd contracts/
+          npm install
+    - save_cache:
+        paths:
+        - contracts/node_modules
+        key: data-contracts-{{ checksum "contracts/package.json" }}
+    - restore_cache:
+        keys:
+        - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+        - eth-contracts-
+    - run:
+        name: eth-contracts repo init
+        command: |
+          cd eth-contracts/
+          rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+          npm install
+    - save_cache:
+        paths:
+        - eth-contracts/node_modules
+        key: eth-contracts-{{ checksum "eth-contracts/package.json" }}
+    - run:
+        name: run tests
+        command: |
+          cd libs
+          npm run test-circle-ci
 workflows:
-  # test master at midnight daily
   test-nightly:
     jobs:
-      - test-libs:
-          force: true
-      - test-contracts:
-          force: true
-      - test-eth-contracts:
-          force: true
-      - test-creator-node:
-          force: true
-      - test-discovery-provider:
-          force: true
-      - test-identity-service:
-          force: true
+    - test-libs-1
+    - test-contracts-1
+    - test-eth-contracts-1
+    - test-creator-node-1
+    - test-discovery-provider-1
+    - test-identity-service-1
     triggers:
-      - schedule:
-          cron: "0 5 * * *"
-          filters:
-            branches:
-              only: /(^master$)/
-
-  # run tests for PRs/branches other than master
+    - schedule:
+        cron: 0 5 * * *
+        filters:
+          branches:
+            only: /(^master$)/
   test-branch:
     jobs:
-      - test-libs:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-contracts:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-eth-contracts:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-creator-node:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-discovery-provider:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-identity-service:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - hold-test-mad-dog-e2e:
-          type: approval
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
-      - test-mad-dog-e2e:
-          requires:
-            - hold-test-mad-dog-e2e
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
-
-
-
-  # push public docker images when a git tag is present
-  # tag must be in the format @audius/<service>@x.x.x
-  # else, any changes to master will be tagged `latest`
+    - test-libs-2:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?hotfix(.*)?)/
+    - test-contracts-2:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?hotfix(.*)?)/
+    - test-eth-contracts-2:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?hotfix(.*)?)/
+    - test-creator-node-2:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?hotfix(.*)?)/
+    - test-discovery-provider-2:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?hotfix(.*)?)/
+    - test-identity-service-2:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?hotfix(.*)?)/
+    - hold-test-mad-dog-e2e:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+        type: approval
+    - test-mad-dog-e2e:
+        filters:
+          branches:
+            ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+        requires:
+        - hold-test-mad-dog-e2e
   dockerhub-build-and-push:
     jobs:
-      # libs: test, build and push
-      - test-libs:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/libs@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - docker-build-and-push:
-          name: build-libs
-          repo: libs
-          requires:
-            - test-libs
-          filters:
-            tags:
-              only: /^@audius/libs@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # contracts: test, build and push
-      - test-contracts:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
-          requires:
-            - test-contracts
-          filters:
-            tags:
-              only: /^@audius/contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # eth-contracts: test, build and push
-      - test-eth-contracts:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
-          requires:
-            - test-eth-contracts
-          filters:
-            tags:
-              only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # creator node: test, build and push
-      - test-creator-node:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/creator-node@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - test-mad-dog-e2e:
-          filters:
-            branches:
-              only: /(^master$)|(.*?mad-?dog(.*)?)/
-      - docker-build-and-push:
-          name: build-creator-node
-          repo: creator-node
-          requires:
-            - test-creator-node
-          filters:
-            tags:
-              only: /^@audius/creator-node@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # discovery provider: test, build and push
-      - test-discovery-provider:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - docker-build-and-push:
-          name: build-discovery-provider
-          repo: discovery-provider
-          requires:
-            - test-discovery-provider
-          filters:
-            tags:
-              only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # identity service: test, build and push
-      - test-identity-service:
-          force: true
-          filters:
-            tags:
-              only: /^@audius/identity-service@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - docker-build-and-push:
-          name: build-identity-service
-          repo: identity-service
-          requires:
-            - test-identity-service
-          filters:
-            tags:
-              only: /^@audius/identity-service@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # DEPLOY MASTER TO CI ENVIRONMENT
-      - deploy:
-          name: deploy-ci
-          cluster-name: audius-ci
-          aws-region: us-west-2
-          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
-          requires:
-            - build-libs
-            - build-contracts
-            - build-eth-contracts
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
-          filters:
-            branches:
-              only: /(^master$)/
+    - test-libs:
+        filters:
+          tags:
+            only: /^@audius/libs@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+    - build-libs:
+        filters:
+          tags:
+            only: /^@audius/libs@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+        requires:
+        - test-libs
+    - test-contracts:
+        filters:
+          tags:
+            only: /^@audius/contracts@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+    - build-contracts:
+        filters:
+          tags:
+            only: /^@audius/contracts@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+        requires:
+        - test-contracts
+    - test-eth-contracts:
+        filters:
+          tags:
+            only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+    - build-eth-contracts:
+        filters:
+          tags:
+            only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+        requires:
+        - test-eth-contracts
+    - test-creator-node:
+        filters:
+          tags:
+            only: /^@audius/creator-node@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+    - test-mad-dog-e2e:
+        filters:
+          branches:
+            only: /(^master$)|(.*?mad-?dog(.*)?)/
+    - build-creator-node:
+        filters:
+          tags:
+            only: /^@audius/creator-node@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+        requires:
+        - test-creator-node
+    - test-discovery-provider:
+        filters:
+          tags:
+            only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+    - build-discovery-provider:
+        filters:
+          tags:
+            only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+        requires:
+        - test-discovery-provider
+    - test-identity-service:
+        filters:
+          tags:
+            only: /^@audius/identity-service@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+    - build-identity-service:
+        filters:
+          tags:
+            only: /^@audius/identity-service@\d+\.\d+\.\d+/
+          branches:
+            only: /(^master$)|(.*?hotfix(.*)?)/
+        requires:
+        - test-identity-service
+    - deploy-ci:
+        filters:
+          branches:
+            only: /(^master$)/
+        requires:
+        - build-libs
+        - build-contracts
+        - build-eth-contracts
+        - build-creator-node
+        - build-discovery-provider
+        - build-identity-service
+  version: 2
