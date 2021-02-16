@@ -180,7 +180,7 @@ async function fetchTimeSeries(
   clampDays: boolean = true
 ) {
   const startTime = getStartTime(bucket, clampDays)
-  let error = false
+  let error = true
   const datasets = (
     await Promise.all(
       nodes.map(async node => {
@@ -316,7 +316,7 @@ export function fetchTrailingApiCalls(
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     const startTime = getStartTime(bucket)
-    let error = false
+    let error = true
     const datasets = (
       await Promise.all(
         nodes.map(async node => {
@@ -380,7 +380,7 @@ export function fetchTopApps(
   const limit = 8
   return async (dispatch, getState, aud) => {
     const startTime = getStartTime(bucket)
-    let error = false
+    let error = true
     const datasets = (
       await Promise.all(
         nodes.map(async node => {
