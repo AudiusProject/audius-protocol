@@ -67,7 +67,7 @@ def user_replica_set_state_update(
                     user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
                 if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
-                    ret_cnode = lookup_usrm_cnode(
+                    ret_cnode = lookup_ursm_cnode(
                         update_task,
                         session,
                         entry,
@@ -99,7 +99,7 @@ def user_replica_set_state_update(
                     user_replica_set_events_lookup[user_id]["events"].append(event_type)
                 # Process L2 Content Node operations
                 elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
-                    cnode_record = parse_usrm_cnode_record(
+                    cnode_record = parse_ursm_cnode_record(
                         update_task,
                         entry,
                         cnode_events_lookup[cnode_sp_id]["content_node"]
@@ -224,7 +224,7 @@ def get_sp_factory_inst(update_task):
 
 
 # Update cnode_record with event arguments
-def parse_usrm_cnode_record(update_task, entry, cnode_record):
+def parse_ursm_cnode_record(update_task, entry, cnode_record):
     event_args = entry["args"]
     cnode_record.delegate_owner_wallet = event_args._cnodeDelegateOwnerWallet
     cnode_record.owner_wallet = event_args._cnodeOwnerWallet
@@ -238,7 +238,7 @@ def parse_usrm_cnode_record(update_task, entry, cnode_record):
     return cnode_record
 
 # Return or create instance of record pointing to this content_node
-def lookup_usrm_cnode(update_task, session, entry, block_number, block_timestamp):
+def lookup_ursm_cnode(update_task, session, entry, block_number, block_timestamp):
     event_blockhash = update_task.web3.toHex(entry.blockHash)
     event_args = entry["args"]
 

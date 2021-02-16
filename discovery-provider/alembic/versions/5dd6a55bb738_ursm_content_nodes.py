@@ -1,4 +1,4 @@
-"""USRM content nodes
+"""URSM content nodes
 
 Revision ID: 5dd6a55bb738
 Revises: 5aaa6198def8
