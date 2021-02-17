@@ -1,6 +1,5 @@
 const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
-const Web3Manager = require('../web3Manager/index')
 
 class UserReplicaSetManagerClient extends ContractClient {
   /**
