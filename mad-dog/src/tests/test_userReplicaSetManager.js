@@ -121,7 +121,7 @@ const verifyUserReplicaSets = async(executeAll) => {
     // Retrieve user id if known from walletIndexToUserIdMap
     // NOTE - It might be easier to just create a map of wallets instead of using 'index'
     const userId = walletIndexToUserIdMap[i]
-    await verifyUserReplicaSetStatus(userId, libs) 
+    await verifyUserReplicaSetStatus(userId, libs)
   })
 }
 
@@ -198,11 +198,7 @@ const swapSecondaries = async(executeAll) => {
 const verifyursmContentNodes = async (executeOne) => {
   logger.info(`Validating content-nodes on UserReplicaSetManager`)
   await executeOne(DEFAULT_INDEX, async (libs)=> {
-    let queriedContentNodes = (await axios({
-      method: 'get',
-      baseURL: libs.getDiscoveryNodeEndpoint(),
-      url: '/ursm_content_nodes'
-    })).data.data
+    let queriedContentNodes = await libs.getURSMContentNodes()
     await Promise.all(queriedContentNodes.map(async (queriedNodeInfo) => {
       let spID = queriedNodeInfo.cnode_sp_id
       let wallet = queriedNodeInfo.delegate_owner_wallet

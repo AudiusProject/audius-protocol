@@ -339,3 +339,12 @@ module.exports.getTopCreatorsByGenres = (genres, limit = 30, offset = 0, withUse
     queryParams: { genre: genres, limit, offset, with_users: withUsers }
   }
 }
+
+module.exports.getURSMContentNodes = (ownerWallet) => {
+  return {
+    endpoint: 'ursm_content_nodes',
+    queryParams: {
+      owner_wallet: ownerWallet
+    }
+  }
+}

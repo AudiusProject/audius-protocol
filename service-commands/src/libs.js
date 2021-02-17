@@ -594,6 +594,10 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
   }
 
+  this.getURSMContentNodes = (ownerWallet) => {
+    return this.libsInstance.discoveryProvider.getURSMContentNodes(ownerWallet)
+  }
+
   /**
   * Wait for the discovery node to catch up to the latest block on chain up to a max
   * indexing timeout of default 10000ms. Used to check regular block indexing.
