@@ -68,9 +68,14 @@ const initAudiusLibs = async () => {
   )
   const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('dataProviderUrl'),
-    null,
-    false
+    /* chainNetworkId */ null,
+    /* requiresAccount */ false
   )
+
+  if (!ethWeb3 || !dataWeb3) {
+    throw new Error('Web3 incorrectly configured')
+  }
+
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
@@ -94,7 +99,8 @@ const initAudiusLibs = async () => {
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
     // If an identity service config is present, set up libs with the connection, otherwise do nothing
     identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
-    isDebug: config.get('creatorNodeIsDebug')
+    isDebug: config.get('creatorNodeIsDebug'),
+    isServer: true
   })
 
   await audiusLibs.init()

@@ -196,10 +196,28 @@ module.exports.parseCNodeResponse = (respObj, requiredFields) => {
   if (!respObj.data || !respObj.data.data) {
     throw new Error('Missing')
   }
+
+  requiredFields = requiredFields
   requiredFields.map(requiredField => {
     if (!respObj.data.data[requiredField]) {
-      throw new Error('Missing')
+      throw new Error(`CNodeResponse missing required data field: ${requiredField}`)
     }
   })
-  return respObj.data.data
+
+  const signatureFields = ['signer', 'timestamp', 'signature']
+  signatureFields.map(signatureField => {
+    if (!respObj.data[signatureField]) {
+      throw new Error(`CNodeResponse missing required signature field: ${signatureField}`)
+    }
+  })
+
+  return {
+    ...respObj.data.data,
+    signatureData: {
+      signer: respObj.data.signer,
+      timestamp: respObj.data.timestamp,
+      signature: respObj.data.signature
+    },
+    rawResponse: respObj.data
+  }
 }

@@ -78,7 +78,7 @@ class URSMService {
         try {
           const resp = await axios({
             baseURL: node.endpoint,
-            url: '/request_for_proposal',
+            url: '/ursm_request_for_proposal',
             method: 'get',
             timeout: 5000,
             params: {
@@ -127,7 +127,7 @@ class URSMService {
   async submitRequestForProposal (nodeEndpoint) {
     let RFPResp = await axios({
       baseURL: nodeEndpoint,
-      url: '/request_for_proposal',
+      url: '/ursm_request_for_proposal',
       method: 'get',
       // timeout needs to be several seconds as the route makes multiple web requests internally
       timeout: 5000,
