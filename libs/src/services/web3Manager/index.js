@@ -26,7 +26,6 @@ class Web3Manager {
 
   /** Browser and testing-compatible signTypedData */
   static ethSignTypedData (web3, wallet, signatureData) {
-    console.log(`ethSignTypedData: ${wallet}`)
     return new Promise((resolve, reject) => {
       let method
       if (web3.currentProvider.isMetaMask === true) {
