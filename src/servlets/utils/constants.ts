@@ -17,42 +17,42 @@ export type ExploreInfoType = {
 
 export const exploreMap: { [key: string]: ExploreInfoType } = {
   'heavy-rotation': {
-    title: 'Heavy rotation',
+    title: 'Heavy Rotation',
     description: 'Your top tracks, in one place',
     image: HEAVY_ROTATION_URL
   },
   'let-them-dj': {
-    title: 'Let them DJ',
+    title: 'Let Them DJ',
     description: 'Playlists created by the people you follow',
     image: LET_THEM_DJ_URL
   },
   'best-new-releases': {
-    title: 'Best new releases',
+    title: 'Best New Releases',
     description: 'From the artists you follow',
     image: BEST_NEW_RELEASES_URL
   },
   'under-the-radar': {
-    title: 'Under the radar',
+    title: 'Under The Radar',
     description: 'Tracks you might have missed from the artists you follow',
     image: UNDER_THE_RADAR_URL
   },
   'top-albums': {
-    title: 'Top albums',
+    title: 'Top Albums',
     description: 'The top albums from all of Audius',
     image: TOP_ALBUMS_URL
   },
   'top-playlists': {
-    title: 'Top playlists',
+    title: 'Top Playlists',
     description: 'The top playlists on Audius right now',
     image: TOP_PLAYLISTS_URL
   },
   'most-loved': {
-    title: 'Most loved',
+    title: 'Most Loved',
     description: 'Tracks favorited by the people you follow',
     image: MOST_LOVED_URL
   },
   'feeling-lucky': {
-    title: 'Feeling lucky',
+    title: 'Feeling Lucky',
     description: 'A purely random collection of tracks from Audius',
     image: FEELING_LUCKY_URL
   },

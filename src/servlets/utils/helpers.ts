@@ -55,7 +55,7 @@ export const getImageUrl = (cid: string, gateway: string | null): string => {
 export const getExploreInfo = (type: string): ExploreInfoType => {
   if (!Object.keys(exploreMap).includes(type)) {
     return {
-      title: 'Just for you',
+      title: 'Just For You',
       description: `Content curated for you based on your likes, reposts, and follows.
                     Refreshes often so if you like a track, favorite it.`,
       image: DEFAULT_IMAGE_URL
