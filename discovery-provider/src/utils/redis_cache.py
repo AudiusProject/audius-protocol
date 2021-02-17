@@ -1,7 +1,6 @@
 import logging  # pylint: disable=C0302
 import functools
-import json
-from flask.json import dumps
+import pickle
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
@@ -20,19 +19,31 @@ def extract_key(path, arg_items):
     key = f"{cache_prefix}:{path}:{req_args}"
     return key
 
-def use_redis_cache(key, ttl_sec, work_func):
-    """Attemps to return value by key, otherwise cahces and returns `work_func`"""
-    redis = redis_connection.get_redis()
+def get_pickled_key(redis, key):
     cached_value = redis.get(key)
-
     if cached_value:
         logger.info(f"Redis Cache - hit {key}")
-        return json.loads(cached_value)
-
+        try:
+            deserialized = pickle.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize cached response: {e}")
+            return None
     logger.info(f"Redis Cache - miss {key}")
+    return None
+
+def pickle_and_set(redis, key, obj, ttl=None):
+    serialized = pickle.dumps(obj)
+    redis.set(key, serialized, ttl)
+
+def use_redis_cache(key, ttl_sec, work_func):
+    """Attemps to return value by key, otherwise caches and returns `work_func`"""
+    redis = redis_connection.get_redis()
+    cached_value = get_pickled_key(redis, key)
+    if cached_value:
+        return cached_value
     to_cache = work_func()
-    serialized = dumps(to_cache)
-    redis.set(key, serialized, ttl_sec)
+    pickle_and_set(redis, key, to_cache, ttl_sec)
     return to_cache
 
 def cache(**kwargs):
@@ -72,27 +83,70 @@ def cache(**kwargs):
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
+            has_user_id = 'user_id' in request.args and request.args['user_id'] is not None
             key = extract_key(request.path, request.args.items())
-            cached_resp = redis.get(key)
+            if not has_user_id:
+                cached_resp = redis.get(key)
 
-            if cached_resp:
-                logger.info(f"Redis Cache - hit {key}")
-                deserialized = json.loads(cached_resp)
-                if transform is not None:
-                    return transform(deserialized)
-                return deserialized, 200
+                if cached_resp:
+                    logger.info(f"Redis Cache - hit {key}")
+                    try:
+                        deserialized = pickle.loads(cached_resp)
+                        if transform is not None:
+                            return transform(deserialized)
+                        return deserialized, 200
+                    except Exception as e:
+                        logger.warning(f"Unable to deserialize cached response: {e}")
 
-            logger.info(f"Redis Cache - miss {key}")
+                logger.info(f"Redis Cache - miss {key}")
             response = func(*args, **kwargs)
 
             if len(response) == 2:
                 resp, status_code = response
                 if status_code < 400:
-                    serialized = dumps(resp)
+                    serialized = pickle.dumps(resp)
                     redis.set(key, serialized, ttl_sec)
                 return resp, status_code
-            serialized = dumps(response)
+            serialized = pickle.dumps(response)
             redis.set(key, serialized, ttl_sec)
             return transform(response)
         return inner_wrap
     return outer_wrap
+
+
+def get_user_id_cache_key(id):
+    return "user:id:{}".format(id)
+
+
+def get_track_id_cache_key(id):
+    return "track:id:{}".format(id)
+
+
+def get_playlist_id_cache_key(id):
+    return "playlist:id:{}".format(id)
+
+
+def remove_cached_user_ids(redis, user_ids):
+    try:
+        user_keys = list(map(get_user_id_cache_key, user_ids))
+        redis.delete(*user_keys)
+    except Exception as e:
+        logger.error(
+            "Unable to remove cached users: %s", e, exc_info=True)
+
+
+def remove_cached_track_ids(redis, track_ids):
+    try:
+        track_keys = list(map(get_track_id_cache_key, track_ids))
+        redis.delete(*track_keys)
+    except Exception as e:
+        logger.error(
+            "Unable to remove cached tracks: %s", e, exc_info=True)
+
+def remove_cached_playlist_ids(redis, playlist_ids):
+    try:
+        playlist_keys = list(map(get_playlist_id_cache_key, playlist_ids))
+        redis.delete(*playlist_keys)
+    except Exception as e:
+        logger.error(
+            "Unable to remove cached playlists: %s", e, exc_info=True)

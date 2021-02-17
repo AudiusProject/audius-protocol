@@ -8,6 +8,7 @@ convict.addFormat({
     return Array.isArray(val)
   },
   coerce: function (val) {
+    if (!val || val === '') return {}
     return JSON.parse(val)
   }
 })
@@ -80,23 +81,41 @@ const config = convict({
     env: 'instagramAPISecret',
     default: null
   },
+  instagramRedirectUrl: {
+    doc: 'Instagram API Redirect url',
+    format: String,
+    env: 'instagramRedirectUrl',
+    default: null
+  },
   relayerPrivateKey: {
-    doc: 'Relayer(used to make relay transactions) private key',
+    doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
     env: 'relayerPrivateKey',
     default: null,
     sensitive: true
   },
   relayerPublicKey: {
-    doc: 'Relayer(used to make relay transactions) public key',
+    doc: 'L2 Relayer(used to make relay transactions) public key. The source of the funds when funding wallet.',
     format: String,
     env: 'relayerPublicKey',
     default: null
   },
   relayerWallets: {
-    doc: 'Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
+    doc: 'L2 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
     format: 'string-array',
     env: 'relayerWallets',
+    default: null
+  },
+  ethFunderAddress: {
+    doc: 'L1 Relayer Address. The source of the funds when funding wallets. (Only used in balance_check and eth_balance_check to check if enough funds exist)',
+    format: String,
+    env: 'ethFunderAddress',
+    default: null
+  },
+  ethRelayerWallets: {
+    doc: 'L1 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
+    format: 'string-array',
+    env: 'ethRelayerWallets',
     default: null
   },
   userVerifierPrivateKey: {
@@ -167,6 +186,18 @@ const config = convict({
     env: 'rateLimitingListensPerIPPerDay',
     default: null
   },
+  rateLimitingEthRelaysPerIPPerDay: {
+    doc: 'Eth relay operations per IP per day',
+    format: 'nat',
+    env: 'rateLimitingEthRelaysPerIPPerDay',
+    default: 50
+  },
+  rateLimitingEthRelaysPerWalletPerDay: {
+    doc: 'Listens per track per IP per Day',
+    format: 'nat',
+    env: 'rateLimitingEthRelaysPerWalletPerDay',
+    default: 10
+  },
   rateLimitingListensPerTrackPerWeek: {
     doc: 'Listens per track per user per Week',
     format: 'nat',
@@ -185,11 +216,48 @@ const config = convict({
     env: 'rateLimitingListensIPWhitelist',
     default: null
   },
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
+  },
   minimumBalance: {
     doc: 'Minimum token balance below which /balance_check fails',
     format: Number,
     env: 'minimumBalance',
     default: null
+  },
+  minimumRelayerBalance: {
+    doc: 'Minimum token balance for relayer below which /balance_check fails',
+    format: Number,
+    env: 'minimumRelayerBalance',
+    default: null
+  },
+  ethMinimumBalance: {
+    doc: 'Minimum ETH balance below which /eth_balance_check fails',
+    format: Number,
+    env: 'ethMinimumBalance',
+    default: 0.5
+  },
+  ethMinimumFunderBalance: {
+    doc: 'Minimum eth balance for funder below which /eth_balance_check fails',
+    format: Number,
+    env: 'ethMinimumFunderBalance',
+    default: 0.5
   },
   mailgunApiKey: {
     doc: 'Mailgun API key used to send emails',
@@ -215,12 +283,6 @@ const config = convict({
     format: Number,
     default: 0,
     env: 'notificationStartBlock'
-  },
-  notificationDiscoveryProvider: {
-    doc: 'Whitelisted discovery provider to query notifications',
-    format: String,
-    default: 'http://localhost:5000',
-    env: 'notificationDiscoveryProvider'
   },
   ethTokenAddress: {
     doc: 'ethTokenAddress',
@@ -405,6 +467,18 @@ const config = convict({
     format: 'nat',
     env: 'headersTimeout',
     default: 60 * 1000 // 60s - node.js default value
+  },
+  defiPulseApiKey: {
+    doc: 'API Key used to query eth gas station info',
+    format: String,
+    env: 'defiPulseApiKey',
+    default: ''
+  },
+  ethRelayerProdGasTier: {
+    doc: 'One of averageGweiHex/fastGweiHex/fastestGweiHex',
+    format: String,
+    env: 'ethRelayerProdGasTier',
+    default: 'fastGweiHex'
   }
 })
 

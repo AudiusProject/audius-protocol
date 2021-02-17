@@ -26,6 +26,9 @@ services:
       - delegateOwnerWallet=${delegateOwnerWallet}
       - delegatePrivateKey=${delegatePrivateKey}
       - creatorNodeEndpoint=${creatorNodeEndpoint}
+      - snapbackDevModeEnabled=${snapbackDevModeEnabled}
+      - spOwnerWallet=${spOwnerWallet}
+      - isUserMetadataNode=${CREATOR_NODE_IS_USER_METADATA}
     env_file:
       - ./env/base.env
     ports:

@@ -1,5 +1,5 @@
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const txRelay = require('../txRelay')
+const txRelay = require('../relay/txRelay')
 const crypto = require('crypto')
 
 module.exports = function (app) {

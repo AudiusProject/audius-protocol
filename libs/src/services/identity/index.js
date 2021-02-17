@@ -105,14 +105,21 @@ class IdentityService {
    * @param {number} trackId
    * @param {number} userId
    */
-  async logTrackListen (trackId, userId) {
-    return this._makeRequest({
+  async logTrackListen (trackId, userId, listenerAddress) {
+    const request = {
       url: `/tracks/${trackId}/listen`,
       method: 'post',
       data: {
         userId: userId
       }
-    })
+    }
+
+    if (listenerAddress) {
+      request.headers = {
+        'x-forwarded-for': listenerAddress
+      }
+    }
+    return this._makeRequest(request)
   }
 
   /**
@@ -229,6 +236,34 @@ class IdentityService {
       }
     })
   }
+
+  async ethRelay (contractAddress, senderAddress, encodedABI, gasLimit) {
+    return this._makeRequest({
+      url: '/eth_relay',
+      method: 'post',
+      data: {
+        contractAddress,
+        senderAddress,
+        encodedABI,
+        gasLimit
+      }
+    })
+  }
+
+  /**
+   * Gets the correct wallet that will relay a txn for `senderAddress`
+   * @param {string} senderAddress wallet
+   */
+  async getEthRelayer (senderAddress) {
+    return this._makeRequest({
+      url: '/eth_relayer',
+      method: 'get',
+      params: {
+        wallet: senderAddress
+      }
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
@@ -240,7 +275,9 @@ class IdentityService {
       return resp.data
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {
-        throw new Error(`Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`)
+        console.error(
+          `Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`
+        )
       }
       throw e
     }

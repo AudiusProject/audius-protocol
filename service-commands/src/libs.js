@@ -1,8 +1,13 @@
-const AudiusLibs = require('@audius/libs')
-const Utils = require('@audius/libs/src/utils')
-const config = require('../config/config')
 const untildify = require('untildify')
 const Web3 = require('web3')
+const axios = require('axios')
+const AudiusLibs = require('@audius/libs')
+const CreatorNode = require('@audius/libs/src/services/creatorNode')
+const Utils = require('@audius/libs/src/utils')
+const config = require('../config/config')
+
+const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
+const MAX_INDEXING_TIMEOUT = 10000
 
 /**
  * Picks up envvars written by contracts init and loads them into convict
@@ -44,7 +49,7 @@ loadLibsVars()
  * Each method may throw.
  * @param {int} walletIndex Ganache can be setup with multiple pre-created wallets. WalletIndex lets you pick which wallet to use for libs.
  */
-function LibsWrapper(walletIndex = 0) {
+function LibsWrapper (walletIndex = 0) {
   this.libsInstance = null
 
   const assertLibsDidInit = () => {
@@ -88,6 +93,10 @@ function LibsWrapper(walletIndex = 0) {
     )
 
     const walletAddress = config.get('data_wallets')[walletIndex]
+    this.walletAddress = walletAddress
+    this.walletIndex = walletIndex
+    this.userId = null // to be updated on init
+
     const web3Config = await AudiusLibs.configExternalWeb3(
       REGISTRY_ADDRESS,
       dataWeb3,
@@ -124,8 +133,14 @@ function LibsWrapper(walletIndex = 0) {
       await libs.init()
       this.libsInstance = libs
     } catch (e) {
-      console.log(`Error initting libs: ${e.message}`)
+      console.error(`Error initting libs: ${e}`)
     }
+  }
+
+  this.getLatestBlockOnChain = async () => {
+    assertLibsDidInit()
+    const { number: latestBlock } = await this.libsInstance.web3Manager.web3.eth.getBlock('latest')
+    return latestBlock
   }
 
   /**
@@ -134,23 +149,35 @@ function LibsWrapper(walletIndex = 0) {
    */
   this.signUp = async ({ metadata }) => {
     assertLibsDidInit()
-    return await this.libsInstance.Account.signUp(
+    const signUpResp = await this.libsInstance.Account.signUp(
       metadata.email,
       metadata.password,
       metadata,
-      false /* is creator */,
-      null /* profile picture */,
-      null /* cover photo */,
+      metadata.profilePictureFile /* profile picture */,
+      metadata.coverPhotoFile /* cover photo */,
       false /* has wallet */,
-      null /* host */,
-      false /* generate recovery info */
+      null /* host */
     )
+
+    // Update libs instance with associated userId
+    if (!signUpResp.error) this.userId = signUpResp.userId
+
+    return signUpResp
   }
 
   /**
    * Upgrades the current user for this LibsWrapper to a creator.
    *
-   * @param {*} args endpoint to upgrade to, current userNode endpoint.
+   * @param {string} userNode current userNode endpoint
+   *
+   * @note userNode is the user metadata node. New users created in
+   * the mad-dog test suite will not need to pass `userNode` as they will
+   * be assigned a replica set on signup. This field is more so for
+   * existing users prior to deprecate UM task that still use the UM node.
+   *
+   * The current mad-dog suite passes in a value for `userNode`, and an empty
+   * string for `endpoint`. The protocol will not try to sync data from
+   * `userNode` if an empty string is passed into `userNode`.
    */
   this.upgradeToCreator = async ({ endpoint, userNode }) => {
     assertLibsDidInit()
@@ -168,11 +195,21 @@ function LibsWrapper(walletIndex = 0) {
     blacklist
   }) => {
     assertLibsDidInit()
-    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes(
+    return this.libsInstance.ServiceProvider.autoSelectCreatorNodes({
       numberOfNodes,
       whitelist,
       blacklist
-    )
+    })
+  }
+
+  this.setCreatorNodeEndpoint = async (primary) => {
+    assertLibsDidInit()
+    return this.libsInstance.creatorNode.setEndpoint(primary)
+  }
+
+  this.updateCreator = async (userId, metadata) => {
+    assertLibsDidInit()
+    return this.libsInstance.User.updateCreator(userId, metadata)
   }
 
   /**
@@ -238,6 +275,109 @@ function LibsWrapper(walletIndex = 0) {
   }
 
   /**
+   * Fetch users metadata from discovery node given array of userIds
+   * @param {number[]} userIds int array of user ids
+   */
+  this.getUsers = async userIds => {
+    assertLibsDidInit()
+    const users = await this.libsInstance.User.getUsers(
+      1 /* limit */,
+      0 /* offset */,
+      userIds
+    )
+    if (!users.length || users.length !== userIds.length) {
+      throw new Error('No users or not all users found')
+    }
+    return users
+  }
+
+  /**
+   * Fetch user account from /user/account with wallet param
+   * @param {string} wallet wallet address
+   */
+  this.getUserAccount = async wallet => {
+    assertLibsDidInit()
+    const userAccount = await this.libsInstance.discoveryProvider.getUserAccount(wallet)
+
+    if (!userAccount) {
+      throw new Error('No user account found.')
+    }
+
+    return userAccount
+  }
+
+  /**
+   * Updates userStateManager and updates the primary endpoint in libsInstance.creatorNode
+   * @param {Object} userAccount new metadata field
+   */
+  this.setCurrentUserAndUpdateLibs = async userAccount => {
+    assertLibsDidInit()
+    this.setCurrentUser(userAccount)
+    const contentNodeEndpointField = userAccount.creator_node_endpoint
+    if (contentNodeEndpointField) {
+      this.getPrimaryAndSetLibs(contentNodeEndpointField)
+    }
+  }
+
+  /**
+   * Updates userStateManager with input user metadata
+   * @param {object} user user metadata
+   */
+  this.setCurrentUser = user => {
+    assertLibsDidInit()
+    this.libsInstance.userStateManager.setCurrentUser(user)
+  }
+
+  /**
+  * Gets the primary off the user metadata and then sets the primary
+  * on the CreatorNode instance in libs
+  * @param {string} contentNodeEndpointField creator_node_endpoint field in user metadata
+  */
+  this.getPrimaryAndSetLibs = contentNodeEndpointField => {
+    assertLibsDidInit()
+    const primary = CreatorNode.getPrimary(contentNodeEndpointField)
+    this.libsInstance.creatorNode.setEndpoint(primary)
+  }
+
+  /**
+   * Wrapper for libsInstance.creatorNode.getEndpoints()
+   * @param {string} contentNodesEndpointField creator_node_endpoint field from user's metadata
+   */
+  this.getContentNodeEndpoints = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getEndpoints(contentNodesEndpointField)
+  }
+
+  this.getPrimary = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getPrimary(contentNodesEndpointField)
+  }
+
+  this.getSecondaries = contentNodesEndpointField => {
+    assertLibsDidInit()
+    return CreatorNode.getSecondaries(contentNodesEndpointField)
+  }
+
+  /**
+   * Updates the metadata on chain and uploads new metadata instance on content node
+   * @param {Object} param
+   * @param {Object} param.newMetadata new metadata object to update in content nodes and on chain
+   * @param {number} param.userId
+   */
+  this.updateAndUploadMetadata = async ({ newMetadata, userId }) => {
+    assertLibsDidInit()
+    return await this.libsInstance.User.updateAndUploadMetadata({ newMetadata, userId })
+  }
+
+  /**
+   * Wrapper for libsInstance.creatorNode.getClockValuesFromReplicaSet()
+   */
+  this.getClockValuesFromReplicaSet = async () => {
+    assertLibsDidInit()
+    return this.libsInstance.creatorNode.getClockValuesFromReplicaSet()
+  }
+
+  /**
    * Gets the user associated with the wallet set in libs
    */
   this.getLibsUserInfo = async () => {
@@ -246,12 +386,15 @@ function LibsWrapper(walletIndex = 0) {
       1,
       0,
       null,
-      this.libsInstance.web3Manager.getWalletAddress()
+      this.getWalletAddress()
     )
 
     if (!users.length) {
       throw new Error('No users!')
     }
+
+    if (!this.userId) this.userId = users[0].user_id
+
     return users[0]
   }
 
@@ -414,6 +557,96 @@ function LibsWrapper(walletIndex = 0) {
     }
 
     return playlists
+  }
+
+  this.getWalletAddress = () => {
+    return this.libsInstance.web3Manager.getWalletAddress()
+  }
+
+  // Util fns
+
+  /**
+  * Wait for the discovery node to catch up to the latest block on chain up to a max
+  * indexing timeout of default 10000ms. Used to check regular block indexing.
+  * @param {number} [maxIndexingTimeout=10000] max time indexing window
+  */
+  this.waitForLatestBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+    let latestBlockOnChain = -1
+    let latestIndexedBlock = -1
+
+    try {
+      // Note: this is /not/ the block of which a certain txn occurred. This is just the
+      // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain
+      // might be 83). This method is the quickest way to attempt to poll up to a reasonably
+      // close block without having to change libs API.
+      latestBlockOnChain = await this.getLatestBlockOnChain()
+
+      console.log(`[Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+
+      const startTime = Date.now()
+      while (Date.now() - startTime < maxIndexingTimeout) {
+        latestIndexedBlock = await this._getLatestIndexedBlock()
+        if (latestIndexedBlock >= latestBlockOnChain) {
+          console.log(`[Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+          return
+        }
+      }
+    } catch (e) {
+      const errorMsg = '[Block Check] Error with checking latest indexed block'
+      console.error(errorMsg, e)
+      throw new Error(`${errorMsg}\n${e}`)
+    }
+    console.warn(`[Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+  }
+
+  /**
+  * Wait for the discovery node to catch up to the latest block on chain up to a max
+  * indexing timeout of default 10000ms. Used to check IPLD block indexing.
+  * @param {number} [maxIndexingTimeout=10000] max time indexing window
+  */
+  this.waitForLatestIPLDBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
+    let latestBlockOnChain = -1
+    let latestIndexedBlock = -1
+
+    try {
+      // Note: this is /not/ the block of which a certain txn occurred. This is just the
+      // latest block on chain. (e.g. Upload track occurred at block 80; latest block on chain
+      // might be 83). This method is the quickest way to attempt to poll up to a reasonably
+      // close block without having to change libs API.
+      latestBlockOnChain = await this.getLatestBlockOnChain()
+
+      console.log(`[IPLD Block Check] Waiting for #${latestBlockOnChain} to be indexed...`)
+
+      const startTime = Date.now()
+      while (Date.now() - startTime < maxIndexingTimeout) {
+        latestIndexedBlock = await this._getLatestIndexedIpldBlock()
+        if (latestIndexedBlock >= latestBlockOnChain) {
+          console.log(`[IPLD Block Check] Discovery Node has indexed #${latestBlockOnChain}!`)
+          return
+        }
+      }
+    } catch (e) {
+      const errorMsg = '[IPLD Block Check] Error with checking latest indexed block'
+      console.error(errorMsg, e)
+      throw new Error(`${errorMsg}\n${e}`)
+    }
+    console.warn(`[IPLD Block Check] Did not index #${latestBlockOnChain} within ${maxIndexingTimeout}ms. Latest block: ${latestIndexedBlock}`)
+  }
+
+  this._getLatestIndexedBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
+    return (await axios({
+      method: 'get',
+      baseURL: endpoint,
+      url: '/health_check'
+    })).data.latest_indexed_block
+  }
+
+  this._getLatestIndexedIpldBlock = async (endpoint = DISCOVERY_NODE_ENDPOINT) => {
+    return (await axios({
+      method: 'get',
+      baseURL: endpoint,
+      url: '/ipld_block_check'
+    })).data.data.db.number
   }
 }
 

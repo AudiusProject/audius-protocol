@@ -10,9 +10,10 @@ const { logger } = require('./logger.js')
 const ServiceCommands = require('@audius/service-commands')
 const {
   addUser,
+  uploadProfileImagesAndAddUser,
   upgradeToCreator,
-  autoSelectCreatorNodes,
-  getLibsUserInfo
+  getLibsUserInfo,
+  getClockValuesFromReplicaSet
 } = ServiceCommands
 
 const TRACK_URLS = [
@@ -25,16 +26,8 @@ const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Happy.mp3'
 ]
 
-const makeCreatorNodeEndpointString = selectedCNodesObj => {
-  if (!selectedCNodesObj || !selectedCNodesObj.primary) return ''
-  const endpointArr = [
-    selectedCNodesObj.primary,
-    ...selectedCNodesObj.secondaries
-  ]
-  return endpointArr.join(',')
-}
-
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
+const MAX_SYNC_TIMEOUT = 60000
 
 /**
  * Adds and upgrades `userCount` users.
@@ -44,61 +37,134 @@ const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
  */
 const addAndUpgradeUsers = async (
   userCount,
-  numCreatorNodes,
   executeAll,
   executeOne
 ) => {
-  let addedUserIds = []
-  let existingUserIds = []
+  const addedUserIds = []
+  const existingUserIds = []
   const walletIndexToUserIdMap = {}
 
-  await logOps('Add users', async () => {
-    const users = genRandomUsers(userCount)
-    await executeAll(async (libs, i) => {
-      // If user already exists, do not recreate user and use existing user
-      const existingUser = await getUser({ executeOne, walletIndex: i })
-      let userId
-      if (existingUser) {
-        existingUserIds.push(existingUser.user_id)
-        userId = existingUser.user_id
-      } else {
-        const userMetadata = users[i]
-        const newUserId = await addUser(libs, userMetadata, USER_PIC_PATH)
-        addedUserIds.push(newUserId)
-        userId = newUserId
-      }
-
-      // add to wallet index to userId mapping
-      walletIndexToUserIdMap[i] = userId
-    })
-
-    // print userIds that exist and were added
-    logger.info(`Adding users, userIds=${addedUserIds}`)
-    logger.info(`Users already exist, userIds=${existingUserIds}`)
-    await waitForIndexing()
-  })
-
-  // TODO: should check if existing users are already creators. if so, dont upgrade
-  await logOps('Upgrade to creator', async () => {
-    try {
-      for (const i of _.range(userCount)) {
-        // Autoselect replica set from valid nodes on-chain
-        const selectedCNodes = await executeOne(i, libsWrapper =>
-          autoSelectCreatorNodes(libsWrapper, numCreatorNodes)
-        )
-        const endpointString = makeCreatorNodeEndpointString(selectedCNodes)
-        // Upgrade to creator with replica set
-        await executeOne(i, l => upgradeToCreator(l, endpointString))
-      }
-    } catch (e) {
-      logger.error('GOT ERR UPGRADING USER TO CREATOR')
-      logger.error(e.message)
-    }
-    await waitForIndexing()
-  })
+  await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
+  await upgradeUsersToCreators(executeAll, executeOne)
 
   // Map out walletId index => userId
   return walletIndexToUserIdMap
+}
+
+const addUsers = async (
+  userCount,
+  executeAll,
+  executeOne
+) => {
+  const addedUserIds = []
+  const existingUserIds = []
+  const walletIndexToUserIdMap = {}
+
+  await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap })
+
+  // Map out walletId index => userId
+  return walletIndexToUserIdMap
+}
+
+const addUsersWithoutProfileImageOnSignUp = async (
+  userCount,
+  executeAll,
+  executeOne
+) => {
+  const addedUserIds = []
+  const existingUserIds = []
+  const walletIndexToUserIdMap = {}
+
+  await _addUsers({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic: false })
+
+  // Map out walletId index => userId
+  return walletIndexToUserIdMap
+}
+
+/**
+ * Helper function to add a user. If the wallet index is already used to create a user, add that userId to
+ * the walletIndexToUserMap.
+ * @param {*} userCount
+ * @param {*} executeAll
+ * @param {*} executeOne
+ * @param {int[]} existingUserIds
+ * @param {int[]} addedUserIds
+ * @param {Object} walletIndexToUserIdMap
+ * @param {boolean} uploadProfilePic flag to upload profile pic on sign up or not
+ */
+async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic = true }) {
+  await logOps('Add users', async () => {
+    const users = genRandomUsers(userCount)
+    await executeAll(async (libs, i) => {
+      try {
+      // If user already exists, do not recreate user and use existing user
+        const existingUser = await getUser({ executeOne, walletIndex: i })
+        let userId
+        if (existingUser) {
+          logger.info(`Found existing user=${existingUser.user_id}`)
+          existingUserIds.push(existingUser.user_id)
+          userId = existingUser.user_id
+        } else {
+          logger.info('Creating new user...')
+          const userMetadata = users[i]
+          let newUserId
+          if (uploadProfilePic) {
+            newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, USER_PIC_PATH)
+          } else {
+            newUserId = await addUser(libs, userMetadata)
+          }
+          logger.info(`Created new user=${newUserId}`)
+          addedUserIds.push(newUserId)
+          userId = newUserId
+        }
+
+        await executeOne(i, libs => libs.waitForLatestBlock())
+
+        // add to wallet index to userId mapping
+        walletIndexToUserIdMap[i] = userId
+
+        // print userIds that exist and were added
+        if (addedUserIds.length) logger.info(`Added users, userIds=${addedUserIds}`)
+        if (existingUserIds.length) logger.info(`Existing users, userIds=${existingUserIds}`)
+      } catch (e) {
+        logger.error('GOT ERR CREATING USER')
+        console.error(e) // this prints out the stack trace
+        throw e
+      }
+    })
+  })
+}
+
+/**
+ * Helper function to upgrade a user at a wallet index to a creator if not already.
+ * @param {*} executeAll
+ * @param {*} executeOne
+ * @param {int} numCreatorNodes
+ */
+async function upgradeUsersToCreators (executeAll, executeOne) {
+  await logOps('Upgrade to creator', async () => {
+    try {
+      await executeAll(async (libs, i) => {
+        // Check if existing users are already creators. If so, don't upgrade
+        const existingUser = await getUser({ executeOne, walletIndex: i })
+        if (!existingUser) throw new Error(`Cannot upgrade nonexistant user with wallet=${libs.walletAddress}`)
+        if (existingUser.tracks > 0) {
+          logger.info(`User ${existingUser.user_id} is already a creator. Skipping upgrade...`)
+          return
+        }
+        // Upgrade to creator with replica set (empty string as users will be assigned an rset on signup)
+        await executeOne(i, l => upgradeToCreator(l, existingUser.creator_node_endpoint))
+        logger.info(`Finished upgrading creator for user=${existingUser.user_id}`)
+
+        // Wait until upgrade txn has been indexed
+        await executeOne(i, libs => libs.waitForLatestBlock())
+      })
+    } catch (e) {
+      logger.error('GOT ERR UPGRADING USER TO CREATOR')
+      console.error(e)
+      throw e
+    }
+  })
 }
 
 /**
@@ -113,7 +179,8 @@ const logOps = async (name, work) => {
     logger.info(`Finished: [${name}].`)
     return res
   } catch (e) {
-    logger.error(`Error in [${name}], [${e.message}]`)
+    logger.error(`Error in [${name}]`)
+    console.error(e)
     throw e
   }
 }
@@ -132,9 +199,9 @@ const getUser = async ({ executeOne, walletIndex }) => {
     })
   } catch (e) {
     if (e.message !== 'No users!') {
-      throw new Error(
-        `Error with getting user with wallet index ${walletIndex}: ${e.message}`
-      )
+      logger.error(`Error with getting user with wallet index ${walletIndex}`)
+      console.error(e)
+      throw e
     }
   }
 
@@ -216,12 +283,13 @@ const getRandomTrackFilePath = async localDirPath => {
   try {
     await fs.ensureDir(localDirPath)
     await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
-  
-    logger.info(`Wrote track to temp local storage at ${targetFilePath}`)  
+
+    logger.info(`Wrote track to temp local storage at ${targetFilePath}`)
   } catch (e) {
-    const error = `Error with writing track to path ${localDirPath}: ${e.message}` 
-    logger.error(error)
-    throw new Error(error)
+    const errorMsg = `Error with writing track to path ${localDirPath}`
+    logger.error(errorMsg)
+    console.error(e)
+    throw new Error(`${errorMsg}: ${e.message}`)
   }
 
   // Return full file path
@@ -249,10 +317,38 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 /** Delay execution for n ms */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-/** Wrapper for custom delay time */
-const waitForIndexing = async (waitTime = 5000) => {
-  logger.info(`Pausing ${waitTime}ms for discprov indexing...`)
-  await delay(waitTime)
+const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
+  let primary, secondary1, secondary2, primaryClockValue, secondary1ClockValue, secondary2ClockValue
+  const userId = libs.userId
+  let synced = false
+  const startTime = Date.now()
+  while (!synced && Date.now() - startTime <= MAX_SYNC_TIMEOUT) {
+    try {
+      const replicaSetClockValues = await executeOne(i, libsWrapper => {
+        return getClockValuesFromReplicaSet(libsWrapper)
+      })
+
+      primary = replicaSetClockValues[0].endpoint
+      secondary1 = replicaSetClockValues[1].endpoint
+      secondary2 = replicaSetClockValues[2].endpoint
+      primaryClockValue = replicaSetClockValues[0].clockValue
+      secondary1ClockValue = replicaSetClockValues[1].clockValue
+      secondary2ClockValue = replicaSetClockValues[2].clockValue
+
+      logger.info(`Monitoring sync for user=${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
+
+      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue && primaryClockValue) {
+        synced = true
+        logger.info(`Sync completed for user=${userId}!`)
+      }
+    } catch (e) {
+      const errorMsg = `Failed sync monitoring for user=${userId}`
+      logger.error(errorMsg)
+      console.error(e)
+      throw new Error(`${errorMsg}: ${e.message}`)
+    }
+    if (!synced) { await delay(1000) }
+  }
 }
 
 /**
@@ -264,11 +360,14 @@ const makeExecuteAll = libsArray => async operation => {
 }
 
 const makeExecuteOne = libsArray => async (index, operation) => {
+  if (index > libsArray.length) throw new Error(`Cannot execute operation - index ${index} out of bounds`)
   return operation(libsArray[index])
 }
 
 module.exports = {
   addAndUpgradeUsers,
+  addUsers,
+  addUsersWithoutProfileImageOnSignUp,
   logOps,
   genRandomUsers,
   getRandomUser,
@@ -276,7 +375,9 @@ module.exports = {
   genRandomString,
   getRandomTrackFilePath,
   delay,
-  waitForIndexing,
+  ensureReplicaSetSyncIsConsistent,
   makeExecuteAll,
-  makeExecuteOne
+  makeExecuteOne,
+  r6,
+  upgradeUsersToCreators
 }

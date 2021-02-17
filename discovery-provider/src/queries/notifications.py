@@ -7,11 +7,12 @@ from src.queries import response_name_constants as const
 from src.queries.query_helpers import get_repost_counts, get_save_counts, get_follower_count_dict
 from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType, Remix
 from src.utils.db_session import get_db_read_replica
+from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
-max_block_diff = 50000
+max_block_diff = int(shared_config["discprov"]["notifications_max_block_diff"])
 
 
 # pylint: disable=R0911

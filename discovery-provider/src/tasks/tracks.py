@@ -25,8 +25,12 @@ track_event_types_arr = [
 def track_state_update(self, update_task, session, track_factory_txs, block_number, block_timestamp):
     """Return int representing number of Track model state changes found in transaction."""
     num_total_changes = 0
+
+    # This stores the track_ids created or updated in the set of transactions
+    track_ids = set()
+
     if not track_factory_txs:
-        return num_total_changes
+        return num_total_changes, track_ids
 
     track_abi = update_task.abi_values["TrackFactory"]["abi"]
     track_contract = update_task.web3.eth.contract(
@@ -40,6 +44,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
             for entry in track_events_tx:
                 event_args = entry["args"]
                 track_id = event_args._trackId if '_trackId' in event_args else event_args._id
+                track_ids.add(track_id)
                 blockhash = update_task.web3.toHex(entry.blockHash)
 
                 if track_id not in track_events:
@@ -77,7 +82,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
             invalidate_old_track(session, track_id)
             session.add(value_obj["track"])
 
-    return num_total_changes
+    return num_total_changes, track_ids
 
 
 def lookup_track_record(update_task, session, entry, event_track_id, block_number, block_hash):
@@ -149,8 +154,10 @@ def update_remixes_table(session, track_record, track_metadata):
         tracks = track_metadata["remix_of"].get("tracks")
         if tracks and isinstance(tracks, list):
             for track in tracks:
+                if not isinstance(track, dict):
+                    continue
                 parent_track_id = track.get("parent_track_id")
-                if parent_track_id and isinstance(parent_track_id, int):
+                if isinstance(parent_track_id, int):
                     remix = Remix(
                         parent_track_id=parent_track_id,
                         child_track_id=child_track_id
@@ -189,10 +196,6 @@ def parse_track_event(
         )[0]
         track_record.owner_id = owner_id
 
-
-        # Reconnect to creator nodes for this user
-        refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
-
         track_record.is_delete = False
 
         track_metadata = update_task.ipfs_client.get_metadata(
@@ -215,18 +218,8 @@ def parse_track_event(
                 return None
 
             logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
-            try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
-                if is_directory:
-                    track_record.cover_art_sizes = track_record.cover_art
-                    track_record.cover_art = None
-            except Exception as e:
-                # we are unable to get the cover art
-                if 'invalid multihash' in str(e):
-                    track_record.cover_art_sizes = None
-                    track_record.cover_art = None
-                else:
-                    raise e
+            track_record.cover_art_sizes = track_record.cover_art
+            track_record.cover_art = None
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
@@ -255,9 +248,6 @@ def parse_track_event(
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
-        # Reconnect to creator nodes for this user
-        refresh_track_owner_ipfs_conn(track_record.owner_id, session, update_task)
-
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
             track_metadata_format
@@ -270,7 +260,8 @@ def parse_track_event(
         )
         track_record.metadata_multihash = upd_track_metadata_multihash
 
-        # if cover_art CID is of a dir, store under _sizes field instead
+        # All incoming cover art is intended to be a directory
+        # Any write to cover_art field is replaced by cover_art_sizes
         if track_record.cover_art:
             # If CID is in IPLD blacklist table, do not continue with indexing
             if is_blacklisted_ipld(session, track_record.cover_art):
@@ -278,18 +269,8 @@ def parse_track_event(
                 return None
 
             logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
-            try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(track_record.cover_art)
-                if is_directory:
-                    track_record.cover_art_sizes = track_record.cover_art
-                    track_record.cover_art = None
-            except Exception as e:
-                # we are unable to get the cover art
-                if 'invalid multihash' in str(e):
-                    track_record.cover_art_sizes = None
-                    track_record.cover_art = None
-                else:
-                    raise e
+            track_record.cover_art_sizes = track_record.cover_art
+            track_record.cover_art = None
 
         update_remixes_table(session, track_record, track_metadata)
 
@@ -352,18 +333,3 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
 
     track_record.route_id = helpers.create_track_route_id(track_metadata["title"], handle)
     return track_record
-
-def refresh_track_owner_ipfs_conn(owner_id, session, update_task):
-    owner_record = (
-        session.query(User.creator_node_endpoint)
-        .filter(
-            User.is_current == True,
-            User.user_id == owner_id)
-        .all()
-    )
-    if len(owner_record) >= 1:
-        parsed_endpoint_list = owner_record[0][0]
-        helpers.update_ipfs_peers_from_user_endpoint(
-            update_task,
-            parsed_endpoint_list
-        )

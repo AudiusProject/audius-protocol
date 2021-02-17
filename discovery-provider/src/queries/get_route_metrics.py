@@ -1,10 +1,12 @@
 import logging
 import time
+from datetime import timedelta
 from sqlalchemy import func, desc, or_
-from src.models import RouteMetrics
+from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
+
 
 def get_route_metrics(args):
     """
@@ -26,7 +28,43 @@ def get_route_metrics(args):
         return _get_route_metrics(session, args)
 
 
+def _make_metrics_tuple(metric):
+    return {
+        'timestamp': int(time.mktime(metric.time.timetuple())),
+        'count': metric.count,
+        'unique_count': metric.unique_count,
+    }
+
 def _get_route_metrics(session, args):
+    # Protocol dashboard optimization:
+    # If we're in 'simple' mode (only asking for day/month bucket, no path or query string),
+    # query the corresponding matview instead of hitting the DB.
+    is_simple_args = (
+        args.get('path') == "" and
+        args.get('query_string') == None and
+        args.get('start_time') and
+        args.get('exact') == False and
+        args.get('version') == None
+    )
+    bucket_size = args.get('bucket_size')
+    if is_simple_args and bucket_size in ["day", "month"]:
+        query = None
+        if bucket_size == "day":
+            # subtract 1 day from the start_time so that the last day is fully complete
+            query = (session.query(RouteMetricsDayMatview)
+                     .filter(RouteMetricsDayMatview.time > (args.get('start_time') - timedelta(days=1))))
+
+        else:
+            query = (session.query(RouteMetricsMonthMatview)
+                     .filter(RouteMetricsMonthMatview.time > (args.get('start_time'))))
+
+        query = (query
+                 .order_by(desc('time'))
+                 .limit(args.get('limit'))
+                 .all())
+        metrics = list(map(_make_metrics_tuple, query))
+        return metrics
+
     metrics_query = (
         session.query(
             func.date_trunc(args.get('bucket_size'), RouteMetrics.timestamp).label('timestamp'),

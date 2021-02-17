@@ -38,7 +38,7 @@ if [ ! -f .gitignore ]; then
 fi
 
 set -e
-python3 scripts/lint.py
+sh scripts/lint.sh
 
 # initialize virtual environment
 # rm -r venv

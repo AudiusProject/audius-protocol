@@ -39,8 +39,8 @@ class Utils {
     return Web3.utils.isBN(number)
   }
 
-  static toBN (number) {
-    return new Web3.utils.BN(number)
+  static toBN (number, base) {
+    return new Web3.utils.BN(number, base)
   }
 
   static BN () {
@@ -66,8 +66,8 @@ class Utils {
   // Function to check if the endpont/health_check returns JSON object [ {'healthy':true} ]
   static async isHealthy (url) {
     try {
-      let response = await axios.get(url + '/health_check')
-      return response.data.healthy
+      const { data: body } = await axios.get(url + '/health_check')
+      return body.data.healthy
     } catch (error) {
       return false
     }

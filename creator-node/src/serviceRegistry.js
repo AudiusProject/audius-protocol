@@ -1,7 +1,8 @@
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
-const SnapbackSM = require('./snapbackSM')
+const MonitoringQueue = require('./monitors/MonitoringQueue')
+const { SnapbackSM } = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 
@@ -24,6 +25,7 @@ class ServiceRegistry {
     this.ipfs = ipfs
     this.ipfsLatest = ipfsLatest
     this.blacklistManager = BlacklistManager
+    this.monitoringQueue = new MonitoringQueue()
 
     // this.audiusLibs isn't initialized until
     // `initServices` is called.
@@ -48,6 +50,8 @@ class ServiceRegistry {
       this.snapbackSM = new SnapbackSM(this.libs)
       await this.snapbackSM.init()
     }
+
+    this.monitoringQueue.start()
   }
 }
 

@@ -15,8 +15,11 @@ def playlist_state_update(
 ):
     """Return int representing number of Playlist model state changes found in transaction."""
     num_total_changes = 0
+    # This stores the playlist_ids created or updated in the set of transactions
+    playlist_ids = set()
+
     if not playlist_factory_txs:
-        return num_total_changes
+        return num_total_changes, playlist_ids
 
     playlist_abi = update_task.abi_values["PlaylistFactory"]["abi"]
     playlist_contract = update_task.web3.eth.contract(
@@ -32,6 +35,7 @@ def playlist_state_update(
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in playlist_events_tx:
                 playlist_id = entry["args"]._playlistId
+                playlist_ids.add(playlist_id)
 
                 if playlist_id not in playlist_events_lookup:
                     existing_playlist_entry = lookup_playlist_record(
@@ -67,7 +71,7 @@ def playlist_state_update(
             invalidate_old_playlist(session, playlist_id)
             session.add(value_obj["playlist"])
 
-    return num_total_changes
+    return num_total_changes, playlist_ids
 
 
 def lookup_playlist_record(update_task, session, entry, block_number):
@@ -238,22 +242,12 @@ def parse_playlist_event(
             )
             return None
 
-        # if playlist_image_multihash CID is of a dir, store under _sizes field instead
+        # All incoming playlist images are set to ipfs dir in column playlist_image_sizes_multihash
         if playlist_record.playlist_image_multihash:
             logger.info(f"[playlist_cover_photo_updated] | Processing playlist image \
             {playlist_record.playlist_image_multihash}")
-            try:
-                is_directory = update_task.ipfs_client.multihash_is_directory(playlist_record.playlist_image_multihash)
-                if is_directory:
-                    playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
-                    playlist_record.playlist_image_multihash = None
-            except Exception as e:
-                # we are unable to get the playlist image
-                if 'invalid multihash' in str(e):
-                    playlist_record.playlist_image_sizes_multihash = None
-                    playlist_record.playlist_image_multihash = None
-                else:
-                    raise e
+            playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
+            playlist_record.playlist_image_multihash = None
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
         logger.info(f"[playlist_description_updated] | Updating playlist {playlist_record.playlist_id} \

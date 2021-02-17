@@ -4,15 +4,21 @@ const fs = require('fs')
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const { getFileUUIDForImageCID } = require('../utils')
-const { authMiddleware, syncLockMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const {
+  authMiddleware,
+  syncLockMiddleware,
+  ensurePrimaryMiddleware,
+  ensureStorageMiddleware,
+  triggerSecondarySyncs
+} = require('../middlewares')
 const DBManager = require('../dbManager')
 
 module.exports = function (app) {
   /**
    * Create AudiusUser from provided metadata, and make metadata available to network
    */
-  app.post('/audius_users/metadata', authMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/audius_users/metadata', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     // TODO - input validation
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
@@ -56,7 +62,7 @@ module.exports = function (app) {
    * Given audiusUser blockchainUserId, blockNumber, and metadataFileUUID, creates/updates AudiusUser DB entry
    * and associates image file entries with audiusUser. Ends audiusUser creation/update process.
    */
-  app.post('/audius_users', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/audius_users', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainUserId || !blockNumber || !metadataFileUUID) {
@@ -85,8 +91,10 @@ module.exports = function (app) {
     // Get coverArtFileUUID and profilePicFileUUID for multihashes in metadata object, if present.
     let coverArtFileUUID, profilePicFileUUID
     try {
-      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_photo_sizes)
-      profilePicFileUUID = await getFileUUIDForImageCID(req, metadataJSON.profile_picture_sizes)
+      [coverArtFileUUID, profilePicFileUUID] = await Promise.all([
+        validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.cover_photo_sizes),
+        validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.profile_picture_sizes)
+      ])
     } catch (e) {
       return errorResponseBadRequest(e.message)
     }

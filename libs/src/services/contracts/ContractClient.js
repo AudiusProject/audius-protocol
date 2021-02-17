@@ -1,8 +1,10 @@
 const ProviderSelection = require('./ProviderSelection')
 const Web3Manager = require('../web3Manager/index')
+const retry = require('async-retry')
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000
+const METHOD_CALL_MAX_RETRIES = 5
 
 /*
  * Base class for instantiating contracts.
@@ -10,14 +12,14 @@ const CONTRACT_INITIALIZING_TIMEOUT = 10000
  * time a method on the contract is invoked.
  */
 class ContractClient {
-  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress) {
+  constructor (web3Manager, contractABI, contractRegistryKey, getRegistryAddress, contractAddress = null) {
     this.web3Manager = web3Manager
     this.contractABI = contractABI
     this.contractRegistryKey = contractRegistryKey
     this.getRegistryAddress = getRegistryAddress
 
     // Once initialized, contract address and contract are set up
-    this._contractAddress = null
+    this._contractAddress = contractAddress
     this._contract = null
 
     // Initialization setup
@@ -55,7 +57,9 @@ class ContractClient {
 
     this._isInitializing = true
     try {
-      this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+      if (!this._contractAddress) {
+        this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+      }
       const web3 = this.web3Manager.getWeb3()
       this._contract = new web3.eth.Contract(
         this.contractABI,
@@ -112,7 +116,29 @@ class ContractClient {
     if (!(methodName in this._contract.methods)) {
       throw new Error(`Contract method ${methodName} not found in ${Object.keys(this._contract.methods)}`)
     }
-    return this._contract.methods[methodName](...args)
+    const method = await this._contract.methods[methodName](...args)
+
+    // Override method.call (chain reads) with built in retry logic
+    const call = method.call
+    method.call = async (...args) => {
+      return retry(async (bail, number) => {
+        return call(...args)
+      }, {
+        // Retry function 5x by default
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: METHOD_CALL_MAX_RETRIES,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log(`Retry error for ${methodName} : ${err}`)
+          }
+        }
+      })
+    }
+
+    return method
   }
 
   async getEthNetId () {

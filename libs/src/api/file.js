@@ -1,9 +1,10 @@
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
+
+const axios = require('axios')
 const { Base, Services } = require('./base')
 const { raceRequests } = require('../utils/network')
 const retry = require('async-retry')
-const FETCH_CID_TIMEOUT_MS = 20 /* sec */ * 1000 /* millis */
 
 // Public gateways to send requests to, ordered by precidence.
 const publicGateways = [
@@ -39,8 +40,8 @@ class File extends Base {
    *  Can be used for tracking metrics on which gateways were used.
    */
   async fetchCID (cid, creatorNodeGateways, callback = null) {
-    const gateways = publicGateways
-      .concat(creatorNodeGateways)
+    const gateways = creatorNodeGateways
+      .concat(publicGateways)
     const urls = gateways.map(gateway => urlJoin(gateway, cid))
 
     return retry(async () => {
@@ -48,9 +49,30 @@ class File extends Base {
         const { response } = await raceRequests(urls, callback, {
           method: 'get',
           responseType: 'blob'
-        }, FETCH_CID_TIMEOUT_MS)
+        }, /* timeout */ null)
+        if (!response) throw new Error(`Could not fetch ${cid}`)
         return response
       } catch (e) {
+        // TODO: Remove this fallback logic when no more users/tracks/playlists
+        // contain "legacy" image formats (no dir cid)
+        if (cid.includes('/')) { // dirCID -- an image
+          console.debug(`Attempted to fetch image ${cid} via legacy method`)
+          // Try legacy image format
+          // Lop off anything like /480x480.jpg in the CID
+          const legacyUrls = gateways.map(gateway => urlJoin(gateway, cid.split('/')[0]))
+          try {
+            const { response } = await raceRequests(legacyUrls, callback, {
+              method: 'get',
+              responseType: 'blob'
+            }, /* timeout */ null)
+            if (!response) throw new Error(`Could not fetch ${cid} via legacy method`)
+            return response
+          } catch (e) {
+            throw new Error(`Failed to retrieve ${cid} by legacy method`)
+          }
+        }
+
+        // Throw so we can retry
         throw new Error(`Failed to retrieve ${cid}`)
       }
     }, {
@@ -88,6 +110,29 @@ class File extends Base {
     } catch (e) {
       throw new Error(`Failed to retrieve ${cid}`)
     }
+  }
+
+  /**
+   * Checks if a cid exists in an IPFS node. Public gateways are tried first, then
+   * fallback to a specified gateway and then to the default gateway.
+   * @param {string} cid IPFS content identifier
+   * @param {Array<string>} creatorNodeGateways fallback ipfs gateways from creator nodes
+   * Eg. creatorNodeGateways = ["https://creatornode.audius.co/ipfs/", "https://creatornode2.audius.co/ipfs/"]
+   */
+  async checkIfCidAvailable (cid, creatorNodeGateways) {
+    const gateways = creatorNodeGateways.concat(publicGateways)
+    const exists = {}
+
+    await Promise.all(gateways.map(async (gateway) => {
+      try {
+        const { status } = await axios({ url: urlJoin(gateway, cid), method: 'head' })
+        exists[gateway] = status === 200
+      } catch (err) {
+        exists[gateway] = false
+      }
+    }))
+
+    return exists
   }
 
   /**

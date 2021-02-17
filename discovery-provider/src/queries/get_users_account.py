@@ -5,6 +5,7 @@ from src.models import User, Playlist, Save, SaveType
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import populate_user_metadata
+from src.queries.get_unpopulated_users import get_unpopulated_users
 
 
 def get_users_account(args):
@@ -68,11 +69,8 @@ def get_users_account(args):
             set([playlist['playlist_owner_id'] for playlist in playlists]))
 
         # Get Users for the Playlist/Albums
-        user_query = session.query(User).filter(
-            and_(User.is_current == True, User.user_id.in_(playlist_owner_ids))
-        )
-        users = user_query.all()
-        users = helpers.query_result_to_list(users)
+        users = get_unpopulated_users(session, playlist_owner_ids)
+
         user_map = {}
 
         stripped_playlists = []

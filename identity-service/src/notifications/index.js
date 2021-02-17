@@ -5,7 +5,6 @@ const axios = require('axios')
 const fs = require('fs')
 const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
-const { indexNotifications } = require('./notificationProcessing')
 const {
   updateBlockchainIds,
   calculateTrackListenMilestones,
@@ -16,25 +15,46 @@ const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, announcementJobType } = require('./constants')
 const { drainPublishedMessages } = require('./notificationQueue')
-const notifDiscProv = config.get('notificationDiscoveryProvider')
 const emailCachePath = './emailCache'
+const processNotifications = require('./processNotifications/index.js')
+const { indexTrendingTracks } = require('./trendingTrackProcessing')
+const sendNotifications = require('./sendNotifications/index.js')
+const audiusLibsWrapper = require('../audiusLibsInstance')
+
+// Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
+const defaultJobOptions = {
+  removeOnComplete: true,
+  removeOnFail: true
+}
 
 class NotificationProcessor {
   constructor () {
     this.notifQueue = new Bull(
-      'notification-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      `notification-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
       })
     this.emailQueue = new Bull(
-      'email-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      `email-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
       })
     this.announcementQueue = new Bull(
-      'announcement-queue',
-      { redis:
-        { port: config.get('redisPort'), host: config.get('redisHost') }
+      `announcement-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
       })
   }
 
@@ -88,6 +108,8 @@ class NotificationProcessor {
         await this.notifQueue.add({
           type: notificationJobType,
           minBlock: maxBlockNumber
+        }, {
+          jobId: `${notificationJobType}:${Date.now()}`
         })
       } catch (e) {
         logger.error(`Restarting due to error indexing notifications : ${e}`)
@@ -95,6 +117,8 @@ class NotificationProcessor {
         await this.notifQueue.add({
           type: notificationJobType,
           minBlock: minBlock
+        }, {
+          jobId: `${notificationJobType}:${Date.now()}`
         })
       }
       // Delay 3s
@@ -108,6 +132,10 @@ class NotificationProcessor {
       logger.info('processEmailNotifications')
       await processEmailNotifications(expressApp, audiusLibs)
       await processDownloadAppEmail(expressApp, audiusLibs)
+
+      // Wait 10 minutes before re-running the job
+      await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000))
+      await this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: `unreadEmailJob:${Date.now()}` })
       done()
     })
 
@@ -115,8 +143,8 @@ class NotificationProcessor {
     this.announcementQueue.process(async (job, done) => {
       await pushAnnouncementNotifications()
       // Delay 30s
-      await new Promise(resolve => setTimeout(resolve, 30000))
-      await this.announcementQueue.add({ type: announcementJobType })
+      await new Promise(resolve => setTimeout(resolve, 30 * 1000))
+      await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
       done()
     })
 
@@ -125,19 +153,18 @@ class NotificationProcessor {
     }
 
     // Every 10 minutes cron: '*/10 * * * *'
-    this.emailQueue.add(
-      { type: 'unreadEmailJob' },
-      { repeat: { cron: '*/10 * * * *' } }
-    )
+    this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: Date.now() })
 
     let startBlock = await getHighestBlockNumber()
     logger.info(`Starting with ${startBlock}`)
     await this.notifQueue.add({
       minBlock: startBlock,
       type: notificationJobType
+    }, {
+      jobId: `${notificationJobType}:${Date.now()}`
     })
 
-    await this.announcementQueue.add({ type: announcementJobType })
+    await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
   }
 
   /**
@@ -149,8 +176,10 @@ class NotificationProcessor {
    * @param {Integer} minBlock min start block to start querying discprov for new notifications
    */
   async indexAll (audiusLibs, minBlock, oldMaxBlockNumber) {
-    const start = Date.now()
-    logger.info(`${new Date()} - notifications main indexAll job`, minBlock, oldMaxBlockNumber, start)
+    const startDate = Date.now()
+    const startTime = process.hrtime()
+
+    logger.info({ minBlock, oldMaxBlockNumber, startDate }, `${new Date()} - notifications main indexAll job`)
 
     // Query owners for tracks relevant to track listen counts
     let listenCounts = await calculateTrackListenMilestones()
@@ -163,14 +192,14 @@ class NotificationProcessor {
     trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
     params.append('min_block_number', minBlock)
 
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
     let reqObj = {
       method: 'get',
-      url: `${notifDiscProv}/notifications`,
+      url: `${discoveryProvider.discoveryProviderEndpoint}/notifications`,
       params,
       timeout: 10000
     }
-    // Use a single transaction
-    const tx = await models.sequelize.transaction()
 
     let body = (await axios(reqObj)).data
     let metadata = body.data.info
@@ -178,6 +207,8 @@ class NotificationProcessor {
     let milestones = body.data.milestones
     let owners = body.data.owners
 
+    // Use a single transaction
+    const tx = await models.sequelize.transaction()
     try {
       // Populate owners, used to index in milestone generation
       const listenCountWithOwners = listenCounts.map((x) => {
@@ -187,15 +218,27 @@ class NotificationProcessor {
           owner: owners.tracks[x.trackId]
         }
       })
-      await indexNotifications(notifications, tx, audiusLibs)
+
+      // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
+      await processNotifications(notifications, tx)
+
+      // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
+      await sendNotifications(audiusLibs, notifications, tx)
+
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
+
+      // Fetch trending track milestones
+      await indexTrendingTracks(audiusLibs, tx)
 
       // Commit
       await tx.commit()
 
       // actually send out push notifications
       await drainPublishedMessages()
-      logger.info(`indexAll - finished main notification index job`, minBlock, start)
+
+      const endTime = process.hrtime(startTime)
+      const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+      logger.info({ minBlock, startDate, duration, notifications: notifications.length }, `indexAll - finished main notification index job`)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)

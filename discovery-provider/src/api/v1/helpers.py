@@ -3,8 +3,8 @@ from src import api_helpers
 from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
-from src.queries.search_queries import SearchKind
 from datetime import datetime
+from .models.common import full_response
 
 logger = logging.getLogger(__name__)
 
@@ -149,15 +149,21 @@ def parse_unix_epoch_param(time, default=0):
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
-    if ("user" in track):
+    if "user" in track:
         track["user"] = extend_user(track["user"])
     track["id"] = track_id
     track["user_id"] = owner_id
-    track["followee_favorites"] = list(map(extend_favorite, track["followee_saves"]))
-    track["followee_resposts"] = list(map(extend_repost, track["followee_reposts"]))
+    if "followee_saves" in track:
+        track["followee_favorites"] = list(map(extend_favorite, track["followee_saves"]))
+    if "followee_reposts" in track:
+        track["followee_reposts"] = list(map(extend_repost, track["followee_reposts"]))
+    if "remix_of" in track:
+        track["remix_of"] = extend_remix_of(track["remix_of"])
+
     track = add_track_artwork(track)
-    track["remix_of"] = extend_remix_of(track["remix_of"])
-    track["favorite_count"] = track["save_count"]
+
+    if "save_count" in track:
+        track["favorite_count"] = track["save_count"]
 
     duration = 0.
     for segment in track["track_segments"]:
@@ -172,6 +178,9 @@ def extend_track(track):
 
     return track
 
+def get_encoded_track_id(track):
+    return { "id": encode_int_id(track["track_id"]) }
+
 def stem_from_track(track):
     track_id = encode_int_id(track["track_id"])
     parent_id = encode_int_id(track["stem_of"]["parent_track_id"])
@@ -181,7 +190,8 @@ def stem_from_track(track):
         "parent_id": parent_id,
         "category": category,
         "cid": track["download"]["cid"],
-        "user_id": encode_int_id(track["owner_id"])
+        "user_id": encode_int_id(track["owner_id"]),
+        "blocknumber": track["blocknumber"]
     }
 
 def extend_playlist(playlist):
@@ -189,14 +199,16 @@ def extend_playlist(playlist):
     owner_id = encode_int_id(playlist["playlist_owner_id"])
     playlist["id"] = playlist_id
     playlist["user_id"] = owner_id
-    if ("user" in playlist):
-        playlist["user"] = extend_user(playlist["user"])
     playlist = add_playlist_artwork(playlist)
+    if "user" in playlist:
+        playlist["user"] = extend_user(playlist["user"])
+    if "followee_saves" in playlist:
+        playlist["followee_favorites"] = list(map(extend_favorite, playlist["followee_saves"]))
+    if "followee_reposts" in playlist:
+        playlist["followee_reposts"] = list(map(extend_repost, playlist["followee_reposts"]))
+    if "save_count" in playlist:
+        playlist["favorite_count"] = playlist["save_count"]
 
-    playlist["followee_favorites"] = list(map(extend_favorite, playlist["followee_saves"]))
-    playlist["followee_reposts"] = list(map(extend_repost, playlist["followee_reposts"]))
-
-    playlist["favorite_count"] = playlist["save_count"]
     playlist["added_timestamps"] = add_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
@@ -235,6 +247,12 @@ def make_response(name, namespace, modelType):
         "data": modelType,
     })
 
+def make_full_response(name, namespace, modelType):
+    return namespace.clone(name, full_response, {
+        "data": modelType
+    })
+
+
 def to_dict(multi_dict):
     """Converts a multi dict into a dict where only list entries are not flat"""
     return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
@@ -269,10 +287,10 @@ MIN_LIMIT = 1
 MAX_LIMIT = 500
 DEFAULT_OFFSET = 0
 MIN_OFFSET = 0
-def format_limit(args, max_limit=MAX_LIMIT):
-    lim = args.get("limit", DEFAULT_LIMIT)
+def format_limit(args, max_limit=MAX_LIMIT, default_limit=DEFAULT_LIMIT):
+    lim = args.get("limit", default_limit)
     if lim is None:
-        return DEFAULT_LIMIT
+        return default_limit
 
     return max(min(int(lim), max_limit), MIN_LIMIT)
 

@@ -1,11 +1,18 @@
 const { recoverPersonalSignature } = require('eth-sig-util')
-const fs = require('fs')
+const fs = require('fs-extra')
+const path = require('path')
 const { BufferListStream } = require('bl')
+const axios = require('axios')
+const spawn = require('child_process').spawn
+
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
+const redis = require('./redis')
+
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
+const { generateTimestampAndSignature } = require('./apiSigning')
 
 class Utils {
   static verifySignature (data, sig) {
@@ -18,61 +25,56 @@ class Utils {
   }
 }
 
-async function getFileUUIDForImageCID (req, imageCID) {
-  const ipfs = req.app.get('ipfsAPI')
-  if (imageCID) { // assumes imageCIDs are optional params
-    // Ensure CID points to a dir, not file
-    let cidIsFile = false
-    try {
-      await ipfs.cat(imageCID, { length: 1 })
-      cidIsFile = true
-    } catch (e) {
-      // Ensure file exists for dirCID
-      const dirFile = await models.File.findOne({
-        where: { multihash: imageCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
-      })
-      if (!dirFile) {
-        throw new Error(`No file stored in DB for dir CID ${imageCID}`)
-      }
+/**
+ * Ensure DB and disk records exist for dirCID and its contents
+ * Return fileUUID for dir DB record
+ * This function does not do further validation since image_upload provides remaining guarantees
+ */
+async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
+  // This handles case where a user/track metadata obj contains no image CID
+  if (!imageDirCID) {
+    return null
+  }
+  req.logger.info(`Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
 
-      // Ensure file refs exist in DB for every file in dir
-      const dirContents = await ipfs.ls(imageCID)
-      req.logger.info(dirContents)
+  // Ensure file exists for dirCID
+  const dirFile = await models.File.findOne({
+    where: { multihash: imageDirCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
+  })
+  if (!dirFile) {
+    throw new Error(`No file stored in DB for imageDirCID ${imageDirCID}`)
+  }
 
-      // Iterates through directory contents but returns upon first iteration
-      // TODO: refactor to remove for-loop
-      for (let fileObj of dirContents) {
-        if (!fileObj.hasOwnProperty('hash') || !fileObj.hash) {
-          throw new Error(`Malformatted dir contents for dirCID ${imageCID}. Cannot process.`)
-        }
+  // Ensure dir exists on disk
+  if (!(await fs.pathExists(dirFile.storagePath))) {
+    throw new Error(`No dir found on disk for imageDirCID ${imageDirCID} at expected path ${dirFile.storagePath}`)
+  }
 
-        const imageFile = await models.File.findOne({
-          where: { multihash: fileObj.hash, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
-        })
-        if (!imageFile) {
-          throw new Error(`No file ref stored in DB for CID ${fileObj.hash} in dirCID ${imageCID}`)
-        }
-        return dirFile.fileUUID
-      }
+  const imageFiles = await models.File.findAll({
+    where: { dirMultihash: imageDirCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
+  })
+  if (!imageFiles) {
+    throw new Error(`No image file records found in DB for imageDirCID ${imageDirCID}`)
+  }
+
+  // Ensure every file exists on disk
+  await Promise.all(imageFiles.map(async function (imageFile) {
+    if (!(await fs.pathExists(imageFile.storagePath))) {
+      throw new Error(`No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`)
     }
-    if (cidIsFile) {
-      throw new Error(`CID ${imageCID} must point to a valid directory on IPFS`)
-    }
-  } else return null
+  }))
+
+  req.logger.info(`Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
+  return dirFile.fileUUID
 }
 
-async function getIPFSPeerId (ipfs, config) {
-  const ipfsClusterIP = config.get('ipfsClusterIP')
-  const ipfsClusterPort = config.get('ipfsClusterPort')
+async function getIPFSPeerId (ipfs) {
+  // Assumes the ipfs id returns the correct address from IPFS. May need to set the correct values in
+  // the IPFS pod. Command is:
+  // ipfs config --json Addresses.Announce '["/ip4/<public ip>/tcp/<public port>"]'
+  // the public port is the port mapped to IPFS' port 4001
 
   let ipfsIDObj = await ipfs.id()
-
-  // if it's a real host and port, generate a new ipfs id and override the addresses with this value
-  // if it's local or these variables aren't passed in, just return the regular ipfs.id() result
-  if (ipfsClusterIP && ipfsClusterPort !== null && ipfsClusterIP !== '127.0.0.1' && ipfsClusterPort !== 0) {
-    const addressStr = `/ip4/${ipfsClusterIP}/tcp/${ipfsClusterPort}/ipfs/${ipfsIDObj.id}`
-    ipfsIDObj.addresses = [addressStr]
-  }
 
   return ipfsIDObj
 }
@@ -158,7 +160,6 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
     req.logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
-    req.logger.error(`ipfsCat - Error: ${e}`)
     reject(e)
   }
 })
@@ -192,7 +193,6 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
     req.logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
-    req.logger.error(`ipfsGet - Error: ${e}`)
     reject(e)
   }
 })
@@ -236,6 +236,94 @@ async function rehydrateIpfsPerCnodeUUIDIfNecessary (cnodeUserUUID, { logContext
       }
     }))
   }
+}
+
+async function findCIDInNetwork (filePath, cid, logger, libs) {
+  const attemptedStateFix = await getIfAttemptedStateFix(filePath)
+  if (attemptedStateFix) return
+
+  // get list of creator nodes
+  const creatorNodes = await getAllRegisteredCNodes(libs)
+  if (!creatorNodes.length) return
+
+  // generate signature
+  const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
+  const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
+  let node
+
+  for (let index = 0; index < creatorNodes.length; index++) {
+    node = creatorNodes[index]
+    try {
+      const resp = await axios({
+        method: 'get',
+        url: `${node.endpoint}/file_lookup`,
+        params: {
+          filePath,
+          timestamp,
+          delegateWallet,
+          signature
+        },
+        responseType: 'stream',
+        timeout: 1000
+      })
+      if (resp.data) {
+        await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
+
+        // verify that the file written matches the hash expected if added to ipfs
+        const content = fs.createReadStream(filePath)
+        for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 2000 })) {
+          if (cid !== result.cid.toString()) {
+            await fs.unlink(filePath)
+            logger.error(`File contents don't match IPFS hash cid: ${cid} result: ${result.cid.toString()}`)
+          }
+        }
+
+        logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
+        break
+      }
+    } catch (e) {
+      // since this is a function running in the background intended to fix state, don't error
+      // and stop the flow of execution for functions that call it
+      continue
+    }
+  }
+}
+
+/**
+ * Get all creator nodes registered on chain from a cached redis value
+ */
+async function getAllRegisteredCNodes (libs) {
+  const cacheKey = 'all_registered_cnodes'
+
+  try {
+    const cnodesList = await redis.get(cacheKey)
+    if (cnodesList) {
+      return JSON.parse(cnodesList)
+    }
+
+    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node'))
+    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
+    redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30) // cache this for 30 minutes
+    return creatorNodes
+  } catch (e) {
+    console.error('Error getting values in getAllRegisteredCNodes', e)
+  }
+  return []
+}
+
+/**
+ * Return if a fix has already been attempted in today for this filePath
+ * @param {String} filePath path of CID on the file system
+ */
+async function getIfAttemptedStateFix (filePath) {
+  // key is `attempted_fs_fixes:<today's date>`
+  // the date function just generates the ISOString and removes the timestamp component
+  const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
+  const firstTime = await redis.sadd(key, filePath)
+  await redis.expire(key, 60 * 60 * 24) // expire one day after final write
+
+  // if firstTime is 1, it's a new key. existing key returns 0
+  return !firstTime
 }
 
 async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
@@ -363,12 +451,59 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
     let addResp = await ipfs.add(ipfsAddArray, { pin: false })
     logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
   } catch (e) {
-    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}, ${ipfsAddArray}`)
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}`)
   }
 }
 
+async function createDirForFile (fileStoragePath) {
+  const dir = path.dirname(fileStoragePath)
+  await fs.ensureDir(dir)
+}
+
+async function writeStreamToFileSystem (stream, expectedStoragePath, createDir = false) {
+  if (createDir) {
+    await createDirForFile(expectedStoragePath)
+  }
+
+  const destinationStream = fs.createWriteStream(expectedStoragePath)
+  stream.pipe(destinationStream)
+  return new Promise((resolve, reject) => {
+    destinationStream.on('finish', () => {
+      resolve()
+    })
+    destinationStream.on('error', err => { reject(err) })
+    stream.on('error', err => { destinationStream.end(); reject(err) })
+  })
+}
+
+/**
+ * Generic function to run shell commands, eg `ls -alh`
+ * @param {String} command Command you want to execute from the shell eg `ls`
+ * @param {Array} args array of string quoted arguments to pass eg ['-alh']
+ * @param {Object} logger logger object with context
+ */
+async function runShellCommand (command, args, logger) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args)
+    let stdout = ''
+    let stderr = ''
+    proc.stdout.on('data', (data) => (stdout += data.toString()))
+    proc.stderr.on('data', (data) => (stderr += data.toString()))
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        logger.info(`Successfully executed command ${command} ${args} with output: \n${stdout}`)
+        resolve()
+      } else {
+        logger.error(`Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`)
+        reject(new Error(`Error while executing command ${command} ${args}`))
+      }
+    })
+  })
+}
+
 module.exports = Utils
-module.exports.getFileUUIDForImageCID = getFileUUIDForImageCID
+module.exports.validateStateForImageDirCIDAndReturnFileUUID = validateStateForImageDirCIDAndReturnFileUUID
 module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
 module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
@@ -377,3 +512,7 @@ module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet
 module.exports.ipfsStat = ipfsStat
 module.exports.rehydrateIpfsPerCnodeUUIDIfNecessary = rehydrateIpfsPerCnodeUUIDIfNecessary
+module.exports.writeStreamToFileSystem = writeStreamToFileSystem
+module.exports.getAllRegisteredCNodes = getAllRegisteredCNodes
+module.exports.findCIDInNetwork = findCIDInNetwork
+module.exports.runShellCommand = runShellCommand

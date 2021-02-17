@@ -6,21 +6,37 @@ const config = require('../config.js')
 const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
-const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../apiHelpers')
-const { getFileUUIDForImageCID } = require('../utils')
-const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const {
+  handleResponse,
+  handleResponseWithHeartbeat,
+  sendResponse,
+  successResponse,
+  errorResponseBadRequest,
+  errorResponseServerError,
+  errorResponseForbidden
+} = require('../apiHelpers')
+const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const {
+  authMiddleware,
+  ensurePrimaryMiddleware,
+  syncLockMiddleware,
+  triggerSecondarySyncs,
+  ensureStorageMiddleware
+} = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 
+const SaveFileToIPFSConcurrencyLimit = 10
+
 module.exports = function (app) {
   /**
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
     if (req.fileSizeError) {
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
@@ -62,11 +78,19 @@ module.exports = function (app) {
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
     const transcodeFileIPFSResp = await saveFileToIPFSFromFS(req, transcodedFilePath)
-    const segmentFileIPFSResps = await Promise.all(segmentFilePaths.map(async (segmentFilePath) => {
-      const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-      const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
-      return { multihash, srcPath: segmentFilePath, dstPath }
-    }))
+
+    let segmentFileIPFSResps = []
+    for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
+      const segmentFilePathsSlice = segmentFilePaths.slice(i, i + SaveFileToIPFSConcurrencyLimit)
+
+      const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
+        const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
+        const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
+        return { multihash, srcPath: segmentFilePath, dstPath }
+      }))
+
+      segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
+    }
     req.logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Retrieve all segment durations as map(segment srcFilePath => segment duration)
@@ -165,7 +189,7 @@ module.exports = function (app) {
    * Given track metadata object, upload and share metadata to IPFS. Return metadata multihash if successful.
    * Error if associated track segments have not already been created and stored.
    */
-  app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks/metadata', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const metadataJSON = req.body.metadata
 
     if (
@@ -265,7 +289,7 @@ module.exports = function (app) {
    * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
    * and associates segment & image file entries with track. Ends track creation/update process.
    */
-  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
+  app.post('/tracks', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
     const { blockchainTrackId, blockNumber, metadataFileUUID, transcodedTrackUUID } = req.body
 
     // Input validation
@@ -303,7 +327,7 @@ module.exports = function (app) {
     // Get coverArtFileUUID for multihash in metadata object, else error
     let coverArtFileUUID
     try {
-      coverArtFileUUID = await getFileUUIDForImageCID(req, metadataJSON.cover_art_sizes)
+      coverArtFileUUID = await validateStateForImageDirCIDAndReturnFileUUID(req, metadataJSON.cover_art_sizes)
     } catch (e) {
       return errorResponseServerError(e.message)
     }
@@ -313,8 +337,7 @@ module.exports = function (app) {
       const existingTrackEntry = await models.Track.findOne({
         where: {
           cnodeUserUUID,
-          blockchainId: blockchainTrackId,
-          coverArtFileUUID
+          blockchainId: blockchainTrackId
         },
         order: [['clock', 'DESC']],
         transaction
@@ -381,7 +404,8 @@ module.exports = function (app) {
           transaction
         })
 
-        if (trackFiles.length !== trackSegmentCIDs.length) {
+        if (trackFiles.length < trackSegmentCIDs.length) {
+          req.logger.error(`Did not find files for every track segment CID for user ${cnodeUserUUID} ${trackFiles} ${trackSegmentCIDs}`)
           throw new Error('Did not find files for every track segment CID.')
         }
         const numAffectedRows = await models.File.update(
@@ -396,7 +420,8 @@ module.exports = function (app) {
             transaction
           }
         )
-        if (parseInt(numAffectedRows, 10) !== trackSegmentCIDs.length) {
+        if (parseInt(numAffectedRows, 10) < trackSegmentCIDs.length) {
+          req.logger.error(`Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${numAffectedRows} ${trackSegmentCIDs.length}`)
           throw new Error('Failed to associate files for every track segment CID.')
         }
       } else { /** If track updated, ensure files exist with trackBlockchainId. */
@@ -507,18 +532,18 @@ module.exports = function (app) {
    * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
    * @dev - Wrapper around getCID, which retrieves track given its CID.
    **/
-  app.get('/tracks/stream/:encodedId', handleResponse(async (req, res) => {
+  app.get('/tracks/stream/:encodedId', async (req, res, next) => {
     const libs = req.app.get('audiusLibs')
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
     const encodedId = req.params.encodedId
     if (!encodedId) {
-      return errorResponseBadRequest('Please provide a track ID')
+      return sendResponse(req, res, errorResponseBadRequest('Please provide a track ID'))
     }
 
     const blockchainId = decode(encodedId)
     if (!blockchainId) {
-      return errorResponseBadRequest(`Invalid ID: ${encodedId}`)
+      return sendResponse(req, res, errorResponseBadRequest(`Invalid ID: ${encodedId}`))
     }
 
     const { blockchainId: blockchainIdFromTrack } = await models.Track.findOne({
@@ -528,7 +553,7 @@ module.exports = function (app) {
     })
 
     if (!blockchainIdFromTrack) {
-      return errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`)
+      return sendResponse(req, res, errorResponseBadRequest(`No track found for blockchainId ${blockchainId}`))
     }
 
     const { multihash } = await models.File.findOne({
@@ -541,21 +566,21 @@ module.exports = function (app) {
     })
 
     if (!multihash) {
-      return errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`)
+      return sendResponse(req, res, errorResponseBadRequest(`No file found for blockchainId ${blockchainId}`))
     }
 
     if (libs.identityService) {
       req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
       // Fire and forget listen recording
       // TODO: Consider queueing these requests
-      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet)
+      libs.identityService.logTrackListen(blockchainId, delegateOwnerWallet, req.ip)
     }
 
     req.params.CID = multihash
     req.params.streamable = true
-
-    return getCID(req, res)
-  }))
+    res.set('Content-Type', 'audio/mpeg')
+    next()
+  }, getCID)
 
   /**
    * List all unlisted tracks for a user

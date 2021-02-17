@@ -1,18 +1,20 @@
 # pylint: disable=too-many-lines
 import logging
-from urllib.parse import urljoin
-import requests
 from sqlalchemy import func, desc, text, Integer, and_, bindparam
 
 from flask import request
 
 from src import exceptions
 from src.queries import response_name_constants
-from src.models import User, Track, Repost, RepostType, Follow, Playlist, Save, SaveType, Remix
-from src.utils import helpers
-from src.utils.config import shared_config
+from src.models import User, Track, Repost, RepostType, Follow, \
+    Playlist, Save, SaveType, Remix, AggregatePlays
+from src.utils import helpers, redis_connection
+from src.queries.get_unpopulated_users import get_unpopulated_users
+from src.queries.get_balances import get_balances, enqueue_balance_refresh
 
 logger = logging.getLogger(__name__)
+
+redis = redis_connection.get_redis()
 
 
 ######## VARS ########
@@ -96,6 +98,10 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows
 def populate_user_metadata(session, user_ids, users, current_user_id, with_track_save_count=False):
+    # Always enqueue balance refresh for current user
+    if current_user_id:
+        enqueue_balance_refresh(redis, [current_user_id])
+
     # build dict of user id --> track count
     track_counts = (
         session.query(
@@ -285,6 +291,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
         current_user_followee_follow_count_dict = {user_id: followee_follow_count for (
             user_id, followee_follow_count) in current_user_followee_follow_counts}
 
+    balance_dict = get_balances(session, redis, user_ids)
+
     for user in users:
         user_id = user["user_id"]
         user[response_name_constants.track_count] = track_count_dict.get(
@@ -309,7 +317,32 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             user_id, False)
         user[response_name_constants.current_user_followee_follow_count] = current_user_followee_follow_count_dict.get(
             user_id, 0)
+        user[response_name_constants.balance] = balance_dict.get(user_id, 0)
 
+    return users
+
+
+def populate_user_follower_counts(session, user_ids, users):
+    """Gets user follower counts for an array of user_ids and corresponding users"""
+    follower_counts = (
+        session.query(
+            Follow.followee_user_id,
+            func.count(Follow.followee_user_id)
+        )
+        .filter(
+            Follow.is_current == True,
+            Follow.is_delete == False,
+            Follow.followee_user_id.in_(user_ids)
+        )
+        .group_by(Follow.followee_user_id)
+        .all()
+    )
+    follower_count_dict = {user_id: follower_count for (
+        user_id, follower_count) in follower_counts}
+    for user in users:
+        user_id = user["user_id"]
+        user[response_name_constants.follower_count] = follower_count_dict.get(
+            user_id, 0)
     return users
 
 
@@ -328,7 +361,6 @@ def get_track_play_count_dict(session, track_ids):
     track_play_counts = session.execute(query, {"ids": track_ids}).fetchall()
     track_play_dict = dict(track_play_counts)
     return track_play_dict
-
 
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
@@ -493,6 +525,31 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         else:
             track[response_name_constants.remix_of] = None
 
+    return tracks
+
+
+def populate_track_repost_counts(session, track_ids, tracks):
+    """Gets track repost counts for an array of track_ids and corresponding tracks"""
+    repost_counts = (
+        session.query(
+            Repost.repost_item_id,
+            func.count(Repost.repost_item_id)
+        )
+        .filter(
+            Repost.is_current == True,
+            Repost.is_delete == False,
+            Repost.repost_item_id.in_(track_ids),
+            Repost.repost_type == RepostType.track
+        )
+        .group_by(Repost.repost_item_id)
+        .all()
+    )
+    repost_count_dict = {track_id: repost_count for (
+        track_id, repost_count) in repost_counts}
+    for track in tracks:
+        track_id = track["track_id"]
+        track[response_name_constants.repost_count] = repost_count_dict.get(
+            track_id, 0)
     return tracks
 
 
@@ -746,6 +803,20 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             user_reposted_playlist_dict.get(playlist_id, False)
         playlist[response_name_constants.has_current_user_saved] = user_saved_playlist_dict.get(
             playlist_id, False)
+
+    return playlists
+
+
+def populate_playlist_repost_counts(session, playlist_ids, playlists, repost_types):
+    """Gets playlist repost counts for an array of playlist_ids and corresponding playlists"""
+    # build dict of playlist id --> repost count
+    playlist_repost_counts = dict(get_repost_counts(
+        session, False, False, playlist_ids, repost_types))
+
+    for playlist in playlists:
+        playlist_id = playlist["playlist_id"]
+        playlist[response_name_constants.repost_count] = playlist_repost_counts.get(
+            playlist_id, 0)
 
     return playlists
 
@@ -1005,42 +1076,34 @@ def get_follower_count_dict(session, user_ids, max_block_number=None):
     return follower_count_dict
 
 
-def get_track_play_counts(track_ids):
+def get_track_play_counts(db, track_ids):
+    """Gets the track play counts for the given track_ids
+    Args:
+        db: sqlalchemy db session instance
+        track_ids: list of track ids
+
+    Returns:
+        dict of track id keys to track play count values
+    """
+
     track_listen_counts = {}
 
     if not track_ids:
         return track_listen_counts
 
-    identity_url = shared_config['discprov']['identity_service_url']
-    # Create and query identity service endpoint
-    identity_tracks_endpoint = urljoin(identity_url, 'tracks/listens')
+    track_plays = (
+        db.query(AggregatePlays)
+        .filter(AggregatePlays.play_item_id.in_(track_ids))
+        .all()
+    )
 
-    post_body = {}
-    post_body['track_ids'] = track_ids
-    try:
-        resp = requests.post(identity_tracks_endpoint, json=post_body)
-    except Exception as e:
-        logger.error(
-            f'Error retrieving play count - {identity_tracks_endpoint}, {e}'
-        )
-        return track_listen_counts
+    for track_play in track_plays:
+        track_listen_counts[track_play.play_item_id] = track_play.count
 
-    json_resp = resp.json()
-    keys = list(resp.json().keys())
-    if not keys:
-        return track_listen_counts
+    for track_id in track_ids:
+        if track_id not in track_listen_counts:
+            track_listen_counts[track_id] = 0
 
-    # Scenario should never arise, since we don't impose date parameter on initial query
-    if len(keys) != 1:
-        raise Exception('Invalid number of keys')
-
-    # Parse listen query results into track listen count dictionary
-    date_key = keys[0]
-    listen_count_json = json_resp[date_key]
-    if 'listenCounts' in listen_count_json:
-        for listen_info in listen_count_json['listenCounts']:
-            current_id = listen_info['trackId']
-            track_listen_counts[current_id] = listen_info['listens']
     return track_listen_counts
 
 
@@ -1081,10 +1144,7 @@ def get_genre_list(genre):
 
 
 def get_users_by_id(session, user_ids, current_user_id=None):
-    user_query = session.query(User).filter(
-        User.is_current == True, User.wallet != None, User.handle != None)
-    users_results = user_query.filter(User.user_id.in_(user_ids)).all()
-    users = helpers.query_result_to_list(users_results)
+    users = get_unpopulated_users(session, user_ids)
 
     if not current_user_id:
         current_user_id = get_current_user_id(required=False)

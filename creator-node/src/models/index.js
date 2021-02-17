@@ -13,7 +13,7 @@ const sequelize = new Sequelize(globalConfig.get('dbUrl'), {
   logging: globalConfig.get('printSequelizeLogs'),
   operatorsAliases: false,
   pool: {
-    max: 100,
+    max: globalConfig.get('dbConnectionPoolMax'),
     min: 5,
     acquire: 60000,
     idle: 10000

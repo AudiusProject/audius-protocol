@@ -9,7 +9,7 @@ const { formatNotificationProps } = require('./formatNotificationMetadata')
 const config = require('../config.js')
 const { logger } = require('../logging')
 
-const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
+const USER_NODE_IPFS_GATEWAY = config.get('environment').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
 
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 const DEFAULT_TRACK_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageTrackEmpty.jpg'
@@ -48,7 +48,8 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       },
       order: [
         ['timestamp', 'DESC'],
-        ['entityId', 'ASC']
+        ['entityId', 'ASC'],
+        [{ model: models.NotificationAction, as: 'actions' }, 'createdAt', 'DESC']
       ],
       include: [{
         model: models.NotificationAction,
@@ -99,7 +100,7 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
 
     const finalUserNotifications = userNotifications.slice(0, limit)
     // Explicitly fetch image thumbnails
-    const metadata = await fetchNotificationMetadata(audius, userId, finalUserNotifications, true)
+    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
@@ -107,8 +108,8 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
   }
 }
 
-async function fetchNotificationMetadata (audius, userId, notifications, fetchThumbnails = false) {
-  let userIdsToFetch = [userId]
+async function fetchNotificationMetadata (audius, userIds = [], notifications, fetchThumbnails = false) {
+  let userIdsToFetch = [...userIds]
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
   let fetchTrackRemixParents = []
@@ -182,6 +183,10 @@ async function fetchNotificationMetadata (audius, userId, notifications, fetchTh
             userIdsToFetch.push(action.actionEntityId)
           }
         }
+        break
+      }
+      case NotificationType.TrendingTrack: {
+        trackIdsToFetch.push(notification.entityId)
         break
       }
     }
@@ -273,9 +278,11 @@ async function fetchNotificationMetadata (audius, userId, notifications, fetchTh
     return um
   }, {})
 
-  for (let trackId of Object.keys(trackMap)) {
-    const track = trackMap[trackId]
-    track.thumbnail = await getTrackImage(track, userMap)
+  if (fetchThumbnails) {
+    for (let trackId of Object.keys(trackMap)) {
+      const track = trackMap[trackId]
+      track.thumbnail = await getTrackImage(track, userMap)
+    }
   }
 
   return {

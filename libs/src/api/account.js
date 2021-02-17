@@ -1,6 +1,7 @@
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
-
+const Utils = require('../utils')
+const { getPermitDigest, sign } = require('../utils/signatures')
 class Account extends Base {
   constructor (userApi, ...services) {
     super(...services)
@@ -89,7 +90,6 @@ class Account extends Base {
    * @param {string} email
    * @param {string} password
    * @param {Object} metadata
-   * @param {?boolean} [isCreator] whether or not the user is a content creator.
    * @param {?File} [profilePictureFile] an optional file to upload as the profile picture
    * @param {?File} [coverPhotoFile] an optional file to upload as the cover phtoo
    * @param {?boolean} [hasWallet]
@@ -99,91 +99,52 @@ class Account extends Base {
     email,
     password,
     metadata,
-    isCreator = false,
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null
   ) {
-    let userId
-
     const phases = {
-      ADD_CREATOR: 'ADD_CREATOR',
+      ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
-
     let phase = ''
+    let userId
+
     try {
-      if (isCreator) {
-        if (this.web3Manager.web3IsExternal()) {
-          // Creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Creator and identity service web3
-          this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_CREATOR
-          userId = await this.User.addCreator(metadata)
-        }
+      if (this.web3Manager.web3IsExternal()) {
+        phase = phases.CREATE_USER_RECORD
+        await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
       } else {
-        if (this.web3Manager.web3IsExternal()) {
-          // Non-creator and external web3 (e.g. MetaMask)
-          this.REQUIRES(Services.IDENTITY_SERVICE)
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
-
-          phase = phases.CREATE_USER_RECORD
-          await this.identityService.createUserRecord(email, this.web3Manager.getWalletAddress())
-        } else {
-          // Non-creator and identity service web3
-          this.REQUIRES(Services.IDENTITY_SERVICE, Services.HEDGEHOG)
-
-          // If an owner wallet already exists, don't try to recreate it
-          if (!hasWallet) {
-            phase = phases.HEDGEHOG_SIGNUP
-            const ownerWallet = await this.hedgehog.signUp(email, password)
-            await this.web3Manager.setOwnerWallet(ownerWallet)
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-
-          phase = phases.UPLOAD_PROFILE_IMAGES
-          metadata = await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
-
-          phase = phases.ADD_USER
-          userId = await this.User.addUser(metadata)
+        this.REQUIRES(Services.HEDGEHOG)
+        // If an owner wallet already exists, don't try to recreate it
+        if (!hasWallet) {
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          await this.web3Manager.setOwnerWallet(ownerWallet)
+          await this.generateRecoveryLink({ handle: metadata.handle, host })
         }
       }
-    } catch (err) {
-      return { error: err.message, phase }
-    }
 
-    metadata.user_id = userId
-    metadata.wallet = this.web3Manager.getWalletAddress()
-    this.userStateManager.setCurrentUser(metadata)
+      // Add user to chain
+      phase = phases.ADD_USER
+      userId = await this.User.addUser(metadata)
+
+      // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
+      phase = phases.ADD_REPLICA_SET
+      metadata = await this.User.assignReplicaSet({ userId })
+
+      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+    } catch (e) {
+      return { error: e.message, phase }
+    }
 
     return { userId, error: false }
   }
@@ -327,6 +288,122 @@ class Account extends Base {
   async searchTags (text, user_tag_count = 2, kind, limit = 100, offset = 0) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return this.discoveryProvider.searchTags(text, user_tag_count, kind, limit, offset)
+  }
+
+  /**
+   * Check if the user has a distribution claim
+   * @param {number?} index The index of the claim to check (if known)
+   */
+  async getHasClaimed (index) {
+    this.REQUIRES(Services.COMSTOCK)
+    if (index) {
+      return this.ethContracts.ClaimDistributionClient.isClaimed(index)
+    }
+    const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    const claim = await this.comstock.getComstock({ wallet })
+    return this.ethContracts.ClaimDistributionClient.isClaimed(claim.index)
+  }
+
+  /**
+   * Get the distribution claim amount
+   */
+  async getClaimDistributionAmount () {
+    this.REQUIRES(Services.COMSTOCK)
+    const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    const claimDistribution = await this.comstock.getComstock({ wallet })
+    const amount = Utils.toBN(claimDistribution.amount.replace('0x', ''), 16)
+    return amount
+  }
+
+  /**
+   * Make the claim
+   * @param {number?} index The index of the claim to check
+   * @param {BN?} amount The amount to be claimed
+   * @param {Array<string>?} merkleProof The merkle proof for the claim
+   */
+  async makeDistributionClaim (index, amount, merkleProof) {
+    this.REQUIRES(Services.COMSTOCK, Services.IDENTITY_SERVICE)
+    const userWallet = this.web3Manager.getWalletAddress()
+    const web3 = this.web3Manager.getWeb3()
+    const wallet = web3.utils.toChecksumAddress(userWallet)
+    if (index && amount && merkleProof) {
+      return this.ethContracts.ClaimDistributionClient.claim(
+        index,
+        userWallet,
+        amount,
+        merkleProof
+      )
+    }
+    const claim = await this.comstock.getComstock({ wallet })
+    return this.ethContracts.ClaimDistributionClient.claim(
+      claim.index,
+      userWallet,
+      claim.amount,
+      claim.proof
+    )
+  }
+
+  /**
+   * Sends `amount` tokens to `recipientAddress` by way of `relayerAddress`
+   */
+  async permitAndSendTokens (recipientAddress, amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
+    await this.sendTokens(myWalletAddress, recipientAddress, amount)
+  }
+
+  /**
+   * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
+   */
+  async permitProxySendTokens (owner, relayerAddress, amount) {
+    const web3 = this.ethWeb3Manager.getWeb3()
+    const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
+    const chainId = await new Promise(resolve => web3.eth.getChainId((_, chainId) => resolve(chainId)))
+    const name = await this.ethContracts.AudiusTokenClient.name()
+    const tokenAddress = this.ethContracts.AudiusTokenClient.contractAddress
+
+    // Submit permit request to give address approval, via relayer
+    let nonce = await this.ethContracts.AudiusTokenClient.nonces(owner)
+    const currentBlockNumber = await web3.eth.getBlockNumber()
+    const currentBlock = await web3.eth.getBlock(currentBlockNumber)
+    // 1 hour, sufficiently far in future
+    let deadline = currentBlock.timestamp + (60 * 60 * 1)
+
+    let digest = getPermitDigest(
+      web3,
+      name,
+      tokenAddress,
+      chainId,
+      { owner: owner, spender: relayerAddress, value: amount },
+      nonce,
+      deadline
+    )
+    let result = sign(digest, myPrivateKey)
+    const tx = await this.ethContracts.AudiusTokenClient.permit(
+      owner,
+      relayerAddress,
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s,
+      { from: owner }
+    )
+    return tx
+  }
+
+  /**
+   * Sends `amount` tokens to `address` from `owner`
+   */
+  async sendTokens (owner, address, amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, amount)
   }
 }
 

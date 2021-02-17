@@ -5,6 +5,7 @@ from src import exceptions
 from src.models import Track, Repost, RepostType, Save, SaveType, Remix
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import populate_track_metadata, \
     add_query_pagination, add_users_to_tracks, create_save_count_subquery, \
     create_repost_count_subquery
@@ -28,16 +29,15 @@ def get_remixes_of(args):
 
     with db.scoped_session() as session:
         def get_unpopulated_remixes():
-            # Fetch the parent track to get the track's owner id
-            parent_track = session.query(Track).filter(
-                Track.is_current == True,
-                Track.track_id == track_id
-            ).first()
 
-            if parent_track == None:
+            # Fetch the parent track to get the track's owner id
+            parent_track_res = get_unpopulated_tracks(session, [track_id], False, False)
+
+            if not parent_track_res or parent_track_res[0] is None:
                 raise exceptions.ArgumentError("Invalid track_id provided")
 
-            track_owner_id = parent_track.owner_id
+            parent_track = parent_track_res[0]
+            track_owner_id = parent_track['owner_id']
 
             # Create subquery for save counts for sorting
             save_count_subquery = create_save_count_subquery(

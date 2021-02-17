@@ -4,6 +4,7 @@ const semver = require('semver')
 const DiscoveryProviderSelection = require('./DiscoveryProviderSelection')
 const DiscoveryProvider = require('.')
 const helpers = require('../../../tests/helpers')
+const { DISCOVERY_PROVIDER_TIMESTAMP } = require('./constants')
 let audiusInstance = helpers.audiusInstance
 
 const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
@@ -31,7 +32,7 @@ describe('DiscoveryProviderSelection', () => {
   beforeEach(() => {
     const LocalStorage = require('node-localstorage').LocalStorage
     const localStorage = new LocalStorage('./local-storage')
-    localStorage.removeItem('@audius/libs:discovery-provider-timestamp')
+    localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
   })
   afterEach(() => {
     nock.cleanAll()
@@ -43,7 +44,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -61,7 +62,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -69,7 +70,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(unhealthy)
       .get('/health_check')
       .reply(400, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -87,7 +88,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -95,7 +96,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(outdated)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.2',
         block_difference: 0
       } })
@@ -113,7 +114,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -121,7 +122,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(behind)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 20
       } })
@@ -139,7 +140,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthyButBehind)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 20
       } })
@@ -147,7 +148,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(pastVersionNotBehind)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.2',
         block_difference: 0
       } })
@@ -160,12 +161,12 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(service, pastVersionNotBehind)
     assert.deepStrictEqual(s.backups, {
       [healthyButBehind]: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 20
       },
       [pastVersionNotBehind]: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.2',
         block_difference: 0
       }
@@ -178,7 +179,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(behind20)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.2',
         block_difference: 20
       } })
@@ -186,7 +187,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(behind40)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 40
       } })
@@ -199,12 +200,12 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(service, behind20)
     assert.deepStrictEqual(s.backups, {
       [behind20]: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.2',
         block_difference: 20
       },
       [behind40]: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 40
       }
@@ -218,7 +219,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(behind100)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 100
       } })
@@ -226,7 +227,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(behind200)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 200
       } })
@@ -243,12 +244,12 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(service, behind100)
     assert.deepStrictEqual(s.backups, {
       [behind100]: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 100
       },
       [behind200]: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 200
       }
@@ -262,7 +263,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(minorBehind)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.1.3',
         block_difference: 20
       } })
@@ -279,7 +280,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy1)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -288,7 +289,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy2)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -311,7 +312,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(healthy1)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -322,7 +323,7 @@ describe('DiscoveryProviderSelection', () => {
     )
     const service = await s.select()
     assert.strictEqual(service, healthy1)
-    const { endpoint } = JSON.parse(localStorage.getItem('@audius/libs:discovery-provider-timestamp'))
+    const { endpoint } = JSON.parse(localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP))
     assert.strictEqual(
       endpoint,
       healthy1
@@ -338,7 +339,7 @@ describe('DiscoveryProviderSelection', () => {
       .get('/health_check')
       .delay(100)
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -348,7 +349,7 @@ describe('DiscoveryProviderSelection', () => {
       .get('/health_check')
       .delay(100)
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -357,7 +358,7 @@ describe('DiscoveryProviderSelection', () => {
     nock(initiallyUnhealthy)
       .get('/health_check')
       .reply(400, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -367,7 +368,7 @@ describe('DiscoveryProviderSelection', () => {
       mockEthContracts([healthy1, healthy2, initiallyUnhealthy], '1.2.3')
     )
     const firstService = await s.select()
-    const { endpoint } = JSON.parse(localStorage.getItem('@audius/libs:discovery-provider-timestamp'))
+    const { endpoint } = JSON.parse(localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP))
     assert.strictEqual(
       endpoint,
       firstService
@@ -384,27 +385,27 @@ describe('DiscoveryProviderSelection', () => {
 
     // Clear the cached service
     s.clearUnhealthy()
-    localStorage.removeItem('@audius/libs:discovery-provider-timestamp')
+    localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
 
     // Make healthy1 start failing but healthy2 succeed
     nock(healthy1)
       .get('/health_check')
       .reply(400, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
     nock(healthy2)
       .get('/health_check')
       .reply(400, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
     nock(initiallyUnhealthy)
       .get('/health_check')
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -426,7 +427,7 @@ describe('DiscoveryProviderSelection', () => {
       .persist()
       .get(uri => true) // hitting any route will respond with 200
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
@@ -437,14 +438,14 @@ describe('DiscoveryProviderSelection', () => {
       .get(uri => true)
       .delay(100)
       .reply(200, { data: {
-        service: 'discovery-provider',
+        service: 'discovery-node',
         version: '1.2.3',
         block_difference: 0
       } })
 
     // Initialize libs and then set disc prov instance with eth contracts mock
     await audiusInstance.init()
-    localStorage.removeItem('@audius/libs:discovery-provider-timestamp')
+    localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
     const mockDP = new DiscoveryProvider(
       null, // whitelist
       audiusInstance.userStateManager,
@@ -457,7 +458,7 @@ describe('DiscoveryProviderSelection', () => {
     audiusInstance.discoveryProvider = mockDP
 
     // Check that healthyThenUnhealthy was chosen and set in local stoarge
-    const discProvLocalStorageData1 = JSON.parse(localStorage.getItem('@audius/libs:discovery-provider-timestamp'))
+    const discProvLocalStorageData1 = JSON.parse(localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP))
     assert.strictEqual(audiusInstance.discoveryProvider.discoveryProviderEndpoint, healthyThenUnhealthy)
     assert.strictEqual(discProvLocalStorageData1.endpoint, healthyThenUnhealthy)
 
@@ -471,7 +472,7 @@ describe('DiscoveryProviderSelection', () => {
 
     // Make a libs request to disc prov; should use healthy
     await audiusInstance.discoveryProvider.getUsers(1)
-    const discProvLocalStorageData2 = JSON.parse(localStorage.getItem('@audius/libs:discovery-provider-timestamp'))
+    const discProvLocalStorageData2 = JSON.parse(localStorage.getItem(DISCOVERY_PROVIDER_TIMESTAMP))
 
     // Check that healthy was chosen and set in local stoarge
     assert.strictEqual(audiusInstance.discoveryProvider.discoveryProviderEndpoint, healthy)

@@ -1,17 +1,30 @@
-const Utils = require('../utils')
 const axios = require('axios')
+const semver = require('semver')
+
+const Utils = require('../utils')
 const promiseFight = require('./promiseFight')
 
 /**
 * Fetches a url and times how long it took the request to complete.
 * @param {Object} request {id, url}
+* @param {number?} timeout
 * @returns { request, response, millis }
 */
-async function timeRequest (request) {
+async function timeRequest (request, timeout = null) {
   // This is non-perfect because of the js event loop, but enough
   // of a proximation. Don't use for mission-critical timing.
   const startTime = new Date().getTime()
-  const response = await axios.get(request.url)
+  let config = {}
+  if (timeout) {
+    config.timeout = timeout
+  }
+  let response
+  try {
+    response = await axios.get(request.url, config)
+  } catch (e) {
+    console.debug(`Error with request for ${request.url}: ${e}`)
+    return { request, response: null, millis: null }
+  }
   const millis = new Date().getTime() - startTime
   return { request, response, millis }
 }
@@ -20,14 +33,41 @@ async function timeRequest (request) {
  * Fetches multiple urls and times each request and returns the results sorted by
  * lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {number?} timeout ms applied to each individual request
  * @returns { Array<{url, response, millis}> }
  */
-async function timeRequests (requests) {
+async function timeRequests (requests, timeout = null) {
   let timings = await Promise.all(requests.map(async request =>
-    timeRequest(request)
+    timeRequest(request, timeout)
   ))
 
-  return timings.sort((a, b) => a.millis - b.millis)
+  return timings
+    .filter(timing => timing.response !== null)
+    .sort((a, b) => a.millis - b.millis)
+}
+
+/**
+ * Fetches multiple urls and times each request and returns the results sorted
+ * first by version and then by lowest-latency.
+ * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {number?} timeout ms applied to each individual request
+ * @returns { Array<{url, response, millis}> }
+ */
+async function timeRequestsAndSortByVersion (requests, timeout = null) {
+  let timings = await Promise.all(requests.map(async request =>
+    timeRequest(request, timeout)
+  ))
+
+  return timings.sort((a, b) => {
+    // If health check failed, send to back of timings
+    if (!a.response) return 1
+    if (!b.response) return -1
+    // Sort by highest version
+    if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
+    if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
+    // If same version, do a tie breaker on the response time
+    return a.millis - b.millis
+  })
 }
 
 // Races requests for file content
@@ -50,15 +90,16 @@ async function raceRequests (
   const CancelToken = axios.CancelToken
 
   const sources = []
+  let hasFinished = false
   const requests = urls.map(async (url, i) => {
     const source = CancelToken.source()
     sources.push(source)
 
     // Slightly offset requests by their order, so:
-    // 1. We try public gateways first
+    // 1. We try creator node gateways first
     // 2. We give requests the opportunity to get canceled if other's are very fast
     await Utils.wait(timeBetweenRequests * i)
-
+    if (hasFinished) return
     return new Promise((resolve, reject) => {
       axios({
         method: 'get',
@@ -69,6 +110,7 @@ async function raceRequests (
         .then(response => {
           const isValid = validationCheck(response)
           if (isValid) {
+            hasFinished = true
             resolve({
               blob: response,
               url
@@ -86,7 +128,9 @@ async function raceRequests (
         })
     })
   })
-  requests.push(Utils.wait(timeout))
+  if (timeout !== null) {
+    requests.push(Utils.wait(timeout))
+  }
   let response
   let errored
   try {
@@ -154,5 +198,6 @@ module.exports = {
   timeRequest,
   timeRequests,
   raceRequests,
-  allRequests
+  allRequests,
+  timeRequestsAndSortByVersion
 }

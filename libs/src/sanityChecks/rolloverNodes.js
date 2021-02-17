@@ -29,6 +29,7 @@ const getNewPrimary = async (libs, secondaries) => {
 }
 
 const rolloverNodes = async (libs, creatorNodeWhitelist) => {
+  console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager.getCurrentUser()
 
   if (!user || !user.is_creator) return
@@ -46,12 +47,12 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
     // Get new secondaries and backfill up to 2
     let newSecondaries = [...secondaries]
     newSecondaries.splice(index, 1)
-    const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes(
-      2 - newSecondaries.length,
-      creatorNodeWhitelist,
+    const autoselect = await libs.ServiceProvider.autoSelectCreatorNodes({
+      numberOfNodes: 2 - newSecondaries.length,
+      whitelist: creatorNodeWhitelist,
       // Exclude ones we currently have
-      new Set([newPrimary, ...newSecondaries])
-    )
+      blacklist: new Set([newPrimary, ...newSecondaries])
+    })
     newSecondaries = newSecondaries.concat([autoselect.primary, ...autoselect.secondaries])
 
     // Set the new endpoint and connect to it
@@ -61,6 +62,7 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
     // Update the user
     const newMetadata = { ...user }
     newMetadata.creator_node_endpoint = newEndpoints.join(',')
+    console.debug(`Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`)
     await libs.User.updateCreator(user.user_id, newMetadata)
   } catch (e) {
     console.error(e)

@@ -1,5 +1,3 @@
-from flask_restx.fields import Boolean
-from src.api.v1.helpers import make_response
 from flask_restx import fields
 from .users import user_model, user_model_full
 from .common import favorite, ns, repost
@@ -75,6 +73,7 @@ track = ns.model('Track', {
 })
 
 track_full = ns.clone('track_full', track, {
+    "blocknumber": fields.Integer(required=True),
     "create_date": fields.String,
     "cover_art_sizes": fields.String,
     "created_at": fields.String,
@@ -105,7 +104,8 @@ stem_full = ns.model('stem_full', {
     "parent_id": fields.String(required=True),
     "category": fields.String(required=True),
     "cid": fields.String(required=True),
-    "user_id": fields.String(required=True)
+    "user_id": fields.String(required=True),
+    "blocknumber": fields.Integer(required=True)
 })
 
 remixes_response = ns.model('remixes_response', {

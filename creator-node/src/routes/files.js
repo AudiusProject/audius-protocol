@@ -1,5 +1,6 @@
 const Redis = require('ioredis')
-const fs = require('fs')
+const fs = require('fs-extra')
+const path = require('path')
 var contentDisposition = require('content-disposition')
 
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
@@ -12,17 +13,29 @@ const {
   errorResponseServerError,
   errorResponseNotFound,
   errorResponseForbidden,
-  errorResponseRangeNotSatisfiable
+  errorResponseRangeNotSatisfiable,
+  errorResponseUnauthorized,
+  handleResponseWithHeartbeat
 } = require('../apiHelpers')
+const { recoverWallet } = require('../apiSigning')
 
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const { authMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat } = require('../utils')
+const {
+  authMiddleware,
+  ensurePrimaryMiddleware,
+  syncLockMiddleware,
+  triggerSecondarySyncs,
+  ensureStorageMiddleware
+} = require('../middlewares')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+const DiskManager = require('../diskManager')
+
+const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 
 /**
  * Helper method to stream file from file system on creator node
@@ -39,12 +52,10 @@ const streamFromFileSystem = async (req, res, path) => {
     let fileStream
 
     let stat
+    stat = fs.statSync(path)
+    // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
-      // Add content length headers
-      // Stats a file from FS and returns fs stat info, like size in bytes
-      stat = fs.statSync(path)
       res.set('Accept-Ranges', 'bytes')
-      res.set('Content-Length', stat.size)
     }
 
     // If a range header is present, use that to create the readstream
@@ -64,10 +75,12 @@ const streamFromFileSystem = async (req, res, path) => {
 
       // Add a content range header to the response
       res.set('Content-Range', formatContentRange(start, end, stat.size))
+      res.set('Content-Length', end - start + 1)
       // set 206 "Partial Content" success status response code
       res.status(206)
     } else {
       fileStream = fs.createReadStream(path)
+      res.set('Content-Length', stat.size)
     }
 
     await new Promise((resolve, reject) => {
@@ -81,6 +94,8 @@ const streamFromFileSystem = async (req, res, path) => {
     throw e
   }
 }
+
+const getStoragePathQueryCacheKey = (path) => `storagePathQuery:${path}`
 
 // Gets a CID, streaming from the filesystem if available and falling back to IPFS if not
 const getCID = async (req, res) => {
@@ -96,18 +111,28 @@ const getCID = async (req, res) => {
     return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
   }
 
-  // Don't serve if not found in DB.
-  const queryResults = await models.File.findOne({
-    where: {
-      multihash: CID
-    },
-    order: [['clock', 'DESC']]
-  })
-  if (!queryResults) {
-    return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
-  }
+  const cacheKey = getStoragePathQueryCacheKey(CID)
 
-  if (queryResults.type === 'dir') return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+  let storagePath = await redisClient.get(cacheKey)
+  if (!storagePath) {
+    // Don't serve if not found in DB.
+    const queryResults = await models.File.findOne({
+      where: {
+        multihash: CID
+      },
+      order: [['clock', 'DESC']]
+    })
+    if (!queryResults) {
+      return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
+    }
+
+    if (queryResults.type === 'dir') {
+      return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+    }
+
+    storagePath = queryResults.storagePath
+    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+  }
 
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
@@ -119,14 +144,26 @@ const getCID = async (req, res) => {
     res.setHeader('Content-Disposition', contentDisposition(req.query.filename))
   }
 
+  // Set the CID cache-control so that client cache the response for 30 days
+  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+
   try {
     // Add a rehydration task to the queue to be processed in the background
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, queryResults.storagePath, { logContext: req.logContext })
+    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, { logContext: req.logContext })
     // Attempt to stream file to client.
-    req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
-    return await streamFromFileSystem(req, res, queryResults.storagePath)
+    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
+
+    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+    try {
+      const libs = req.app.get('audiusLibs')
+      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      return await streamFromFileSystem(req, res, storagePath)
+    } catch (e) {
+      req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
+    }
   }
 
   try {
@@ -134,7 +171,6 @@ const getCID = async (req, res) => {
     // If the IPFS stat call fails or timesout, an error is thrown
     const stat = await ipfsStat(CID, req.logContext, 500)
     res.set('Accept-Ranges', 'bytes')
-    res.set('Content-Length', stat.size)
 
     // Stream file from ipfs if cat one byte takes under 500ms
     // If catReadableStream() promise is rejected, throw an error and stream from file system
@@ -158,10 +194,12 @@ const getCID = async (req, res) => {
         )
         // Add a content range header to the response
         res.set('Content-Range', formatContentRange(start, end, stat.size))
+        res.set('Content-Length', end - start + 1)
         // set 206 "Partial Content" success status response code
         res.status(206)
       } else {
         stream = req.app.get('ipfsAPI').catReadableStream(CID)
+        res.set('Content-Length', stat.size)
       }
 
       stream
@@ -170,6 +208,9 @@ const getCID = async (req, res) => {
         .on('error', e => { reject(e) })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
+
     // If the file cannot be retrieved through IPFS, return 500 without attempting to stream file.
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
@@ -187,39 +228,61 @@ const getDirCID = async (req, res) => {
   const filename = req.params.filename
   const ipfsPath = `${dirCID}/${filename}`
 
-  // Don't serve if not found in DB.
-  // Query for the file based on the dirCID and filename
-  const queryResults = await models.File.findOne({
-    where: {
-      dirMultihash: dirCID,
-      fileName: filename
-    },
-    order: [['clock', 'DESC']]
-  })
-  if (!queryResults) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
-    )
+  const cacheKey = getStoragePathQueryCacheKey(ipfsPath)
+
+  let storagePath = await redisClient.get(cacheKey)
+  if (!storagePath) {
+    // Don't serve if not found in DB.
+    // Query for the file based on the dirCID and filename
+    const queryResults = await models.File.findOne({
+      where: {
+        dirMultihash: dirCID,
+        fileName: filename
+      },
+      order: [['clock', 'DESC']]
+    })
+    if (!queryResults) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseNotFound(`No valid file found for provided dirCID: ${dirCID} and filename: ${filename}`)
+      )
+    }
+    storagePath = queryResults.storagePath
+    redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   }
+
   // Lop off the last bit of the storage path (the child CID)
   // to get the parent storage path for IPFS rehydration
-  const parentStoragePath = queryResults.storagePath.split('/').slice(0, -1).join('/')
+  const parentStoragePath = storagePath.split('/').slice(0, -1).join('/')
 
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
   req.logger.info(`IPFS Standalone Request - ${ipfsPath}`)
   req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
+  // Set the CID cache-control so that client cache the response for 30 days
+  res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+
   try {
     // Add rehydrate task to queue to be processed in background
     RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
     // Attempt to stream file to client.
-    req.logger.info(`Retrieving ${queryResults.storagePath} directly from filesystem`)
-    return await streamFromFileSystem(req, res, queryResults.storagePath)
+    req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
+    return await streamFromFileSystem(req, res, storagePath)
   } catch (e) {
-    req.logger.info(`Failed to retrieve ${queryResults.storagePath} from FS`)
+    req.logger.info(`Failed to retrieve ${storagePath} from FS`)
+
+    // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
+    try {
+      // CID is the file CID, parse it from the storagePath
+      const CID = storagePath.split('/').slice(-1).join('')
+      const libs = req.app.get('audiusLibs')
+      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      return await streamFromFileSystem(req, res, storagePath)
+    } catch (e) {
+      req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
+    }
   }
 
   try {
@@ -236,6 +299,8 @@ const getDirCID = async (req, res) => {
         .on('error', e => { reject(e) })
     })
   } catch (e) {
+    // Unset the cache-control header so that a bad response is not cached
+    res.removeHeader('cache-control')
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
@@ -244,7 +309,7 @@ module.exports = function (app) {
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */
-  app.post('/image_upload', authMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponse(async (req, res) => {
+  app.post('/image_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }
@@ -264,7 +329,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '150x150.jpg': 150,
             '480x480.jpg': 480,
@@ -277,7 +341,6 @@ module.exports = function (app) {
         resizeResp = await ImageProcessingQueue.resizeImage({
           file: imageBufferOriginal,
           fileName: originalFileName,
-          storagePath: req.app.get('storagePath'),
           sizes: {
             '640x.jpg': 640,
             '2000x.jpg': 2000
@@ -290,6 +353,54 @@ module.exports = function (app) {
       req.logger.debug('ipfs add resp', resizeResp)
     } catch (e) {
       return errorResponseServerError(e)
+    }
+
+    /**
+     * Ensure image files written to disk match dirCID returned from resizeImage
+     */
+
+    const ipfs = req.app.get('ipfsLatestAPI')
+
+    const dirCID = resizeResp.dir.dirCID
+
+    // build ipfs add array
+    let ipfsAddArray = []
+    try {
+      await Promise.all(resizeResp.files.map(async function (file) {
+        const fileBuffer = await fs.readFile(file.storagePath)
+        ipfsAddArray.push({
+          path: file.sourceFile,
+          content: fileBuffer
+        })
+      }))
+    } catch (e) {
+      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+    }
+
+    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+    let ipfsAddRespArr
+    try {
+      const ipfsAddResp = await ipfs.add(
+        ipfsAddArray,
+        {
+          pin: false,
+          onlyHash: true,
+          timeout: 1000
+        }
+      )
+      ipfsAddRespArr = []
+      for await (const resp of ipfsAddResp) {
+        ipfsAddRespArr.push(resp)
+      }
+    } catch (e) {
+      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
+      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+    }
+
+    // Ensure actual and expected dirCIDs match
+    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+    if (expectedDirCID !== dirCID) {
+      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID ${dirCID}`)
     }
 
     // Record image file entries in DB
@@ -312,7 +423,7 @@ module.exports = function (app) {
           sourceFile: file.sourceFile,
           storagePath: file.storagePath,
           type: 'image', // TODO - replace with models enum
-          dirMultihash: resizeResp.dir.dirCID,
+          dirMultihash: dirCID,
           fileName: file.sourceFile.split('/').slice(-1)[0]
         }
         await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
@@ -320,17 +431,18 @@ module.exports = function (app) {
 
       req.logger.info(`route time = ${Date.now() - routestart}`)
       await transaction.commit()
-      triggerSecondarySyncs(req)
-      return successResponse({ dirCID: resizeResp.dir.dirCID })
     } catch (e) {
       await transaction.rollback()
       return errorResponseServerError(e)
     }
+
+    triggerSecondarySyncs(req)
+    return successResponse({ dirCID })
   }))
 
   app.get('/ipfs_peer_info', handleResponse(async (req, res) => {
     const ipfs = req.app.get('ipfsAPI')
-    const ipfsIDObj = await getIPFSPeerId(ipfs, config)
+    const ipfsIDObj = await getIPFSPeerId(ipfs)
     if (req.query.caller_ipfs_id) {
       try {
         req.logger.info(`Connection to ${req.query.caller_ipfs_id}`)
@@ -368,6 +480,61 @@ module.exports = function (app) {
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
+
+  /**
+   * Serve file from FS given a storage path
+   * This is a cnode-cnode only route, not to be consumed by clients. It has auth restrictions to only
+   * allow calls from cnodes with delegateWallets registered on chain
+   * @dev No handleResponse around this route because it doesn't play well with our route handling abstractions,
+   * same as the /ipfs route
+   * @param req.query.filePath the fs path for the file. should be full path including leading /file_storage
+   * @param req.query.delegateWallet the wallet address that signed this request
+   * @param req.query.timestamp the timestamp when the request was made
+   * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
+   */
+  app.get('/file_lookup', async (req, res) => {
+    const { filePath, timestamp, signature } = req.query
+    let { delegateWallet } = req.query
+    delegateWallet = delegateWallet.toLowerCase()
+
+    // no filePath passed in
+    if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
+
+    // check that signature is correct and delegateWallet is registered on chain
+    const recoveredWallet = recoverWallet({ filePath, delegateWallet, timestamp }, signature).toLowerCase()
+    const libs = req.app.get('audiusLibs')
+    const creatorNodes = await getAllRegisteredCNodes(libs)
+    const foundDelegateWallet = creatorNodes.some(node => node.delegateOwnerWallet.toLowerCase() === recoveredWallet)
+    if ((recoveredWallet !== delegateWallet) || !foundDelegateWallet) {
+      return sendResponse(req, res, errorResponseUnauthorized(`Invalid wallet signature`))
+    }
+    const filePathNormalized = path.normalize(filePath)
+
+    // check that the regex works and verify it's not blacklisted
+    const matchObj = DiskManager.extractCIDsFromFSPath(filePathNormalized)
+    if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
+
+    const { outer, inner } = matchObj
+    if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
+      return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
+    }
+    res.setHeader('Content-Disposition', contentDisposition(outer))
+
+    // inner will only be set for image dir CID
+    // if there's an inner CID, check if CID is blacklisted and set content disposition header
+    if (inner) {
+      if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {
+        return sendResponse(req, res, errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`))
+      }
+      res.setHeader('Content-Disposition', contentDisposition(inner))
+    }
+
+    try {
+      return await streamFromFileSystem(req, res, filePathNormalized)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseNotFound(`File with path not found`))
+    }
+  })
 }
 
 module.exports.getCID = getCID

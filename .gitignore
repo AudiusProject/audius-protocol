@@ -4,3 +4,5 @@
 *.swn
 .vscode
 node_modules/
+
+.idea

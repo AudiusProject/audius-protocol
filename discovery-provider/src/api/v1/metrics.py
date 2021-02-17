@@ -1,23 +1,28 @@
-import logging # pylint: disable=C0302
-from datetime import datetime
+import logging
 from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
 from flask import Flask, Blueprint
-from flask_restx import Resource, Namespace, fields, reqparse
+from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.api.v1.helpers import make_response, success_response, to_dict, \
     parse_bool_param, parse_unix_epoch_param, abort_bad_request_param
-from .models.metrics import route_metric, app_name_metric, app_name, plays_metric, genre_metric
+from .models.metrics import route_metric, app_name_metric, app_name, plays_metric, \
+    genre_metric, route_trailing_metric, app_name_trailing_metric
 from src.queries.get_route_metrics import get_route_metrics
 from src.queries.get_app_name_metrics import get_app_name_metrics
 from src.queries.get_app_names import get_app_names
+from src.queries.get_trailing_metrics import get_monthly_trailing_route_metrics, \
+    get_trailing_app_metrics
 from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 
+
 ns = Namespace('metrics', description='Metrics related operations')
 
 route_metrics_response = make_response("metrics_reponse", ns, fields.List(fields.Nested(route_metric)))
+route_metrics_trailing_month_response = make_response("route_metrics_trailing_month_response", ns, fields.Nested(route_trailing_metric))
 app_name_response = make_response("app_name_response", ns, fields.List(fields.Nested(app_name)))
+app_name_trailing_response = make_response("app_name_trailing_response", ns, fields.List(fields.Nested(app_name_trailing_metric)))
 app_name_metrics_response = make_response("app_name_metrics_response", ns, fields.List(fields.Nested(app_name_metric)))
 plays_metrics_response = make_response("plays_metrics", ns, fields.List(fields.Nested(plays_metric)))
 genre_metrics_response = make_response("genre_metrics", ns, fields.List(fields.Nested(genre_metric)))
@@ -54,7 +59,7 @@ class RouteMetrics(Resource):
         }
     )
     @ns.marshal_with(route_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         """Get the route metrics"""
         args = metrics_route_parser.parse_args()
@@ -90,7 +95,17 @@ metrics_app_name_list_parser = reqparse.RequestParser()
 metrics_app_name_list_parser.add_argument('start_time', required=False, type=int)
 metrics_app_name_list_parser.add_argument('limit', required=False, type=int)
 metrics_app_name_list_parser.add_argument('offset', required=False, type=int)
-metrics_app_name_list_parser.add_argument('include_unknown', required=False, type=bool)
+metrics_app_name_list_parser.add_argument('include_unknown', required=False, type=inputs.boolean)
+
+@ns.route("/routes/trailing/month", doc=False)
+class RouteMetricsTrailingMonth(Resource):
+    @ns.marshal_with(route_metrics_trailing_month_response)
+    @cache(ttl_sec=30 * 60)
+    def get(self):
+        """Gets trailing month route metrics from matview"""
+        metrics = get_monthly_trailing_route_metrics()
+        response = success_response(metrics)
+        return response
 
 @ns.route("/app_name", doc=False)
 class AppNameListMetrics(Resource):
@@ -129,6 +144,27 @@ class AppNameListMetrics(Resource):
         response = success_response(app_names)
         return response
 
+
+valid_trailing_time_periods = ["week", "month", "all_time"]
+trailing_app_name_parser = reqparse.RequestParser()
+trailing_app_name_parser.add_argument('limit', required=False, type=int)
+
+@ns.route("/app_name/trailing/<string:time_range>")
+class TrailingAppNameMetrics(Resource):
+    @ns.marshal_with(app_name_trailing_response)
+    @cache(ttl_sec=3 * 60 * 60)
+    def get(self, time_range):
+        """Gets trailing app name metrics from matview"""
+        if time_range not in valid_trailing_time_periods:
+            abort_bad_request_param('time_range', ns)
+        parsed = trailing_app_name_parser.parse_args()
+        args = {
+            "limit": parsed.get("limit", 10),
+            "time_range": time_range
+        }
+        metrics = get_trailing_app_metrics(args)
+        response = success_response(metrics)
+        return response
 
 metrics_app_name_parser = reqparse.RequestParser()
 metrics_app_name_parser.add_argument('start_time', required=False, type=int)
@@ -199,7 +235,7 @@ class PlaysMetrics(Resource):
     )
     @ns.expect(metrics_plays_parser)
     @ns.marshal_with(plays_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         args = metrics_plays_parser.parse_args()
 
@@ -245,7 +281,7 @@ class GenreMetrics(Resource):
     )
     @ns.expect(metrics_genres_parser)
     @ns.marshal_with(genre_metrics_response)
-    @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=3 * 60 * 60)
     def get(self):
         args = metrics_genres_parser.parse_args()
 

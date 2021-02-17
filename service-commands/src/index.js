@@ -1,59 +1,24 @@
-const {
-  runSetupCommand,
-  performHealthCheck,
-  allUp,
-  Service,
-  SetupCommand
-} = require('./setup')
+const Setup = require('./setup')
 
 const { LibsWrapper, Utils } = require('./libs')
-const {
-  addUser,
-  upgradeToCreator,
-  autoSelectCreatorNodes,
-  getUser,
-  getLibsUserInfo,
-  updateMultihash,
-  updateCoverPhoto,
-  updateProfilePhoto
-} = require('./commands/users')
-const {
-  uploadTrack,
-  getTrackMetadata,
-  addTrackToChain,
-  updateTrackOnChain
-} = require('./commands/tracks')
-const { verifyCIDExistsOnCreatorNode } = require('./commands/files')
-const { addIPLDToBlacklist } = require('./commands/ipldBlacklist')
-const {
-  createPlaylist,
-  updatePlaylistCoverPhoto,
-  getPlaylists
-} = require('./commands/playlists')
+
+// Any method you add in these commands files will be automatically imported
+// and accessible via ServiceCommands
+const User = require('./commands/users')
+const Track = require('./commands/tracks')
+const File = require('./commands/files')
+const IpldBlacklist = require('./commands/ipldBlacklist')
+const Playlist = require('./commands/playlists')
+const DataContracts = require('./commands/dataContracts')
 
 module.exports = {
-  runSetupCommand,
-  performHealthCheck,
   LibsWrapper,
   Utils,
-  addUser,
-  upgradeToCreator,
-  autoSelectCreatorNodes,
-  uploadTrack,
-  getTrackMetadata,
-  getUser,
-  getLibsUserInfo,
-  updateMultihash,
-  updateCoverPhoto,
-  updateProfilePhoto,
-  addIPLDToBlacklist,
-  addTrackToChain,
-  updateTrackOnChain,
-  verifyCIDExistsOnCreatorNode,
-  createPlaylist,
-  updatePlaylistCoverPhoto,
-  getPlaylists,
-  allUp,
-  Service,
-  SetupCommand
+  ...Setup,
+  ...User,
+  ...Track,
+  ...File,
+  ...IpldBlacklist,
+  ...Playlist,
+  ...DataContracts
 }

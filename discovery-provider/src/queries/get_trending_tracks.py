@@ -1,19 +1,41 @@
 import logging  # pylint: disable=C0302
 import datetime
 from dateutil.parser import parse
-from flask.globals import request
 
-from src.models import Track
-from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import populate_track_metadata, \
     get_users_ids, get_users_by_id
 from src.tasks.generate_trending import generate_trending
-from src.utils.redis_cache import extract_key, use_redis_cache
+from src.utils.redis_cache import use_redis_cache
 
 logger = logging.getLogger(__name__)
 
-SCORES_CACHE_DURATION_SEC = 10 * 60
+TRENDING_LIMIT = 100
+TRENDING_TTL_SEC = 30 * 60
+
+def make_trending_cache_key(time_range, genre):
+    """Makes a cache key resembling `generated-trending:week:electronic`"""
+    return f"generated-trending:{time_range}:{(genre.lower() if genre else '')}"
+
+def generate_unpopulated_trending(session, genre, time_range, limit=TRENDING_LIMIT):
+    trending_tracks = generate_trending(session, time_range, genre, limit, 0)
+
+    track_scores = [z(time_range, track) for track in trending_tracks['listen_counts']]
+    sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
+
+    track_ids = [track['track_id'] for track in sorted_track_scores]
+
+    tracks = get_unpopulated_tracks(session, track_ids)
+    return (tracks, track_ids)
+
+def make_generate_unpopulated_trending(session, genre, time_range):
+    """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
+       expects to be passed a function with no arguments."""
+    def wrapped():
+        return generate_unpopulated_trending(session, genre, time_range)
+    return wrapped
+
 
 N = 1
 a = max
@@ -47,38 +69,16 @@ def z(time, track):
     return{'score':H*Q,**track}
 
 def get_trending_tracks(args):
-    limit, offset, current_user_id = args.get("limit"), args.get("offset"), args.get("current_user_id")
-
+    """Gets trending by getting the currently cached tracks and then populating them."""
     db = get_db_read_replica()
-
-    time = args.get('time')
-    query_time = None if time not in ["day", "week", "month", "year"] else time
-
     with db.scoped_session() as session:
-        def get_unpopulated_trending():
-            trending_tracks = generate_trending(
-                session, query_time, args.get('genre', None),
-                limit, offset)
+        current_user_id, genre, time = args.get("current_user_id"), args.get("genre"), args.get("time", "week")
+        time_range = "week" if time not in ["week", "month", "year"] else time
+        key = make_trending_cache_key(time_range, genre)
 
-            track_scores = [z(time, track) for track in trending_tracks['listen_counts']]
-            sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
-
-            track_ids = [track['track_id'] for track in sorted_track_scores]
-
-            tracks = session.query(Track).filter(
-                Track.is_current == True,
-                Track.is_unlisted == False,
-                Track.stem_of == None,
-                Track.track_id.in_(track_ids)
-            ).all()
-            tracks = helpers.query_result_to_list(tracks)
-            return (tracks, track_ids)
-
-        # get scored trending tracks, either
-        # through cached redis value, or through `get_unpopulated_trending`
-        cache_keys = {"genre": args.get("genre"), "time": args.get("time")}
-        key = extract_key(f"generated-trending:{request.path}", cache_keys.items())
-        (tracks, track_ids) = use_redis_cache(key, SCORES_CACHE_DURATION_SEC, get_unpopulated_trending)
+        # Will try to hit cached trending from task, falling back
+        # to generating it here if necessary and storing it with no TTL
+        (tracks, track_ids) = use_redis_cache(key, None, make_generate_unpopulated_trending(session, genre, time_range))
 
         # populate track metadata
         tracks = populate_track_metadata(

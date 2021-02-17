@@ -3,7 +3,7 @@ const qs = require('querystring')
 const config = require('../config.js')
 const models = require('../models')
 const uuidv4 = require('uuid/v4')
-const txRelay = require('../txRelay')
+const txRelay = require('../relay/txRelay')
 
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 

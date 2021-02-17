@@ -16,7 +16,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "^0.12.2",
+    "@audius/libs": "^1.1.9",
     "apn": "^2.2.0",
     "aws-sdk": "^2.595.0",
     "axios": "^0.19.0",
@@ -33,6 +33,7 @@
     "express": "^4.16.3",
     "express-rate-limit": "^3.4.0",
     "handlebars": "^4.4.3",
+    "hashids": "^2.2.2",
     "ioredis": "^4.9.0",
     "mailgun-js": "^0.22.0",
     "moment": "^2.24.0",

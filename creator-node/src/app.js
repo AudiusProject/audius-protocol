@@ -2,11 +2,19 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
+const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
-const { userReqLimiter, trackReqLimiter, audiusUserReqLimiter, metadataReqLimiter, imageReqLimiter } = require('./reqLimiter')
+const {
+  userReqLimiter,
+  trackReqLimiter,
+  audiusUserReqLimiter,
+  metadataReqLimiter,
+  imageReqLimiter,
+  getRateLimiterMiddleware
+} = require('./reqLimiter')
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
@@ -26,6 +34,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
+app.use(getRateLimiterMiddleware())
 
 // import routes
 require('./routes')(app)
@@ -39,17 +48,21 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
-const initializeApp = (port, storageDir, serviceRegistry) => {
+const initializeApp = (port, serviceRegistry) => {
+  const storagePath = DiskManager.getConfigStoragePath()
   // TODO: Can remove these when all routes
   // consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
-  app.set('storagePath', storageDir)
+  app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property
   app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
+
+  // https://expressjs.com/en/guide/behind-proxies.html
+  app.set('trust proxy', true)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 

@@ -92,7 +92,8 @@ def get_tracks_including_unlisted(args):
             return (tracks, track_ids)
 
         key = make_cache_key(args)
-        (tracks, track_ids) = use_redis_cache(key, UNPOPULATED_TRACK_CACHE_DURATION_SEC, get_unpopulated_track)
+        (tracks, track_ids) = use_redis_cache(
+            key, UNPOPULATED_TRACK_CACHE_DURATION_SEC, get_unpopulated_track)
 
         # Add users
         if args.get("with_users", False):

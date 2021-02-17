@@ -1,7 +1,6 @@
 const request = require('supertest')
 const assert = require('assert')
 const sinon = require('sinon')
-const path = require('path')
 const fs = require('fs')
 
 const models = require('../src/models')
@@ -9,12 +8,13 @@ const models = require('../src/models')
 const ipfsClient = require('../src/ipfsClient')
 const config = require('../src/config')
 const BlacklistManager = require('../src/blacklistManager')
+const DiskManager = require('../src/diskManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { sortKeys } = require('../src/apiHelpers')
+const { sortKeys } = require('../src/apiSigning')
 
 describe('test AudiusUsers with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock
@@ -39,7 +39,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
   it('successfully creates Audius user (POST /audius_users/metadata)', async function () {
     const metadata = { test: 'field1' }
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
-    ipfsMock.pin.add.once().withArgs('testCIDLink')
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
 
     const resp = await request(app)
       .post('/audius_users/metadata')
@@ -47,7 +47,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'testCIDLink' || !resp.body.metadataFileUUID) {
+    if (resp.body.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' || !resp.body.metadataFileUUID) {
       throw new Error('invalid return data')
     }
   })
@@ -56,7 +56,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
     const metadata = { test: 'field1' }
 
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
-    ipfsMock.pin.add.once().withArgs('testCIDLink')
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
     libsMock.User.getUsers.exactly(2)
 
     const resp = await request(app)
@@ -65,7 +65,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'testCIDLink') {
+    if (resp.body.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
       throw new Error('invalid return data')
     }
 
@@ -143,7 +143,7 @@ describe('Test AudiusUsers with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = path.join(config.get('storagePath'), resp.body.metadataMultihash)
+    const metadataPath = DiskManager.computeFilePath(resp.body.metadataMultihash)
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -173,11 +173,11 @@ describe('Test AudiusUsers with real IPFS', function () {
     assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
   })
 
-  it('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
+  it.skip('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
 
   })
 
-  it('TODO - multiple uploads', async function () {
+  it.skip('TODO - multiple uploads', async function () {
 
   })
 })

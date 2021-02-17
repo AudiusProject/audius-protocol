@@ -5,9 +5,9 @@ from src.api.v1.models.users import user_model_full
 from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
-from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track,\
+from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_full_response,\
     make_response, success_response, search_parser, abort_bad_request_param, decode_string_id, \
-    extend_user, get_default_max
+    extend_user, get_default_max, get_current_user_id
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache
@@ -21,7 +21,7 @@ ns = Namespace('playlists', description='Playlist related operations')
 full_ns = Namespace('playlists', description='Full playlist related operations')
 
 playlists_response = make_response("playlist_response", ns, fields.List(fields.Nested(playlist_model)))
-full_playlists_response = make_response("full_playlist_response", full_ns, fields.List(fields.Nested(full_playlist_model)))
+full_playlists_response = make_full_response("full_playlist_response", full_ns, fields.List(fields.Nested(full_playlist_model)))
 
 def get_playlist(playlist_id, current_user_id):
     """Returns a single playlist, or None"""
@@ -38,8 +38,6 @@ def get_playlist(playlist_id, current_user_id):
 def get_tracks_for_playlist(playlist_id, current_user_id=None):
     args = {"playlist_id": playlist_id, "with_users": True, "current_user_id": current_user_id}
     playlist_tracks = get_playlist_tracks(args)
-    if not playlist_tracks:
-        abort_not_found(playlist_id, ns)
     tracks = list(map(extend_track, playlist_tracks))
     return tracks
 
@@ -77,9 +75,7 @@ class FullPlaylist(Resource):
         """Fetch a playlist."""
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = full_playlist_parser.parse_args()
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
 
         playlist = get_playlist(playlist_id, current_user_id)
         if playlist:
@@ -176,7 +172,6 @@ class Top(Resource):
 
         args['with_users'] = True
 
-        logger.warning(args)
         response = get_top_playlists(args.type, args)
 
         playlists = list(map(extend_playlist, response))
@@ -186,7 +181,7 @@ playlist_favorites_route_parser = reqparse.RequestParser()
 playlist_favorites_route_parser.add_argument('user_id', required=False)
 playlist_favorites_route_parser.add_argument('limit', required=False, type=int)
 playlist_favorites_route_parser.add_argument('offset', required=False, type=int)
-playlist_favorites_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+playlist_favorites_response = make_full_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:playlist_id>/favorites")
 class FullTrackFavorites(Resource):
     @full_ns.expect(playlist_favorites_route_parser)
@@ -210,10 +205,7 @@ class FullTrackFavorites(Resource):
         decoded_id = decode_with_abort(playlist_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-        
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
         args = {
             'save_playlist_id': decoded_id,
             'current_user_id': current_user_id,
@@ -229,7 +221,7 @@ playlist_reposts_route_parser = reqparse.RequestParser()
 playlist_reposts_route_parser.add_argument('user_id', required=False)
 playlist_reposts_route_parser.add_argument('limit', required=False, type=int)
 playlist_reposts_route_parser.add_argument('offset', required=False, type=int)
-playlist_reposts_response = make_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+playlist_reposts_response = make_full_response("following_response", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:playlist_id>/reposts")
 class FullPlaylistReposts(Resource):
     @full_ns.expect(playlist_reposts_route_parser)
@@ -253,10 +245,7 @@ class FullPlaylistReposts(Resource):
         decoded_id = decode_with_abort(playlist_id, full_ns)
         limit = get_default_max(args.get('limit'), 10, 100)
         offset = get_default_max(args.get('offset'), 0)
-        
-        current_user_id = None
-        if args.get("user_id"):
-            current_user_id = decode_string_id(args["user_id"])
+        current_user_id = get_current_user_id(args)
         args = {
             'repost_playlist_id': decoded_id,
             'current_user_id': current_user_id,

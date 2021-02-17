@@ -29,7 +29,9 @@ const SERVICES = [
   'cn8_creator-node_1',
   'cn9_creator-node_1',
   'cn10_creator-node_1',
-  'audius-disc-prov_web-server_1'
+  'audius-disc-prov_web-server_1',
+  'cn-um_creator-node_1',
+  'audius_ganache_cli'
 ]
 
 const exitWithError = () => {
@@ -58,7 +60,7 @@ const cmd = process.argv[2]
 if (cmd === 'add') {
   let lines = readFileIntoArray()
   if (!verifyNotAlreadyAdded(lines)) {
-    console.log('Local dev mapping already exists!')
+    console.log('Local dev mapping already exists! If you want to update your hosts file, please run the `remove` command and then re-run `add`.')
     exit(0)
   }
 
@@ -80,7 +82,7 @@ if (cmd === 'add') {
 } else if (cmd === 'add-remote-host') {
   let lines = readFileIntoArray()
   if (!verifyNotAlreadyAdded(lines)) {
-    console.log('Local dev mapping already exists!')
+    console.log('Local dev mapping already exists! If you want to update your hosts file, please run the `remove` command and then re-run `add-remote-host`.')
     exit(0)
   }
 
@@ -88,7 +90,7 @@ if (cmd === 'add') {
     throw new Error('Misconfigured local env.\nEnsure AUDIUS_REMOTE_DEV_HOST has been exported and /etc/hosts file has necessary permissions.')
   }
   const hostMappings = SERVICES.map(s => `${REMOTE_DEV_HOST} ${s}`)
-  hostMappings.push(`${REMOTE_DEV_HOST} ${audius_client}`)
+  hostMappings.push(`${REMOTE_DEV_HOST} audius_client`)
   lines = [...lines, START_SENTINEL, ...hostMappings, END_SENTINEL, '\n']
   writeArrayIntoFile(lines)
 }

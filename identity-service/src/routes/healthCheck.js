@@ -2,23 +2,21 @@ const config = require('../config.js')
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { sequelize } = require('../models')
-const { getRelayerFunds } = require('../txRelay')
+const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
+const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const axios = require('axios')
-
-let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
 const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
 const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
-const RELAY_HEALTH_MIN_NUM_USERS = 3 // min number of users affected to qualify for error
 const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
-// if (txs on blockchain / attempted) is less than this percent, health check will error
-// eg. 10 transactions on chain but 120 attempts should error
-const RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD = 0.75
+const RELAY_HEALTH_MIN_TRANSACTIONS = 5 // min number of tx's that must have happened within block diff
 const RELAY_HEALTH_ACCOUNTS = new Set(config.get('relayerWallets').map(wallet => wallet.publicKey))
+const ETH_RELAY_HEALTH_ACCOUNTS = new Set(config.get('ethRelayerWallets').map(wallet => wallet.publicKey))
 
 // flatten one level of nexted arrays
 const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
@@ -45,7 +43,7 @@ module.exports = function (app) {
     let blockDiff = parseInt(req.query.blockDiff, 10) || RELAY_HEALTH_TEN_MINS_AGO_BLOCKS
     let maxTransactions = parseInt(req.query.maxTransactions, 10) || RELAY_HEALTH_MAX_TRANSACTIONS
     let maxErrors = parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
-    let sentVsAttemptThreshold = parseFloat(req.query.sentVsAttemptThreshold) || RELAY_HEALTH_SENT_VS_ATTEMPTED_THRESHOLD
+    let minTransactions = parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
     let isVerbose = req.query.verbose || false
 
     // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
@@ -119,8 +117,6 @@ module.exports = function (app) {
     }
 
     let isError = false
-    if (Object.keys(failureTxs).length >= RELAY_HEALTH_MIN_NUM_USERS &&
-      flatten(Object.values(failureTxs)).length > maxErrors) isError = true
 
     // delete old entries from set in redis
     const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
@@ -132,11 +128,12 @@ module.exports = function (app) {
     const attemptedTxsInRedis = await redis.zrangebyscore('relayTxAttempts', minBlockTime, maxBlockTime)
     const successfulTxsInRedis = await redis.zrangebyscore('relayTxSuccesses', minBlockTime, maxBlockTime)
     const failureTxsInRedis = await redis.zrangebyscore('relayTxFailures', minBlockTime, maxBlockTime)
-    if ((txCounter / attemptedTxsInRedis.length) < sentVsAttemptThreshold) isError = true
+    if (txCounter < minTransactions) isError = true
 
     const serverResponse = {
       blockchain: {
         numberOfTransactions: txCounter,
+        minTransactions,
         numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
         failedTransactionHashes: failureTxs,
         startBlock: startBlockNumber,
@@ -166,13 +163,21 @@ module.exports = function (app) {
   app.get('/health_check', handleResponse(async (req, res) => {
     // for now we just check db connectivity
     await sequelize.query('SELECT 1', { type: sequelize.QueryTypes.SELECT })
-    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA })
+
+    // get connected discprov via libs
+    const audiusLibsInstance = req.app.get('audiusLibs')
+    return successResponse({ 'healthy': true, 'git': process.env.GIT_SHA, selectedDiscoveryProvider: audiusLibsInstance.discoveryProvider.discoveryProviderEndpoint })
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('minimumBalance'))
+    let { minimumBalance, minimumRelayerBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('minimumBalance'))
+    minimumRelayerBalance = parseFloat(minimumRelayerBalance || config.get('minimumRelayerBalance'))
     let belowMinimumBalances = []
     let balances = []
+
+    // run fundRelayerIfEmpty so it'll auto top off any accounts below the threshold
+    await fundRelayerIfEmpty()
 
     for (let account of RELAY_HEALTH_ACCOUNTS) {
       let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
@@ -181,20 +186,75 @@ module.exports = function (app) {
         belowMinimumBalances.push({ account, balance })
       }
     }
+    const relayerPublicKey = config.get('relayerPublicKey')
+    const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerPublicKey), 'ether'))
+    const relayerAboveMinimum = relayerBalance >= minimumRelayerBalance
 
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && relayerAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         'minimum_balance': minimumBalance,
-        'balances': balances
+        'balances': balances,
+        'relayer': {
+          'wallet': relayerPublicKey,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     } else {
       return errorResponseServerError({
         'above_balance_minimum': false,
         'minimum_balance': minimumBalance,
         'balances': balances,
-        'below_minimum_balance': belowMinimumBalances
+        'below_minimum_balance': belowMinimumBalances,
+        'relayer': {
+          'wallet': relayerPublicKey,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
+      })
+    }
+  }))
+
+  app.get('/eth_balance_check', handleResponse(async (req, res) => {
+    let { minimumBalance, minimumFunderBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('ethMinimumBalance'))
+    minimumFunderBalance = parseFloat(minimumFunderBalance || config.get('ethMinimumFunderBalance'))
+    let funderAddress = config.get('ethFunderAddress')
+    let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
+    let funderAboveMinimum = funderBalance >= minimumFunderBalance
+    let belowMinimumBalances = []
+    let balances = []
+    for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
+      let balance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(account), 'ether'))
+      balances.push({ account, balance })
+      if (balance < minimumBalance) {
+        belowMinimumBalances.push({ account, balance })
+      }
+    }
+
+    let balanceResponse = {
+      'minimum_balance': minimumBalance,
+      'balances': balances,
+      'funder': {
+        'wallet': funderAddress,
+        'balance': funderBalance,
+        'above_balance_minimum': funderAboveMinimum
+      }
+    }
+
+    // no accounts below minimum balance
+    if (!belowMinimumBalances.length && funderAboveMinimum) {
+      return successResponse({
+        'above_balance_minimum': true,
+        ...balanceResponse
+      })
+    } else {
+      return errorResponseServerError({
+        'above_balance_minimum': false,
+        'below_minimum_balance': belowMinimumBalances,
+        ...balanceResponse
       })
     }
   }))
@@ -209,14 +269,17 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
-    let discProvHealthCheck = (await axios({
+
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
+    let body = (await axios({
       method: 'get',
-      url: `${notifDiscProv}/health_check`
+      url: `${discoveryProvider.discoveryProviderEndpoint}/health_check`
     })).data
-    let discProvDbHighestBlock = discProvHealthCheck['db']['number']
+    let discProvDbHighestBlock = body.data['db']['number']
     let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
     let resp = {
-      'discProv': discProvHealthCheck,
+      'discProv': body.data,
       'identity': highestBlockNumber,
       'notifBlockDiff': notifBlockDiff
     }
@@ -240,13 +303,13 @@ module.exports = function (app) {
     let idleConnections = null
 
     // Get number of open DB connections
-    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_identity_service'")
+    const numConnectionsQuery = await sequelize.query("SELECT numbackends from pg_stat_database where datname = 'audius_centralized_service'")
     if (numConnectionsQuery && numConnectionsQuery[0] && numConnectionsQuery[0][0] && numConnectionsQuery[0][0].numbackends) {
       numConnections = numConnectionsQuery[0][0].numbackends
     }
 
     // Get detailed connection info
-    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_identity_service'"))
+    const connectionInfoQuery = (await sequelize.query("select wait_event_type, wait_event, state, query from pg_stat_activity where datname = 'audius_centralized_service'"))
     if (connectionInfoQuery && connectionInfoQuery[0]) {
       connectionInfo = connectionInfoQuery[0]
       activeConnections = (connectionInfo.filter(conn => conn.state === 'active')).length

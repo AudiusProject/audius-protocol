@@ -3,7 +3,7 @@ const readline = require('readline')
 
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
-const { setServiceVersion } = require('./helpers/version')
+const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {
   registerLocalService,
   queryLocalServices,
@@ -13,9 +13,8 @@ const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
-const serviceTypeList = ['discovery-provider', 'creator-node']
-const spDiscProvType = serviceTypeList[0]
-const spCreatorNodeType = serviceTypeList[1]
+// Directories within the audius-protocol repository used for development
+const serviceDirectoryList = ['discovery-provider', 'creator-node']
 const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
 const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
@@ -24,11 +23,24 @@ const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
 const creatorNodeEndpoint4 = 'http://cn4_creator-node_1:4003'
 const amountOfAuds = 2000000
 
+const contentNodeType = 'content-node'
+const contentNodeTypeMin = 200000
+const contentNodeTypeMax = 10000000
+
+const discoveryNodeType = 'discovery-node'
+const discoveryNodeTypeMin = 200000
+const discoveryNodeTypeMax = 7000000
+
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
+let serviceTypesList = []
 try {
-  serviceTypeList.forEach((type) => {
-    serviceVersions[type] = (require(`../../${type}/.version.json`)['version'])
+  serviceDirectoryList.forEach((type) => {
+    let typeInfo = require(`../../${type}/.version.json`)
+    let version = typeInfo['version']
+    let serviceType = typeInfo['service']
+    serviceVersions[serviceType] = version
+    serviceTypesList.push(serviceType)
   })
 } catch (e) {
   throw new Error("Couldn't get the service versions")
@@ -99,28 +111,12 @@ const run = async () => {
         break
       }
 
-      case 'register-cnode-1':
-        await _registerCnode1(audiusLibs, ethAccounts)
-        break
-
-      case 'register-cnode-2':
-        await _registerCnode2(audiusLibs, ethAccounts)
-        break
-
-      case 'register-cnode-3':
-        await _registerCnode3(audiusLibs, ethAccounts)
-        break
-
-      case 'register-cnode-4':
-        await _registerCnode4(audiusLibs, ethAccounts)
-        break
-
       case 'deregister-sps':
         await _deregisterAllSPs(audiusLibs, ethAccounts)
         break
 
       case 'query-sps':
-        await queryLocalServices(audiusLibs, serviceTypeList)
+        await queryLocalServices(audiusLibs, serviceTypesList)
         break
 
       case 'update-cnode-config': {
@@ -151,52 +147,29 @@ run()
 
 const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await distributeTokens(audiusLibs, amountOfAuds)
+  await _initEthContractTypes(audiusLibs)
   await _initAllVersions(audiusLibs)
-  await queryLocalServices(audiusLibs, serviceTypeList)
+  await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
 // Account 0
 const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, spDiscProvType, discProvEndpoint1, amountOfAuds)
+  await registerLocalService(audiusLibs, discoveryNodeType, discProvEndpoint1, amountOfAuds)
 }
 
 // Account 3
 const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
   let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs4, spDiscProvType, discProvEndpoint2, amountOfAuds)
+  await registerLocalService(audiusLibs4, discoveryNodeType, discProvEndpoint2, amountOfAuds)
 }
 
 const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + parseInt(serviceNumber) - 1}`
 
+// Templated cnode to allow for dynamic number of services
 const _registerCnode = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
-  await registerLocalService(audiusLibs, spCreatorNodeType, endpoint, amountOfAuds)
-}
-
-// Account 1
-const _registerCnode1 = async (audiusLibs, ethAccounts) => {
-  let acct = ethAccounts[1].toLowerCase()
-  let audiusLibs2 = await initAudiusLibs(true, null, acct)
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint1, amountOfAuds)
-}
-
-// Account 2
-const _registerCnode2 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[2])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint2, amountOfAuds)
-}
-
-// Account 3
-const _registerCnode3 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint3, amountOfAuds)
-}
-
-// Account 4
-const _registerCnode4 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[4])
-  await registerLocalService(audiusLibs2, spCreatorNodeType, creatorNodeEndpoint4, amountOfAuds)
+  await registerLocalService(audiusLibs, contentNodeType, endpoint, amountOfAuds)
 }
 
 const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath, endpoint = null, isShell = false) => {
@@ -209,59 +182,78 @@ const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath,
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
   const audiusLibs1 = audiusLibs
-  await deregisterLocalService(audiusLibs1, spDiscProvType, discProvEndpoint1)
+  await deregisterLocalService(audiusLibs1, discoveryNodeType, discProvEndpoint1)
   const audiusLibs2 = await initAudiusLibs(true, null, ethAccounts[3])
-  await deregisterLocalService(audiusLibs2, spDiscProvType, discProvEndpoint2)
+  await deregisterLocalService(audiusLibs2, discoveryNodeType, discProvEndpoint2)
 
   const audiusLibs3 = await initAudiusLibs(true, null, ethAccounts[1])
-  await deregisterLocalService(audiusLibs3, spCreatorNodeType, creatorNodeEndpoint1)
+  await deregisterLocalService(audiusLibs3, contentNodeType, creatorNodeEndpoint1)
   const audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[2])
-  await deregisterLocalService(audiusLibs4, spCreatorNodeType, creatorNodeEndpoint2)
+  await deregisterLocalService(audiusLibs4, contentNodeType, creatorNodeEndpoint2)
   const audiusLibs5 = await initAudiusLibs(true, null, ethAccounts[4])
-  await deregisterLocalService(audiusLibs5, spCreatorNodeType, creatorNodeEndpoint3)
+  await deregisterLocalService(audiusLibs5, contentNodeType, creatorNodeEndpoint3)
   const audiusLibs6 = await initAudiusLibs(true, null, ethAccounts[5])
-  await deregisterLocalService(audiusLibs6, spCreatorNodeType, creatorNodeEndpoint4)
+  await deregisterLocalService(audiusLibs6, contentNodeType, creatorNodeEndpoint4)
 }
 
 const _initAllVersions = async (audiusLibs) => {
-  for (let serviceType of serviceTypeList) {
+  for (let serviceType of serviceTypesList) {
     await setServiceVersion(audiusLibs, serviceType, serviceVersions[serviceType])
   }
 }
 
+const _initEthContractTypes = async (libs) => {
+  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  // Add content-node serviceType
+  await addServiceType(libs, contentNodeType, contentNodeTypeMin, contentNodeTypeMax)
+  console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
+  // Add discovery-node serviceType
+  await addServiceType(libs, discoveryNodeType, discoveryNodeTypeMin, discoveryNodeTypeMax)
+}
+
 // Write an update to either the common .sh file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async (readPath, writePath, delegateOwnerWallet, delegateWalletPkey, endpoint, isShell) => {
+const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ownerWalletPkey, endpoint, isShell) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity
   })
   let output = []
-  let walletFound = false
+  let delegateOwnerWalletFound = false
+  let spOwnerWalletFound = false
   let pkeyFound = false
   let endpointFound = false
-  const ownerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`
+
+  // Local dev, delegate and owner wallet are equal
+  let delegateOwnerWallet = ownerWallet
+  let delegateWalletPkey = ownerWalletPkey
+
+  const spOwnerWalletLine = `${isShell ? 'export ' : ''}spOwnerWallet=${ownerWallet}`
+  const delegateOwnerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`
   const pkeyLine = `${isShell ? 'export ' : ''}delegatePrivateKey=0x${delegateWalletPkey}`
   const endpointLine = `${isShell ? 'export ' : ''}creatorNodeEndpoint=${endpoint}`
 
   for await (const line of rl) {
     // Each line in input.txt will be successively available here as `line`.
     if (line.includes('delegateOwnerWallet')) {
-      output.push(ownerWalletLine)
-      walletFound = true
+      output.push(delegateOwnerWalletLine)
+      delegateOwnerWalletFound = true
     } else if (line.includes('delegatePrivateKey')) {
       output.push(pkeyLine)
       pkeyFound = true
     } else if (line.includes('creatorNodeEndpoint')) {
       output.push(endpointLine)
       endpointFound = true
+    } else if (line.includes('spOwnerWallet')) {
+      output.push(spOwnerWalletLine)
+      spOwnerWalletFound = true
     } else {
       output.push(line)
     }
   }
 
-  if (!walletFound) {
-    output.push(ownerWalletLine)
+  if (!delegateOwnerWalletFound) {
+    output.push(delegateOwnerWalletLine)
   }
   if (!pkeyFound) {
     output.push(pkeyLine)
@@ -269,7 +261,10 @@ const _updateCreatorNodeConfigFile = async (readPath, writePath, delegateOwnerWa
   if (!endpointFound) {
     output.push(endpointLine)
   }
+  if (!spOwnerWalletFound) {
+    output.push(spOwnerWalletLine)
+  }
 
   fs.writeFileSync(writePath, output.join('\n'))
-  console.log(`Updated ${writePath} with ${delegateOwnerWallet}:${delegateWalletPkey}, endpoint=${endpoint}`)
+  console.log(`Updated ${writePath} with spOwnerWallet=${ownerWallet}\ndelegateOwnerWallet=${delegateOwnerWallet}\ndelegateWalletPkey=${delegateWalletPkey}\nendpoint=${endpoint}`)
 }

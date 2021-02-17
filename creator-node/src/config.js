@@ -2,6 +2,18 @@ const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
 
+// Custom boolean format used to ensure that empty string '' is evaluated as false
+// https://github.com/mozilla/node-convict/issues/380
+convict.addFormat({
+  name: 'BooleanCustom',
+  validate: function (val) {
+    return (typeof val === 'boolean') || (typeof val === 'string')
+  },
+  coerce: function (val) {
+    return val === true || val === 'true'
+  }
+})
+
 // Define a schema
 const config = convict({
   dbUrl: {
@@ -9,6 +21,12 @@ const config = convict({
     format: String,
     env: 'dbUrl',
     default: null
+  },
+  dbConnectionPoolMax: {
+    doc: 'Max connections in database pool',
+    format: 'nat',
+    env: 'dbConnectionPoolMax',
+    default: 100
   },
   ipfsHost: {
     doc: 'IPFS host address',
@@ -21,18 +39,6 @@ const config = convict({
     format: 'port',
     env: 'ipfsPort',
     default: null
-  },
-  ipfsClusterIP: {
-    doc: 'The IP address of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'ipaddress',
-    env: 'ipfsClusterIP',
-    default: '127.0.0.1' // somewhat of a hack because convict requires non-null values, will check for this value when used
-  },
-  ipfsClusterPort: {
-    doc: 'The port of the node in the kube cluster running ipfs to expose it so outside nodes can peer into it',
-    format: 'port',
-    env: 'ipfsClusterPort',
-    default: 0
   },
   storagePath: {
     doc: 'File system path to store raw files that are uploaded',
@@ -119,6 +125,34 @@ const config = convict({
     env: 'logLevel',
     default: null
   },
+
+  maxExportClockValueRange: {
+    doc: 'Maximum range of clock values to export at once to prevent process OOM',
+    format: Number,
+    env: 'maxExportClockValueRange',
+    default: 10000
+  },
+
+  // Rate limit configs
+  endpointRateLimits: {
+    doc: `A serialized objects of rate limits with the form {
+      <req.path>: {
+        <req.method>:
+          [
+            {
+              expiry: <seconds>,
+              max: <count>
+            },
+            ...
+          ],
+          ...
+        }
+      }
+    `,
+    format: String,
+    env: 'endpointRateLimits',
+    default: '{}'
+  },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
     format: 'nat',
@@ -149,6 +183,7 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
     format: 'nat',
@@ -239,6 +274,7 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+
   spID: {
     doc: 'ID of creator node in ethContracts ServiceProviderFactory',
     format: Number,
@@ -312,7 +348,7 @@ const config = convict({
     default: ''
   },
   debounceTime: {
-    doc: 'sync debounce time',
+    doc: 'sync debounce time in ms',
     format: 'nat',
     env: 'debounceTime',
     default: 30000 // 30000ms = 30s
@@ -341,6 +377,7 @@ const config = convict({
     env: 'creatorNodeEndpoint',
     default: null
   },
+
   // Service selection
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
@@ -352,19 +389,6 @@ const config = convict({
     doc: 'Identity service endpoint to record creator-node driven plays against',
     format: String,
     env: 'identityService',
-    default: ''
-  },
-  /** Manual content blacklists */
-  userBlacklist: {
-    doc: 'Comma-separated list of user blockchain IDs that creator node should avoid serving / storing',
-    format: String,
-    env: 'userBlacklist',
-    default: ''
-  },
-  trackBlacklist: {
-    doc: 'Comma-separated list of track blockchain IDs that creator node should avoid serving / storing',
-    format: String,
-    env: 'trackBlacklist',
     default: ''
   },
   creatorNodeIsDebug: {
@@ -379,29 +403,17 @@ const config = convict({
     env: 'rehydrateMaxConcurrency',
     default: 10
   },
-  rehydrateIPFSConcurrencyLimit: {
-    doc: 'Max number of concurrent rehydrate ipfs calls to make',
-    format: 'nat',
-    env: 'rehydrateIPFSConcurrencyLimit',
-    default: 10
+  snapbackDevModeEnabled: {
+    doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
+    format: 'BooleanCustom',
+    env: 'snapbackDevModeEnabled',
+    default: false
   },
-  trackSaveConcurrencyLimit: {
-    doc: 'Max number of concurrent track saves',
+  maxStorageUsedPercent: {
+    doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
-    env: 'trackSaveConcurrencyLimit',
-    default: 10
-  },
-  nonTrackFileSaveConcurrencyLimit: {
-    doc: 'Max number of concurrent non track saves',
-    format: 'nat',
-    env: 'nonTrackFileSaveConcurrencyLimit',
-    default: 10
-  },
-  redisRehydrateCacheTTL: {
-    doc: 'Max time a cache entry for rehydrate key will live in seconds',
-    format: 'nat',
-    env: 'redisRehydrateCacheTTL',
-    default: 3600 // 60 min * (60 seconds/min) = 3600 seconds (1 hr)
+    env: 'maxStorageUsedPercent',
+    default: 95
   }
 
   // unsupported options at the moment
