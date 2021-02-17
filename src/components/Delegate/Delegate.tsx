@@ -13,6 +13,7 @@ import UpdateDelegationModal from 'components/UpdateDelegationModal'
 import { Address, Status } from 'types'
 import { formatWei, formatShortAud } from 'utils/format'
 import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
+import { usePendingClaim } from 'store/cache/claims/hooks'
 
 const messages = {
   title: 'Manage Delegation',
@@ -107,10 +108,15 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
   wallet,
   delegates
 }: DelegateSectionProps) => {
+  const { hasClaim, status: claimStatus } = usePendingClaim(wallet)
   const useHasPendingDecrease = useHasPendingDecreaseDelegationTx()
   const isDecreaseDelegationDisabled =
     useHasPendingDecrease.status !== Status.Success ||
-    useHasPendingDecrease.hasPendingDecreaseTx
+    useHasPendingDecrease.hasPendingDecreaseTx ||
+    claimStatus !== Status.Success ||
+    hasClaim
+  const isIncreaseDelegationDisabled =
+    claimStatus !== Status.Success || hasClaim
   return (
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       <div className={styles.title}>{messages.title} </div>
@@ -131,7 +137,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           <IncreaseDelegation
             wallet={wallet}
             delegates={delegates}
-            isDisabled={false}
+            isDisabled={isIncreaseDelegationDisabled}
           />
           <DecreaseDelegation
             wallet={wallet}
