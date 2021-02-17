@@ -23,9 +23,9 @@ module.exports = function (app) {
    */
 
   /**
-   * This route is called by an requesting node attempting to self register on L2 UserReplicaSetManager
-   *    contract (URSM) via Chain of Trust. The requesting node is requesting a signature from this node
-   *    (the proposer node) to submit as part of the contract registration transaction.
+   * This route is called by a requesting node attempting to self register or update record on L2
+   *    UserReplicaSetManager contract (URSM) via Chain of Trust. The requesting node is requesting a
+   *    signature from this node (proposer node) to submit as part of the contract registration transaction.
    *
    * Steps:
    *  1. Short circuit if node is already registered on URSM
@@ -48,33 +48,38 @@ module.exports = function (app) {
     spID = parseInt(spID)
 
     /**
-     * Short circuit if node already registered on URSM contract
-     */
-    const alreadyRegisteredOnURSM = !libs.Utils.isZeroAddress(
-      await libs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(spID)
-    )
-    if (alreadyRegisteredOnURSM) {
-      return errorResponseBadRequest(
-        `Cannot submit proposal signature - Node with spID ${spID} already registered on UserReplicaSetManager contract`
-      )
-    }
-
-    /**
      * Fetch node info from L1 ServiceProviderFactory for spID
      */
     const nodeSpInfoFromSPFactory = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
       libs.creatorNode.serviceTypeName,
       spID
     )
-    if (!nodeSpInfoFromSPFactory) {
-      return errorResponseBadRequest(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory`)
-    }
     let {
-      owner: ownerWalletFromChain,
+      owner: ownerWalletFromSPFactory,
       delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
-      endpoint: nodeEndpointFromChain
+      endpoint: nodeEndpointFromSPFactory
     } = nodeSpInfoFromSPFactory
     delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
+    
+    if (
+      libs.Utils.isZeroAddress(ownerWalletFromSPFactory)
+      || libs.Utils.isZeroAddress(delegateOwnerWalletFromSPFactory)
+      || !nodeEndpointFromSPFactory
+    ) {
+      return errorResponseBadRequest(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory`)
+    }
+
+    /**
+     * Short-circuit if L2 record already matches L1 record (i.e. delegateOwnerWallets match)
+     */
+    const delegateOwnerWalletFromURSM = (
+      await libs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(spID)
+    ).toLowerCase()
+    if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+      return errorResponseBadRequest(
+        `No-op - UserReplicaSetManager record for node with spID ${spID} already matches L1 ServiceProviderFactory record`
+      )
+    }
 
     /**
      * Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
@@ -95,7 +100,7 @@ module.exports = function (app) {
      */
     const randomBytesToSign = (await randomBytes(18)).toString()
     let nodeHealthCheckResp = await axios({
-      baseURL: nodeEndpointFromChain,
+      baseURL: nodeEndpointFromSPFactory,
       url: '/health_check',
       method: 'get',
       timeout: 1000,
@@ -113,9 +118,9 @@ module.exports = function (app) {
      */
     if (
       !(nodeHealthCheckResp.healthy)
-      || (nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromChain)
+      || (nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromSPFactory)
       || (nodeHealthCheckResp.spID !== spID)
-      || ((nodeHealthCheckResp.spOwnerWallet).toLowerCase() !== ownerWalletFromChain.toLowerCase())
+      || ((nodeHealthCheckResp.spOwnerWallet).toLowerCase() !== ownerWalletFromSPFactory.toLowerCase())
     ) {
       return errorResponseServerError(`CN unhealthy or misconfigured`)
     }
