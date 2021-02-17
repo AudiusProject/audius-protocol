@@ -158,7 +158,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
         else:
             logger.info(
-                f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address} from registry"
+                f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address}"
             )
 
 def index_blocks(self, db, blocks_list):
