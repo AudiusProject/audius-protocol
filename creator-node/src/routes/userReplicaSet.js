@@ -19,6 +19,7 @@ module.exports = function (app) {
    * TODO
    * - rate limit
    * - consider also validating L1 healthy state eg valid bounds
+   * - move to component pattern
    */
 
   /**
