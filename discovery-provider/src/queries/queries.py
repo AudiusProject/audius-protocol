@@ -554,7 +554,11 @@ def get_creator_node_users():
 @bp.route("/ursm_content_nodes", methods=("GET",))
 def get_ursm_content_nodes():
     try:
-        cnodes = get_ursm_cnodes()
+        owner_wallet = None
+        if "owner_wallet" in request.args:
+            owner_wallet = request.args.get("owner_wallet")
+        logger.error(f"ursm_content_nodes: ownerwallet={owner_wallet}")
+        cnodes = get_ursm_cnodes(owner_wallet)
         return api_helpers.success_response(cnodes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
