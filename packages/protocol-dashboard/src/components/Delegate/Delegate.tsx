@@ -13,12 +13,16 @@ import UpdateDelegationModal from 'components/UpdateDelegationModal'
 import { Address, Status } from 'types'
 import { formatWei, formatShortAud } from 'utils/format'
 import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
+import { usePendingClaim } from 'store/cache/claims/hooks'
 
 const messages = {
   title: 'Manage Delegation',
   delegationLabel: `Your STAKE ${TICKER}`,
   decrease: 'DECREASE DELEGATION',
-  increase: 'INCREASE DELEGATION'
+  increase: 'INCREASE DELEGATION',
+  pendingDecreaseDisabled:
+    'Not Permitted While A Decrease Delegation Is Pending',
+  pendingClaimDisabled: 'Not Permitted While A Claim Is Pending'
 }
 
 const DecreaseDelegation = ({
@@ -107,10 +111,15 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
   wallet,
   delegates
 }: DelegateSectionProps) => {
+  const { hasClaim, status: claimStatus } = usePendingClaim(wallet)
   const useHasPendingDecrease = useHasPendingDecreaseDelegationTx()
   const isDecreaseDelegationDisabled =
     useHasPendingDecrease.status !== Status.Success ||
-    useHasPendingDecrease.hasPendingDecreaseTx
+    useHasPendingDecrease.hasPendingDecreaseTx ||
+    claimStatus !== Status.Success ||
+    hasClaim
+  const isIncreaseDelegationDisabled =
+    claimStatus !== Status.Success || hasClaim
   return (
     <Paper className={clsx(styles.container, { [className!]: !!className })}>
       <div className={styles.title}>{messages.title} </div>
@@ -128,17 +137,35 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           </div>
         </div>
         <div className={styles.btnContainer}>
-          <IncreaseDelegation
-            wallet={wallet}
-            delegates={delegates}
-            isDisabled={false}
-          />
-          <DecreaseDelegation
-            wallet={wallet}
-            delegates={delegates}
+          <Tooltip
+            position={Position.TOP}
+            text={messages.pendingClaimDisabled}
+            isDisabled={isIncreaseDelegationDisabled}
+            className={styles.delegateBtnTooltip}
+          >
+            <IncreaseDelegation
+              wallet={wallet}
+              delegates={delegates}
+              isDisabled={isIncreaseDelegationDisabled}
+            />
+          </Tooltip>
+          <Tooltip
+            position={Position.TOP}
+            text={
+              useHasPendingDecrease.hasPendingDecreaseTx
+                ? messages.pendingDecreaseDisabled
+                : messages.pendingClaimDisabled
+            }
             isDisabled={isDecreaseDelegationDisabled}
-            className={styles.decreaseBtn}
-          />
+            className={styles.delegateBtnTooltip}
+          >
+            <DecreaseDelegation
+              wallet={wallet}
+              delegates={delegates}
+              isDisabled={isDecreaseDelegationDisabled}
+              className={styles.decreaseBtn}
+            />
+          </Tooltip>
         </div>
       </div>
     </Paper>
