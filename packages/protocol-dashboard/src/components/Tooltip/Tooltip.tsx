@@ -30,6 +30,7 @@ const TooltipText: React.FC<{
 interface TooltipProps {
   className?: string
   text: string
+  isDisabled?: boolean
   position?: Position
 }
 
@@ -47,6 +48,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   className,
   children,
   text,
+  isDisabled = true,
   position = Position.TOP
 }) => {
   const containerRef = useRef(null)
@@ -88,6 +90,10 @@ const Tooltip: React.FC<TooltipProps> = ({
     window.addEventListener('scroll', hideOnScroll, true)
     return () => window.removeEventListener('scroll', hideOnScroll)
   }, [isHover])
+
+  if (!isDisabled) {
+    return <> {children} </>
+  }
 
   return (
     <span
