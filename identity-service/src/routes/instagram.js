@@ -37,7 +37,7 @@ module.exports = function (app) {
         method: 'get',
         url: 'https://graph.instagram.com/me',
         qs: {
-          'fields': 'id,username,media_count,account_type',
+          'fields': 'id,username,account_type',
           'access_token': accessToken
         }
       })
@@ -49,7 +49,7 @@ module.exports = function (app) {
       // Store the access token, user id, and current profile for user in db
       try {
         await models.InstagramUser.upsert({
-          uuid: igUser.id,
+          uuid: igUser.username,
           profile: igUser,
           accessToken
         })
@@ -77,9 +77,9 @@ module.exports = function (app) {
       try {
         // Verify the user user id exists in the DB before updating it
         const igUser = await models.InstagramUser.findOne({ where: {
-          uuid: profile.id
+          uuid: profile.username
         } })
-        if (!igUser) throw new Error('User must first be verified')
+        if (!igUser) throw new Error(`Could not find matching ig user in the db: ${profile.username}`)
         igUser.profile = profile
         igUser.verified = profile.is_verified
         await igUser.save()

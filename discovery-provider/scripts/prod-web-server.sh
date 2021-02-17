@@ -15,6 +15,12 @@ stop
 # start new services
 docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up --build -d redis-server
 docker build -t discprov_read_only .
-docker run -p 5000:5000 -e audius_db_url=$DB_URL -e audius_db_url_read_replica=$DB_URL discprov_read_only  /bin/bash -c ./scripts/dev-server.sh --build web-server
+docker run \
+  -v $(pwd):/audius-discovery-provider \
+  -p 5000:5000 \
+  -e audius_db_url=$DB_URL \
+  -e audius_db_url_read_replica=$DB_URL \
+  -e audius_db_run_migrations=false \
+  discprov_read_only  /bin/bash -c ./scripts/dev-server.sh --build web-server
 
 trap stop EXIT

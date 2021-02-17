@@ -4,7 +4,7 @@ from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.api_helpers import success_response, success_response_backwards_compat
-from src.queries.get_health import get_health
+from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -77,4 +77,13 @@ def play_check():
         latest_play,
         500 if error else 200,
         sign_response=False
+    )
+
+@bp.route("/ipld_block_check", methods=["GET"])
+def ipld_block_check():
+    use_redis_cache = parse_bool_param(request.args.get("use_cache"))
+    latest_ipld_indexed_block, latest_indexed_ipld_block_hash = get_latest_ipld_indexed_block(use_redis_cache)
+
+    return success_response(
+        {"db":{"number": latest_ipld_indexed_block, "blockhash": latest_indexed_ipld_block_hash}}
     )

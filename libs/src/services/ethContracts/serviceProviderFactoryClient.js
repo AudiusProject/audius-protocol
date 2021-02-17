@@ -42,12 +42,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       timeout: 1000
     }
     const resp = await axios(axiosRequestObj)
-    let endpointServiceType
-    try {
-      endpointServiceType = resp.data.data.service
-    } catch (e) {
-      endpointServiceType = resp.data.service
-    }
+    const endpointServiceType = resp.data.data.service
 
     if (serviceType !== endpointServiceType) {
       throw new Error('Attempting to register endpoint with mismatched service type')
@@ -83,6 +78,136 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       endpoint,
       amount,
       this.web3Manager.getWalletAddress())
+  }
+
+  async getRegisteredServiceProviderEvents ({
+    serviceType,
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (owner) {
+      filter._owner = owner
+    }
+    if (serviceType) {
+      filter._serviceType = serviceType
+    }
+    const events = await contract.getPastEvents('RegisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
+    }))
+  }
+
+  async getDeregisteredServiceProviderEvents ({
+    serviceType,
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const filter = {}
+    if (owner) {
+      filter._owner = owner
+    }
+    if (serviceType) {
+      filter._serviceType = serviceType
+    }
+    const events = await contract.getPastEvents('DeregisteredServiceProvider', {
+      fromBlock: queryStartBlock,
+      filter
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
+    }))
+  }
+
+  async getIncreasedStakeEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('IncreasedStake', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
+    }))
+  }
+
+  async getDecreasedStakeEvaluatedEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('DecreaseStakeRequestEvaluated', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
+    }))
+  }
+
+  async getDecreasedStakeRequestedEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('DecreaseStakeRequested', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
+    }))
+  }
+
+  async getDecreasedStakeCancelledEvents ({
+    owner,
+    queryStartBlock = 0
+  }) {
+    const contract = await this.getContract()
+    const events = await contract.getPastEvents('DecreaseStakeRequestCancelled', {
+      fromBlock: queryStartBlock,
+      filter: {
+        _owner: owner
+      }
+    })
+    return events.map(event => ({
+      blockNumber: parseInt(event.blockNumber),
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
+    }))
   }
 
   // Get the deregistered service's most recent endpoint and delegate owner wallet
@@ -297,12 +422,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     }
 
     const resp = await axios(axiosRequestObj)
-    let serviceType
-    try {
-      serviceType = resp.data.data.service
-    } catch (e) {
-      serviceType = resp.data.service
-    }
+    const serviceType = resp.data.data.service
 
     const serviceProviderId = await this.getServiceProviderIdFromEndpoint(endpoint)
     const info = await this.getServiceEndpointInfo(serviceType, serviceProviderId)

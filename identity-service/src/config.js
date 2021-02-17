@@ -106,6 +106,12 @@ const config = convict({
     env: 'relayerWallets',
     default: null
   },
+  ethFunderAddress: {
+    doc: 'L1 Relayer Address. The source of the funds when funding wallets. (Only used in balance_check and eth_balance_check to check if enough funds exist)',
+    format: String,
+    env: 'ethFunderAddress',
+    default: null
+  },
   ethRelayerWallets: {
     doc: 'L1 Relayer wallet objects to send transactions. Stringified array like[{ publicKey, privateKey}, ...]',
     format: 'string-array',
@@ -235,10 +241,22 @@ const config = convict({
     env: 'minimumBalance',
     default: null
   },
+  minimumRelayerBalance: {
+    doc: 'Minimum token balance for relayer below which /balance_check fails',
+    format: Number,
+    env: 'minimumRelayerBalance',
+    default: null
+  },
   ethMinimumBalance: {
     doc: 'Minimum ETH balance below which /eth_balance_check fails',
     format: Number,
     env: 'ethMinimumBalance',
+    default: 0.5
+  },
+  ethMinimumFunderBalance: {
+    doc: 'Minimum eth balance for funder below which /eth_balance_check fails',
+    format: Number,
+    env: 'ethMinimumFunderBalance',
     default: 0.5
   },
   mailgunApiKey: {
@@ -265,12 +283,6 @@ const config = convict({
     format: Number,
     default: 0,
     env: 'notificationStartBlock'
-  },
-  notificationDiscoveryProvider: {
-    doc: 'Whitelisted discovery provider to query notifications',
-    format: String,
-    default: 'http://localhost:5000',
-    env: 'notificationDiscoveryProvider'
   },
   ethTokenAddress: {
     doc: 'ethTokenAddress',

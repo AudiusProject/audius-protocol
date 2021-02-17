@@ -1,35 +1,35 @@
 {
   "data": {
     "cnodeUsers": {
-      "454d032a-ed79-4332-a3dd-3de2a8f30f47": {
-        "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+      "10aaedfe-9f1c-475a-94b5-fab7b39e401b": {
+        "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
         "walletPublicKey": "0xadd36bad12002f1097cdb7ee24085c28e960fc32",
         "lastLogin": null,
         "latestBlockNumber": 10,
         "clock": 37,
-        "createdAt": "2020-10-02T18:48:03.369Z",
-        "updatedAt": "2020-10-02T18:48:17.516Z",
+        "createdAt": "2020-11-23T22:44:17.791Z",
+        "updatedAt": "2020-11-23T22:44:31.757Z",
         "audiusUsers": [
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 2,
             "blockchainId": "1",
-            "metadataFileUUID": "b37ff266-b947-462c-82f5-0a4053d964ed",
+            "metadataFileUUID": "ba8f4f3b-34d9-4fc7-ba31-c7a4b48551b4",
             "metadataJSON": {
               "testField": "testValue"
             },
             "coverArtFileUUID": null,
             "profilePicFileUUID": null,
-            "createdAt": "2020-10-02T18:48:04.500Z",
-            "updatedAt": "2020-10-02T18:48:04.500Z"
+            "createdAt": "2020-11-23T22:44:18.914Z",
+            "updatedAt": "2020-11-23T22:44:18.914Z"
           }
         ],
         "tracks": [
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 37,
             "blockchainId": "1",
-            "metadataFileUUID": "5b24a995-d8f6-4572-8ecc-5107cf8d6ef0",
+            "metadataFileUUID": "9caf769e-fbad-4230-b12e-67e8cf7ed7fd",
             "metadataJSON": {
               "test": "field1",
               "owner_id": 1,
@@ -165,841 +165,812 @@
               ]
             },
             "coverArtFileUUID": null,
-            "createdAt": "2020-10-02T18:48:17.522Z",
-            "updatedAt": "2020-10-02T18:48:17.522Z"
+            "createdAt": "2020-11-23T22:44:31.769Z",
+            "updatedAt": "2020-11-23T22:44:31.769Z"
           }
         ],
         "files": [
           {
-            "fileUUID": "b37ff266-b947-462c-82f5-0a4053d964ed",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "ba8f4f3b-34d9-4fc7-ba31-c7a4b48551b4",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": null,
             "multihash": "QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
             "sourceFile": null,
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
+            "storagePath": "test_file_storage/files/BrU/QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
             "type": "metadata",
             "clock": 1,
-            "createdAt": "2020-10-02T18:48:03.429Z",
-            "updatedAt": "2020-10-02T18:48:03.429Z"
+            "createdAt": "2020-11-23T22:44:17.859Z",
+            "updatedAt": "2020-11-23T22:44:17.859Z"
           },
           {
-            "fileUUID": "adf37c4b-6912-44f0-bfd7-0beac73de1bd",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "43bf9656-db92-4b27-9e60-228f323d9334",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
+            "storagePath": "test_file_storage/files/WKF/QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
             "type": "copy320",
             "clock": 3,
-            "createdAt": "2020-10-02T18:48:15.962Z",
-            "updatedAt": "2020-10-02T18:48:17.542Z"
+            "createdAt": "2020-11-23T22:44:30.459Z",
+            "updatedAt": "2020-11-23T22:44:31.775Z"
           },
           {
-            "fileUUID": "ee446211-8995-400b-9604-0a305e5fdb5f",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "fe71b072-6164-40fb-b730-10f3e443531a",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
+            "storagePath": "test_file_storage/files/TLk/QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
             "type": "track",
             "clock": 4,
-            "createdAt": "2020-10-02T18:48:15.973Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.468Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "90cf7255-98c4-4383-b417-32bdc0dd7a60",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "f2fd7bbc-915d-436a-8c71-cd4c28a7b3a9",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
+            "storagePath": "test_file_storage/files/Kuk/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
             "type": "track",
             "clock": 5,
-            "createdAt": "2020-10-02T18:48:15.984Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.473Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "6a30a091-cceb-47f4-980b-de4da1d800cf",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "1a943d6d-8660-4f18-9a66-9fe20758fbf7",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
+            "storagePath": "test_file_storage/files/28C/QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
             "type": "track",
             "clock": 6,
-            "createdAt": "2020-10-02T18:48:15.996Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.477Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "43820bd5-5fdc-4f7c-add2-ff542afc97a2",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "5f9023cb-02fa-43f3-adb1-c578a164bc5b",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
+            "storagePath": "test_file_storage/files/1vK/QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
             "type": "track",
             "clock": 7,
-            "createdAt": "2020-10-02T18:48:16.011Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.485Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "51dd0569-81ba-486e-ac50-7c1dff95cd69",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "b2a9201c-d1da-4b5a-ac15-a7717ffd0752",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
+            "storagePath": "test_file_storage/files/xvg/QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
             "type": "track",
             "clock": 8,
-            "createdAt": "2020-10-02T18:48:16.024Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.492Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "3b9df1fb-e630-41a1-b45f-45a954eab0b2",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "5b48d1b7-1c90-4f46-b3b4-49dacc22e2cf",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
+            "storagePath": "test_file_storage/files/qgG/QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
             "type": "track",
             "clock": 9,
-            "createdAt": "2020-10-02T18:48:16.037Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.497Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "431e0330-f8ef-49b7-9625-78f4d47baf2d",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "8622c473-7748-4ac7-9107-2f10421d17b6",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
+            "storagePath": "test_file_storage/files/GMk/Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
             "type": "track",
             "clock": 10,
-            "createdAt": "2020-10-02T18:48:16.049Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.502Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "c6904e22-c603-4743-ae91-281eb67f4187",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "66633000-3ecb-462b-a91f-77338d285d5b",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
+            "storagePath": "test_file_storage/files/Bza/QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
             "type": "track",
             "clock": 11,
-            "createdAt": "2020-10-02T18:48:16.061Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.508Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "4902f34d-cc2c-4373-8214-ed71e3d40939",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "cb73e61b-b9fa-4d56-b55b-c0896970a6a7",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
+            "storagePath": "test_file_storage/files/38t/QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
             "type": "track",
             "clock": 12,
-            "createdAt": "2020-10-02T18:48:16.076Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.519Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "894c6c9b-9402-473e-9db9-b6a421b110c3",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "789b0e49-4605-4fc4-8ddb-f0d7af2a2e00",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
+            "storagePath": "test_file_storage/files/NDx/QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
             "type": "track",
             "clock": 13,
-            "createdAt": "2020-10-02T18:48:16.092Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.524Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "4976f227-cd4d-481c-abb4-171bfc9acaad",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "429366c3-2c02-4bad-b037-c8a08c7d664f",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
+            "storagePath": "test_file_storage/files/MdW/QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
             "type": "track",
             "clock": 14,
-            "createdAt": "2020-10-02T18:48:16.107Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.529Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "b9339fde-2ac9-44be-b1a0-3373604b0915",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "186c70ee-3b01-4e39-b886-00001a861053",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
+            "storagePath": "test_file_storage/files/c2i/QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
             "type": "track",
             "clock": 15,
-            "createdAt": "2020-10-02T18:48:16.120Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.534Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "d9e8a2c6-5816-4d4e-90f7-c18c6a4f1f3d",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "6e51ae54-9e16-491d-8cbd-cb01e9245f05",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
+            "storagePath": "test_file_storage/files/ZNj/QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
             "type": "track",
             "clock": 16,
-            "createdAt": "2020-10-02T18:48:16.131Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.539Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "c8153ea3-8ec7-4a27-9695-ae2f23d8134f",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "44e7ec01-8621-48fd-b035-365c9c8a0b1b",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
+            "storagePath": "test_file_storage/files/n63/QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
             "type": "track",
             "clock": 17,
-            "createdAt": "2020-10-02T18:48:16.145Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.544Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "d3ac63d0-b307-49a8-986b-32c63aaf9489",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "d6e2a02e-616d-41a1-a22d-698e4b5e6e1c",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
+            "storagePath": "test_file_storage/files/sHo/QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
             "type": "track",
             "clock": 18,
-            "createdAt": "2020-10-02T18:48:16.159Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.549Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "1d6db106-3673-4c9f-9ff0-e036b602ab97",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "e4c2eba9-a6f9-4e28-89e4-d81ea85556f7",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
+            "storagePath": "test_file_storage/files/ZJK/QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
             "type": "track",
             "clock": 19,
-            "createdAt": "2020-10-02T18:48:16.174Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.553Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "3cc4644e-e912-4120-a7ef-daa8cb6872a8",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "f37e36c3-fc05-4637-85a8-4f0d222a0a95",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
+            "storagePath": "test_file_storage/files/Wmj/QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
             "type": "track",
             "clock": 20,
-            "createdAt": "2020-10-02T18:48:16.189Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.558Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "e83f72d8-3e65-4cf4-a4d0-6309ff56d3aa",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "51e88fa4-5c55-4e93-b73b-8b975ee39164",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
+            "storagePath": "test_file_storage/files/SQ9/QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
             "type": "track",
             "clock": 21,
-            "createdAt": "2020-10-02T18:48:16.205Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.563Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "80a5e3a1-9fa2-4a5e-ba03-89b460868955",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "859aa53a-fb46-4d77-8cfd-92c850d47ada",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
+            "storagePath": "test_file_storage/files/Jto/QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
             "type": "track",
             "clock": 22,
-            "createdAt": "2020-10-02T18:48:16.221Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.568Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "3da22ac0-16a9-4d50-b244-822f5d4162de",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "c0355625-f56f-48ef-a0ad-535bb9e17265",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
+            "storagePath": "test_file_storage/files/6EK/QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
             "type": "track",
             "clock": 23,
-            "createdAt": "2020-10-02T18:48:16.237Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.572Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "ff62119b-6007-4288-be9e-d6a27d59a642",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "7eb3f06b-7787-40ae-b143-4fc03b2fd504",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
+            "storagePath": "test_file_storage/files/zHn/QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
             "type": "track",
             "clock": 24,
-            "createdAt": "2020-10-02T18:48:16.248Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.580Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "4d65ebc1-1f6b-431b-9ba8-faa38fd32f80",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "c239d0ba-d98a-4c4b-be34-5f54ec2881cb",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
+            "storagePath": "test_file_storage/files/VSE/QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
             "type": "track",
             "clock": 25,
-            "createdAt": "2020-10-02T18:48:16.262Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.587Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "5c85c277-2bcb-47a2-a793-63c8e47b8930",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "d7470c8a-20ac-4981-bdbc-0c02439de539",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
+            "storagePath": "test_file_storage/files/QEL/QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
             "type": "track",
             "clock": 26,
-            "createdAt": "2020-10-02T18:48:16.275Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.592Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "d0cac540-f96c-4ed4-b674-e39dc625beb5",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "aa723ef8-d4fa-44a9-bb5a-a332c7b75943",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
+            "storagePath": "test_file_storage/files/5CP/QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
             "type": "track",
             "clock": 27,
-            "createdAt": "2020-10-02T18:48:16.287Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.597Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "eda99b1b-9c9d-4b5d-afaf-efa9a8ff0800",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "d92f9e65-1f7e-4e63-8675-2f301a88deda",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
+            "storagePath": "test_file_storage/files/wDS/QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
             "type": "track",
             "clock": 28,
-            "createdAt": "2020-10-02T18:48:16.300Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.601Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "d281c018-d711-487b-acf9-5e0c964f0813",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "6acb9e2b-3f01-4e7b-ae0d-33ab8ca16bf2",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
+            "storagePath": "test_file_storage/files/iRH/QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
             "type": "track",
             "clock": 29,
-            "createdAt": "2020-10-02T18:48:16.313Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.612Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "77d29616-08e9-4d65-b12a-f0de40eecf71",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "07ffc750-9927-4e7f-9cb3-e570d86f4bca",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
+            "storagePath": "test_file_storage/files/5TX/QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
             "type": "track",
             "clock": 30,
-            "createdAt": "2020-10-02T18:48:16.328Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.618Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "e7c3a05d-5e10-44da-9422-5759c9ca8204",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "f6ec32b2-d6b8-4c49-abee-db7088ad643e",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
+            "storagePath": "test_file_storage/files/VvS/QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
             "type": "track",
             "clock": 31,
-            "createdAt": "2020-10-02T18:48:16.341Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.624Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "7753b1de-ba07-4c52-8e5f-5b21e3504b3d",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "a5909e6d-28d6-43da-89cf-8673a7b22dcb",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
+            "storagePath": "test_file_storage/files/LZX/QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
             "type": "track",
             "clock": 32,
-            "createdAt": "2020-10-02T18:48:16.353Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.633Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "878a6ef9-296b-475d-83df-e2d7055accc6",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "e5565f73-f072-42ad-aa89-ba295be709f5",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
+            "storagePath": "test_file_storage/files/TAE/QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
             "type": "track",
             "clock": 33,
-            "createdAt": "2020-10-02T18:48:16.364Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.641Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "7a239b4b-3255-4160-b260-6e0dc862837b",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "bbdff123-2c20-473e-8f65-6996b7bb9d79",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
+            "storagePath": "test_file_storage/files/XTd/QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
             "type": "track",
             "clock": 34,
-            "createdAt": "2020-10-02T18:48:16.379Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.646Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "36873c2b-b33d-4da5-a9c8-13e6f699ee5b",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "1bb2e12c-842a-4ea7-9160-4a47a342872c",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": 1,
             "multihash": "QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
-            "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+            "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
+            "storagePath": "test_file_storage/files/MFa/QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
             "type": "track",
             "clock": 35,
-            "createdAt": "2020-10-02T18:48:16.393Z",
-            "updatedAt": "2020-10-02T18:48:17.557Z"
+            "createdAt": "2020-11-23T22:44:30.653Z",
+            "updatedAt": "2020-11-23T22:44:31.798Z"
           },
           {
-            "fileUUID": "5b24a995-d8f6-4572-8ecc-5107cf8d6ef0",
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "fileUUID": "9caf769e-fbad-4230-b12e-67e8cf7ed7fd",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "trackBlockchainId": null,
             "multihash": "QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
             "sourceFile": null,
             "fileName": null,
             "dirMultihash": null,
-            "storagePath": "test_file_storage/QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
+            "storagePath": "test_file_storage/files/aPa/QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
             "type": "metadata",
             "clock": 36,
-            "createdAt": "2020-10-02T18:48:16.475Z",
-            "updatedAt": "2020-10-02T18:48:16.475Z"
+            "createdAt": "2020-11-23T22:44:30.721Z",
+            "updatedAt": "2020-11-23T22:44:30.721Z"
           }
         ],
         "clockRecords": [
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 1,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:03.425Z",
-            "updatedAt": "2020-10-02T18:48:03.425Z"
+            "createdAt": "2020-11-23T22:44:17.856Z",
+            "updatedAt": "2020-11-23T22:44:17.856Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 2,
             "sourceTable": "AudiusUser",
-            "createdAt": "2020-10-02T18:48:04.496Z",
-            "updatedAt": "2020-10-02T18:48:04.496Z"
+            "createdAt": "2020-11-23T22:44:18.912Z",
+            "updatedAt": "2020-11-23T22:44:18.912Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 3,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:15.959Z",
-            "updatedAt": "2020-10-02T18:48:15.959Z"
+            "createdAt": "2020-11-23T22:44:30.456Z",
+            "updatedAt": "2020-11-23T22:44:30.456Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 4,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:15.970Z",
-            "updatedAt": "2020-10-02T18:48:15.970Z"
+            "createdAt": "2020-11-23T22:44:30.464Z",
+            "updatedAt": "2020-11-23T22:44:30.464Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 5,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:15.979Z",
-            "updatedAt": "2020-10-02T18:48:15.979Z"
+            "createdAt": "2020-11-23T22:44:30.471Z",
+            "updatedAt": "2020-11-23T22:44:30.471Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 6,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:15.992Z",
-            "updatedAt": "2020-10-02T18:48:15.992Z"
+            "createdAt": "2020-11-23T22:44:30.476Z",
+            "updatedAt": "2020-11-23T22:44:30.476Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 7,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.008Z",
-            "updatedAt": "2020-10-02T18:48:16.008Z"
+            "createdAt": "2020-11-23T22:44:30.483Z",
+            "updatedAt": "2020-11-23T22:44:30.483Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 8,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.020Z",
-            "updatedAt": "2020-10-02T18:48:16.020Z"
+            "createdAt": "2020-11-23T22:44:30.489Z",
+            "updatedAt": "2020-11-23T22:44:30.489Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 9,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.030Z",
-            "updatedAt": "2020-10-02T18:48:16.030Z"
+            "createdAt": "2020-11-23T22:44:30.496Z",
+            "updatedAt": "2020-11-23T22:44:30.496Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 10,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.045Z",
-            "updatedAt": "2020-10-02T18:48:16.045Z"
+            "createdAt": "2020-11-23T22:44:30.500Z",
+            "updatedAt": "2020-11-23T22:44:30.500Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 11,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.057Z",
-            "updatedAt": "2020-10-02T18:48:16.057Z"
+            "createdAt": "2020-11-23T22:44:30.505Z",
+            "updatedAt": "2020-11-23T22:44:30.505Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 12,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.071Z",
-            "updatedAt": "2020-10-02T18:48:16.071Z"
+            "createdAt": "2020-11-23T22:44:30.517Z",
+            "updatedAt": "2020-11-23T22:44:30.517Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 13,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.087Z",
-            "updatedAt": "2020-10-02T18:48:16.087Z"
+            "createdAt": "2020-11-23T22:44:30.522Z",
+            "updatedAt": "2020-11-23T22:44:30.522Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 14,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.103Z",
-            "updatedAt": "2020-10-02T18:48:16.103Z"
+            "createdAt": "2020-11-23T22:44:30.527Z",
+            "updatedAt": "2020-11-23T22:44:30.527Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 15,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.113Z",
-            "updatedAt": "2020-10-02T18:48:16.113Z"
+            "createdAt": "2020-11-23T22:44:30.532Z",
+            "updatedAt": "2020-11-23T22:44:30.532Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 16,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.128Z",
-            "updatedAt": "2020-10-02T18:48:16.128Z"
+            "createdAt": "2020-11-23T22:44:30.537Z",
+            "updatedAt": "2020-11-23T22:44:30.537Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 17,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.142Z",
-            "updatedAt": "2020-10-02T18:48:16.142Z"
+            "createdAt": "2020-11-23T22:44:30.542Z",
+            "updatedAt": "2020-11-23T22:44:30.542Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 18,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.153Z",
-            "updatedAt": "2020-10-02T18:48:16.153Z"
+            "createdAt": "2020-11-23T22:44:30.547Z",
+            "updatedAt": "2020-11-23T22:44:30.547Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 19,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.171Z",
-            "updatedAt": "2020-10-02T18:48:16.171Z"
+            "createdAt": "2020-11-23T22:44:30.551Z",
+            "updatedAt": "2020-11-23T22:44:30.551Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 20,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.181Z",
-            "updatedAt": "2020-10-02T18:48:16.181Z"
+            "createdAt": "2020-11-23T22:44:30.556Z",
+            "updatedAt": "2020-11-23T22:44:30.556Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 21,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.198Z",
-            "updatedAt": "2020-10-02T18:48:16.198Z"
+            "createdAt": "2020-11-23T22:44:30.561Z",
+            "updatedAt": "2020-11-23T22:44:30.561Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 22,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.213Z",
-            "updatedAt": "2020-10-02T18:48:16.213Z"
+            "createdAt": "2020-11-23T22:44:30.566Z",
+            "updatedAt": "2020-11-23T22:44:30.566Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 23,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.229Z",
-            "updatedAt": "2020-10-02T18:48:16.229Z"
+            "createdAt": "2020-11-23T22:44:30.571Z",
+            "updatedAt": "2020-11-23T22:44:30.571Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 24,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.244Z",
-            "updatedAt": "2020-10-02T18:48:16.244Z"
+            "createdAt": "2020-11-23T22:44:30.578Z",
+            "updatedAt": "2020-11-23T22:44:30.578Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 25,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.258Z",
-            "updatedAt": "2020-10-02T18:48:16.258Z"
+            "createdAt": "2020-11-23T22:44:30.585Z",
+            "updatedAt": "2020-11-23T22:44:30.585Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 26,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.270Z",
-            "updatedAt": "2020-10-02T18:48:16.270Z"
+            "createdAt": "2020-11-23T22:44:30.590Z",
+            "updatedAt": "2020-11-23T22:44:30.590Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 27,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.281Z",
-            "updatedAt": "2020-10-02T18:48:16.281Z"
+            "createdAt": "2020-11-23T22:44:30.595Z",
+            "updatedAt": "2020-11-23T22:44:30.595Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 28,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.296Z",
-            "updatedAt": "2020-10-02T18:48:16.296Z"
+            "createdAt": "2020-11-23T22:44:30.600Z",
+            "updatedAt": "2020-11-23T22:44:30.600Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 29,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.310Z",
-            "updatedAt": "2020-10-02T18:48:16.310Z"
+            "createdAt": "2020-11-23T22:44:30.605Z",
+            "updatedAt": "2020-11-23T22:44:30.605Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 30,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.324Z",
-            "updatedAt": "2020-10-02T18:48:16.324Z"
+            "createdAt": "2020-11-23T22:44:30.616Z",
+            "updatedAt": "2020-11-23T22:44:30.616Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 31,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.337Z",
-            "updatedAt": "2020-10-02T18:48:16.337Z"
+            "createdAt": "2020-11-23T22:44:30.621Z",
+            "updatedAt": "2020-11-23T22:44:30.621Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 32,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.347Z",
-            "updatedAt": "2020-10-02T18:48:16.347Z"
+            "createdAt": "2020-11-23T22:44:30.631Z",
+            "updatedAt": "2020-11-23T22:44:30.631Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 33,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.361Z",
-            "updatedAt": "2020-10-02T18:48:16.361Z"
+            "createdAt": "2020-11-23T22:44:30.638Z",
+            "updatedAt": "2020-11-23T22:44:30.638Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 34,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.376Z",
-            "updatedAt": "2020-10-02T18:48:16.376Z"
+            "createdAt": "2020-11-23T22:44:30.644Z",
+            "updatedAt": "2020-11-23T22:44:30.644Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 35,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.387Z",
-            "updatedAt": "2020-10-02T18:48:16.387Z"
+            "createdAt": "2020-11-23T22:44:30.650Z",
+            "updatedAt": "2020-11-23T22:44:30.650Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 36,
             "sourceTable": "File",
-            "createdAt": "2020-10-02T18:48:16.470Z",
-            "updatedAt": "2020-10-02T18:48:16.470Z"
+            "createdAt": "2020-11-23T22:44:30.717Z",
+            "updatedAt": "2020-11-23T22:44:30.717Z"
           },
           {
-            "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+            "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
             "clock": 37,
             "sourceTable": "Track",
-            "createdAt": "2020-10-02T18:48:17.518Z",
-            "updatedAt": "2020-10-02T18:48:17.518Z"
+            "createdAt": "2020-11-23T22:44:31.759Z",
+            "updatedAt": "2020-11-23T22:44:31.759Z"
           }
-        ]
+        ],
+        "clockInfo": {
+          "requestedClockRangeMin": 0,
+          "requestedClockRangeMax": 9999,
+          "localClockMax": 37
+        }
       }
     },
     "ipfsIDObj": {
-      "id": "QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDFr5LdVX9oig5N7FHJkQcUiJXAO9Qa5w9m2CDlfRZ5WL5B04wU0nr2u2AjGSgtlScQueSgvQwcESYeCVI283rk8ekSfUJKt0XXPFbTwdQufSehTlWuPFerrgSlNX3BaE5Rkj8L+1PlpqjH/tRsYOqIyF4LXHYZsppQeFruPwW/xy6jNa/RsJlaI2epVDIBGVDc5VB6sNEZCX2httJJ86t69T2DaLWBv0/5A4MAssftwf4LQIuU0AIMX/UKJlT6XsumplX/5SFwSpzFnD2JKwWF8uT0/P58fEo5BfCNdOfjxCJqWXRt4eVzbg4hkUKM8NGzSKQ2Wj6UG+ad+msYz7hPAgMBAAE=",
+      "id": "QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
+      "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDmuHex9F7CsBpGb/t/R3KhoTSwpQqdaHmDM04G6Otb7zuMPE/OgU3sOCoswmzRNFLJuqVFqjGuhtKmZvbUaz+Lq+mRUFiasxzZYIylBBt2ku0PIhIfmuAg8rXCZBEqDxCGN4PNCWphaaTDYv4OIcwUWo8JpNiYf+BcRymT18tcSLMk/v/MuZQtpd5H7xp6Wtt6RXy0wUZE5q0qPjlooaNmtgzhLxOOKRyBlTlAyZ5Xn4k+knlGIv53T7KQM2mN8W6gfAflhC1HXSM5tVnq3r+E2KFvhUChlESTrfDfPrfU4iVDSU4gmkapWpqxvLMvyU4lVMq/kUPc/c/cYmzGmxZvAgMBAAE=",
       "addresses": [
-        "/ip4/127.0.0.1/tcp/4001/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/172.17.0.2/tcp/4001/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/54730/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/61166/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/51519/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/58070/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/60833/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/53424/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/53997/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/54011/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/54007/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/57977/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/50404/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/52702/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/57941/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/62905/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/52377/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/52387/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/52392/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/52883/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/53259/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/58551/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/60788/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/60997/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/61023/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/62016/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/62094/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/64479/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/65142/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/52278/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/53453/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/59140/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/61015/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/62396/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/63364/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/50408/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-        "/ip4/73.157.75.185/tcp/53883/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU"
+        "/ip4/127.0.0.1/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
+        "/ip4/172.17.0.2/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
+        "/ip4/3.238.99.177/tcp/49717/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT"
       ],
       "agentVersion": "go-ipfs/0.4.23/6ce9a35",
       "protocolVersion": "ipfs/0.1.0"
     }
   },
   "cnodeUsers": {
-    "454d032a-ed79-4332-a3dd-3de2a8f30f47": {
-      "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+    "10aaedfe-9f1c-475a-94b5-fab7b39e401b": {
+      "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
       "walletPublicKey": "0xadd36bad12002f1097cdb7ee24085c28e960fc32",
       "lastLogin": null,
       "latestBlockNumber": 10,
       "clock": 37,
-      "createdAt": "2020-10-02T18:48:03.369Z",
-      "updatedAt": "2020-10-02T18:48:17.516Z",
+      "createdAt": "2020-11-23T22:44:17.791Z",
+      "updatedAt": "2020-11-23T22:44:31.757Z",
       "audiusUsers": [
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 2,
           "blockchainId": "1",
-          "metadataFileUUID": "b37ff266-b947-462c-82f5-0a4053d964ed",
+          "metadataFileUUID": "ba8f4f3b-34d9-4fc7-ba31-c7a4b48551b4",
           "metadataJSON": {
             "testField": "testValue"
           },
           "coverArtFileUUID": null,
           "profilePicFileUUID": null,
-          "createdAt": "2020-10-02T18:48:04.500Z",
-          "updatedAt": "2020-10-02T18:48:04.500Z"
+          "createdAt": "2020-11-23T22:44:18.914Z",
+          "updatedAt": "2020-11-23T22:44:18.914Z"
         }
       ],
       "tracks": [
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 37,
           "blockchainId": "1",
-          "metadataFileUUID": "5b24a995-d8f6-4572-8ecc-5107cf8d6ef0",
+          "metadataFileUUID": "9caf769e-fbad-4230-b12e-67e8cf7ed7fd",
           "metadataJSON": {
             "test": "field1",
             "owner_id": 1,
@@ -1135,813 +1106,784 @@
             ]
           },
           "coverArtFileUUID": null,
-          "createdAt": "2020-10-02T18:48:17.522Z",
-          "updatedAt": "2020-10-02T18:48:17.522Z"
+          "createdAt": "2020-11-23T22:44:31.769Z",
+          "updatedAt": "2020-11-23T22:44:31.769Z"
         }
       ],
       "files": [
         {
-          "fileUUID": "b37ff266-b947-462c-82f5-0a4053d964ed",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "ba8f4f3b-34d9-4fc7-ba31-c7a4b48551b4",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": null,
           "multihash": "QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
           "sourceFile": null,
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
+          "storagePath": "test_file_storage/files/BrU/QmcyuCtU24R2N9Ejs5tsm7vebBhs3g6Qnhh6w3ZoEYBrUE",
           "type": "metadata",
           "clock": 1,
-          "createdAt": "2020-10-02T18:48:03.429Z",
-          "updatedAt": "2020-10-02T18:48:03.429Z"
+          "createdAt": "2020-11-23T22:44:17.859Z",
+          "updatedAt": "2020-11-23T22:44:17.859Z"
         },
         {
-          "fileUUID": "adf37c4b-6912-44f0-bfd7-0beac73de1bd",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "43bf9656-db92-4b27-9e60-228f323d9334",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
+          "storagePath": "test_file_storage/files/WKF/QmRcVgkrvsyUeY3x3zvc6EhDSFjZJ8QD5qyKowHsPeWKFT",
           "type": "copy320",
           "clock": 3,
-          "createdAt": "2020-10-02T18:48:15.962Z",
-          "updatedAt": "2020-10-02T18:48:17.542Z"
+          "createdAt": "2020-11-23T22:44:30.459Z",
+          "updatedAt": "2020-11-23T22:44:31.775Z"
         },
         {
-          "fileUUID": "ee446211-8995-400b-9604-0a305e5fdb5f",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "fe71b072-6164-40fb-b730-10f3e443531a",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
+          "storagePath": "test_file_storage/files/TLk/QmQQhdN8918ix1MibmSek9orTLKqZSSzqUvJAtEfMqTLku",
           "type": "track",
           "clock": 4,
-          "createdAt": "2020-10-02T18:48:15.973Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.468Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "90cf7255-98c4-4383-b417-32bdc0dd7a60",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "f2fd7bbc-915d-436a-8c71-cd4c28a7b3a9",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
+          "storagePath": "test_file_storage/files/Kuk/QmSMQGu2vrE6UwXiZDCxyJwTsCcpPrYNBPJBL4by4LKukd",
           "type": "track",
           "clock": 5,
-          "createdAt": "2020-10-02T18:48:15.984Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.473Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "6a30a091-cceb-47f4-980b-de4da1d800cf",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "1a943d6d-8660-4f18-9a66-9fe20758fbf7",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
+          "storagePath": "test_file_storage/files/28C/QmdkuVqHUDhYePhXska15UEZHPike11NPHu5tsy9eY28Ch",
           "type": "track",
           "clock": 6,
-          "createdAt": "2020-10-02T18:48:15.996Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.477Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "43820bd5-5fdc-4f7c-add2-ff542afc97a2",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "5f9023cb-02fa-43f3-adb1-c578a164bc5b",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
+          "storagePath": "test_file_storage/files/1vK/QmZQd76dJjyd4bLL29gT5urxqY6JRS9vjnAUpuwkS91vKJ",
           "type": "track",
           "clock": 7,
-          "createdAt": "2020-10-02T18:48:16.011Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.485Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "51dd0569-81ba-486e-ac50-7c1dff95cd69",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "b2a9201c-d1da-4b5a-ac15-a7717ffd0752",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
+          "storagePath": "test_file_storage/files/xvg/QmVLLQTLByH65Ht2J3bKyFXZaKjUDho6742dSqk9nqxvgP",
           "type": "track",
           "clock": 8,
-          "createdAt": "2020-10-02T18:48:16.024Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.492Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "3b9df1fb-e630-41a1-b45f-45a954eab0b2",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "5b48d1b7-1c90-4f46-b3b4-49dacc22e2cf",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
+          "storagePath": "test_file_storage/files/qgG/QmZJipWYtJDebvUbti2xSA3cijYxQ6YmVnkotA5SXiqgGF",
           "type": "track",
           "clock": 9,
-          "createdAt": "2020-10-02T18:48:16.037Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.497Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "431e0330-f8ef-49b7-9625-78f4d47baf2d",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "8622c473-7748-4ac7-9107-2f10421d17b6",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
+          "storagePath": "test_file_storage/files/GMk/Qmb5QCepqy2k26gvFKALcP74YvAaPS3AtCqNhXeH9YGMkB",
           "type": "track",
           "clock": 10,
-          "createdAt": "2020-10-02T18:48:16.049Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.502Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "c6904e22-c603-4743-ae91-281eb67f4187",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "66633000-3ecb-462b-a91f-77338d285d5b",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
+          "storagePath": "test_file_storage/files/Bza/QmRiU48Xr3vD3n6KhzJAvcuchmPbbumBefa3y7aeNaBzan",
           "type": "track",
           "clock": 11,
-          "createdAt": "2020-10-02T18:48:16.061Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.508Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "4902f34d-cc2c-4373-8214-ed71e3d40939",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "cb73e61b-b9fa-4d56-b55b-c0896970a6a7",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
+          "storagePath": "test_file_storage/files/38t/QmZwxEQSjS6uruo4vXwkh6fUhvjBK4Yp83qq9AHX4R38tr",
           "type": "track",
           "clock": 12,
-          "createdAt": "2020-10-02T18:48:16.076Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.519Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "894c6c9b-9402-473e-9db9-b6a421b110c3",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "789b0e49-4605-4fc4-8ddb-f0d7af2a2e00",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
+          "storagePath": "test_file_storage/files/NDx/QmPyxEWcfJ9qnQm8CNPChzLoDinhTbi9zVtyGTJBeoNDxB",
           "type": "track",
           "clock": 13,
-          "createdAt": "2020-10-02T18:48:16.092Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.524Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "4976f227-cd4d-481c-abb4-171bfc9acaad",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "429366c3-2c02-4bad-b037-c8a08c7d664f",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
+          "storagePath": "test_file_storage/files/MdW/QmULEs3yq1kCVMBoiSMSVv7JopVz6K3TgncqcriioNMdWi",
           "type": "track",
           "clock": 14,
-          "createdAt": "2020-10-02T18:48:16.107Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.529Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "b9339fde-2ac9-44be-b1a0-3373604b0915",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "186c70ee-3b01-4e39-b886-00001a861053",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
+          "storagePath": "test_file_storage/files/c2i/QmaqSv1buZQ6enNwsae4B3paPDAXjcXZTRY6cUscPoc2ik",
           "type": "track",
           "clock": 15,
-          "createdAt": "2020-10-02T18:48:16.120Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.534Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "d9e8a2c6-5816-4d4e-90f7-c18c6a4f1f3d",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "6e51ae54-9e16-491d-8cbd-cb01e9245f05",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
+          "storagePath": "test_file_storage/files/ZNj/QmYG4TY55oLoe5RjsABJmcUrAUWgyCc8jRpvBTWkT7ZNjH",
           "type": "track",
           "clock": 16,
-          "createdAt": "2020-10-02T18:48:16.131Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.539Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "c8153ea3-8ec7-4a27-9695-ae2f23d8134f",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "44e7ec01-8621-48fd-b035-365c9c8a0b1b",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
+          "storagePath": "test_file_storage/files/n63/QmXyGwndsBXmM2xCW4VaWkRqp3pv4Cr6yAKfHnYDDTn63d",
           "type": "track",
           "clock": 17,
-          "createdAt": "2020-10-02T18:48:16.145Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.544Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "d3ac63d0-b307-49a8-986b-32c63aaf9489",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "d6e2a02e-616d-41a1-a22d-698e4b5e6e1c",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
+          "storagePath": "test_file_storage/files/sHo/QmdjBYvYirb4ANjK55ktmE4eokEKVsej9tjeWuZDxasHoh",
           "type": "track",
           "clock": 18,
-          "createdAt": "2020-10-02T18:48:16.159Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.549Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "1d6db106-3673-4c9f-9ff0-e036b602ab97",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "e4c2eba9-a6f9-4e28-89e4-d81ea85556f7",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
+          "storagePath": "test_file_storage/files/ZJK/QmWbAbeaDGSM3LiARCKk2EWnLtgUqKcD3hK4nvHwdUZJK9",
           "type": "track",
           "clock": 19,
-          "createdAt": "2020-10-02T18:48:16.174Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.553Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "3cc4644e-e912-4120-a7ef-daa8cb6872a8",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "f37e36c3-fc05-4637-85a8-4f0d222a0a95",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
+          "storagePath": "test_file_storage/files/Wmj/QmTacAUYq6qUdMqkNEUPohYLbAu3eEetwAW9QYn53TWmj7",
           "type": "track",
           "clock": 20,
-          "createdAt": "2020-10-02T18:48:16.189Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.558Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "e83f72d8-3e65-4cf4-a4d0-6309ff56d3aa",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "51e88fa4-5c55-4e93-b73b-8b975ee39164",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
+          "storagePath": "test_file_storage/files/SQ9/QmNbt57KLtgbEKz97qSoJDZ2DteEjmg455ZBvnoCHySQ9q",
           "type": "track",
           "clock": 21,
-          "createdAt": "2020-10-02T18:48:16.205Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.563Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "80a5e3a1-9fa2-4a5e-ba03-89b460868955",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "859aa53a-fb46-4d77-8cfd-92c850d47ada",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
+          "storagePath": "test_file_storage/files/Jto/QmNpX6fcViqDTBBJmVKsAVcNmQdqZRV4zqzUuxfP4DJtot",
           "type": "track",
           "clock": 22,
-          "createdAt": "2020-10-02T18:48:16.221Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.568Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "3da22ac0-16a9-4d50-b244-822f5d4162de",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "c0355625-f56f-48ef-a0ad-535bb9e17265",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
+          "storagePath": "test_file_storage/files/6EK/QmcKcZfASQZJUVaHKtFxN7CqyhwD9oiQNeCkZxfDo36EKA",
           "type": "track",
           "clock": 23,
-          "createdAt": "2020-10-02T18:48:16.237Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.572Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "ff62119b-6007-4288-be9e-d6a27d59a642",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "7eb3f06b-7787-40ae-b143-4fc03b2fd504",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
+          "storagePath": "test_file_storage/files/zHn/QmZw9kq8iVcVtNzRapsS9K3zRiaLNsa8bD9Dbw4QBXzHnJ",
           "type": "track",
           "clock": 24,
-          "createdAt": "2020-10-02T18:48:16.248Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.580Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "4d65ebc1-1f6b-431b-9ba8-faa38fd32f80",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "c239d0ba-d98a-4c4b-be34-5f54ec2881cb",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
+          "storagePath": "test_file_storage/files/VSE/QmYCWrB5vGJ3REaTRkL35QgpZNDN25E1XtEpMQVctPVSEx",
           "type": "track",
           "clock": 25,
-          "createdAt": "2020-10-02T18:48:16.262Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.587Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "5c85c277-2bcb-47a2-a793-63c8e47b8930",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "d7470c8a-20ac-4981-bdbc-0c02439de539",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
+          "storagePath": "test_file_storage/files/QEL/QmX9ePR6kL5djVNvGKzXogjigPfRtA75XKj3d71ZiAQELF",
           "type": "track",
           "clock": 26,
-          "createdAt": "2020-10-02T18:48:16.275Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.592Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "d0cac540-f96c-4ed4-b674-e39dc625beb5",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "aa723ef8-d4fa-44a9-bb5a-a332c7b75943",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
+          "storagePath": "test_file_storage/files/5CP/QmPuDcNoaa8NmSa7mYPWneNDPqMmwiDoTnr6pAsrAg5CPY",
           "type": "track",
           "clock": 27,
-          "createdAt": "2020-10-02T18:48:16.287Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.597Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "eda99b1b-9c9d-4b5d-afaf-efa9a8ff0800",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "d92f9e65-1f7e-4e63-8675-2f301a88deda",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
+          "storagePath": "test_file_storage/files/wDS/QmZjt4SvTXhTqeoKTNPAKTPwfd8QadRWz9tjKXg9fEwDSY",
           "type": "track",
           "clock": 28,
-          "createdAt": "2020-10-02T18:48:16.300Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.601Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "d281c018-d711-487b-acf9-5e0c964f0813",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "6acb9e2b-3f01-4e7b-ae0d-33ab8ca16bf2",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
+          "storagePath": "test_file_storage/files/iRH/QmXLcCb5PTVtUusxtyo3pckJjCqeZKUt5VNv1FAbEdiRHn",
           "type": "track",
           "clock": 29,
-          "createdAt": "2020-10-02T18:48:16.313Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.612Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "77d29616-08e9-4d65-b12a-f0de40eecf71",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "07ffc750-9927-4e7f-9cb3-e570d86f4bca",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
+          "storagePath": "test_file_storage/files/5TX/QmX1mAPkDpBTooEAoZbLv1PWFfaaq2aQ9gLX2Bcktd5TXT",
           "type": "track",
           "clock": 30,
-          "createdAt": "2020-10-02T18:48:16.328Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.618Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "e7c3a05d-5e10-44da-9422-5759c9ca8204",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "f6ec32b2-d6b8-4c49-abee-db7088ad643e",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
+          "storagePath": "test_file_storage/files/VvS/QmPhEZL5o7uAtes7g1kmxRGaLeRXE9YF4h8CPHk1KYVvSk",
           "type": "track",
           "clock": 31,
-          "createdAt": "2020-10-02T18:48:16.341Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.624Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "7753b1de-ba07-4c52-8e5f-5b21e3504b3d",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "a5909e6d-28d6-43da-89cf-8673a7b22dcb",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
+          "storagePath": "test_file_storage/files/LZX/QmZEnMbMH9FzkLHn4LW4CGjW5FPHg6dw3PCYhHjCXrLZXy",
           "type": "track",
           "clock": 32,
-          "createdAt": "2020-10-02T18:48:16.353Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.633Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "878a6ef9-296b-475d-83df-e2d7055accc6",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "e5565f73-f072-42ad-aa89-ba295be709f5",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
+          "storagePath": "test_file_storage/files/TAE/QmekrmmfT4oHvRst8aYioWLTPGAGHcNEj3as8cVgo1TAE8",
           "type": "track",
           "clock": 33,
-          "createdAt": "2020-10-02T18:48:16.364Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.641Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "7a239b4b-3255-4160-b260-6e0dc862837b",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "bbdff123-2c20-473e-8f65-6996b7bb9d79",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
+          "storagePath": "test_file_storage/files/XTd/QmckKtz4nhmwsyFGNJ8pLpLSPPkgPGXq44bQRQwi75XTdp",
           "type": "track",
           "clock": 34,
-          "createdAt": "2020-10-02T18:48:16.379Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.646Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "36873c2b-b33d-4da5-a9c8-13e6f699ee5b",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "1bb2e12c-842a-4ea7-9160-4a47a342872c",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": 1,
           "multihash": "QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
-          "sourceFile": "50329ff9-c2c5-422a-8152-ff5338102fa6.mp3",
+          "sourceFile": "2359965d-3e8b-4f5c-af22-acd83ba48572.mp3",
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
+          "storagePath": "test_file_storage/files/MFa/QmbJ9JdEDT6bzdcsY5grX71nq2etzNZXsCM6H84k1GMFas",
           "type": "track",
           "clock": 35,
-          "createdAt": "2020-10-02T18:48:16.393Z",
-          "updatedAt": "2020-10-02T18:48:17.557Z"
+          "createdAt": "2020-11-23T22:44:30.653Z",
+          "updatedAt": "2020-11-23T22:44:31.798Z"
         },
         {
-          "fileUUID": "5b24a995-d8f6-4572-8ecc-5107cf8d6ef0",
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "fileUUID": "9caf769e-fbad-4230-b12e-67e8cf7ed7fd",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "trackBlockchainId": null,
           "multihash": "QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
           "sourceFile": null,
           "fileName": null,
           "dirMultihash": null,
-          "storagePath": "test_file_storage/QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
+          "storagePath": "test_file_storage/files/aPa/QmcYCwJHfCScqDFEXd78hkdFbyn98mJWXhej4QhQx2aPaZ",
           "type": "metadata",
           "clock": 36,
-          "createdAt": "2020-10-02T18:48:16.475Z",
-          "updatedAt": "2020-10-02T18:48:16.475Z"
+          "createdAt": "2020-11-23T22:44:30.721Z",
+          "updatedAt": "2020-11-23T22:44:30.721Z"
         }
       ],
       "clockRecords": [
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 1,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:03.425Z",
-          "updatedAt": "2020-10-02T18:48:03.425Z"
+          "createdAt": "2020-11-23T22:44:17.856Z",
+          "updatedAt": "2020-11-23T22:44:17.856Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 2,
           "sourceTable": "AudiusUser",
-          "createdAt": "2020-10-02T18:48:04.496Z",
-          "updatedAt": "2020-10-02T18:48:04.496Z"
+          "createdAt": "2020-11-23T22:44:18.912Z",
+          "updatedAt": "2020-11-23T22:44:18.912Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 3,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:15.959Z",
-          "updatedAt": "2020-10-02T18:48:15.959Z"
+          "createdAt": "2020-11-23T22:44:30.456Z",
+          "updatedAt": "2020-11-23T22:44:30.456Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 4,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:15.970Z",
-          "updatedAt": "2020-10-02T18:48:15.970Z"
+          "createdAt": "2020-11-23T22:44:30.464Z",
+          "updatedAt": "2020-11-23T22:44:30.464Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 5,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:15.979Z",
-          "updatedAt": "2020-10-02T18:48:15.979Z"
+          "createdAt": "2020-11-23T22:44:30.471Z",
+          "updatedAt": "2020-11-23T22:44:30.471Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 6,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:15.992Z",
-          "updatedAt": "2020-10-02T18:48:15.992Z"
+          "createdAt": "2020-11-23T22:44:30.476Z",
+          "updatedAt": "2020-11-23T22:44:30.476Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 7,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.008Z",
-          "updatedAt": "2020-10-02T18:48:16.008Z"
+          "createdAt": "2020-11-23T22:44:30.483Z",
+          "updatedAt": "2020-11-23T22:44:30.483Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 8,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.020Z",
-          "updatedAt": "2020-10-02T18:48:16.020Z"
+          "createdAt": "2020-11-23T22:44:30.489Z",
+          "updatedAt": "2020-11-23T22:44:30.489Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 9,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.030Z",
-          "updatedAt": "2020-10-02T18:48:16.030Z"
+          "createdAt": "2020-11-23T22:44:30.496Z",
+          "updatedAt": "2020-11-23T22:44:30.496Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 10,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.045Z",
-          "updatedAt": "2020-10-02T18:48:16.045Z"
+          "createdAt": "2020-11-23T22:44:30.500Z",
+          "updatedAt": "2020-11-23T22:44:30.500Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 11,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.057Z",
-          "updatedAt": "2020-10-02T18:48:16.057Z"
+          "createdAt": "2020-11-23T22:44:30.505Z",
+          "updatedAt": "2020-11-23T22:44:30.505Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 12,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.071Z",
-          "updatedAt": "2020-10-02T18:48:16.071Z"
+          "createdAt": "2020-11-23T22:44:30.517Z",
+          "updatedAt": "2020-11-23T22:44:30.517Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 13,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.087Z",
-          "updatedAt": "2020-10-02T18:48:16.087Z"
+          "createdAt": "2020-11-23T22:44:30.522Z",
+          "updatedAt": "2020-11-23T22:44:30.522Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 14,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.103Z",
-          "updatedAt": "2020-10-02T18:48:16.103Z"
+          "createdAt": "2020-11-23T22:44:30.527Z",
+          "updatedAt": "2020-11-23T22:44:30.527Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 15,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.113Z",
-          "updatedAt": "2020-10-02T18:48:16.113Z"
+          "createdAt": "2020-11-23T22:44:30.532Z",
+          "updatedAt": "2020-11-23T22:44:30.532Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 16,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.128Z",
-          "updatedAt": "2020-10-02T18:48:16.128Z"
+          "createdAt": "2020-11-23T22:44:30.537Z",
+          "updatedAt": "2020-11-23T22:44:30.537Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 17,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.142Z",
-          "updatedAt": "2020-10-02T18:48:16.142Z"
+          "createdAt": "2020-11-23T22:44:30.542Z",
+          "updatedAt": "2020-11-23T22:44:30.542Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 18,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.153Z",
-          "updatedAt": "2020-10-02T18:48:16.153Z"
+          "createdAt": "2020-11-23T22:44:30.547Z",
+          "updatedAt": "2020-11-23T22:44:30.547Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 19,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.171Z",
-          "updatedAt": "2020-10-02T18:48:16.171Z"
+          "createdAt": "2020-11-23T22:44:30.551Z",
+          "updatedAt": "2020-11-23T22:44:30.551Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 20,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.181Z",
-          "updatedAt": "2020-10-02T18:48:16.181Z"
+          "createdAt": "2020-11-23T22:44:30.556Z",
+          "updatedAt": "2020-11-23T22:44:30.556Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 21,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.198Z",
-          "updatedAt": "2020-10-02T18:48:16.198Z"
+          "createdAt": "2020-11-23T22:44:30.561Z",
+          "updatedAt": "2020-11-23T22:44:30.561Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 22,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.213Z",
-          "updatedAt": "2020-10-02T18:48:16.213Z"
+          "createdAt": "2020-11-23T22:44:30.566Z",
+          "updatedAt": "2020-11-23T22:44:30.566Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 23,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.229Z",
-          "updatedAt": "2020-10-02T18:48:16.229Z"
+          "createdAt": "2020-11-23T22:44:30.571Z",
+          "updatedAt": "2020-11-23T22:44:30.571Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 24,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.244Z",
-          "updatedAt": "2020-10-02T18:48:16.244Z"
+          "createdAt": "2020-11-23T22:44:30.578Z",
+          "updatedAt": "2020-11-23T22:44:30.578Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 25,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.258Z",
-          "updatedAt": "2020-10-02T18:48:16.258Z"
+          "createdAt": "2020-11-23T22:44:30.585Z",
+          "updatedAt": "2020-11-23T22:44:30.585Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 26,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.270Z",
-          "updatedAt": "2020-10-02T18:48:16.270Z"
+          "createdAt": "2020-11-23T22:44:30.590Z",
+          "updatedAt": "2020-11-23T22:44:30.590Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 27,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.281Z",
-          "updatedAt": "2020-10-02T18:48:16.281Z"
+          "createdAt": "2020-11-23T22:44:30.595Z",
+          "updatedAt": "2020-11-23T22:44:30.595Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 28,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.296Z",
-          "updatedAt": "2020-10-02T18:48:16.296Z"
+          "createdAt": "2020-11-23T22:44:30.600Z",
+          "updatedAt": "2020-11-23T22:44:30.600Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 29,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.310Z",
-          "updatedAt": "2020-10-02T18:48:16.310Z"
+          "createdAt": "2020-11-23T22:44:30.605Z",
+          "updatedAt": "2020-11-23T22:44:30.605Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 30,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.324Z",
-          "updatedAt": "2020-10-02T18:48:16.324Z"
+          "createdAt": "2020-11-23T22:44:30.616Z",
+          "updatedAt": "2020-11-23T22:44:30.616Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 31,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.337Z",
-          "updatedAt": "2020-10-02T18:48:16.337Z"
+          "createdAt": "2020-11-23T22:44:30.621Z",
+          "updatedAt": "2020-11-23T22:44:30.621Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 32,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.347Z",
-          "updatedAt": "2020-10-02T18:48:16.347Z"
+          "createdAt": "2020-11-23T22:44:30.631Z",
+          "updatedAt": "2020-11-23T22:44:30.631Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 33,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.361Z",
-          "updatedAt": "2020-10-02T18:48:16.361Z"
+          "createdAt": "2020-11-23T22:44:30.638Z",
+          "updatedAt": "2020-11-23T22:44:30.638Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 34,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.376Z",
-          "updatedAt": "2020-10-02T18:48:16.376Z"
+          "createdAt": "2020-11-23T22:44:30.644Z",
+          "updatedAt": "2020-11-23T22:44:30.644Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 35,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.387Z",
-          "updatedAt": "2020-10-02T18:48:16.387Z"
+          "createdAt": "2020-11-23T22:44:30.650Z",
+          "updatedAt": "2020-11-23T22:44:30.650Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 36,
           "sourceTable": "File",
-          "createdAt": "2020-10-02T18:48:16.470Z",
-          "updatedAt": "2020-10-02T18:48:16.470Z"
+          "createdAt": "2020-11-23T22:44:30.717Z",
+          "updatedAt": "2020-11-23T22:44:30.717Z"
         },
         {
-          "cnodeUserUUID": "454d032a-ed79-4332-a3dd-3de2a8f30f47",
+          "cnodeUserUUID": "10aaedfe-9f1c-475a-94b5-fab7b39e401b",
           "clock": 37,
           "sourceTable": "Track",
-          "createdAt": "2020-10-02T18:48:17.518Z",
-          "updatedAt": "2020-10-02T18:48:17.518Z"
+          "createdAt": "2020-11-23T22:44:31.759Z",
+          "updatedAt": "2020-11-23T22:44:31.759Z"
         }
-      ]
+      ],
+      "clockInfo": {
+        "requestedClockRangeMin": 0,
+        "requestedClockRangeMax": 9999,
+        "localClockMax": 37
+      }
     }
   },
   "ipfsIDObj": {
-    "id": "QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-    "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDFr5LdVX9oig5N7FHJkQcUiJXAO9Qa5w9m2CDlfRZ5WL5B04wU0nr2u2AjGSgtlScQueSgvQwcESYeCVI283rk8ekSfUJKt0XXPFbTwdQufSehTlWuPFerrgSlNX3BaE5Rkj8L+1PlpqjH/tRsYOqIyF4LXHYZsppQeFruPwW/xy6jNa/RsJlaI2epVDIBGVDc5VB6sNEZCX2httJJ86t69T2DaLWBv0/5A4MAssftwf4LQIuU0AIMX/UKJlT6XsumplX/5SFwSpzFnD2JKwWF8uT0/P58fEo5BfCNdOfjxCJqWXRt4eVzbg4hkUKM8NGzSKQ2Wj6UG+ad+msYz7hPAgMBAAE=",
+    "id": "QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
+    "publicKey": "CAASpgIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDmuHex9F7CsBpGb/t/R3KhoTSwpQqdaHmDM04G6Otb7zuMPE/OgU3sOCoswmzRNFLJuqVFqjGuhtKmZvbUaz+Lq+mRUFiasxzZYIylBBt2ku0PIhIfmuAg8rXCZBEqDxCGN4PNCWphaaTDYv4OIcwUWo8JpNiYf+BcRymT18tcSLMk/v/MuZQtpd5H7xp6Wtt6RXy0wUZE5q0qPjlooaNmtgzhLxOOKRyBlTlAyZ5Xn4k+knlGIv53T7KQM2mN8W6gfAflhC1HXSM5tVnq3r+E2KFvhUChlESTrfDfPrfU4iVDSU4gmkapWpqxvLMvyU4lVMq/kUPc/c/cYmzGmxZvAgMBAAE=",
     "addresses": [
-      "/ip4/127.0.0.1/tcp/4001/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/172.17.0.2/tcp/4001/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/54730/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/61166/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/51519/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/58070/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/60833/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/53424/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/53997/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/54011/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/54007/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/57977/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/50404/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/52702/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/57941/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/62905/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/52377/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/52387/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/52392/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/52883/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/53259/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/58551/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/60788/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/60997/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/61023/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/62016/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/62094/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/64479/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/65142/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/52278/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/53453/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/59140/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/61015/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/62396/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/63364/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/50408/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU",
-      "/ip4/73.157.75.185/tcp/53883/ipfs/QmW3xqYHGro1yW5cv9EKEaMCWSKQ7835aFNrXm9SHji7HU"
+      "/ip4/127.0.0.1/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
+      "/ip4/172.17.0.2/tcp/4001/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT",
+      "/ip4/3.238.99.177/tcp/49717/ipfs/QmUWaDczeR1KatXnH4raKp38NSSK5Xy5yMh12VAx9v8YqT"
     ],
     "agentVersion": "go-ipfs/0.4.23/6ce9a35",
     "protocolVersion": "ipfs/0.1.0"
   },
   "signer": "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25",
-  "version": "0.3.22",
+  "version": "0.3.25",
   "service": "content-node",
-  "timestamp": "2020-10-02T18:48:17.781Z",
-  "signature": "0x0b15fd18955ac3c610795c2e3dfa396a25a708255814e0133a2710379255078450a22a7dfdfbed4d284b8239f7e4c47af591da894e54986539f38beb7091f9f51c"
+  "timestamp": "2020-11-23T22:44:31.833Z",
+  "signature": "0x5c2256b67ddc0a128ca37903f8570c53ecaeb5f565d17701dad250354f9be55d71df4f1b68dc7c42c2f5af0370e3efdd838e924e9964791a1c868b794e2b57161b"
 }

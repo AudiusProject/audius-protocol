@@ -1,17 +1,10 @@
 const config = require('../../config/config')
 const fs = require('fs')
 
-const addUser = async (libsWrapper, metadata, userPicturePath) => {
-  const userPicFile = fs.createReadStream(userPicturePath)
-  const resp = await libsWrapper.libsInstance.File.uploadImage(
-    userPicFile,
-    'true' // square, this weirdly has to be a boolean string
-  )
-  metadata.profile_picture_sizes = resp.dirCID
-  metadata.cover_photo_sizes = resp.dirCID
+const User = {}
 
+User.addUser = async (libsWrapper, metadata) => {
   const { error, phase, userId } = await libsWrapper.signUp({ metadata })
-
   if (error) {
     throw new Error(`Adding user error: ${error} in phase: ${phase}`)
   }
@@ -19,14 +12,77 @@ const addUser = async (libsWrapper, metadata, userPicturePath) => {
   return userId
 }
 
-const upgradeToCreator = async (libsWrapper, endpoint) => {
+/**
+ * TODO: The third party libraries we use in libs gets buggy when we try to upload photos
+ * programically via libs. We should be uploading a photo via signUp() instead of explicitly
+ * uploading photos after signup and reassociating the updated metadata. This is the
+ * workaround for this issue.
+ */
+User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePath) => {
+  // Sign user up
+  const userId = await User.addUser(libsWrapper, metadata)
+
+  // Wait for discovery node to index user
+  await libsWrapper.waitForLatestBlock()
+
+  metadata = await User.getUser(libsWrapper, userId)
+
+  // Upload photo for profile picture
+  await User.uploadPhotoAndUpdateMetadata({
+    metadata,
+    libsWrapper,
+    userId,
+    picturePath: userPicturePath
+  })
+
+  return userId
+}
+
+/**
+ * Upload photo for cover photo and profile picture and update the metadata object
+ * @param {Object} param
+ * @param {Object} param.metadata original metadata object
+ * @param {Object} param.libsWrapper libs wrapper in ServiceCommands
+ * @param {number} param.userId
+ * @param {string} param.picturePath path of picture to upload
+ * @param {boolean} param.[updateCoverPhoto=true] flag to update cover_photo_sizes hash
+ * @param {boolean} param.[updateProfilePicture=true] flag to update profile_picture_sizes hash
+ */
+User.uploadPhotoAndUpdateMetadata = async ({
+  metadata,
+  libsWrapper,
+  userId,
+  picturePath,
+  updateCoverPhoto = true,
+  updateProfilePicture = true
+}) => {
+  const newMetadata = { ...metadata }
+  const userPicFile = fs.createReadStream(picturePath)
+  const resp = await libsWrapper.libsInstance.File.uploadImage(
+    userPicFile,
+    'true' // square, this weirdly has to be a boolean string
+  )
+  if (updateProfilePicture) newMetadata.profile_picture_sizes = resp.dirCID
+  if (updateCoverPhoto) newMetadata.cover_photo_sizes = resp.dirCID
+
+  // Update metadata on content node + chain
+  await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
+
+  return newMetadata
+}
+
+User.updateAndUploadMetadata = async (libsWrapper, { newMetadata, userId }) => {
+  await libsWrapper.updateAndUploadMetadata({ newMetadata, userId })
+}
+
+User.upgradeToCreator = async (libsWrapper, newEndpoint) => {
   await libsWrapper.upgradeToCreator({
-    endpoint,
-    userNode: config.get('user_node')
+    userNode: config.get('user_node'),
+    endpoint: newEndpoint
   })
 }
 
-const autoSelectCreatorNodes = async (
+User.autoSelectCreatorNodes = async (
   libsWrapper,
   numberOfNodes,
   whitelist,
@@ -39,19 +95,47 @@ const autoSelectCreatorNodes = async (
   })
 }
 
-const getUser = async (libs, userId) => {
+User.setCreatorNodeEndpoint = async (libsWrapper, primary) => {
+  return libsWrapper.setCreatorNodeEndpoint(primary)
+}
+
+User.updateCreator = async (libsWrapper, userId, metadata) => {
+  return libsWrapper.updateCreator(userId, metadata)
+}
+
+User.getUser = async (libs, userId) => {
   return libs.getUser(userId)
 }
 
-const getLibsUserInfo = async libs => {
+User.getUsers = async (libs, userIds) => {
+  return libs.getUsers(userIds)
+}
+
+User.getUserAccount = async (libs, wallet) => {
+  return libs.getUserAccount(wallet)
+}
+
+User.getLibsWalletAddress = libs => {
+  return libs.getWalletAddress()
+}
+
+User.setCurrentUserAndUpdateLibs = async (libs, userAccount) => {
+  libs.setCurrentUserAndUpdateLibs(userAccount)
+}
+
+User.setCurrentUser = (libs, user) => {
+  libs.setCurrentUser(user)
+}
+
+User.getLibsUserInfo = async libs => {
   return libs.getLibsUserInfo()
 }
 
-const updateMultihash = async (libsWrapper, userId, multihashDigest) => {
+User.updateMultihash = async (libsWrapper, userId, multihashDigest) => {
   return libsWrapper.updateMultihash(userId, multihashDigest)
 }
 
-const updateProfilePhoto = async (
+User.updateProfilePhoto = async (
   libsWrapper,
   userId,
   profilePhotoMultihashDigest
@@ -59,7 +143,7 @@ const updateProfilePhoto = async (
   return libsWrapper.updateProfilePhoto(userId, profilePhotoMultihashDigest)
 }
 
-const updateCoverPhoto = async (
+User.updateCoverPhoto = async (
   libsWrapper,
   userId,
   coverPhotoMultihashDigest
@@ -67,13 +151,12 @@ const updateCoverPhoto = async (
   return libsWrapper.updateCoverPhoto(userId, coverPhotoMultihashDigest)
 }
 
-module.exports = {
-  addUser,
-  upgradeToCreator,
-  getUser,
-  autoSelectCreatorNodes,
-  getLibsUserInfo,
-  updateMultihash,
-  updateProfilePhoto,
-  updateCoverPhoto
+User.getContentNodeEndpoints = (libsWrapper, contentNodeEndpointField) => {
+  return libsWrapper.getContentNodeEndpoints(contentNodeEndpointField)
 }
+
+User.getClockValuesFromReplicaSet = async libsWrapper => {
+  return libsWrapper.getClockValuesFromReplicaSet()
+}
+
+module.exports = User

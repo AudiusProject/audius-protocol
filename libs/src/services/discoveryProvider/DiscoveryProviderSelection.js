@@ -36,6 +36,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.currentVersion = null
     this.reselectTimeout = config.reselectTimeout
     this.selectionCallback = config.selectionCallback
+    this.monitoringCallbacks = config.monitoringCallbacks || {}
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -118,6 +119,34 @@ class DiscoveryProviderSelection extends ServiceSelection {
   isHealthy (response, urlMap) {
     const { status, data } = response
     const { block_difference: blockDiff, service, version } = data.data
+
+    if (this.monitoringCallbacks.healthCheck) {
+      const url = new URL(response.config.url)
+      try {
+        this.monitoringCallbacks.healthCheck({
+          endpoint: url.origin,
+          pathname: url.pathname,
+          queryString: url.search,
+          version,
+          git: data.data.git,
+          blockDifference: blockDiff,
+          databaseBlockNumber: data.data.db.number,
+          webBlockNumber: data.data.web.blocknumber,
+          databaseSize: data.data.database_size,
+          databaseConnections: data.data.database_connections,
+          totalMemory: data.data.total_memory,
+          usedMemory: data.data.used_memory,
+          totalStorage: data.data.filesystem_size,
+          usedStorage: data.data.filesystem_used,
+          receivedBytesPerSec: data.received_bytes_per_sec,
+          transferredBytesPerSec: data.transferred_bytes_per_sec
+        })
+      } catch (e) {
+        // Swallow errors -- this method should not throw generally
+        console.error(e)
+      }
+    }
+
     if (status !== 200) return false
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false

@@ -13,7 +13,6 @@ class ItemType(fields.Raw):
             return "playlist"
         raise MarshallingError("Unable to marshal as activity type")
 
-
 class ActivityItem(fields.Raw):
     def format(self, value):
         try:
@@ -23,7 +22,6 @@ class ActivityItem(fields.Raw):
                 return marshal(value, playlist_model)
         except:
             raise MarshallingError("Unable to marshal as activity item")
-
 
 class FullActivityItem(fields.Raw):
     def format(self, value):
@@ -42,7 +40,7 @@ activity_model = ns.model("activity", {
     "item": ActivityItem
 })
 
-activity_model_full = ns.model("activity", {
+activity_model_full = ns.model("activity_full", {
     "timestamp": fields.String(allow_null=True),
     "item_type": ItemType,
     "item": FullActivityItem

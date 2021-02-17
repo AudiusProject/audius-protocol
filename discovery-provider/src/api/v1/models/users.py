@@ -30,6 +30,7 @@ user_model = ns.model("user", {
 })
 
 user_model_full = ns.clone("user_full", user_model, {
+    "balance": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "wallet": fields.String(required=True),
     "created_at": fields.String(required=True),

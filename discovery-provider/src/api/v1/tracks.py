@@ -8,11 +8,10 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_full_response, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
     format_offset, format_limit, decode_string_id, stem_from_track, \
-    get_current_user_id
+    get_current_user_id, get_encoded_track_id
 
-from .models.tracks import track, track_full, stem_full, remixes_response
+from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
-from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
@@ -23,6 +22,10 @@ from src.queries.get_tracks_including_unlisted import get_tracks_including_unlis
 from src.queries.get_stems_of import get_stems_of
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
+from src.queries.get_trending_ids import get_trending_ids
+from src.queries.get_trending import get_trending
+from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_random_tracks import get_random_tracks, DEFAULT_RANDOM_LIMIT
 
 logger = logging.getLogger(__name__)
 
@@ -222,30 +225,6 @@ class TrackSearchResult(Resource):
 # `get_trending_tracks.py`, which caches the scored tracks before they are populated (keyed by genre + time).
 # With this second cache, each user_id can reuse on the same cached list of tracks, and then populate them uniquely.
 
-TRENDING_LIMIT = 100
-TRENDING_TTL_SEC = 30 * 60
-
-def get_trending(args):
-    """Get Trending, shared between full and regular endpoints."""
-    # construct args
-    time = args.get("time") if args.get("time") is not None else 'week'
-    current_user_id = args.get("user_id")
-    args = {
-        'time': time,
-        'genre': args.get("genre", None),
-        'with_users': True,
-        'limit': TRENDING_LIMIT,
-        'offset': 0
-    }
-
-    # decode and add user_id if necessary
-    if current_user_id:
-        decoded_id = decode_string_id(current_user_id)
-        args["current_user_id"] = decoded_id
-
-    tracks = get_trending_tracks(args)
-    return list(map(extend_track, tracks))
-
 @ns.route("/trending")
 class Trending(Resource):
     @record_metrics
@@ -298,12 +277,119 @@ class FullTrending(Resource):
         return success_response(trending)
 
 
+# Get random tracks for a genre and exclude tracks in the exclusion list
+random_track_parser = reqparse.RequestParser()
+random_track_parser.add_argument('genre', required=False)
+random_track_parser.add_argument('limit', type=int, required=False)
+random_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
+random_track_parser.add_argument('time', required=False)
+
+@ns.route("/random")
+class RandomTrack(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Random Tracks""",
+        params={
+            'genre': 'Random trending tracks for a specified genre',
+            'limit': 'Number of random tracks to fetch',
+            'exclusion_list': 'List of track ids to exclude',
+            'time': 'Trending tracks over a specified time range (week, month, allTime)'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=TRENDING_TTL_SEC)
+    def get(self):
+        args = random_track_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
+        args['limit'] = max(TRENDING_LIMIT, limit)
+        tracks = get_random_tracks(args)
+        return success_response(tracks[:limit])
+
+full_random_track_parser = random_track_parser.copy()
+full_random_track_parser.add_argument('user_id', required=False)
+
+@full_ns.route("/random")
+class FullRandomTrack(Resource):
+    def get_cache_key(self):
+        """Construct a cache key from genre + exclusion list + user + time"""
+        request_items = to_dict(request.args)
+        request_items.pop('limit', None)
+        key = extract_key(request.path, request_items.items())
+        return key
+
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        args = full_random_track_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
+        args['limit'] = max(TRENDING_LIMIT, limit)
+        key = self.get_cache_key()
+
+        # Attempt to use the cached tracks list
+        if args['user_id'] is not None:
+            full_random = get_random_tracks(args)
+        else:
+            full_random = use_redis_cache(
+                key, TRENDING_TTL_SEC, lambda: get_random_tracks(args))
+        random = full_random[:limit]
+        return success_response(random)
+
+
+trending_ids_route_parser = reqparse.RequestParser()
+trending_ids_route_parser.add_argument('limit', required=False, type=int, default=10)
+trending_ids_route_parser.add_argument('genre', required=False, type=str)
+
+track_id = ns.model('track_id', { "id": fields.String(required=True) })
+trending_times_ids = ns.model('trending_times_ids', {
+        "week": fields.List(fields.Nested(track_id)),
+        "month": fields.List(fields.Nested(track_id)),
+        "year": fields.List(fields.Nested(track_id))
+})
+trending_ids_response = make_response(
+    "trending_ids_response",
+    ns,
+    fields.Nested(trending_times_ids)
+)
+
+@full_ns.route("/trending/ids")
+class FullTrendingIds(Resource):
+    @record_metrics
+    @full_ns.expect(trending_ids_route_parser)
+    @ns.doc(
+        id="""Trending Tracks Ids""",
+        params={
+            'genre': 'Track genre',
+            'limit': 'Limit',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @full_ns.marshal_with(trending_ids_response)
+    def get(self):
+        """Gets the track ids of the top trending tracks on Audius"""
+        args = trending_ids_route_parser.parse_args()
+        trending_ids = get_trending_ids(args)
+        res = {
+            "week": list(map(get_encoded_track_id, trending_ids["week"])),
+            "month": list(map(get_encoded_track_id, trending_ids["month"])),
+            "year": list(map(get_encoded_track_id, trending_ids["year"]))
+        }
+        return success_response(res)
+
 track_favorites_route_parser = reqparse.RequestParser()
 track_favorites_route_parser.add_argument('user_id', required=False)
 track_favorites_route_parser.add_argument('limit', required=False, type=int)
 track_favorites_route_parser.add_argument('offset', required=False, type=int)
 track_favorites_response = make_full_response(
-    "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+    "track_favorites_response_full", full_ns, fields.List(fields.Nested(user_model_full)))
 
 
 @full_ns.route("/<string:track_id>/favorites")
@@ -348,7 +434,7 @@ track_reposts_route_parser.add_argument('user_id', required=False)
 track_reposts_route_parser.add_argument('limit', required=False, type=int)
 track_reposts_route_parser.add_argument('offset', required=False, type=int)
 track_reposts_response = make_full_response(
-    "following_response", full_ns, fields.List(fields.Nested(user_model_full)))
+    "track_reposts_response_full", full_ns, fields.List(fields.Nested(user_model_full)))
 @full_ns.route("/<string:track_id>/reposts")
 class FullTrackReposts(Resource):
     @full_ns.expect(track_reposts_route_parser)
@@ -399,7 +485,7 @@ class FullTrackStems(Resource):
 
 
 remixes_response = make_full_response(
-    "remixes_response", full_ns, fields.Nested(remixes_response))
+    "remixes_response_full", full_ns, fields.Nested(remixes_response_model))
 remixes_parser = reqparse.RequestParser()
 remixes_parser.add_argument('user_id', required=False)
 remixes_parser.add_argument('limit', required=False, default=10)
@@ -438,7 +524,7 @@ class FullRemixingRoute(Resource):
     @cache(ttl_sec=10)
     def get(self, track_id):
         decoded_id = decode_with_abort(track_id, full_ns)
-        request_args = remixes_parser.parse_args()
+        request_args = remixing_parser.parse_args()
         current_user_id = get_current_user_id(request_args)
 
         args = {

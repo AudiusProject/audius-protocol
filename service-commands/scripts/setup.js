@@ -94,6 +94,7 @@ program
         throw new Error('Failed to parse arguments')
       }
       let options = {}
+
       const serviceName = findService(service)
       const setupCommand = findCommand(command)
 

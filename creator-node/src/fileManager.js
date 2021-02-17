@@ -82,10 +82,10 @@ async function saveFileToIPFSFromFS (req, srcPath) {
 /**
  * Given a CID, saves the file to disk. Steps to achieve that:
  * 1. do the prep work to save the file to the local file system including
- * creating directories, changing IPFS gateway urls before calling _saveFileForMultihash
+ * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
  * 2. attempt to fetch the CID from a variety of sources
- * 3. throws error if failure, couldn't find the file or file contents don't match CID,
- * returns expectedStoragePath if successful
+ * 3. throws error if failure, couldn't find the file or file contents don't match CID;
+ *    returns expectedStoragePath if successful
  * @param {Object} req request object
  * @param {String} multihash IPFS cid
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
@@ -94,7 +94,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
  */
-async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   try {
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
@@ -201,7 +201,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
         }
 
         if (!response || !response.data) {
-          throw new Error(`Couldn't find files on other creator nodes`)
+          throw new Error(`Couldn't find files on other creator nodes, after trying URLs: ${gatewayUrlsMapped.toString()}`)
         }
 
         // Write file to disk
@@ -219,7 +219,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
       throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
     }
 
-    // for verification purposes - don't delete. verifies that the contents of the file match the file's cid
+    // verify that the contents of the file match the file's cid
     try {
       const ipfs = req.app.get('ipfsLatestAPI')
       const content = fs.createReadStream(expectedStoragePath)
@@ -234,7 +234,7 @@ async function saveFileForMultihash (req, multihash, expectedStoragePath, gatewa
 
     return expectedStoragePath
   } catch (e) {
-    throw new Error(`saveFileForMultihash - ${e}`)
+    throw new Error(`saveFileForMultihashToFS - ${e}`)
   }
 }
 
@@ -296,8 +296,10 @@ async function removeTrackFolder (req, fileDir) {
     // Delete fileDir after all its contents have been deleted
     await rmdir(fileDir)
     req.logger.info(`Removed track folder at fileDir ${fileDir}`)
+    return null
   } catch (err) {
     req.logger.error(`Error removing ${fileDir}. ${err}`)
+    return err
   }
 }
 
@@ -350,7 +352,7 @@ const trackFileUpload = multer({
       cb(null, true)
     } else {
       req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${file.mimetype}`
-      cb(null, false)
+      cb(new Error(req.fileFilterError))
     }
   }
 })
@@ -374,13 +376,35 @@ function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
 }
 
+/**
+ * Checks if the Content Node storage has reached the `maxStorageUsedPercent` defined in the config. `storagePathSize`
+ * and `storagePathUsed` are values taken off of the Content Node monitoring system.
+ * @param {Object} param
+ * @param {number} param.storagePathSize size of total storage
+ * @param {number} param.storagePathUsed size of used storage
+ * @param {number} param.maxStorageUsedPercent max storage percentage allowed in a CNode
+ * @returns {boolean} true if enough storage; false if storage is equal to or over `maxStorageUsedPercent`
+ */
+function hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUsedPercent }) {
+  // If these values are not present, the Content Node did not initialize properly.
+  if (
+    storagePathSize === null ||
+    storagePathSize === undefined ||
+    storagePathUsed === null ||
+    storagePathUsed === undefined
+  ) { return false }
+
+  return (100 * storagePathUsed / storagePathSize) < maxStorageUsedPercent
+}
+
 module.exports = {
   saveFileFromBufferToIPFSAndDisk,
   saveFileToIPFSFromFS,
-  saveFileForMultihash,
+  saveFileForMultihashToFS,
   removeTrackFolder,
   upload,
   uploadTempDiskStorage,
   trackFileUpload,
-  handleTrackContentUpload
+  handleTrackContentUpload,
+  hasEnoughStorageSpace
 }

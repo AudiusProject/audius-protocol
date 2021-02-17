@@ -22,7 +22,6 @@ import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
 from src.queries import queries, search, search_queries, health_check, trending, notifications
-from src.queries.search_config import set_search_similarity
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
 from src.utils.session_manager import SessionManager
@@ -224,7 +223,7 @@ def configure_flask(test_config, app, mode="app"):
         except exc.OperationalError as e:
             if "could not connect to server" in str(e):
                 logger.warning(
-                    "DB connection isn't up yet...setting a teporary timeout and trying again"
+                    "DB connection isn't up yet...setting a temporary timeout and trying again"
                 )
                 time.sleep(10)
             else:
@@ -239,7 +238,12 @@ def configure_flask(test_config, app, mode="app"):
         alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
         alembic_config.set_main_option("sqlalchemy.url", str(database_url))
         with helpers.cd(alembic_dir):
-            alembic.command.upgrade(alembic_config, "head")
+            # run db migrations unless `run_migrations` overridden to false. default value is true
+            # need to call with getboolean because configparser doesn't allow you to
+            # store non string types and it coerces into bool for you
+            if shared_config.getboolean("db", "run_migrations"):
+                logger.info('running alembic db migrations')
+                alembic.command.upgrade(alembic_config, "head")
 
     if test_config is not None:
         # load the test config if passed in
@@ -249,15 +253,11 @@ def configure_flask(test_config, app, mode="app"):
         app.config["db"]["url"],
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
-    with app.db_session_manager.scoped_session() as session:
-        set_search_similarity(session)
 
     app.db_read_replica_session_manager = SessionManager(
         app.config["db"]["url_read_replica"],
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
-    with app.db_read_replica_session_manager.scoped_session() as session:
-        set_search_similarity(session)
 
 
     exceptions.register_exception_handlers(app)
@@ -285,12 +285,16 @@ def configure_celery(flask_app, celery, test_config=None):
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
 
+    ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
+
     # Update celery configuration
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
-                 "src.tasks.index_cache", "src.tasks.index_plays",
-                 "src.tasks.index_metrics", "src.tasks.index_materialized_views",
-                 "src.tasks.index_network_peers"],
+                 "src.tasks.index_plays", "src.tasks.index_metrics",
+                 "src.tasks.index_materialized_views",
+                 "src.tasks.index_network_peers", "src.tasks.index_trending",
+                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue"
+                 ],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -298,11 +302,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
-                "schedule": timedelta(seconds=60),
-            },
-            "update_cache": {
-                "task": "update_discovery_cache",
-                "schedule": timedelta(seconds=60)
+                "schedule": timedelta(seconds=ipld_interval),
             },
             "update_play_count": {
                 "task": "update_play_count",
@@ -319,6 +319,18 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_network_peers": {
                 "task": "update_network_peers",
                 "schedule": timedelta(seconds=30)
+            },
+            "index_trending": {
+                "task": "index_trending",
+                "schedule": crontab(minute=0, hour="*")
+            },
+            "update_user_balances": {
+                "task": "update_user_balances",
+                "schedule": timedelta(minutes=5)
+            },
+            "monitoring_queue": {
+                "task": "monitoring_queue",
+                "schedule": timedelta(seconds=60)
             }
         },
         task_serializer="json",

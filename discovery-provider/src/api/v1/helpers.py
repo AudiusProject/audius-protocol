@@ -178,6 +178,9 @@ def extend_track(track):
 
     return track
 
+def get_encoded_track_id(track):
+    return { "id": encode_int_id(track["track_id"]) }
+
 def stem_from_track(track):
     track_id = encode_int_id(track["track_id"])
     parent_id = encode_int_id(track["stem_of"]["parent_track_id"])
@@ -284,10 +287,10 @@ MIN_LIMIT = 1
 MAX_LIMIT = 500
 DEFAULT_OFFSET = 0
 MIN_OFFSET = 0
-def format_limit(args, max_limit=MAX_LIMIT):
-    lim = args.get("limit", DEFAULT_LIMIT)
+def format_limit(args, max_limit=MAX_LIMIT, default_limit=DEFAULT_LIMIT):
+    lim = args.get("limit", default_limit)
     if lim is None:
-        return DEFAULT_LIMIT
+        return default_limit
 
     return max(min(int(lim), max_limit), MIN_LIMIT)
 

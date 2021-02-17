@@ -1,5 +1,4 @@
 import logging
-import sqlalchemy
 
 trackTitleWeight = 0.7
 userNameWeight = 0.7
@@ -10,7 +9,7 @@ minSearchSimilarity = 0.1
 logger = logging.getLogger(__name__)
 
 
-def set_search_similarity(session):
+def set_search_similarity(cursor):
     """
     Sets the search similarity threshold to be used by % operator in queries.
     https://www.postgresql.org/docs/9.6/pgtrgm.html
@@ -19,8 +18,8 @@ def set_search_similarity(session):
     https://stackoverflow.com/a/11250001/11435157
     """
     try:
-        session.execute(sqlalchemy.text(
+        cursor.execute(
             f"SET pg_trgm.similarity_threshold = {minSearchSimilarity}"
-        ))
+        )
     except Exception as e:
-        logger.error(f"Unable to set similarity_threshold, {0}".format(e))
+        logger.error(f"Unable to set similarity_threshold: {e}")

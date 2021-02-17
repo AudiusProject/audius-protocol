@@ -15,7 +15,7 @@ pytest-cov==2.6.0
 pytest-dotenv==0.5.2
 base58==1.0.0
 flask-cors==3.0.6
-gunicorn==19.9.0
+gunicorn==20.0.4
 jsonschema==3.2.0
 flask-restx==0.2.0
 hashids==1.2.0
@@ -24,3 +24,4 @@ jsonformatter==0.3.0
 py-cid==0.3.0
 pytest-postgresql==2.4.1
 eventlet==0.28.0
+psutil==5.8.0

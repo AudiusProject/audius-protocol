@@ -1,20 +1,23 @@
 from enum import Enum
 import logging  # pylint: disable=C0302
+from functools import cmp_to_key
 from flask import Blueprint, request
 import sqlalchemy
 
 from src import api_helpers, exceptions
 from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight
-from src.models import User, Track, RepostType, Save, SaveType, Follow
+from src.models import Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
+from src.queries.search_track_tags import search_track_tags
+from src.queries.search_user_tags import search_user_tags
 from src.queries.query_helpers import get_current_user_id, get_users_by_id, get_users_ids, populate_user_metadata, \
-    populate_track_metadata, populate_playlist_metadata, get_pagination_vars, \
-    get_track_play_counts
+    populate_track_metadata, populate_playlist_metadata, get_pagination_vars, populate_playlist_repost_counts, \
+    populate_user_follower_counts, populate_track_repost_counts
 
 logger = logging.getLogger(__name__)
 bp = Blueprint("search_tags", __name__)
@@ -22,12 +25,44 @@ bp = Blueprint("search_tags", __name__)
 
 ######## VARS ########
 
+# Search for at least 10 items in the lexeme even if the user requests fewer
+# this is to allow secondary sorts to be more effective.
+MIN_SEARCH_LEXEME_LIMIT = 10
+
 class SearchKind(Enum):
     all = 1
     tracks = 2
     users = 3
     playlists = 4
     albums = 5
+
+
+######## UTILS ########
+
+def compare_users(user1, user2):
+    """Comparison util for ordering user search results."""
+    # Any verified user is ranked higher
+    if user1["is_verified"] and not user2["is_verified"]:
+        return -1
+    if user2["is_verified"] and not user1["is_verified"]:
+        return 1
+    if "follower_count" in user1 and "follower_count" in user2:
+        return user2["follower_count"] - user1["follower_count"]
+    return 0
+
+
+def compare_tracks(track1, track2):
+    """Comparison util for ordering track search results."""
+    if "repost_count" in track1 and "repost_count" in track2:
+        return track2["repost_count"] - track1["repost_count"]
+    return 0
+
+
+def compare_playlists(playlist1, playlist2):
+    """Comparison util for ordering playlist search results."""
+    if "repost_count" in playlist1 and "repost_count" in playlist2:
+        return playlist2["repost_count"] - playlist1["repost_count"]
+    return 0
 
 
 ######## ROUTES ########
@@ -59,150 +94,35 @@ def search_tags():
     results = {}
 
     (limit, offset) = get_pagination_vars()
-    like_tags_str = str.format('%{}%', search_str)
     db = get_db_read_replica()
     with db.scoped_session() as session:
         if (searchKind in [SearchKind.all, SearchKind.tracks]):
-            track_res = sqlalchemy.text(
-                f"""
-                select distinct(track_id)
-                from
-                (
-                    select
-                        strip(to_tsvector(tracks.tags)) as tagstrip,
-                        track_id
-                    from
-                        tracks
-                    where
-                        (tags like :like_tags_query)
-                        and (is_current is true)
-                        and (is_delete is false)
-                        and (is_unlisted is false)
-                        and (stem_of is NULL)
-                    order by
-                        updated_at desc
-                ) as t
-                    where
-                    tagstrip @@ to_tsquery(:query);
-                """
-            )
-            track_ids = session.execute(
-                track_res,
-                {
-                    "query": search_str,
-                    "like_tags_query": like_tags_str
-                }
-            ).fetchall()
-
-            # track_ids is list of tuples - simplify to 1-D list
-            track_ids = [i[0] for i in track_ids]
-
-            tracks = (
-                session.query(Track)
-                .filter(
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                    Track.is_unlisted == False,
-                    Track.stem_of == None,
-                    Track.track_id.in_(track_ids),
-                )
-                .all()
-            )
-
-            tracks = helpers.query_result_to_list(tracks)
-            track_play_counts = get_track_play_counts(track_ids)
-
-            tracks = populate_track_metadata(
-                session, track_ids, tracks, current_user_id)
-
-            for track in tracks:
-                track_id = track["track_id"]
-                track[response_name_constants.play_count] = track_play_counts.get(
-                    track_id, 0)
-
-            play_count_sorted_tracks = \
-                sorted(
-                    tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
-
-            # Add pagination parameters to track and user results
-            play_count_sorted_tracks = \
-                play_count_sorted_tracks[slice(offset, offset + limit, 1)]
-
-            results['tracks'] = play_count_sorted_tracks
+            results['tracks'] = search_track_tags(session, {
+                'search_str': search_str,
+                'current_user_id': current_user_id,
+                'limit': limit,
+                'offset': offset
+            })
 
         if (searchKind in [SearchKind.all, SearchKind.users]):
-            user_res = sqlalchemy.text(
-                f"""
-                select * from
-                (
-                    select
-                        count(track_id),
-                        owner_id
-                    from
-                    (
-                        select
-                            strip(to_tsvector(tracks.tags)) as tagstrip,
-                            track_id,
-                            owner_id
-                        from
-                            tracks
-                        where
-                            (tags like :like_tags_query)
-                            and (is_current is true)
-                            and (is_unlisted is false)
-                            and (stem_of is NULL)
-                        order by
-                            updated_at desc
-                    ) as t
-                    where
-                            tagstrip @@ to_tsquery(:query)
-                    group by
-                            owner_id
-                    order by
-                            count desc
-                ) as usr
-                where
-                    usr.count >= :user_tag_count;
-                """
-            )
-            user_ids = session.execute(
-                user_res,
-                {
-                    "query": search_str,
-                    "like_tags_query": like_tags_str,
-                    "user_tag_count": user_tag_count
-                }
-            ).fetchall()
+            results['users'] = search_user_tags(session, {
+                'search_str': search_str,
+                'current_user_id': current_user_id,
+                "user_tag_count": user_tag_count,
+                'limit': limit,
+                'offset': offset
+            })
 
-            # user_ids is list of tuples - simplify to 1-D list
-            user_ids = [i[1] for i in user_ids]
-
-            users = (
-                session.query(User)
-                .filter(
-                    User.is_current == True,
-                    User.user_id.in_(user_ids)
-                )
-                .all()
-            )
-            users = helpers.query_result_to_list(users)
-
-            users = populate_user_metadata(
-                session, user_ids, users, current_user_id)
-
-            followee_sorted_users = \
-                sorted(
-                    users, key=lambda i: i[response_name_constants.follower_count], reverse=True)
-
-            followee_sorted_users = \
-                followee_sorted_users[slice(offset, offset + limit, 1)]
-
-            results['users'] = followee_sorted_users
 
     # Add personalized results for a given user
     if current_user_id:
         if (searchKind in [SearchKind.all, SearchKind.tracks]):
             # Query saved tracks for the current user that contain this tag
+            track_ids = [track['track_id'] for track in results['tracks']]
+            track_play_counts = {
+                track['track_id']: track[response_name_constants.play_count] for track in results['tracks']
+            }
+
             saves_query = (
                 session.query(Save.save_item_id)
                 .filter(
@@ -248,6 +168,7 @@ def search_tags():
 
         if (searchKind in [SearchKind.all, SearchKind.users]):
             # Query followed users that have referenced this tag
+            user_ids = [user['user_id'] for user in results['users']]
             followed_user_query = (
                 session.query(Follow.followee_user_id)
                 .filter(
@@ -456,7 +377,7 @@ def track_search_query(
         res,
         {
             "query": searchStr,
-            "limit": limit,
+            "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "title_weight": trackTitleWeight,
             "current_user_id": current_user_id
@@ -467,6 +388,8 @@ def track_search_query(
     track_ids = [i[0] for i in track_ids]
     tracks = get_unpopulated_tracks(session, track_ids, True)
 
+    # TODO: Populate track metadata should be sped up to be able to be
+    # used in search autocomplete as that'll give us better results.
     if is_auto_complete == True:
         # fetch users for tracks
         track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
@@ -476,15 +399,22 @@ def track_search_query(
         # attach user objects to track objects
         for track in tracks:
             track["user"] = users_dict[track["owner_id"]]
+        tracks = populate_track_repost_counts(session, track_ids, tracks)
     else:
         # bundle peripheral info into track results
         tracks = populate_track_metadata(
             session, track_ids, tracks, current_user_id)
 
-    # preserve order from track_ids above
-    tracks = [next((t for t in tracks if t["track_id"] == track_id), None)
-              for track_id in track_ids]
-    return tracks
+    # Preserve order from track_ids above
+    tracks_map = {}
+    for t in tracks:
+        tracks_map[t["track_id"]] = t
+    tracks = [tracks_map[track_id] for track_id in track_ids]
+
+    # Sort tracks by extra criteria for "best match"
+    tracks.sort(key=cmp_to_key(compare_tracks))
+
+    return tracks[0:limit]
 
 
 def user_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id):
@@ -523,7 +453,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
         res,
         {
             "query": searchStr,
-            "limit": limit,
+            "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": userNameWeight,
             "current_user_id": current_user_id
@@ -535,15 +465,27 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
 
     users = get_unpopulated_users(session, user_ids)
 
-    if not is_auto_complete:
+    # TODO: Populate user metadata should be sped up to be able to be
+    # used in search autocomplete as that'll give us better results.
+    if is_auto_complete:
+        # get follower information to improve search ordering
+        users = populate_user_follower_counts(session, user_ids, users)
+    else:
         # bundle peripheral info into user results
         users = populate_user_metadata(
             session, user_ids, users, current_user_id)
 
-    # preserve order from user_ids above
-    users = [next(u for u in users if u["user_id"] == user_id)
-             for user_id in user_ids]
-    return users
+
+    # Preserve order from user_ids above
+    user_map = {}
+    for u in users:
+        user_map[u["user_id"]] = u
+    users = [user_map[user_id] for user_id in user_ids]
+
+    # Sort users by extra criteria for "best match"
+    users.sort(key=cmp_to_key(compare_users))
+
+    return users[0:limit]
 
 
 def playlist_search_query(session, searchStr, limit, offset, is_album, personalized, is_auto_complete, current_user_id):
@@ -594,7 +536,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         res,
         {
             "query": searchStr,
-            "limit": limit,
+            "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": playlistNameWeight,
             "current_user_id": current_user_id
@@ -605,6 +547,8 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
     playlist_ids = [i[0] for i in playlist_ids]
     playlists = get_unpopulated_playlists(session, playlist_ids, True)
 
+    # TODO: Populate playlist metadata should be sped up to be able to be
+    # used in search autocomplete as that'll give us better results.
     if is_auto_complete:
         # fetch users for playlists
         playlist_owner_ids = list(map(lambda playlist: playlist["playlist_owner_id"], playlists))
@@ -614,6 +558,8 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
         # attach user objects to playlist objects
         for playlist in playlists:
             playlist["user"] = users_dict[playlist["playlist_owner_id"]]
+
+        playlists = populate_playlist_repost_counts(session, playlist_ids, playlists, [repost_type])
     else:
         # bundle peripheral info into playlist results
         playlists = populate_playlist_metadata(
@@ -625,7 +571,13 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
             current_user_id
         )
 
-    # preserve order from playlist_ids above
-    playlists = [next((p for p in playlists if p["playlist_id"]
-                       == playlist_id), None) for playlist_id in playlist_ids]
-    return playlists
+    # Preserve order from playlist_ids above
+    playlists_map = {}
+    for p in playlists:
+        playlists_map[p["playlist_id"]] = p
+    playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
+
+    # Sort playlists by extra criteria for "best match"
+    playlists.sort(key=cmp_to_key(compare_playlists))
+
+    return playlists[0:limit]

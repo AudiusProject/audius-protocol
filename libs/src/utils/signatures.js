@@ -9,9 +9,14 @@ const sign = (digest, privateKey) => {
   return signature
 }
 
-const PERMIT_TYPEHASH = Utils.keccak256(
-  'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
-)
+// lazyload permitTypehash to avoid a web3 race
+let _permitTypehash = null
+const getPermitTypehash = () => {
+  if (!_permitTypehash) {
+    _permitTypehash = Utils.keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
+  }
+  return _permitTypehash
+}
 
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
@@ -28,7 +33,7 @@ function getPermitDigest (
 
   let innerEncoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
-    [PERMIT_TYPEHASH, approve.owner, approve.spender, approve.value, nonce, deadline]
+    [getPermitTypehash(), approve.owner, approve.spender, approve.value, nonce, deadline]
   )
   let encoded = pack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],

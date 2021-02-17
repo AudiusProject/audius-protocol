@@ -5,25 +5,27 @@ This API allows you to bring services up and down and control your local audius 
 
 **Before you begin:**
 - Install tools: `docker`, `docker-compose`, `node`.
+- If you are on Linux, it is possible that your kernal might have updated without a reboot. Reboot to ensure that docker does not have kernel related issues.
 - Clone the [audius-protocol](https://github.com/AudiusProject/audius-protocol) repo.
-- Set the environment variable `PROTOCOL_DIR` to point to the cloned `protocol` repo.
+- `export` the environment variable `PROTOCOL_DIR` to point to the cloned `protocol` repo.
 
-  Can be set in .bashrc, `export PROTOCOL_DIR=/Users/hareeshnagaraj/Development/audius-protocol`
-- Run the `<service-commands>/scripts/hosts.js` script with `sudo node hosts.js add`. This script will add mappings to your `/etc/hosts` file.
+  set this in your shell config (`.bashrc`), e.g. `export PROTOCOL_DIR=/Users/hareeshnagaraj/Development/audius-protocol`
 - Execute `npm install` in `<service-commands>` (audius-tooling/service-commands)
+- Run the `<service-commands>/scripts/hosts.js` script with `sudo node hosts.js add`. This script will add mappings to your `/etc/hosts` file.
 
 **First time setup**
 
-- Initialize all the services by executing the following inside `service-commands/scripts`:
+- Initialize all the services by executing the following inside `service-commands`:
 
 ```
-node setup.js run init-repos up
+node scripts/setup.js run init-repos up
 ```
 
 ***Linking local libs***
 - Link libs to consume changes from your local branch within the system
   - In `<audius-protocol>/libs`, run `npm link`.
   - In `<audius-protocol>/service-commands`, run `npm link @audius/libs`.
+  - In `<audius-client>`, run `npm link @audius/libs`.
 
 **Bringing up all services:**
 - In `<service-commands>/scripts/`, run `node setup.js up` to bring all services up.

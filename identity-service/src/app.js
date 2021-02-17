@@ -7,7 +7,7 @@ const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
-const initAudiusLibs = require('./audiusLibsInstance')
+const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
@@ -90,7 +90,8 @@ class App {
   }
 
   async configureAudiusInstance () {
-    const audiusInstance = await initAudiusLibs()
+    await audiusLibsWrapper.init()
+    const audiusInstance = audiusLibsWrapper.getAudiusLibs()
     this.express.set('audiusLibs', audiusInstance)
     return audiusInstance
   }
@@ -124,11 +125,14 @@ class App {
   _getIP (req) {
     // Gets the IP for rate-limiting based on X-Forwarded-For headers
     // Algorithm:
-    // If > 1 headers:
-    //    If rightmost is CN, then use rightmost - 1 (known to be safe)
-    //    If rightmost is not CN, then use rightmost
     // If 1 header or no headers:
-    //    use req.ip (leftmost)
+    //   We are not running behind a proxy, something is probably wonky, use req.ip (leftmost)
+    // If > 1 headers:
+    //   This assumes two proxies (some outer proxy like cloudflare and then some proxy like a load balancer)
+    //   Rightmost header is the outer proxy
+    //   Rightmost - 1 header is either a creator node OR the actual user
+    //    If creator node, use Rightmost - 2 (since creator node will pass this along)
+    //    Else, use Rightmost - 1 since it's the actual user
 
     let ip = req.ip
     const forwardedFor = req.get('X-Forwarded-For')
@@ -140,23 +144,28 @@ class App {
     }
 
     const headers = forwardedFor.split(',')
-    // headers length == 1 means that no x-forwarded-for was passed to identity proxy,
-    // so the request wasn't from CN. We can just use req.ip which corresponds
-    // to the forward-for that the proxy added
+    // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
+    // We can just use req.ip which corresponds to the best guess forward-for that was added if any
     if (headers.length === 1) {
-      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, ip: ${ip}`)
+      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
       return ip
     }
 
-    const rightMost = headers[headers.length - 1]
+    // Length is at least 2, length - 1 would be the outermost proxy, so length - 2 is the "sender"
+    // either the actual user or a content node
+    const senderIP = headers[headers.length - 2]
 
-    if (this._isIPWhitelisted(rightMost)) {
-      const forwardedIP = headers[headers.length - 2]
-      req.logger.debug(`_getIP: recording listen from creatornode, forwarded IP: ${forwardedIP}`)
+    if (this._isIPWhitelisted(senderIP)) {
+      const forwardedIP = headers[headers.length - 3]
+      if (!forwardedIP) {
+        req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
+        return senderIP
+      }
+      req.logger.debug(`_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
       return forwardedIP
     }
-    req.logger.debug(`_getIP: recording listen from 2 headers, but not creator-node, IP: ${rightMost}`)
-    return rightMost
+    req.logger.debug(`_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
+    return senderIP
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis

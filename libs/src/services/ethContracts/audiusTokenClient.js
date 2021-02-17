@@ -1,3 +1,5 @@
+const DEFAULT_GAS_AMOUNT = 200000
+
 class AudiusTokenClient {
   constructor (ethWeb3Manager, contractABI, contractAddress) {
     this.ethWeb3Manager = ethWeb3Manager
@@ -6,12 +8,22 @@ class AudiusTokenClient {
 
     this.web3 = this.ethWeb3Manager.getWeb3()
     this.AudiusTokenContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
+
+    this.bustCacheNonce = 0
   }
 
   /* ------- GETTERS ------- */
 
+  async bustCache () {
+    this.bustCacheNonce += 1
+  }
+
   async balanceOf (account) {
-    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call()
+    let args
+    if (this.bustCacheNonce > 0) {
+      args = { _audiusBustCache: this.bustCacheNonce }
+    }
+    const balance = await this.AudiusTokenContract.methods.balanceOf(account).call(args)
     return this.web3.utils.toBN(balance)
   }
 
@@ -23,7 +35,10 @@ class AudiusTokenClient {
 
   // Get the name of the contract
   async nonces (wallet) {
-    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call()
+    // Pass along a unique param so the nonce value is always not cached
+    const nonce = await this.AudiusTokenContract.methods.nonces(wallet).call({
+      _audiusBustCache: Date.now()
+    })
     const number = this.web3.utils.toBN(nonce).toNumber()
     return number
   }
@@ -41,7 +56,9 @@ class AudiusTokenClient {
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
-      owner
+      owner,
+      /* txGasLimit */ DEFAULT_GAS_AMOUNT,
+      /* retries */ 0
     )
     return { txReceipt: tx }
   }
@@ -66,7 +83,11 @@ class AudiusTokenClient {
       s
     )
     const tx = await this.ethWeb3Manager.relayTransaction(
-      contractMethod, this.contractAddress, owner
+      contractMethod,
+      this.contractAddress,
+      owner,
+      /* txGasLimit */ DEFAULT_GAS_AMOUNT,
+      /* retries */ 0
     )
     return tx
   }

@@ -2,31 +2,35 @@ const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
 const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
 
-const CREATOR_NODE_SERVICE_NAME = 'content-node'
-const DISCOVERY_PROVIDER_SERVICE_NAME = 'discovery-node'
+const CONTENT_NODE_SERVICE_NAME = 'content-node'
+const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
+
+// Default timeout for each content node's sync and health check
+const CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT = 7500
 
 /**
  * API methods to interact with Audius service providers.
  * Types of services include:
- *    - Creator Node (host creator content)
- *    - Discovery Provider (index and make content queryable)
+ *    - Content Node (host creator content)
+ *    - Discovery Node (index and make content queryable)
  * Retrieving lists of available services, etc. are found here.
  */
 class ServiceProvider extends Base {
-  /* ------- CREATOR NODE  ------- */
+  /* ------- Content Node  ------- */
 
   async listCreatorNodes () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
+    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(CONTENT_NODE_SERVICE_NAME)
   }
 
   /**
-   * Fetches healthy creator nodes filtered down to a given whitelist and blacklist
+   * Fetches healthy Content Nodes filtered down to a given whitelist and blacklist
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
    */
   async getSelectableCreatorNodes (
     whitelist = null,
-    blacklist = null
+    blacklist = null,
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   ) {
     let creatorNodes = await this.listCreatorNodes()
 
@@ -43,50 +47,56 @@ class ServiceProvider extends Base {
     const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
-        url: `${node.endpoint}/version`
-      }))
+        url: `${node.endpoint}/health_check/verbose`
+      })),
+      timeout
     )
 
     let services = {}
     timings.forEach(timing => {
-      if (timing.response) services[timing.request.id] = timing.response.data
+      if (timing.response) services[timing.request.id] = timing.response.data.data
     })
 
     return services
   }
 
   /**
-   * Fetches healthy creator nodes and autoselects a primary
-   * and two secondaries
+   * Fetches healthy Content Nodes and autoselects a primary
+   * and two secondaries.
    * @param {number} numberOfNodes total number of nodes to fetch (2 secondaries means 3 total)
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whiltelist)
    * @param {Set<string?} blacklist whether or not to exclude any nodes (default no blacklist)
+   * @param {boolean} performSyncCheck whether or not to perform sync check
+   * @param {number?} timeout ms applied to each request made to a content node
    * @returns { primary, secondaries, services }
    * // primary: string
-   * // secondaries: Array<string>
-   * // services: { creatorNodeEndpoint: versionInfo }
+   * // secondaries: string[]
+   * // services: { creatorNodeEndpoint: healthCheckResponse }
    */
-  async autoSelectCreatorNodes (
+  async autoSelectCreatorNodes ({
     numberOfNodes = 3,
     whitelist = null,
-    blacklist = null
-  ) {
+    blacklist = null,
+    performSyncCheck = true,
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
+  }) {
     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
       whitelist,
-      blacklist
+      blacklist,
+      timeout
     })
 
-    const { primary, secondaries, services } = await creatorNodeSelection.select()
+    const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck)
     return { primary, secondaries, services }
   }
 
-  /* ------- DISCOVERY PROVIDER ------ */
+  /* ------- Discovery Node ------ */
 
   async listDiscoveryProviders () {
-    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_PROVIDER_SERVICE_NAME)
+    return this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(DISCOVERY_NODE_SERVICE_NAME)
   }
 }
 

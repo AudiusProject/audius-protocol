@@ -3,7 +3,9 @@ const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
+const { hasEnoughStorageSpace } = require('./fileManager')
 const { serviceRegistry } = require('./serviceRegistry')
+const { getMonitors, MONITORS } = require('./monitors/monitors')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -52,7 +54,9 @@ async function syncLockMiddleware (req, res, next) {
 
 /** Blocks writes if node is not the primary for audiusUser associated with wallet. */
 async function ensurePrimaryMiddleware (req, res, next) {
-  if (config.get('isUserMetadataNode')) next()
+  if (config.get('isUserMetadataNode')) {
+    return next()
+  }
 
   const start = Date.now()
 
@@ -69,7 +73,13 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   let creatorNodeEndpoints
   try {
-    creatorNodeEndpoints = await getCreatorNodeEndpoints(req, req.session.wallet)
+    creatorNodeEndpoints = await getCreatorNodeEndpoints({
+      req,
+      wallet: req.session.wallet,
+      blockNumber: req.body.blockNumber,
+      ensurePrimary: true,
+      myCnodeEndpoint: serviceEndpoint
+    })
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
@@ -88,6 +98,41 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
   next()
+}
+
+/** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
+async function ensureStorageMiddleware (req, res, next) {
+  // Get storage data and max storage percentage allowed
+  const [storagePathSize, storagePathUsed] = await getMonitors([
+    MONITORS.STORAGE_PATH_SIZE,
+    MONITORS.STORAGE_PATH_USED
+  ])
+
+  const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
+
+  // Check to see if CNode has enough storage
+  let hasEnoughStorage = hasEnoughStorageSpace({
+    storagePathSize,
+    storagePathUsed,
+    maxStorageUsedPercent
+  })
+
+  if (hasEnoughStorage) {
+    next()
+  } else {
+    const errorMsg = `Node is reaching storage space capacity. Current usage=${(100 * storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
+    req.logger.error(errorMsg)
+    return sendResponse(
+      req,
+      res,
+      errorResponseServerError(
+        {
+          msg: errorMsg,
+          state: 'NODE_REACHED_CAPACITY'
+        }
+      )
+    )
+  }
 }
 
 /**
@@ -110,10 +155,13 @@ async function triggerSecondarySyncs (req) {
   }
 }
 
-/** Retrieves current FQDN registered on-chain with node's owner wallet. */
-// TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
-// services has been registered, and we can't register the service unless the service starts up.
-// Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
+/**
+ * Retrieves current FQDN registered on-chain with node's owner wallet
+ *
+ * @notice TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
+ *    services has been registered, and we can't register the service unless the service starts up.
+ *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
+ */
 async function getOwnEndpoint (req) {
   if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
@@ -144,63 +192,148 @@ async function getOwnEndpoint (req) {
   return spInfo['endpoint']
 }
 
-/** Get all creator node endpoints for user by wallet from discprov. */
-async function getCreatorNodeEndpoints (req, wallet) {
-  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
-  const libs = req.app.get('audiusLibs')
+/**
+ * Retrieves user replica set from discprov
+ *
+ * Polls discprov conditionally as follows:
+ *    - If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
+ *    - Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
+ *      - Errors if retrieved primary does not match myCnodeEndpoint
+ *    - If neither of above conditions are met, falls back to single discprov query without polling
+ *
+ * @param {Object} req - request object passed throughout route lifespan
+ * @param {string} wallet - wallet used to query discprov for user data
+ * @param {number} blockNumber - blocknumber of eth TX preceding CN call
+ * @param {string} myCnodeEndpoint - endpoint of this CN
+ * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
+ *
+ * @returns {Array} - array of strings of replica set
+ */
+async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
+  if (config.get('isUserMetadataNode')) {
+    throw new Error('Not available for userMetadataNode')
+  }
 
   req.logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
+  const libs = req.app.get('audiusLibs')
   const start = Date.now()
 
-  // Poll discprov until it has indexed provided blocknumber to ensure up-to-date user data.
   let user = null
-  const { blockNumber } = req.body
+
   if (blockNumber) {
-    let discprovBlockNumber = -1
+    /**
+     * If blockNumber provided, polls discprov until it has indexed that blocknumber (for up to 200 seconds)
+     */
     const start2 = Date.now()
 
     // In total, will try for 200 seconds.
     const MaxRetries = 40
     const RetryTimeout = 5000 // 5 seconds
+
+    // Initial delay before polling
     await utils.timeout(1000)
+
+    let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
       req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
           throw new Error('Missing or malformatted user fetched from discprov.')
         }
+
         user = fetchedUser
         discprovBlockNumber = Math.max(user[0].blocknumber, user[0].track_blocknumber)
+
         if (discprovBlockNumber >= blockNumber) {
           break
         }
       } catch (e) { // Ignore all errors until MaxRetries exceeded.
         req.logger.info(e)
       }
+
       await utils.timeout(RetryTimeout)
       req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
 
-    if (discprovBlockNumber < blockNumber) {
-      throw new Error(`Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
-    }
+    // Error if discprov doesn't return any user for wallet
     if (!user) {
       throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
     }
+
+    // Error if discprov has still not indexed to target blockNumber
+    if (discprovBlockNumber < blockNumber) {
+      throw new Error(`Discprov still outdated after ${MaxRetries}. Discprov blocknumber ${discprovBlockNumber} requested blocknumber ${blockNumber}`)
+    }
+  } else if (ensurePrimary && myCnodeEndpoint) {
+    /**
+     * Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
+     * Errors if retrieved primary does not match myCnodeEndpoint
+     */
+    req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`)
+
+    const start2 = Date.now()
+
+    // Will poll every 5 sec for up to 1 minute (60 sec)
+    const MaxRetries = 12
+    const RetryTimeout = 5000 // 5 seconds
+
+    // Initial delay before polling
+    await utils.timeout(1000)
+
+    let returnedPrimaryEndpoint = null
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+
+      try {
+        const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
+        if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('creator_node_endpoint')) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
+        }
+
+        user = fetchedUser
+        returnedPrimaryEndpoint = (user[0].creator_node_endpoint).split(',')[0]
+
+        if (returnedPrimaryEndpoint === myCnodeEndpoint) {
+          break
+        }
+      } catch (e) { // Ignore all errors until MaxRetries exceeded
+        req.logger.info(e)
+      }
+
+      await utils.timeout(RetryTimeout)
+      req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+    }
+
+    // Error if discprov doesn't return any user for wallet
+    if (!user) {
+      throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
+    }
+
+    // Error if discprov has still not returned own endpoint as primary
+    if (returnedPrimaryEndpoint !== myCnodeEndpoint) {
+      throw new Error(`Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${myCnodeEndpoint}`)
+    }
   } else {
-    req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, fetching user without retries.`)
+    /**
+     * If neither of above conditions are met, falls back to single discprov query without polling
+     */
+    req.logger.info(`getCreatorNodeEndpoints || ensurePrimary === false, fetching user without retries`)
     user = await libs.User.getUsers(1, 0, null, wallet)
   }
 
   if (!user || user.length === 0 || !user[0].hasOwnProperty('creator_node_endpoint')) {
     throw new Error(`Invalid return data from discovery provider for user with wallet ${wallet}.`)
   }
+
   const endpoint = user[0]['creator_node_endpoint']
-  const resp = endpoint ? endpoint.split(',') : []
+  const userReplicaSet = endpoint ? endpoint.split(',') : []
 
   req.logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
-  return resp
+  return userReplicaSet
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
@@ -210,4 +343,12 @@ function _isFQDN (url) {
   return FQDN.test(url)
 }
 
-module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware, getOwnEndpoint, getCreatorNodeEndpoints }
+module.exports = {
+  authMiddleware,
+  ensurePrimaryMiddleware,
+  ensureStorageMiddleware,
+  triggerSecondarySyncs,
+  syncLockMiddleware,
+  getOwnEndpoint,
+  getCreatorNodeEndpoints
+}

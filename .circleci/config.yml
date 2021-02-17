@@ -20,6 +20,137 @@ jobs:
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+      
+      # Download and cache dependencies
+
+      # libs
+      - restore_cache:
+          name: Restore libs cache
+          keys:
+          - v1-libs-{{ checksum "libs/package-lock.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-libs-
+      - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
+      - run: 
+          name: libs repo init
+          command: |
+            cd libs
+            npm install
+      - save_cache:
+          name: Save libs cache
+          key: v1-libs-{{ checksum "libs/package-lock.json" }}
+          paths:
+            - libs/node_modules
+
+      # data contracts
+      - restore_cache:
+          name: Restore contracts cache 
+          keys:
+          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
+          - v1-data-contracts- 
+      - run:
+          name: contract repo init
+          command: |
+            cd contracts/
+            npm install
+      - save_cache:
+          name: Save contracts cache
+          paths:
+            - contracts/node_modules
+          key: v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
+
+      # eth contracts
+      - restore_cache:
+          name: Restore eth-contracts cache
+          keys:
+          - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
+          - v1-eth-contracts-
+      - run:
+          name: eth-contracts repo init
+          command: |
+            cd eth-contracts/
+            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+            source ~/.bash_profile
+            nvm install 10.16
+            npm install
+      - save_cache:
+          name: Save eth-contracts cache
+          paths:
+            - eth-contracts/node_modules
+          key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
+
+      # content node
+      - restore_cache:
+          name: Restore content-node cache
+          keys:
+          - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
+          - v1-content-node- 
+      - run:
+          name: content-node repo init
+          command: |
+            source ~/.bash_profile
+            nvm install v10.16
+            cd creator-node/
+            npm install
+      - save_cache:
+          name: Save content-node cache
+          paths:
+            - creator-node/node_modules
+          key: v1-content-node-{{ checksum "creator-node/package-lock.json" }}
+
+      # identity
+      - restore_cache:
+          name: Restore identity-service cache
+          keys:
+          - v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
+          - v1-identity-service-
+      - run:
+          name: identity-service repo init
+          command: |
+            cd identity-service/
+            npm install
+      - save_cache:
+          name: Save identity-service cache
+          paths:
+            - identity-service/node_modules
+          key: v1-identity-service-{{ checksum "identity-service/package-lock.json" }} 
+
+      # mad-dog
+      - restore_cache:
+          name: Restore mad-dog cache
+          keys:
+          - v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
+          - v1-mad-dog-
+      - run:
+          name: mad-dog repo init
+          command: |
+            cd mad-dog/
+            npm install
+      - save_cache:
+          name: Save mad-dog cache
+          paths:
+            - mad-dog/node_modules
+          key: v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }} 
+
+      # service commands
+      - restore_cache:
+          name: Restore service-commands cache
+          keys:
+          - v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
+          - v1-service-commands-
+      - run:
+          name: service-commands repo init
+          command: |
+            source ~/.bash_profile
+            nvm install v10.16
+            cd service-commands/
+            npm install
+      - save_cache:
+          name: Save service-commands cache
+          paths:
+            - service-commands/node_modules
+          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }} 
+
       - run:
           name: execute
           command: |
@@ -29,7 +160,6 @@ jobs:
             nvm install v10.16
             nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
-            sh init-repos.sh
             cd /home/circleci/project/libs/
             npm link
             cd /home/circleci/project/service-commands/
@@ -47,6 +177,7 @@ jobs:
             export ipfsHost="localhost"
             export ipfsPort=6001
             npm run start test-ci
+
   test-libs:
     docker:
       # specify the version you desire here
@@ -348,7 +479,7 @@ jobs:
           command: |
             cd discovery-provider
             source venv/bin/activate
-            python ./scripts/lint.py
+            sh scripts/lint.sh
       - restore_cache:
           keys:
           - disc-prov-contracts-{{ checksum "contracts/package.json" }}
@@ -549,17 +680,17 @@ workflows:
           filters:
             branches:
               ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - hold-test-mad-dog-e2e:
-          type: approval
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+      # - hold-test-mad-dog-e2e:
+      #     type: approval
+      #     filters:
+      #       branches:
+      #         ignore: /(^master$)|(.*?mad-?dog(.*)?)/
       - test-mad-dog-e2e:
-          requires:
-            - hold-test-mad-dog-e2e
+          # requires:
+          #   - hold-test-mad-dog-e2e
           filters:
             branches:
-              ignore: /(^master$)|(.*?mad-?dog(.*)?)/
+              ignore: /(^master$)|(.*?hotfix(.*)?)/
 
 
 

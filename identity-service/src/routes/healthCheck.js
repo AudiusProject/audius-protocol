@@ -5,10 +5,9 @@ const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const axios = require('axios')
-
-let notifDiscProv = config.get('notificationDiscoveryProvider')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
@@ -171,7 +170,9 @@ module.exports = function (app) {
   }))
 
   app.get('/balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('minimumBalance'))
+    let { minimumBalance, minimumRelayerBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('minimumBalance'))
+    minimumRelayerBalance = parseFloat(minimumRelayerBalance || config.get('minimumRelayerBalance'))
     let belowMinimumBalances = []
     let balances = []
 
@@ -185,26 +186,44 @@ module.exports = function (app) {
         belowMinimumBalances.push({ account, balance })
       }
     }
+    const relayerPublicKey = config.get('relayerPublicKey')
+    const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerPublicKey), 'ether'))
+    const relayerAboveMinimum = relayerBalance >= minimumRelayerBalance
 
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && relayerAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         'minimum_balance': minimumBalance,
-        'balances': balances
+        'balances': balances,
+        'relayer': {
+          'wallet': relayerPublicKey,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     } else {
       return errorResponseServerError({
         'above_balance_minimum': false,
         'minimum_balance': minimumBalance,
         'balances': balances,
-        'below_minimum_balance': belowMinimumBalances
+        'below_minimum_balance': belowMinimumBalances,
+        'relayer': {
+          'wallet': relayerPublicKey,
+          'balance': relayerBalance,
+          'above_balance_minimum': relayerAboveMinimum
+        }
       })
     }
   }))
 
   app.get('/eth_balance_check', handleResponse(async (req, res) => {
-    let minimumBalance = parseFloat(config.get('ethMinimumBalance'))
+    let { minimumBalance, minimumFunderBalance } = req.query
+    minimumBalance = parseFloat(minimumBalance || config.get('ethMinimumBalance'))
+    minimumFunderBalance = parseFloat(minimumFunderBalance || config.get('ethMinimumFunderBalance'))
+    let funderAddress = config.get('ethFunderAddress')
+    let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
+    let funderAboveMinimum = funderBalance >= minimumFunderBalance
     let belowMinimumBalances = []
     let balances = []
     for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
@@ -214,12 +233,19 @@ module.exports = function (app) {
         belowMinimumBalances.push({ account, balance })
       }
     }
+
     let balanceResponse = {
       'minimum_balance': minimumBalance,
-      'balances': balances
+      'balances': balances,
+      'funder': {
+        'wallet': funderAddress,
+        'balance': funderBalance,
+        'above_balance_minimum': funderAboveMinimum
+      }
     }
+
     // no accounts below minimum balance
-    if (!belowMinimumBalances.length) {
+    if (!belowMinimumBalances.length && funderAboveMinimum) {
       return successResponse({
         'above_balance_minimum': true,
         ...balanceResponse
@@ -243,14 +269,17 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
-    let discProvHealthCheck = (await axios({
+
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
+    let body = (await axios({
       method: 'get',
-      url: `${notifDiscProv}/health_check`
+      url: `${discoveryProvider.discoveryProviderEndpoint}/health_check`
     })).data
-    let discProvDbHighestBlock = discProvHealthCheck['db']['number']
+    let discProvDbHighestBlock = body.data['db']['number']
     let notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
     let resp = {
-      'discProv': discProvHealthCheck,
+      'discProv': body.data,
       'identity': highestBlockNumber,
       'notifBlockDiff': notifBlockDiff
     }

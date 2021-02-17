@@ -50,7 +50,7 @@ def get_playlist_tracks(args):
                 session, playlist_track_ids, tracks, current_user_id)
 
             if args.get("with_users", False):
-                add_users_to_tracks(session, tracks)
+                add_users_to_tracks(session, tracks, current_user_id)
 
             tracks_dict = {track['track_id']: track for track in tracks}
 

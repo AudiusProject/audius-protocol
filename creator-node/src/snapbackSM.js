@@ -191,18 +191,30 @@ class SnapbackSM {
       }
     }
     // Note: we pass in syncType as job name for observability
-    return this.syncQueue.add(syncType, { syncRequestParameters, startTime: Date.now(), primaryClockValue }, { priority })
+    return this.syncQueue.add(
+      syncType,
+      {
+        syncRequestParameters,
+        startTime: Date.now(),
+        primaryClockValue
+      },
+      { priority }
+    )
   }
 
-  // Main state machine processing function
-  async processStateMachineOperation (job) {
+  /**
+   * Main state machine processing function
+   *
+   * Determines which users need to be processed and triggers syncs to secondaries
+   */
+  async processStateMachineOperation () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
     if (this.audiusLibs == null) {
       logger.error(`Invalid libs instance`)
       return
     }
-    // Attempt to initialize, if this creator node has not yet been registered on chain
-    // then no operations will be performed
+
+    // Ensure node identity config is initialized
     if (!this.initialized) {
       await this.initializeNodeIdentityConfig()
       // Exit if failed to initialize
@@ -216,10 +228,11 @@ class SnapbackSM {
       await this.recoverSpID()
       return
     }
+
     // Retrieve users list for this node
     let usersList = await this.getNodePrimaryUsers()
 
-    // Generate list of wallets to query clock number
+    // Generate list of wallets by node to query clock number
     // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
     let nodeVectorClockQueryList = {}
 
@@ -229,29 +242,30 @@ class SnapbackSM {
     // Wallets being processed in this state machine operation
     let wallets = []
 
-    // Issue queries to secondaries for each user
+    /**
+     * Build map of content node to list of all users that need to be processed
+     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
+     */
     usersList.forEach(
       (user) => {
-        let userId = user.user_id
-        let modResult = userId % ModuloBase
-        let shouldProcess = (modResult === this.currentModuloSlice)
-
+        // determine if user should be processed by checking if user_id % moduloBase = currentModuloSlice
+        const userId = user.user_id
+        const modResult = userId % ModuloBase
+        const shouldProcess = (modResult === this.currentModuloSlice)
         if (!shouldProcess) {
           return
         }
 
         // Add to list of currently processing users
         usersToProcess.push(user)
-        let userWallet = user.wallet
+        const userWallet = user.wallet
         wallets.push(userWallet)
 
         // Conditionally asign secondary if present
-        let secondary1 = null
-        let secondary2 = null
-        if (user.secondary1) secondary1 = user.secondary1
-        if (user.secondary2) secondary2 = user.secondary2
+        const secondary1 = (user.secondary1) ? user.secondary1 : null
+        const secondary2 = (user.secondary2) ? user.secondary2 : null
 
-        // Create node
+        // Initialize empty array for node in node-wallet map if needed
         if (!nodeVectorClockQueryList[secondary1] && secondary1 != null) { nodeVectorClockQueryList[secondary1] = [] }
         if (!nodeVectorClockQueryList[secondary2] && secondary2 != null) { nodeVectorClockQueryList[secondary2] = [] }
 
@@ -260,6 +274,7 @@ class SnapbackSM {
         if (secondary2 != null) nodeVectorClockQueryList[secondary2].push(userWallet)
       }
     )
+
     this.log(`Processing ${usersToProcess.length} users`)
     // Cached primary clock values for currently processing user set
     let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
@@ -280,8 +295,8 @@ class SnapbackSM {
             }
           }
           this.log(`Requesting ${walletsToQuery.length} users from ${node}`)
-          let resp = await axios(requestParams)
-          let userClockStatusList = resp.data.users
+          let { data: body } = await axios(requestParams)
+          let userClockStatusList = body.data.users
           // Process returned clock values from this secondary node
           userClockStatusList.map(
             (entry) => {
@@ -297,7 +312,6 @@ class SnapbackSM {
         }
       )
     )
-
     this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
 
     // Issue syncs if necessary
@@ -317,8 +331,8 @@ class SnapbackSM {
             let primaryClockValue = primaryClockValues[userWallet]
             let secondary1ClockValue = secondary1 != null ? secondaryNodeUserClockStatus[secondary1][userWallet] : undefined
             let secondary2ClockValue = secondary2 != null ? secondaryNodeUserClockStatus[secondary2][userWallet] : undefined
-            let secondary1SyncRequired = secondary1ClockValue === undefined ? true : primaryClockValue > secondary1ClockValue
-            let secondary2SyncRequired = secondary2ClockValue === undefined ? true : primaryClockValue > secondary2ClockValue
+            let secondary1SyncRequired = (secondary1ClockValue === undefined) ? true : (primaryClockValue > secondary1ClockValue)
+            let secondary2SyncRequired = (secondary2ClockValue === undefined) ? true : (primaryClockValue > secondary2ClockValue)
             this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
             // Enqueue sync for secondary1 if required
             if (secondary1SyncRequired && secondary1 != null) {
@@ -348,60 +362,93 @@ class SnapbackSM {
         }
       )
     )
-    let previousModuloSlice = this.currentModuloSlice
+
     // Increment and adjust current slice by ModuloBase
+    const previousModuloSlice = this.currentModuloSlice
     this.currentModuloSlice += 1
     this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice}`)
+    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice} out of ${ModuloBase}`)
+
     this.log(`Issued ${numSyncsIssued} sync ops`)
-    this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} ------------------`)
+    this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} / ${ModuloBase} ------------------`)
   }
 
-  // Track an ongoing sync operation to a secondary
-  async monitorSecondarySync (syncWallet, primaryClockValue, secondaryUrl) {
-    let startTime = Date.now()
-    // Monitor the sync status
-    let syncMonitoringRequestParameters = {
+  /**
+   * Track an ongoing sync operation for a given secondaryUrl and user wallet
+   * Poll repeatedly until secondary has synced up to given primaryClockValue or max duration has been exceeded
+   */
+  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl) {
+    const startTime = Date.now()
+
+    // Define axios request object for secondary sync status request
+    const syncMonitoringRequestParameters = {
       method: 'get',
       baseURL: secondaryUrl,
-      url: `/sync_status/${syncWallet}`,
+      url: `/sync_status/${userWallet}`,
       responseType: 'json'
     }
+
+    // TODO syncAttemptCompleted does nothing - refactor this
     let syncAttemptCompleted = false
+    let secondaryClockValAfterSync = null
     while (!syncAttemptCompleted) {
       try {
-        let syncMonitoringResp = await axios(syncMonitoringRequestParameters)
-        let respData = syncMonitoringResp.data.data
-        this.log(`processSync ${syncWallet} secondary response: ${JSON.stringify(respData)}`)
+        const syncMonitoringResp = await axios(syncMonitoringRequestParameters)
+
+        const respData = syncMonitoringResp.data.data
+        this.log(`processSync ${userWallet} secondary response: ${JSON.stringify(respData)}`)
+
         // A success response does not necessarily guarantee completion, validate response data to confirm
         // Returned secondaryClockValue can be greater than the cached primaryClockValue if a client write was initiated
         //    after primaryClockValue cached and resulting sync is monitored
         if (respData.clockValue >= primaryClockValue) {
+          secondaryClockValAfterSync = respData.clockValue
+
+          this.log(`Sync for ${userWallet} at ${secondaryUrl} to clock value ${secondaryClockValAfterSync} for primaryClockVal ${primaryClockValue} completed in ${Date.now() - startTime}ms`)
           syncAttemptCompleted = true
-          this.log(`processSync ${syncWallet} clockValue from secondary:${respData.clockValue}, primary:${primaryClockValue}`)
           break
         }
       } catch (e) {
-        this.log(`processSync ${syncWallet} error querying sync_status: ${e}`)
+        this.log(`processSync ${userWallet} error querying sync_status: ${e}`)
       }
+
+      // Stop retrying if max sync monitoring duration exceeded
       if (Date.now() - startTime > MaxSyncMonitoringDurationInMs) {
-        this.log(`ERROR: processSync ${syncWallet} timeout for ${syncWallet}`)
+        this.log(`ERROR: processSync ${userWallet} timed out`)
         syncAttemptCompleted = true
+        break
       }
+
       // Delay between retries
       await utils.timeout(SyncMonitoringRetryDelay)
     }
-    let duration = Date.now() - startTime
-    if (!syncAttemptCompleted) {
-      this.log(`Sync for ${syncWallet} at ${secondaryUrl} completed in ${duration}ms`)
+
+    // enqueue another sync if secondary is still behind
+    // TODO max retry limit
+    if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
+      await this.issueSecondarySync({
+        userWallet,
+        secondaryEndpoint: secondaryUrl,
+        primaryEndpoint: this.endpoint,
+        primaryClockValue,
+        priority: SyncPriority.Low
+      })
     }
   }
 
-  // Main sync queue job
+  /**
+   * Main sync queue job
+   * Given job data, triggers sync request to secondary and polls until sync completion
+   */
   async processSyncOperation (job) {
-    const { name: jobType, opts: { priority }, id } = job
+    const {
+      name: jobType,
+      opts: { priority },
+      id
+    } = job
     const syncRequestParameters = job.data.syncRequestParameters
-    let isValidSyncJobData = (
+
+    const isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
       ('url' in syncRequestParameters) &&
       ('method' in syncRequestParameters) &&
@@ -412,6 +459,7 @@ class SnapbackSM {
       logger.error(job.data)
       return
     }
+
     const syncWallet = syncRequestParameters.data.wallet[0]
     const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
@@ -420,11 +468,10 @@ class SnapbackSM {
     // Issue sync request to secondary
     await axios(syncRequestParameters)
 
-    // Monitor the sync status
+    // Wait until has sync has completed (up to a timeout) before moving on
     await this.monitorSecondarySync(syncWallet, primaryClockValue, secondaryUrl)
 
     // Exit when sync status is computed
-    // Determine how many times to retry this operation
     this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
   }
 
@@ -461,8 +508,11 @@ class SnapbackSM {
     return this.initialized
   }
 
-  // Initialize the state machine
-  // Optionally accepts `maxSyncJobs` to set sync concurrency limit other than `MaxParallelSyncJobs`
+  /**
+   * Initialize the state machine
+   *
+   * @param - Optionally accepts `maxSyncJobs` to override sync concurrency limit `MaxParallelSyncJobs`
+   */
   async init (maxSyncJobs) {
     await this.stateMachineQueue.empty()
     await this.syncQueue.empty()
@@ -477,7 +527,7 @@ class SnapbackSM {
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
-          await this.processStateMachineOperation(job)
+          await this.processStateMachineOperation()
         } catch (e) {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {

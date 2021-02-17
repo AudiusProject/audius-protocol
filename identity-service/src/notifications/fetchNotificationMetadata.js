@@ -9,7 +9,7 @@ const { formatNotificationProps } = require('./formatNotificationMetadata')
 const config = require('../config.js')
 const { logger } = require('../logging')
 
-const USER_NODE_IPFS_GATEWAY = config.get('notificationDiscoveryProvider').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
+const USER_NODE_IPFS_GATEWAY = config.get('environment').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
 
 const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
 const DEFAULT_TRACK_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageTrackEmpty.jpg'
@@ -183,6 +183,10 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
             userIdsToFetch.push(action.actionEntityId)
           }
         }
+        break
+      }
+      case NotificationType.TrendingTrack: {
+        trackIdsToFetch.push(notification.entityId)
         break
       }
     }
