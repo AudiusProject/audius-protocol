@@ -99,7 +99,11 @@ const theme = {
 
   '--page-header-gradient-1': 'rgb(252,252,252)',
   '--page-header-gradient-2': 'rgba(252,252,252,0.85)',
-  '--page-header-gradient-2-alt': 'rgba(252,252,252,0.95)'
+  '--page-header-gradient-2-alt': 'rgba(252,252,252,0.95)',
+
+  '--profile-page-badge': '#FFFFFF',
+  '--profile-page-badge-shadow':
+    '0px 2px 5px -2px rgba(133, 129, 153, 0.25), 0px 1px 0px -2px rgba(227, 227, 227, 1), 0px 0px 1px -2px rgba(133, 129, 153, 0.1)'
 }
 
 export default theme
