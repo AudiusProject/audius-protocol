@@ -2,6 +2,7 @@ const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
 const AudiusABIDecoder = require('../ABIDecoder/index')
+const EthereumWallet = require('ethereumjs-wallet')
 let XMLHttpRequestRef
 if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = require('xmlhttprequest').XMLHttpRequest
@@ -25,6 +26,7 @@ class Web3Manager {
 
   /** Browser and testing-compatible signTypedData */
   static ethSignTypedData (web3, wallet, signatureData) {
+    console.log(`ethSignTypedData: ${wallet}`)
     return new Promise((resolve, reject) => {
       let method
       if (web3.currentProvider.isMetaMask === true) {
@@ -77,6 +79,12 @@ class Web3Manager {
       this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoints[0], 10000))
       this.useExternalWeb3 = false
 
+      if (web3Config.internalWeb3Config.privateKey) {
+        let pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
+        this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)
+        return
+      }
+
       // create private key pair here if it doesn't already exist
       const storedWallet = this.hedgehog.getWallet()
       if (storedWallet) {
@@ -102,7 +110,7 @@ class Web3Manager {
     if (this.useExternalWeb3) {
       // Lowercase the owner wallet. Consider using the checksum address.
       // See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-55.md.
-      return this.ownerWallet.toLowerCase()
+      return this.getWeb3().utils.toChecksumAddress(this.ownerWallet.toLowerCase())
     } else {
       return this.ownerWallet.getAddressString()
     }
@@ -171,7 +179,6 @@ class Web3Manager {
           signatureData.message[key] = Buffer.from(signatureData.message[key])
         }
       })
-
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
         { data: signatureData }

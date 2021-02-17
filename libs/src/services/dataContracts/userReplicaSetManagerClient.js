@@ -67,16 +67,12 @@ class UserReplicaSetManagerClient extends ContractClient {
    * @param {number} cnodeId
    * @param {string} cnodeDelegateWallet
    * @param {number} proposerSpId
-   * @param {string} proposerWallet
-   * @param {Object} ethWeb3
    */
   async getProposeAddOrUpdateContentNodeRequestData (
     cnodeId,
     cnodeDelegateWallet,
     cnodeOwnerWallet,
-    proposerSpId,
-    proposerWallet,
-    ethWeb3
+    proposerSpId
   ) {
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -90,7 +86,7 @@ class UserReplicaSetManagerClient extends ContractClient {
       proposerSpId,
       nonce
     )
-    let sig = await Web3Manager.ethSignTypedData(ethWeb3, proposerWallet, signatureData)
+    let sig = await this.web3Manager.signTypedData(signatureData)
     return {
       nonce,
       signatureData,
