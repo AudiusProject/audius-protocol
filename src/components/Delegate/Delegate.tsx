@@ -20,7 +20,8 @@ const messages = {
   delegationLabel: `Your STAKE ${TICKER}`,
   decrease: 'DECREASE DELEGATION',
   increase: 'INCREASE DELEGATION',
-  pendingDecreaseDisabled: 'Not Permitted While A Decrease Delegation Is Pending',
+  pendingDecreaseDisabled:
+    'Not Permitted While A Decrease Delegation Is Pending',
   pendingClaimDisabled: 'Not Permitted While A Claim Is Pending'
 }
 
@@ -150,7 +151,11 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           </Tooltip>
           <Tooltip
             position={Position.TOP}
-            text={useHasPendingDecrease.hasPendingDecreaseTx ? messages.pendingDecreaseDisabled : messages.pendingClaimDisabled}
+            text={
+              useHasPendingDecrease.hasPendingDecreaseTx
+                ? messages.pendingDecreaseDisabled
+                : messages.pendingClaimDisabled
+            }
             isDisabled={isDecreaseDelegationDisabled}
             className={styles.delegateBtnTooltip}
           >

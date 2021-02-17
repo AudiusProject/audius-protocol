@@ -92,9 +92,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   }, [isHover])
 
   if (!isDisabled) {
-    return (
-      <> {children} </>
-    )
+    return <> {children} </>
   }
 
   return (
