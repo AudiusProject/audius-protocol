@@ -36,7 +36,7 @@ module.exports = function (app) {
       req.logger.warn(`CAPTCHA - Got captcha score: ${score}, is ok? ${ok}`)
       if (!ok) return errorResponseBadRequest('CAPTCHA - Failed captcha')
     } else {
-      req.loggger.warn('CAPTCHA - No captcha found on request')
+      req.logger.warn('CAPTCHA - No captcha found on request')
     }
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
