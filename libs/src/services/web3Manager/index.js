@@ -288,7 +288,6 @@ const ethSignTypedData = (web3, wallet, signatureData) => {
   })
 }
 
-
 function override (object, methodName, callback) {
   object[methodName] = callback(object[methodName])
 }
