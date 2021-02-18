@@ -95,6 +95,9 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  *                  eg original.jpg or 150x150.jpg
  */
 async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+  // stores all the stages of this function along with associated information relevant to that step
+  // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
+  // so we only need to print it once in the global catch or after everthing finishes except for any return statements
   let decisionTree = []
 
   try {
@@ -121,7 +124,6 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       decisionTree.push({ stage: 'Successfully called mkdir on local file system', val: parsedStoragePath, time: Date.now() })
     } catch (e) {
       decisionTree.push({ stage: 'Error calling mkdir on local file system', val: parsedStoragePath, time: Date.now() })
-      _printDecisionTreeObj(req, decisionTree)
       throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
     }
 
@@ -232,7 +234,6 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
 
         if (!response || !response.data) {
           decisionTree.push({ stage: `Couldn't find files on other creator nodes, after trying URLs`, vals: null, time: Date.now() })
-          _printDecisionTreeObj(req, decisionTree)
           throw new Error(`Couldn't find files on other creator nodes, after trying URLs: ${gatewayUrlsMapped.toString()}`)
         }
 
@@ -244,7 +245,6 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         req.logger.info(`wrote file to ${expectedStoragePath}`)
       } catch (e) {
         decisionTree.push({ stage: `Failed to retrieve file for multihash from other creator node gateways`, vals: e.message, time: Date.now() })
-        _printDecisionTreeObj(req, decisionTree)
         throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
       }
     }
@@ -252,13 +252,12 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     // file was not found on ipfs or any gateway
     if (!fileFound) {
       decisionTree.push({ stage: 'Failed to retrieve file for multihash after trying ipfs & other creator node gateways', vals: multihash, time: Date.now() })
-      _printDecisionTreeObj(req, decisionTree)
       throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
     }
 
     // verify that the contents of the file match the file's cid
     try {
-      decisionTree.push({ stage: 'Failed to retrieve file for multihash after trying ipfs & other creator node gateways', vals: multihash, time: Date.now() })
+      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const ipfs = req.app.get('ipfsLatestAPI')
       const content = fs.createReadStream(expectedStoragePath)
       for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
@@ -268,9 +267,9 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
       }
+      decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
     } catch (e) {
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
-      _printDecisionTreeObj(req, decisionTree)
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
