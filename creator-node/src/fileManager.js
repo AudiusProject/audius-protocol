@@ -121,7 +121,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       decisionTree.push({ stage: 'Successfully called mkdir on local file system', val: parsedStoragePath, time: Date.now() })
     } catch (e) {
       decisionTree.push({ stage: 'Error calling mkdir on local file system', val: parsedStoragePath, time: Date.now() })
-      req.logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
+      _printDecisionTreeObj(req, decisionTree)
       throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
     }
 
@@ -152,7 +152,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     if (fs.existsSync(expectedStoragePath)) {
       req.logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
       decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash, Date.now()] })
-      req.logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
+      _printDecisionTreeObj(req, decisionTree)
       return expectedStoragePath
     }
 
@@ -232,7 +232,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
 
         if (!response || !response.data) {
           decisionTree.push({ stage: `Couldn't find files on other creator nodes, after trying URLs`, vals: null, time: Date.now() })
-          printDecisionTreeObj(req, decisionTree)
+          _printDecisionTreeObj(req, decisionTree)
           throw new Error(`Couldn't find files on other creator nodes, after trying URLs: ${gatewayUrlsMapped.toString()}`)
         }
 
@@ -244,7 +244,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         req.logger.info(`wrote file to ${expectedStoragePath}`)
       } catch (e) {
         decisionTree.push({ stage: `Failed to retrieve file for multihash from other creator node gateways`, vals: e.message, time: Date.now() })
-        printDecisionTreeObj(req, decisionTree)
+        _printDecisionTreeObj(req, decisionTree)
         throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
       }
     }
@@ -252,7 +252,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     // file was not found on ipfs or any gateway
     if (!fileFound) {
       decisionTree.push({ stage: 'Failed to retrieve file for multihash after trying ipfs & other creator node gateways', vals: multihash, time: Date.now() })
-      printDecisionTreeObj(req, decisionTree)
+      _printDecisionTreeObj(req, decisionTree)
       throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
     }
 
@@ -264,26 +264,26 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
-          printDecisionTreeObj(req, decisionTree)
+          _printDecisionTreeObj(req, decisionTree)
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
       }
     } catch (e) {
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
-      printDecisionTreeObj(req, decisionTree)
+      _printDecisionTreeObj(req, decisionTree)
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
-    printDecisionTreeObj(req, decisionTree)
+    _printDecisionTreeObj(req, decisionTree)
     return expectedStoragePath
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
-    printDecisionTreeObj(req, decisionTree)
+    _printDecisionTreeObj(req, decisionTree)
     throw new Error(`saveFileForMultihashToFS - ${e}`)
   }
 }
 
-const printDecisionTreeObj = (req, decisionTree) => {
+const _printDecisionTreeObj = (req, decisionTree) => {
   req.logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
 }
 
