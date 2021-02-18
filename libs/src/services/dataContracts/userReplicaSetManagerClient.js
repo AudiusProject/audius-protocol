@@ -143,7 +143,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async getUserReplicaSet (userId) {
     const method = await this.getMethod('getUserReplicaSet', userId)
-    let currentWallet = this.web3Manager.getWalletAddressString()
+    let currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
 
@@ -153,7 +153,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async getContentNodeWallets (spId) {
     const method = await this.getMethod('getContentNodeWallets', spId)
-    let currentWallet = this.web3Manager.getWalletAddressString()
+    let currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
 }
