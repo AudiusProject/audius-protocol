@@ -74,7 +74,7 @@
   align-items: center;
   width: 241px;
   min-height: 547px;
-  padding: 40px 20px;
+  padding: 40px 18px;
   border-radius: 16px;
   border: 2px solid var(--neutral-light-7);
   background-color: var(--neutral-light-10);
@@ -129,7 +129,7 @@
 .tierTextContainer span:not(.sparkles) i {
   height: 18px !important;
   width: 18px !important;
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .discordButton {
