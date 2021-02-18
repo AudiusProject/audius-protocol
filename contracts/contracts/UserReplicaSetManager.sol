@@ -45,7 +45,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     event UpdateReplicaSet(
         uint _userId,
         uint _primaryId,
-        uint[] _secondaryIds
+        uint[] _secondaryIds,
+        address _signer
     );
 
     event AddOrUpdateContentNode(
@@ -323,7 +324,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             secondaryIds: _secondaryIds
         });
 
-        emit UpdateReplicaSet(_userId, _primaryId, _secondaryIds);
+        emit UpdateReplicaSet(_userId, _primaryId, _secondaryIds, signer);
     }
 
     /// @notice Update configured userReplicaSetBootstrapAddress
