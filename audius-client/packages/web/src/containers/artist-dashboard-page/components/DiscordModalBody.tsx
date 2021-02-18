@@ -12,7 +12,7 @@ type DiscordModalBodyProps = {
 
 const messages = {
   title:
-    'To access the private token-holders only Discord channel and/or update your Discord role, send a DM to the Audius VIP Discord Bot (@Audius-bot) with this code',
+    'To access the private token-holders only Discord channel and/or update your Discord role, send a DM to the Audius VIP Discord Bot (@AUDIO-BOT) with this code',
   boxLabel: 'COPY THIS CODE',
   launch: 'LAUNCH THE VIP DISCORD'
 }
