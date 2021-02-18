@@ -104,7 +104,8 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
 
-    decisionTree.push({ stage: 'About to start running saveFileForMultihashToFS', val: {
+    decisionTree.push({ stage: 'About to start running saveFileForMultihashToFS',
+      val: {
         multihash,
         gatewaysToTry,
         gatewayUrlsMapped,
