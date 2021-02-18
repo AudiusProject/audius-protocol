@@ -76,7 +76,7 @@
   min-height: 547px;
   padding: 40px 20px;
   border-radius: 16px;
-  border: 2px solid rgba(214, 213, 223, 0.5);
+  border: 2px solid var(--neutral-light-7);
   background-color: var(--neutral-light-10);
 }
 
