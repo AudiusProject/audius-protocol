@@ -195,7 +195,7 @@ const swapSecondaries = async(executeAll) => {
 
 // Verify indexed state matches content nodes registered in UserReplicaSetManager
 // Also confirms UserReplicaSetManager state maches eth-contracts
-const verifyursmContentNodes = async (executeOne) => {
+const verifyUrsmContentNodes = async (executeOne) => {
   logger.info(`Validating content-nodes on UserReplicaSetManager`)
   await executeOne(DEFAULT_INDEX, async (libs)=> {
     let queriedContentNodes = await libs.getURSMContentNodes()
@@ -250,7 +250,7 @@ const userReplicaSetManagerTest = async ({
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
 
-  await verifyursmContentNodes(executeOne)
+  await verifyUrsmContentNodes(executeOne)
   // Start of actual test logic
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary1ToPrimary(executeAll)
