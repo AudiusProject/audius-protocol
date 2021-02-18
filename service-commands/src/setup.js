@@ -339,6 +339,7 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    // Intentionally disabled until migration has been run on production
     // NOTE - this must run at the end since it requires all CN services to be up and registered on L1
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]

@@ -11,6 +11,10 @@
         {
           "name": "_bootstrapNodeDelegateWallets",
           "type": "address[]"
+        },
+        {
+          "name": "_bootstrapNodeOwnerWallets",
+          "type": "address[]"
         }
       ],
       "name": "seedBootstrapNodes",
@@ -92,6 +96,67 @@
       "constant": false,
       "inputs": [
         {
+          "name": "_cnodeSpId",
+          "type": "uint256"
+        },
+        {
+          "name": "_cnodeWallets",
+          "type": "address[2]"
+        },
+        {
+          "name": "_proposerSpIds",
+          "type": "uint256[3]"
+        },
+        {
+          "name": "_proposerNonces",
+          "type": "bytes32[3]"
+        },
+        {
+          "name": "_proposer1Sig",
+          "type": "bytes"
+        },
+        {
+          "name": "_proposer2Sig",
+          "type": "bytes"
+        },
+        {
+          "name": "_proposer3Sig",
+          "type": "bytes"
+        }
+      ],
+      "name": "addOrUpdateContentNode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_spID",
+          "type": "uint256"
+        }
+      ],
+      "name": "getContentNodeWallets",
+      "outputs": [
+        {
+          "name": "delegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "name": "ownerWallet",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
           "name": "_newBootstrapAddress",
           "type": "address"
         }
@@ -161,63 +226,6 @@
         }
       ],
       "name": "initialize",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "_spID",
-          "type": "uint256"
-        }
-      ],
-      "name": "getContentNodeWallet",
-      "outputs": [
-        {
-          "name": "wallet",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_cnodeSpId",
-          "type": "uint256"
-        },
-        {
-          "name": "_cnodeDelegateOwnerWallet",
-          "type": "address"
-        },
-        {
-          "name": "_proposerSpIds",
-          "type": "uint256[3]"
-        },
-        {
-          "name": "_proposerNonces",
-          "type": "bytes32[3]"
-        },
-        {
-          "name": "_proposer1Sig",
-          "type": "bytes"
-        },
-        {
-          "name": "_proposer2Sig",
-          "type": "bytes"
-        },
-        {
-          "name": "_proposer3Sig",
-          "type": "bytes"
-        }
-      ],
-      "name": "addOrUpdateContentNode",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -357,22 +365,27 @@
         },
         {
           "indexed": false,
+          "name": "_cnodeOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "name": "_proposerSpIds",
           "type": "uint256[3]"
         },
         {
           "indexed": false,
-          "name": "_proposer1Address",
+          "name": "_proposer1DelegateOwnerWallet",
           "type": "address"
         },
         {
           "indexed": false,
-          "name": "_proposer2Address",
+          "name": "_proposer2DelegateOwnerWallet",
           "type": "address"
         },
         {
           "indexed": false,
-          "name": "_proposer3Address",
+          "name": "_proposer3DelegateOwnerWallet",
           "type": "address"
         }
       ],

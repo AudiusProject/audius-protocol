@@ -1,8 +1,8 @@
 import logging
 import os
-import sqlalchemy
 
 from src.models import Block, IPLDBlacklistBlock
+from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
@@ -11,6 +11,8 @@ from src.utils.redis_constants import latest_block_redis_key, \
 
 
 logger = logging.getLogger(__name__)
+MONITORS = monitors.MONITORS
+
 disc_prov_version = helpers.get_discovery_provider_version()
 
 default_healthy_block_diff = int(
@@ -28,24 +30,12 @@ def _get_db_block_state():
 
 # Returns number of and info on open db connections
 def _get_db_conn_state():
-    db = db_session.get_db_read_replica()
-    with db.scoped_session() as session:
-        # Query number of open DB connections
-        num_connections = session.execute(
-            sqlalchemy.text("select sum(numbackends) from pg_stat_database;")
-        ).fetchall()
+    conn_state = monitors.get_monitors([
+        MONITORS[monitor_names.database_connections],
+        MONITORS[monitor_names.database_connection_info]
+    ])
 
-        if not (num_connections and num_connections[0][0]):
-            return 'pg_stat_database query failed', True
-        num_connections = num_connections[0][0]
-
-        # Query connection info
-        connection_info = session.execute(sqlalchemy.text(
-            "select datname, state, query, wait_event_type, wait_event from pg_stat_activity where state is not null;"
-        )).fetchall()
-        connection_info = [dict(row) for row in connection_info]
-
-    return {"open_connections": num_connections, "connection_info": connection_info}, False
+    return conn_state, False
 
 # Returns the most current block in ipld blocks table and its associated block hash
 def _get_db_ipld_block_state():
@@ -157,6 +147,19 @@ def get_health(args, use_redis_cache=True):
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
+    # Get system information monitor values
+    sys_info = monitors.get_monitors([
+        MONITORS[monitor_names.database_size],
+        MONITORS[monitor_names.database_connections],
+        MONITORS[monitor_names.total_memory],
+        MONITORS[monitor_names.used_memory],
+        MONITORS[monitor_names.filesystem_size],
+        MONITORS[monitor_names.filesystem_used],
+        MONITORS[monitor_names.received_bytes_per_sec],
+        MONITORS[monitor_names.transferred_bytes_per_sec],
+        MONITORS[monitor_names.redis_total_memory]
+    ])
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -167,6 +170,7 @@ def get_health(args, use_redis_cache=True):
             "blockhash": latest_indexed_block_hash
         },
         "git": os.getenv("GIT_SHA"),
+        **sys_info
     }
 
     block_difference = abs(

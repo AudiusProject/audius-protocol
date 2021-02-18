@@ -121,7 +121,7 @@ const verifyUserReplicaSets = async(executeAll) => {
     // Retrieve user id if known from walletIndexToUserIdMap
     // NOTE - It might be easier to just create a map of wallets instead of using 'index'
     const userId = walletIndexToUserIdMap[i]
-    await verifyUserReplicaSetStatus(userId, libs) 
+    await verifyUserReplicaSetStatus(userId, libs)
   })
 }
 
@@ -195,32 +195,29 @@ const swapSecondaries = async(executeAll) => {
 
 // Verify indexed state matches content nodes registered in UserReplicaSetManager
 // Also confirms UserReplicaSetManager state maches eth-contracts
-const verifyUsrmContentNodes = async (executeOne) => {
+const verifyUrsmContentNodes = async (executeOne) => {
   logger.info(`Validating content-nodes on UserReplicaSetManager`)
   await executeOne(DEFAULT_INDEX, async (libs)=> {
-    let queriedContentNodes = (await axios({
-      method: 'get',
-      baseURL: libs.getDiscoveryNodeEndpoint(),
-      url: '/usrm_content_nodes'
-    })).data.data
+    let queriedContentNodes = await libs.getURSMContentNodes()
     await Promise.all(queriedContentNodes.map(async (queriedNodeInfo) => {
       let spID = queriedNodeInfo.cnode_sp_id
       let wallet = queriedNodeInfo.delegate_owner_wallet
-      let walletFromChain = await libs.getContentNodeWallet(spID) 
-      if (wallet !== walletFromChain) {
+      let walletsInfo = await libs.getContentNodeWallets(spID)
+      let delegateWalletFromChain = walletsInfo.delegateOwnerWallet
+      if (wallet !== delegateWalletFromChain) {
         throw new Error(
-          `Mismatch between UserReplicaSetManager chain wallet: ${walletFromChain} and queried wallet: ${wallet}`
+          `Mismatch between UserReplicaSetManager chain wallet: ${delegateWalletFromChain} and queried wallet: ${wallet}`
         )
       }
       // Query eth-contracts and confirm IDs
       logger.info(`Found UserReplicaSetManager and Discovery Provider match for spID=${spID}, delegateWallet=${wallet}`)
       let ethSpInfo = await libs.getServiceEndpointInfo('content-node', spID)
-      if (walletFromChain !== ethSpInfo.delegateOwnerWallet) {
+      if (delegateWalletFromChain !== ethSpInfo.delegateOwnerWallet) {
         throw new Error(
-          `Mismatch between UserReplicaSetManager chain wallet: ${walletFromChain} and SP eth-contracts wallet: ${ethSpInfo.delegateOwnerWallet}`
+          `Mismatch between UserReplicaSetManager chain wallet: ${delegateWalletFromChain} and SP eth-contracts wallet: ${ethSpInfo.delegateOwnerWallet}`
         )
       }
-      logger.info(`Found UserReplicaSetManager and ServiceProviderFactory match for spID=${spID}, delegateWallet=${walletFromChain}`)
+      logger.info(`Found UserReplicaSetManager and ServiceProviderFactory match for spID=${spID}, delegateWallet=${delegateWalletFromChain}`)
     }))
   })
   logger.info(`Finished validating content-nodes on UserReplicaSetManager`)
@@ -252,8 +249,8 @@ const userReplicaSetManagerTest = async ({
   contentNodeList.forEach((info)=>{
       contentNodeEndpointToInfoMapping[info.endpoint] = info
   })
-  
-  await verifyUsrmContentNodes(executeOne)
+
+  await verifyUrsmContentNodes(executeOne)
   // Start of actual test logic
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary1ToPrimary(executeAll)

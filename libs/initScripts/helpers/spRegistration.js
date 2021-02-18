@@ -70,7 +70,7 @@ async function deregisterLocalService (audiusLibs, serviceType, serviceEndpoint)
  * Local only
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
  */
-async function queryLocalServices (audiusLibs, serviceTypeList, usrmLibs = null) {
+async function queryLocalServices (audiusLibs, serviceTypeList, ursmLibs = null) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   console.log('\n----querying service providers')
@@ -104,12 +104,14 @@ async function queryLocalServices (audiusLibs, serviceTypeList, usrmLibs = null)
     console.log(`${numProvs} instances of ${spType}`)
   }
   console.log('----done querying service providers')
-  if (usrmLibs) {
+  if (ursmLibs) {
     console.log('\n----querying UserReplicaSetManager on data-contracts')
     for (const cnode of cnodesInfoList) {
-      let delegateWalletFromUsrmContract = await usrmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(cnode.spID)
+      let spInfoFromUrsm = await ursmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnode.spID)
+      let delegateWalletFromUrsmContract = spInfoFromUrsm.delegateOwnerWallet
+      let ownerWalletFromUrsmContract = spInfoFromUrsm.ownerWallet
       console.log(`spID ${cnode.spID} | \
-eth-contracts delegateWallet=${cnode.delegateOwnerWallet}, data-contracts delegateWallet=${delegateWalletFromUsrmContract}`)
+eth-contracts delegateWallet=${cnode.delegateOwnerWallet}, data-contracts delegateOwnerWallet=${delegateWalletFromUrsmContract}, ownerWallet=${ownerWalletFromUrsmContract}`)
     }
     console.log('----done querying UserReplicaSetManager on data-contracts\n')
   }

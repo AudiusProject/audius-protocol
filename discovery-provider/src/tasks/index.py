@@ -4,7 +4,7 @@ import concurrent.futures
 import requests
 
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save, USRMContentNode
+from src.models import Block, User, Track, Repost, Follow, Playlist, Save, URSMContentNode
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -158,7 +158,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
         else:
             logger.info(
-                f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address} from registry"
+                f"index.py | No update to user_replica_set_manager address, queried {user_replica_set_manager_address}"
             )
 
 def index_blocks(self, db, blocks_list):
@@ -386,8 +386,8 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_user_entries = (
                 session.query(User).filter(User.blockhash == revert_hash).all()
             )
-            revert_usrm_content_node_entries = (
-                session.query(USRMContentNode).filter(USRMContentNode.blockhash == revert_hash).all()
+            revert_ursm_content_node_entries = (
+                session.query(URSMContentNode).filter(URSMContentNode.blockhash == revert_hash).all()
             )
 
             # revert all of above transactions
@@ -472,21 +472,21 @@ def revert_blocks(self, db, revert_blocks_list):
                 # Remove track entries
                 logger.info(f"Reverting track: {track_to_revert}")
                 session.delete(track_to_revert)
-            
-            for usrm_content_node_to_revert in revert_usrm_content_node_entries:
-                cnode_sp_id = usrm_content_node_to_revert.cnode_sp_id
-                previous_usrm_content_node_entry = (
-                    session.query(USRMContentNode)
-                    .filter(USRMContentNode.cnode_sp_id == cnode_sp_id)
-                    .filter(USRMContentNode.blocknumber < revert_block_number)
-                    .order_by(USRMContentNode.blocknumber.desc())
+
+            for ursm_content_node_to_revert in revert_ursm_content_node_entries:
+                cnode_sp_id = ursm_content_node_to_revert.cnode_sp_id
+                previous_ursm_content_node_entry = (
+                    session.query(URSMContentNode)
+                    .filter(URSMContentNode.cnode_sp_id == cnode_sp_id)
+                    .filter(URSMContentNode.blocknumber < revert_block_number)
+                    .order_by(URSMContentNode.blocknumber.desc())
                     .first()
                 )
-                if previous_usrm_content_node_entry:
-                    previous_usrm_content_node_entry.is_current = True
-                # Remove previous USRM Content Node entires
-                logger.info(f"Reverting USRM Content Node: {usrm_content_node_to_revert}")
-                session.delete(usrm_content_node_to_revert)
+                if previous_ursm_content_node_entry:
+                    previous_ursm_content_node_entry.is_current = True
+                # Remove previous ursm Content Node entires
+                logger.info(f"Reverting ursm Content Node: {ursm_content_node_to_revert}")
+                session.delete(ursm_content_node_to_revert)
 
             # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
             for user_to_revert in revert_user_entries:

@@ -80,7 +80,31 @@ class CreatorNode {
 
   /* -------------- */
 
-  constructor (web3Manager, creatorNodeEndpoint, isServer, userStateManager, lazyConnect, schemas) {
+  /**
+   * Constructs a service class for a creator node
+   * @param {Web3Manager} web3Manager
+   * @param {string} creatorNodeEndpoint fallback creator node endpoint (to be deprecated)
+   * @param {boolean} isServer
+   * @param {UserStateManager} userStateManagern  singleton UserStateManager instance
+   * @param {boolean} lazyConnect whether or not to lazy connect (sign in) on load
+   * @param {*} schemas
+   * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
+   * @param {Set<string>?} blockList whether or not to exclude any nodes (default null)
+   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   * @param {function} monitoringCallbacks.request
+   * @param {function} monitoringCallbacks.healthCheck
+   */
+  constructor (
+    web3Manager,
+    creatorNodeEndpoint,
+    isServer,
+    userStateManager,
+    lazyConnect,
+    schemas,
+    passList = null,
+    blockList = null,
+    monitoringCallbacks = {}
+  ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
@@ -93,6 +117,10 @@ class CreatorNode {
     this.connecting = false
     this.authToken = null
     this.maxBlockNumber = 0
+
+    this.passList = passList
+    this.blockList = blockList
+    this.monitoringCallbacks = monitoringCallbacks
   }
 
   async init () {
@@ -547,11 +575,51 @@ class CreatorNode {
     axiosRequestObj.baseURL = this.creatorNodeEndpoint
 
     // Axios throws for non-200 responses
+    const url = new URL(axiosRequestObj.baseURL + axiosRequestObj.url)
+    const start = Date.now()
     try {
       const resp = await axios(axiosRequestObj)
+      const duration = Date.now() - start
+
+      if (this.monitoringCallbacks.request) {
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            signer: resp.data.signer,
+            signature: resp.data.signature,
+            requestMethod: axiosRequestObj.method,
+            status: resp.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      }
       // Axios `data` field gets the response body
       return resp.data
     } catch (e) {
+      const resp = e.response || {}
+      const duration = Date.now() - start
+
+      if (this.monitoringCallbacks.request) {
+        try {
+          this.monitoringCallbacks.request({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.search,
+            requestMethod: axiosRequestObj.method,
+            status: resp.status,
+            responseTimeMillis: duration
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      }
+
       _handleErrorHelper(e, axiosRequestObj.url)
     }
   }

@@ -163,13 +163,13 @@ async function main () {
         await testRunner([test])
         break
       }
-      case 'test-usrm': {
-        const usrmUsers = 4
+      case 'test-ursm': {
+        const ursmUsers = 4
         const test = makeTest(
           'userReplicaSetManager',
           userReplicaSetManagerTest,
           {
-            numUsers: usrmUsers
+            numUsers: ursmUsers
           })
         await testRunner([test])
         break

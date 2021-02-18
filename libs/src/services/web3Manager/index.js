@@ -2,6 +2,7 @@ const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
 const AudiusABIDecoder = require('../ABIDecoder/index')
+const EthereumWallet = require('ethereumjs-wallet')
 let XMLHttpRequestRef
 if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = require('xmlhttprequest').XMLHttpRequest
@@ -21,34 +22,6 @@ class Web3Manager {
     this.identityService = identityService
     this.hedgehog = hedgehog
     this.AudiusABIDecoder = AudiusABIDecoder
-  }
-
-  /** Browser and testing-compatible signTypedData */
-  static ethSignTypedData (web3, wallet, signatureData) {
-    return new Promise((resolve, reject) => {
-      let method
-      if (web3.currentProvider.isMetaMask === true) {
-        method = 'eth_signTypedData_v3'
-        signatureData = JSON.stringify(signatureData)
-      } else {
-        method = 'eth_signTypedData'
-        // fix per https://github.com/ethereum/web3.js/issues/1119
-      }
-
-      web3.currentProvider.send({
-        method: method,
-        params: [wallet, signatureData],
-        from: wallet
-      }, (err, result) => {
-        if (err) {
-          reject(err)
-        } else if (result.error) {
-          reject(result.error)
-        } else {
-          resolve(result.result)
-        }
-      })
-    })
   }
 
   async init () {
@@ -76,6 +49,12 @@ class Web3Manager {
       // either user has external web3 but it's not configured, or doesn't have web3
       this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoints[0], 10000))
       this.useExternalWeb3 = false
+
+      if (web3Config.internalWeb3Config.privateKey) {
+        let pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
+        this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)
+        return
+      }
 
       // create private key pair here if it doesn't already exist
       const storedWallet = this.hedgehog.getWallet()
@@ -153,12 +132,24 @@ class Web3Manager {
 
   async signTypedData (signatureData) {
     if (this.useExternalWeb3) {
-      return Web3Manager.ethSignTypedData(
+      return ethSignTypedData(
         this.getWeb3(),
         this.getWalletAddress(),
         signatureData
       )
     } else {
+      // Due to changes in ethereumjs-util's toBuffer method as of v6.2.0
+      // non hex-prefixed string values are not permitted and need to be
+      // provided directly as a buffer.
+      // https://github.com/ethereumjs/ethereumjs-util/releases/tag/v6.2.0
+      Object.keys(signatureData.message).forEach(key => {
+        if (
+          typeof signatureData.message[key] === 'string' &&
+          !signatureData.message[key].startsWith('0x')
+        ) {
+          signatureData.message[key] = Buffer.from(signatureData.message[key])
+        }
+      })
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
         { data: signatureData }
@@ -268,6 +259,34 @@ class Web3Manager {
 }
 
 module.exports = Web3Manager
+
+/** Browser and testing-compatible signTypedData */
+const ethSignTypedData = (web3, wallet, signatureData) => {
+  return new Promise((resolve, reject) => {
+    let method
+    if (web3.currentProvider.isMetaMask === true) {
+      method = 'eth_signTypedData_v3'
+      signatureData = JSON.stringify(signatureData)
+    } else {
+      method = 'eth_signTypedData'
+      // fix per https://github.com/ethereum/web3.js/issues/1119
+    }
+
+    web3.currentProvider.send({
+      method: method,
+      params: [wallet, signatureData],
+      from: wallet
+    }, (err, result) => {
+      if (err) {
+        reject(err)
+      } else if (result.error) {
+        reject(result.error)
+      } else {
+        resolve(result.result)
+      }
+    })
+  })
+}
 
 function override (object, methodName, callback) {
   object[methodName] = callback(object[methodName])

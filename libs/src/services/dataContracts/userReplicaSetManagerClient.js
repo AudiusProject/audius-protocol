@@ -1,6 +1,5 @@
 const ContractClient = require('../contracts/ContractClient')
 const signatureSchemas = require('../../../data-contracts/signatureSchemas')
-const Web3Manager = require('../web3Manager/index')
 
 class UserReplicaSetManagerClient extends ContractClient {
   /**
@@ -25,7 +24,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    * Add a new content node to the L2 layer of the protocol
    * Requires signatures from 3 existing nodes on the UserReplicaSetManager contract
    * @param {number} cnodeId
-   * @param {string} cnodeDelegateOwnerWallet
+   * @param {Array<string>} cnodeOwnerWallets - [0] = incoming delegateOwnerWallet, [1] = incoming ownerWallet
    * @param {Array<number>} proposerSpIds
    * @param {Array<string>} proposerNonces
    * @param {string} proposer1Sig
@@ -34,7 +33,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async addOrUpdateContentNode (
     cnodeId,
-    cnodeDelegateOwnerWallet,
+    cnodeOwnerWallets,
     proposerSpIds,
     proposerNonces,
     proposer1Sig,
@@ -45,7 +44,7 @@ class UserReplicaSetManagerClient extends ContractClient {
     const method = await this.getMethod(
       'addOrUpdateContentNode',
       cnodeId,
-      cnodeDelegateOwnerWallet,
+      cnodeOwnerWallets,
       proposerSpIds,
       proposerNonces,
       proposer1Sig,
@@ -67,15 +66,12 @@ class UserReplicaSetManagerClient extends ContractClient {
    * @param {number} cnodeId
    * @param {string} cnodeDelegateWallet
    * @param {number} proposerSpId
-   * @param {string} proposerWallet
-   * @param {Object} ethWeb3
    */
   async getProposeAddOrUpdateContentNodeRequestData (
     cnodeId,
     cnodeDelegateWallet,
-    proposerSpId,
-    proposerWallet,
-    ethWeb3
+    cnodeOwnerWallet,
+    proposerSpId
   ) {
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
@@ -85,10 +81,11 @@ class UserReplicaSetManagerClient extends ContractClient {
       contractAddress,
       cnodeId,
       cnodeDelegateWallet,
+      cnodeOwnerWallet,
       proposerSpId,
       nonce
     )
-    let sig = await Web3Manager.ethSignTypedData(ethWeb3, proposerWallet, signatureData)
+    let sig = await this.web3Manager.signTypedData(signatureData)
     return {
       nonce,
       signatureData,
@@ -146,7 +143,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    */
   async getUserReplicaSet (userId) {
     const method = await this.getMethod('getUserReplicaSet', userId)
-    let currentWallet = this.web3Manager.getWalletAddressString()
+    let currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
 
@@ -154,9 +151,9 @@ class UserReplicaSetManagerClient extends ContractClient {
    * Return the current wallet address associated with a given spID
    * @param {number} userId
    */
-  async getContentNodeWallet (spId) {
-    const method = await this.getMethod('getContentNodeWallet', spId)
-    let currentWallet = this.web3Manager.getWalletAddressString()
+  async getContentNodeWallets (spId) {
+    const method = await this.getMethod('getContentNodeWallets', spId)
+    let currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
 }

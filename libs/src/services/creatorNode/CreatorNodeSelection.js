@@ -18,6 +18,7 @@ class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
+    maxStorageUsedPercent = 90,
     timeout = null
   }) {
     super({
@@ -29,8 +30,9 @@ class CreatorNodeSelection extends ServiceSelection {
           return e.endpoint
         })
       },
-      whitelist,
-      blacklist
+      // Use the content node's configured whitelist if not provided
+      whitelist: whitelist || creatorNode.passList,
+      blacklist: blacklist || creatorNode.blockList
     })
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
@@ -39,6 +41,8 @@ class CreatorNodeSelection extends ServiceSelection {
     this.healthCheckPath = 'health_check/verbose'
     // String array of healthy Content Node endpoints
     this.backupsList = []
+    // Max percentage (represented out of 100) allowed before determining CN is unsuitable for selection
+    this.maxStorageUsedPercent = maxStorageUsedPercent
   }
 
   /**
@@ -195,23 +199,25 @@ class CreatorNodeSelection extends ServiceSelection {
       const endpoint = resp.request.id
       let isHealthy = false
 
-      // Check that the health check responded with status code 200 and that the
-      // version is up to date on major and minor
+      // Check that the health check:
+      // 1. Responded with status code 200 and that the
+      // 2. Version is up to date on major and minor
+      // 3. Has enough storage space -- max capacity defined at the variable `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
           this.currentVersion,
           resp.response.data.data.version
         )
-        isHealthy = isUp && versionIsUpToDate
+        const { storagePathSize, storagePathUsed } = resp.response.data.data
+        const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
+        isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
       }
 
       if (!isHealthy) { this.addUnhealthy(endpoint) }
 
       return isHealthy
     })
-
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_AND_OUTDATED, val: services })
 
     // Create a mapping of healthy services and their responses. Used on dapp to display the healthy services for selection
     // Also update services to be healthy services
@@ -221,7 +227,52 @@ class CreatorNodeSelection extends ServiceSelection {
       return service.request.id
     })
 
+    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: healthyServicesList })
+
+    // Record metrics
+    if (this.creatorNode.monitoringCallbacks.healthCheck) {
+      healthCheckedServices.forEach(check => {
+        const url = new URL(check.request.url)
+        const data = check.response.data.data
+        try {
+          this.creatorNode.monitoringCallbacks.healthCheck({
+            endpoint: url.origin,
+            pathname: url.pathname,
+            queryString: url.queryrString,
+            version: data.version,
+            git: data.git,
+            selectedDiscoveryNode: data.selectedDiscoveryProvider,
+            databaseSize: data.databaseSize,
+            databaseConnections: data.databaseConnections,
+            totalMemory: data.totalMemory,
+            usedMemory: data.usedMemory,
+            totalStorage: data.storagePathSize,
+            usedStorage: data.storagePathUsed,
+            maxFileDescriptors: data.maxFileDescriptors,
+            allocatedFileDescriptors: data.allocatedFileDescriptors,
+            receivedBytesPerSec: data.receivedBytesPerSec,
+            transferredBytesPerSec: data.transferredBytesPerSec
+          })
+        } catch (e) {
+          // Swallow errors -- this method should not throw generally
+          console.error(e)
+        }
+      })
+    }
+
     return { healthyServicesList, healthyServicesMap: servicesMap }
+  }
+
+  _hasEnoughStorageSpace ({ storagePathSize, storagePathUsed }) {
+    // If for any reason these values off the response is falsy value, default to enough storage
+    if (
+      storagePathSize === null ||
+      storagePathSize === undefined ||
+      storagePathUsed === null ||
+      storagePathUsed === undefined
+    ) { return true }
+
+    return (100 * storagePathUsed / storagePathSize) < this.maxStorageUsedPercent
   }
 }
 

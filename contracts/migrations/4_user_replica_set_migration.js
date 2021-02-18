@@ -18,22 +18,37 @@ module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     // TODO: Consider how this migration will be run against prod
     //       Registry.deployed() may not be the cleanest way to do this
-    let registry = await Registry.deployed()
+    let registry
+    let registryAddress
+    if (network === 'test_local' || network === 'development') {
+      registry = await Registry.deployed()
+      registryAddress = registry.address
+    } else {
+      if (!config.registryAddress) {
+        throw new Error('Invalid configuration, expected registry address to be configured')
+      }
+      registryAddress = config.registryAddress
+      registry = await Registry.at(registryAddress)
+    }
+
     const networkId = Registry.network_id
-    const registryAddress = registry.address
     console.log(`Deploying UserReplicaSetManager to ${network}`)
     const config = contractConfig[network]
     // This is the blacklist's veriferAddress
-    const blacklisterAddress = config.blacklisterAddress || accounts[0]
     // Incoming proxy admin is identical to currently configured blacklisterAddress
-    const proxyAdminAddress = blacklisterAddress
+    // If no blacklister is configured, the last known account is used as the proxy admin
+    const proxyAdminAddress = config.blacklisterAddress || accounts[accounts.length - 1]
     const userReplicaSetBootstrapAddress = config.userReplicaSetBootstrapAddress || accounts[9]
 
     const bootstrapSPIds = config.bootstrapSPIds
     const bootstrapNodeDelegateWallets = config.bootstrapSPDelegateWallets
-    if (network !== 'test_local' && (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length == 0)) {
+    const bootstrapSPOwnerWallets = config.bootstrapSPOwnerWallets
+    if (
+        network !== 'test_local' &&
+        (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length === 0 || bootstrapSPOwnerWallets.length === 0)
+      ) {
       throw new Error(
-        `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds} and bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}`
+        `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds}, bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}, bootstrapSPOwnerWallets=${bootstrapSPOwnerWallets}`
       )
     }
     console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
@@ -75,6 +90,7 @@ module.exports = (deployer, network, accounts) => {
     await userReplicaSetManagerInst.seedBootstrapNodes(
       bootstrapSPIds,
       bootstrapNodeDelegateWallets,
+      bootstrapSPOwnerWallets,
       { from: userReplicaSetBootstrapAddress }
     )
     seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })

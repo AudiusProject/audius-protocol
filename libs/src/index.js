@@ -29,9 +29,17 @@ class AudiusLibs {
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
+   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   * @param {function} monitoringCallbacks.request
+   * @param {function} monitoringCallbacks.healthCheck
    */
-  static configDiscoveryProvider (whitelist = null, reselectTimeout = null, selectionCallback = null) {
-    return { whitelist, reselectTimeout, selectionCallback }
+  static configDiscoveryProvider (
+    whitelist = null,
+    reselectTimeout = null,
+    selectionCallback = null,
+    monitoringCallbacks = {}
+  ) {
+    return { whitelist, reselectTimeout, selectionCallback, monitoringCallbacks }
   }
 
   /**
@@ -55,9 +63,20 @@ class AudiusLibs {
    * @param {string} fallbackUrl creator node endpoint to fall back to on requests
    * @param {boolean} lazyConnect whether to delay connection to the node until the first
    * request that requires a connection is made.
+   * @param {Set<string>?} passList whether or not to include only specified nodes (default null)
+   * @param {Set<string>?} blockList whether or not to exclude any nodes (default null)
+   * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
+   * @param {function} monitoringCallbacks.request
+   * @param {function} monitoringCallbacks.healthCheck
    */
-  static configCreatorNode (fallbackUrl, lazyConnect = false) {
-    return { fallbackUrl, lazyConnect }
+  static configCreatorNode (
+    fallbackUrl,
+    lazyConnect = false,
+    passList = null,
+    blockList = null,
+    monitoringCallbacks = {}
+  ) {
+    return { fallbackUrl, lazyConnect, passList, blockList, monitoringCallbacks }
   }
 
   /**
@@ -88,7 +107,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers) {
+  static configInternalWeb3 (registryAddress, providers, privateKey) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -104,7 +123,8 @@ class AudiusLibs {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoints: providerList
+        web3ProviderEndpoints: providerList,
+        privateKey
       }
     }
   }
@@ -251,7 +271,8 @@ class AudiusLibs {
         this.ethContracts,
         this.web3Manager,
         this.discoveryProviderConfig.reselectTimeout,
-        this.discoveryProviderConfig.selectionCallback
+        this.discoveryProviderConfig.selectionCallback,
+        this.discoveryProviderConfig.monitoringCallbacks
       )
       await this.discoveryProvider.init()
     }
@@ -269,7 +290,11 @@ class AudiusLibs {
         this.isServer,
         this.userStateManager,
         this.creatorNodeConfig.lazyConnect,
-        this.schemas)
+        this.schemas,
+        this.creatorNodeConfig.passList,
+        this.creatorNodeConfig.blockList,
+        this.creatorNodeConfig.monitoringCallbacks
+      )
       await this.creatorNode.init()
     }
 
