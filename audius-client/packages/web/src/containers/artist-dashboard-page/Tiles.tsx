@@ -22,6 +22,8 @@ import {
 } from 'store/token-dashboard/slice'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
 import spinnyVideo from 'assets/animations/spinnytoken.mp4'
+import spinnyVideoDark from 'assets/animations/spinnytoken_dark.mp4'
+import { isDarkMode } from 'utils/theme/theme'
 
 const messages = {
   claimCTA: 'CLAIM $AUDIO',
@@ -156,13 +158,15 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
     }
   }, [mouseOver])
 
+  const darkMode = isDarkMode()
+
   return (
     <Tile className={cn([styles.explainerTile, className])}>
       <>
         <div className={styles.tokenHero}>
           <video
             autoPlay
-            src={spinnyVideo}
+            src={darkMode ? spinnyVideoDark : spinnyVideo}
             height={200}
             width={200}
             onMouseOver={() => setMouseOver(true)}

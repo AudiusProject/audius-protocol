@@ -98,7 +98,7 @@
   margin-bottom: 4px;
   text-align: left;
   display: flex;
-  align-items: center;
+  margin-right: 8px;
 }
 
 .artistName h1 {
@@ -108,6 +108,10 @@
 
 .artistName > .iconVerified {
   margin-left: 4px;
+}
+
+.badgesSpan {
+  display: inline-block
 }
 
 .artistHandle {
