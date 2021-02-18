@@ -408,6 +408,12 @@ const config = convict({
     format: 'BooleanCustom',
     env: 'snapbackDevModeEnabled',
     default: false
+  },
+  maxStorageUsedPercent: {
+    doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
+    format: 'nat',
+    env: 'maxStorageUsedPercent',
+    default: 95
   }
 
   // unsupported options at the moment

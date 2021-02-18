@@ -7,7 +7,7 @@ const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
-const initAudiusLibs = require('./audiusLibsInstance')
+const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
@@ -90,7 +90,8 @@ class App {
   }
 
   async configureAudiusInstance () {
-    const audiusInstance = await initAudiusLibs()
+    await audiusLibsWrapper.init()
+    const audiusInstance = audiusLibsWrapper.getAudiusLibs()
     this.express.set('audiusLibs', audiusInstance)
     return audiusInstance
   }

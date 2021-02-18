@@ -284,12 +284,6 @@ const config = convict({
     default: 0,
     env: 'notificationStartBlock'
   },
-  notificationDiscoveryProvider: {
-    doc: 'Whitelisted discovery provider to query notifications',
-    format: String,
-    default: 'http://localhost:5000',
-    env: 'notificationDiscoveryProvider'
-  },
   ethTokenAddress: {
     doc: 'ethTokenAddress',
     format: String,

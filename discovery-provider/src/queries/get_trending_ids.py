@@ -1,6 +1,7 @@
 import logging
 from src.utils.redis_cache import extract_key, use_redis_cache
-from src.queries.get_trending import TRENDING_TTL_SEC, get_trending
+from src.queries.get_trending import get_trending
+from src.queries.get_trending_tracks import TRENDING_TTL_SEC
 
 logger = logging.getLogger(__name__)
 

@@ -239,9 +239,9 @@ class DelegateManagerClient extends GovernedContractClient {
 
     return {
       txReceipt: tx,
-      delegator: tx.events.DecreaseDelegatedStake.returnValues._delegator,
-      serviceProvider: tx.events.DecreaseDelegatedStake.returnValues._serviceProvider,
-      decreaseAmount: Utils.toBN(tx.events.DecreaseDelegatedStake.returnValues._decreaseAmount)
+      delegator: tx.events.UndelegateStakeRequestEvaluated.returnValues._delegator,
+      serviceProvider: tx.events.UndelegateStakeRequestEvaluated.returnValues._serviceProvider,
+      decreaseAmount: Utils.toBN(tx.events.UndelegateStakeRequestEvaluated.returnValues._amount)
     }
   }
 
@@ -292,9 +292,9 @@ class DelegateManagerClient extends GovernedContractClient {
     )
     return {
       txReceipt: tx,
-      delegator: tx.events.DelegatorRemoved.returnValues._delegator,
-      serviceProvider: tx.events.DelegatorRemoved.returnValues._serviceProvider,
-      unstakedAmount: Utils.toBN(tx.events.DelegatorRemoved.returnValues._unstakedAmount)
+      delegator: tx.events.RemoveDelegatorRequestEvaluated.returnValues._delegator,
+      serviceProvider: tx.events.RemoveDelegatorRequestEvaluated.returnValues._serviceProvider,
+      unstakedAmount: Utils.toBN(tx.events.RemoveDelegatorRequestEvaluated.returnValues._unstakedAmount)
     }
   }
 
