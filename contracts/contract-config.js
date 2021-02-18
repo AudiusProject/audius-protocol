@@ -23,7 +23,8 @@ module.exports = {
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
     bootstrapSPOwnerWallets: [],
-    userReplicaSetBootstrapAddress: null
+    userReplicaSetBootstrapAddress: null,
+    registryAddress: null
   },
   poa_mainnet: {
     verifierAddress: '0xbeef8E42e8B5964fDD2b7ca8efA0d9aef38AA996',
@@ -31,7 +32,8 @@ module.exports = {
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
     bootstrapSPOwnerWallets: [],
-    userReplicaSetBootstrapAddress: null
+    userReplicaSetBootstrapAddress: null,
+    registryAddress: null
   },
   poa_sokol: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
@@ -39,6 +41,7 @@ module.exports = {
     bootstrapSPIds: [],
     bootstrapSPDelegateWallets: [],
     bootstrapSPOwnerWallets: [],
-    userReplicaSetBootstrapAddress: null
+    userReplicaSetBootstrapAddress: null,
+    registryAddress: null
   }
 }
