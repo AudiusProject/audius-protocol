@@ -452,7 +452,7 @@ class AudiusBackend {
   }
 
   static async autoSelectCreatorNodes() {
-    return audiusLibs.ServiceProvider.autoSelectCreatorNodes()
+    return audiusLibs.ServiceProvider.autoSelectCreatorNodes({})
   }
 
   static async getSelectableCreatorNodes() {
