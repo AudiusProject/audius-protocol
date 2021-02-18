@@ -154,6 +154,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     if (fs.existsSync(expectedStoragePath)) {
       req.logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
       decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash, Date.now()] })
+      // since this is early exit, print the decision tree here
       _printDecisionTreeObj(req, decisionTree)
       return expectedStoragePath
     }
@@ -263,7 +264,6 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
-          _printDecisionTreeObj(req, decisionTree)
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
       }
