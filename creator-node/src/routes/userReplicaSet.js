@@ -28,9 +28,9 @@ module.exports = function (app) {
    *    signature from this node (proposer node) to submit as part of the contract registration transaction.
    *
    * Steps:
-   *  1. Short circuit if node is already registered on URSM
-   *  2. Fetch node info from L1 ServiceProviderFactory for spID
+   *  1. Fetch node info from L1 ServiceProviderFactory for spID
    *    a. Error if no L1 record found
+   *  2. Short circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
    *  3. Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
    *  4. Confirm health check returns healthy and response data matches on-chain data
    *    a. Confirm health check response was signed by delegate owner wallet registered on L1 for spID
