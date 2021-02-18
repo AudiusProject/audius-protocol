@@ -4,7 +4,7 @@ const models = require('../models')
 const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
 const config = require('../config')
-const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../middlewares')
+const { getOwnEndpoint, getCreatorNodeEndpoints, ensureStorageMiddleware } = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
@@ -157,7 +157,7 @@ module.exports = function (app) {
    *
    * This route is only run on secondaries, to export and sync data from a user's primary.
    */
-  app.post('/sync', handleResponse(async (req, res) => {
+  app.post('/sync', ensureStorageMiddleware, handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
