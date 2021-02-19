@@ -82,10 +82,12 @@ def user_replica_set_state_update(
                 if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
                     primary = args._primaryId
                     secondaries = args._secondaryIds
+                    signer = args._signer
                     user_record = user_replica_set_events_lookup[user_id]["user"]
                     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
                     user_record.primary_id = primary
                     user_record.secondary_ids = secondaries
+                    user_record.replica_set_update_signer = signer
 
                     # Update cnode endpoint string reconstructed from sp ID
                     creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
