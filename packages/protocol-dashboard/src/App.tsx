@@ -3,7 +3,7 @@ import React from 'react'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Switch, Route } from 'react-router'
-import { createBrowserHistory } from 'history'
+import { createHashHistory } from 'history'
 
 import Header from 'components/Header'
 import Home from 'containers/Home'
@@ -26,7 +26,7 @@ import Proposal from 'containers/Proposal'
 import { createStyles } from 'utils/mobile'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
-const history = createBrowserHistory()
+const history = createHashHistory()
 const store = createStore(history)
 
 const Root = () => (
