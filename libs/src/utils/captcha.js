@@ -61,7 +61,7 @@ class Captcha {
       throw new Error('No serviceKey provided')
     }
 
-    let score, ok
+    let score, ok, hostname
 
     const formData = new FormData()
     formData.append('response', token)
@@ -79,12 +79,14 @@ class Captcha {
 
       score = resp.data.score
       ok = score >= minScore
+      hostname = resp.data.hostname
     } catch (e) {
       console.error('Error with verifying captcha request', e)
       score = null
       ok = false
+      hostname = null
     }
-    return { score, ok }
+    return { score, ok, hostname }
   }
 }
 

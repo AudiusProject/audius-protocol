@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    hostname: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE

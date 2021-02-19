@@ -29,13 +29,9 @@ module.exports = function (app) {
     const body = req.body
     const libs = req.app.get('audiusLibs')
 
-    // Calculate the recaptcha score
-    let score
+    let score, ok, hostname
     if (body.token) {
-      const recaptchaResponse = await libs.captcha.verify(body.token)
-      const ok = recaptchaResponse.ok
-      score = recaptchaResponse.score
-
+      ({ score, ok, hostname } = await libs.captcha.verify(body.token))
       req.logger.info(`CAPTCHA - Got captcha score: ${score}, is above minimum threshold score? ${ok}`)
       if (!ok) return errorResponseBadRequest('CAPTCHA - Failed captcha')
     } else {
@@ -47,7 +43,8 @@ module.exports = function (app) {
       await models.RecaptchaScores.create({
         walletAddress: body.walletAddress,
         score,
-        context: '/authentication'
+        context: '/authentication',
+        hostname
       })
     } catch (e) {
       req.logger.error('CAPTCHA - Error with adding recaptcha score', e)
