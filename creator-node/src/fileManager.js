@@ -121,9 +121,9 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
       await mkdir(parsedStoragePath, { recursive: true })
-      decisionTree.push({ stage: 'Successfully called mkdir on local file system', val: parsedStoragePath, time: Date.now() })
+      decisionTree.push({ stage: 'Successfully called mkdir on local file system', vals: parsedStoragePath, time: Date.now() })
     } catch (e) {
-      decisionTree.push({ stage: 'Error calling mkdir on local file system', val: parsedStoragePath, time: Date.now() })
+      decisionTree.push({ stage: 'Error calling mkdir on local file system', vals: parsedStoragePath, time: Date.now() })
       throw new Error(`Error making directory at ${parsedStoragePath} - ${e.message}`)
     }
 
@@ -153,7 +153,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     // If file already stored on disk, return immediately.
     if (fs.existsSync(expectedStoragePath)) {
       req.logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
-      decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash, Date.now()] })
+      decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash], time: Date.now() })
       // since this is early exit, print the decision tree here
       _printDecisionTreeObj(req, decisionTree)
       return expectedStoragePath
@@ -209,7 +209,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         // ..replace(/\/$/, "") removes trailing slashes
         req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
 
-        decisionTree.push({ stage: 'About to race requests via getways', vals: gatewayUrlsMapped, time: Date.now() })
+        decisionTree.push({ stage: 'About to race requests via gateways', vals: gatewayUrlsMapped, time: Date.now() })
         // Note - Requests are intentionally not parallel to minimize additional load on gateways
         for (let index = 0; index < gatewayUrlsMapped.length; index++) {
           const url = gatewayUrlsMapped[index]
@@ -283,7 +283,11 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
 }
 
 const _printDecisionTreeObj = (req, decisionTree) => {
-  req.logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
+  try {
+    req.logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
+  } catch (e) {
+    req.logger.error('error printing saveFileForMultihashToFS decision tree', decisionTree)
+  }
 }
 
 /**
