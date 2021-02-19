@@ -6,7 +6,7 @@ const IS_BROWSER = typeof window !== 'undefined' && window !== null
 
 class Captcha {
   /**
-   * @param {object} 
+   * @param {object}
    *  { string | undefined } siteKey
    *  { string | undefined } serviceKey
    */
@@ -19,7 +19,7 @@ class Captcha {
   }
 
   /**
-   * Intended to be called by clients
+   * Intended to be called by clients. Will generate a token used to calculate recaptcha score.
    * @param {string} action name for this "action" for grouping
    */
   async generate (action) {
@@ -48,11 +48,12 @@ class Captcha {
   }
 
   /**
-   * Intended to be called by services
+   * Intended to be called by services. According to recaptcha v3 docs:
+   * A score of 1.0 is very likely a good interaction, 0.0 is very likely a bot
    * @param {string} token
    * @param {number} minScore score must be >= minScore to be ok
    * @returns {Object}
-   *    {boolean | null} ok - whether score > minScore (true if something went wrong)
+   *    {boolean | null} ok - whether score > minScore (false if something went wrong)
    *    {number | null} score - the raw score [0, 1] (or null if a score was not computed)
    */
   async verify (token, minScore = 0.5) {
@@ -72,15 +73,16 @@ class Captcha {
         formData,
         {
           headers: formData.getHeaders(),
-          adapter: IS_BROWSER ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
+          adapter: IS_BROWSER ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http')
         }
       )
+
       score = resp.data.score
       ok = score >= minScore
     } catch (e) {
-      console.error(e)
+      console.error('Error with verifying captcha request', e)
       score = null
-      ok = true
+      ok = false
     }
     return { score, ok }
   }

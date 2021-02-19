@@ -479,6 +479,12 @@ const config = convict({
     format: String,
     env: 'ethRelayerProdGasTier',
     default: 'fastGweiHex'
+  },
+  captchaScoreSecret: {
+    doc: 'The secret necessary to view user captcha scores',
+    format: String,
+    env: 'captchaScoreSecret',
+    default: ''
   }
 })
 

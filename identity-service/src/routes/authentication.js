@@ -25,18 +25,32 @@ module.exports = function (app) {
    * authentication process
    */
   app.post('/authentication', handleResponse(async (req, res, next) => {
-    return errorResponseBadRequest('CAPTCHA - Failed captcha')
-    // body should contain {iv, cipherText, lookupKey}
-    let body = req.body
-    req.logger.warn(`CAPTCHA - REQ ${body.token}`)
+    // body should contain {iv, cipherText, lookupKey, walletAddress}
+    const body = req.body
+    const libs = req.app.get('audiusLibs')
 
+    // Calculate the recaptcha score
+    let score
     if (body.token) {
-      const libs = req.app.get('audiusLibs')
-      const { ok, score } = await libs.captcha.verify(body.token)
-      req.logger.warn(`CAPTCHA - Got captcha score: ${score}, is ok? ${ok}`)
+      const recaptchaResponse = await libs.captcha.verify(body.token)
+      const ok = recaptchaResponse.ok
+      score = recaptchaResponse.score
+
+      req.logger.info(`CAPTCHA - Got captcha score: ${score}, is above minimum threshold score? ${ok}`)
       if (!ok) return errorResponseBadRequest('CAPTCHA - Failed captcha')
     } else {
       req.logger.warn('CAPTCHA - No captcha found on request')
+    }
+
+    // Add recaptcha score and route context to table
+    try {
+      await models.RecaptchaScores.create({
+        walletAddress: body.walletAddress,
+        score,
+        context: '/authentication'
+      })
+    } catch (e) {
+      req.logger.error('CAPTCHA - Error with adding recaptcha score', e)
     }
 
     if (body && body.iv && body.cipherText && body.lookupKey) {

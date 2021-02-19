@@ -22,19 +22,11 @@ class IdentityService {
     const token = await this.captcha.generate('identity/authentication')
     obj.token = token
 
-    let res
-    try {
-      res = await this._makeRequest({
-        url: '/authentication',
-        method: 'post',
-        data: obj
-      })
-    } catch (e) {
-      console.log('BANANA = AUTHENTICATIONM FAILED!!!!', e)
-      window.onbeforeunload = null
-      window.location = 'https://i.giphy.com/media/3oriNOxhZpQB1511eM/giphy.webp'
-    }
-    return res
+    return this._makeRequest({
+      url: '/authentication',
+      method: 'post',
+      data: obj
+    })
   }
 
   async setUserFn (obj) {
