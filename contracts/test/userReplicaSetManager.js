@@ -224,6 +224,7 @@ contract('UserReplicaSetManager', async (accounts) => {
             {
                 _userId: toBN(userId),
                 _primaryId: toBN(newPrimary),
+                _signer: senderAcct
             }
         )
     }
