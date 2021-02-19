@@ -1,7 +1,6 @@
 /* global assert */
 import { web3New } from '../utils/web3New'
 
-
 export const unregisterContractAndValidate = async (registry, contractRegistryKey, contractInstanceAddress) => {
   await registry.removeContract(contractRegistryKey)
   await assertNoContractExists(contractInstanceAddress)
