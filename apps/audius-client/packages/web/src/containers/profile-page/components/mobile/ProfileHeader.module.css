@@ -57,7 +57,7 @@
   display: inline-flex;
   flex-direction: column;
   z-index: 5;
-  background: var(--white);
+  background: var(--neutral-light-10);
 }
 
 .titleContainer {
