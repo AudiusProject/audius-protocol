@@ -16,8 +16,6 @@ const encodeCall = (name, args, values) => {
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
-    // TODO: Consider how this migration will be run against prod
-    //       Registry.deployed() may not be the cleanest way to do this
     let registry
     let registryAddress
     if (network === 'test_local' || network === 'development') {

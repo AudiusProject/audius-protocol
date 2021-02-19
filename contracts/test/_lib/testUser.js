@@ -10,27 +10,6 @@ import { web3New } from '../utils/web3New'
 const signatureSchemas = require('../../signature_schemas/signatureSchemas')
 
 /** UserReplicaSetManager functions */
-export const addOrUpdateCreatorNode = async (userReplicaSetManager, cnodeId, cnodeDelegateOwnerWallet, proposerId, proposerWallet) => {
-  const nonce = signatureSchemas.getNonce()
-  const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
-  let signatureData = signatureSchemas.generators.getAddOrUpdateCreatorNodeRequestData(
-    chainId,
-    userReplicaSetManager.address,
-    cnodeId,
-    cnodeDelegateOwnerWallet,
-    proposerId,
-    nonce)
-  // Sign with proposerWallet
-  let sig = await eth_signTypedData(proposerWallet, signatureData)
-  let tx = await userReplicaSetManager.addOrUpdateCreatorNode(cnodeId, cnodeDelegateOwnerWallet, proposerId, nonce, sig)
-  parseTxWithAssertsAndResp(
-    tx,
-    'AddOrUpdateCreatorNode',
-    { _cnodeSpId: cnodeId, _cnodeDelegateOwnerWallet: cnodeDelegateOwnerWallet, _proposerSpId: proposerId }
-  )
-  return tx
-}
-
 export const updateReplicaSet = async (userReplicaSetManager, userId, primary, secondaries, oldPrimary, oldSecondaries, senderAcct) => {
   const nonce = signatureSchemas.getNonce()
   const chainId = getNetworkIdForContractInstance(userReplicaSetManager)
