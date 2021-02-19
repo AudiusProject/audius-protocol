@@ -83,7 +83,3 @@
   position: relative;
   top: 1px;
 }
-
-.iconVerified path {
-  fill: var(--primary);
-}
