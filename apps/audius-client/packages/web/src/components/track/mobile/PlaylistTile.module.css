@@ -189,10 +189,6 @@
   margin-left: 4px;
 }
 
-.iconVerified path {
-  fill: var(--primary);
-}
-
 /* Track Item */
 .trackItem {
   display: inline-flex;
