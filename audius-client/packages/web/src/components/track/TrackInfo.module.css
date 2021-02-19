@@ -89,10 +89,6 @@
   width: 8px;
 }
 
-.iconVerified path {
-  fill: var(--primary);
-}
-
 .active {
   color: var(--primary);
 }

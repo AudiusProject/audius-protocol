@@ -59,10 +59,12 @@
 
 .textContainer {
   position: relative;
-  margin-top: 7px;
+  margin: 4px 0px 2px;
   color: var(--neutral);
   user-select: none;
   padding: 0px 4px;
+  display: flex;
+  align-items: center;
 }
 
 .cardContainer.selected .textContainer,
@@ -71,7 +73,6 @@
 }
 
 .primaryText {
-  margin: 0 auto 8px;
   font-size: var(--font-s);
   line-height: 18px;
   font-weight: var(--font-bold);
@@ -83,17 +84,8 @@
 }
 
 .iconVerified {
-  position: absolute;
-  top: 2px;
-  right: -12px;
-}
-
-svg.iconVerified path {
-  fill: var(--primary);
-}
-
-.cardContainer.selected svg.iconVerified path {
-  fill: var(--white);
+  display: inline-block;
+  margin-left: 4px;
 }
 
 .secondaryText {
