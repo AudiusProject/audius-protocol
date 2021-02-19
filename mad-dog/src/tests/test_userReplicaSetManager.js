@@ -30,7 +30,8 @@ let walletIndexToUserIdMap
 
 const verifyUserReplicaSetStatus = async (
   userId,
-  libs
+  libs,
+  replicaSetUpdaterAddress = null
 ) =>
 {
   try {
@@ -40,6 +41,17 @@ const verifyUserReplicaSetStatus = async (
     // Query user object
     let usrQueryInfo = await getUser(libs, userId)
 
+    // Validate the latest updater indexed into discovery node matches expected value
+    let replicaSetUpdateSigner = replicaSetUpdaterAddress
+    if (!replicaSetUpdateSigner) {
+      replicaSetUpdateSigner = libs.getWalletAddress()
+    }
+    let queriedReplicaSetUpdateSigner = usrQueryInfo.replica_set_update_signer.toLowerCase()
+    let expectedUpdaterFound = replicaSetUpdateSigner === queriedReplicaSetUpdateSigner
+    if (!expectedUpdaterFound) {
+      throw new Error('Invalid replica set updater found')
+    }
+
     // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
     let replicaEndpointArray = usrQueryInfo.creator_node_endpoint.split(",")
     let primaryEndpointString = replicaEndpointArray[0]
@@ -47,7 +59,7 @@ const verifyUserReplicaSetStatus = async (
     let primaryInfo = contentNodeEndpointToInfoMapping[primaryEndpointString]
     let primaryID = usrQueryInfo.primary_id
 
-    // Throw if mismatch between queried primaryID and assigned 
+    // Throw if mismatch between queried primaryID and assigned
     //    spID on chain for this endpoint
     if (primaryID !== primaryInfo.spID) {
       throw new Error(`Mismatch spID values. Expected endpoint for ${primaryID}, found ${primaryInfo.spID}`)
