@@ -154,6 +154,7 @@ class App {
     // Length is at least 2, length - 1 would be the outermost proxy, so length - 2 is the "sender"
     // either the actual user or a content node
     const senderIP = headers[headers.length - 2]
+    // hi
 
     if (this._isIPWhitelisted(senderIP)) {
       const forwardedIP = headers[headers.length - 3]
