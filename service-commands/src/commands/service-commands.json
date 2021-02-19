@@ -22,7 +22,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
-      "cd contracts/; node_modules/.bin/truffle migrate",
+      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3",
       "echo 'Writing flask config'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run"
     ],
@@ -180,6 +180,12 @@
   "init-repos": {
     "up": [
       ". scripts/init-repos.sh"
+    ]
+  },
+  "user-replica-set-manager": {
+    "up": [
+      "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
+      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4"
     ]
   }
 }
