@@ -45,14 +45,14 @@ contract('UserReplicaSetManager', async (accounts) => {
     const cnode3OwnerWallet = accounts[10]
     // Fourth spID = 4, accounts = accounts[6]
     const cnode4SpID = 4
-    const cnode4Account = accounts[11]
+    const cnode4DelegateOwnerWallet = accounts[11]
     const cnode4OwnerWallet = accounts[12]
     // Special permission addresses
     const userReplicaBootstrapAddress = accounts[24]
     // Proxy deployer is explicitly set
     const proxyAdminAddress = accounts[25]
     const bootstrapSPIds = [cnode1SpID, cnode2SpID, cnode3SpID, cnode4SpID]
-    const bootstrapDelegateWallets = [cnode1DelegateOwnerWallet, cnode2DelegateOwnerWallet, cnode3DelegateOwnerWallet, cnode4Account]
+    const bootstrapDelegateWallets = [cnode1DelegateOwnerWallet, cnode2DelegateOwnerWallet, cnode3DelegateOwnerWallet, cnode4DelegateOwnerWallet]
     const bootstrapOwnerWallets = [cnode1OwnerWallet, cnode2OwnerWallet, cnode3OwnerWallet, cnode4OwnerWallet]
     // Contract objects
     let registry
@@ -109,7 +109,6 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
         seedComplete = await userReplicaSetManager.getSeedComplete({ from: userReplicaBootstrapAddress })
         assert.isTrue(seedComplete, "Expect completed seed operation")
-
         // Confirm constructor events were fired as expected
         await expectEvent.inTransaction(
             seedTx.tx,
@@ -150,6 +149,40 @@ contract('UserReplicaSetManager', async (accounts) => {
                 _proposer3DelegateOwnerWallet: addressZero
            }
         )
+        await expectEvent.inTransaction(
+            seedTx.tx,
+            UserReplicaSetManager,
+            'AddOrUpdateContentNode',
+            {
+                _cnodeSpId: toBN(cnode4SpID),
+                _cnodeDelegateOwnerWallet: cnode4DelegateOwnerWallet,
+                _cnodeOwnerWallet: cnode4OwnerWallet,
+                _proposer1DelegateOwnerWallet: addressZero,
+                _proposer2DelegateOwnerWallet: addressZero,
+                _proposer3DelegateOwnerWallet: addressZero
+           }
+        )
+        // Validate proposers for AddOrUpdateContentNode events in bootstrap case
+        assert.isTrue(seedTx.logs.length === 4, "Expected 4 emitted events")
+        let event1Args = seedTx.logs[0].args
+        let event2Args = seedTx.logs[1].args
+        let event3Args = seedTx.logs[2].args
+        let event4Args = seedTx.logs[3].args
+        let event1ProposerSpIds = event1Args._proposerSpIds
+        let event2ProposerSpIds = event2Args._proposerSpIds
+        let event3ProposerSpIds = event3Args._proposerSpIds
+        let event4ProposerSpIds = event4Args._proposerSpIds
+        // Manually verify proposers are all spID=0
+        // This is true only in the bootstrap case
+        assert.isTrue(event1ProposerSpIds.length === 3, "Expected 3 entries")
+        assert.isTrue(event2ProposerSpIds.length === 3, "Expected 3 entries")
+        assert.isTrue(event3ProposerSpIds.length === 3, "Expected 3 entries")
+        assert.isTrue(event4ProposerSpIds.length === 3, "Expected 3 entries")
+        // Confirm all proposer spIDs are 0 for each of the 4 bootstrap events
+        event1ProposerSpIds.forEach(x=>{ assert.isTrue(x.eq(toBN(0))) })
+        event2ProposerSpIds.forEach(x=>{ assert.isTrue(x.eq(toBN(0))) })
+        event3ProposerSpIds.forEach(x=>{ assert.isTrue(x.eq(toBN(0))) })
+        event4ProposerSpIds.forEach(x=>{ assert.isTrue(x.eq(toBN(0))) })
    })
 
     // Confirm constructor arguments are respected on chain
@@ -664,7 +697,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         user1Secondaries = toBNArray([3, 4])
         // Try to issue an update from the incoming secondary account, confirm failure
         await expectRevert(
-          updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode4Account),
+          updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode4DelegateOwnerWallet),
           'Invalid update operation'
         )
         await updateReplicaSet(userId1, user1Primary, user1Secondaries, oldPrimary, oldSecondaries, cnode3DelegateOwnerWallet)
