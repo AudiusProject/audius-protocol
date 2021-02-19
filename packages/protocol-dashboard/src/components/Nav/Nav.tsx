@@ -9,6 +9,7 @@ import { AppState } from 'store/types'
 import styles from './Nav.module.css'
 import * as routes from 'utils/routes'
 import { Button, ButtonType } from '@audius/stems'
+import { useLocation } from 'react-router-dom'
 
 const navRoutes = [
   { matchParams: { path: routes.HOME, exact: true }, text: 'OVERVIEW' },
@@ -32,7 +33,9 @@ const NavButton = (props: NavButtonProps) => {
     pushRoute,
     matchParams: { path }
   } = props
-  const isActiveRoute = !!matchPath(window.location.pathname, props.matchParams)
+  const location = useLocation()
+
+  const isActiveRoute = !!matchPath(location.pathname, props.matchParams)
   const onButtonClick = useCallback(() => pushRoute(path), [path, pushRoute])
 
   return (
