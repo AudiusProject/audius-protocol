@@ -50,9 +50,10 @@ class ServiceRegistry {
 
       this.snapbackSM = new SnapbackSM(this.audiusLibs)
       await this.snapbackSM.init()
-      
-      console.log('SIDTEST SUCCESSFULY INITED LIBS & SNAPBACK')
-      // this.URSMService = new URSMService(this.nodeConfig, this.audiusLibs)
+
+      if (this.nodeConfig.get('spID')) {
+        this.URSMService = new URSMService(this.nodeConfig, this.audiusLibs)
+      }
     }
 
     this.monitoringQueue.start()
@@ -88,14 +89,19 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    web3Config: {
-      registryAddress: config.get('dataRegistryAddress'),
-      useExternalWeb3: true,
-      externalWeb3Config: {
-        web3: dataWeb3,
-        ownerWallet: config.get('delegateOwnerWallet')
-      }
-    },
+    // web3Config: {
+    //   registryAddress: config.get('dataRegistryAddress'),
+    //   useExternalWeb3: true,
+    //   externalWeb3Config: {
+    //     web3: dataWeb3,
+    //     ownerWallet: config.get('delegateOwnerWallet')
+    //   }
+    // },
+    web3Config: AudiusLibs.configInternalWeb3(
+      config.get('dataRegistryAddress'),
+      [config.get('dataProviderUrl')],
+      config.get('delegatePrivateKey')
+    ),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
     // If an identity service config is present, set up libs with the connection, otherwise do nothing
     identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,

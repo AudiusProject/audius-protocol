@@ -35,10 +35,6 @@ class CreatorNode {
     return [primary, ...secondaries].join()
   }
 
-  static get serviceTypeName () {
-    return CREATOR_NODE_SERVICE_NAME
-  }
-
   /**
    * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
    * @param {string} endpoint content node endpoint

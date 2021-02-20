@@ -1,6 +1,9 @@
 const Web3 = require('web3')
 const web3 = new Web3()
 
+// 5 minutes in ms is the maximum age of a signature
+const MAX_SIGNATURE_AGE_MS = 300000
+
 /**
  * Generate the timestamp and signature for api signing
  * @param {object} data
@@ -11,6 +14,7 @@ const generateTimestampAndSignature = (data, privateKey) => {
   const toSignObj = { ...data, timestamp }
   // JSON stringify automatically removes white space given 1 param
   const toSignStr = JSON.stringify(sortKeys(toSignObj))
+  // console.log(`TOSIGNSTR: ${toSignStr}`)
   const toSignHash = web3.utils.keccak256(toSignStr)
   const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
 
@@ -25,10 +29,23 @@ const generateTimestampAndSignature = (data, privateKey) => {
 // eslint-disable-next-line no-unused-vars
 const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(sortKeys(data))
+  // console.log(`structuredata: ${structuredData}`)
   const hashedData = web3.utils.keccak256(structuredData)
   const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
 
   return recoveredWallet
+}
+
+/**
+ * 
+ * @param {*} signatureTimestamp 
+ */
+const signatureHasExpired = (signatureTimestamp) => {
+  const signatureTimestampDate = new Date(signatureTimestamp)
+  const currentTimestampDate = new Date()
+  const signatureAge = currentTimestampDate - signatureTimestampDate
+
+  return (signatureAge >= MAX_SIGNATURE_AGE_MS)
 }
 
 const sortKeys = x => {
@@ -40,5 +57,7 @@ const sortKeys = x => {
 module.exports = {
   generateTimestampAndSignature,
   recoverWallet,
-  sortKeys
+  sortKeys,
+  MAX_SIGNATURE_AGE_MS,
+  signatureHasExpired
 }

@@ -76,6 +76,7 @@ const initializeApp = async (port, serviceRegistry) => {
   server.headersTimeout = config.get('headersTimeout')
 
   // initialize URSMService (requires server and /health_check to already be available)
+  app.set('serviceRegistry', serviceRegistry)
   // await utils.timeout(1000)
   // console.info(`SIDTEST ABOUT TO RUN URSMSERVICE INIT`)
   // await serviceRegistry.URSMService.init()

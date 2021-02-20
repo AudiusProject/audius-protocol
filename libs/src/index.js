@@ -102,6 +102,7 @@ class AudiusLibs {
       }
     }
   }
+
   /**
    * Configures an internal web3 to use (via Hedgehog)
    * @param {string} registryAddress

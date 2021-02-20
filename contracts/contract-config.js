@@ -4,9 +4,9 @@ module.exports = {
   development: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     blacklisterAddress: null,
-    bootstrapSPIds: [],
-    bootstrapSPDelegateWallets: [],
-    bootstrapSPOwnerWallets: [],
+    bootstrapSPIds: [1,2,3],
+    bootstrapSPDelegateWallets: ['0x96b1fE6C6620e31C179704b5096D6e84ba0615e3', '0x139289B903E1463031d7352db361862167FF6E74', '0xeAE8D7F3044C48d8e1749408eC5886e65f1d53BD'],
+    bootstrapSPOwnerWallets: ['0x96b1fE6C6620e31C179704b5096D6e84ba0615e3', '0x139289B903E1463031d7352db361862167FF6E74', '0xeAE8D7F3044C48d8e1749408eC5886e65f1d53BD'],
     userReplicaSetBootstrapAddress: null
   },
   test_local: {

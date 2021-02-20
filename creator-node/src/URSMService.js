@@ -1,6 +1,12 @@
-const { logger } = require('./logging')
 const axios = require('axios')
+const _ = require('lodash')
+const { Utils: LibsUtils } = require('@audius/libs')
+
+const { logger } = require('./logging')
 const { parseCNodeResponse } = require('./apiHelpers')
+const { generateTimestampAndSignature } = require('./apiSigning')
+
+
 
 /**
  * TODO move to services layer
@@ -17,55 +23,110 @@ const { parseCNodeResponse } = require('./apiHelpers')
  */
 class URSMService {
   constructor (nodeConfig, audiusLibs) {
-    // Requires properly initialized libs instance and non-zero spID
-    // Currently spID is configured inside snapbackSM
-    if (!audiusLibs || !nodeConfig.get('spID')) {
-      throw new Error('nope')
-    }
-
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
     this.spID = nodeConfig.get('spID')
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
+    this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
+
+    // Requires properly initialized libs instance and non-zero spID
+    // Currently spID is configured inside snapbackSM
+    if (!this.audiusLibs || !this.spID || !this.delegateOwnerWallet || !this.delegatePrivateKey) {
+      throw new Error('nope')
+    }
 
     this.numSignaturesRequired = 3
+
+    this.logInfo(`URSMSERVICE CONSTRUCTED`)
   }
 
-  // Class level log output
   logInfo (msg) {
     logger.info(`URSMService || ${msg}`)
   }
+
   logError (msg) {
     logger.error(`URSMService ERROR || ${msg}`)
   }
 
   /**
-   * 
+   * TODO DESCRIPTION
+   *
+   * Steps: 
+   *  1. Fetch node record from L1 ServiceProviderFactory for spID
+   *    a. Short-circuit if no L1 record found
+   *  2. Fetch node record from L2 UserReplicaSetManager for spID
+   *    a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
+   *  3. Fetch list of all nodes registered on URSM, in order to submit requests for proposal
+   *    a. Randomize list to minimize bias
+   *    b. Organize list to ensure requests are sent to nodes with unique ownerWallets
+   *  4. Submit requests for proposal to nodes until 3 successful signatures received
+   *    a. Must have signatures from nodes with unique ownerWallets
+   *    b. Error if all available nodes contacted without 3 successful signatures
+   *  5. Submit registration transaction to URSM with signatures
    */
   async init () {
-    // Short circuit if already registered on URSM
-    const alreadyRegistered = (
-      (await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(this.spID))
-      != '0x0000000000000000000000000000000000000000'
+    this.logInfo('STARTING INIT')
+
+    /**
+     * 1. Fetch node record from L1 ServiceProviderFactory for spID
+     */
+    const spRecordFromSPFactory = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+      'content-node',
+      this.spID
     )
-    if (alreadyRegistered) {
-      this.logInfo('Node already registered on UserReplicaSetManager contract - Short-circuiting init process.')
-      return
+    let {
+      owner: ownerWalletFromSPFactory,
+      delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
+      endpoint: endpointFromSPFactory
+    } = spRecordFromSPFactory
+    delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
+
+
+    /**
+     * 1-a. Short-circuit if no L1 record found
+     */
+    if (
+      LibsUtils.isZeroAddress(ownerWalletFromSPFactory)
+      || LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory)
+      || !endpointFromSPFactory
+    ) {
+      throw new Error('L1recordbad')
     }
 
-    // Fetch all nodes currently registered on URSM, in order to submit requests for proposal
-    const allURSMContentNodes = await this.audiusLibs.discoveryProvider.getURSMContentNodes()
-    this.logInfo(`allURSMContentNodes: ${JSON.stringify(allURSMContentNodes)}`)
+    /**
+     * 2. Fetch node record from L2 UserReplicaSetManager for spID
+     */
+    const delegateOwnerWalletFromURSM = (
+      (await this.audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(this.spID))
+      .delegateOwnerWallet
+    ).toLowerCase()
 
-    // TODO at this point need to have the CN endpoints one way or another
-    //  for now am just assuming it is a prop in the array of objects
+    /**
+     * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
+     */
+    if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+      throw new Error('L2recordmatch')
+    }
 
-    // TODO consider using _.shuffle() to randomize
-    let availableNodes = allURSMContentNodes
-    let numRemainingSignatures = this.numSignaturesRequired
+    /**
+     * 3. Fetch list of all nodes registered on URSM, in order to submit requests for proposal
+     *  a. Randomize list to minimize bias
+     *  b. Remove duplicates by owner_wallet key due to on-chain uniqueness constraint
+     */
+    let URSMContentNodes = await this.audiusLibs.discoveryProvider.getURSMContentNodes()
+    const tmp = URSMContentNodes[0]
+    this.logInfo(`tmp: ${JSON.stringify(tmp, null, 2)}`)
+    URSMContentNodes = URSMContentNodes.filter(node => node.endpoint)
+    URSMContentNodes = _.shuffle(URSMContentNodes)
+    URSMContentNodes = Object.values(_.keyBy(URSMContentNodes, 'owner_wallet'))
+
+    /**
+     * TODO document
+     */
+    let numRemainingSignatures = 1
+    let availableNodes = [tmp]
     let receivedSignatures = []
 
-    /** TODO document */
     while (numRemainingSignatures > 0) {
       if (availableNodes.length < numRemainingSignatures) {
         // TODO what is appropriate way to error -> kill proc, set flag to flip health check?
@@ -73,23 +134,11 @@ class URSMService {
       }
 
       let nodesToAttempt = availableNodes.slice(0, numRemainingSignatures)
+      availableNodes = availableNodes.slice(numRemainingSignatures)
 
       let responses = await Promise.all(nodesToAttempt.map(async (node) => {
         try {
-          const resp = await axios({
-            baseURL: node.endpoint,
-            url: '/ursm_request_for_proposal',
-            method: 'get',
-            timeout: 5000,
-            params: {
-              spID: this.spID
-            }
-          })
-          return {
-            spID: node.spID,
-            nonce: resp.nonce,
-            sig: resp.sig
-          }
+          return this._submitRequestForProposal(node.endpoint)
         } catch (e) {
           this.logError(`RFP failed to node ${node.endpoint} with error ${e}`)
           return null
@@ -98,11 +147,19 @@ class URSMService {
       responses = responses.filter(Boolean)
 
       numRemainingSignatures -= responses.length
-      receivedSignatures.concat({responses})
+      receivedSignatures.concat(responses)
     }
 
-    // getting to this point implies 3 successful signatures received
-    // TODO - assert length = 3
+    // if (receivedSignatures.length !== 3) {
+    //   throw new Error('idk')
+    // }
+
+    this.logInfo(`receviedsigns: ${JSON.stringify(receivedSignatures, null, 2)}`)
+    return 'yes'
+
+    /**
+     * Submit proposal 
+     */
 
     const proposerSpIDs = receivedSignatures.map(signatureObj => signatureObj.spID)
     const proposerNonces = receivedSignatures.map(signatureObj => signatureObj.nonce)
@@ -124,7 +181,15 @@ class URSMService {
     }
   }
 
-  async submitRequestForProposal (nodeEndpoint) {
+  /**
+   * 
+   * @param {*} nodeEndpoint 
+   */
+  async _submitRequestForProposal (nodeEndpoint) {
+    const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
+
+    this.logInfo(`submitting RFP to ${nodeEndpoint} for spID ${this.spID} // ${timestamp} // ${signature} // privkey: ${this.delegatePrivateKey}`)
+
     let RFPResp = await axios({
       baseURL: nodeEndpoint,
       url: '/ursm_request_for_proposal',
@@ -132,9 +197,13 @@ class URSMService {
       // timeout needs to be several seconds as the route makes multiple web requests internally
       timeout: 5000,
       params: {
-        spID: this.spID
+        spID: this.spID,
+        timestamp,
+        signature
       }
     })
+    this.logInfo(`RFPRESP from endpoint: ${nodeEndpoint}: ${JSON.stringify(RFPResp.data, null, 2)}`)
+
     RFPResp = parseCNodeResponse(RFPResp)
 
     return {

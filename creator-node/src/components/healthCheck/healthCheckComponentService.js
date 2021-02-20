@@ -10,7 +10,7 @@ const { MONITORS } = require('../../monitors/monitors')
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign) => {
+const healthCheck = async ({ audiusLibs } = {}, logger, sequelize, randomBytesToSign) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -26,10 +26,10 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign) 
     response.randomBytesToSign = randomBytesToSign
   }
 
-  if (libs) {
-    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
+  if (audiusLibs) {
+    response.selectedDiscoveryProvider = audiusLibs.discoveryProvider.discoveryProviderEndpoint
   } else {
-    logger.warn('Health check with no libs')
+    logger.warn('Health check with no audiusLibs')
   }
 
   // we have a /db_check route for more granular detail, but the service health check should
