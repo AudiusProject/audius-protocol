@@ -9,7 +9,7 @@ class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
-    maxStorageUsedPercent = 95,
+    maxStorageUsedPercent = 90,
     timeout = null
   }) {
     super({
@@ -188,16 +188,20 @@ class CreatorNodeSelection extends ServiceSelection {
       let isHealthy = false
 
       // Check that the health check:
-      // 1. Responded with status code 200 and that the
+      // 1. Responded with status code 200
       // 2. Version is up to date on major and minor
-      // 3. Has enough storage space -- max capacity defined at the variable `this.maxStorageUsedPercent`
+      // 3. Has enough storage space
+      //    - Max capacity percent is defined from CN health check response. If not present,
+      //      use default from constructor
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
           this.currentVersion,
           resp.response.data.data.version
         )
-        const { storagePathSize, storagePathUsed } = resp.response.data.data
+        let { storagePathSize, storagePathUsed, maxStorageUsedPercent } = resp.response.data.data
+        // If CN does not respond with maxStorageUsedPercent, use the default from constructor
+        this.maxStorageUsedPercent = maxStorageUsedPercent || this.maxStorageUsedPercent
         const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
         isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
       }

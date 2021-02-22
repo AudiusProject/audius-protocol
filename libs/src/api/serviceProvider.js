@@ -1,7 +1,6 @@
 const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
 const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
-const axios = require('axios')
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
@@ -81,27 +80,14 @@ class ServiceProvider extends Base {
     performSyncCheck = true,
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
   }) {
-    let creatorNodeSelectionConfig = {
+    const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
       ethContracts: this.ethContracts,
       numberOfNodes,
       whitelist,
       blacklist,
       timeout
-    }
-
-    try {
-      const healthCheckResp = await axios({
-        url: `${this.creatorNode.creatorNodeEndpoint}/health_check/verbose`,
-        method: 'get',
-        responseType: 'json'
-      })
-      creatorNodeSelectionConfig.maxStorageUsedPercent = healthCheckResp.data.maxStorageUsedPercent
-    } catch (e) {
-      console.warn(`Could not retrieve maxStorageUsedPercent from ${this.creatorNode.creatorNodeEndpoint}`, e)
-    }
-
-    const creatorNodeSelection = new CreatorNodeSelection(creatorNodeSelectionConfig)
+    })
 
     const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck)
     return { primary, secondaries, services }
