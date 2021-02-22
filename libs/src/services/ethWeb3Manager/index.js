@@ -1,4 +1,5 @@
 const Web3 = require('../../web3')
+const MultiProvider = require('./multiProvider')
 const EthereumTx = require('ethereumjs-tx')
 const retry = require('async-retry')
 const { sample } = require('lodash')
@@ -15,7 +16,19 @@ class EthWeb3Manager {
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
 
     // Pick a provider at random to spread the load
-    const provider = sample(web3Config.providers)
+    const providers = web3Config.providers.map(provider => {
+      if (typeof provider === "string") {
+        if (provider.startsWith("http")) {
+          return new Web3.providers.HttpProvider(provider)
+        } else {
+          return new Web3.providers.WebsocketProvider(provider)
+        }
+      } else {
+        return provider.eth.currentProvider
+      }
+    })
+
+    const provider = new MultiProvider(providers)
 
     this.web3Config = web3Config
     this.identityService = identityService
