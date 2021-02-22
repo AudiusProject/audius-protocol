@@ -1,12 +1,12 @@
 import { Address } from 'types'
-import { fetchWithTimeout, TIMED_OUT_ERROR } from 'utils/fetch'
+import { TIMED_OUT_ERROR, withTimeout } from 'utils/fetch'
 import { getRandomDefaultImage } from 'utils/identicon'
+import { getProfile } from '3box/lib/api'
 
-const api3Box = 'https://ipfs.3box.io'
 const ipfsGateway = 'https://ipfs.infura.io/ipfs/'
-const getProfileUrl = (wallet: string) => `${api3Box}/profile?address=${wallet}`
 
 type User = {
+  status?: string
   name?: string
   image: string
 }
@@ -23,7 +23,7 @@ export const get3BoxProfile = async (
     const user: User = { image }
 
     // Get the profile from 3box
-    const profile = await fetchWithTimeout(getProfileUrl(wallet), 3000)
+    const profile = (await withTimeout(getProfile(wallet), 3000)) as User
     if (profile.status === 'error') return user
 
     // Extract the name and image url
