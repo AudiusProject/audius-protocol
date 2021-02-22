@@ -75,3 +75,5 @@ fi
 node_modules/.bin/standard
 
 # intentionally does not bring down containers
+
+echo "DUMMY"
