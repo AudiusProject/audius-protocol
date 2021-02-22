@@ -2,35 +2,35 @@ const { promisify, callbackify } = require('util')
 const { shuffle } = require('lodash')
 
 class MultiProvider {
-    constructor(providers) {
-        if (!providers.every(provider => provider.sendAsync || provider.send)) {
-            throw new Error('Some providers do not have a send method to use.')
-        }
-
-        this.providers = providers
-        this.send = callbackify(this._send.bind(this))
+  constructor (providers) {
+    if (!providers.every(provider => provider.sendAsync || provider.send)) {
+      throw new Error('Some providers do not have a send method to use.')
     }
 
-    async _send(payload) {
-        for (const provider of shuffle(this.providers)) {
-            try {
-                const send = promisify((provider.sendAsync || provider.send).bind(provider));
-                return await send(payload)
-            } catch (e) {
-                console.log(e)
-            }
-        }
+    this.providers = providers
+    this.send = callbackify(this._send.bind(this))
+  }
 
-        throw new Error('All requests failed')
+  async _send (payload) {
+    for (const provider of shuffle(this.providers)) {
+      try {
+        const send = promisify((provider.sendAsync || provider.send).bind(provider))
+        return await send(payload)
+      } catch (e) {
+        console.log(e)
+      }
     }
 
-    disconnect() {
-        this.providers.forEach(provider => provider.disconnect())
-    }
+    throw new Error('All requests failed')
+  }
 
-    supportsSubscriptions() {
-        return this.providers.every(provider => provider.supportsSubscriptions())
-    }
+  disconnect () {
+    this.providers.forEach(provider => provider.disconnect())
+  }
+
+  supportsSubscriptions () {
+    return this.providers.every(provider => provider.supportsSubscriptions())
+  }
 }
 
 module.exports = MultiProvider

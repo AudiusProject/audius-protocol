@@ -2,7 +2,6 @@ const Web3 = require('../../web3')
 const MultiProvider = require('./multiProvider')
 const EthereumTx = require('ethereumjs-tx')
 const retry = require('async-retry')
-const { sample } = require('lodash')
 const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
 const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
@@ -17,8 +16,8 @@ class EthWeb3Manager {
 
     // Pick a provider at random to spread the load
     const providers = web3Config.providers.map(provider => {
-      if (typeof provider === "string") {
-        if (provider.startsWith("http")) {
+      if (typeof provider === 'string') {
+        if (provider.startsWith('http')) {
           return new Web3.providers.HttpProvider(provider)
         } else {
           return new Web3.providers.WebsocketProvider(provider)
