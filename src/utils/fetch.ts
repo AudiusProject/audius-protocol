@@ -15,3 +15,15 @@ export const fetchWithTimeout = async (
   }
   return res.json()
 }
+
+export const withTimeout = async (
+  asyncCall: () => Promise<any>,
+  timeout: number = DEFAULT_TIMEOUT_MS
+) => {
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`${TIMED_OUT_ERROR}`)), timeout)
+  })
+
+  const res = await Promise.race([asyncCall, timeoutPromise])
+  return res
+}
