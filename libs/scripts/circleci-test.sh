@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 <<COMMENT
 CircleCI Specific Test Script
@@ -45,8 +46,6 @@ npm run test:units
 # - Data contracts config: registry contract & owner wallet addresses
 # - Eth contracts config: AudiusToken contract address
 sh ./scripts/migrate_contracts.sh
-
-set -e
 
 # run tests
 printf '\nSTART tests:\n\n'
