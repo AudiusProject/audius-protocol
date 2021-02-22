@@ -348,9 +348,11 @@ describe('test CreatorNodeSelection', () => {
       whitelist: null,
       blacklist: null
     })
+    assert(cns.maxStorageUsedPercent === 95)
 
     const { primary, secondaries, services } = await cns.select()
 
+    assert(cns.maxStorageUsedPercent === 95)
     assert(primary === shouldBePrimary)
     assert(secondaries.length === 2)
     assert(secondaries.includes(shouldBeSecondary1))
@@ -362,7 +364,7 @@ describe('test CreatorNodeSelection', () => {
     healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
 
-  it('overrides with health check resp `maxStorageUsedPercent` even if value is passed into constructor', async () => {
+  it('overrides with health check resp `maxStorageUsedPercent` even if it is passed into constructor', async () => {
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
       .get('/health_check/verbose')
@@ -458,8 +460,11 @@ describe('test CreatorNodeSelection', () => {
       maxStorageUsedPercent: 50
     })
 
+    assert(cns.maxStorageUsedPercent === 50)
+
     const { primary, secondaries, services } = await cns.select()
 
+    assert(cns.maxStorageUsedPercent === 50)
     assert(primary === shouldBePrimary)
     assert(secondaries.length === 2)
     assert(secondaries.includes(shouldBeSecondary1))

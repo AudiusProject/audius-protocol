@@ -9,7 +9,7 @@ class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
-    maxStorageUsedPercent = 90,
+    maxStorageUsedPercent = 95,
     timeout = null
   }) {
     super({
