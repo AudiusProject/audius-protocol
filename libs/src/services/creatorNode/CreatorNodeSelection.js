@@ -192,7 +192,7 @@ class CreatorNodeSelection extends ServiceSelection {
       // 2. Version is up to date on major and minor
       // 3. Has enough storage space
       //    - Max capacity percent is defined from CN health check response. If not present,
-      //      use default from constructor
+      //      use existing value from `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
