@@ -200,7 +200,6 @@ class CreatorNodeSelection extends ServiceSelection {
           resp.response.data.data.version
         )
         let { storagePathSize, storagePathUsed, maxStorageUsedPercent } = resp.response.data.data
-        // If CN does not respond with maxStorageUsedPercent, use the default from constructor
         this.maxStorageUsedPercent = maxStorageUsedPercent || this.maxStorageUsedPercent
         const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
         isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
