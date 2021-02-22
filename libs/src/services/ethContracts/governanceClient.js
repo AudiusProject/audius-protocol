@@ -1,4 +1,5 @@
 const ContractClient = require('../contracts/ContractClient')
+const Utils = require('../../utils')
 
 const DEFAULT_GAS_AMOUNT = 200000
 
@@ -393,6 +394,26 @@ class GovernanceClient extends ContractClient {
       voterStake: this.toBN(event._voterStake),
       blockNumber: voteEvent.blockNumber
     }
+  }
+
+  /**
+   *
+   * @param {Integer} proposalId id of the governance proposal
+   * @returns {BigNumber} amount of tokens required to reach quorum
+   */
+  async calculateQuoroum (proposalId) {
+    const { submissionBlockNumber } = await this.getProposalById(proposalId)
+
+    // represented as a value > 0, eg 5% is 5
+    const quoroumPercent = await this.getVotingQuorumPercent()
+
+    // retrieve stake at the time of proposal from Staking client
+    const totalStakeAtProposal = await this.stakingProxyClient.totalStakedAt(submissionBlockNumber)
+
+    // quorum = (total staked at proposal * quorum percent) / 100
+    const quorumStake = (totalStakeAtProposal.mul(Utils.toBN(quoroumPercent))).div(Utils.toBN(100))
+
+    return quorumStake
   }
 }
 
