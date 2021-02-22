@@ -163,7 +163,10 @@ class CreatorNodeSelection extends ServiceSelection {
       }
     }
 
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS,
+      val: successfulSyncCheckServices
+    })
 
     return successfulSyncCheckServices
   }
@@ -220,30 +223,32 @@ class CreatorNodeSelection extends ServiceSelection {
     // Record metrics
     if (this.creatorNode.monitoringCallbacks.healthCheck) {
       healthCheckedServices.forEach(check => {
-        const url = new URL(check.request.url)
-        const data = check.response.data.data
-        try {
-          this.creatorNode.monitoringCallbacks.healthCheck({
-            endpoint: url.origin,
-            pathname: url.pathname,
-            queryString: url.queryrString,
-            version: data.version,
-            git: data.git,
-            selectedDiscoveryNode: data.selectedDiscoveryProvider,
-            databaseSize: data.databaseSize,
-            databaseConnections: data.databaseConnections,
-            totalMemory: data.totalMemory,
-            usedMemory: data.usedMemory,
-            totalStorage: data.storagePathSize,
-            usedStorage: data.storagePathUsed,
-            maxFileDescriptors: data.maxFileDescriptors,
-            allocatedFileDescriptors: data.allocatedFileDescriptors,
-            receivedBytesPerSec: data.receivedBytesPerSec,
-            transferredBytesPerSec: data.transferredBytesPerSec
-          })
-        } catch (e) {
-          // Swallow errors -- this method should not throw generally
-          console.error(e)
+        if (check.response && check.response.data) {
+          const url = new URL(check.request.url)
+          const data = check.response.data.data
+          try {
+            this.creatorNode.monitoringCallbacks.healthCheck({
+              endpoint: url.origin,
+              pathname: url.pathname,
+              queryString: url.queryrString,
+              version: data.version,
+              git: data.git,
+              selectedDiscoveryNode: data.selectedDiscoveryProvider,
+              databaseSize: data.databaseSize,
+              databaseConnections: data.databaseConnections,
+              totalMemory: data.totalMemory,
+              usedMemory: data.usedMemory,
+              totalStorage: data.storagePathSize,
+              usedStorage: data.storagePathUsed,
+              maxFileDescriptors: data.maxFileDescriptors,
+              allocatedFileDescriptors: data.allocatedFileDescriptors,
+              receivedBytesPerSec: data.receivedBytesPerSec,
+              transferredBytesPerSec: data.transferredBytesPerSec
+            })
+          } catch (e) {
+            // Swallow errors -- this method should not throw generally
+            console.error(e)
+          }
         }
       })
     }
