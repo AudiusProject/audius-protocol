@@ -165,6 +165,20 @@ def get_endpoint_string_from_sp_ids(
     logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}")
     return endpoint_string
 
+# Helper function to query endpoint in ursm cnode record parsing
+def get_ursm_cnode_endpoint(update_task, sp_id):
+    endpoint = None
+    sp_factory_inst = None
+    try:
+        sp_factory_inst, endpoint = get_endpoint_from_id(
+            update_task,
+            sp_factory_inst,
+            sp_id
+        )
+    except Exception as exc:
+        logger.error(f"user_replica_set.py | ERROR in get_ursm_cnode_endpoint {exc}")
+    return endpoint
+
 # Initializes sp_factory if necessary and retrieves spID
 # Returns initialized instance of contract and endpoint
 def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
@@ -187,24 +201,10 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
             content_node_service_type,
             sp_id
         ).call()
-        logger.info(cn_endpoint_info)
+        logger.info(f"user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}")
         endpoint = cn_endpoint_info[1]
 
     return sp_factory_inst, endpoint
-
-# Helper function to query endpoint in ursm cnode record parsing
-def get_ursm_cnode_endpoint(update_task, sp_id):
-    endpoint = None
-    sp_factory_inst = None
-    try:
-        sp_factory_inst, endpoint = get_endpoint_from_id(
-            update_task,
-            sp_factory_inst,
-            sp_id
-        )
-    except Exception as exc:
-        logger.error(f"user_replica_set.py | ERROR in get_ursm_cnode_endpoint {exc}")
-    return endpoint
 
 # Return instance of ServiceProviderFactory initialized with configs
 def get_sp_factory_inst(update_task):
