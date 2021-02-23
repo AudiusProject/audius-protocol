@@ -136,7 +136,8 @@ const Service = Object.freeze({
   USER_METADATA_NODE: 'user-metadata-node',
   IDENTITY_SERVICE: 'identity-service',
   DISTRIBUTE: 'distribute',
-  INIT_REPOS: 'init-repos'
+  INIT_REPOS: 'init-repos',
+  USER_REPLICA_SET_MANAGER: 'user-replica-set-manager'
 })
 
 // gets a service command, interpolating service names
@@ -337,7 +338,9 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    // Intentionally disabled until migration has been run on production
+    // [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
 
   const start = Date.now()
