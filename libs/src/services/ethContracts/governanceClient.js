@@ -399,7 +399,7 @@ class GovernanceClient extends ContractClient {
   /**
    *
    * @param {Number} proposalId id of the governance proposal
-   * @returns {BN} amount of tokens required to reach quorum
+   * @returns {BN} amount of tokens in wei required to reach quorum
    */
   async calculateQuoroum (proposalId) {
     const { submissionBlockNumber } = await this.getProposalById(proposalId)
