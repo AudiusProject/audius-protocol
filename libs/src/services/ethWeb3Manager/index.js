@@ -1,5 +1,5 @@
 const Web3 = require('../../web3')
-const MultiProvider = require('./multiProvider')
+const MultiProvider = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx')
 const retry = require('async-retry')
 const DEFAULT_GAS_AMOUNT = 200000
