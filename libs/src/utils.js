@@ -105,7 +105,7 @@ class Utils {
   }
 
   static async configureWeb3 (web3Provider, chainNetworkId, requiresAccount = true) {
-    let web3Instance;
+    let web3Instance
     if (typeof web3Provider === 'string') {
       web3Instance = new Web3(
         new MultiProvider(
