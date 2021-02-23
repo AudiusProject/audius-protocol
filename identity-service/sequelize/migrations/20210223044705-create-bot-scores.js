@@ -2,7 +2,7 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('RecaptchaScores', {
+    return queryInterface.createTable('BotScores', {
       id: {
         allowNull: false,
         type: Sequelize.INTEGER,
@@ -13,15 +13,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
-      score: {
+      recaptchaScore: {
         allowNull: false,
         type: Sequelize.DECIMAL
       },
-      context: {
+      recaptchaContext: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      hostname: {
+      recaptchaHostname: {
         allowNull: false,
         type: Sequelize.STRING
       },
@@ -34,9 +34,11 @@ module.exports = {
         type: Sequelize.DATE
       }
     })
+      .then(() => queryInterface.addIndex('BotScores', ['walletAddress']))
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('RecaptchaScores')
+    return queryInterface.removeIndex('BotScores', ['walletAddress'])
+      .then(() => queryInterface.dropTable('BotScores'))
   }
 }

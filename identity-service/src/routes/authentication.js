@@ -27,28 +27,6 @@ module.exports = function (app) {
   app.post('/authentication', handleResponse(async (req, res, next) => {
     // body should contain {iv, cipherText, lookupKey, walletAddress}
     const body = req.body
-    const libs = req.app.get('audiusLibs')
-
-    let score, ok, hostname
-    if (body.token) {
-      ({ score, ok, hostname } = await libs.captcha.verify(body.token))
-      req.logger.info(`CAPTCHA - Got captcha score: ${score}, is above minimum threshold score? ${ok}`)
-      if (!ok) return errorResponseBadRequest('CAPTCHA - Failed captcha')
-    } else {
-      req.logger.warn('CAPTCHA - No captcha found on request')
-    }
-
-    // Add recaptcha score and route context to table
-    try {
-      await models.RecaptchaScores.create({
-        walletAddress: body.walletAddress,
-        score,
-        context: '/authentication',
-        hostname
-      })
-    } catch (e) {
-      req.logger.error('CAPTCHA - Error with adding recaptcha score', e)
-    }
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {

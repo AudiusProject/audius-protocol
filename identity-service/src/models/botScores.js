@@ -1,7 +1,7 @@
 'use strict'
 
 module.exports = (sequelize, DataTypes) => {
-  const RecaptchaScores = sequelize.define('RecaptchaScores', {
+  const BotScores = sequelize.define('BotScores', {
     id: {
       allowNull: false,
       type: DataTypes.INTEGER,
@@ -10,17 +10,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     walletAddress: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      index: true
     },
-    score: {
+    recaptchaScore: {
       type: DataTypes.DECIMAL,
       allowNull: false
     },
-    context: {
+    recaptchaContext: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    hostname: {
+    recaptchaHostname: {
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -33,5 +34,5 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE
     }
   }, {})
-  return RecaptchaScores
+  return BotScores
 }
