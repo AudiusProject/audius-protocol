@@ -48,6 +48,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors)
   const country = config.get('serviceCountry')
   const latitude = config.get('serviceLatitude')
   const longitude = config.get('serviceLongitude')
+  const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
   // System information
   const [
@@ -88,7 +89,8 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors)
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
-    transferredBytesPerSec
+    transferredBytesPerSec,
+    maxStorageUsedPercent
   }
 
   return response
