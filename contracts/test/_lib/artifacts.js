@@ -21,8 +21,13 @@ export const DiscoveryProviderFactory = artifacts.require('./contract/DiscoveryP
 export const SocialFeatureFactory = artifacts.require('./contract/SocialFeatureFactory')
 export const PlaylistFactory = artifacts.require('./contract/PlaylistFactory')
 export const UserLibraryFactory = artifacts.require('./contract/UserLibraryFactory')
+export const UserReplicaSetManager = artifacts.require('./contract/UserReplicaSetManager')
+
+// Proxy contracts
+export const AdminUpgradeabilityProxy = artifacts.require('./contracts/AdminUpgradeabilityProxy')
 
 // Test contract artifacts
 export const TestStorage = artifacts.require('./contract/storage/test/TestStorage')
 export const TestContract = artifacts.require('./contract/test/TestContract')
 export const TestContractWithStorage = artifacts.require('./contract/test/TestContractWithStorage')
+export const TestUserReplicaSetManager = artifacts.require('./contract/test/TestUserReplicaSetManager')

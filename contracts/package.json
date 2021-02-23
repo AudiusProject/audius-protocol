@@ -12,7 +12,7 @@
   "scripts": {
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
-    "ganache": "docker run --name audius_ganache_cli -d -p 8545:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json",
+    "ganache": "docker run --name audius_ganache_cli -d -p 8545:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100",
     "ganache-i": "docker ps",
     "ganache-q": "docker rm -f audius_ganache_cli > /dev/null",
     "truffle-compile": "./node_modules/.bin/truffle compile",
@@ -22,6 +22,7 @@
     "lint": "./node_modules/.bin/standard",
     "lint-fix": "./node_modules/.bin/standard --fix",
     "test": "npm run truffle-test",
+    "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
     "test-circle-ci": "./scripts/circleci-test.sh",
     "discprov-script-t": "./node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -test --ipfs-test-host localhost --ipfs-test-port 6001"
   },
@@ -30,12 +31,15 @@
     "babel-preset-env": "^1.7.0",
     "bignumber.js": "^8.0.2",
     "bs58": "^4.0.1",
+    "ethereumjs-abi": "0.6.7",
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "openzeppelin-solidity": "^2.1.0",
+    "@openzeppelin/upgrades": "2.8.0",
     "truffle": "5.0.42"
   },
   "devDependencies": {
+    "@openzeppelin/test-helpers": "0.5.5",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "chance": "^1.0.18",

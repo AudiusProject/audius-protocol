@@ -194,6 +194,7 @@ const getCommonNotificationsFields = (notification) => ({
   id: notification.id,
   isHidden: notification.isHidden,
   isRead: notification.isRead,
+  isViewed: notification.isViewed,
   timestamp: notification.timestamp
 })
 

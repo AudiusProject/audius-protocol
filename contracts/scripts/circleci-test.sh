@@ -15,14 +15,14 @@ printf '\nSTART Truffle tests:\n\n'
 
 if [ $# -eq 0 ]
 	then
-		node_modules/.bin/truffle test
+		node_modules/.bin/truffle test --network test_local
 elif [ $1 == '--verbose-rpc' ] && [ $# -eq 1 ]
 	then
-		node_modules/.bin/truffle test --verbose-rpc
+		node_modules/.bin/truffle test --verbose-rpc --network test_local
 elif [ $1 == '--verbose-rpc' ] && [ $# -eq 2 ]
 	then
-		node_modules/.bin/truffle test --verbose-rpc $2
+		node_modules/.bin/truffle test --verbose-rpc $2 --network test_local
 else
-	node_modules/.bin/truffle test $1
+	node_modules/.bin/truffle test $1 --network test_local
 fi
 

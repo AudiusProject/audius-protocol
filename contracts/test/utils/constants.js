@@ -12,6 +12,7 @@ export const socialFeatureFactoryKey = web3New.utils.utf8ToHex('SocialFeatureFac
 export const socialFeatureStorageKey = web3New.utils.utf8ToHex('SocialFeatureStorage')
 export const ipldBlacklistFactorykey = web3New.utils.utf8ToHex('IPLDBlacklistFactory')
 export const userLibraryFactoryKey = web3New.utils.utf8ToHex('UserLibraryFactory')
+export const userReplicaSetManagerKey = web3New.utils.utf8ToHex('UserReplicaSetManager')
 export const testStorageKey = web3New.utils.utf8ToHex('TestStorage')
 export const testContractKey = web3New.utils.utf8ToHex('TestContract')
 
