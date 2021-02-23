@@ -93,7 +93,6 @@ class EthContracts {
       this.GovernanceClient
     )
 
-
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
       this.ethWeb3Manager,
       ServiceProviderFactoryABI,
