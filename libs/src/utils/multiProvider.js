@@ -8,7 +8,7 @@ class MultiProvider {
     }
 
     this.providers = providers
-    this.send = callbackify(this._send.bind(this))
+    this.send = callbackify(this._send.bind(this)) // web3 only supports callback functions and not async
   }
 
   _send (payload) {
@@ -24,10 +24,12 @@ class MultiProvider {
     throw new Error('All requests failed')
   }
 
-  disconnect () {
-    this.providers.forEach(provider => provider.disconnect())
-  }
-
+  /**
+   * Returns the desired boolean.
+   *
+   * @method supportsSubscriptions
+   * @returns {boolean}
+   */
   supportsSubscriptions () {
     return this.providers.every(provider => provider.supportsSubscriptions())
   }
