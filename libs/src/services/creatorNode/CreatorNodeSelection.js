@@ -2,6 +2,10 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
+/**
+ * In memory dictionary used to query spID from endpoint
+ * Eliminates duplicate web3 calls within same session
+ */
 let contentNodeEndpointToSpID = { }
 function getSpIDFromEndpoint (endpoint) {
   return contentNodeEndpointToSpID[endpoint]
@@ -45,16 +49,6 @@ class CreatorNodeSelection extends ServiceSelection {
     this.maxStorageUsedPercent = maxStorageUsedPercent
   }
 
-  /**
-   * Selects a primary and secondary Content Nodes. Order of preference is highest version, then response time.
-   *
-   * 1. Retrieve all the Content Node services
-   * 2. Filter from/out Content Nodes based off of the whitelist and blacklist
-   * 3. Filter out unhealthy, outdated, and still syncing nodes via health and sync check
-   * 4. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime
-   * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
-   * @param {boolean?} performSyncCheck whether or not to check whether the nodes need syncs before selection
-   */
   async select (performSyncCheck = true) {
     // Reset decision tree and backups
     this.decisionTree = []
