@@ -11,11 +11,11 @@ class MultiProvider {
     this.send = callbackify(this._send.bind(this))
   }
 
-  async _send (payload) {
+  _send (payload) {
     for (const provider of shuffle(this.providers)) {
       try {
         const send = promisify((provider.sendAsync || provider.send).bind(provider))
-        return await send(payload)
+        return send(payload)
       } catch (e) {
         console.log(e)
       }
