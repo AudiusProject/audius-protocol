@@ -19,9 +19,6 @@ class IdentityService {
   }
 
   async setAuthFn (obj) {
-    const token = await this.captcha.generate('identity/authentication')
-    obj.token = token
-
     return this._makeRequest({
       url: '/authentication',
       method: 'post',

@@ -25,7 +25,7 @@ module.exports = function (app) {
    * authentication process
    */
   app.post('/authentication', handleResponse(async (req, res, next) => {
-    // body should contain {iv, cipherText, lookupKey, walletAddress}
+    // body should contain {iv, cipherText, lookupKey}
     const body = req.body
 
     if (body && body.iv && body.cipherText && body.lookupKey) {

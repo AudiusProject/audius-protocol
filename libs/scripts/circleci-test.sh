@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-set -x
 
 <<COMMENT
 CircleCI Specific Test Script

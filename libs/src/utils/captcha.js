@@ -23,7 +23,6 @@ class Captcha {
    * @param {string} action name for this "action" for grouping
    */
   async generate (action) {
-    console.log(this.siteKey, action)
     if (!this.siteKey) {
       throw new Error('No siteKey provided')
     }
