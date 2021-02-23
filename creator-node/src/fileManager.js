@@ -264,6 +264,8 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
+          // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
+          unlink(expectedStoragePath)
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
       }
