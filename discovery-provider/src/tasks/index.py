@@ -156,10 +156,9 @@ def update_user_replica_set_manager_address_if_necessary(self):
         if user_replica_set_manager_address != "0x0000000000000000000000000000000000000000":
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
-    else:
-        logger.info(
-            f"index.py | No update to user_replica_set_manager address, found {user_replica_set_manager_address}"
-        )
+    logger.info(
+        f"index.py | update_user_replica_set_manager_address_if_necessary, found {user_replica_set_manager_address}"
+    )
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
