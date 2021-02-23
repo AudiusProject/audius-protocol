@@ -162,7 +162,8 @@ def get_endpoint_string_from_sp_ids(
                 logger.info(f"user_replica_set.py | Failed to find secondary info for {secondary_endpoint}")
     except Exception as exc:
         logger.error(f"user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}")
-    logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}")
+        raise exc
+    logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}", exc_info=True)
     return endpoint_string
 
 # Helper function to query endpoint in ursm cnode record parsing
@@ -176,7 +177,8 @@ def get_ursm_cnode_endpoint(update_task, sp_id):
             sp_id
         )
     except Exception as exc:
-        logger.error(f"user_replica_set.py | ERROR in get_ursm_cnode_endpoint {exc}")
+        logger.error(f"user_replica_set.py | ERROR in get_ursm_cnode_endpoint {exc}", exc_info=True)
+        raise exc
     return endpoint
 
 # Initializes sp_factory if necessary and retrieves spID
