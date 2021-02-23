@@ -82,7 +82,7 @@ class Captcha {
     } catch (e) {
       console.error('Error with verifying captcha request', e)
       score = null
-      ok = false
+      ok = true
       hostname = null
     }
     return { score, ok, hostname }
