@@ -61,21 +61,6 @@ class EthContracts {
     )
     this.getRegistryAddressForContract = this.getRegistryAddressForContract.bind(this)
 
-    this.ClaimsManagerClient = new ClaimsManagerClient(
-      this.ethWeb3Manager,
-      ClaimsManagerABI,
-      ClaimsManagerProxyKey,
-      this.getRegistryAddressForContract
-    )
-
-    this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
-      this.ethWeb3Manager,
-      ServiceTypeManagerABI,
-      ServiceTypeManagerProxyKey,
-      this.getRegistryAddressForContract,
-      this.GovernanceClient
-    )
-
     this.StakingProxyClient = new StakingProxyClient(
       this.ethWeb3Manager,
       StakingABI,
@@ -92,6 +77,22 @@ class EthContracts {
       this.AudiusTokenClient,
       this.StakingProxyClient
     )
+
+    this.ClaimsManagerClient = new ClaimsManagerClient(
+      this.ethWeb3Manager,
+      ClaimsManagerABI,
+      ClaimsManagerProxyKey,
+      this.getRegistryAddressForContract
+    )
+
+    this.ServiceTypeManagerClient = new ServiceTypeManagerClient(
+      this.ethWeb3Manager,
+      ServiceTypeManagerABI,
+      ServiceTypeManagerProxyKey,
+      this.getRegistryAddressForContract,
+      this.GovernanceClient
+    )
+
 
     this.ServiceProviderFactoryClient = new ServiceProviderFactoryClient(
       this.ethWeb3Manager,
