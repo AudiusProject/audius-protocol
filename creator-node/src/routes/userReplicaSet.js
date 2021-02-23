@@ -187,6 +187,9 @@ module.exports = function (app) {
     })
   }))
 
+  /**
+   * NOTE - this is a testing route and will be removed before merge.
+   */
   app.get('/submitRFP', handleResponse(async (req, res, next) => {
     const serviceRegistry = req.app.get('serviceRegistry')
     try {

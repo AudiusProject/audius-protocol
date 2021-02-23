@@ -100,7 +100,7 @@ const initAudiusLibs = async () => {
     web3Config: AudiusLibs.configInternalWeb3(
       config.get('dataRegistryAddress'),
       [config.get('dataProviderUrl')],
-      config.get('delegatePrivateKey')
+      config.get('delegatePrivateKey').replace('0x', '')
     ),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
     // If an identity service config is present, set up libs with the connection, otherwise do nothing

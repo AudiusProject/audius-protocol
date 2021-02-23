@@ -61,7 +61,7 @@ class ContractClient {
         this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
         if (this._contractAddress === '0x0000000000000000000000000000000000000000') {
           this._isInitializing = false
-          throw new Error(`Failed retrieve address for ${this.contractRegistryKey}`)
+          throw new Error(`Failed to retrieve address for ${this.contractRegistryKey}`)
         }
       }
       const web3 = this.web3Manager.getWeb3()

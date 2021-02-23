@@ -5,6 +5,7 @@ const { Utils: LibsUtils } = require('@audius/libs')
 const { logger } = require('./logging')
 const { parseCNodeResponse } = require('./apiHelpers')
 const { generateTimestampAndSignature } = require('./apiSigning')
+const { response } = require('express')
 
 
 
@@ -28,10 +29,11 @@ class URSMService {
     this.spID = nodeConfig.get('spID')
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
+    this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
 
     // Requires properly initialized libs instance and non-zero spID
     // Currently spID is configured inside snapbackSM
-    if (!this.audiusLibs || !this.spID || !this.delegateOwnerWallet || !this.delegatePrivateKey) {
+    if (!this.audiusLibs || !this.spID || !this.delegateOwnerWallet || !this.delegatePrivateKey || !this.spOwnerWallet) {
       throw new Error('nope')
     }
 
@@ -114,8 +116,11 @@ class URSMService {
      *  b. Remove duplicates by owner_wallet key due to on-chain uniqueness constraint
      */
     let URSMContentNodes = await this.audiusLibs.discoveryProvider.getURSMContentNodes()
+    
+    // TODO - setting list to single value for testing purposes
     const tmp = URSMContentNodes[0]
     this.logInfo(`tmp: ${JSON.stringify(tmp, null, 2)}`)
+
     URSMContentNodes = URSMContentNodes.filter(node => node.endpoint)
     URSMContentNodes = _.shuffle(URSMContentNodes)
     URSMContentNodes = Object.values(_.keyBy(URSMContentNodes, 'owner_wallet'))
@@ -123,8 +128,10 @@ class URSMService {
     /**
      * TODO document
      */
-    let numRemainingSignatures = 1
-    let availableNodes = [tmp]
+    // let numRemainingSignatures = 1
+    let numRemainingSignatures = 3
+    // let availableNodes = [tmp]
+    let availableNodes = URSMContentNodes
     let receivedSignatures = []
 
     while (numRemainingSignatures > 0) {
@@ -138,24 +145,27 @@ class URSMService {
 
       let responses = await Promise.all(nodesToAttempt.map(async (node) => {
         try {
-          return this._submitRequestForProposal(node.endpoint)
+          const resp = await this._submitRequestForProposal(node.endpoint)
+          this.logInfo(`submitRFP resp: ${JSON.stringify(resp, null, 2)}`)
+          return resp
         } catch (e) {
           this.logError(`RFP failed to node ${node.endpoint} with error ${e}`)
           return null
         }
       }))
+      this.logInfo(`respones: ${JSON.stringify(responses, null, 2)}`)
       responses = responses.filter(Boolean)
 
       numRemainingSignatures -= responses.length
-      receivedSignatures.concat(responses)
+      receivedSignatures = receivedSignatures.concat(responses)
     }
 
-    // if (receivedSignatures.length !== 3) {
-    //   throw new Error('idk')
-    // }
+    if (receivedSignatures.length !== 3) {
+      throw new Error('3 signatutres required')
+    }
 
     this.logInfo(`receviedsigns: ${JSON.stringify(receivedSignatures, null, 2)}`)
-    return 'yes'
+    // return 'yes'
 
     /**
      * Submit proposal 
@@ -166,18 +176,22 @@ class URSMService {
     try {
       const regTx = await this.audiusLibs.contracts.UserReplicaSetManagerClient.addOrUpdateContentNode(
         this.spID,
-        this.delegateOwnerWallet,
+        [
+          this.delegateOwnerWallet,
+          this.spOwnerWallet
+        ],
         proposerSpIDs,
         proposerNonces,
         receivedSignatures[0].sig,
         receivedSignatures[1].sig,
         receivedSignatures[2].sig
       )
+      this.logInfo('successfully relayed chain write')
   
       // TODO - p sure internally libs sendTransaction has retries, so should be gucci but want to make this configurable.
     } catch (e) {
       // TODO better error handling
-      throw new Error('shit failed')
+      throw new Error(`shit failed ${e}`)
     }
   }
 
@@ -204,12 +218,15 @@ class URSMService {
     })
     this.logInfo(`RFPRESP from endpoint: ${nodeEndpoint}: ${JSON.stringify(RFPResp.data, null, 2)}`)
 
-    RFPResp = parseCNodeResponse(RFPResp)
+    // NOTE - this doesn't work for some reason
+    // RFPResp = parseCNodeResponse(RFPResp)
+
+    // this.logInfo(`RFPResp2: ${JSON.stringify(RFPResp, null, 2)}`)
 
     return {
-      spID: RFPResp.spID,
-      nonce: RFPResp.nonce,
-      sig: RFPResp.sig
+      spID: RFPResp.data.data.spID,
+      nonce: RFPResp.data.data.nonce,
+      sig: RFPResp.data.data.sig
     }
   }
 }
