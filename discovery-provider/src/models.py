@@ -154,7 +154,7 @@ class User(Base):
     created_at = Column(DateTime, nullable=False)
     primary_id = Column(Integer, nullable=True)
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
-    replica_set_update_signer = Column(String, index=True)
+    replica_set_update_signer = Column(String, nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
