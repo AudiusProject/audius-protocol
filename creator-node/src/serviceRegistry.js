@@ -57,7 +57,7 @@ class ServiceRegistry {
 
 /** Private helper used by ServiceRegistry for initializing libs */
 const initAudiusLibs = async () => {
-  const ethWeb3 = await Promise.all(config.get('ethProviderUrl').split(',').map((providerUrl) => 
+  const ethWeb3 = await Promise.all(config.get('ethProviderUrl').split(',').map((providerUrl) =>
     AudiusLibs.Utils.configureWeb3(
       providerUrl,
       config.get('ethNetworkId'),
