@@ -24,6 +24,7 @@ from src import exceptions
 from src.queries import queries, search, search_queries, health_check, trending, notifications
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
+from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
@@ -130,7 +131,8 @@ def create_celery(test_config=None):
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
     # Initialize eth web
-    eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
+    providers = [HTTPProvider(i) for i in shared_config["web3"]["eth_provider_url"].split(',')]
+    eth_web3 = Web3(MultiProvider(providers))
 
     global registry
     global user_factory
