@@ -398,8 +398,8 @@ class GovernanceClient extends ContractClient {
 
   /**
    *
-   * @param {Integer} proposalId id of the governance proposal
-   * @returns {BigNumber} amount of tokens required to reach quorum
+   * @param {Number} proposalId id of the governance proposal
+   * @returns {BN} amount of tokens required to reach quorum
    */
   async calculateQuoroum (proposalId) {
     const { submissionBlockNumber } = await this.getProposalById(proposalId)
@@ -411,7 +411,16 @@ class GovernanceClient extends ContractClient {
     const totalStakeAtProposal = await this.stakingProxyClient.totalStakedAt(submissionBlockNumber)
 
     // quorum = (total staked at proposal * quorum percent) / 100
-    const quorumStake = (totalStakeAtProposal.mul(Utils.toBN(quoroumPercent))).div(Utils.toBN(100))
+    // the divmod function returns an object with both the quotient (div) and the remainder (mod)
+    // { div, mod }
+    const quorumStakeDivMod = (totalStakeAtProposal.mul(Utils.toBN(quoroumPercent))).divmod(Utils.toBN(100))
+
+    let quorumStake = quorumStakeDivMod.div
+
+    // if there's a non-zero remainder, round up
+    if (!quorumStakeDivMod.mod.isZero()) {
+      quorumStake = quorumStakeDivMod.div.add(Utils.toBN(1))
+    }
 
     return quorumStake
   }
