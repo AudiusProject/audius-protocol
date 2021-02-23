@@ -157,14 +157,6 @@ class Web3Manager {
     }
   }
 
-  getWalletAddressString () {
-    if (this.useExternalWeb3) {
-      return this.ownerWallet
-    } else {
-      return this.ownerWallet.getAddressString()
-    }
-  }
-
   async sendTransaction (
     contractMethod,
     contractRegistryKey,

@@ -364,9 +364,6 @@ class Users extends Base {
     // Preserve old metadata object
     const oldMetadata = { ...user }
 
-    console.log(`Updating from ${oldMetadata.creator_node_endpoint}`)
-    console.log(`Updating to ${newMetadata.creator_node_endpoint}`)
-
     // Update user creator_node_endpoint on chain if applicable
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
