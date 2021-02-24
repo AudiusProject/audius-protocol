@@ -524,7 +524,7 @@ class Users extends Base {
    * @param {Object} param.newMetadata new metadata object
    * @param {number} param.userId
    */
-  async updateAndUploadMetadata ({ newMetadata, userId }) {
+  async updateAndUploadMetadata ({ newMetadata, userId, firstTime = false }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
     const phases = {
@@ -545,14 +545,20 @@ class Users extends Base {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
-        // Ensure DN has indexed creator_node_endpoint change
-        await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
+        if (firstTime) {
+          this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+        } else {
+          await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+          // Ensure DN has indexed creator_node_endpoint change
+          await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
+        }
       }
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
-      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(newMetadata)
+      const { metadataMultihash, metadataFileUUID } = await this.creatorNode.uploadCreatorContent(
+        newMetadata, null, firstTime
+      )
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN

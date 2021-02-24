@@ -176,7 +176,7 @@ class CreatorNode {
    * Uploads creator content to a creator node
    * @param {object} metadata the creator metadata
    */
-  async uploadCreatorContent (metadata, blockNumber = null) {
+  async uploadCreatorContent (metadata, blockNumber = null, forceWrite = false) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
@@ -187,7 +187,8 @@ class CreatorNode {
         method: 'post',
         data: {
           metadata,
-          blockNumber
+          blockNumber,
+          forceWrite
         }
       }
 
