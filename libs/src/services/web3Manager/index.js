@@ -50,6 +50,7 @@ class Web3Manager {
       this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoints[0], 10000))
       this.useExternalWeb3 = false
 
+      // Any privateKey config input will bypass hedgehog and recover the associated public key
       if (web3Config.internalWeb3Config.privateKey) {
         let pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
         this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)

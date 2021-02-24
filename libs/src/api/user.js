@@ -2,7 +2,7 @@ const { pick } = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
-const { getSpIDFromEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
+const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values
@@ -714,14 +714,19 @@ class Users extends Base {
     return tx
   }
 
+  // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
+  // Any error in the web3 fetch will short circuit the entire operation
   async _retrieveSpIDFromEndpoint (endpoint) {
-    let cachedSpID = await getSpIDFromEndpoint(endpoint)
+    let cachedSpID = getSpIDForEndpoint(endpoint)
     let spID = cachedSpID
     if (!spID) {
       let spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
         endpoint
       )
+      // Throw if this spID is 0 or invalid
       spID = spEndpointInfo.spID
+      // Cache value if it is valid
+      setSpIDForEndpoint(endpoint, spID)
     }
     return spID
   }

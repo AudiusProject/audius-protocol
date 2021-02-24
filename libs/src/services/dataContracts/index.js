@@ -102,6 +102,9 @@ class AudiusContracts {
     }
   }
 
+  // Special case initialization flow for UserReplicaSetManagerClient backwards compatibility
+  // Until the contract is deployed and added to the data contract registry, replica set
+  // operations will flow through the existing UserFactory
   async initUserReplicaSetManagerClient () {
     try {
       if (
