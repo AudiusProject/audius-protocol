@@ -187,7 +187,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with get', vals: multihash, time: Date.now() })
         // ipfsGet returns a BufferListStream object which is not a buffer
         // not compatible into writeFile directly, but it can be streamed to a file
-        let fileBL = await Utils.ipfsGet(multihash, req, 5000)
+        let fileBL = await Utils.ipfsGet(multihash, req, 1000)
         req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
         decisionTree.push({ stage: 'Retrieved file from local ipfs node with get', vals: multihash, time: Date.now() })
 
