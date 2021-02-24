@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
+const { promisify } = require('util')
 
 const config = require('../config.js')
 const { getSegmentsDuration } = require('../segmentDuration')
@@ -28,6 +29,8 @@ const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
+
+const readFile = promisify(fs.readFile)
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
@@ -311,7 +314,8 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
+      const fileBuffer = await readFile(file.storagePath)
+      metadataJSON = JSON.parse(fileBuffer)
       if (
         !metadataJSON ||
         !metadataJSON.track_segments ||

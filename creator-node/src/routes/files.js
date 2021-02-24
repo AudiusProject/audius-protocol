@@ -34,6 +34,9 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
+const { promisify } = require('util')
+
+const fsStat = promisify(fs.stat)
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 
@@ -52,7 +55,7 @@ const streamFromFileSystem = async (req, res, path) => {
     let fileStream
 
     let stat
-    stat = fs.statSync(path)
+    stat = await fsStat(path)
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
