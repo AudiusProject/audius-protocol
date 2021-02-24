@@ -8,6 +8,7 @@ import { MetaTagFormat } from './servlets/metaTags/types'
 import { router as apiRouter } from './servlets/api'
 import { getBedtimeResponse } from './servlets/bedtime'
 import { router as healthRouter } from './servlets/health'
+import { router as protocolDashboardRouter } from './servlets/protocolDashboard'
 import getMetaTagsResponse from './servlets/metaTags'
 
 import libs from './libs'
@@ -105,6 +106,7 @@ router.get('*', (
 
 app.use(express.static(path.resolve(__dirname + '/public')))
 app.use('/api', apiRouter)
+app.use('/protocol_dashboard', protocolDashboardRouter)
 app.use('/health_check', healthRouter)
 app.use('/', router)
 
