@@ -156,10 +156,11 @@ def get_endpoint_string_from_sp_ids(
                 sp_factory_inst,
                 secondary_id
             )
-            if secondary_endpoint:
-                endpoint_string = f"{endpoint_string},{secondary_endpoint}"
-            else:
-                logger.info(f"user_replica_set.py | Failed to find secondary info for {secondary_endpoint}")
+            # Conditionally log if endpoint is None after fetching
+            if not secondary_endpoint:
+                logger.info(f"user_replica_set.py | Failed to find secondary info for {secondary_id}")
+            # Append to endpoint string regardless of status
+            endpoint_string = f"{endpoint_string},{secondary_endpoint}"
     except Exception as exc:
         logger.error(f"user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}")
         raise exc

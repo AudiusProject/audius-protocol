@@ -28,6 +28,9 @@ default_padded_start_hash = (
 )
 default_config_start_hash = "0x0"
 
+# Used to update user_replica_set_manager address and skip txs conditionally
+zero_address = "0x0000000000000000000000000000000000000000"
+
 def get_contract_info_if_exists(self, address):
     for contract_name, contract_address in contract_addresses.items():
         if update_task.web3.toChecksumAddress(contract_address) == address:
@@ -143,7 +146,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
     shared_config = update_task.shared_config
     abi_values = update_task.abi_values
     user_replica_set_manager_address = contract_addresses["user_replica_set_manager"]
-    if user_replica_set_manager_address == "0x0000000000000000000000000000000000000000":
+    if user_replica_set_manager_address == zero_address:
         registry_address = web3.toChecksumAddress(
             shared_config["contracts"]["registry"]
         )
@@ -153,7 +156,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
         user_replica_set_manager_address = registry_instance.functions.getContract(
             bytes("UserReplicaSetManager", "utf-8")
         ).call()
-        if user_replica_set_manager_address != "0x0000000000000000000000000000000000000000":
+        if user_replica_set_manager_address != zero_address:
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
     logger.info(
@@ -213,6 +216,11 @@ def index_blocks(self, db, blocks_list):
                 tx_hash = web3.toHex(tx["hash"])
                 tx_target_contract_address = tx["to"]
                 tx_receipt = tx_receipt_dict[tx_hash]
+
+                # Skip in case a transaction targets zero address
+                if tx_target_contract_address == zero_address:
+                    logger.info(f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}")
+                    continue
 
                 # Handle user operations
                 if tx_target_contract_address == contract_addresses["user_factory"]:
