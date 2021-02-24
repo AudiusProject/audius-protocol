@@ -190,20 +190,25 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       } = this.props
       // Dispatch event to create account
       signUp(email.value, password.value, handle.value)
-      recordCompleteProfile()
+      recordCompleteProfile(email.value, handle.value)
     }
     if (page === Pages.FOLLOW) {
       const {
-        followArtists: { selectedUserIds }
+        followArtists: { selectedUserIds },
+        email,
+        handle
       } = this.props.fields
       this.props.followArtists(selectedUserIds)
       this.props.recordCompleteFollow(
         selectedUserIds.join('|'),
-        selectedUserIds.length
+        selectedUserIds.length,
+        email.value,
+        handle.value
       )
     }
     if (page === Pages.LOADING) {
-      this.props.recordCompleteCreating()
+      const { email, handle } = this.props.fields
+      this.props.recordCompleteCreating(email.value, handle.value)
       if (isMobile) {
         // Immediately go to the listening view because we don't
         // support uploads on mobile
@@ -217,8 +222,12 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 
   handleOnContinue = (page: Pages) => {
     return () => {
-      if (page === Pages.PASSWORD) this.props.recordCompleteEmail()
-      else if (page === Pages.PROFILE) this.props.recordCompletePassword()
+      const { email } = this.props.fields
+      if (page === Pages.PASSWORD) {
+        this.props.recordCompleteEmail(email.value)
+      } else if (page === Pages.PROFILE) {
+        this.props.recordCompletePassword(email.value)
+      }
       this.addRouteHash(page)
       this.props.goToPage(page)
     }
@@ -259,18 +268,20 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   }
 
   onUploadTrack = () => {
+    const { email, handle } = this.props.fields
     this.finishSignup()
     this.props.goToRoute(UPLOAD_PAGE)
     this.props.recordGoToUpload()
-    this.props.recordFinish('upload')
+    this.props.recordFinish('upload', email.value, handle.value)
     if (!this.props.isMobile && !isElectron())
       this.props.showPushNotificationConfirmation()
   }
 
   onStartListening = () => {
+    const { email, handle } = this.props.fields
     this.finishSignup()
     this.props.goToRoute(FEED_PAGE)
-    this.props.recordFinish('listen')
+    this.props.recordFinish('listen', email.value, handle.value)
     if (!this.props.isMobile && !isElectron())
       this.props.showPushNotificationConfirmation()
   }
@@ -327,9 +338,21 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     profileImage: any,
     coverPhoto: any
   ) => {
+    const {
+      fields: { email, handle }
+    } = this.props
     if (profile.screen_name) this.props.validateHandle(profile.screen_name)
     this.props.setTwitterProfile(twitterId, profile, profileImage, coverPhoto)
-    this.props.recordTwitterComplete(!!profile.verified)
+    this.props.recordTwitterComplete(
+      !!profile.verified,
+      email.value,
+      handle.value
+    )
+  }
+
+  onRecordTwitterStart = () => {
+    const { email } = this.props.fields
+    this.props.recordTwitterStart(email.value)
   }
 
   setInstagramProfile = (
@@ -403,7 +426,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       setTwitterProfile: this.setTwitterProfile,
       setInstagramProfile: this.setInstagramProfile,
       onMetaMaskSignIn: this.onMetaMaskSignIn,
-      recordTwitterStart: this.props.recordTwitterStart,
+      recordTwitterStart: this.onRecordTwitterStart,
       recordTwitterComplete: this.props.recordTwitterComplete
     }
     if (this.props.isMobile) {
@@ -508,62 +531,73 @@ function mapDispatchToProps(dispatch: Dispatch) {
       })
       dispatch(trackEvent)
     },
-    recordCompleteEmail: () => {
-      const trackEvent: TrackEvent = make(
-        Name.CREATE_ACCOUNT_COMPLETE_EMAIL,
-        {}
-      )
-      dispatch(trackEvent)
-    },
-    recordCompletePassword: () => {
-      const trackEvent: TrackEvent = make(
-        Name.CREATE_ACCOUNT_COMPLETE_PASSWORD,
-        {}
-      )
-      dispatch(trackEvent)
-    },
-    recordCompleteTwitter: (isVerified: boolean) => {
-      const trackEvent: TrackEvent = make(
-        Name.CREATE_ACCOUNT_COMPLETE_TWITTER,
-        { isVerified }
-      )
-      dispatch(trackEvent)
-    },
-    recordCompleteProfile: () => {
-      const trackEvent: TrackEvent = make(
-        Name.CREATE_ACCOUNT_COMPLETE_PROFILE,
-        {}
-      )
-      dispatch(trackEvent)
-    },
-    recordTwitterStart: () => {
-      const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_START_TWITTER, {})
-      dispatch(trackEvent)
-    },
-    recordTwitterComplete: (isVerified: boolean) => {
-      const trackEvent: TrackEvent = make(
-        Name.CREATE_ACCOUNT_COMPLETE_TWITTER,
-        { isVerified }
-      )
-      dispatch(trackEvent)
-    },
-    recordCompleteFollow: (users: string, count: number) => {
-      const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_FOLLOW, {
-        users,
-        count
+    recordCompleteEmail: (emailAddress: string) => {
+      const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_EMAIL, {
+        emailAddress
       })
       dispatch(trackEvent)
     },
-    recordCompleteCreating: () => {
+    recordCompletePassword: (emailAddress: string) => {
       const trackEvent: TrackEvent = make(
-        Name.CREATE_ACCOUNT_COMPLETE_CREATING,
-        {}
+        Name.CREATE_ACCOUNT_COMPLETE_PASSWORD,
+        { emailAddress }
       )
       dispatch(trackEvent)
     },
-    recordFinish: (enterMode: 'upload' | 'listen') => {
+    recordCompleteProfile: (emailAddress: string, handle: string) => {
+      const trackEvent: TrackEvent = make(
+        Name.CREATE_ACCOUNT_COMPLETE_PROFILE,
+        { emailAddress, handle }
+      )
+      dispatch(trackEvent)
+    },
+    recordTwitterStart: (emailAddress: string) => {
+      const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_START_TWITTER, {
+        emailAddress
+      })
+      dispatch(trackEvent)
+    },
+    recordTwitterComplete: (
+      isVerified: boolean,
+      emailAddress: string,
+      handle: string
+    ) => {
+      const trackEvent: TrackEvent = make(
+        Name.CREATE_ACCOUNT_COMPLETE_TWITTER,
+        { isVerified, emailAddress, handle }
+      )
+      dispatch(trackEvent)
+    },
+    recordCompleteFollow: (
+      users: string,
+      count: number,
+      emailAddress: string,
+      handle: string
+    ) => {
+      const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_FOLLOW, {
+        users,
+        count,
+        emailAddress,
+        handle
+      })
+      dispatch(trackEvent)
+    },
+    recordCompleteCreating: (emailAddress: string, handle: string) => {
+      const trackEvent: TrackEvent = make(
+        Name.CREATE_ACCOUNT_COMPLETE_CREATING,
+        { emailAddress, handle }
+      )
+      dispatch(trackEvent)
+    },
+    recordFinish: (
+      enterMode: 'upload' | 'listen',
+      emailAddress: string,
+      handle: string
+    ) => {
       const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_FINISH, {
-        enterMode
+        enterMode,
+        emailAddress,
+        handle
       })
       dispatch(trackEvent)
     }

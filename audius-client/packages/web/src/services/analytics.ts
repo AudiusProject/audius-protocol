@@ -140,30 +140,43 @@ type CreateAccountOpen = {
 }
 type CreateAccountCompleteEmail = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_EMAIL
+  emailAddress: string
 }
 type CreateAccoutCompletePassword = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PASSWORD
+  emailAddress: string
 }
 type CreateAccountStartTwitter = {
   eventName: Name.CREATE_ACCOUNT_START_TWITTER
+  emailAddress: string
 }
 type CreateAccountCompleteTwitter = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER
   isVerified: boolean
+  emailAddress: string
+  handle: string
 }
 type CreateAccountCompleteProfile = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PROFILE
+  emailAddress: string
+  handle: string
 }
 type CreateAccountCompleteFollow = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_FOLLOW
+  emailAddress: string
+  handle: string
   users: string
   count: number
 }
 type CreateAccountCompleteCreating = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_CREATING
+  emailAddress: string
+  handle: string
 }
 type CreateAccountOpenFinish = {
   eventName: Name.CREATE_ACCOUNT_FINISH
+  emailAddress: string
+  handle: string
 }
 
 // Sign In

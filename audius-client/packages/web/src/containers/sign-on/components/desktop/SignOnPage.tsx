@@ -90,7 +90,6 @@ export type SignOnProps = {
   onToggleMetaMaskModal: () => void
   onConfigureWithMetaMask: () => void
   recordTwitterStart: () => void
-  recordTwitterComplete: (isVerified: boolean) => void
   suggestedFollows: User[]
   onSelectArtistCategory: (category: FollowArtistsCategory) => void
 }
@@ -155,7 +154,6 @@ const SignOnProvider = ({
   onConfigureWithMetaMask,
   suggestedFollows: suggestedFollowEntries,
   recordTwitterStart,
-  recordTwitterComplete,
   onSelectArtistCategory
 }: SignOnProps) => {
   const {
