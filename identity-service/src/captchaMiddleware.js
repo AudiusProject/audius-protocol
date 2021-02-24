@@ -1,3 +1,4 @@
+const config = require('./config')
 const models = require('./models')
 
 const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captcha }) => {
@@ -17,23 +18,26 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
     }
 
     // TODO: Make middleware return errorResponse later
-    if (!ok) logger.warn('CAPTCHA - Failed captcha')
+    if (!ok) logger.warn(`CAPTCHA - Failed captcha with score ${score}`)
   } else {
     logger.warn('CAPTCHA - No captcha found on request')
   }
 }
 
 async function captchaMiddleware (req, res, next) {
-  const libs = req.app.get('audiusLibs')
+  if (!config.get('recaptchaServiceKey')) {
+    req.logger.warn(`CAPTCHA - No service key found. Not calculating score for wallet=${req.body.walletAddress}`)
+  } else {
+    const libs = req.app.get('audiusLibs')
 
-  verifyAndRecordCaptcha({
-    token: req.body.token,
-    walletAddress: req.body.walletAddress,
-    url: req.url,
-    logger: req.logger,
-    captcha: libs.captcha
-  })
-
+    verifyAndRecordCaptcha({
+      token: req.body.token,
+      walletAddress: req.body.walletAddress,
+      url: req.url,
+      logger: req.logger,
+      captcha: libs.captcha
+    })
+  }
   next()
 }
 
