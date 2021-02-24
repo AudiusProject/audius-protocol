@@ -564,7 +564,7 @@ class SnapbackSM {
     await this.initializeNodeIdentityConfig()
 
     // Enqueue first state machine operation
-    await this.stateMachineQueue.add({ startTime: Date.now() })
+    // await this.stateMachineQueue.add({ startTime: Date.now() })
   }
 
   async getSyncQueueJobs () {
