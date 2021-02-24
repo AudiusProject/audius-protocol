@@ -621,7 +621,7 @@ class URSMContentNode(Base):
     proposer_1_delegate_owner_wallet = Column(String, nullable=False)
     proposer_2_delegate_owner_wallet = Column(String, nullable=False)
     proposer_3_delegate_owner_wallet = Column(String, nullable=False)
-    endpoint = Column(String, nullable=False)
+    endpoint = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash)
