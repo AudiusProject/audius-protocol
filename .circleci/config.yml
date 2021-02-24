@@ -173,6 +173,7 @@ workflows:
           #   branches:
           #     only: /^main$/
       - update-staging-records:
+          context: Audius Client
           requires:
             - hold-update-staging-records
           # filters:
