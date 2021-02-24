@@ -465,7 +465,6 @@ class Users extends Base {
       await this._waitForCreatorNodeEndpointIndexing(
         newMetadata.user_id,
         newMetadata.creator_node_endpoint,
-        newMetadata.handle
       )
     }
 
