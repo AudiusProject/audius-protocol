@@ -5,28 +5,15 @@ const { logger } = require('../logger.js')
 const {
   addAndUpgradeUsers
 } = require('../helpers.js')
-// const { exec } = require('child_process')
 
 const DEFAULT_INDEX = 1
 
-/*
-const {
-  uploadTrack,
-  getTrackMetadata,
-  getUser,
-  verifyCIDExistsOnCreatorNode
-} = ServiceCommands
-*/
-
-let contentNodeList = null
 let contentNodeEndpointToInfoMapping = {}
+let walletIndexToUserIdMap
 
 const {
     getUser
 } = ServiceCommands
-
-// const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
-let walletIndexToUserIdMap
 
 const verifyUserReplicaSetStatus = async (
   userId,

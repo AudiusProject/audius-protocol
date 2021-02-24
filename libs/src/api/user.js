@@ -464,7 +464,7 @@ class Users extends Base {
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(
         newMetadata.user_id,
-        newMetadata.creator_node_endpoint,
+        newMetadata.creator_node_endpoint
       )
     }
 
