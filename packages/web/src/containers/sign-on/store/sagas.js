@@ -38,6 +38,9 @@ import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { Genre, ELECTRONIC_SUBGENRES } from 'utils/genres'
 import { getIGUserUrl } from 'components/general/InstagramAuth'
 
+const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
+const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
+
 const SUGGESTED_FOLLOW_USER_HANDLE_URL =
   process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES ||
   'https://download.audius.co/static-resources/signup-follows.json'
@@ -142,46 +145,52 @@ function* validateHandle(action) {
     const instagramScreenName = signOn.instagramScreenName
     const verified = signOn.verified
 
-    const [inUse, twitterUserQuery, instagramUser] = yield all([
-      call(AudiusBackend.handleInUse, action.handle),
-      call(AudiusBackend.twitterHandle, action.handle),
-      call(getInstagramUser, action.handle)
-    ])
-    const {
-      user: { profile }
-    } = twitterUserQuery
-    if (
-      !verified ||
-      twitterScreenName.toLowerCase() !== action.handle.toLowerCase()
-    ) {
+    if (IS_PRODUCTION_BUILD || IS_PRODUCTION) {
+      const [inUse, twitterUserQuery, instagramUser] = yield all([
+        call(AudiusBackend.handleInUse, action.handle),
+        call(AudiusBackend.twitterHandle, action.handle),
+        call(getInstagramUser, action.handle)
+      ])
+      const {
+        user: { profile }
+      } = twitterUserQuery
       if (
-        Array.isArray(profile) &&
-        profile[0].verified &&
-        action.handle.toLowerCase() === profile[0].screen_name.toLowerCase()
+        !verified ||
+        twitterScreenName.toLowerCase() !== action.handle.toLowerCase()
       ) {
-        yield put(
-          signOnActions.validateHandleSucceeded(false, 'twitterReserved')
-        )
-        return
+        if (
+          Array.isArray(profile) &&
+          profile[0].verified &&
+          action.handle.toLowerCase() === profile[0].screen_name.toLowerCase()
+        ) {
+          yield put(
+            signOnActions.validateHandleSucceeded(false, 'twitterReserved')
+          )
+          return
+        }
       }
-    }
-    if (
-      !verified ||
-      instagramScreenName.toLowerCase() !== action.handle.toLowerCase()
-    ) {
       if (
-        instagramUser &&
-        action.handle.toLowerCase() === instagramUser.username.toLowerCase() &&
-        instagramUser.is_verified
+        !verified ||
+        instagramScreenName.toLowerCase() !== action.handle.toLowerCase()
       ) {
-        yield put(
-          signOnActions.validateHandleSucceeded(false, 'instagramReserved')
-        )
-        return
+        if (
+          instagramUser &&
+          action.handle.toLowerCase() ===
+            instagramUser.username.toLowerCase() &&
+          instagramUser.is_verified
+        ) {
+          yield put(
+            signOnActions.validateHandleSucceeded(false, 'instagramReserved')
+          )
+          return
+        }
       }
-    }
 
-    yield put(signOnActions.validateHandleSucceeded(!inUse))
+      yield put(signOnActions.validateHandleSucceeded(!inUse))
+    } else {
+      const inUse = yield call(AudiusBackend.handleInUse, action.handle)
+      yield put(signOnActions.validateHandleSucceeded(!inUse))
+    }
   } catch (err) {
     yield put(signOnActions.validateHandleFailed(err.message))
   }
