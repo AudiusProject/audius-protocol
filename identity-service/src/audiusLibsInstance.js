@@ -32,7 +32,7 @@ class AudiusLibsWrapper {
         }
       },
       isServer: true,
-      captchaConfig: { serviceKey: '6LfVR-0ZAAAAAGN7YqtPC7DyVzgsLc_4_9_5MyVj' }
+      captchaConfig: { serviceKey: config.get('recaptchaServiceKey') }
     })
 
     await audiusInstance.init()
