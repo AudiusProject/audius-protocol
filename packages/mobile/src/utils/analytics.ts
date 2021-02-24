@@ -16,7 +16,10 @@ export const setup = async () => {
       // Record screen views automatically!
       recordScreenViews: false,
       // Record certain application events automatically!
-      trackAppLifecycleEvents: true
+      trackAppLifecycleEvents: true,
+      // Always flush events (worse for battery, but the web-view is likely even worse)
+      // https://segment.com/docs/connections/sources/catalog/libraries/mobile/react-native/#flush
+      flushAt: 1
     })
     analyticsSetupStatus = 'ready'
     console.info('Analytics ready')
