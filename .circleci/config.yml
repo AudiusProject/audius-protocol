@@ -94,13 +94,15 @@ jobs:
       - run:
           name: install-awscli
           command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
       - run:
           name: Update AWS records
           command: |
             DNS_NAME=_dnslink.dashboard.staging.audius.org
             CID=$(cat ./build_cid.txt)
-            echo "{\n"Comment": "Update the ipfs CID for the protocol dashboard",\n"Changes": [\n {\n"Action": "UPSERT",\n"ResourceRecordSet": {\n"Name": "$DNS_NAME",\n"Type": "TXT",\n"TTL": 600,\n"ResourceRecords": [\n {\n"Value": "\"dnslink=/ipfs/$CID\""\n }\n ]\n }\n }\n ]}" | tee change-record.json
-            # aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch ./change-record.json
+            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": "$DNS_NAME","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/$CID\"" } ] } } ]}' | tee change-record.json
+            aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch file://$(pwd)/change-record.json
 
   build-prod:
     working_directory: ~/protocol-dashboard
