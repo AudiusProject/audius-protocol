@@ -57,8 +57,7 @@ jobs:
       - persist_to_workspace:
           root: ./
           paths:
-            - build
-            - build.zip
+            - ./*
 
   deploy-staging:
     working_directory: ~/protocol-dashboard
@@ -84,7 +83,7 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: build
+          name: update build in ga
           command: npm run update-build:stage
 
   update-staging-records:
