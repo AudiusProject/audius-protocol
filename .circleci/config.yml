@@ -159,10 +159,16 @@ workflows:
           # filters:
           #   branches:
           #     only: /^main$/
-      - update-staging-records:
+      - hold-update-staging-records:
           type: approval
           requires:
             - update-staging-ga-build
+          # filters:
+          #   branches:
+          #     only: /^main$/
+      - update-staging-records:
+          requires:
+            - hold-update-staging-records
           # filters:
           #   branches:
           #     only: /^main$/

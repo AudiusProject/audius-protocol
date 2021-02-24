@@ -38,16 +38,17 @@ const updateContentNodePeers = async () => {
     console.error('unable to update content node ipfs peers')
     process.exit(1)
   }
+  console.log('Added ipfs peers')
 }
 
 const updateGABuild = async () => {
   const res = await fetch(`${endpoint}/protocol_dashboard/update_build`)
   const response = await res.json()
-  console.log({ response})
   if (!response.success) {
     console.error('unable to update GA build')
     process.exit(1)
   }
+  console.log('Updated build folder in GA')
 }
 
 const pinGABuild = async () => {
@@ -57,7 +58,9 @@ const pinGABuild = async () => {
     process.exit(1)
   }
   const response = await res.json()
-  return response.cid
+  const cid = response.cid
+  console.log(`IPFS Pin Added CID: ${cid}`)
+  return cid
 }
 
 const run = async () => {
