@@ -21,10 +21,10 @@ const config = {
     gaEndpoint: 'http://localhost:9001'
   },
   stage: {
-    gaEndpoint: 'https://staging.audius.co'
+    gaEndpoint: 'https://general-admission.staging.audius.co'
   },
   prod: {
-    gaEndpoint: 'https://audius.co'
+    gaEndpoint: 'https://general-admission.audius.co'
   }
 }
 
