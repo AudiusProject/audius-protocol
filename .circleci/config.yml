@@ -105,7 +105,7 @@ jobs:
           command: |
             DNS_NAME=_dnslink.dashboard.staging.audius.org
             CID=$(cat ./build_cid.txt)
-            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": ""'"$DNS_NAME"'"","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/"'"$CID"'"\"" } ] } } ]}' | tee change-record.json
+            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": "'"$DNS_NAME"'","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/'"$CID"'\"" } ] } } ]}' | tee change-record.json
             aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch file://$(pwd)/change-record.json
 
   build-prod:
