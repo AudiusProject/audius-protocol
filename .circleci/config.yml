@@ -85,6 +85,10 @@ jobs:
       - run:
           name: update build in ga
           command: npm run update-build:stage
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./build_cid.txt
 
   update-staging-records:
     working_directory: ~/protocol-dashboard
