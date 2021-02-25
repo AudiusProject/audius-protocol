@@ -14,7 +14,7 @@ async function getSegmentsDuration (filename, filedir) {
     let manifestPath = path.join(filedir, `${fileRandomName}.m3u8`)
     let manifestContents = await readFile(manifestPath)
     let splitManifest = manifestContents.toString().split('\n')
-  
+
     let segmentDurations = {}
     for (let i = 0; i < splitManifest.length; i += 1) {
       let matchedResults = splitManifest[i].match(SEGMENT_REGEXP)
