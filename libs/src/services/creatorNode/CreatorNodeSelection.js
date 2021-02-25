@@ -30,7 +30,7 @@ class CreatorNodeSelection extends ServiceSelection {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
         return services.map((e) => {
-          setSpIDForEndpoint(e.endpoint, spID)
+          setSpIDForEndpoint(e.endpoint, e.spID)
           return e.endpoint
         })
       },

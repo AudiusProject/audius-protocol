@@ -690,7 +690,6 @@ class Users extends Base {
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
     }
-
     // If still uninitialized, proceed with legacy update - else move forward with new contract update
     if (!this.contracts.UserReplicaSetManagerClient) {
       const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
@@ -699,12 +698,13 @@ class Users extends Base {
       )
       return updateEndpointTxReceipt
     }
-
     let primaryEndpoint = CreatorNode.getPrimary(metadata.creator_node_endpoint)
     let secondaries = CreatorNode.getSecondaries(metadata.creator_node_endpoint)
-    let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)
-    let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
-    let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
+    let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
+      this._retrieveSpIDFromEndpoint(primaryEndpoint),
+      this._retrieveSpIDFromEndpoint(secondaries[0]),
+      this._retrieveSpIDFromEndpoint(secondaries[1])
+    ])
     // Update in new contract
     let tx = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
@@ -715,7 +715,7 @@ class Users extends Base {
   }
 
   // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
-  // Any error in the web3 fetch will short circuit the entire operation
+  // Any error in the web3 fetch will short circuit the entire operation as expected
   async _retrieveSpIDFromEndpoint (endpoint) {
     let cachedSpID = getSpIDForEndpoint(endpoint)
     let spID = cachedSpID
@@ -723,8 +723,11 @@ class Users extends Base {
       let spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
         endpoint
       )
-      // Throw if this spID is 0 or invalid
+      // Throw if this spID is 0, indicating invalid
       spID = spEndpointInfo.spID
+      if (spID === 0) {
+        throw new Error(`Failed to find spID for ${endpoint}`)
+      }
       // Cache value if it is valid
       setSpIDForEndpoint(endpoint, spID)
     }

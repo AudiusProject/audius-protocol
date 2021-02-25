@@ -122,8 +122,7 @@ const run = async () => {
         break
 
       case 'query-sps-ursm':
-        let ursmLibs = await getUrsmLibs(audiusLibs)
-        await queryLocalServices(audiusLibs, serviceTypesList, ursmLibs)
+        await queryLocalServices(audiusLibs, serviceTypesList, true)
         break
 
       case 'update-cnode-config': {

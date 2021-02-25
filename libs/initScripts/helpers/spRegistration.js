@@ -69,8 +69,10 @@ async function deregisterLocalService (audiusLibs, serviceType, serviceEndpoint)
 /**
  * Local only
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
+ * @param {Array} serviceTypeList List of services to query
+ * @param {Boolean} queryUserReplicaSetManager Conditionally query L2 replica set contract
  */
-async function queryLocalServices (audiusLibs, serviceTypeList, ursmLibs = null) {
+async function queryLocalServices (audiusLibs, serviceTypeList, queryUserReplicaSetManager = false) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   console.log('\n----querying service providers')
@@ -104,10 +106,10 @@ async function queryLocalServices (audiusLibs, serviceTypeList, ursmLibs = null)
     console.log(`${numProvs} instances of ${spType}`)
   }
   console.log('----done querying service providers')
-  if (ursmLibs) {
+  if (queryUserReplicaSetManager) {
     console.log('\n----querying UserReplicaSetManager on data-contracts')
     for (const cnode of cnodesInfoList) {
-      let spInfoFromUrsm = await ursmLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnode.spID)
+      let spInfoFromUrsm = await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnode.spID)
       let delegateWalletFromUrsmContract = spInfoFromUrsm.delegateOwnerWallet
       let ownerWalletFromUrsmContract = spInfoFromUrsm.ownerWallet
       console.log(`spID ${cnode.spID} | \
