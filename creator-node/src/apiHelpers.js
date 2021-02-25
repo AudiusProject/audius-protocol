@@ -192,6 +192,10 @@ module.exports.errorResponseSocketTimeout = (socketTimeout) => {
   return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
 }
 
+/**
+ * Define custom api error subclasses to be thrown in components and handled in route controllers
+ */
+
 class ErrorBadRequest extends Error {}
 Object.defineProperty(ErrorBadRequest.prototype, 'name', {
   value: 'ErrorBadRequest'
@@ -205,8 +209,8 @@ module.exports.ErrorBadRequest = ErrorBadRequest
 module.exports.ErrorServerError = ErrorServerError
 
 /**
- * TODO
- * @param {*} error 
+ * Given an error instance, returns the corresponding error response to request
+ * @param {Error} error instance of error class or subclass
  */
 module.exports.handleApiError = (error) => {
   // logger.info(`e: ${e} // ${e.name} // ${e.message}`)
