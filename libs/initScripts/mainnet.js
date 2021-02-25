@@ -6,6 +6,7 @@ const { getStakingParameters } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
 const AudiusLibs = require('../src/index')
+const { split } = require('lodash')
 
 const isServer = true
 
@@ -60,6 +61,9 @@ const run = async () => {
       case 'stakeinfo':
         await getStakingParameters(audiusLibs)
         break
+      case 'generate-ursm-bootstrap-addresses':
+        await generateBootstrappersList(audiusLibs)
+        break
       default:
         _throwArgError()
     }
@@ -111,6 +115,54 @@ async function getAudiusLibs (config, privateKey, ownerWallet) {
   let audiusLibs = new AudiusLibs(audiusLibsConfig)
   await audiusLibs.init()
   return audiusLibs
+}
+
+// Function used to calculate the list of bootstrap information for UserReplicaSetManager
+async function generateBootstrappersList (audiusLibs) {
+  console.log('Generating bootstrap list')
+  const contentNodeType = 'content-node'
+  let spList = await audiusLibs.ethContracts.getServiceProviderList(contentNodeType)
+  let bootstrapSPIds = []
+  let bootstrapSPDelegateWallets = []
+  let bootstrapSPOwnerWallets = []
+  // Used to verify state after lists are populated
+  let cachedEndpointInfoMap = {}
+  for (var i = 0; i < spList.length; i++) {
+    let entry = spList[i]
+    bootstrapSPIds.push(entry.spID)
+    bootstrapSPDelegateWallets.push(entry.delegateOwnerWallet)
+    bootstrapSPOwnerWallets.push(entry.owner)
+    cachedEndpointInfoMap[entry.spID] = entry
+  }
+  if (
+    bootstrapSPIds.length !== bootstrapSPOwnerWallets.length ||
+    bootstrapSPIds.length !== bootstrapSPDelegateWallets.length ||
+    bootstrapSPOwnerWallets.length !== bootstrapSPDelegateWallets.length
+    ) {
+    throw new Error('Mismatched bootstrap array lengths found')
+  }
+  // Validate lists match on chain values at respective indices
+  for (var i = 0; i < bootstrapSPIds.length; i++) {
+    let spID = bootstrapSPIds[i]
+    let delegateOwnerWallet = bootstrapSPDelegateWallets[i]
+    let ownerWallet = bootstrapSPOwnerWallets[i]
+    let chainInfo = cachedEndpointInfoMap[spID]
+    if (delegateOwnerWallet != chainInfo.delegateOwnerWallet) {
+      throw new Error(
+        `Invalid delegateOwnerWallet found for ${spID}, expected ${chainInfo.delegateOwnerWallet}, found ${delegateOwnerWallet}`
+      )
+    }
+    console.log(`spID=${spID} | Valid delegateOwnerWallet found. Expected ${chainInfo.delegateOwnerWallet}, found ${delegateOwnerWallet}`)
+    if (ownerWallet != chainInfo.owner) {
+      throw new Error(
+        `Invalid ownerWallet found for ${spID}, expected ${chainInfo.owner}, found ${ownerWallet}`
+      )
+    }
+    console.log(`spID=${spID} | Valid ownerWallet found. Expected ${chainInfo.owner}, found ${ownerWallet}`)
+  }
+  console.log(bootstrapSPIds)
+  console.log(bootstrapSPOwnerWallets)
+  console.log(bootstrapSPDelegateWallets)
 }
 
 function _getEnv (env) {
