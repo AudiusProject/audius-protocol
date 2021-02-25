@@ -108,7 +108,7 @@ class UserReplicaSetManagerClient extends ContractClient {
   }
 
   /**
-   * Return the current wallet address associated with a given spID
+   * Return the current ownerWallet and delegateOwnerWallet for a given spID
    * @param {number} userId
    */
   async getContentNodeWallets (spId) {

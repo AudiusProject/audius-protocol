@@ -368,7 +368,7 @@ class Users extends Base {
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // Perform update to new contract
-      const updateEndpointTxReceipt = await this._updateReplicaSet(userId, newMetadata)
+      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -458,7 +458,7 @@ class Users extends Base {
       await this.creatorNode.setEndpoint(newPrimary)
 
       // Update user creator_node_endpoint on chain if applicable
-      const updateEndpointTxReceipt = await this._updateReplicaSet(userId, newMetadata)
+      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -553,7 +553,7 @@ class Users extends Base {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this._updateReplicaSet(userId, newMetadata)
+        await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
         // Ensure DN has indexed creator_node_endpoint change
         await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
       }
@@ -685,7 +685,7 @@ class Users extends Base {
     return pick(metadata, USER_PROPS.concat('user_id'))
   }
 
-  async _updateReplicaSet (userId, metadata) {
+  async _updateReplicaSetOnChain (userId, creatorNodeEndpoint) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
@@ -694,12 +694,12 @@ class Users extends Base {
     if (!this.contracts.UserReplicaSetManagerClient) {
       const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
         userId,
-        metadata.creator_node_endpoint
+        creatorNodeEndpoint
       )
       return updateEndpointTxReceipt
     }
-    let primaryEndpoint = CreatorNode.getPrimary(metadata.creator_node_endpoint)
-    let secondaries = CreatorNode.getSecondaries(metadata.creator_node_endpoint)
+    let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
+    let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
     let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
       this._retrieveSpIDFromEndpoint(primaryEndpoint),
       this._retrieveSpIDFromEndpoint(secondaries[0]),
