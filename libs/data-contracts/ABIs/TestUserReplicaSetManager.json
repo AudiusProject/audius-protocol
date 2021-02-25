@@ -1,0 +1,432 @@
+{
+  "contractName": "TestUserReplicaSetManager",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_bootstrapSPIds",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_bootstrapNodeDelegateWallets",
+          "type": "address[]"
+        },
+        {
+          "name": "_bootstrapNodeOwnerWallets",
+          "type": "address[]"
+        }
+      ],
+      "name": "seedBootstrapNodes",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getUserReplicaSetBootstrapAddress",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUserReplicaSet",
+      "outputs": [
+        {
+          "name": "primaryId",
+          "type": "uint256"
+        },
+        {
+          "name": "secondaryIds",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getSeedComplete",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_cnodeSpId",
+          "type": "uint256"
+        },
+        {
+          "name": "_cnodeWallets",
+          "type": "address[2]"
+        },
+        {
+          "name": "_proposerSpIds",
+          "type": "uint256[3]"
+        },
+        {
+          "name": "_proposerNonces",
+          "type": "bytes32[3]"
+        },
+        {
+          "name": "_proposer1Sig",
+          "type": "bytes"
+        },
+        {
+          "name": "_proposer2Sig",
+          "type": "bytes"
+        },
+        {
+          "name": "_proposer3Sig",
+          "type": "bytes"
+        }
+      ],
+      "name": "addOrUpdateContentNode",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_spID",
+          "type": "uint256"
+        }
+      ],
+      "name": "getContentNodeWallets",
+      "outputs": [
+        {
+          "name": "delegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "name": "ownerWallet",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_newBootstrapAddress",
+          "type": "address"
+        }
+      ],
+      "name": "updateUserReplicaBootstrapAddress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "name": "setRegistry",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_registryAddress",
+          "type": "address"
+        },
+        {
+          "name": "_userFactoryRegistryKey",
+          "type": "bytes32"
+        },
+        {
+          "name": "_userReplicaSetBootstrapAddress",
+          "type": "address"
+        },
+        {
+          "name": "_networkId",
+          "type": "uint256"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_primaryId",
+          "type": "uint256"
+        },
+        {
+          "name": "_secondaryIds",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_oldPrimaryId",
+          "type": "uint256"
+        },
+        {
+          "name": "_oldSecondaryIds",
+          "type": "uint256[]"
+        },
+        {
+          "name": "_requestNonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateReplicaSet",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "usedSignatures",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_primaryId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_secondaryIds",
+          "type": "uint256[]"
+        },
+        {
+          "indexed": false,
+          "name": "_signer",
+          "type": "address"
+        }
+      ],
+      "name": "UpdateReplicaSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_cnodeSpId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_cnodeDelegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_cnodeOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_proposerSpIds",
+          "type": "uint256[3]"
+        },
+        {
+          "indexed": false,
+          "name": "_proposer1DelegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_proposer2DelegateOwnerWallet",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "_proposer3DelegateOwnerWallet",
+          "type": "address"
+        }
+      ],
+      "name": "AddOrUpdateContentNode",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "newFunction",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ]
+}

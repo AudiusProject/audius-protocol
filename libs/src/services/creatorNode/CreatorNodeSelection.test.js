@@ -3,7 +3,7 @@ const assert = require('assert')
 const semver = require('semver')
 
 const { CREATOR_NODE_SERVICE_NAME } = require('./constants')
-const CreatorNodeSelection = require('./CreatorNodeSelection')
+const { CreatorNodeSelection } = require('./CreatorNodeSelection')
 
 const mockEthContracts = (urls, currrentVersion, previousVersions = null) => ({
   getCurrentVersion: async () => currrentVersion,

@@ -503,6 +503,11 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getURSMContentNodes (ownerWallet = null) {
+    const req = Requests.getURSMContentNodes(ownerWallet)
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node

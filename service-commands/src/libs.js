@@ -563,7 +563,40 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.web3Manager.getWalletAddress()
   }
 
-  // Util fns
+  this.getServices = async (type) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
+  }
+
+  this.getServiceEndpointInfo = async (serviceType, serviceId) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+      serviceType,
+      serviceId
+    )
+  }
+
+  this.getUserReplicaSet = async (userId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  }
+
+  this.getContentNodeWallets = async (cnodeId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnodeId)
+  }
+
+  this.updateReplicaSet = async (userId, primary, secondaries) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primary,
+      secondaries
+    )
+  }
+
+  this.getDiscoveryNodeEndpoint = () => {
+    return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
+  }
+
+  this.getURSMContentNodes = (ownerWallet) => {
+    return this.libsInstance.discoveryProvider.getURSMContentNodes(ownerWallet)
+  }
 
   /**
   * Wait for the discovery node to catch up to the latest block on chain up to a max

@@ -319,10 +319,10 @@ contract('UserReplicaSetManager', async (accounts) => {
             userReplicaSetManagerInitData,
             { from: deployer }
         )
-        let localUsrmContract = await UserReplicaSetManager.at(unSeededProxy.address)
+        let localUrsmContract = await UserReplicaSetManager.at(unSeededProxy.address)
         // Confirm unseeded contract rejects operations
         await expectRevert(
-            localUsrmContract.updateUserReplicaBootstrapAddress(
+            localUrsmContract.updateUserReplicaBootstrapAddress(
                 accounts[20],
                 { from: userReplicaBootstrapAddress }
             ),
@@ -330,7 +330,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         )
         // Confirm failure when called from non-bootstrap address
         await expectRevert(
-            localUsrmContract.seedBootstrapNodes(
+            localUrsmContract.seedBootstrapNodes(
                 bootstrapSPIds,
                 bootstrapDelegateWallets,
                 bootstrapOwnerWallets
@@ -341,7 +341,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Create an intentionally mismatched length list of bootstrap spIDs<->delegateWallets
         const invalidSPIds = [cnode1SpID, cnode2SpID, cnode3SpID]
         await expectRevert(
-            localUsrmContract.seedBootstrapNodes(
+            localUrsmContract.seedBootstrapNodes(
                 invalidSPIds,
                 bootstrapDelegateWallets,
                 bootstrapOwnerWallets,
@@ -352,7 +352,7 @@ contract('UserReplicaSetManager', async (accounts) => {
         // Create an intentionally mismatched length list of bootstrap spIDs<->ownerWallets
         const invalidBootstrapOwnerWallets = [cnode1OwnerWallet, cnode2OwnerWallet, cnode4OwnerWallet]
         await expectRevert(
-            localUsrmContract.seedBootstrapNodes(
+            localUrsmContract.seedBootstrapNodes(
                 bootstrapSPIds,
                 bootstrapDelegateWallets,
                 invalidBootstrapOwnerWallets,

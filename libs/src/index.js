@@ -107,7 +107,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers) {
+  static configInternalWeb3 (registryAddress, providers, privateKey) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -123,7 +123,8 @@ class AudiusLibs {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoints: providerList
+        web3ProviderEndpoints: providerList,
+        privateKey
       }
     }
   }
