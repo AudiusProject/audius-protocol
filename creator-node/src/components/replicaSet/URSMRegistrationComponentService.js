@@ -8,23 +8,23 @@ const {
   parseCNodeResponse,
   ErrorServerError,
   ErrorBadRequest
-} = require("../../apiHelpers")
-const { recoverWallet, signatureHasExpired } = require("../../apiSigning")
-
+} = require('../../apiHelpers')
+const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
 
 /**
- * This route is called by a requesting node attempting to create or update its record on L2
- *    UserReplicaSetManager contract (URSM) via Chain of Trust. The requesting node submits a request for
- *    signature from this node (proposer node) to submit as part of the contract addOrUpdateContentNode transaction.
+ * This function is part of the L2 UserReplicaSetManager contract (URSM) chain of trust node registration flow.
+ *    A requesting node submits a request for signature to self (proposer node) which it uses to submit as
+ *    part of the contract addOrUpdateContentNode transaction.
  *
  * Steps:
  *  1. Fetch node info from L1 ServiceProviderFactory for spID
- *    a. Error if no L1 record found
+ *    a. Reject if node is not registered as valid SP
  *    b. Short circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
  *  2. Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
- *  3. Confirm health check returns healthy and response data matches on-chain data
+ *  3. Confirm SP is within valid stake bounds on L1 ServiceProviderFactory
+ *  4. Confirm health check returns healthy and response data matches on-chain data
  *    a. Confirm health check response was signed by delegate owner wallet registered on L1 for spID
- *  4. Generate & return proposal signature artifacts
+ *  5. Generate & return proposal signature artifacts
  */
 const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }, logger, spID, reqTimestamp, reqSignature) => {
   if (!spID || !reqTimestamp || !reqSignature) {
@@ -46,14 +46,14 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
     endpoint: nodeEndpointFromSPFactory
   } = spRecordFromSPFactory
   delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
-  
+
   /**
    * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
    */
   if (
-    LibsUtils.isZeroAddress(ownerWalletFromSPFactory)
-    || LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory)
-    || !nodeEndpointFromSPFactory
+    LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
+    LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
+    !nodeEndpointFromSPFactory
   ) {
     throw new ErrorBadRequest(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory`)
   }
@@ -63,7 +63,7 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
    */
   const delegateOwnerWalletFromURSM = (
     (await audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(spID))
-    .delegateOwnerWallet
+      .delegateOwnerWallet
   ).toLowerCase()
   if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
     throw new ErrorBadRequest(
@@ -83,7 +83,7 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
   }
 
   /**
-   * Confirm service provider is within valid bounds on L1 ServiceProviderFactory
+   * Confirm service provider is within valid stake bounds on L1 ServiceProviderFactory
    */
   const spDetailsFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderDetails(
     ownerWalletFromSPFactory
@@ -116,12 +116,14 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
    * Confirm health check returns healthy and response data matches on-chain data
    */
   if (
-    !(nodeHealthCheckResp.healthy)
-    || (nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromSPFactory)
-    || (nodeHealthCheckResp.spID !== spID)
-    || ((nodeHealthCheckResp.spOwnerWallet).toLowerCase() !== ownerWalletFromSPFactory.toLowerCase())
+    !(nodeHealthCheckResp.healthy) ||
+    (nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromSPFactory) ||
+    (nodeHealthCheckResp.spID !== spID) ||
+    ((nodeHealthCheckResp.spOwnerWallet).toLowerCase() !== ownerWalletFromSPFactory.toLowerCase())
   ) {
-    throw new ErrorServerError(`CN unhealthy or misconfigured`)
+    throw new ErrorServerError(
+      `Content node health check response from endpoint ${nodeEndpointFromSPFactory} indicates unhealthy or misconfigured`
+    )
   }
 
   /**
@@ -144,12 +146,14 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
     )
   }
 
-  // Generate proposal signature artifacts
+  /**
+   * Generate proposal signature artifacts
+   */
   const proposalSignatureInfo = await audiusLibs.contracts.UserReplicaSetManagerClient.getProposeAddOrUpdateContentNodeRequestData(
-    spID,
-    delegateOwnerWalletFromSPFactory,
-    ownerWalletFromSPFactory,
-    nodeConfig.get('spID')
+    /* new node L1 spID */ spID,
+    /* new node L1 delegateOwnerWallet */ delegateOwnerWalletFromSPFactory,
+    /* proposing node (self) ownerWallet */ ownerWalletFromSPFactory,
+    /* proposing node (self) L1 spID */ nodeConfig.get('spID')
   )
 
   return {

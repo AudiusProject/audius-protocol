@@ -231,7 +231,7 @@ module.exports.handleApiError = (error) => {
  *    Unnests response data.data and returns formatted data, along with raw response object.
  *    Uses response schema defined above in successResponse()
  * @param {Object} respObj original response object from axios request to content node
- * @param {string[]} requiredFields 
+ * @param {string[]} requiredFields
  */
 module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
   if (!respObj.data || !respObj.data.data) {
