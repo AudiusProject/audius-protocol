@@ -103,7 +103,7 @@ class UserReplicaSetManagerClient extends ContractClient {
     let resp = await method.call({ from: currentWallet })
     return {
       primaryId: parseInt(resp.primaryId),
-      secondaryIds: resp.secondaryIds.map(x=>parseInt(x))
+      secondaryIds: resp.secondaryIds.map(x => parseInt(x))
     }
   }
 
