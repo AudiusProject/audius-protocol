@@ -78,7 +78,7 @@ module.exports = {
   poa_sokol: { // Bootstrap arguments as of 2/25/21
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     blacklisterAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
-    bootstrapSPIds: [[ 3, 4, 5 ]],
+    bootstrapSPIds: [ 3, 4, 5 ],
     bootstrapSPDelegateWallets: [
       '0x5Af47323Bd946A89d38F107A873ba6C83e3acee1',
       '0xA951cBC410c2C6e1D3047A8Ff2BC161C994FcbD8',
