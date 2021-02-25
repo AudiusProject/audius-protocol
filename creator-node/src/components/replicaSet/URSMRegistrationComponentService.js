@@ -13,10 +13,6 @@ const { recoverWallet, signatureHasExpired } = require("../../apiSigning")
 
 
 /**
- * TODO
- * - rate limit
- * - consider also validating L1 healthy state eg valid bounds
- *
  * This route is called by a requesting node attempting to create or update its record on L2
  *    UserReplicaSetManager contract (URSM) via Chain of Trust. The requesting node submits a request for
  *    signature from this node (proposer node) to submit as part of the contract addOrUpdateContentNode transaction.
@@ -51,6 +47,9 @@ const respondToURSMRequestForProposal = async ({ audiusLibs, nodeConfig }, logge
   } = spRecordFromSPFactory
   delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
   
+  /**
+   * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
+   */
   if (
     LibsUtils.isZeroAddress(ownerWalletFromSPFactory)
     || LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory)
@@ -81,6 +80,16 @@ const respondToURSMRequestForProposal = async ({ audiusLibs, nodeConfig }, logge
     throw new ErrorBadRequest(
       'Request for proposal must be signed by delegate owner wallet registered on L1 for spID'
     )
+  }
+
+  /**
+   * Confirm service provider is within valid bounds on L1 ServiceProviderFactory
+   */
+  const spDetailsFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderDetails(
+    ownerWalletFromSPFactory
+  )
+  if (!spDetailsFromSPFactory.validBounds) {
+    throw new ErrorBadRequest('ServiceProvider for given spID is not within valid bounds on L1 ServiceProviderFactory')
   }
 
   /**

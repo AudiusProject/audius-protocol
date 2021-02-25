@@ -105,7 +105,8 @@ class URSMService {
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
     if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
-      throw new Error('L2recordmatch')
+      // throw new Error('L2recordmatch')
+      this.logInfo(`l2recordbad`)
     }
 
     /**
@@ -163,7 +164,7 @@ class URSMService {
     }
 
     this.logInfo(`receviedsigns: ${JSON.stringify(receivedSignatures, null, 2)}`)
-    // return 'yes'
+    return 'yes'
 
     /**
      * Submit proposal 
