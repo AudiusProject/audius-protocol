@@ -116,6 +116,7 @@ async function getAudiusLibs (config, privateKey, ownerWallet) {
 }
 
 // Function used to calculate the list of bootstrap information for UserReplicaSetManager
+// Will run against environment provided in argument (staging-config.json for staging, prod-config.json for prod, etc.)
 async function generateBootstrappersList (audiusLibs) {
   console.log('Generating bootstrap list')
   const contentNodeType = 'content-node'
