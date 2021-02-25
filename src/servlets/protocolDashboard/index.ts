@@ -1,15 +1,14 @@
 import express from 'express'
 import fs from 'fs'
-import unzipper from 'unzipper'
-import path from 'path'
 import fetch from 'node-fetch'
-import libs from '../../libs'
+import path from 'path'
+import unzipper from 'unzipper'
 // @ts-ignore
 import ipfs, { globSource } from '../../ipfs'
+import libs from '../../libs'
 
 export const router = express.Router()
 const BUILD_URL = process.env.PROTOCOL_DASHBOARD_BUILD_URL
-
 
 // Peers with all content nodes
 router.get('/peer_content_nodes', async (
@@ -18,7 +17,17 @@ router.get('/peer_content_nodes', async (
   try {
     // first get my own ipfs id
     const ipfsId = await ipfs.id()
-    const addr = ipfsId.addresses[0]
+
+    const addresses = ipfsId.addresses.filter(
+      (addr: string) => {
+        return !addr.toString().startsWith('/ip4/127.0.0.1') && !addr.toString().startsWith('/ip4/192.168')
+      }
+    )
+    if (addresses.length === 0) {
+      res.status(500).send('No Valid IPFS addresses to peer with content nodes')
+      return
+    }
+    const addr = addresses[0]
     const contentNodes = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
     const connections: { [name: string]: boolean } = {}
     for (let cn of contentNodes) {
@@ -30,30 +39,27 @@ router.get('/peer_content_nodes', async (
         connections[cn.endpoint] = true
       }
     }
-    if (Object.values(connections).every(isConnected => !isConnected)) {
+    if (Object.values(connections).every((isConnected) => !isConnected)) {
       res.status(500).send(`Unable to connect to any content nodes`)
     } else {
-      res.json({ success: true, connections })
+      res.json({ success: true, ipfsAddress: addr, connections })
     }
   } catch (err) {
     res.status(500).send(err.message)
   }
 })
 
-
 // Gets the ipfs id
 router.get('/ipfs', async (
   req: express.Request,
   res: express.Response) => {
-    try {
-      const ipfsId = await ipfs.id()
-      res.json(ipfsId)
-    } catch (err) {
-      res.status(500).send(err.message)
-    }
+  try {
+    const ipfsId = await ipfs.id()
+    res.json(ipfsId)
+  } catch (err) {
+    res.status(500).send(err.message)
+  }
 })
-
-
 
 const BUILD_ZIP_PATH = path.resolve(__dirname, '../../build.zip')
 const BUILD_PATH_EXTRACT = path.resolve(__dirname, '../../')
@@ -68,21 +74,21 @@ router.get('/update_build', async (
       res.status(500).send(`Build URL not specified`)
       return
     }
-    const response = await fetch(BUILD_URL);
+    const response = await fetch(BUILD_URL)
     await new Promise((resolve, reject) => {
       const fileStream = fs.createWriteStream(BUILD_ZIP_PATH)
-      response.body.pipe(fileStream);
-      response.body.on("error", (err: Error) => reject(err))
-      fileStream.on("finish", () => resolve(true))
+      response.body.pipe(fileStream)
+      response.body.on('error', (err: Error) => reject(err))
+      fileStream.on('finish', () => resolve(true))
     })
-  
+
     await new Promise((resolve, reject) => {
       const unzipStream = fs.createReadStream(BUILD_ZIP_PATH)
-      unzipStream.on("close", () => resolve(true))
-      unzipStream.on("error", reject)
+      unzipStream.on('close', () => resolve(true))
+      unzipStream.on('error', reject)
       unzipStream.pipe(unzipper.Extract({ path: BUILD_PATH_EXTRACT }))
     })
-  
+
     res.json({ success: true })
   } catch (err) {
     res.status(500).send(err.message)
@@ -98,7 +104,7 @@ router.get('/pin_build', async (
     for await (const file of ipfs.add(globSource(BUILD_PATH, { recursive: true }), { pin: true })) {
       files.push(file)
     }
-    const rootFile = files.find(f => f.path === 'build')
+    const rootFile = files.find((f) => f.path === 'build')
     res.json({ cid: rootFile.cid.toString() })
   } catch (err) {
     console.log(err)

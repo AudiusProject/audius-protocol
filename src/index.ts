@@ -8,8 +8,8 @@ import { MetaTagFormat } from './servlets/metaTags/types'
 import { router as apiRouter } from './servlets/api'
 import { getBedtimeResponse } from './servlets/bedtime'
 import { router as healthRouter } from './servlets/health'
-import { router as protocolDashboardRouter } from './servlets/protocolDashboard'
 import getMetaTagsResponse from './servlets/metaTags'
+import { router as protocolDashboardRouter } from './servlets/protocolDashboard'
 
 import libs from './libs'
 
