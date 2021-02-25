@@ -4,9 +4,9 @@ const models = require('./models')
 const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captcha }) => {
   let score, ok, hostname
   if (token) {
-    ({ score, ok, hostname } = await captcha.verify(token))
-
     try {
+      ({ score, ok, hostname } = await captcha.verify(token))
+
       models.BotScores.create({
         walletAddress,
         recaptchaScore: score,
@@ -14,7 +14,7 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
         recaptchaHostname: hostname
       })
     } catch (e) {
-      logger.error('CAPTCHA - Error with adding recaptcha score', e)
+      logger.error('CAPTCHA - Error with calculating or recording recaptcha score', e)
     }
 
     // TODO: Make middleware return errorResponse later
