@@ -6,8 +6,6 @@ const { getStakingParameters } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 
 const AudiusLibs = require('../src/index')
-const { split } = require('lodash')
-
 const isServer = true
 
 let args = process.argv
@@ -138,22 +136,22 @@ async function generateBootstrappersList (audiusLibs) {
     bootstrapSPIds.length !== bootstrapSPOwnerWallets.length ||
     bootstrapSPIds.length !== bootstrapSPDelegateWallets.length ||
     bootstrapSPOwnerWallets.length !== bootstrapSPDelegateWallets.length
-    ) {
+  ) {
     throw new Error('Mismatched bootstrap array lengths found')
   }
   // Validate lists match on chain values at respective indices
-  for (var i = 0; i < bootstrapSPIds.length; i++) {
-    let spID = bootstrapSPIds[i]
-    let delegateOwnerWallet = bootstrapSPDelegateWallets[i]
-    let ownerWallet = bootstrapSPOwnerWallets[i]
+  for (var j = 0; j < bootstrapSPIds.length; j++) {
+    let spID = bootstrapSPIds[j]
+    let delegateOwnerWallet = bootstrapSPDelegateWallets[j]
+    let ownerWallet = bootstrapSPOwnerWallets[j]
     let chainInfo = cachedEndpointInfoMap[spID]
-    if (delegateOwnerWallet != chainInfo.delegateOwnerWallet) {
+    if (delegateOwnerWallet !== chainInfo.delegateOwnerWallet) {
       throw new Error(
         `Invalid delegateOwnerWallet found for ${spID}, expected ${chainInfo.delegateOwnerWallet}, found ${delegateOwnerWallet}`
       )
     }
     console.log(`spID=${spID} | Valid delegateOwnerWallet found. Expected ${chainInfo.delegateOwnerWallet}, found ${delegateOwnerWallet}`)
-    if (ownerWallet != chainInfo.owner) {
+    if (ownerWallet !== chainInfo.owner) {
       throw new Error(
         `Invalid ownerWallet found for ${spID}, expected ${chainInfo.owner}, found ${ownerWallet}`
       )
