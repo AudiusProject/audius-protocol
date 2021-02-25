@@ -14,7 +14,7 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
         recaptchaHostname: hostname
       })
     } catch (e) {
-      logger.error('CAPTCHA - Error with calculating or recording recaptcha score', e)
+      logger.error(`CAPTCHA - Error with calculating or recording recaptcha score for wallet=${walletAddress}`, e)
     }
 
     // TODO: Make middleware return errorResponse later
