@@ -2,7 +2,7 @@ const ServiceCommands = require('../src/index')
 const { program } = require('commander')
 const { allUp, Service, SetupCommand, runSetupCommand } = ServiceCommands
 
-const NUM_CREATOR_NODES = 2
+const NUM_CREATOR_NODES = 3
 const SERVICE_INSTANCE_NUMBER = 1
 
 const printOptions = () => {

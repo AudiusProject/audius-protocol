@@ -13,6 +13,9 @@ const redis = require('./redis')
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
+const { promisify } = require('util')
+
+const readFile = promisify(fs.readFile)
 
 class Utils {
   static verifySignature (data, sig) {
@@ -338,7 +341,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
     for (var entry of findOriginalFileQuery) {
       let sourceFilePath = entry.storagePath
       try {
-        let bufferedFile = fs.readFileSync(sourceFilePath)
+        let bufferedFile = await readFile(sourceFilePath)
         let originalSource = entry.sourceFile
         ipfsAddArray.push({
           path: originalSource,
@@ -396,7 +399,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   for (let entry of findOriginalFileQuery) {
     let sourceFilePath = entry.storagePath
     try {
-      let bufferedFile = fs.readFileSync(sourceFilePath)
+      let bufferedFile = await readFile(sourceFilePath)
       let originalSource = entry.sourceFile
       ipfsAddArray.push({
         path: originalSource,
