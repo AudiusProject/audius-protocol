@@ -10,7 +10,7 @@ const { MONITORS } = require('../../monitors/monitors')
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -19,6 +19,11 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
     spOwnerWallet: config.get('spOwnerWallet')
+  }
+
+  // If optional `randomBytesToSign` query param provided, node will include string in signed object
+  if (randomBytesToSign) {
+    response.randomBytesToSign = randomBytesToSign
   }
 
   if (libs) {
