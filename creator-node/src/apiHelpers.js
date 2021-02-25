@@ -192,6 +192,34 @@ module.exports.errorResponseSocketTimeout = (socketTimeout) => {
   return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
 }
 
+class ErrorBadRequest extends Error {}
+Object.defineProperty(ErrorBadRequest.prototype, 'name', {
+  value: 'ErrorBadRequest'
+})
+class ErrorServerError extends Error {}
+Object.defineProperty(ErrorServerError.prototype, 'name', {
+  value: 'ErrorServerError'
+})
+
+module.exports.ErrorBadRequest = ErrorBadRequest
+module.exports.ErrorServerError = ErrorServerError
+
+/**
+ * TODO
+ * @param {*} error 
+ */
+module.exports.handleApiError = (error) => {
+  // logger.info(`e: ${e} // ${e.name} // ${e.message}`)
+  switch (error) {
+    case ErrorBadRequest:
+      return this.errorResponseBadRequest(error.message)
+    case ErrorServerError:
+      return this.errorResponseServerError(error.message)
+    default:
+      return this.errorResponseServerError(error.message)
+  }
+}
+
 module.exports.parseCNodeResponse = (respObj, requiredFields) => {
   if (!respObj.data || !respObj.data.data) {
     throw new Error('Missing')

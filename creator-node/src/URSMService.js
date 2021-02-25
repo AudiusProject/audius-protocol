@@ -38,8 +38,6 @@ class URSMService {
     }
 
     this.numSignaturesRequired = 3
-
-    this.logInfo(`URSMSERVICE CONSTRUCTED`)
   }
 
   logInfo (msg) {
