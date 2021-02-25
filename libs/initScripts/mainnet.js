@@ -160,8 +160,11 @@ async function generateBootstrappersList (audiusLibs) {
     }
     console.log(`spID=${spID} | Valid ownerWallet found. Expected ${chainInfo.owner}, found ${ownerWallet}`)
   }
+  console.log(`bootstrapSPIds:`)
   console.log(bootstrapSPIds)
+  console.log(`bootstrapSPOwnerWallets:`)
   console.log(bootstrapSPOwnerWallets)
+  console.log(`bootstrapSPDelegateWallets:`)
   console.log(bootstrapSPDelegateWallets)
 }
 
