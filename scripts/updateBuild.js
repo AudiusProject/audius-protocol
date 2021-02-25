@@ -33,7 +33,7 @@ const endpoint = config[env].gaEndpoint
 const updateContentNodePeers = async () => {
   const res = await fetch(`${endpoint}/protocol_dashboard/peer_content_nodes`)
   const response = await res.json()
-  console.log({ response})
+  console.log({ response })
   if (!response.success) {
     console.error('unable to update content node ipfs peers')
     process.exit(1)
