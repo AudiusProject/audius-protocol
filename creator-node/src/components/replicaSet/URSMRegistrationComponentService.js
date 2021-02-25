@@ -26,7 +26,7 @@ const { recoverWallet, signatureHasExpired } = require("../../apiSigning")
  *    a. Confirm health check response was signed by delegate owner wallet registered on L1 for spID
  *  4. Generate & return proposal signature artifacts
  */
-const respondToURSMRequestForProposal = async ({ libs: audiusLibs, nodeConfig }, logger, spID, reqTimestamp, reqSignature) => {
+const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }, logger, spID, reqTimestamp, reqSignature) => {
   if (!spID || !reqTimestamp || !reqSignature) {
     throw new ErrorBadRequest('Must provide all required query parameters: spID, timestamp, signature')
   }
@@ -78,7 +78,7 @@ const respondToURSMRequestForProposal = async ({ libs: audiusLibs, nodeConfig },
   let recoveredDelegateOwnerWallet = (recoverWallet(requesterWalletRecoveryObj, reqSignature)).toLowerCase()
   if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet) {
     throw new ErrorBadRequest(
-      'Request for proposal must be signed by delegate owner wallet registered on L1 for spID'
+      'Request for signature must be signed by delegate owner wallet registered on L1 for spID'
     )
   }
 
@@ -160,5 +160,5 @@ const respondToURSMRequestForProposal = async ({ libs: audiusLibs, nodeConfig },
 }
 
 module.exports = {
-  respondToURSMRequestForProposal
+  respondToURSMRequestForSignature
 }

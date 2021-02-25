@@ -5,14 +5,14 @@ const {
   handleResponse,
   handleApiError
 } = require('../../apiHelpers')
-const { respondToURSMRequestForProposal } = require('./URSMRegistrationComponentService')
+const { respondToURSMRequestForSignature } = require('./URSMRegistrationComponentService')
 
 const router = express.Router()
 
 // Controllers
 
 /**
- * Controller for `/ursm_request_for_proposal` route
+ * Controller for `/ursm_request_for_signature` route
  * Calls `URSMRegistrationComponentService
  */
 const respondToURSMRequestForProposalController = async (req) => {
@@ -22,7 +22,7 @@ const respondToURSMRequestForProposalController = async (req) => {
   const logger = req.logger
 
   try {
-    const response = await respondToURSMRequestForProposal(serviceRegistry, logger, spID, timestamp, signature)
+    const response = await respondToURSMRequestForSignature(serviceRegistry, logger, spID, timestamp, signature)
     return successResponse(response)
   } catch (e) {
     return handleApiError(e)
@@ -31,6 +31,6 @@ const respondToURSMRequestForProposalController = async (req) => {
 
 // Routes
 
-router.get('/ursm_request_for_proposal', handleResponse(respondToURSMRequestForProposalController))
+router.get('/ursm_request_for_signature', handleResponse(respondToURSMRequestForProposalController))
 
 module.exports = router

@@ -58,7 +58,7 @@ const initializeApp = (port, serviceRegistry) => {
   app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
-  app.set('audiusLibs', serviceRegistry.audiusLibs)
+  app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property

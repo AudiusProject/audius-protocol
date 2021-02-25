@@ -224,12 +224,20 @@ module.exports.handleApiError = (error) => {
   }
 }
 
-module.exports.parseCNodeResponse = (respObj, requiredFields) => {
+/**
+ * Helper function to parse responses from axios requests to other Content Nodes.
+ *    Given a response object and required fields, errors if any required fields missing.
+ *    Also errors if any signature fields missing.
+ *    Unnests response data.data and returns formatted data, along with raw response object.
+ *    Uses response schema defined above in successResponse()
+ * @param {Object} respObj original response object from axios request to content node
+ * @param {string[]} requiredFields 
+ */
+module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
   if (!respObj.data || !respObj.data.data) {
     throw new Error('Missing')
   }
 
-  requiredFields = requiredFields
   requiredFields.map(requiredField => {
     if (!respObj.data.data[requiredField]) {
       throw new Error(`CNodeResponse missing required data field: ${requiredField}`)
