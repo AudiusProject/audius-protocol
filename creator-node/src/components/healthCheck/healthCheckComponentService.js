@@ -10,7 +10,7 @@ const { MONITORS } = require('../../monitors/monitors')
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize) => {
+const healthCheck = async ({ audiusLibs } = {}, logger, sequelize, randomBytesToSign) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -21,10 +21,15 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
     spOwnerWallet: config.get('spOwnerWallet')
   }
 
-  if (libs) {
-    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
+  // If optional `randomBytesToSign` query param provided, node will include string in signed object
+  if (randomBytesToSign) {
+    response.randomBytesToSign = randomBytesToSign
+  }
+
+  if (audiusLibs) {
+    response.selectedDiscoveryProvider = audiusLibs.discoveryProvider.discoveryProviderEndpoint
   } else {
-    logger.warn('Health check with no libs')
+    logger.warn('Health check with no audiusLibs')
   }
 
   // we have a /db_check route for more granular detail, but the service health check should
@@ -41,14 +46,13 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors) => {
-  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
+const healthCheckVerbose = async ({ audiusLibs } = {}, logger, sequelize, getMonitors) => {
+  const basicHealthCheck = await healthCheck({ audiusLibs }, logger, sequelize)
 
   // Location information
   const country = config.get('serviceCountry')
   const latitude = config.get('serviceLatitude')
   const longitude = config.get('serviceLongitude')
-  const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
   // System information
   const [
@@ -89,8 +93,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors)
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
-    transferredBytesPerSec,
-    maxStorageUsedPercent
+    transferredBytesPerSec
   }
 
   return response

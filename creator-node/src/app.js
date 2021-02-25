@@ -18,6 +18,7 @@ const {
 const config = require('./config')
 const healthCheckRoutes = require('./components/healthCheck/healthCheckController')
 const contentBlacklistRoutes = require('./components/contentBlacklist/contentBlacklistController')
+const replicaSetRoutes = require('./components/replicaSet/replicaSetController')
 
 const app = express()
 // middleware functions will be run in order they are added to the app below
@@ -40,6 +41,7 @@ app.use(getRateLimiterMiddleware())
 require('./routes')(app)
 app.use('/', healthCheckRoutes)
 app.use('/', contentBlacklistRoutes)
+app.use('/', replicaSetRoutes)
 
 function errorHandler (err, req, res, next) {
   req.logger.error('Internal server error')
@@ -50,12 +52,13 @@ app.use(errorHandler)
 
 const initializeApp = (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()
+
   // TODO: Can remove these when all routes
   // consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
-  app.set('audiusLibs', serviceRegistry.libs)
+  app.set('audiusLibs', serviceRegistry.audiusLibs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property
@@ -63,6 +66,8 @@ const initializeApp = (port, serviceRegistry) => {
 
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
+
+  app.set('serviceRegistry', serviceRegistry)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 

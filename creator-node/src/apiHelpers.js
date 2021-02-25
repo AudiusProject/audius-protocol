@@ -191,3 +191,61 @@ module.exports.errorResponseNotFound = (message) => {
 module.exports.errorResponseSocketTimeout = (socketTimeout) => {
   return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
 }
+
+class ErrorBadRequest extends Error {}
+Object.defineProperty(ErrorBadRequest.prototype, 'name', {
+  value: 'ErrorBadRequest'
+})
+class ErrorServerError extends Error {}
+Object.defineProperty(ErrorServerError.prototype, 'name', {
+  value: 'ErrorServerError'
+})
+
+module.exports.ErrorBadRequest = ErrorBadRequest
+module.exports.ErrorServerError = ErrorServerError
+
+/**
+ * TODO
+ * @param {*} error 
+ */
+module.exports.handleApiError = (error) => {
+  // logger.info(`e: ${e} // ${e.name} // ${e.message}`)
+  switch (error) {
+    case ErrorBadRequest:
+      return this.errorResponseBadRequest(error.message)
+    case ErrorServerError:
+      return this.errorResponseServerError(error.message)
+    default:
+      return this.errorResponseServerError(error.message)
+  }
+}
+
+module.exports.parseCNodeResponse = (respObj, requiredFields) => {
+  if (!respObj.data || !respObj.data.data) {
+    throw new Error('Missing')
+  }
+
+  requiredFields = requiredFields
+  requiredFields.map(requiredField => {
+    if (!respObj.data.data[requiredField]) {
+      throw new Error(`CNodeResponse missing required data field: ${requiredField}`)
+    }
+  })
+
+  const signatureFields = ['signer', 'timestamp', 'signature']
+  signatureFields.map(signatureField => {
+    if (!respObj.data[signatureField]) {
+      throw new Error(`CNodeResponse missing required signature field: ${signatureField}`)
+    }
+  })
+
+  return {
+    ...respObj.data.data,
+    signatureData: {
+      signer: respObj.data.signer,
+      timestamp: respObj.data.timestamp,
+      signature: respObj.data.signature
+    },
+    rawResponse: respObj.data
+  }
+}
