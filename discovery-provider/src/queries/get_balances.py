@@ -6,7 +6,7 @@ from src.models import UserBalance
 logger = logging.getLogger(__name__)
 
 # How stale of current_user balance we will tolerate before refreshing.
-BALANCE_REFRESH_SEC_CURRENT_USER = 5 * 60
+BALANCE_REFRESH_SEC_CURRENT_USER = 3 * 60
 
 # How stale of a non-zero user balance we tolerate before refreshing
 BALANCE_REFRESH_SEC_NONEMPTY_USER = 15 * 60
@@ -46,7 +46,7 @@ def enqueue_balance_refresh(redis, user_ids):
         return
     redis.sadd(REDIS_PREFIX, *user_ids)
 
-def get_balances(session, redis, user_ids):
+def get_balances(session, redis, user_ids, is_verified_ids_set=set()):
     """Gets user balances.
        Returns mapping { user_id: balance }
        Enqueues in Redis user balances requiring refresh.
@@ -65,7 +65,7 @@ def get_balances(session, redis, user_ids):
     # Find user_ids that don't yet have a balance
     user_ids_set = set(user_ids)
     fetched_user_ids_set = {x.user_id for x in query}
-    needs_balance_set = user_ids_set - fetched_user_ids_set
+    needs_balance_set = user_ids_set - fetched_user_ids_set + is_verified_ids_set
 
     # Add new balances to result set
     no_balance_dict = {user_id: 0 for user_id in needs_balance_set}
