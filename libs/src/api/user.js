@@ -685,6 +685,9 @@ class Users extends Base {
     return pick(metadata, USER_PROPS.concat('user_id'))
   }
 
+  // Perform replica set update
+  // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
+  // This behavior is to ensure backwards compatibility prior to contract deploy
   async _updateReplicaSetOnChain (userId, creatorNodeEndpoint) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
