@@ -100,7 +100,11 @@ class UserReplicaSetManagerClient extends ContractClient {
   async getUserReplicaSet (userId) {
     const method = await this.getMethod('getUserReplicaSet', userId)
     let currentWallet = this.web3Manager.getWalletAddress()
-    return method.call({ from: currentWallet })
+    let resp = await method.call({ from: currentWallet })
+    return {
+      primaryId: parseInt(resp.primaryId),
+      secondaryIds: resp.secondaryIds.map(x=>parseInt(x))
+    }
   }
 
   /**
