@@ -1,5 +1,6 @@
 const express = require('express')
 
+const { serviceRegistry } = require('../../serviceRegistry')
 const {
   successResponse,
   handleResponse,
@@ -18,7 +19,6 @@ const router = express.Router()
 const respondToURSMRequestForProposalController = async (req) => {
   const { spID, timestamp, signature } = req.query
 
-  const serviceRegistry = req.app.get('serviceRegistry')
   const logger = req.logger
 
   try {

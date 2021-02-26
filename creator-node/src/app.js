@@ -67,8 +67,6 @@ const initializeApp = (port, serviceRegistry) => {
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
 
-  app.set('serviceRegistry', serviceRegistry)
-
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
   // Increase from 2min default to accommodate long-lived requests.
