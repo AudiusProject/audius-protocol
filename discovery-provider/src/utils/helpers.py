@@ -209,6 +209,8 @@ def multihash_digest_to_cid(multihash_digest):
 
 
 def get_web3_endpoint(shared_config):
+    if shared_config["web3"]["provider_url"]:
+        return shared_config["web3"]["provider_url"]
     if shared_config["web3"]["port"] != '443':
         web3endpoint = "http://{}:{}".format(
             shared_config["web3"]["host"], shared_config["web3"]["port"]

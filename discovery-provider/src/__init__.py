@@ -127,7 +127,8 @@ def create_celery(test_config=None):
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
-    web3 = Web3(HTTPProvider(web3endpoint))
+    web3_providers = [HTTPProvider(i) for i in web3endpoint.split(',')]
+    web3 = Web3(MultiProvider(web3_providers))
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
     # Initialize eth web
