@@ -19,7 +19,7 @@ const pinCID = async (ipfs) => {
       .map(cid => new CID(cid))
     const removeCIDs = []
 
-    for await (const { cid, type } of ipfs.pin.ls({ type: 'recursive' })) {
+    for await (const { cid } of ipfs.pin.ls({ type: 'recursive' })) {
       if (!addCIDs.some(addCID => addCID.equals(cid))) {
         removeCIDs.push(cid)
       }
