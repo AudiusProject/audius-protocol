@@ -8,6 +8,7 @@ import { useEffect } from 'react'
 import { setTimeline } from './slice'
 import { Address } from 'types'
 import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
+import { useUsers } from 'store/cache/user/hooks'
 import { TimelineEvent } from 'models/TimelineEvents'
 
 const getFirstEvent = (...events: TimelineEvent[]) => {
@@ -40,6 +41,47 @@ const combineEvents = (...eventLists: TimelineEvent[][]) => {
   }
   return combined
 }
+
+// -------------------------------- Helpers --------------------------------
+/*
+const getEventUsers = (events: TimelineEvent[]): Address[] => {
+  const users = new Set<Address>()
+  events.forEach(event => {
+    switch (event._type) {
+      case 'ServiceProviderIncreaseStake':
+      case 'ServiceProviderDecreaseStake':
+      case 'ServiceProviderRegistered':
+      case 'ServiceProviderDeregistered':
+        users.add(event.owner)
+        break
+      case 'DelegateIncreaseStake':
+      case 'DelegateDecreaseStake':
+      case 'DelegateRemoved':
+        users.add(event.delegator)
+        users.add(event.serviceProvider)
+        break
+      case 'DelegateClaim':
+        users.add(event.claimer)
+        break
+      case 'DelegateSlash':
+        users.add(event.target)
+        break
+      case 'GovernanceVote':
+      case 'GovernanceVoteUpdate':
+        users.add(event.voter)
+        break
+      case 'GovernanceProposal':
+        users.add(event.proposer)
+        break
+      case 'ClaimProcessed':
+        users.add(event.claimer)
+        break
+    }
+  })
+  // @ts-ignore
+  return [...users]
+}
+*/
 
 // -------------------------------- Selectors  --------------------------------
 
@@ -83,6 +125,11 @@ export function fetchTimeline(
     const events = await Promise.all(rawEvents)
 
     const timeline = combineEvents(...events).reverse()
+
+    // TODO: call dispatch fetchUsers with event users after the graph logic is
+    // consolidated with the fetch users logic
+    // const eventUsers = getEventUsers(timeline)
+
     dispatch(setTimeline({ wallet, timeline }))
   }
 }
@@ -95,6 +142,11 @@ export const useTimeline = (wallet: Address, timelineType: TimelineType) => {
   )
   // const ethBlockNumber = useEthBlockNumber()
   const dispatch = useDispatch()
+
+  // Temporary fix
+  // The users from the timeline events need to be fetched, but the fetchUsers method
+  // is not yet consolidated w/ the graph fetching logic
+  useUsers()
 
   useEffect(() => {
     if (wallet && !timeline) {

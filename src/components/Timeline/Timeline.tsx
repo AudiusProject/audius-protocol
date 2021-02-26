@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import { push as pushRoute } from 'connected-react-router'
@@ -41,6 +41,9 @@ const Timeline: React.FC<TimelineProps> = ({
 }: TimelineProps) => {
   const { timeline } = useTimeline(wallet, timelineType)
   const { isOpen, onClick, onClose } = useModalControls()
+  useEffect(() => {
+    onClose()
+  }, [wallet, onClose])
   return (
     <Paper className={clsx({ [className!]: !!className })}>
       <h3 className={styles.title}>{messages.title}</h3>
@@ -48,7 +51,9 @@ const Timeline: React.FC<TimelineProps> = ({
         timeline.length > 0 ? (
           timeline
             .slice(0, 4)
-            .map((event, i) => <TimelineEvent key={i} event={event} />)
+            .map((event, i) => (
+              <TimelineEvent key={i} event={event} onClick={onClick} />
+            ))
         ) : (
           <div className={styles.emptyTimeline}>{messages.emptyTimeline}</div>
         )
