@@ -2,11 +2,11 @@
 
 We are moving the Content Node codebase to a component + service pattern. Here's a short explanation to ensure consistency moving forward. The purpose of moving to this pattern is to ensure separation of concerns between application and business logic.
 
-A **ComponentService** contains **Components** for business logic related code and never touches any application / routing logic. This allows for easy unit testing of all **Components**.
+A **Component** consists of a number of **ComponentServices** and a **ComponentController**.
 
-A **Controller** is responsible for tying **Components** to application logic.
+A **ComponentService** contains business logic and never touches any application or routing logic. This allows for easy unit testing.
 
-A **Router** is responsible for tying **Controllers** to Express API Routes.
+A **ComponentController** is responsible for typing **ComponentServices** to application logic, and also contains **Routers**, which connect application logic to Express API routing logic. (Note, in future, this may be refactored to move Routing logic out)
 
 Note - Any cross-component or non-router-based logic lives in a Service, which lives in the ServiceRegistry. Legacy modules like `dbManager` and `ffmpeg.js` will eventually be refactored into this format.
 
@@ -14,11 +14,10 @@ Note - Any cross-component or non-router-based logic lives in a Service, which l
 
 ## Example
 
-* `/components` - Contains all ComponentServices
-  * `/components/healthCheck` - Contains all health check ComponentServices
-    * `/components/healthCheck/healthCheckComponentService.js` - Contains all Components related to health check
-    * `/components/healthCheck/healthCheckComponentService.test.js` - Contains unit tests for every Component in the HealthCheckComponentService
-    * `/components/healthCheck/syncHealthCheckComponentService.js` - Contains all Components related to sync health check
-    * `/components/healthCheck/syncHealthCheckComponentService.test.js` - Contains unit tests for every Component in the SyncHealthCheckComponentService
-    * `/components/healthCheck/healthCheckController.js` - Connects all health check Components to health check Controllers and connects all health check Controllers to health check Routes
-      * NOTE - in future, this might be refactored to move Routes logic out
+* `/components` - Contains all **Components**
+  * `/components/healthCheck` - Health check is one Component, comprised of **ComponentServices** and a **ComponentController**
+    * `/components/healthCheck/healthCheckComponentService.js` - Contains all business logic related to health check **Component**
+    * `/components/healthCheck/healthCheckComponentService.test.js` - Contains unit tests for health check **ComponentService**
+    * `/components/healthCheck/syncHealthCheckComponentService.js` - Contains all business logic related to sync health check **Component**
+    * `/components/healthCheck/syncHealthCheckComponentService.test.js` - Contains unit tests for sync health check **ComponentService**
+    * `/components/healthCheck/healthCheckController.js` - Connects all health check **ComponentServices** to **ComponentControllers** and connects all **ComponentControllers** to **Routes**
