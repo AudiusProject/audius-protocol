@@ -191,3 +191,72 @@ module.exports.errorResponseNotFound = (message) => {
 module.exports.errorResponseSocketTimeout = (socketTimeout) => {
   return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
 }
+
+/**
+ * Define custom api error subclasses to be thrown in components and handled in route controllers
+ */
+
+class ErrorBadRequest extends Error {}
+Object.defineProperty(ErrorBadRequest.prototype, 'name', {
+  value: 'ErrorBadRequest'
+})
+class ErrorServerError extends Error {}
+Object.defineProperty(ErrorServerError.prototype, 'name', {
+  value: 'ErrorServerError'
+})
+
+module.exports.ErrorBadRequest = ErrorBadRequest
+module.exports.ErrorServerError = ErrorServerError
+
+/**
+ * Given an error instance, returns the corresponding error response to request
+ * @param {Error} error instance of error class or subclass
+ */
+module.exports.handleApiError = (error) => {
+  switch (error) {
+    case ErrorBadRequest:
+      return this.errorResponseBadRequest(error.message)
+    case ErrorServerError:
+      return this.errorResponseServerError(error.message)
+    default:
+      return this.errorResponseServerError(error.message)
+  }
+}
+
+/**
+ * Helper function to parse responses from axios requests to other Content Nodes.
+ *    Given a response object and required fields, errors if any required fields missing.
+ *    Also errors if any signature fields missing.
+ *    Unnests response data.data and returns formatted data, along with raw response object.
+ *    Uses response schema defined above in successResponse()
+ * @param {Object} respObj original response object from axios request to content node
+ * @param {string[]} requiredFields
+ */
+module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
+  if (!respObj.data || !respObj.data.data) {
+    throw new Error('Unexpected respObj format')
+  }
+
+  requiredFields.map(requiredField => {
+    if (!respObj.data.data[requiredField]) {
+      throw new Error(`CNodeResponse missing required data field: ${requiredField}`)
+    }
+  })
+
+  const signatureFields = ['signer', 'timestamp', 'signature']
+  signatureFields.map(signatureField => {
+    if (!respObj.data[signatureField]) {
+      throw new Error(`CNodeResponse missing required signature field: ${signatureField}`)
+    }
+  })
+
+  return {
+    ...respObj.data.data,
+    signatureData: {
+      signer: respObj.data.signer,
+      timestamp: respObj.data.timestamp,
+      signature: respObj.data.signature
+    },
+    rawResponse: respObj.data
+  }
+}

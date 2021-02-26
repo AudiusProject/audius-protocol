@@ -51,8 +51,10 @@ const healthCheckController = async (req) => {
     return errorResponseServerError()
   }
 
+  let { randomBytesToSign } = req.query
+
   const logger = req.logger
-  const response = await healthCheck(serviceRegistry, logger, sequelize)
+  const response = await healthCheck(serviceRegistry, logger, sequelize, randomBytesToSign)
   return successResponse(response)
 }
 

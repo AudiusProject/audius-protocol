@@ -2,6 +2,8 @@ const bs58 = require('bs58')
 const Web3 = require('./web3')
 const axios = require('axios')
 
+const ZeroAddress = '0x0000000000000000000000000000000000000000'
+
 class Utils {
   static importDataContractABI (pathStr) {
     // need to specify part of path here because of https://github.com/webpack/webpack/issues/4921#issuecomment-357147299
@@ -122,6 +124,14 @@ class Utils {
     }
 
     return web3Instance
+  }
+
+  static get zeroAddress () {
+    return ZeroAddress
+  }
+
+  static isZeroAddress (address) {
+    return (address === Utils.zeroAddress)
   }
 }
 
