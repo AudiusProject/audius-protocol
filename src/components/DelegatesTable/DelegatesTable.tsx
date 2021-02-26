@@ -7,11 +7,10 @@ import { useDelegates } from 'store/cache/user/hooks'
 import { useModalControls } from 'utils/hooks'
 import Table from 'components/Table'
 import styles from './DelegatesTable.module.css'
-import AudiusClient from 'services/Audius'
 import { Delegate, Address } from 'types'
 import DelegatesModal from 'components/DelegatesModal'
-import Tooltip from 'components/Tooltip'
-import { formatShortWallet, formatWei } from 'utils/format'
+import DisplayAudio from 'components/DisplayAudio'
+import { formatShortWallet } from 'utils/format'
 import BN from 'bn.js'
 
 const messages = {
@@ -67,12 +66,10 @@ const DelegatesTable: React.FC<DelegatesTableProps> = ({
         <div className={clsx(styles.rowCol, styles.colAddress)}>
           {data.name || formatShortWallet(data.address)}
         </div>
-        <Tooltip
+        <DisplayAudio
           className={clsx(styles.rowCol, styles.colAmount)}
-          text={formatWei(data.activeAmount)}
-        >
-          {AudiusClient.displayShortAud(data.activeAmount)}
-        </Tooltip>
+          amount={data.activeAmount}
+        />
       </div>
     )
   }

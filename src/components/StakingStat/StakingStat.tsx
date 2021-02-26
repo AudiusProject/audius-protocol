@@ -2,13 +2,14 @@ import React from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
 
-import Tooltip, { Position } from 'components/Tooltip'
+import { Position } from 'components/Tooltip'
 import styles from './StakingStat.module.css'
 import { Status } from 'types'
 import { TICKER } from 'utils/consts'
-import { formatWei, formatShortAud } from 'utils/format'
+import { formatWei } from 'utils/format'
 import StatsChip, { Divider } from 'components/StatsChip/StatsChip'
 import InlineStat from 'components/InlineStat/InlineStat'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   staked: `Staked ${TICKER}`,
@@ -22,8 +23,8 @@ const messages = {
 type OwnProps = {
   staked: BN
   numDiscoveryNodes: number
-  numContentNodes: number
   totalDelegates: BN
+  numContentNodes: number
   totalDelegatesStatus: Status
   isLoading: boolean
 }
@@ -49,7 +50,7 @@ const StakingStatInfo: React.FC<StakingStatInfoProps> = ({
         [styles.delegatesContainer]: hasDelegates
       })}
       tooltipText={formatWei(staked)}
-      primaryStat={formatShortAud(staked)}
+      amount={staked}
       primaryStatName={messages.staked}
       isLoading={isLoading}
     >
@@ -66,13 +67,12 @@ const StakingStatInfo: React.FC<StakingStatInfoProps> = ({
           <Divider className={styles.delegatesDivider} />
           <div className={styles.delegatedContainer}>
             <div className={styles.delegatedLabel}>{messages.delegated}</div>
-            <Tooltip
+            <DisplayAudio
               position={Position.BOTTOM}
-              text={formatWei(totalDelegates)}
               className={styles.delegatedValue}
-            >
-              {formatShortAud(totalDelegates)}
-            </Tooltip>
+              amount={totalDelegates}
+              shortFormat
+            />
           </div>
         </>
       )}

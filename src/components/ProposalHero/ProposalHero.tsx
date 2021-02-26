@@ -8,8 +8,6 @@ import { Proposal, Outcome, Vote, Address, Status } from 'types'
 import Button, { ButtonType } from 'components/Button'
 import {
   leftPadZero,
-  formatShortAud,
-  formatWei,
   getDate,
   getHumanReadableTime
 } from 'utils/format'
@@ -18,19 +16,20 @@ import { ReactComponent as IconThumbDown } from 'assets/img/iconThumbDown.svg'
 import ConfirmTransactionModal from 'components/ConfirmTransactionModal'
 import { useSubmitVote } from 'store/actions/submitVote'
 import { StandaloneBox } from 'components/ConfirmTransactionModal/ConfirmTransactionModal'
+import Loading from 'components/Loading'
+import DisplayAudio from 'components/DisplayAudio'
 import { useUser } from 'store/cache/user/hooks'
 import {
   useProposalTimeRemaining,
   useAmountAbstained
 } from 'store/cache/proposals/hooks'
 import { useAccountUser } from 'store/account/hooks'
-import Tooltip, { Position } from 'components/Tooltip'
+import { Position } from 'components/Tooltip'
 import { createStyles } from 'utils/mobile'
 import { IconCheck, IconRemove } from '@audius/stems'
 
 import desktopStyles from './ProposalHero.module.css'
 import mobileStyles from './ProposalHeroMobile.module.css'
-import Loading from 'components/Loading'
 import getActiveStake from 'utils/activeStake'
 import clsx from 'clsx'
 
@@ -176,7 +175,7 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
     }
   }, [status, newVote, setCurrentVote, setReset])
 
-  const amountAbstained = useAmountAbstained(proposal)
+  const amountAbstained = useAmountAbstained(proposal) || Utils.toBN('0')
 
   const isActive = proposal?.outcome === Outcome.InProgress
   const evaluatedBlockTimestamp = proposal?.evaluatedBlock?.timestamp ?? null
@@ -245,30 +244,27 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
                 votesFor={proposal.voteMagnitudeYes}
                 votesAgainst={proposal.voteMagnitudeNo}
               />
-              <Tooltip
-                text={formatWei(amountAbstained)}
+              <DisplayAudio
                 position={Position.BOTTOM}
                 className={styles.abstained}
-              >
-                {`${formatShortAud(amountAbstained)} ${messages.notVoted}`}
-              </Tooltip>
+                amount={amountAbstained}
+                label={messages.notVoted}
+              />
               {isActive && (
                 <div className={styles.quorumContainer}>
-                  <Tooltip
-                    text={formatWei(totalMagnitudeVoted)}
+                  <DisplayAudio
                     position={Position.BOTTOM}
                     className={styles.quorumValue}
-                  >
-                    {`${formatShortAud(totalMagnitudeVoted)} ${messages.voted}`}
-                  </Tooltip>
+                    amount={totalMagnitudeVoted}
+                    label={messages.voted}
+                  />
                   {' / '}
-                  <Tooltip
-                    text={formatWei(proposal.quorum)}
+                  <DisplayAudio
                     position={Position.BOTTOM}
                     className={styles.quorumValue}
-                  >
-                    {`${formatShortAud(proposal.quorum)} ${messages.quorum}`}
-                  </Tooltip>
+                    amount={proposal.quorum}
+                    label={messages.quorum}
+                  />
                 </div>
               )}
             </div>
