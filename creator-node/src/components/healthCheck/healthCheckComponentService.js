@@ -9,6 +9,9 @@ const { MONITORS } = require('../../monitors/monitors')
  * the current git SHA, and service version info.
  * @param {*} ServiceRegistry
  * @param {*} logger
+ * @param {*} sequelize
+ * @param {string=} randomBytesToSign optional bytes string to be included in response object
+ *    and used in signature generation
  */
 const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign) => {
   let response = {
