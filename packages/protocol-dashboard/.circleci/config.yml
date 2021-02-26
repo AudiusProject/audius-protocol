@@ -51,10 +51,13 @@ jobs:
       - run:
           name: build
           command: npm run build:stage
+      - run:
+          name: zip build
+          command: zip -r build.zip ./build
       - persist_to_workspace:
           root: ./
           paths:
-            - build
+            - ./*
 
   deploy-staging:
     working_directory: ~/protocol-dashboard
@@ -68,7 +71,42 @@ jobs:
           at: ./
       - run:
           name: Deploy to S3
-          command: aws s3 sync build s3://dashboard.staging.audius.org --delete --cache-control max-age=0
+          command: |
+            aws s3 sync build s3://dashboard.staging.audius.org --delete --cache-control max-age=0
+            aws s3 cp build.zip s3://dashboard.staging.audius.org/build.zip --cache-control max-age=0
+
+  update-staging-ga-build:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update build in ga
+          command: npm run update-build:stage
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./build_cid.txt
+
+  update-staging-records:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Update AWS records
+          command: |
+            DNS_NAME=_dnslink.dashboard.staging.audius.org
+            CID=$(cat ./build_cid.txt)
+            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": "'"$DNS_NAME"'","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/'"$CID"'\"" } ] } } ]}' | tee change-record.json
+            aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch file://$(pwd)/change-record.json
 
   build-prod:
     working_directory: ~/protocol-dashboard
@@ -81,10 +119,13 @@ jobs:
       - run:
           name: build
           command: npm run build:prod
+      - run:
+          name: zip build
+          command: zip -r build.zip ./build
       - persist_to_workspace:
           root: ./
           paths:
-            - build
+            - ./*
 
   deploy-prod:
     working_directory: ~/protocol-dashboard
@@ -101,6 +142,40 @@ jobs:
           command: |
             aws s3 sync build s3://dashboard.audius.org --delete --cache-control max-age=604800
             aws s3 cp s3://dashboard.audius.org/index.html s3://dashboard.audius.org/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
+            aws s3 cp build.zip s3://dashboard.audius.org/build.zip --cache-control max-age=0
+
+  update-prod-ga-build:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update build in ga
+          command: npm run update-build:prod
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./build_cid.txt
+
+  update-prod-records:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Update AWS records
+          command: |
+            DNS_NAME=_dnslink.dashboard.audius.org
+            CID=$(cat ./build_cid.txt)
+            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": "'"$DNS_NAME"'","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/'"$CID"'\"" } ] } } ]}' | tee change-record.json
+            aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch file://$(pwd)/change-record.json
 
 workflows:
   version: 2
@@ -114,6 +189,26 @@ workflows:
           context: Audius Client
           requires:
             - build-staging
+          filters:
+            branches:
+              only: /^main$/
+      - update-staging-ga-build:
+          requires:
+            - deploy-staging
+          filters:
+            branches:
+              only: /^main$/
+      - hold-update-staging-records:
+          type: approval
+          requires:
+            - update-staging-ga-build
+          filters:
+            branches:
+              only: /^main$/
+      - update-staging-records:
+          context: Audius Client
+          requires:
+            - hold-update-staging-records
           filters:
             branches:
               only: /^main$/
@@ -131,6 +226,26 @@ workflows:
           context: Audius Client
           requires:
             - hold-deploy-prod
+          filters:
+            branches:
+              only: /^main$/
+      - update-prod-ga-build:
+          requires:
+            - deploy-prod
+          filters:
+            branches:
+              only: /^main$/
+      - hold-update-prod-records:
+          type: approval
+          requires:
+            - update-prod-ga-build
+          filters:
+            branches:
+              only: /^main$/
+      - update-prod-records:
+          context: Audius Client
+          requires:
+            - hold-update-prod-records
           filters:
             branches:
               only: /^main$/
