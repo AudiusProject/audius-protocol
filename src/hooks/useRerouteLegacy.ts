@@ -12,7 +12,10 @@ import { useLocation } from 'react-router-dom'
 export const useRerouteLegacy = () => {
   const location = useLocation()
   useEffect(() => {
-    if (window.location.pathname !== '/' && !window.location.pathname.includes('/ipns')) {
+    if (
+      window.location.pathname !== '/' &&
+      !window.location.pathname.includes('/ipns')
+    ) {
       window.history.replaceState({}, '', `/#${window.location.pathname}`)
     }
   }, [location])
