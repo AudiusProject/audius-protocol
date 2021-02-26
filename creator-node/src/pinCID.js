@@ -8,7 +8,7 @@ const IPFS_PIN_TIMEOUT = 30 /* sec */ * 1000 /* ms */
 
 /**
  * Pin CIDs from config
- * @param {*} ipfs
+ * @param {IPFS} ipfs
  */
 const pinCID = async (ipfs) => {
   try {
