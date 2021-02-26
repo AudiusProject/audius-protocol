@@ -56,7 +56,8 @@ const messages = {
   darkModeOff: 'Off',
   darkModeAuto: 'Auto',
   verifiedTitle: 'Verified on twitter or Instagram?',
-  getVerified: 'Get verified by linking a verified social account to Audius'
+  getVerified: 'Get verified by linking a verified social account to Audius',
+  matrixMode: '🕳 🐇 Matrix'
 }
 
 type OwnProps = {
@@ -88,6 +89,7 @@ type OwnProps = {
   recordSignOut: (callback?: () => void) => void
   recordAccountRecovery: () => void
   recordDownloadDesktopApp: () => void
+  showMatrix: boolean
 }
 
 export type SettingsPageProps = OwnProps
@@ -147,6 +149,41 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
     this.props.recordDownloadDesktopApp()
   }
 
+  renderThemeCard() {
+    const { showMatrix, theme, toggleTheme } = this.props
+
+    const options = [
+      {
+        key: Theme.DEFAULT,
+        text: messages.darkModeOff
+      },
+      {
+        key: Theme.DARK,
+        text: messages.darkModeOn
+      },
+      {
+        key: Theme.AUTO,
+        text: messages.darkModeAuto
+      }
+    ]
+    if (showMatrix) {
+      options.push({ key: Theme.MATRIX, text: messages.matrixMode })
+    }
+
+    return (
+      <SettingsCard
+        title='Dark Mode'
+        description="Enable dark mode or choose 'Auto' to change with your system settings"
+      >
+        <TabSlider
+          options={options}
+          selected={theme || Theme.DEFAULT}
+          onSelectOption={option => toggleTheme(option)}
+        />
+      </SettingsCard>
+    )
+  }
+
   render() {
     const {
       title,
@@ -160,8 +197,6 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
       onInstagramLogin,
       goToRoute,
       onTwitterLogin,
-      theme,
-      toggleTheme,
       notificationSettings,
       emailFrequency,
       toggleBrowserPushNotificationPermissions,
@@ -237,29 +272,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
               />
             </Toast>
           </SettingsCard>
-          <SettingsCard
-            title='Dark Mode'
-            description="Enable dark mode or choose 'Auto' to change with your system settings"
-          >
-            <TabSlider
-              options={[
-                {
-                  key: Theme.DEFAULT,
-                  text: messages.darkModeOff
-                },
-                {
-                  key: Theme.DARK,
-                  text: messages.darkModeOn
-                },
-                {
-                  key: Theme.AUTO,
-                  text: messages.darkModeAuto
-                }
-              ]}
-              selected={theme || Theme.DEFAULT}
-              onSelectOption={option => toggleTheme(option)}
-            />
-          </SettingsCard>
+          {this.renderThemeCard()}
           <SettingsCard
             title='NOTIFICATIONS'
             description='Review your notifications preferences'

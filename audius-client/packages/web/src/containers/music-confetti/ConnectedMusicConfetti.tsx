@@ -1,9 +1,9 @@
 import MusicConfetti from 'components/background-animations/MusicConfetti'
 import React, { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
+import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
-import { getIsVisible } from './store/selectors'
-import { hide } from './store/slice'
+import { getIsMatrix, hide, getIsVisible } from './store/slice'
 
 const ConnectedMusicConfetti = () => {
   const dispatch = useDispatch()
@@ -12,10 +12,18 @@ const ConnectedMusicConfetti = () => {
   }, [dispatch])
 
   const isVisible = useSelector(getIsVisible)
+  const isMatrix = useSelector(getIsMatrix)
+  const isMobile = useIsMobile()
 
   return (
     isVisible && (
-      <MusicConfetti zIndex={10000} onCompletion={onConfettiFinished} />
+      <MusicConfetti
+        zIndex={10000}
+        onCompletion={onConfettiFinished}
+        isMatrix={isMatrix}
+        limit={isMatrix ? (isMobile ? 200 : 500) : undefined}
+        gravity={isMatrix ? 0.25 : undefined}
+      />
     )
   )
 }

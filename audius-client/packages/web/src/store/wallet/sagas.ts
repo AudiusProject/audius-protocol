@@ -92,7 +92,7 @@ function* claimAsync() {
       put(setClaim({ balance: '0' as StringWei })),
       put(increaseBalance({ amount: weiToString(weiBNClaimable) })),
       put(claimSucceeded()),
-      put(showMusicConfetti())
+      put(showMusicConfetti({ isMatrix: false }))
     ])
     yield put(
       make(Name.CLAIM_AUDIO_SUCCESS, {

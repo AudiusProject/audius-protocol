@@ -21,6 +21,8 @@ import { formatCount } from 'utils/formatUtil'
 import styles from './NavHeader.module.css'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import { StringKeys } from 'services/remote-config'
+import { getTheme } from 'utils/theme/theme'
+import Theme from 'models/Theme'
 
 const NavHeader = ({
   account,
@@ -35,6 +37,7 @@ const NavHeader = ({
   const logoVariantClickTarget = useRemoteVar(
     StringKeys.AUDIUS_LOGO_VARIANT_CLICK_TARGET
   )
+  const isMatrix = getTheme() === Theme.MATRIX
 
   const onClickLogo = useCallback(() => {
     if (logoVariantClickTarget) {
@@ -55,7 +58,9 @@ const NavHeader = ({
         {logoVariant ? (
           <img src={logoVariant} alt='' />
         ) : (
-          <AudiusLogoHorizontal className={styles.logo} />
+          <AudiusLogoHorizontal
+            className={cn(styles.logo, { [styles.matrixLogo]: isMatrix })}
+          />
         )}
       </div>
       {account ? (

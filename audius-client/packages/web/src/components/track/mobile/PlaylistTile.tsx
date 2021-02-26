@@ -87,6 +87,7 @@ type ExtraProps = {
   makeGoToFavoritesPage: (id: ID) => (e: React.MouseEvent<HTMLElement>) => void
   isOwner: boolean
   darkMode: boolean
+  isMatrix: boolean
 }
 
 const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
@@ -170,6 +171,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 <FavoriteButton
                   iconMode
                   isDarkMode={props.darkMode}
+                  isMatrixMode={props.isMatrix}
                   className={styles.favoriteButton}
                 />
               </div>
@@ -187,6 +189,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 <RepostButton
                   iconMode
                   isDarkMode={props.darkMode}
+                  isMatrixMode={props.isMatrix}
                   className={styles.repostButton}
                 />
               </div>
@@ -208,7 +211,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
           onShare={props.onShare}
           onClickOverflow={props.onClickOverflow}
           isOwner={props.isOwner}
-          darkMode={props.darkMode}
+          isDarkMode={props.darkMode}
+          isMatrixMode={props.isMatrix}
         />
       </div>
     </div>

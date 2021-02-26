@@ -17,7 +17,7 @@ import {
   openSignOn,
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import { setTab } from 'containers/explore-page/store/actions'
 import { Tabs } from 'containers/explore-page/store/types'
 
@@ -94,6 +94,7 @@ const ConnectedNavBar = ({
       onClickFavorites={goToFavorites}
       onClickProfile={goToProfile}
       isDarkMode={isDarkMode()}
+      isMatrixMode={isMatrix()}
     />
   )
 }

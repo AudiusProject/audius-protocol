@@ -30,6 +30,7 @@ type Props = {
   onClickFavorites: () => void
   onClickProfile: () => void
   isDarkMode: boolean
+  isMatrixMode: boolean
 }
 
 const BottomBar = ({
@@ -40,7 +41,8 @@ const BottomBar = ({
   onClickExplore,
   onClickFavorites,
   onClickProfile,
-  isDarkMode
+  isDarkMode,
+  isMatrixMode
 }: Props) => {
   const { setStackReset } = useContext(RouterContext)
   const [tempCurrentPage, setTempCurrentPage] = useState<string | null>(
@@ -70,26 +72,31 @@ const BottomBar = ({
         isActive={tempCurrentPage === FEED_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickFeed, FEED_PAGE)}
+        isMatrixMode={isMatrixMode}
       />
       <TrendingButton
         isActive={tempCurrentPage === TRENDING_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickTrending, TRENDING_PAGE)}
+        isMatrixMode={isMatrixMode}
       />
       <ExploreButton
         isActive={tempCurrentPage === EXPLORE_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickExplore, EXPLORE_PAGE)}
+        isMatrixMode={isMatrixMode}
       />
       <FavoritesButton
         isActive={tempCurrentPage === FAVORITES_PAGE}
         darkMode={isDarkMode}
         onClick={onClick(onClickFavorites, FAVORITES_PAGE)}
+        isMatrixMode={isMatrixMode}
       />
       <ProfileButton
         isActive={tempCurrentPage === userProfilePageRoute}
         darkMode={isDarkMode}
         onClick={onClick(onClickProfile, userProfilePageRoute)}
+        isMatrixMode={isMatrixMode}
       />
     </div>
   )

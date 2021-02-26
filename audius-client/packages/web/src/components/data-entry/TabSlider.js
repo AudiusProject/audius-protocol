@@ -25,9 +25,13 @@ const TabSlider = props => {
   }))
 
   useEffect(() => {
-    const selectedRefIdx = props.options.findIndex(
+    let selectedRefIdx = props.options.findIndex(
       option => option.key === selectedOption
     )
+    if (selectedRefIdx === -1) {
+      selectedRefIdx = 0
+    }
+
     const selectedRef = optionRefs.current[selectedRefIdx]
     const left = optionRefs.current
       .slice(0, selectedRefIdx)
@@ -73,7 +77,6 @@ const TabSlider = props => {
             <div
               ref={idx === 0 ? getFirstOptionRef : optionRefs.current[idx]}
               className={cn(styles.tab, {
-                [styles.activeTab]: selectedOption === option.key,
                 [styles.tabFullWidth]: !!props.fullWidth
               })}
               onClick={() => onSetSelected(option.key)}

@@ -1,7 +1,5 @@
 /* global Image */
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import PropTypes from 'prop-types'
-// import styles from './MusicConfetti.module.css'
 import heartIconPrimary from 'assets/img/particles/particleHeartPrimary.svg'
 import heartIconSecondary from 'assets/img/particles/particleHeartSecondary.svg'
 import noteIconSecondary from 'assets/img/particles/particleNoteSecondary.svg'
@@ -14,42 +12,48 @@ import playlistsIconSecondary from 'assets/img/particles/particlePlaylistSeconda
 import Confetti from 'utils/animations/music-confetti'
 import { useOnResizeEffect } from 'utils/effects'
 
+const DEFAULT_IMAGES = [
+  heartIconPrimary,
+  heartIconSecondary,
+  noteIconSecondary,
+  noteIconPrimary,
+  listensIconPrimary,
+  listensIconSecondary,
+  playlistsIconPrimary,
+  playlistsIconSecondary
+]
+
 async function startConfettiAnimation(
-  canvasRef,
-  recycle,
-  limit,
-  friction,
-  gravity,
-  rotate,
-  swing,
-  particleRate,
-  onCompletion
+  canvasRef: HTMLCanvasElement,
+  recycle: boolean,
+  limit: number,
+  friction: number,
+  gravity: number,
+  rotate: number,
+  swing: number,
+  particleRate: number,
+  onCompletion: () => void,
+  isMatrix: boolean
 ) {
   if (!canvasRef) return
-  const images = [
-    heartIconPrimary,
-    heartIconSecondary,
-    noteIconSecondary,
-    noteIconPrimary,
-    listensIconPrimary,
-    listensIconSecondary,
-    playlistsIconPrimary,
-    playlistsIconSecondary
-  ].map(icon => {
-    const img = new Image()
-    img.src = icon
-    return img
-  })
-  await Promise.all(
-    images.map(
-      img =>
-        new Promise((resolve, reject) => {
-          img.onload = () => {
-            resolve(true)
-          }
-        })
+  const images = null
+  if (!isMatrix) {
+    const images = DEFAULT_IMAGES.map(icon => {
+      const img = new Image()
+      img.src = icon
+      return img
+    })
+    await Promise.all(
+      images.map(
+        img =>
+          new Promise(resolve => {
+            img.onload = () => {
+              resolve(true)
+            }
+          })
+      )
     )
-  )
+  }
 
   const confetti = new Confetti(
     canvasRef,
@@ -67,20 +71,49 @@ async function startConfettiAnimation(
   return confetti
 }
 
-const MusicConfetti = props => {
-  // Check if browser is Safari, Edge, or IE
-  if (
-    (navigator.userAgent.includes('Safari') &&
-      !navigator.userAgent.includes('Chrome')) ||
-    navigator.userAgent.includes('Edge' || navigator.userAgent.includes('MSIE'))
-  ) {
-    return null
-  }
-  return <UnconditionalMusicConfetti {...props} />
+type MusicConfettiProps = {
+  withBackground?: boolean
+  recycle?: boolean
+  limit?: number
+  friction?: number
+  gravity?: number
+  rotate?: number
+  swing?: number
+  particleRate?: number
+  zIndex?: number
+  onCompletion?: () => void
+  isMatrix?: boolean
 }
 
-const UnconditionalMusicConfetti = props => {
-  const confettiPromiseRef = useRef(null)
+const defaultProps: MusicConfettiProps = {
+  withBackground: false,
+  recycle: false,
+  limit: 250,
+  friction: 0.99,
+  gravity: 0.2,
+  rotate: 0.1,
+  swing: 0.01,
+  particleRate: 0.1,
+  zIndex: 16,
+  onCompletion: () => {},
+  isMatrix: false
+}
+
+const MusicConfetti = (props: MusicConfettiProps) => {
+  const newProps = { ...props } as Required<MusicConfettiProps>
+
+  if (props.isMatrix) {
+    newProps.swing = 0
+    newProps.rotate = 0
+  }
+
+  return <UnconditionalMusicConfetti {...newProps} />
+}
+
+MusicConfetti.defaultProps = defaultProps
+
+const UnconditionalMusicConfetti = (props: Required<MusicConfettiProps>) => {
+  const confettiPromiseRef = useRef<Promise<Confetti | undefined> | null>(null)
 
   // When we mount canvas, start confetti and set the confettiPromiseRef
   const {
@@ -91,10 +124,12 @@ const UnconditionalMusicConfetti = props => {
     rotate,
     swing,
     particleRate,
-    onCompletion
+    onCompletion,
+    isMatrix
   } = props
+
   const setCanvasRef = useCallback(
-    node => {
+    (node: HTMLCanvasElement) => {
       if (!node) return
       const confetti = startConfettiAnimation(
         node,
@@ -105,7 +140,8 @@ const UnconditionalMusicConfetti = props => {
         rotate,
         swing,
         particleRate,
-        onCompletion
+        onCompletion,
+        isMatrix
       )
       confettiPromiseRef.current = confetti
     },
@@ -117,7 +153,8 @@ const UnconditionalMusicConfetti = props => {
       rotate,
       swing,
       particleRate,
-      onCompletion
+      onCompletion,
+      isMatrix
     ]
   )
 
@@ -147,6 +184,7 @@ const UnconditionalMusicConfetti = props => {
       height: window.innerHeight
     })
   })
+
   return (
     <canvas
       ref={setCanvasRef}
@@ -168,31 +206,6 @@ const UnconditionalMusicConfetti = props => {
       }}
     />
   )
-}
-
-MusicConfetti.propTypes = {
-  withBackground: PropTypes.bool,
-  recycle: PropTypes.bool,
-  limit: PropTypes.number,
-  friction: PropTypes.number,
-  gravity: PropTypes.number,
-  rotate: PropTypes.number,
-  swing: PropTypes.number,
-  particleRate: PropTypes.number,
-  zIndex: PropTypes.number,
-  onCompletion: PropTypes.func
-}
-
-MusicConfetti.defaultProps = {
-  withBackground: false,
-  recycle: false,
-  limit: 250,
-  friction: 0.99,
-  gravity: 0.2,
-  rotate: 0.1,
-  swing: 0.01,
-  particleRate: 0.1,
-  zIndex: 16
 }
 
 export default MusicConfetti

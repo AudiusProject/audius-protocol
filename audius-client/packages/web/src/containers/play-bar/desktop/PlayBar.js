@@ -42,7 +42,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import styles from './PlayBar.module.css'
 
 import { setupHotkeys } from 'utils/hotkeyUtil'
-import { shouldShowDark } from 'utils/theme/theme'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import {
   RepostSource,
   FavoriteSource,
@@ -281,6 +281,8 @@ class PlayBar extends Component {
       playButtonStatus = 'play'
     }
 
+    const matrix = isMatrix()
+
     return (
       <div className={styles.playBar}>
         <div className={styles.playBarContentWrapper}>
@@ -318,6 +320,7 @@ class PlayBar extends Component {
             <div className={styles.buttonControls}>
               <div className={styles.shuffleButton}>
                 <ShuffleButtonProvider
+                  isMatrix={matrix}
                   darkMode={shouldShowDark(theme)}
                   onShuffleOn={this.shuffleOn}
                   onShuffleOff={this.shuffleOff}
@@ -338,6 +341,7 @@ class PlayBar extends Component {
               </div>
               <div className={styles.repeatButton}>
                 <RepeatButtonProvider
+                  isMatrix={matrix}
                   darkMode={shouldShowDark(theme)}
                   onRepeatOff={this.repeatOff}
                   onRepeatAll={this.repeatAll}

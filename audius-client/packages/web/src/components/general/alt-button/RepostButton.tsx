@@ -9,9 +9,12 @@ import repostDarkActive from 'assets/img/iconRepostDarkActive@2x.png'
 import repostLight from 'assets/img/iconRepostLight@2x.png'
 import repostLightAlt from 'assets/img/iconRepostLightAlt@2x.png'
 import repostLightActive from 'assets/img/iconRepostLightActive@2x.png'
+import repostActiveMatrix from 'assets/img/iconRepostActiveMatrix@2x.png'
+import repostInactiveMatrix from 'assets/img/iconRepostInactiveMatrix@2x.png'
 
 type RepostButtonProps = {
   isDarkMode: boolean
+  isMatrixMode: boolean
   onClick?: (e: MouseEvent) => void
   className?: string
   wrapperClassName?: string
@@ -42,11 +45,22 @@ const iconMap = {
       regular: repostLight,
       variant: repostLightAlt
     }
+  },
+  matrix: {
+    active: {
+      regular: repostActiveMatrix,
+      variant: repostActiveMatrix
+    },
+    inactive: {
+      regular: repostInactiveMatrix,
+      variant: repostInactiveMatrix
+    }
   }
 }
 
 const RepostButton = ({
   isDarkMode,
+  isMatrixMode,
   className,
   wrapperClassName,
   onClick = () => {},
@@ -57,9 +71,9 @@ const RepostButton = ({
   altVariant = false
 }: RepostButtonProps) => {
   const icon =
-    iconMap[isDarkMode ? 'dark' : 'light'][isActive ? 'active' : 'inactive'][
-      altVariant ? 'variant' : 'regular'
-    ]
+    iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light'][
+      isActive ? 'active' : 'inactive'
+    ][altVariant ? 'variant' : 'regular']
   const [isSpinning, setIsSpinning] = useState(false)
   const [isDepressed, setIsDepressed] = useState(false)
 

@@ -844,16 +844,17 @@ class App extends Component {
           <Modals />
         </Suspense>
 
+        {
+          <Suspense fallback={null}>
+            <ConnectedMusicConfetti />
+          </Suspense>
+        }
+
         {/* Non-mobile */}
         {!isMobileClient && <Konami />}
         {!isMobileClient && <ConfirmerPreview />}
         {!isMobileClient && <Visualizer />}
         {!isMobileClient && <PinnedTrackConfirmation />}
-        {!isMobileClient && (
-          <Suspense fallback={null}>
-            <ConnectedMusicConfetti />
-          </Suspense>
-        )}
 
         {/* Mobile-only */}
         {isMobileClient && <ConnectedReachabilityBar />}

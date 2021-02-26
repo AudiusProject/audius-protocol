@@ -33,7 +33,7 @@ import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
 import { OwnProps as CollectionkMenuProps } from 'containers/menu/CollectionMenu'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import {
   saveCollection,
@@ -437,6 +437,7 @@ const ConnectedPlaylistTile = memo(
         isOwner={isOwner}
         isLoading={isLoading}
         isDarkMode={isDarkMode()}
+        isMatrixMode={isMatrix()}
         isActive={isActive}
         artwork={artwork}
         rightActions={rightActions}

@@ -196,7 +196,7 @@ const Tiers = () => {
   const showConfetti = useShowConfetti(tier)
   useEffect(() => {
     if (showConfetti) {
-      dispatch(show())
+      dispatch(show({ isMatrix: false }))
     }
   }, [showConfetti, dispatch])
 

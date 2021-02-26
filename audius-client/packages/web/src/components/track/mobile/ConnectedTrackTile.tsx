@@ -33,7 +33,7 @@ import { getUserId } from 'store/account/selectors'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { FavoriteType } from 'models/Favorite'
 import { setRepost } from 'containers/reposts-page/store/actions'
-import { shouldShowDark } from 'utils/theme/theme'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { FavoriteSource, RepostSource, ShareSource } from 'services/analytics'
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
@@ -213,6 +213,7 @@ const ConnectedTrackTile = memo(
         goToRoute={goToRoute}
         isOwner={isOwner}
         darkMode={darkMode}
+        isMatrix={isMatrix()}
       />
     )
   }

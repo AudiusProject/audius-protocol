@@ -38,6 +38,7 @@ type AnimatedIconButtonProps = {
   disabledClassName?: string
   icon: AnimatedIconType
   darkMode: boolean
+  isMatrix?: boolean
 }
 
 const AnimatedIconButton = ({
@@ -47,6 +48,7 @@ const AnimatedIconButton = ({
   disabledClassName,
   icon,
   darkMode,
+  isMatrix = false,
   isDisabled = false,
   isActive = false,
   stopPropagation = false
@@ -59,6 +61,7 @@ const AnimatedIconButton = ({
       isActive={isActive}
       isDisabled={isDisabled}
       darkMode={darkMode}
+      isMatrix={isMatrix}
       onClick={onClick || ((e: React.MouseEvent) => {})}
       iconLightJSON={() => require(`assets/animations/${light}.json`)}
       iconDarkJSON={() => require(`assets/animations/${dark}.json`)}

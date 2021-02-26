@@ -118,7 +118,7 @@
 }
 
 .iconKebabHorizontal path {
-  fill: var(--static-neutral-light-6);
+  fill: var(--neutral-light-6);
 }
 
 .iconKebabHorizontal:hover path,

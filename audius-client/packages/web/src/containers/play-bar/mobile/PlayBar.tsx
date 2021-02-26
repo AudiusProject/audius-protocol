@@ -26,7 +26,7 @@ import styles from './PlayBar.module.css'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { ID } from 'models/common/Identifiers'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import { FavoriteSource, Name, PlaybackSource } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
@@ -128,6 +128,7 @@ const PlayBar = ({
           <FavoriteButton
             onClick={toggleFavorite}
             isDarkMode={isDarkMode()}
+            isMatrixMode={isMatrix()}
             isActive={has_current_user_saved}
             className={styles.favorite}
           />

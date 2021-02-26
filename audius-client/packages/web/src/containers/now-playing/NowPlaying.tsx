@@ -42,7 +42,7 @@ import NextButton from 'components/play-bar/NextButton'
 import PlayButton from 'components/play-bar/PlayButton'
 import PreviousButton from 'components/play-bar/PreviousButton'
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
 import styles from './NowPlaying.module.css'
@@ -310,6 +310,9 @@ const NowPlaying = g(
         }
       : {}
 
+    const matrix = isMatrix()
+    const darkMode = isDarkMode()
+
     return (
       <div
         className={cn(styles.nowPlaying, {
@@ -384,7 +387,8 @@ const NowPlaying = g(
           <div className={styles.repeatButton}>
             <RepeatButtonProvider
               isMobile
-              darkMode={isDarkMode()}
+              isMatrix={matrix}
+              darkMode={darkMode}
               onRepeatOff={() => repeat(RepeatMode.OFF)}
               onRepeatAll={() => repeat(RepeatMode.ALL)}
               onRepeatSingle={() => repeat(RepeatMode.SINGLE)}
@@ -406,7 +410,8 @@ const NowPlaying = g(
           <div className={styles.shuffleButton}>
             <ShuffleButtonProvider
               isMobile
-              darkMode={isDarkMode()}
+              darkMode={darkMode}
+              isMatrix={matrix}
               onShuffleOn={() => shuffle(true)}
               onShuffleOff={() => shuffle(false)}
             />
@@ -424,6 +429,7 @@ const NowPlaying = g(
             onShare={onShare}
             onClickOverflow={onClickOverflow}
             isDarkMode={isDarkMode()}
+            isMatrixMode={matrix}
           />
         </div>
       </div>

@@ -56,7 +56,8 @@ const messages = {
   cast: 'Select your prefered casting method.',
   title: 'Settings',
   description: 'Configure your Audius account',
-  historyTitle: 'Listening History'
+  historyTitle: 'Listening History',
+  matrixMode: 'Matrix'
 }
 
 type OwnProps = {
@@ -92,6 +93,7 @@ type OwnProps = {
   updateCastMethod: (castMethod: Cast) => void
   recordSignOut: (callback?: () => void) => void
   onTwitterCompleteOauth: (isVerified: boolean) => void
+  showMatrix: boolean
 }
 
 export type SettingsPageProps = OwnProps
@@ -118,7 +120,8 @@ const SettingsPage = (props: SettingsPageProps) => {
     castMethod,
     updateCastMethod,
     getNotificationSettings,
-    getPushNotificationSettings
+    getPushNotificationSettings,
+    showMatrix
   } = props
   useScrollToTop()
 
@@ -166,6 +169,37 @@ const SettingsPage = (props: SettingsPageProps) => {
     return <SubPageComponent {...props} />
   }
   const isIOS = getIsIOS()
+
+  const renderThemeSlider = () => {
+    const options = [
+      {
+        key: Theme.AUTO,
+        text: 'Auto'
+      },
+      {
+        key: Theme.DARK,
+        text: 'Dark'
+      },
+      {
+        key: Theme.DEFAULT,
+        text: 'Light'
+      }
+    ]
+
+    if (showMatrix) {
+      options.push({ key: Theme.MATRIX, text: messages.matrixMode })
+    }
+
+    return (
+      <TabSlider
+        isMobile
+        fullWidth
+        options={options}
+        selected={theme || Theme.DEFAULT}
+        onSelectOption={option => toggleTheme(option)}
+      />
+    )
+  }
   return (
     <Page
       title={messages.title}
@@ -212,26 +246,7 @@ const SettingsPage = (props: SettingsPageProps) => {
               title={messages.appearanceTitle}
               body={messages.appearance}
             >
-              <TabSlider
-                isMobile
-                fullWidth
-                options={[
-                  {
-                    key: Theme.AUTO,
-                    text: 'Auto'
-                  },
-                  {
-                    key: Theme.DARK,
-                    text: 'Dark'
-                  },
-                  {
-                    key: Theme.DEFAULT,
-                    text: 'Light'
-                  }
-                ]}
-                selected={theme || Theme.DEFAULT}
-                onSelectOption={option => toggleTheme(option)}
-              />
+              {renderThemeSlider()}
             </Row>
             {isIOS && NATIVE_MOBILE && (
               <Row

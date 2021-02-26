@@ -8,7 +8,7 @@ import cn from 'classnames'
 
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 import SearchBarResult from 'components/search/SearchBarResult'
-import iconSearch from 'assets/img/iconSearch.svg'
+import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import styles from './SearchBar.module.css'
@@ -394,7 +394,7 @@ class SearchBar extends Component {
             name='search'
             autoComplete='off'
             type='search'
-            prefix={<img src={iconSearch} alt='Search' />}
+            prefix={<IconSearch />}
             onKeyDown={this.onKeyDown}
             spellCheck={false}
             maxLength={500}

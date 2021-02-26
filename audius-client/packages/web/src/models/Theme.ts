@@ -1,7 +1,8 @@
 enum Theme {
   DEFAULT = 'default',
   DARK = 'dark',
-  AUTO = 'auto'
+  AUTO = 'auto',
+  MATRIX = 'matrix'
 }
 
 export default Theme

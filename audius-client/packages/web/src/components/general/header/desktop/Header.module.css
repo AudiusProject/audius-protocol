@@ -40,13 +40,13 @@
   color: var(--secondary);
   font-weight: var(--font-heavy);
   font-size: var(--font-4xl);
-  
+
   user-select: none;
   background-image: var(--page-header-gradient);
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
-  text-shadow: 0px 2px 4px rgba(162,47,235,0.2);
+  text-shadow: var(--page-header-text-shadow);
   line-height: 46px;
 }
 
@@ -56,9 +56,9 @@
 
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
-  text-shadow: 0px 2px 4px rgba(162,47,235,0.2);
+  text-shadow:var(--page-header-text-shadow);
 }
-  
+
 .header.mini {
   /* Padding top to align baseline with main. */
   padding-top: 12px;
@@ -67,7 +67,7 @@
   font-weight: var(--font-heavy);
   user-select: none;
 }
-  
+
 .header.section {
   display: inline-block;
   color: var(--neutral);
