@@ -66,12 +66,23 @@
   box-shadow: none;
 }
 .searchBar :global(.ant-input::placeholder) {
-  color: #858199;
+  color: var(--neutral-light-4);
 }
+
+.searchBar :global(.ant-input-prefix)>svg {
+  height: 12px;
+  width: 12px;
+}
+
+.searchBar :global(.ant-input-prefix)>svg g path {
+  fill: var(--neutral-light-4);
+}
+
 /* Hide the placeholder text when selecting. */
 .searchBar :global(.ant-input:focus::placeholder) {
   opacity: 0;
 }
+
 
 .searchBar :global(.ant-select-dropdown) {
   -webkit-app-region: none;
@@ -155,16 +166,16 @@
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active),
 .searchBox :global(.ant-select-dropdown-menu-item:hover) {
   background-color: var(--secondary);
-} 
+}
 
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > .resultText,
 .searchBox :global(.ant-select-dropdown-menu-item:hover) > div > div > .resultText {
   color: var(--white);
-} 
+}
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > div > .resultText,
 .searchBox :global(.ant-select-dropdown-menu-item:hover) > div > div > div > .resultText {
     color: var(--white);
-} 
+}
 
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) svg path,
 .searchBox :global(.ant-select-dropdown-menu-item:hover) svg path {
@@ -196,7 +207,7 @@
 
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).noResultsOption {
   background-color: var(--white);
-} 
+}
 
 .noResults {
   width:100%;

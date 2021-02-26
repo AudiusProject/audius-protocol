@@ -9,9 +9,12 @@ import heartDarkActive from 'assets/img/iconHeartDarkActive@2x.png'
 import heartLight from 'assets/img/iconHeartLight@2x.png'
 import heartLightAlt from 'assets/img/iconHeartLightAlt@2x.png'
 import heartLightActive from 'assets/img/iconHeartLightActive@2x.png'
+import heartActiveMatrix from 'assets/img/iconHeartActiveMatrix@2x.png'
+import heartInactiveMatrix from 'assets/img/iconHeartInactiveMatrix@2x.png'
 
 type FavoriteButtonProps = {
   isDarkMode: boolean
+  isMatrixMode: boolean
   onClick?: (e: MouseEvent) => void
   className?: string
   wrapperClassName?: string
@@ -42,11 +45,22 @@ const iconMap = {
       regular: heartLight,
       variant: heartLightAlt
     }
+  },
+  matrix: {
+    active: {
+      regular: heartActiveMatrix,
+      variant: heartActiveMatrix
+    },
+    inactive: {
+      regular: heartInactiveMatrix,
+      variant: heartInactiveMatrix
+    }
   }
 }
 
 const FavoriteButton = ({
   isDarkMode,
+  isMatrixMode,
   className,
   wrapperClassName,
   onClick = () => {},
@@ -60,9 +74,9 @@ const FavoriteButton = ({
   const [yAnim, setYAnim] = useState(false)
 
   const icon =
-    iconMap[isDarkMode ? 'dark' : 'light'][isActive ? 'active' : 'inactive'][
-      altVariant ? 'variant' : 'regular'
-    ]
+    iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light'][
+      isActive ? 'active' : 'inactive'
+    ][altVariant ? 'variant' : 'regular']
 
   return (
     <div

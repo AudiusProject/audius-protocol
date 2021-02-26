@@ -47,6 +47,8 @@ import {
   Permission
 } from 'utils/browserNotifications'
 import { withClassNullGuard } from 'utils/withNullGuard'
+import { show } from 'containers/music-confetti/store/slice'
+import { makeGetTierAndVerifiedForUser } from 'containers/user-badges/utils'
 
 const messages = {
   title: 'Settings',
@@ -61,7 +63,7 @@ type OwnProps = {
 }
 
 type SettingsPageProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
+  ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps>
 
 type SettingsPageState = {
@@ -85,6 +87,9 @@ class SettingsPage extends PureComponent<
   toggleTheme = (option: Theme) => {
     this.props.recordThemeChange(option)
     this.props.setTheme(option)
+    if (option === Theme.MATRIX) {
+      this.props.showMatrixConfetti()
+    }
   }
 
   toggleBrowserPushNotificationPermissions = (
@@ -157,8 +162,11 @@ class SettingsPage extends PureComponent<
       onTwitterCompleteOauth,
       recordSignOut,
       recordAccountRecovery,
-      recordDownloadDesktopApp
+      recordDownloadDesktopApp,
+      tier
     } = this.props
+
+    const showMatrix = tier === 'gold' || tier === 'platinum'
 
     const childProps = {
       title: messages.title,
@@ -188,7 +196,8 @@ class SettingsPage extends PureComponent<
       togglePushNotificationSetting,
       updateEmailFrequency,
       recordDownloadDesktopApp,
-      goToRoute
+      goToRoute,
+      showMatrix
     }
 
     const mobileProps = {
@@ -201,19 +210,25 @@ class SettingsPage extends PureComponent<
   }
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    handle: getUserHandle(state),
-    name: getUserName(state),
-    isVerified: getAccountVerified(state),
-    isCreator: getAccountIsCreator(state),
-    userId: getUserId(state),
-    profilePictureSizes: getAccountProfilePictureSizes(state),
-    theme: getTheme(state),
-    emailFrequency: getEmailFrequency(state),
-    notificationSettings: getBrowserNotificationSettings(state),
-    pushNotificationSettings: getPushNotificationSettings(state),
-    castMethod: getCastMethod(state)
+function makeMapStateToProps() {
+  const getTier = makeGetTierAndVerifiedForUser()
+
+  return (state: AppState) => {
+    const userId = getUserId(state) ?? 0
+    return {
+      handle: getUserHandle(state),
+      name: getUserName(state),
+      isVerified: getAccountVerified(state),
+      isCreator: getAccountIsCreator(state),
+      userId,
+      profilePictureSizes: getAccountProfilePictureSizes(state),
+      theme: getTheme(state),
+      emailFrequency: getEmailFrequency(state),
+      notificationSettings: getBrowserNotificationSettings(state),
+      pushNotificationSettings: getPushNotificationSettings(state),
+      castMethod: getCastMethod(state),
+      tier: getTier(state, { userId }).tier
+    }
   }
 }
 
@@ -297,10 +312,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         make(Name.ACCOUNT_HEALTH_DOWNLOAD_DESKTOP, { source: 'settings' })
       )
+    },
+    showMatrixConfetti: () => {
+      dispatch(show({ isMatrix: true }))
     }
   }
 }
 
 const g = withClassNullGuard(mapper)
 
-export default connect(mapStateToProps, mapDispatchToProps)(g(SettingsPage))
+export default connect(makeMapStateToProps, mapDispatchToProps)(g(SettingsPage))

@@ -56,6 +56,10 @@
   opacity: 1.0;
 }
 
+.icon g path {
+  fill: var(--neutral-light-4) !important;
+}
+
 .disabled .icon g path {
   fill: var(--neutral-light-7) !important;
   transform: none !important;

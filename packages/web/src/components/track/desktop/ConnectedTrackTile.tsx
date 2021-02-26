@@ -21,7 +21,7 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import {
   saveTrack,
@@ -304,6 +304,7 @@ const ConnectedTrackTile = memo(
           isOwner={isOwner}
           isLoading={isLoading}
           isDarkMode={isDarkMode()}
+          isMatrixMode={isMatrix()}
           listenCount={play_count}
           isActive={isActive}
           isArtistPick={isArtistPick}

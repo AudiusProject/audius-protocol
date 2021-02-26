@@ -5,26 +5,30 @@ import styles from './MoreButton.module.css'
 
 import moreDark from 'assets/img/iconMoreDark@2x.png'
 import moreLight from 'assets/img/iconMoreLight@2x.png'
+import moreMatrix from 'assets/img/iconKebabInactiveMatrix@2x.png'
 
 type MoreButtonProps = {
   onClick: () => void
   isDarkMode: boolean
+  isMatrixMode: boolean
   className?: string
   stopPropagation?: boolean
 }
 
 const iconMap = {
   dark: moreDark,
-  light: moreLight
+  light: moreLight,
+  matrix: moreMatrix
 }
 
 const MoreButton = ({
   onClick,
   isDarkMode,
+  isMatrixMode,
   className,
   stopPropagation = true
 }: MoreButtonProps) => {
-  const icon = iconMap[isDarkMode ? 'dark' : 'light']
+  const icon = iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light']
 
   return (
     <div

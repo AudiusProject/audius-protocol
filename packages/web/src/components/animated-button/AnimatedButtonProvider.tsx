@@ -15,6 +15,7 @@ export type BaseAnimatedButtonProps = {
   activeClassName?: string
   wrapperClassName?: string
   stopPropagation?: boolean
+  isMatrix: boolean
 
   // If we mount in the active state,
   // should we animate that transition or not?
@@ -31,6 +32,7 @@ const AnimatedButton = ({
   iconJSON,
   onClick,
   isActive,
+  isMatrix,
   uniqueKey,
   isDisabled = false,
   className = '',
@@ -103,7 +105,8 @@ const AnimatedButton = ({
         },
         {
           [disabledClassName]: isDisabled
-        }
+        },
+        { [styles.glow]: isActive && isMatrix }
       )}
     >
       <div className={cn(wrapperClassName)}>
@@ -124,6 +127,7 @@ const AnimatedButton = ({
 
 export type AnimatedButtonProviderProps = {
   darkMode: boolean
+  isMatrix: boolean
   iconDarkJSON: () => any
   iconLightJSON: () => any
 } & BaseAnimatedButtonProps

@@ -32,6 +32,10 @@
   width: 24px !important;
 }
 
+.bottomButtons path {
+  fill: var(--neutral) !important;
+}
+
 .activeButton path {
   fill: var(--primary) !important;
 }

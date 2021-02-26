@@ -61,31 +61,31 @@
 }
 
 .segmentVisible:nth-child(1) {
-  background: linear-gradient(180deg, #ED75F9 0%, #CC0FE0 100%);
+  background: var(--segmented-progress-bar-segment-1);
 }
 
 .segmentVisible:nth-child(2) {
-	background: linear-gradient(180deg, #E477FB 0%, #B815DB 100%);
+  background: var(--segmented-progress-bar-segment-2);
 }
 
 .segmentVisible:nth-child(3) {
-	background: linear-gradient(180deg, #D069F5 0%, #9F0AD4 100%);
+  background: var(--segmented-progress-bar-segment-3);
 }
 
 .segmentVisible:nth-child(4) {
-	background: linear-gradient(180deg, #CC75FA 0%, #8908CE 100%);
+  background: var(--segmented-progress-bar-segment-4);
 }
 
 .segmentVisible:nth-child(5) {
-	background: linear-gradient(180deg, #AF4DFF 0%, #7305C8 100%);
+  background: var(--segmented-progress-bar-segment-5);
 }
 
 .segmentVisible:nth-child(6) {
-	background: linear-gradient(180deg, #9C45FF 0%, #5C03C2 100%);
+  background: var(--segmented-progress-bar-segment-6);
 }
 
 .segmentVisible:nth-child(7) {
-	background: linear-gradient(180deg, #833BFB 0%, #4600BC 100%);
+  background: var(--segmented-progress-bar-segment-7);
 }
 
 .segmentHidden {

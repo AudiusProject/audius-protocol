@@ -21,7 +21,9 @@ import {
   pressSend
 } from 'store/token-dashboard/slice'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
-import { isDarkMode } from 'utils/theme/theme'
+import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
+import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import Theme from 'models/Theme'
 
 const TOKEN_ANIMATION_URL =
   'https://d1ne8ucs302cxl.cloudfront.net/animations/spinnytoken.mp4'
@@ -161,23 +163,28 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
     }
   }, [mouseOver])
 
-  const darkMode = isDarkMode()
+  const isDarkMode = getIsDarkMode()
+  const isMatrixMode = getTheme() === Theme.MATRIX
 
   return (
     <Tile className={cn([styles.explainerTile, className])}>
       <>
         <div className={styles.tokenHero}>
-          <video
-            autoPlay
-            src={darkMode ? TOKEN_ANIMATION_DARK_URL : TOKEN_ANIMATION_URL}
-            height={200}
-            width={200}
-            onMouseOver={() => setMouseOver(true)}
-            onMouseOut={() => setMouseOver(false)}
-            ref={videoRef}
-            onEnded={handleOnEnded}
-            muted
-          />
+          {isMatrixMode ? (
+            <IconGoldBadgeSVG />
+          ) : (
+            <video
+              autoPlay
+              src={isDarkMode ? TOKEN_ANIMATION_DARK_URL : TOKEN_ANIMATION_URL}
+              height={200}
+              width={200}
+              onMouseOver={() => setMouseOver(true)}
+              onMouseOut={() => setMouseOver(false)}
+              ref={videoRef}
+              onEnded={handleOnEnded}
+              muted
+            />
+          )}
         </div>
         <div className={styles.whatIsAudioContainer}>
           <h4 className={styles.whatIsAudio}>{messages.whatIsAudio}</h4>

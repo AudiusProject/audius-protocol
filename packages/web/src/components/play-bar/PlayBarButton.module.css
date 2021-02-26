@@ -66,3 +66,7 @@
   /* On some devices (iOS 13) the animation can get clipped with overflow hidden */
   overflow: visible !important;
 }
+
+.playButton :global(#primaryBG) path, .playButton :global(#Primary) path {
+  fill: var(--primary);
+}
