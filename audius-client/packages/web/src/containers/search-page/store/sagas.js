@@ -77,7 +77,11 @@ export function* getSearchResults(searchText, kind, limit, offset) {
   yield call(processAndCacheTracks, tracks)
 
   const collections = albums.concat(playlists)
-  yield call(processAndCacheCollections, collections)
+  yield call(
+    processAndCacheCollections,
+    collections,
+    /* shouldRetrieveTracks */ false
+  )
 
   return { users, tracks, albums, playlists }
 }
