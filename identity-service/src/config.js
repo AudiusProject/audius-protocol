@@ -479,6 +479,18 @@ const config = convict({
     format: String,
     env: 'ethRelayerProdGasTier',
     default: 'fastGweiHex'
+  },
+  captchaScoreSecret: {
+    doc: 'The secret necessary to view user captcha scores',
+    format: String,
+    env: 'captchaScoreSecret',
+    default: 'captcha_score_secret'
+  },
+  recaptchaServiceKey: {
+    doc: 'The service key for Google recaptcha v3 API',
+    format: String,
+    env: 'recaptchaServiceKey',
+    default: ''
   }
 })
 
