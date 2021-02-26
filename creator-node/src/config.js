@@ -421,12 +421,6 @@ const config = convict({
     format: String,
     env: 'pinAddCIDs',
     default: ''
-  },
-  pinRemoveCIDs: {
-    doc: 'Array of comma separated CIDs to pin remove',
-    format: String,
-    env: 'pinRemoveCIDs',
-    default: ''
   }
 
   // unsupported options at the moment

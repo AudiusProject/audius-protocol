@@ -17,6 +17,13 @@ const pinCID = async (ipfs) => {
       .split(',')
       .filter(cid => cid !== '')
       .map(cid => new CID(cid))
+    const removeCIDs = []
+
+    for await (const { cid, type } of ipfs.pin.ls({ type: 'recursive' })) {
+      if (!addCIDs.some(addCID => addCID.equals(cid))) {
+        removeCIDs.push(cid)
+      }
+    }
 
     for (const cid of addCIDs) {
       try {
@@ -26,11 +33,6 @@ const pinCID = async (ipfs) => {
         logger.error(`Unable to pin CID: ${cid.toString()} with err: ${err.message}`)
       }
     }
-
-    const removeCIDs = config.get('pinRemoveCIDs')
-      .split(',')
-      .filter(cid => cid !== '')
-      .map(cid => new CID(cid))
 
     for (const cid of removeCIDs) {
       try {
