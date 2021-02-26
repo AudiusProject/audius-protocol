@@ -152,7 +152,7 @@ const getCID = async (req, res) => {
 
   try {
     // Add a rehydration task to the queue to be processed in the background
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, { logContext: req.logContext })
+    // RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, { logContext: req.logContext })
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, storagePath)
@@ -257,7 +257,7 @@ const getDirCID = async (req, res) => {
 
   // Lop off the last bit of the storage path (the child CID)
   // to get the parent storage path for IPFS rehydration
-  const parentStoragePath = storagePath.split('/').slice(0, -1).join('/')
+  // const parentStoragePath = storagePath.split('/').slice(0, -1).join('/')
 
   redisClient.incr('ipfsStandaloneReqs')
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
@@ -269,7 +269,7 @@ const getDirCID = async (req, res) => {
 
   try {
     // Add rehydrate task to queue to be processed in background
-    RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
+    // RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
     // Attempt to stream file to client.
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
     return await streamFromFileSystem(req, res, storagePath)

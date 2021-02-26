@@ -10,7 +10,7 @@ const transcodingMaxConcurrency = config.get('transcodingMaxConcurrency')
 // Otherwise, uses the number of CPU cores available to node
 const MAX_CONCURRENCY = transcodingMaxConcurrency !== -1
   ? transcodingMaxConcurrency
-  : os.cpus().length
+  : (os.cpus().length) / 2
 
 const PROCESS_NAMES = Object.freeze({
   segment: 'segment',
