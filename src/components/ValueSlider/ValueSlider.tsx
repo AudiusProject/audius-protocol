@@ -116,18 +116,12 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
                   : messages.min
                 : messages.min}
             </span>
-            <DisplayAudio
-              position={Position.BOTTOM}
-              amount={min}
-            />
+            <DisplayAudio position={Position.BOTTOM} amount={min} />
           </div>
         )}
         {max && (
           <div ref={minValueRef} className={styles.maxValues}>
-            <DisplayAudio
-              position={Position.BOTTOM}
-              amount={max}
-            />
+            <DisplayAudio position={Position.BOTTOM} amount={max} />
             <span className={styles.maxLabel}>
               {isIncrease !== undefined
                 ? isIncrease

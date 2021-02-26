@@ -20,13 +20,7 @@ const TotalStakedStat: React.FC<TotalStakedStatProps> = () => {
   let stat: ReactNode = null
 
   if (total && status === Status.Success) {
-    stat = (
-      <DisplayAudio
-        className={styles.stat}
-        amount={total}
-        shortFormat
-      />
-    )
+    stat = <DisplayAudio className={styles.stat} amount={total} shortFormat />
   }
 
   return <Stat label={messages.staked} stat={stat} />

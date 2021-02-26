@@ -125,7 +125,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
       <div className={styles.title}>{messages.title} </div>
       <div className={styles.content}>
         <div className={styles.delegationContainer}>
-          <DisplayAudio 
+          <DisplayAudio
             position={Position.TOP}
             className={styles.delegationValue}
             amount={delegates}

@@ -85,7 +85,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
         <div className={styles.walletText}>
           {formatShortWallet(user.wallet)}
         </div>
-        <DisplayAudio 
+        <DisplayAudio
           position={Position.BOTTOM}
           className={styles.tokenText}
           label={TICKER}

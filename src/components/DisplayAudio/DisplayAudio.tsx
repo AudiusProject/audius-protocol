@@ -10,10 +10,10 @@ import styles from './DisplayAudio.module.css'
 import copyToClipboard from 'utils/copyToClipboard'
 
 type OwnProps = {
-  className?: string,
-  amount: BN,
-  position?: Position,
-  label?: string,
+  className?: string
+  amount: BN
+  position?: Position
+  label?: string
   shortFormat?: boolean
 }
 
@@ -28,16 +28,19 @@ const DisplayAudio: React.FC<DisplayAudioProps> = ({
 }) => {
   const [tooltipText, setTooltipText] = useState(formatWei(amount))
   const formatter = shortFormat ? formatShortAud : AudiusClient.displayShortAud
-  const onClick = useCallback((e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    copyToClipboard(formatWeiNumber(amount))
-    setTooltipText('Copied!')
-    const timeout = setTimeout(() => {
-      setTooltipText(formatWei(amount))
-    }, 1000)
-    return () => clearTimeout(timeout)
-  }, [amount, setTooltipText])
+  const onClick = useCallback(
+    e => {
+      e.preventDefault()
+      e.stopPropagation()
+      copyToClipboard(formatWeiNumber(amount))
+      setTooltipText('Copied!')
+      const timeout = setTimeout(() => {
+        setTooltipText(formatWei(amount))
+      }, 1000)
+      return () => clearTimeout(timeout)
+    },
+    [amount, setTooltipText]
+  )
   return (
     <Tooltip
       onClick={onClick}

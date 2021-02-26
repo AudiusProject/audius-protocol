@@ -52,7 +52,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   onClick = () => {},
   isDisabled = true,
   position = Position.TOP
-}) => { 
+}) => {
   const containerRef = useRef(null)
   const [tooltipPosition, setPosition] = useState({ left: 0, top: 0 })
   const rootDomNode = document.getElementById('root') as any

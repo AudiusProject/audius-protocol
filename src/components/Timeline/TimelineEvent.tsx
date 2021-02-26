@@ -469,7 +469,10 @@ const ServiceProviderStakeEvent: React.FC<{
           <>
             {'to'}
             <DisplayAudio
-              className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
+              className={clsx(
+                styles.titleSpacingLeft,
+                styles.titleSpacingRight
+              )}
               amount={newAmount}
               label={TICKER}
             />
