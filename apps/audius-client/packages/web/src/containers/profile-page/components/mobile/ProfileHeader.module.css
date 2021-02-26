@@ -215,7 +215,7 @@
   width: 100%;
   margin-top: 8px;
   text-align: left;
-  color: #CC0FE0;
+  color: var(--primary);
   font-family: "Avenir Next LT Pro";
   font-size: 14px;
   font-weight: 500;

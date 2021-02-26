@@ -32,7 +32,7 @@ import { RepostType } from 'containers/reposts-page/store/types'
 import { getUserId } from 'store/account/selectors'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { FavoriteType } from 'models/Favorite'
-import { shouldShowDark } from 'utils/theme/theme'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import {
   FavoriteSource,
@@ -290,6 +290,7 @@ const ConnectedPlaylistTile = g(
         makeGoToFavoritesPage={makeGoToFavoritesPage}
         isOwner={isOwner}
         darkMode={darkMode}
+        isMatrix={isMatrix()}
       />
     )
   }

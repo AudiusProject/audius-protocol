@@ -3,6 +3,7 @@ import RepeatButton from './RepeatButton'
 
 type RepeatButtonProviderProps = {
   darkMode: boolean
+  isMatrix: boolean
   onRepeatOff: () => void
   onRepeatSingle: () => void
   onRepeatAll: () => void
@@ -17,6 +18,7 @@ type AnimationStates = {
 
 const RepeatButtonProvider = ({
   darkMode,
+  isMatrix,
   onRepeatOff,
   onRepeatSingle,
   onRepeatAll,
@@ -25,9 +27,23 @@ const RepeatButtonProvider = ({
   const [animations, setAnimations] = useState<AnimationStates | null>(null)
   const defaultAnimations = useRef<AnimationStates | null>(null)
   const darkAnimations = useRef<AnimationStates | null>(null)
+  const matrixAnimations = useRef<AnimationStates | null>(null)
 
   useEffect(() => {
-    if (darkMode) {
+    if (isMatrix) {
+      if (!matrixAnimations.current) {
+        const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllMatrix.json')
+        const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleMatrix.json')
+        const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffMatrix.json')
+        matrixAnimations.current = {
+          pbIconRepeatAll,
+          pbIconRepeatSingle,
+          pbIconRepeatOff
+        }
+      }
+
+      setAnimations({ ...matrixAnimations.current })
+    } else if (darkMode) {
       if (!darkAnimations.current) {
         const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllDark.json')
         const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleDark.json')
@@ -52,7 +68,7 @@ const RepeatButtonProvider = ({
       }
       setAnimations({ ...defaultAnimations.current })
     }
-  }, [darkMode, setAnimations])
+  }, [darkMode, setAnimations, isMatrix])
 
   return (
     animations && (

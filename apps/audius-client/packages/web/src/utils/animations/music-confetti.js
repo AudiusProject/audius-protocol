@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 // Utility Functions to compute confetti physics
 
 export function degreesToRads(degrees) {
@@ -16,13 +18,21 @@ export function randomInt(min, max) {
   return Math.floor(min + Math.random() * (max - min + 1))
 }
 
+const RANDOM_LETTERS =
+  'abcdefghijklmnoqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~!@#$%^&*()`™£¢∞§¶•ªº'
+
+// How far apart columns are in matrix mode
+const COLUMN_SPACING = 50
+
 // Particle class representing a piece of confetti
 // The particle holds the image, postion, and phsyics for moving in the animation
 export class Particle {
   constructor(img, x, y, opacity, sizeRatio, friction, gravity, rotate, swing) {
+    this.randomLetter =
+      RANDOM_LETTERS[Math.floor(Math.random() * RANDOM_LETTERS.length)]
     this.img = img
     this.center = x
-    this.maxVx = randomRange(-10, 10) * sizeRatio
+    this.maxVx = swing > 0 ? randomRange(-10, 10) * sizeRatio : 0
     this.maxVy = randomRange(-4, -0.3) * sizeRatio
     this.y = y
     this.x = x
@@ -33,7 +43,7 @@ export class Particle {
     this.vx = this.maxVx
     this.ax = swing > 0 ? randomRange(0.001, swing) : 0
     this.vy = this.maxVy
-    this.angle = degreesToRads(randomRange(0, 360))
+    this.angle = rotate > 0 ? degreesToRads(randomRange(0, 360)) : 0
     this.anglespin = rotate > 0 ? randomRange(-1 * rotate, rotate) : 0
   }
 
@@ -53,7 +63,28 @@ export class Particle {
     ctx.translate(Math.floor(this.x), Math.floor(this.y))
     ctx.rotate(this.angle)
     ctx.globalAlpha = this.opacity
-    ctx.drawImage(this.img, 0, 0)
+    if (this.img) {
+      ctx.drawImage(this.img, 0, 0)
+    } else {
+      // If no image, we must be in matrix mode
+
+      // As letters descend down the screen, draw their ghosts
+      // progressively higher up leading to a cool parallax effect
+      const heightMultipler = this.y / 100
+
+      // Draw the letter
+      ctx.font = '14px Avenir Next LT Pro'
+      ctx.fillStyle = 'rgba(12, 241, 12, 1)'
+      ctx.fillText(this.randomLetter, 0, 0)
+
+      // Draw lower opacity ghosts behind the falling letter
+      ctx.fillStyle = 'rgba(12, 241, 12, 0.3)'
+      ctx.fillText(this.randomLetter, 0, -10 * heightMultipler)
+      ctx.fillStyle = 'rgba(12, 241, 12, 0.1)'
+      ctx.fillText(this.randomLetter, 0, -20 * heightMultipler)
+      ctx.fillStyle = 'rgba(12, 241, 12, 0.05)'
+      ctx.fillText(this.randomLetter, 0, -30 * heightMultipler)
+    }
     ctx.restore()
   }
 }
@@ -87,26 +118,39 @@ export default class Confetti {
     this.particles = []
     this.particlesGenerated = 0
     this.onCompletion = onCompletion
+
+    // For matrix, generate columns by iterating over width with a
+    // COLUMN_SPACING step and then perturbing the values somewhat
+    this.particleColumns = _.range(0, width, COLUMN_SPACING).map(
+      c => c + Math.random() * COLUMN_SPACING - COLUMN_SPACING * 0.4
+    )
   }
 
   generateParticle = (source, number) => {
-    const x = randomRange(0, this.width)
+    const x = this.swing
+      ? randomRange(0, this.width)
+      : _.sample(this.particleColumns)
     const y = -30 // Start the particle 30px above
-    const opacity = randomRange(0.3, 0.9) // Range from 0.3 to 0.9
-    const size = ((opacity + 0.2) * 5) / 6 // range 0.5 to 1
-    const particleImg = this.images[randomInt(0, this.images.length - 1)]
+    const opacity = this.swing ? randomRange(0.3, 0.9) : randomRange(0.8, 1) // Range from 0.3 to 0.9
+    const size = this.swing ? ((opacity + 0.2) * 5) / 6 : 1 // range 0.5 to 1
 
-    const imageCanvas = document.createElement('canvas')
-    const imageContext = imageCanvas.getContext('2d')
-    imageCanvas.height = particleImg.height * size
-    imageCanvas.width = particleImg.width * size
-    imageContext.drawImage(
-      particleImg,
-      0,
-      0,
-      imageCanvas.width,
-      imageCanvas.height
-    )
+    let imageCanvas = null
+
+    if (this.images) {
+      const particleImg = this.images[randomInt(0, this.images.length - 1)]
+
+      imageCanvas = document.createElement('canvas')
+      const imageContext = imageCanvas.getContext('2d')
+      imageCanvas.height = particleImg.height * size
+      imageCanvas.width = particleImg.width * size
+      imageContext.drawImage(
+        particleImg,
+        0,
+        0,
+        imageCanvas.width,
+        imageCanvas.height
+      )
+    }
 
     return new Particle(
       imageCanvas,

@@ -5,7 +5,7 @@
   justify-content: flex-start;
   align-items: center;
   border-radius: 6px;
-  box-shadow: 0px 16px 20px rgba(133, 129, 153, 0.15);
+  box-shadow: 0px 16px 20px var(--table-shadow);
   min-height: 210px;
 }
 
@@ -297,4 +297,9 @@
 
 .tokenHero {
   margin: 66px 64px 66px 102px;
+}
+
+.tokenHero svg {
+  width: 200px;
+  height: 200px;
 }

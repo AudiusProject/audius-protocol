@@ -3,6 +3,7 @@ import ShuffleButton from './ShuffleButton'
 
 type ShuffleButtonProviderProps = {
   darkMode: boolean
+  isMatrix: boolean
   onShuffleOn: () => void
   onShuffleOff: () => void
   isMobile: boolean
@@ -15,6 +16,7 @@ type AnimationStates = {
 
 const ShuffleButtonProvider = ({
   darkMode,
+  isMatrix,
   onShuffleOn,
   onShuffleOff,
   isMobile
@@ -22,9 +24,20 @@ const ShuffleButtonProvider = ({
   const [animations, setAnimations] = useState<AnimationStates | null>(null)
   const defaultAnimations = useRef<AnimationStates | null>(null)
   const darkAnimations = useRef<AnimationStates | null>(null)
+  const matrixAnimations = useRef<AnimationStates | null>(null)
 
   useEffect(() => {
-    if (darkMode) {
+    if (isMatrix) {
+      if (!matrixAnimations.current) {
+        const pbIconShuffleOff = require('assets/animations/pbIconShuffleOffMatrix.json')
+        const pbIconShuffleOn = require('assets/animations/pbIconShuffleOnMatrix.json')
+        matrixAnimations.current = {
+          pbIconShuffleOff,
+          pbIconShuffleOn
+        }
+      }
+      setAnimations({ ...matrixAnimations.current })
+    } else if (darkMode) {
       if (!darkAnimations.current) {
         const pbIconShuffleOff = require('assets/animations/pbIconShuffleOffDark.json')
         const pbIconShuffleOn = require('assets/animations/pbIconShuffleOnDark.json')
@@ -45,7 +58,7 @@ const ShuffleButtonProvider = ({
       }
       setAnimations({ ...defaultAnimations.current })
     }
-  }, [darkMode, setAnimations])
+  }, [darkMode, setAnimations, isMatrix])
 
   return (
     animations && (

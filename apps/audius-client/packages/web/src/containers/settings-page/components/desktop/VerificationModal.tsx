@@ -196,7 +196,7 @@ const VerificationModal = (props: VerificationModalProps) => {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
-        dispatch(showMusicConfetti())
+        dispatch(showMusicConfetti({ isMatrix: false }))
         onInstagramLogin(uuid, profile)
         setStatus(Status.SUCCESS)
       }
@@ -213,7 +213,7 @@ const VerificationModal = (props: VerificationModalProps) => {
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
-        dispatch(showMusicConfetti())
+        dispatch(showMusicConfetti({ isMatrix: false }))
         onTwitterLogin(uuid, profile)
         setStatus(Status.SUCCESS)
       }

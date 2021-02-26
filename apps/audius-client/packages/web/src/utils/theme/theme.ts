@@ -2,6 +2,7 @@ import Theme from 'models/Theme'
 
 import DarkTheme from './dark'
 import DefaultTheme from './default'
+import MatrixTheme from './matrix'
 import { getIsIOS } from 'utils/browser'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
@@ -33,21 +34,22 @@ export const shouldShowDark = (theme?: Theme | null) => {
 }
 
 export const setTheme = (theme: Theme) => {
-  switch (theme) {
-    case Theme.DARK:
-      applyTheme(DarkTheme)
-      break
-    case Theme.AUTO:
-      if (doesPreferDarkMode()) {
-        applyTheme(DarkTheme)
-      } else {
-        applyTheme(DefaultTheme)
-      }
-      break
-    default:
-      applyTheme(DefaultTheme)
-      break
-  }
+  const themeFile = (() => {
+    switch (theme) {
+      case Theme.DARK:
+        return DarkTheme
+      case Theme.MATRIX:
+        return MatrixTheme
+      case Theme.AUTO:
+        if (doesPreferDarkMode()) {
+          return DarkTheme
+        }
+        return DefaultTheme
+      default:
+        return DefaultTheme
+    }
+  })()
+  applyTheme(themeFile)
   window.localStorage.setItem(THEME_KEY, theme)
 }
 
@@ -60,6 +62,7 @@ export const getTheme = (): Theme | null => {
 }
 
 export const isDarkMode = () => shouldShowDark(getTheme())
+export const isMatrix = () => getTheme() === Theme.MATRIX
 
 export const clearTheme = () => {
   window.localStorage.removeItem(THEME_KEY)

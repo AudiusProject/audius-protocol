@@ -39,6 +39,7 @@ type ExtraProps = {
   ) => (e: React.MouseEvent<HTMLElement>) => void
   isOwner: boolean
   darkMode: boolean
+  isMatrix: boolean
 }
 
 const formatListenCount = (listenCount?: number) => {
@@ -74,6 +75,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     onClickOverflow,
     coSign,
     darkMode,
+    isMatrix,
     userId
   } = props
 
@@ -200,6 +202,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                 {formatCount(props.repostCount)}
                 <RepostButton
                   iconMode
+                  isMatrixMode={isMatrix}
                   isDarkMode={darkMode}
                   className={styles.repostButton}
                 />
@@ -216,6 +219,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                 <FavoriteButton
                   iconMode
                   isDarkMode={darkMode}
+                  isMatrixMode={isMatrix}
                   className={styles.favoriteButton}
                 />
               </div>
@@ -233,7 +237,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
           isOwner={props.isOwner}
-          darkMode={darkMode}
+          isDarkMode={darkMode}
+          isMatrixMode={isMatrix}
         />
       </div>
     </div>

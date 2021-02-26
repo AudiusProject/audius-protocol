@@ -17,7 +17,8 @@ type BottomButtonsProps = {
   onClickOverflow: () => void
   onShare: () => void
   isOwner: boolean
-  darkMode: boolean
+  isDarkMode: boolean
+  isMatrixMode: boolean
 }
 
 const messages = {
@@ -33,13 +34,15 @@ const BottomButtons = (props: BottomButtonsProps) => {
         onClick={() => props.toggleRepost()}
         isActive={props.hasReposted}
         isDisabled={props.isOwner}
-        isDarkMode={props.darkMode}
+        isDarkMode={props.isDarkMode}
+        isMatrixMode={props.isMatrixMode}
       />
       <FavoriteButton
         onClick={() => props.toggleSave()}
         isActive={props.hasSaved}
         isDisabled={props.isOwner}
-        isDarkMode={props.darkMode}
+        isDarkMode={props.isDarkMode}
+        isMatrixMode={props.isMatrixMode}
       />
       <ShareButton
         onClick={() => {
@@ -48,9 +51,14 @@ const BottomButtons = (props: BottomButtonsProps) => {
           }
           props.onShare()
         }}
-        isDarkMode={props.darkMode}
+        isDarkMode={props.isDarkMode}
+        isMatrixMode={props.isMatrixMode}
       />
-      <MoreButton onClick={props.onClickOverflow} isDarkMode={props.darkMode} />
+      <MoreButton
+        onClick={props.onClickOverflow}
+        isDarkMode={props.isDarkMode}
+        isMatrixMode={props.isMatrixMode}
+      />
     </div>
   )
 }

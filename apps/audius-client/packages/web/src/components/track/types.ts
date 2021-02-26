@@ -112,6 +112,9 @@ export type DeaktopTrackTileProps = {
   /** If in dark mode for the bottom buttons to be colored */
   isDarkMode?: boolean
 
+  /** Are we in matrix mode? */
+  isMatrixMode: boolean
+
   /** The artwork for the track tile */
   artwork: ReactNode
 
@@ -188,6 +191,9 @@ export type DesktopPlaylistTileProps = {
 
   /** If in dark mode for the bottom buttons to be colored */
   isDarkMode?: boolean
+
+  /** Are we in matrix mode? */
+  isMatrixMode: boolean
 
   /** The artwork for the track tile */
   artwork: ReactNode
