@@ -57,6 +57,13 @@ http {
       proxy_pass http://node:8000;
     }
 
+    # Protocol Dashboard routes.
+    location /protocol_dashboard {
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Methods' 'GET';
+      proxy_pass http://node:8000;
+    }
+
     # Proxy bedtime api.js before /embed/api
     location = /embed/api.js {
       proxy_pass ${BEDTIME_URL}api.js;
