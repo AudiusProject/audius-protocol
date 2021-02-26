@@ -28,6 +28,7 @@ from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
+from src.utils.redis_metrics import METRICS_INTERVAL
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -324,6 +325,14 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_metrics": {
                 "task": "update_metrics",
                 "schedule": crontab(minute=0, hour="*")
+            },
+            "aggregate_metrics": {
+                "task": "aggregate_metrics",
+                "schedule": timedelta(minutes=METRICS_INTERVAL)
+            },
+            "synchronize_metrics": {
+                "task": "synchronize_metrics",
+                "schedule": crontab(minute=0, hour=1)
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",

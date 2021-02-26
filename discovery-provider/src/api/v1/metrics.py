@@ -1,19 +1,22 @@
 import logging
 from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
-from flask import Flask, Blueprint
 from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.api.v1.helpers import make_response, success_response, to_dict, \
-    parse_bool_param, parse_unix_epoch_param, abort_bad_request_param
+    parse_bool_param, parse_unix_epoch_param, abort_bad_request_param, \
+    abort_bad_path_param, format_limit
 from .models.metrics import route_metric, app_name_metric, app_name, plays_metric, \
     genre_metric, route_trailing_metric, app_name_trailing_metric
-from src.queries.get_route_metrics import get_route_metrics
-from src.queries.get_app_name_metrics import get_app_name_metrics
+from src.queries.get_route_metrics import get_route_metrics, get_aggregate_route_metrics, \
+    get_historical_route_metrics
+from src.queries.get_app_name_metrics import get_app_name_metrics, get_aggregate_app_metrics, \
+    get_historical_app_metrics
 from src.queries.get_app_names import get_app_names
 from src.queries.get_trailing_metrics import get_monthly_trailing_route_metrics, \
-    get_trailing_app_metrics
+    get_trailing_app_metrics, get_aggregate_route_metrics_trailing_month
 from src.utils.redis_cache import cache
-
+from src.utils.redis_metrics import get_redis_route_metrics, get_redis_app_metrics, \
+    get_aggregate_metrics_info
 logger = logging.getLogger(__name__)
 
 
@@ -37,6 +40,101 @@ metrics_route_parser.add_argument('bucket_size', required=False)
 metrics_route_parser.add_argument('version', required=False, action='append')
 
 valid_date_buckets = ['hour', 'day', 'week', 'month', 'quarter', 'year', 'decade', 'century']
+valid_bucket_sizes = {
+    'week': ['day'],
+    'month': ['day', 'week'],
+    'all_time': ['month', 'week']
+}
+
+@ns.route("/aggregates/info", doc=False)
+class MetricsAggregateInfo(Resource):
+    @cache(ttl_sec=5)
+    def get(self):
+        """Gets aggregate metrics information"""
+        metrics_info = get_aggregate_metrics_info()
+        logger.info(f"metrics info: {metrics_info}")
+        response = success_response(metrics_info)
+        return response
+
+@ns.route("/aggregates/historical", doc=False)
+class MetricsAggregateInfo(Resource):
+    @cache(ttl_sec=30 * 60)
+    def get(self):
+        """Gets historical aggregate metrics"""
+        historical_metrics = {
+            'routes': get_historical_route_metrics(),
+            'apps': get_historical_app_metrics()
+        } 
+        response = success_response(historical_metrics)
+        return response
+
+@ns.route("/aggregates/routes/cached", doc=False)
+class CachedRouteMetrics(Resource):
+    @cache(ttl_sec=5)
+    def get(self):
+        args = metrics_route_parser.parse_args()
+        start_time = parse_unix_epoch_param(args.get("start_time"))
+        metrics = get_redis_route_metrics(start_time)
+        response = success_response(metrics)
+        return response
+
+@ns.route("/aggregates/routes/trailing/month", doc=False)
+class RouteAggregateMetricsTrailingMonth(Resource):
+    @cache(ttl_sec=30 * 60)
+    def get(self):
+        """Gets aggregated route metrics based on time range and bucket size"""
+        metrics = get_aggregate_route_metrics_trailing_month()
+        response = success_response(metrics)
+        return response
+
+aggregate_metrics_route_parser = reqparse.RequestParser()
+aggregate_metrics_route_parser.add_argument('bucket_size', required=False)
+
+@ns.route("/aggregates/routes/<string:time_range>", doc=False)
+class RouteAggregateMetrics(Resource):
+    @cache(ttl_sec=30 * 60)
+    def get(self, time_range):
+        """Gets aggregated route metrics based on time range and bucket size"""
+        if time_range not in valid_bucket_sizes:
+            abort_bad_path_param('time_range', ns)
+
+        args = aggregate_metrics_route_parser.parse_args()
+        valid_buckets = valid_bucket_sizes[time_range]
+        bucket_size = args.get("bucket_size") or valid_buckets[0]
+
+        if bucket_size not in valid_buckets:
+            abort_bad_request_param('bucket_size', ns)
+
+        metrics = get_aggregate_route_metrics(time_range, bucket_size)
+        response = success_response(metrics)
+        return response
+
+@ns.route("/aggregates/apps/cached", doc=False)
+class CachedAppMetrics(Resource):
+    @cache(ttl_sec=5)
+    def get(self):
+        args = metrics_route_parser.parse_args()
+        start_time = parse_unix_epoch_param(args.get("start_time"))
+        metrics = get_redis_app_metrics(start_time)
+        response = success_response(metrics)
+        return response
+
+aggregate_metrics_app_name_parser = reqparse.RequestParser()
+aggregate_metrics_app_name_parser.add_argument('limit', required=False)
+
+@ns.route("/aggregates/apps/<string:time_range>", doc=False)
+class AppNameAggregateMetricsTrailing(Resource):
+    @cache(ttl_sec=30 * 60)
+    def get(self, time_range):
+        """Gets aggregated app metrics based on time range and bucket size"""
+        if time_range not in valid_bucket_sizes:
+            abort_bad_path_param('time_range', ns)
+
+        args = aggregate_metrics_app_name_parser.parse_args()
+        limit = format_limit(args, max_limit=100)
+        metrics = get_aggregate_app_metrics(time_range, limit)
+        response = success_response(metrics)
+        return response
 
 @ns.route("/routes", doc=False)
 class RouteMetrics(Resource):

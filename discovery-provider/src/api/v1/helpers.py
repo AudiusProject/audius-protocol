@@ -230,6 +230,9 @@ def extend_activity(item):
         }
     return None
 
+def abort_bad_path_param(param, namespace):
+    namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))
+
 def abort_bad_request_param(param, namespace):
     namespace.abort(400, "Oh no! Bad request parameter {}.".format(param))
 

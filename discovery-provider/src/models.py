@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Text,
@@ -479,6 +480,70 @@ timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
+class DailyUniqueUsersMetrics(Base):
+    __tablename__ = "daily_unique_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<DailyUniqueUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class DailyTotalUsersMetrics(Base):
+    __tablename__ = "daily_total_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<DailyTotalUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class MonthlyUniqueUsersMetrics(Base):
+    __tablename__ = "monthly_unique_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<MonthlyUniqueUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class MonthlyTotalUsersMetrics(Base):
+    __tablename__ = "monthly_total_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<MonthlyTotalUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
 class AppNameMetrics(Base):
     __tablename__ = "app_name_metrics"
 
@@ -495,6 +560,42 @@ class AppNameMetrics(Base):
 application_name={self.application_name},\
 count={self.count},\
 ip={self.ip},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class DailyAppNameMetrics(Base):
+    __tablename__ = "daily_app_name_metrics"
+
+    id = Column(Integer, primary_key=True)
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<DailyAppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class MonthlyAppNameMetrics(Base):
+    __tablename__ = "monthly_app_name_metrics"
+
+    id = Column(Integer, primary_key=True)
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<MonthlyAppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"

@@ -1,12 +1,47 @@
-from functools import reduce
 import logging
-from sqlalchemy import desc
+from functools import reduce
+from datetime import date, timedelta
+from sqlalchemy import desc, func
 from src.models import RouteMetricsTrailingWeek, RouteMetricsTrailingMonth, RouteMetricsAllTime, \
-    AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime
+    AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime, DailyUniqueUsersMetrics, \
+    DailyTotalUsersMetrics
 from src.utils import db_session
 from src import exceptions
 
 logger = logging.getLogger(__name__)
+
+def get_aggregate_route_metrics_trailing_month():
+    """
+    Returns trailing count and unique count for all routes in the last month
+
+    Returns:
+        { count, unique_count }
+    """
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        today = date.today()
+        thirty_days_ago = today - timedelta(days=30)
+
+        unique_count = (
+            session.query(func.sum(DailyUniqueUsersMetrics.count))
+            .filter(thirty_days_ago <= DailyUniqueUsersMetrics.timestamp)
+            .filter(DailyUniqueUsersMetrics.timestamp < today)
+            .first()
+        )
+        logger.info(f"trailing month unique count: {unique_count}")
+
+        total_count = (
+            session.query(func.sum(DailyTotalUsersMetrics.count))
+            .filter(thirty_days_ago <= DailyTotalUsersMetrics.timestamp)
+            .filter(DailyTotalUsersMetrics.timestamp < today)
+            .first()
+        )
+        logger.info(f"trailing month total count: {total_count}")
+
+        return {
+            "unique_count": unique_count[0],
+            "count": total_count[0]
+        }
 
 def get_monthly_trailing_route_metrics():
     """

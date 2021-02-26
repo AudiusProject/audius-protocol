@@ -1,12 +1,294 @@
 import logging
 import time
-from datetime import timedelta
+import functools as ft
+from datetime import date, timedelta
 from sqlalchemy import func, desc, or_
-from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview
+from src import exceptions
+from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview, \
+    DailyUniqueUsersMetrics, DailyTotalUsersMetrics, MonthlyUniqueUsersMetrics, MonthlyTotalUsersMetrics
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
+def get_historical_route_metrics():
+    """
+    Returns daily metrics for the last thirty days and all time monthly metrics
+
+    Returns:
+        {
+            daily: {
+                2021/01/15: {unique: ..., total: ...}
+                ...
+            },
+            monthly: {
+                2021/01/01: {unique: ..., total: ...}
+                ...
+            }
+        }
+    """
+
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        today = date.today()
+        thirty_days_ago = today - timedelta(days=30)
+
+        daily_metrics = {}
+        unique_daily_counts = (
+            session.query(
+                DailyUniqueUsersMetrics.timestamp,
+                DailyUniqueUsersMetrics.count
+            )
+            .filter(thirty_days_ago <= DailyUniqueUsersMetrics.timestamp)
+            .filter(DailyUniqueUsersMetrics.timestamp < today)
+            .all()
+        )
+        unique_daily_count_records = ft.reduce(lambda acc, curr: \
+            acc.update({str(curr[0]): curr[1]}) or acc, unique_daily_counts, {})
+
+        total_daily_counts = (
+            session.query(
+                DailyTotalUsersMetrics.timestamp,
+                DailyTotalUsersMetrics.count
+            )
+            .filter(thirty_days_ago <= DailyTotalUsersMetrics.timestamp)
+            .filter(DailyTotalUsersMetrics.timestamp < today)
+            .all()
+        )
+        total_daily_count_records = ft.reduce(lambda acc, curr: \
+            acc.update({str(curr[0]): curr[1]}) or acc, total_daily_counts, {})
+
+        for timestamp, unique_count in unique_daily_count_records.items():
+            if timestamp in total_daily_count_records:
+                daily_metrics[timestamp] = {
+                    'unique': unique_count,
+                    'total': total_daily_count_records[timestamp]
+                }
+
+        monthly_metrics = {}
+        unique_monthly_counts = (
+            session.query(
+                MonthlyUniqueUsersMetrics.timestamp,
+                MonthlyUniqueUsersMetrics.count
+            )
+            .filter(MonthlyUniqueUsersMetrics.timestamp < today)
+            .all()
+        )
+        unique_monthly_count_records = ft.reduce(lambda acc, curr: \
+            acc.update({str(curr[0]): curr[1]}) or acc, unique_monthly_counts, {})
+
+        total_monthly_counts = (
+            session.query(
+                MonthlyTotalUsersMetrics.timestamp,
+                MonthlyTotalUsersMetrics.count
+            )
+            .filter(MonthlyTotalUsersMetrics.timestamp < today)
+            .all()
+        )
+        total_monthly_count_records = ft.reduce(lambda acc, curr: \
+            acc.update({str(curr[0]): curr[1]}) or acc, total_monthly_counts, {})
+
+        for timestamp, unique_count in unique_monthly_count_records.items():
+            if timestamp in total_monthly_count_records:
+                monthly_metrics[timestamp] = {
+                    'unique': unique_count,
+                    'total': total_monthly_count_records[timestamp]
+                }
+
+        return {
+            'daily': daily_metrics,
+            'monthly': monthly_metrics
+        }
+
+def get_aggregate_route_metrics(time_range, bucket_size):
+    """
+    Returns a list of timestamp with unique count and total count for all routes
+    based on given time range and grouped give by bucket size
+
+    Returns:
+        [{ timestamp, count, unique_count }]
+    """
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        today = date.today()
+        seven_days_ago = today - timedelta(days=7)
+        thirty_days_ago = today - timedelta(days=30)
+
+        if time_range == 'week':
+            if bucket_size == 'day':
+                unique_counts = (
+                    session.query(
+                        DailyUniqueUsersMetrics.timestamp,
+                        DailyUniqueUsersMetrics.count
+                    )
+                    .filter(seven_days_ago <= DailyUniqueUsersMetrics.timestamp)
+                    .filter(DailyUniqueUsersMetrics.timestamp < today)
+                    .all()
+                )
+                unique_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, unique_counts, {})
+
+                total_counts = (
+                    session.query(
+                        DailyTotalUsersMetrics.timestamp,
+                        DailyTotalUsersMetrics.count
+                    )
+                    .filter(seven_days_ago <= DailyTotalUsersMetrics.timestamp)
+                    .filter(DailyTotalUsersMetrics.timestamp < today)
+                    .all()
+                )
+                total_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, total_counts, {})
+
+                metrics = []
+                for timestamp, unique_count in unique_count_records.items():
+                    if timestamp in total_count_records:
+                        metrics.append({
+                            'timestamp': timestamp,
+                            'unique': unique_count,
+                            'total': total_count_records[timestamp]
+                        })
+                return metrics
+            raise exceptions.ArgumentError("Invalid bucket_size for time_range")
+        if time_range == 'month':
+            if bucket_size == 'day':
+                unique_counts = (
+                    session.query(
+                        DailyUniqueUsersMetrics.timestamp,
+                        DailyUniqueUsersMetrics.count
+                    )
+                    .filter(thirty_days_ago <= DailyUniqueUsersMetrics.timestamp)
+                    .filter(DailyUniqueUsersMetrics.timestamp < today)
+                    .all()
+                )
+                unique_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, unique_counts, {})
+
+                total_counts = (
+                    session.query(
+                        DailyTotalUsersMetrics.timestamp,
+                        DailyTotalUsersMetrics.count
+                    )
+                    .filter(thirty_days_ago <= DailyTotalUsersMetrics.timestamp)
+                    .filter(DailyTotalUsersMetrics.timestamp < today)
+                    .all()
+                )
+                total_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, total_counts, {})
+
+                metrics = []
+                for timestamp, unique_count in unique_count_records.items():
+                    if timestamp in total_count_records:
+                        metrics.append({
+                            'timestamp': timestamp,
+                            'unique': unique_count,
+                            'total': total_count_records[timestamp]
+                        })
+                return metrics
+            if bucket_size == 'week':
+                unique_counts = (
+                    session.query(
+                        func.date_trunc(bucket_size, DailyUniqueUsersMetrics.timestamp).label('timestamp'),
+                        func.sum(DailyUniqueUsersMetrics.count).label('count')
+                    )
+                    .filter(thirty_days_ago <= DailyUniqueUsersMetrics.timestamp)
+                    .filter(DailyUniqueUsersMetrics.timestamp < today)
+                    .group_by(func.date_trunc(bucket_size, DailyUniqueUsersMetrics.timestamp))
+                    .all()
+                )
+                unique_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, unique_counts, {})
+
+                total_counts = (
+                    session.query(
+                        func.date_trunc(bucket_size, DailyTotalUsersMetrics.timestamp).label('timestamp'),
+                        func.sum(DailyTotalUsersMetrics.count).label('count')
+                    )
+                    .filter(thirty_days_ago <= DailyTotalUsersMetrics.timestamp)
+                    .filter(DailyTotalUsersMetrics.timestamp < today)
+                    .group_by(func.date_trunc(bucket_size, DailyTotalUsersMetrics.timestamp))
+                    .all()
+                )
+                total_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, total_counts, {})
+
+                metrics = []
+                for timestamp, unique_count in unique_count_records.items():
+                    if timestamp in total_count_records:
+                        metrics.append({
+                            'timestamp': timestamp,
+                            'unique': unique_count,
+                            'total': total_count_records[timestamp]
+                        })
+                return metrics
+            raise exceptions.ArgumentError("Invalid bucket_size for time_range")
+        if time_range == 'all_time':
+            if bucket_size == 'month':
+                unique_counts = (
+                    session.query(
+                        MonthlyUniqueUsersMetrics.timestamp,
+                        MonthlyUniqueUsersMetrics.count
+                    )
+                    .filter(MonthlyUniqueUsersMetrics.timestamp < today)
+                    .all()
+                )
+                unique_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, unique_counts, {})
+
+                total_counts = (
+                    session.query(
+                        MonthlyTotalUsersMetrics.timestamp,
+                        MonthlyTotalUsersMetrics.count
+                    )
+                    .filter(MonthlyTotalUsersMetrics.timestamp < today)
+                    .all()
+                )
+                total_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, total_counts, {})
+
+                metrics = []
+                for timestamp, unique_count in unique_count_records.items():
+                    if timestamp in total_count_records:
+                        metrics.append({
+                            'timestamp': timestamp,
+                            'unique': unique_count,
+                            'total': total_count_records[timestamp]
+                        })
+                return metrics
+            if bucket_size == 'week':
+                unique_counts = (
+                    session.query(
+                        func.date_trunc(bucket_size, DailyUniqueUsersMetrics.timestamp).label('timestamp'),
+                        func.sum(DailyUniqueUsersMetrics.count).label('count')
+                    )
+                    .filter(DailyUniqueUsersMetrics.timestamp < today)
+                    .group_by(func.date_trunc(bucket_size, DailyUniqueUsersMetrics.timestamp))
+                    .all()
+                )
+                unique_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, unique_counts, {})
+                total_counts = (
+                    session.query(
+                        func.date_trunc(bucket_size, DailyTotalUsersMetrics.timestamp).label('timestamp'),
+                        func.sum(DailyTotalUsersMetrics.count).label('count')
+                    )
+                    .filter(DailyTotalUsersMetrics.timestamp < today)
+                    .group_by(func.date_trunc(bucket_size, DailyTotalUsersMetrics.timestamp))
+                    .all()
+                )
+                total_count_records = ft.reduce(lambda acc, curr: \
+                    acc.update({str(curr[0]): curr[1]}) or acc, total_counts, {})
+
+                metrics = []
+                for timestamp, unique_count in unique_count_records.items():
+                    if timestamp in total_count_records:
+                        metrics.append({
+                            'timestamp': timestamp,
+                            'unique': unique_count,
+                            'total': total_count_records[timestamp]
+                        })
+                return metrics
+            raise exceptions.ArgumentError("Invalid bucket_size for time_range")
+        raise exceptions.ArgumentError("Invalid time_range")
 
 def get_route_metrics(args):
     """
