@@ -10,10 +10,10 @@ const { MONITORS } = require('../../monitors/monitors')
  * @param {*} ServiceRegistry
  * @param {*} logger
  * @param {*} sequelize
- * @param {string=} randomBytesToSign optional bytes string to be included in response object
+ * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign = null) => {
   let response = {
     ...versionInfo,
     healthy: true,

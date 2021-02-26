@@ -213,7 +213,6 @@ module.exports.ErrorServerError = ErrorServerError
  * @param {Error} error instance of error class or subclass
  */
 module.exports.handleApiError = (error) => {
-  // logger.info(`e: ${e} // ${e.name} // ${e.message}`)
   switch (error) {
     case ErrorBadRequest:
       return this.errorResponseBadRequest(error.message)
@@ -235,7 +234,7 @@ module.exports.handleApiError = (error) => {
  */
 module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
   if (!respObj.data || !respObj.data.data) {
-    throw new Error('Missing')
+    throw new Error('Unexpected respObj format')
   }
 
   requiredFields.map(requiredField => {

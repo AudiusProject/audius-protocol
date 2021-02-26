@@ -145,8 +145,8 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
     throw new ErrorBadRequest('Health check response signature has expired')
   }
   const responderWalletRecoveryObj = { ...responseData, randomBytesToSign, timestamp: respTimestamp }
-  recoveredDelegateOwnerWallet = (recoverWallet(responderWalletRecoveryObj, respSignature)).toLowerCase()
-  if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet) {
+  const recoveredDelegateOwnerWallet2 = (recoverWallet(responderWalletRecoveryObj, respSignature)).toLowerCase()
+  if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet2) {
     throw new ErrorBadRequest(
       'Health check response must be signed by delegate owner wallet registered on L1 for spID'
     )
