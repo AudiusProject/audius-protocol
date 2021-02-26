@@ -155,9 +155,10 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
 
     // using a js timeout because IPFS cat sometimes does not resolve the timeout and gets
     // stuck in this function indefinitely
+    // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
     setTimeout(() => {
       return reject(new Error('ipfsCat timed out'))
-    }, timeout)
+    }, 2 * timeout)
 
     // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
@@ -189,9 +190,10 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
 
     // using a js timeout because IPFS get sometimes does not resolve the timeout and gets
     // stuck in this function indefinitely
+    // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
     setTimeout(() => {
       return reject(new Error('ipfsGet timed out'))
-    }, timeout)
+    }, 2 * timeout)
 
     // ipfs.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
