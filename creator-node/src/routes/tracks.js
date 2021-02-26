@@ -27,7 +27,7 @@ const {
 const TranscodingQueue = require('../TranscodingQueue')
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+// const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 
 const readFile = promisify(fs.readFile)

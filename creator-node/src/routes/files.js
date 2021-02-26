@@ -31,7 +31,7 @@ const {
 } = require('../middlewares')
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+// const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { promisify } = require('util')
