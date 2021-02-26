@@ -17,7 +17,7 @@ const config = require('./config')
  *  - `blackListManager`: responsible for handling blacklisted content
  *  - `audiusLibs`: an instance of Audius Libs
  *
- * `initServices` must be called prior to consuming servies from the registry.
+ * `initServices` must be called prior to consuming services from the registry.
  */
 class ServiceRegistry {
   constructor () {

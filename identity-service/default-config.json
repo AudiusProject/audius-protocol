@@ -55,5 +55,7 @@
   "setTimeout": 600000,
   "timeout": 600000,
   "keepAliveTimeout": 5000,
-  "headersTimeout": 60000
+  "headersTimeout": 60000,
+  "captchaScoreSecret": "captcha_score_secret",
+  "recaptchaServiceKey": ""
 }
