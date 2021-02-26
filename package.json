@@ -2,6 +2,7 @@
   "name": "audius-protocol-dashboard",
   "version": "0.1.0",
   "private": true,
+  "homepage": "./",
   "dependencies": {
     "3box": "^1.22.2",
     "@apollo/client": "^3.3.7",
