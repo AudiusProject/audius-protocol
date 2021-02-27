@@ -30,7 +30,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>125</string>
+	<string>131</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -49,7 +49,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This lets you take photos for uploading to Audius, including setting your profile picture and track cover art.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
@@ -72,5 +72,14 @@
 	<false/>
 	<key>UIStatusBarHidden</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>AvenirNextLTPro-Bold.otf</string>
+		<string>AvenirNextLTPro-Demi-Bold.otf</string>
+		<string>AvenirNextLTPro-Heavy.otf</string>
+		<string>AvenirNextLTPro-Medium.otf</string>
+		<string>AvenirNextLTPro-Regular.otf</string>
+		<string>AvenirNextLTPro-UltLt.otf</string>
+	</array>
 </dict>
 </plist>

@@ -5,13 +5,17 @@ import audio, { AudioState } from './audio/reducer'
 import oauth, { OAuthState } from './oauth/reducer'
 import web, { WebState } from './web/reducer'
 import lifecycle, { LifecycleState } from './lifecycle/reducer'
+import notifications, { NotificationsState } from './notifications/reducer'
+import theme, { ThemeState } from './theme/reducer'
 
 export type AppState = {
   audio: AudioState,
   web: WebState,
   oauth: OAuthState,
   lifecycle: LifecycleState,
-  googleCast: GoogleCastState
+  googleCast: GoogleCastState,
+  notifications: NotificationsState,
+  theme: ThemeState
 }
 
 const createRootReducer = () => combineReducers({
@@ -19,7 +23,9 @@ const createRootReducer = () => combineReducers({
   web,
   oauth,
   lifecycle,
-  googleCast
+  googleCast,
+  notifications,
+  theme
 })
 
 export default createRootReducer
