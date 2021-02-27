@@ -39,7 +39,6 @@ const TopBar = ({
   onClose
 }: TopBarProps) => {
   const color = useSpecialColor('staticWhite', 'white')
-  console.log(color)
   const topBarStyle = useTheme(styles.topBar, {
     backgroundColor: 'secondary',
   })
