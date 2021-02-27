@@ -1,5 +1,6 @@
 import { MessageType } from './types'
 import { NativeMobileMessage } from './helpers'
+import User from 'models/User'
 
 export class BackendDidSetup extends NativeMobileMessage {
   constructor() {
@@ -25,8 +26,14 @@ export class NotOnFirstPage extends NativeMobileMessage {
   }
 }
 
+export class ChangedPage extends NativeMobileMessage {
+  constructor(location: Location) {
+    super(MessageType.CHANGED_PAGE, { location })
+  }
+}
+
 export class SignedIn extends NativeMobileMessage {
-  constructor() {
-    super(MessageType.SIGNED_IN, {})
+  constructor(account: User) {
+    super(MessageType.SIGNED_IN, { account })
   }
 }

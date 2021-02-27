@@ -7,7 +7,8 @@ import {
 import mobileSagas from './mobileSagas'
 import {
   OnFirstPage,
-  NotOnFirstPage
+  NotOnFirstPage,
+  ChangedPage
 } from 'services/native-mobile-interface/lifecycle'
 import { MessageType } from 'services/native-mobile-interface/types'
 import {
@@ -47,18 +48,24 @@ function* trackLocation() {
       ;(window as any).locationHistory.push(location)
     }
 
-    const historyLength = (window as any).locationHistory.length
-    const firstPageRoutes = [SIGN_IN_PAGE, SIGN_UP_PAGE, FEED_PAGE]
-    if (firstPageRoutes.includes(location.pathname) && !location.search) {
-      // If native mobile, the sign in / sign up page should not offer a back btn option
-      const message = new OnFirstPage()
-      message.send()
-    } else if (historyLength <= 1) {
-      const message = new OnFirstPage()
-      message.send()
-    } else {
-      const message = new NotOnFirstPage()
-      message.send()
+    if (NATIVE_MOBILE) {
+      // Set page change
+      new ChangedPage(location).send()
+
+      // Set first page actions
+      const historyLength = (window as any).locationHistory.length
+      const firstPageRoutes = [SIGN_IN_PAGE, SIGN_UP_PAGE, FEED_PAGE]
+      if (firstPageRoutes.includes(location.pathname) && !location.search) {
+        // If native mobile, the sign in / sign up page should not offer a back btn option
+        const message = new OnFirstPage()
+        message.send()
+      } else if (historyLength <= 1) {
+        const message = new OnFirstPage()
+        message.send()
+      } else {
+        const message = new NotOnFirstPage()
+        message.send()
+      }
     }
   }
 }

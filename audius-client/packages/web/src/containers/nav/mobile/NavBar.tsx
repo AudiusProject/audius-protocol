@@ -25,6 +25,10 @@ import {
 } from 'containers/animated-switch/RouterContextProvider'
 import { History } from 'history'
 import { getIsIOS } from 'utils/browser'
+import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
+import { useLocation } from 'react-router-dom'
+
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 interface NavBarProps {
   isLoading: boolean
@@ -84,6 +88,14 @@ const NavBar = ({
     setSearchValue('')
   }
 
+  const onClickNotifications = useCallback(() => {
+    if (NATIVE_MOBILE) {
+      new OpenNotificationsMessage().send()
+    } else {
+      goToNotificationPage()
+    }
+  }, [goToNotificationPage])
+
   const logoTransitions = useTransition(!isSearching, null, {
     from: {
       opacity: 0,
@@ -103,15 +115,26 @@ const NavBar = ({
   })
 
   const { setSlideDirection } = useContext(RouterContext)
+  const location = useLocation()
+
+  const onGoBack = useCallback(() => {
+    // @ts-ignore
+    if (location.state?.fromNativeNotifications) {
+      onClickNotifications()
+    } else {
+      goBack()
+    }
+  }, [goBack, onClickNotifications, location])
+
   const goBackAndResetSlide = useCallback(() => {
-    goBack()
+    onGoBack()
     setSlideDirection(SlideDirection.FROM_LEFT)
-  }, [goBack, setSlideDirection])
+  }, [onGoBack, setSlideDirection])
 
   const goBackAndDoNotAnimate = useCallback(() => {
     setStackReset(true)
-    setImmediate(goBack)
-  }, [setStackReset, goBack])
+    setImmediate(onGoBack)
+  }, [setStackReset, onGoBack])
 
   let left = null
   if (leftElement === LeftPreset.BACK) {
@@ -119,7 +142,7 @@ const NavBar = ({
       <IconButton
         className={cn(styles.leftIconButton, styles.caretRight)}
         icon={<IconCaretRight />}
-        onClick={goBack}
+        onClick={onGoBack}
       />
     )
   } else if (leftElement === LeftPreset.CLOSE) {
@@ -148,11 +171,11 @@ const NavBar = ({
     left = (
       <>
         <IconButton
-          className={cn(styles.leftIconButton, {
+          className={cn(styles.leftIconButton, styles.notificationIcon, {
             [styles.hasUnread]: notificationCount > 0
           })}
           icon={<IconNotification />}
-          onClick={goToNotificationPage}
+          onClick={onClickNotifications}
         />
         {notificationCount > 0 && (
           <div className={styles.iconTag}>{formatCount(notificationCount)}</div>
