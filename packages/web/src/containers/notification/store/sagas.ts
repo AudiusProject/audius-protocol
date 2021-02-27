@@ -9,6 +9,7 @@ import {
   takeEvery,
   select
 } from 'redux-saga/effects'
+import mobileSagas from './mobileSagas'
 import { ID } from 'models/common/Identifiers'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as notificationActions from './actions'
@@ -34,7 +35,6 @@ import { getIsReachable } from 'store/reachability/selectors'
 import { retrieveCollections } from 'store/cache/collections/utils'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import Track from 'models/Track'
-import { MessageType } from 'services/native-mobile-interface/types'
 import { getRemoteVar, IntKeys } from 'services/remote-config'
 import { remoteConfigIntDefaults } from 'services/remote-config/defaults'
 
@@ -390,7 +390,7 @@ const checkIfNotifcationsChanged = (
   )
 }
 
-function* getNotifications(isFirstFetch: boolean) {
+export function* getNotifications(isFirstFetch: boolean) {
   try {
     const isOpen = yield select(getNotificationPanelIsOpen)
     const status = yield select(getNotificationStatus)
@@ -523,7 +523,7 @@ function* notificationPollingDaemon() {
   }
 }
 
-function* markAllNotificationsViewed() {
+export function* markAllNotificationsViewed() {
   yield call(waitForBackendSetup)
   yield call(AudiusBackend.markAllNotificationAsViewed)
   if (NATIVE_MOBILE) {
@@ -555,27 +555,6 @@ function* watchTogglePanel() {
   })
 }
 
-// Clear the notification badges if the user is signed in
-function* resetNotificationBadgeCount() {
-  try {
-    const hasAccount = yield select(getHasAccount)
-    if (hasAccount) {
-      const message = new ResetNotificationsBadgeCount()
-      message.send()
-      yield call(AudiusBackend.clearNotificationBadges)
-    }
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-// On Native App open and enter foreground, clear the notification badges
-function* watchResetNotificationBadgeCount() {
-  yield call(waitForBackendSetup)
-  yield call(resetNotificationBadgeCount)
-  yield takeEvery(MessageType.ENTER_FOREGROUND, resetNotificationBadgeCount)
-}
-
 export default function sagas() {
   const sagas: (() => Generator)[] = [
     watchFetchNotifications,
@@ -590,8 +569,5 @@ export default function sagas() {
     watchTogglePanel,
     watchNotificationError
   ]
-  if (NATIVE_MOBILE) {
-    sagas.push(watchResetNotificationBadgeCount)
-  }
-  return sagas
+  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }

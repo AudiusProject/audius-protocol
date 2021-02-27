@@ -3,6 +3,12 @@ import { Status } from 'store/types'
 import Track from 'models/Track'
 import Collection from 'models/Collection'
 import User from 'models/User'
+import {
+  getNotificationEntities,
+  getNotificationEntity,
+  getNotificationUser,
+  getNotificationUsers
+} from './selectors'
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -178,4 +184,11 @@ export default interface NotificationState {
   status?: Status
   hasMore: boolean
   hasLoaded: boolean
+}
+
+export type ConnectedNotification = Notification & {
+  user: ReturnType<typeof getNotificationUser>
+  users: ReturnType<typeof getNotificationUsers>
+  entity: ReturnType<typeof getNotificationEntity>
+  entities: ReturnType<typeof getNotificationEntities>
 }
