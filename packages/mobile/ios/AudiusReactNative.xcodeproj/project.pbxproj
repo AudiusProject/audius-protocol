@@ -13,11 +13,17 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */; };
 		3090F66787A049B79B70C360 /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AAF0FC799BFBB3171EC02F5 /* libPods-AudiusReactNative.a */; };
+		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
+		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */; };
 		83D3A5322399E3290084E702 /* Web.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 83D3A5312399E3290084E702 /* Web.bundle */; };
 		83F7359F23C55C2D0040A4C5 /* AirplayViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */; };
 		83F735A523C64C950040A4C5 /* AirplayEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F735A423C64C950040A4C5 /* AirplayEvent.m */; };
 		83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
+		9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */; };
+		A30E10E3AF254D4881C3A2B8 /* AvenirNextLTPro-Demi-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8B498DEFE0774F838F5214A5 /* AvenirNextLTPro-Demi-Bold.otf */; };
+		C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */ = {isa = PBXBuildFile; fileRef = D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */; };
+		CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */ = {isa = PBXBuildFile; fileRef = D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,10 +40,12 @@
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
 		22B7D9D67FF4356AF18C514B /* Pods-AudiusReactNative-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative-tvOS.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative-tvOS/Pods-AudiusReactNative-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
 		4AAF0FC799BFBB3171EC02F5 /* libPods-AudiusReactNative.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6758EEA9DAB0AAADA5F67998 /* Pods-AudiusReactNativeTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNativeTests.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNativeTests/Pods-AudiusReactNativeTests.release.xcconfig"; sourceTree = "<group>"; };
 		6B452D6802C4306F053EB3EB /* Pods-AudiusReactNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.release.xcconfig"; sourceTree = "<group>"; };
 		6C8083B6CFC29BD00A625F7C /* Pods-AudiusReactNative.bounce.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.debug.xcconfig"; sourceTree = "<group>"; };
+		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		81727C58BC36D2467C693B1F /* Pods-AudiusReactNative-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative-tvOS/Pods-AudiusReactNative-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		83D3A5312399E3290084E702 /* Web.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Web.bundle; path = "../web-app/Web.bundle"; sourceTree = "<group>"; };
@@ -45,13 +53,17 @@
 		83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayViewManager.m; sourceTree = "<group>"; };
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
 		8A8648EE0E082759D49DC3B2 /* libPods-AudiusReactNative-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B498DEFE0774F838F5214A5 /* AvenirNextLTPro-Demi-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Demi-Bold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Demi-Bold.otf"; sourceTree = "<group>"; };
 		8D6F4FDAE2D3D6B687E5388B /* Pods-AudiusReactNative.bounce.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.release.xcconfig"; sourceTree = "<group>"; };
 		9D4842FCB22727CC9A1C85EE /* Pods-AudiusReactNative-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative-tvOSTests/Pods-AudiusReactNative-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		9F035DB660458A6B6919AC4D /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
 		A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "Audius Music.entitlements"; path = "AudiusReactNative/Audius Music.entitlements"; sourceTree = "<group>"; };
 		B7134F32482EE9B86C0C9B35 /* libPods-AudiusReactNativeTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNativeTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5DD43C367062E89734346EE /* Pods-AudiusReactNative-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative-tvOSTests/Pods-AudiusReactNative-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
+		D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Heavy.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Heavy.otf"; sourceTree = "<group>"; };
+		D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-UltLt.otf"; path = "../src/assets/fonts/AvenirNextLTPro-UltLt.otf"; sourceTree = "<group>"; };
 		E0514290BB2B2D972992B845 /* Pods-AudiusReactNativeTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNativeTests.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNativeTests/Pods-AudiusReactNativeTests.debug.xcconfig"; sourceTree = "<group>"; };
+		EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Bold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Bold.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 		F4166EE30A59971CE3EBA18B /* libPods-AudiusReactNative-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -137,6 +149,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				9203ADA7911C8949B98165F4 /* Pods */,
 				13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */,
+				A5F065694F9E40CE97972CFA /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -166,6 +179,20 @@
 				8D6F4FDAE2D3D6B687E5388B /* Pods-AudiusReactNative.bounce.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		A5F065694F9E40CE97972CFA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */,
+				8B498DEFE0774F838F5214A5 /* AvenirNextLTPro-Demi-Bold.otf */,
+				D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */,
+				33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */,
+				6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */,
+				D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */,
+			);
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -199,7 +226,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 940;
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
@@ -238,6 +265,12 @@
 				838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */,
+				A30E10E3AF254D4881C3A2B8 /* AvenirNextLTPro-Demi-Bold.otf in Resources */,
+				C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */,
+				5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */,
+				9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */,
+				CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,13 +410,13 @@
 				BUNDLE_ID_SUFFIX = "";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
-				CURRENT_PROJECT_VERSION = 125;
+				CURRENT_PROJECT_VERSION = 131;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = LRFCG93S85;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.0.46;
+				MARKETING_VERSION = 1.0.47;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -409,12 +442,12 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 125;
+				CURRENT_PROJECT_VERSION = 131;
 				DEVELOPMENT_TEAM = LRFCG93S85;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.0.46;
+				MARKETING_VERSION = 1.0.47;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -597,13 +630,13 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 125;
+				CURRENT_PROJECT_VERSION = 131;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = LRFCG93S85;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.0.46;
+				MARKETING_VERSION = 1.0.47;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -677,12 +710,12 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "AudiusReactNative/Audius Music.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 125;
+				CURRENT_PROJECT_VERSION = 131;
 				DEVELOPMENT_TEAM = LRFCG93S85;
 				INFOPLIST_FILE = AudiusReactNative/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.0.46;
+				MARKETING_VERSION = 1.0.47;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

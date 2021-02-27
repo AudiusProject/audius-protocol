@@ -13,12 +13,14 @@ jobs:
       - run:
           name: copy staging env
           command: |
+            cp .env.stage.tmpl .env.stage
             echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.stage
             echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY_STAGING" >> .env.stage
             echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY_STAGING" >> .env.stage
       - run:
           name: copy production env
           command: |
+            cp .env.prod.tmpl .env.prod
             echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.prod
             echo "SEGMENT_IOS_WRITE_KEY=$SEGMENT_IOS_WRITE_KEY" >> .env.prod
             echo "SEGMENT_ANDROID_WRITE_KEY=$SEGMENT_ANDROID_WRITE_KEY" >> .env.prod

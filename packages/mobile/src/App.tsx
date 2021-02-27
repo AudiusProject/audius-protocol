@@ -14,6 +14,7 @@ import { setup as setupAnalytics } from './utils/analytics'
 import useConnectivity from './components/web/useConnectivity'
 import { incrementSessionCount } from './utils/useSessionCount'
 import NotificationReminder from './components/notification-reminder/NotificationReminder'
+import Notifications from './components/notifications/Notifications'
 
 const store = createStore(
   createRootReducer(),
@@ -48,6 +49,7 @@ const App = () => {
 
   return <Provider store={store}>
     <GoogleCast webRef={webRef} />
+    <Notifications webRef={webRef} />
     <WebApp webRef={webRef} />
     <Audio webRef={webRef} />
     <OAuth webRef={webRef} />

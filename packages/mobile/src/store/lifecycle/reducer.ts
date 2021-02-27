@@ -1,3 +1,4 @@
+import User from "models/User"
 import {
   LifecycleActions,
   BACKEND_LOADED,
@@ -5,18 +6,23 @@ import {
   ON_FIRST_PAGE,
   NOT_ON_FIRST_PAGE,
   SIGNED_IN,
+  CHANGED_PAGE,
 } from "./actions"
 
 export type LifecycleState = {
   dappLoaded: boolean,
   onFirstPage: boolean,
-  signedIn: boolean
+  signedIn: boolean,
+  account: User | null,
+  location: any
 }
 
 const initialState = {
   dappLoaded: false,
   onFirstPage: true,
-  signedIn: false
+  signedIn: false,
+  account: null,
+  location: null
 }
 
 const reducer = (
@@ -43,10 +49,16 @@ const reducer = (
           ...state,
           onFirstPage: false
         }
+      case CHANGED_PAGE:
+        return {
+          ...state,
+          location: action.location
+        }
       case SIGNED_IN:
         return {
           ...state,
-          signedIn: true
+          signedIn: true,
+          account: action.account
         }
       default:
         return state
