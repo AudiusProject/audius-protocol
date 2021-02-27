@@ -36,6 +36,8 @@ npm run ios
 npm run ios:dev
 # Run the app on a device
 npm run ios:device "Raymond's iPhone"
+# To see available devices
+xcrun xctrace list devices
 ```
 
 **Android**

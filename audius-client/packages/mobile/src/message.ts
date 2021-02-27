@@ -9,6 +9,8 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo'
 import * as audioActions from './store/audio/actions'
 import * as oauthActions from './store/oauth/actions'
 import * as lifecycleActions  from './store/lifecycle/actions'
+import * as notificationsActions from './store/notifications/actions'
+import * as themeActions from './store/theme/actions'
 import { showCastPicker }  from './store/googleCast/controller'
 import * as webActions from './store/web/actions'
 import { AppState } from './store'
@@ -23,7 +25,8 @@ import { checkConnectivity, Connectivity } from './utils/connectivity'
 import { Provider } from './store/oauth/reducer'
 import { handleWebAppLog } from './utils/logging'
 import { remindUserToTurnOnNotifications } from './components/notification-reminder/NotificationReminder'
-import { handleThemeChange } from './utils/theme'
+import { handleThemeChange, Theme } from './utils/theme'
+import { Status } from './types/status'
 
 let sentInitialTheme = false
 
@@ -55,6 +58,14 @@ export enum MessageType {
   RESET_NOTIFICATIONS_BADGE_COUNT = 'reset-notifications-badge-count',
   ENABLE_PUSH_NOTIFICATIONS_REMINDER = 'action/enable-push-notifications-reminder',
   PROMPT_PUSH_NOTIFICATION_REMINDER = 'prompt-push-notifications-reminder',
+
+  OPEN_NOTIFICATIONS = 'open-notifications',
+  FETCH_NOTIFICATIONS = 'fetch-notifications',
+  FETCH_NOTIFICATIONS_SUCCESS = 'fetch-notifications-success',
+  FETCH_NOTIFICATIONS_REPLACE = 'fetch-notifications-replace',
+  FETCH_NOTIFICATIONS_FAILURE = 'fetch-notifications-failure',
+  REFRESH_NOTIFICATIONS = 'refresh-notifications',
+  MARK_ALL_NOTIFICATIONS_AS_VIEWED = 'mark-all-notifications-as-viewed',
 
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
@@ -91,6 +102,7 @@ export enum MessageType {
   ON_FIRST_PAGE = 'nav-on-first-page',
   NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
   GO_BACK = 'nav-go-back',
+  CHANGED_PAGE = 'nav-changed-page',
 
   // Analytics
   ANALYTICS_IDENTIFY = 'analytics-identify',
@@ -193,6 +205,21 @@ export const handleMessage = async (
         remindUserToTurnOnNotifications(postMessage)
         break
       }
+    case MessageType.OPEN_NOTIFICATIONS:
+      dispatch(notificationsActions.open())
+      postMessage({
+        type: MessageType.MARK_ALL_NOTIFICATIONS_AS_VIEWED,
+        isAction: true
+      })
+      return
+    case MessageType.FETCH_NOTIFICATIONS_SUCCESS:
+      dispatch(notificationsActions.append(Status.SUCCESS, message.notifications))
+      return
+    case MessageType.FETCH_NOTIFICATIONS_REPLACE:
+      dispatch(notificationsActions.replace(Status.SUCCESS, message.notifications))
+      return
+    case MessageType.FETCH_NOTIFICATIONS_FAILURE:
+      return dispatch(notificationsActions.append(Status.FAILURE, []))
 
     // OAuth
     case MessageType.REQUEST_TWITTER_AUTH:
@@ -204,7 +231,7 @@ export const handleMessage = async (
     case MessageType.BACKEND_SETUP:
       return dispatch(lifecycleActions.backendLoaded())
     case MessageType.SIGNED_IN:
-      return dispatch(lifecycleActions.signedIn())
+      return dispatch(lifecycleActions.signedIn(message.account))
     case MessageType.REQUEST_NETWORK_CONNECTED:
       const isConnected = checkConnectivity(Connectivity.netInfo)
       postMessage({
@@ -273,12 +300,16 @@ export const handleMessage = async (
     case MessageType.NOT_ON_FIRST_PAGE: {
       return dispatch(lifecycleActions.notOnFirstPage())
     }
+    case MessageType.CHANGED_PAGE: {
+      return dispatch(lifecycleActions.changedPage(message.location))
+    }
     case MessageType.LOGGING: {
       handleWebAppLog(message.level, message.message)
       break
     }
 
     case MessageType.THEME_CHANGE: {
+      dispatch(themeActions.set(message.theme))
       handleThemeChange(message.theme)
       break
     }

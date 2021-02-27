@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="Assets" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="assets" transform="translate(-763.000000, -1039.000000)">
+            <g id="icon/heart" transform="translate(763.000000, 1039.000000)">
+                <rect id="Bound" x="0" y="0" width="24" height="24"></rect>
+                <path d="M7.366,4.81818182 C4.04114286,4.81818182 2,7.71323052 2,9.84740666 C2,14.4627192 7.86171429,18.4552273 12,21.1818182 C16.1382857,18.4542045 22,14.4627192 22,9.84740666 C22,7.71305154 19.9598286,4.81818182 16.634,4.81818182 C14.7768571,4.81818182 13.1897143,6.14353409 12,7.40184659 C10.8091429,6.14340625 9.2232,4.81818182 7.366,4.81818182 Z" id="heart" fill="#000" fill-rule="evenodd"></path>
+            </g>
+        </g>
+    </g>
+</svg>
