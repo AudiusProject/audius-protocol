@@ -7,7 +7,9 @@ function* watchPushRoute() {
   yield takeEvery(MessageType.PUSH_ROUTE, function* (action: Message) {
     const { route } = action
     if (route) {
-      yield put(pushRoute(route))
+      yield put(
+        pushRoute(route, { noAnimation: true, fromNativeNotifications: true })
+      )
     }
   })
 }

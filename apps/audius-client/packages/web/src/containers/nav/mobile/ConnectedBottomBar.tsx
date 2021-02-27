@@ -21,6 +21,8 @@ import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import { setTab } from 'containers/explore-page/store/actions'
 import { Tabs } from 'containers/explore-page/store/types'
 
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps<any>
@@ -43,8 +45,24 @@ const ConnectedNavBar = ({
 
   const [lastNavRoute, setNavRoute] = useState(FEED_PAGE)
   const currentRoute = history.location.pathname
-  if (navRoutes.has(currentRoute) && lastNavRoute !== currentRoute) {
-    setNavRoute(currentRoute)
+
+  if (lastNavRoute !== currentRoute) {
+    // If the current route isn't what we memoized, check if it's a nav route
+    // and update the current route if so
+    if (navRoutes.has(currentRoute)) {
+      setNavRoute(currentRoute)
+    }
+
+    // If we are in native mobile and we entered the app via notification directly,
+    // update the current route to the current page so that none of the
+    // nav bar items are highlighted
+    if (
+      NATIVE_MOBILE &&
+      // @ts-ignore
+      history.location.state?.fromNativeNotifications
+    ) {
+      setNavRoute(currentRoute)
+    }
   }
 
   const goToFeed = useCallback(() => {

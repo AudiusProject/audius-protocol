@@ -144,7 +144,9 @@ const AnimatedSwitch = ({
     if (
       DISABLED_PAGES.has(location.pathname) ||
       // Don't animate on replace transitions
-      history.action === 'REPLACE'
+      history.action === 'REPLACE' ||
+      // @ts-ignore
+      location.state?.noAnimation
     ) {
       setDisabled(true)
     } else if (disabled) {

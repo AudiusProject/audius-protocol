@@ -65,7 +65,7 @@ function* onFetchAccount(account) {
     hasSignedInNativeMobile: !!NATIVE_MOBILE
   })
   if (NATIVE_MOBILE) {
-    new SignedIn().send()
+    new SignedIn(account).send()
   }
 }
 
