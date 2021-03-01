@@ -13,7 +13,7 @@ const PROCESS_NAMES = Object.freeze({
 // Otherwise, uses the number of CPU cores available to node
 const MAX_CONCURRENCY = imageProcessingMaxConcurrency !== -1
   ? imageProcessingMaxConcurrency
-  : (os.cpus().length) / 2
+  : os.cpus().length
 
 class ImageProcessingQueue {
   constructor () {
