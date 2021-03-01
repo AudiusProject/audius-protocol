@@ -24,6 +24,7 @@ const healthCheck = (payload: MonitorPayload, type: ServiceMonitorType) => {
   const sampleRate =
     getRemoteVar(IntKeys.SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE) || 0
   if (shouldRecord(sampleRate)) {
+    payload.type = type
     track(Name.SERVICE_MONITOR_HEALTH_CHECK, payload)
   }
 }
@@ -32,6 +33,7 @@ const request = (payload: MonitorPayload, type: ServiceMonitorType) => {
   const sampleRate =
     getRemoteVar(IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE) || 0
   if (shouldRecord(sampleRate)) {
+    payload.type = type
     track(Name.SERVICE_MONITOR_REQUEST, payload)
   }
 }
