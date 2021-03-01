@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
-import { Utils } from '@audius/libs'
 
 import styles from './VotesTable.module.css'
 import Table from 'components/Table'
