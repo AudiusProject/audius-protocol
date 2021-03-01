@@ -60,12 +60,14 @@ export function fetchActiveProposals(): ThunkAction<
       await Promise.all(
         proposalIds.map(async id => {
           const proposal = await aud.Governance.getProposalById(id)
+          const quorum = await aud.Governance.getProposalQuorum(id)
           const {
             name,
             description
           } = await aud.Governance.getProposalSubmissionById(id)
           proposal.name = name
           proposal.description = description
+          proposal.quorum = quorum
           return proposal
         })
       )
@@ -87,8 +89,10 @@ export function fetchAllProposals(): ThunkAction<
       proposalEvents.map(async (p: ProposalEvent) => {
         const { proposalId, description, name } = p
         const proposal = await aud.Governance.getProposalById(proposalId)
+        const quorum = await aud.Governance.getProposalQuorum(proposalId)
         proposal.description = description
         proposal.name = name
+        proposal.quorum = quorum
         if (proposal.outcome !== Outcome.InProgress) {
           const evaluationBlockNumber = await aud.Governance.getProposalEvaluationBlock(
             proposalId
@@ -108,12 +112,14 @@ export function fetchProposal(
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     const proposal = await aud.Governance.getProposalById(proposalId)
+    const quorum = await aud.Governance.getProposalQuorum(proposalId)
     const {
       name,
       description
     } = await aud.Governance.getProposalSubmissionById(proposalId)
     proposal.name = name
     proposal.description = description
+    proposal.quorum = quorum
     if (proposal.outcome !== Outcome.InProgress) {
       const evaluationBlockNumber = await aud.Governance.getProposalEvaluationBlock(
         proposalId

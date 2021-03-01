@@ -127,3 +127,54 @@
   justify-content: center;
   min-height: 400px;
 }
+
+.quorumContainer {
+  margin-top: 8px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  line-height: 15px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.quorumValue {
+  margin: 0px 8px;
+}
+
+
+.quorumStatusContainer {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-l);
+  line-height: 22px;
+  color: var(--neutral);
+  text-transform: capitalize;
+  display: inline-flex;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.circle {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.circle.met {
+  background-color: #6BCF63;
+}
+
+.circle.notMet {
+  background-color: var(--neutral-light-4);
+}
+
+.icon path {
+  fill: var(--static-white);
+}
