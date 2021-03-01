@@ -14,6 +14,8 @@ import styles from './RemixesPage.module.css'
 import { pluralize } from 'utils/formatUtil'
 import { fullTrackRemixesPage } from 'utils/route'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { isMatrix } from 'utils/theme/theme'
+import cn from 'classnames'
 
 const messages = {
   remixes: 'Remix',
@@ -58,7 +60,11 @@ const RemixesPage = g(
             className={styles.header}
             title={
               <>
-                <IconRemixes className={styles.iconRemix} />
+                <IconRemixes
+                  className={cn(styles.iconRemix, {
+                    [styles.matrix]: isMatrix()
+                  })}
+                />
                 <span>{title}</span>
               </>
             }

@@ -16,6 +16,10 @@
   overflow: hidden;
 }
 
+.matrix .container {
+  background: var(--page-header-gradient);
+}
+
 .isMobile .container {
   transform: rotate(45deg) translateX(-68px);
 }

@@ -27,31 +27,35 @@ const MONTHS = {
 
 const transformMonth = monthShort => MONTHS[monthShort]
 
-const getDataProps = ({ labels, values }) => ({
-  labels: [...labels],
-  datasets: [
-    {
-      fill: true,
-      lineTension: 0.2,
-      backgroundColor: 'rgb(234, 197, 244)',
-      borderColor: '#CC0FE0',
-      borderCapStyle: 'butt',
-      borderDash: [],
-      borderDashOffset: 0.0,
-      borderJoinStyle: 'miter',
-      pointBorderColor: '#CC0FE0',
-      pointBackgroundColor: '#CC0FE0',
-      pointBorderWidth: 0,
-      pointHoverRadius: 8,
-      pointHoverBackgroundColor: '#CC0FE0',
-      pointHoverBorderColor: '#CC0FE0',
-      pointHoverBorderWidth: 0,
-      pointRadius: 3,
-      pointHitRadius: 8,
-      data: [...values]
-    }
-  ]
-})
+const getDataProps = ({ labels, values }, isMatrix) => {
+  const colorPrimary = isMatrix ? '#0CF10C' : '#CC0FE0'
+  const colorBackground = isMatrix ? '#184F17' : 'rgb(234, 197, 244)'
+  return {
+    labels: [...labels],
+    datasets: [
+      {
+        fill: true,
+        lineTension: 0.2,
+        backgroundColor: colorBackground,
+        borderColor: colorPrimary,
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: colorPrimary,
+        pointBackgroundColor: colorPrimary,
+        pointBorderWidth: 0,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: colorPrimary,
+        pointHoverBorderColor: colorPrimary,
+        pointHoverBorderWidth: 0,
+        pointRadius: 3,
+        pointHitRadius: 8,
+        data: [...values]
+      }
+    ]
+  }
+}
 
 const getLineGraphOptions = transformXValue => ({
   layout: {
@@ -143,9 +147,9 @@ const getLineGraphOptions = transformXValue => ({
       const title = tooltipModel.title[0] || []
       const playCount = tooltipModel.body[0].lines[0] || 0
       const innerHtml = `
-        <div class='totalPlaysTooltipContainer'> 
-          <div class='totalPlaysTooltipTitle'>${title}</div> 
-          <div class='totalPlaysTooltipLabelContainer'> 
+        <div class='totalPlaysTooltipContainer'>
+          <div class='totalPlaysTooltipTitle'>${title}</div>
+          <div class='totalPlaysTooltipLabelContainer'>
             <div class='totalPlaysTooltipLabelText'>${
               playCount + ' Plays'
             }</div>
@@ -228,7 +232,13 @@ export class TotalPlaysChart extends Component {
   }
 
   render() {
-    const { data, tracks, onSetTrackOption, onSetYearOption } = this.props
+    const {
+      data,
+      tracks,
+      onSetTrackOption,
+      onSetYearOption,
+      isMatrix
+    } = this.props
     const { chartSize, yearOptions } = this.state
 
     const trackOptions = [{ name: 'All Tracks', id: -1 }].concat(tracks)
@@ -238,7 +248,7 @@ export class TotalPlaysChart extends Component {
     }
     const yearsMenu = { items: yearOptions }
 
-    const lineData = getDataProps(data)
+    const lineData = getDataProps(data, isMatrix)
     const lineGraphOptions = getLineGraphOptions(transformMonth)
 
     return (

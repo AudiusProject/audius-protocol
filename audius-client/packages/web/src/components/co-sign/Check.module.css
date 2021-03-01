@@ -30,5 +30,5 @@
 
 .iconCoSign rect {
   stroke: var(--white);
-  fill: var(--primary);
+  fill: var(--static-primary);
 }

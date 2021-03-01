@@ -45,7 +45,7 @@
 .genreButton.selected {
   background-color: var(--secondary);
   border: 1px solid var(--secondary);
-  color: var(--static-white);
+  color: var(--darkmode-static-white);
   transform: scale(1);
   transition: all 0.1s ease-in-out;
 }

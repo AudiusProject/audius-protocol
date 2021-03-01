@@ -36,7 +36,8 @@ const messages = {
   currentTier: 'CURRENT TIER',
   learnMore: 'LEARN MORE',
   launchDiscord: 'LAUNCH THE VIP DISCORD',
-  tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+ $AUDIO`
+  tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+ $AUDIO`,
+  matrixMode: 'Matrix Mode'
 }
 
 type AudioTiers = Exclude<BadgeTier, 'none'>
@@ -159,6 +160,13 @@ export const Tier = ({
                 <i className='emoji large white-heavy-check-mark' />
                 {messages.badgeRole(tier)}
               </span>
+              {(tier === 'gold' || tier === 'platinum') && (
+                <span>
+                  <i className='emoji large rabbit' />
+                  <i className='emoji large hole' />
+                  {messages.matrixMode}
+                </span>
+              )}
               {isActive && (
                 <Button
                   text={messages.updateRole}

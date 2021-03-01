@@ -104,7 +104,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
 
   return (
     <div className={styles.container}>
-      {props.showArtistPick && props.isArtistPick && <ArtistPick isMobile />}
+      {props.showArtistPick && props.isArtistPick && (
+        <ArtistPick isMobile isMatrixMode={isMatrix} />
+      )}
       <div
         className={styles.mainContent}
         onClick={() => {

@@ -89,7 +89,7 @@ const TrackTile = memo(
         >
           {artwork}
         </div>
-        {isArtistPick && <ArtistPick />}
+        {isArtistPick && <ArtistPick isMatrixMode={isMatrixMode} />}
         <div
           className={cn(styles.body, {
             // if track and not playlist/album

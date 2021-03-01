@@ -6,6 +6,8 @@ import SectionButton from 'components/general/SectionButton'
 import ConnectedRemixCard from 'containers/remix/ConnectedRemixCard'
 
 import styles from './Remixes.module.css'
+import { isMatrix } from 'utils/theme/theme'
+import cn from 'classnames'
 
 const messages = {
   title: 'Remixes',
@@ -23,7 +25,9 @@ const Remixes = ({ trackIds, goToAllRemixes, count }: RemixesProps) => {
   return (
     <div className={styles.remixes}>
       <div className={styles.header}>
-        <IconRemix className={styles.iconRemix} />
+        <IconRemix
+          className={cn(styles.iconRemix, { [styles.matrix]: isMatrix() })}
+        />
         <span>{messages.title}</span>
       </div>
       <div className={styles.tracks}>

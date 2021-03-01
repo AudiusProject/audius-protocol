@@ -19,7 +19,7 @@ import tiledBackground from 'assets/img/notFoundTiledBackround.png'
 import notFoundAnimation from 'assets/animations/404.json'
 import styles from './NotFoundPage.module.css'
 import { getTheme } from 'store/application/ui/theme/selectors'
-import { shouldShowDark } from 'utils/theme/theme'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { useRecord, make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
@@ -71,7 +71,8 @@ const NotFoundPage = ({ isMobile, goToHomePage, theme }: NotFoundPageProps) => {
         })}
         style={{
           backgroundImage: `url(${tiledBackground})`,
-          backgroundBlendMode: shouldShowDark(theme) ? 'color-burn' : 'none'
+          backgroundBlendMode:
+            shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
         }}
       >
         <div className={styles.contentWrapper}>

@@ -35,6 +35,8 @@ import lazyWithPreload from 'utils/lazyWithPreload'
 import { ClaimTile, ExplainerTile, WalletTile } from './Tiles'
 import WalletModal from './WalletModal'
 import Tiers from './Tiers'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import Theme from 'models/Theme'
 
 const TotalPlaysChart = lazyWithPreload(() =>
   import('./components/TotalPlaysChart')
@@ -295,7 +297,14 @@ export class ArtistDashboardPage extends Component<
   }
 
   renderCreatorContent() {
-    const { account, listenData, tracks, unlistedTracks, stats } = this.props
+    const {
+      account,
+      listenData,
+      tracks,
+      unlistedTracks,
+      stats,
+      isMatrix
+    } = this.props
     if (!account || !account.is_creator) return null
 
     const { selectedTrack } = this.state
@@ -321,6 +330,7 @@ export class ArtistDashboardPage extends Component<
           <Suspense fallback={<div className={styles.chartFallback} />}>
             <TotalPlaysChart
               data={chartData}
+              isMatrix={isMatrix}
               tracks={chartTracks}
               selectedTrack={selectedTrack}
               onSetYearOption={this.onSetYearOption}
@@ -404,7 +414,8 @@ const makeMapStateToProps = () => {
   return (state: AppState) => ({
     ...getDashboard(state),
     listenData: getDashboardListenData(state),
-    status: getDashboardStatus(state)
+    status: getDashboardStatus(state),
+    isMatrix: getTheme(state) === Theme.MATRIX
   })
 }
 

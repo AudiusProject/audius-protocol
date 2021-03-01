@@ -38,6 +38,7 @@ import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButton
 import RepostButton from 'components/general/RepostButton'
 import FavoriteButton from 'components/general/FavoriteButton'
 import Tooltip from 'components/tooltip/Tooltip'
+import cn from 'classnames'
 
 import styles from './PlayBar.module.css'
 
@@ -311,7 +312,8 @@ class PlayBar extends Component {
                 elapsedSeconds={audio?.getPosition()}
                 totalSeconds={duration}
                 style={{
-                  handleColor: 'var(--static-white)'
+                  railListenedColor: 'var(--track-slider-rail)',
+                  handleColor: 'var(--track-slider-handle)'
                 }}
                 onScrubRelease={this.props.seek}
               />
@@ -359,9 +361,13 @@ class PlayBar extends Component {
               >
                 <span>
                   <FavoriteButton
-                    favoritedClassName={styles.favorited}
+                    favoritedClassName={cn(styles.favorited, {
+                      [styles.favoritedMatrix]: isMatrix
+                    })}
                     disabled={!uid || isOwner}
-                    unfavoritedClassName={styles.unfavorited}
+                    unfavoritedClassName={cn(styles.unfavorited, {
+                      [styles.unfavoritedMatrix]: isMatrix
+                    })}
                     favorited={favorited}
                     onClick={() => this.onToggleFavorite(favorited, trackId)}
                   />

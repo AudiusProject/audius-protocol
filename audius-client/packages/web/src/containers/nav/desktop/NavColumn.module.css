@@ -334,7 +334,7 @@ svg.logo path {
 }
 
 .links .link:hover:before {
-  border-right: 4px solid rgba(201, 201, 201, .8);
+  border-right: 4px solid var(--neutral-light-4);
 }
 .links .link.disabled:hover {
   border-right: none;

@@ -18,6 +18,14 @@
   margin-right: 12px;
 }
 
+.iconRemix path {
+  fill: url(#linearGradient-1);
+}
+
+.iconRemix.matrix path {
+  fill: url(#matrixHeaderGradient);
+}
+
 .headerSecondary {
   display: inline-flex;
   align-items: center;

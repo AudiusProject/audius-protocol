@@ -23,7 +23,7 @@
   font-weight: var(--font-demi-bold);
   letter-spacing: 0.23px;
   line-height: 26px;
-  color: var(--secondary);
+  color: var(--action-sheet-text);
 }
 
 .filterItem:active {

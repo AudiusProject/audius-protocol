@@ -85,7 +85,7 @@
 }
 
 .playAllButton .playAllButtonText {
-  color: var(--static-white);
+  color: var(--darkmode-static-white);
   font-size: var(--font-xl);
   font-weight: var(--font-bold);
   letter-spacing: 0.71px;

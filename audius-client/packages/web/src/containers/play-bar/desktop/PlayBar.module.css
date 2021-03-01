@@ -90,6 +90,10 @@
   width: 20px;
 }
 
+.favoritedMatrix g path {
+  fill: var(--primary) !important;
+}
+
 .unfavorited {
   height: 20px;
   width: 20px;
@@ -97,4 +101,8 @@
 
 .unfavorited g path {
   fill: var(--neutral) !important;
+}
+
+.unfavorited.unfavoritedMatrix g path {
+  fill: var(--neutral-light-4) !important;
 }

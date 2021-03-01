@@ -36,3 +36,7 @@
 .filterContainer :global(.ant-input-prefix)>svg g path {
   fill: var(--neutral-light-4);
 }
+
+.filterContainer :global(.ant-input)::placeholder {
+  color: var(--neutral-light-4);
+}

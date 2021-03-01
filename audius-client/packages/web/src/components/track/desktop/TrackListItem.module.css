@@ -6,7 +6,7 @@
   cursor: pointer;
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
-  text-align: left; 
+  text-align: left;
   user-select: none;
   line-height: normal;
   position: relative;
@@ -96,7 +96,7 @@
   font-weight: var(--font-medium);
 }
 
-.trackTitle, 
+.trackTitle,
 .artistName {
   align-items: center;
   padding-right: 8px;
@@ -115,7 +115,7 @@
   text-decoration: none;
 }
 
-.artistName .by { 
+.artistName .by {
   margin-right: 4px;
 }
 
