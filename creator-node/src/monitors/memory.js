@@ -10,8 +10,8 @@ const getUsedMemory = async () => {
   const mem = await si.mem()
   if (mem.active / mem.total > 0.5) {
     dump()
-  } 
-  
+  }
+
   // Excluding buffers/cache
   return mem.active
 }
