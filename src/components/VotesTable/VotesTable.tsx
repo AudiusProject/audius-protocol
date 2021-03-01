@@ -38,7 +38,7 @@ const RenderRow = ({ data }: { data: VoteEvent }) => {
       </div>
       <DisplayAudio
         className={clsx(styles.rowCol, styles.colVoteWeight)}
-        amount={data?.voterStake ?? Utils.toBN('0')}
+        amount={data.voterStake}
       />
     </div>
   )
