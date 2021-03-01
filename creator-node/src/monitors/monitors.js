@@ -1,5 +1,9 @@
 const { getDatabaseSize, getDatabaseConnections, getDatabaseConnectionInfo, getDatabaseLiveness } = require('./database')
-const { getTotalMemory, getUsedMemory } = require('./memory')
+const {
+  getTotalMemory,
+  getUsedMemory,
+  getNodeProcessMemoryUsage
+} = require('./memory')
 const {
   getStoragePathSize,
   getStoragePathUsed,
@@ -61,14 +65,17 @@ const DATABASE_CONNECTION_INFO = {
 const TOTAL_MEMORY = {
   name: 'totalMemory',
   func: getTotalMemory,
-  ttl: 60 * 2,
   type: 'int'
 }
 const USED_MEMORY = {
   name: 'usedMemory',
   func: getUsedMemory,
-  ttl: 60 * 2,
   type: 'int'
+}
+const NODE_PROCESS_MEMORY_USAGE = {
+  name: 'nodeProcessMemoryUsage',
+  func: getNodeProcessMemoryUsage,
+  type: 'json'
 }
 
 const STORAGE_PATH_SIZE = {
@@ -152,6 +159,7 @@ const MONITORS = {
   DATABASE_CONNECTION_INFO,
   TOTAL_MEMORY,
   USED_MEMORY,
+  NODE_PROCESS_MEMORY_USAGE,
   STORAGE_PATH_SIZE,
   STORAGE_PATH_USED,
   FILESYSTEM_SIZE,

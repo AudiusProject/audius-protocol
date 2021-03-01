@@ -11,7 +11,13 @@ const getUsedMemory = async () => {
   return mem.active
 }
 
+const getNodeProcessMemoryUsage = async () => {
+  const mem = process.memoryUsage()
+  return JSON.stringify(mem)
+}
+
 module.exports = {
   getTotalMemory,
-  getUsedMemory
+  getUsedMemory,
+  getNodeProcessMemoryUsage
 }
