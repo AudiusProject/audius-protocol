@@ -9,11 +9,10 @@ import { useUser, useDelegators } from 'store/cache/user/hooks'
 
 import Table from 'components/Table'
 import styles from './DelegatorsTable.module.css'
-import AudiusClient from 'services/Audius'
 import { Operator, Address, Delegate } from 'types'
 import DelegatorsModal from 'components/DelegatorsModal'
-import Tooltip from 'components/Tooltip'
-import { formatShortWallet, formatWei } from 'utils/format'
+import { formatShortWallet } from 'utils/format'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   title: 'Delegators',
@@ -71,12 +70,10 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
         <div className={clsx(styles.rowCol, styles.colAddress)}>
           {data.name || formatShortWallet(data.address)}
         </div>
-        <Tooltip
+        <DisplayAudio
           className={clsx(styles.rowCol, styles.colAmount)}
-          text={formatWei(data.activeAmount)}
-        >
-          {AudiusClient.displayShortAud(data.activeAmount)}
-        </Tooltip>
+          amount={data.activeAmount}
+        />
       </div>
     )
   }

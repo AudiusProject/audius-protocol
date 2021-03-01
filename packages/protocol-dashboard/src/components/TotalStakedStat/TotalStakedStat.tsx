@@ -1,13 +1,11 @@
 import React, { ReactNode } from 'react'
 
-import { formatShortAud } from 'utils/format'
 import Stat from 'components/Stat'
 import { TICKER } from 'utils/consts'
-import Tooltip from 'components/Tooltip'
-import { formatWei } from 'utils/format'
 import styles from './TotalStakedStat.module.css'
 import { Status } from 'types'
 import useTotalStaked from 'hooks/useTotalStaked'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   staked: `Active Stake ${TICKER}`
@@ -22,11 +20,7 @@ const TotalStakedStat: React.FC<TotalStakedStatProps> = () => {
   let stat: ReactNode = null
 
   if (total && status === Status.Success) {
-    stat = (
-      <Tooltip className={styles.stat} text={formatWei(total)}>
-        {formatShortAud(total)}
-      </Tooltip>
-    )
+    stat = <DisplayAudio className={styles.stat} amount={total} shortFormat />
   }
 
   return <Stat label={messages.staked} stat={stat} />

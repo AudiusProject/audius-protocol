@@ -2,7 +2,7 @@ import InlineStat from 'components/InlineStat/InlineStat'
 import StatsChip from 'components/StatsChip/StatsChip'
 import React from 'react'
 import BN from 'bn.js'
-import { formatShortAud, formatWei } from 'utils/format'
+import { formatWei } from 'utils/format'
 import { TICKER } from 'utils/consts'
 
 type DelegationStatsChipProps = {
@@ -30,7 +30,7 @@ const DelegationStatsChip = ({
   return (
     <StatsChip
       tooltipText={formatWei(delegated)}
-      primaryStat={formatShortAud(delegated)}
+      amount={delegated}
       primaryStatName={messages.delegated}
       isLoading={isLoading}
     >

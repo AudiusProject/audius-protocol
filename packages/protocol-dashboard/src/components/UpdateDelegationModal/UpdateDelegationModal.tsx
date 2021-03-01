@@ -19,8 +19,7 @@ import { TICKER } from 'utils/consts'
 import { useModalControls } from 'utils/hooks'
 import { useUserDelegation } from 'store/actions/userDelegation'
 import useUpdateDelegation from 'store/actions/updateDelegation'
-import Tooltip, { Position } from 'components/Tooltip'
-import { formatWei } from 'utils/format'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   increaseTitle: 'Increase Delegation',
@@ -159,27 +158,19 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
           <div className={styles.stakingChange}>
             <div className={styles.stakingRow}>
               <div className={styles.stakingLabel}>Current Staking:</div>
-              <Tooltip
-                position={Position.TOP}
-                text={formatWei(delegates)}
+              <DisplayAudio
                 className={styles.stakingValue}
-              >
-                {`${AudiusClient.displayShortAud(
-                  delegates
-                ).toString()} ${TICKER}`}
-              </Tooltip>
+                amount={delegates}
+                label={TICKER}
+              />
             </div>
             <div className={styles.stakingRow}>
               <div className={styles.stakingLabel}>Change:</div>
-              <Tooltip
-                position={Position.BOTTOM}
-                text={formatWei(stakeChange)}
+              <DisplayAudio
                 className={clsx(styles.stakingValue, styles.changeValue)}
-              >
-                {`${AudiusClient.displayShortAud(
-                  stakeChange
-                ).toString()} ${TICKER}`}
-              </Tooltip>
+                amount={stakeChange}
+                label={TICKER}
+              />
             </div>
           </div>
         </div>

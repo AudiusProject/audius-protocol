@@ -3,8 +3,8 @@ import clsx from 'clsx'
 import styles from './ValueSlider.module.css'
 import AudiusClient from 'services/Audius'
 import { BigNumber } from 'types'
-import Tooltip, { Position } from 'components/Tooltip'
-import { formatWei } from 'utils/format'
+import { Position } from 'components/Tooltip'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   min: 'MIN',
@@ -116,16 +116,12 @@ const ValueSlider: React.FC<ValueSliderProps> = ({
                   : messages.min
                 : messages.min}
             </span>
-            <Tooltip position={Position.BOTTOM} text={formatWei(min)}>
-              {AudiusClient.displayShortAud(min)}
-            </Tooltip>
+            <DisplayAudio position={Position.BOTTOM} amount={min} />
           </div>
         )}
         {max && (
           <div ref={minValueRef} className={styles.maxValues}>
-            <Tooltip position={Position.BOTTOM} text={formatWei(max)}>
-              {AudiusClient.displayShortAud(max)}
-            </Tooltip>
+            <DisplayAudio position={Position.BOTTOM} amount={max} />
             <span className={styles.maxLabel}>
               {isIncrease !== undefined
                 ? isIncrease

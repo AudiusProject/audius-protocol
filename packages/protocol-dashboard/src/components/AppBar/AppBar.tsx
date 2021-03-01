@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import Button from 'components/Button'
-import Tooltip, { Position } from 'components/Tooltip'
+import { Position } from 'components/Tooltip'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
 import { ReactComponent as Logo } from 'assets/img/audiusLogoHorizontal.svg'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address } from 'types'
-import { formatWei, formatShortAud, formatShortWallet } from 'utils/format'
+import { formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage, isCryptoPage } from 'utils/routes'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
@@ -17,6 +17,7 @@ import { createStyles } from 'utils/mobile'
 import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 import { useIsMobile } from 'utils/hooks'
+import DisplayAudio from 'components/DisplayAudio'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -84,13 +85,13 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
         <div className={styles.walletText}>
           {formatShortWallet(user.wallet)}
         </div>
-        <Tooltip
+        <DisplayAudio
           position={Position.BOTTOM}
-          text={formatWei(user.audToken)}
           className={styles.tokenText}
-        >
-          {`${formatShortAud(user.audToken)} ${TICKER}`}
-        </Tooltip>
+          label={TICKER}
+          amount={user.audToken}
+          shortFormat
+        />
       </div>
     </div>
   )

@@ -11,9 +11,9 @@ import { IconArrowWhite } from '@audius/stems'
 import { useModalControls } from 'utils/hooks'
 import UpdateDelegationModal from 'components/UpdateDelegationModal'
 import { Address, Status } from 'types'
-import { formatWei, formatShortAud } from 'utils/format'
 import { useHasPendingDecreaseDelegationTx } from 'store/account/hooks'
 import { usePendingClaim } from 'store/cache/claims/hooks'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   title: 'Manage Delegation',
@@ -125,13 +125,12 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
       <div className={styles.title}>{messages.title} </div>
       <div className={styles.content}>
         <div className={styles.delegationContainer}>
-          <Tooltip
+          <DisplayAudio
             position={Position.TOP}
-            text={formatWei(delegates)}
             className={styles.delegationValue}
-          >
-            {formatShortAud(delegates)}
-          </Tooltip>
+            amount={delegates}
+            shortFormat
+          />
           <div className={styles.delegationLabel}>
             {messages.delegationLabel}
           </div>

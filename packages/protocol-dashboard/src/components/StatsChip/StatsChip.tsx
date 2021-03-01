@@ -1,9 +1,10 @@
 import React from 'react'
+import BN from 'bn.js'
 import Paper from 'components/Paper'
 import styles from './StatsChip.module.css'
 import clsx from 'clsx'
-import Tooltip, { Position } from 'components/Tooltip'
 import Loading from 'components/Loading'
+import DisplayAudio from 'components/DisplayAudio'
 
 export const Divider = ({ className }: { className?: string }) => {
   return (
@@ -14,7 +15,7 @@ export const Divider = ({ className }: { className?: string }) => {
 type StatsChipProps = {
   className?: string
   tooltipText: string
-  primaryStat: string
+  amount: BN
   primaryStatName: string
   isLoading: boolean
 }
@@ -24,7 +25,7 @@ const StatsChip: React.FC<StatsChipProps> = ({
   children,
   className,
   tooltipText,
-  primaryStat,
+  amount,
   primaryStatName,
   isLoading
 }) => {
@@ -36,13 +37,11 @@ const StatsChip: React.FC<StatsChipProps> = ({
         </div>
       ) : (
         <>
-          <Tooltip
-            position={Position.TOP}
-            text={tooltipText}
+          <DisplayAudio
             className={styles.tooltipStyle}
-          >
-            {primaryStat}
-          </Tooltip>
+            amount={amount}
+            shortFormat
+          />
           <div className={styles.label}>{primaryStatName}</div>
           <Divider />
           {children}

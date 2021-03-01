@@ -3,14 +3,13 @@ import clsx from 'clsx'
 
 import { useDelegates } from 'store/cache/user/hooks'
 import styles from './DelegatesModal.module.css'
-import AudiusClient from 'services/Audius'
 import ModalTable from 'components/ModalTable'
-import Tooltip from 'components/Tooltip'
 import BN from 'bn.js'
 import { Delegate, Address } from 'types'
-import { formatShortWallet, formatWei } from 'utils/format'
+import { formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   title: 'Delegates',
@@ -59,12 +58,10 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
         <div className={clsx(styles.rowCol, styles.colAddress)}>
           {data.name || formatShortWallet(data.address)}
         </div>
-        <Tooltip
+        <DisplayAudio
           className={clsx(styles.rowCol, styles.colAmount)}
-          text={formatWei(data.amount)}
-        >
-          {AudiusClient.displayShortAud(data.amount)}
-        </Tooltip>
+          amount={data.amount}
+        />
       </div>
     )
   }

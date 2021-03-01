@@ -6,14 +6,14 @@ import { SERVICES_USERS, accountPage } from 'utils/routes'
 
 import styles from './TopAddressesTable.module.css'
 import Table from 'components/Table'
-import Tooltip from 'components/Tooltip'
-import { formatShortWallet, formatWeight, formatWei } from 'utils/format'
+import { formatShortWallet, formatWeight } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake from 'utils/activeStake'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   topAddresses: 'Top Addresses by Voting Weight',
@@ -110,12 +110,10 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
         </div>
         {!isMobile && (
           <>
-            <Tooltip
+            <DisplayAudio
               className={clsx(styles.rowCol, styles.totalStakedColumn)}
-              text={formatWei(data.staked)}
-            >
-              {Audius.displayShortAud(data.staked)}
-            </Tooltip>
+              amount={data.staked}
+            />
             <div className={clsx(styles.rowCol, styles.voteWeightColumn)}>
               {`${formatWeight(data.voteWeight)}%`}
             </div>
