@@ -7,7 +7,8 @@ const getTotalMemory = async () => {
 
 const getUsedMemory = async () => {
   const mem = await si.mem()
-  return mem.used
+  // Excluding buffers/cache
+  return mem.active
 }
 
 module.exports = {
