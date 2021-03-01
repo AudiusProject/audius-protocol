@@ -70,6 +70,12 @@ export const formatAud = (amount: BigNumber | null) => {
   return aud
 }
 
+export const formatWeiNumber = (amount: BigNumber | null) => {
+  if (!Utils.isBN(amount)) return ''
+  let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
+  return aud
+}
+
 export const formatWei = (amount: BigNumber | null) => {
   if (!Utils.isBN(amount)) return ''
   let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
