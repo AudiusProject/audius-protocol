@@ -102,7 +102,7 @@ def get_historical_route_metrics():
 def get_aggregate_route_metrics(time_range, bucket_size):
     """
     Returns a list of timestamp with unique count and total count for all routes
-    based on given time range and grouped give by bucket size
+    based on given time range and grouped by bucket size
 
     Returns:
         [{ timestamp, count, unique_count }]

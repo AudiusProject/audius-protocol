@@ -60,7 +60,7 @@ def parse_metrics_key(key):
     Validates that a key is correctly formatted and returns
     the source: (routes|applications), ip address, and date of key
     """
-    if not metrics_prefix.startswith(metrics_prefix): # ??? do we mean key.startswith(metrics_prefix)
+    if not key.startswith(metrics_prefix):
         logger.warning(f"Bad redis key inserted w/out metrics prefix {key}")
         return None
 
@@ -173,6 +173,18 @@ def persist_app_metrics(db, day, month, app_count):
             session.add(month_record)
 
 def merge_metrics(metrics, end_time, metric_type, db):
+    """
+    Merge this node's metrics to those received from other discovery nodes:
+        Update unique and total, daily and monthly metrics for routes and apps
+
+        Dump the cached metrics so that if this node temporarily goes down,
+        we can recover the IPs and app names to perform the calculation and deduplication
+        when the node comes back up
+
+        Clean up old metrics from cache
+
+        Persist metrics in the database
+    """
     logger.info(f"about to merge {metric_type} metrics: {metrics}")
     day = end_time.split(':')[0]
     month = f"{day[:7]}/01"
@@ -197,6 +209,9 @@ def merge_metrics(metrics, end_time, metric_type, db):
     # only relevant for app metrics
     app_count = {}
 
+    # update daily and monthly metrics, which could be route metrics or app metrics
+    # if route metrics, new_value and new_count would be an IP and the number of requests from it
+    # otherwise, new_value and new_count would be an app and the number of requests from it
     for new_value, new_count in metrics.items():
         if metric_type == 'route' and new_value not in daily_metrics[day]:
             unique_daily_count += 1

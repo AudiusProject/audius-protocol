@@ -46,30 +46,19 @@ valid_bucket_sizes = {
     'all_time': ['month', 'week']
 }
 
-@ns.route("/aggregates/info", doc=False)
-class MetricsAggregateInfo(Resource):
-    @cache(ttl_sec=5)
-    def get(self):
-        """Gets aggregate metrics information"""
-        metrics_info = get_aggregate_metrics_info()
-        logger.info(f"metrics info: {metrics_info}")
-        response = success_response(metrics_info)
-        return response
-
-@ns.route("/aggregates/historical", doc=False)
-class MetricsAggregateInfo(Resource):
-    @cache(ttl_sec=30 * 60)
-    def get(self):
-        """Gets historical aggregate metrics"""
-        historical_metrics = {
-            'routes': get_historical_route_metrics(),
-            'apps': get_historical_app_metrics()
-        } 
-        response = success_response(historical_metrics)
-        return response
-
-@ns.route("/aggregates/routes/cached", doc=False)
+@ns.route("/routes/cached", doc=False)
 class CachedRouteMetrics(Resource):
+    @ns.doc(
+        id="""Cached Route Metrics""",
+        params={
+            'start_time': 'Start Time in Unix Epoch'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @cache(ttl_sec=5)
     def get(self):
         args = metrics_route_parser.parse_args()
@@ -78,8 +67,50 @@ class CachedRouteMetrics(Resource):
         response = success_response(metrics)
         return response
 
+@ns.route("/apps/cached", doc=False)
+class CachedAppMetrics(Resource):
+    @ns.doc(
+        id="""Cached App Metrics""",
+        params={
+            'start_time': 'Start Time in Unix Epoch'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @cache(ttl_sec=5)
+    def get(self):
+        args = metrics_route_parser.parse_args()
+        start_time = parse_unix_epoch_param(args.get("start_time"))
+        metrics = get_redis_app_metrics(start_time)
+        response = success_response(metrics)
+        return response
+
+@ns.route("/aggregates/info", doc=False)
+class AggregateMetricsInfo(Resource):
+    @cache(ttl_sec=5)
+    def get(self):
+        """Gets aggregate metrics information"""
+        metrics_info = get_aggregate_metrics_info()
+        response = success_response(metrics_info)
+        return response
+
+@ns.route("/aggregates/historical", doc=False)
+class AggregateHistoricalMetrics(Resource):
+    @cache(ttl_sec=30 * 60)
+    def get(self):
+        """Gets historical aggregate metrics"""
+        historical_metrics = {
+            'routes': get_historical_route_metrics(),
+            'apps': get_historical_app_metrics()
+        }
+        response = success_response(historical_metrics)
+        return response
+
 @ns.route("/aggregates/routes/trailing/month", doc=False)
-class RouteAggregateMetricsTrailingMonth(Resource):
+class AggregateRouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self):
         """Gets aggregated route metrics based on time range and bucket size"""
@@ -87,18 +118,29 @@ class RouteAggregateMetricsTrailingMonth(Resource):
         response = success_response(metrics)
         return response
 
-aggregate_metrics_route_parser = reqparse.RequestParser()
-aggregate_metrics_route_parser.add_argument('bucket_size', required=False)
+aggregate_route_metrics_parser = reqparse.RequestParser()
+aggregate_route_metrics_parser.add_argument('bucket_size', required=False)
 
 @ns.route("/aggregates/routes/<string:time_range>", doc=False)
-class RouteAggregateMetrics(Resource):
+class AggregateRouteMetrics(Resource):
+    @ns.doc(
+        id="""Aggregate Route Metrics""",
+        params={
+            'bucket_size': 'Grouping of route metrics (e.g. by day, week, or month) for given time range'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @cache(ttl_sec=30 * 60)
     def get(self, time_range):
         """Gets aggregated route metrics based on time range and bucket size"""
         if time_range not in valid_bucket_sizes:
             abort_bad_path_param('time_range', ns)
 
-        args = aggregate_metrics_route_parser.parse_args()
+        args = aggregate_route_metrics_parser.parse_args()
         valid_buckets = valid_bucket_sizes[time_range]
         bucket_size = args.get("bucket_size") or valid_buckets[0]
 
@@ -109,28 +151,29 @@ class RouteAggregateMetrics(Resource):
         response = success_response(metrics)
         return response
 
-@ns.route("/aggregates/apps/cached", doc=False)
-class CachedAppMetrics(Resource):
-    @cache(ttl_sec=5)
-    def get(self):
-        args = metrics_route_parser.parse_args()
-        start_time = parse_unix_epoch_param(args.get("start_time"))
-        metrics = get_redis_app_metrics(start_time)
-        response = success_response(metrics)
-        return response
-
-aggregate_metrics_app_name_parser = reqparse.RequestParser()
-aggregate_metrics_app_name_parser.add_argument('limit', required=False)
+aggregate_app_metrics_parser = reqparse.RequestParser()
+aggregate_app_metrics_parser.add_argument('limit', required=False)
 
 @ns.route("/aggregates/apps/<string:time_range>", doc=False)
-class AppNameAggregateMetricsTrailing(Resource):
+class AggregateAppMetricsTrailing(Resource):
+    @ns.doc(
+        id="""Aggregate App Metrics""",
+        params={
+            'limit': 'Maximum number of apps to return'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
     @cache(ttl_sec=30 * 60)
     def get(self, time_range):
         """Gets aggregated app metrics based on time range and bucket size"""
         if time_range not in valid_bucket_sizes:
             abort_bad_path_param('time_range', ns)
 
-        args = aggregate_metrics_app_name_parser.parse_args()
+        args = aggregate_app_metrics_parser.parse_args()
         limit = format_limit(args, max_limit=100)
         metrics = get_aggregate_app_metrics(time_range, limit)
         response = success_response(metrics)

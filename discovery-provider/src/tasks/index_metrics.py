@@ -137,6 +137,11 @@ def refresh_metrics_matviews(db):
         logger.info('index_metrics.py | refreshed metrics matviews')
 
 def get_all_other_nodes():
+    """
+    Get number of discovery nodes
+    At each node, get the service info which includes the endpoint
+    Return all node endpoints except that of this node
+    """
     shared_config = aggregate_metrics.shared_config
     eth_web3 = aggregate_metrics.eth_web3
     eth_registry_address = aggregate_metrics.eth_web3.toChecksumAddress(
@@ -164,16 +169,16 @@ def get_all_other_nodes():
 
 def get_metrics(endpoint, start_time):
     try:
-        route_metrics_endpoint = f"{endpoint}/v1/metrics/aggregates/routes/cached?start_time={start_time}"
+        route_metrics_endpoint = f"{endpoint}/v1/metrics/routes/cached?start_time={start_time}"
         logger.info(f"route metrics request to: {route_metrics_endpoint}")
-        route_metrics_response = requests.get(route_metrics_endpoint, timeout=3)
+        route_metrics_response = requests.get(route_metrics_endpoint, timeout=10)
         if route_metrics_response.status_code != 200:
             raise Exception(f"Query to cached route metrics endpoint {route_metrics_endpoint} \
                 failed with status code {route_metrics_response.status_code}")
 
-        app_metrics_endpoint = f"{endpoint}/v1/metrics/aggregates/apps/cached?start_time={start_time}"
+        app_metrics_endpoint = f"{endpoint}/v1/metrics/apps/cached?start_time={start_time}"
         logger.info(f"app metrics request to: {app_metrics_endpoint}")
-        app_metrics_response = requests.get(app_metrics_endpoint, timeout=3)
+        app_metrics_response = requests.get(app_metrics_endpoint, timeout=10)
         if app_metrics_response.status_code != 200:
             raise Exception(f"Query to cached app metrics endpoint {app_metrics_endpoint} \
                 failed with status code {app_metrics_response.status_code}")
@@ -185,15 +190,20 @@ def get_metrics(endpoint, start_time):
         return None, None
 
 def consolidate_metrics_from_other_nodes(self, db, redis):
+    """
+    Get recent route and app metrics from all other discovery nodes
+    and merge with this node's metrics so that this node will be aware
+    of all the metrics across users hitting different providers
+    """
     all_other_nodes = get_all_other_nodes()
 
     visited_node_timestamps_str = redis_get_or_restore(redis, metrics_visited_nodes)
     visited_node_timestamps = json.loads(visited_node_timestamps_str) if visited_node_timestamps_str else {}
 
-    two_iterations_ago = datetime.utcnow() - timedelta(minutes=METRICS_INTERVAL * 2)
-    two_iterations_ago_str = two_iterations_ago.strftime(datetime_format_secondary)
+    one_iteration_ago = datetime.utcnow() - timedelta(minutes=METRICS_INTERVAL)
+    one_iteration_ago_str = one_iteration_ago.strftime(datetime_format_secondary)
     for node in all_other_nodes:
-        start_time_str = visited_node_timestamps[node] if node in visited_node_timestamps else two_iterations_ago_str
+        start_time_str = visited_node_timestamps[node] if node in visited_node_timestamps else one_iteration_ago_str
         start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
         start_time = int(start_time_obj.timestamp())
         new_route_metrics, new_app_metrics = get_metrics(node, start_time)
@@ -217,7 +227,7 @@ def get_historical_metrics(node):
     try:
         endpoint = f"{node}/v1/metrics/aggregates/historical"
         logger.info(f"historical metrics request to: {endpoint}")
-        response = requests.get(endpoint, timeout=3)
+        response = requests.get(endpoint, timeout=10)
         if response.status_code != 200:
             raise Exception(f"Query to historical metrics endpoint {endpoint} \
                 failed with status code {response.status_code}")
@@ -253,6 +263,7 @@ def update_historical_metrics(db, daily_route_metrics, monthly_route_metrics, da
     update_historical_daily_app_metrics(db, daily_app_metrics)
     update_historical_monthly_app_metrics(db, monthly_app_metrics)
 
+# get historical monthly metrics and last month's daily metrics to periodically synchronize metrics across all nodes
 def synchronize_all_node_metrics(self, db):
     daily_route_metrics = {}
     monthly_route_metrics = {}
