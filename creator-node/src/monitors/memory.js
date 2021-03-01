@@ -7,10 +7,17 @@ const getTotalMemory = async () => {
 
 const getUsedMemory = async () => {
   const mem = await si.mem()
-  return mem.used
+  // Excluding buffers/cache
+  return mem.active
+}
+
+const getNodeProcessMemoryUsage = async () => {
+  const mem = process.memoryUsage()
+  return JSON.stringify(mem)
 }
 
 module.exports = {
   getTotalMemory,
-  getUsedMemory
+  getUsedMemory,
+  getNodeProcessMemoryUsage
 }
