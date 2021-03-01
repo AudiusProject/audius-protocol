@@ -151,6 +151,7 @@ export type Proposal = {
   name?: string
   description?: string
   evaluatedBlock?: Block
+  quorum: BigNumber
 }
 
 export type ProposalEvent = {

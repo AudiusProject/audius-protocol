@@ -26,11 +26,13 @@ import {
 import { useAccountUser } from 'store/account/hooks'
 import Tooltip, { Position } from 'components/Tooltip'
 import { createStyles } from 'utils/mobile'
+import { IconCheck, IconRemove } from '@audius/stems'
 
 import desktopStyles from './ProposalHero.module.css'
 import mobileStyles from './ProposalHeroMobile.module.css'
 import Loading from 'components/Loading'
 import getActiveStake from 'utils/activeStake'
+import clsx from 'clsx'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -39,7 +41,11 @@ const messages = {
   voteAgainst: 'Vote Against',
   timeRemaining: 'Est. Time Remaining',
   targetBlock: 'Target Block',
-  notVoted: 'NOT-VOTED'
+  notVoted: 'NOT-VOTED',
+  voted: 'VOTED',
+  quorum: 'QUORUM',
+  quorumMet: 'Quorum Met',
+  quorumNotMet: 'Quorum Not Met'
 }
 
 type VoteCTAProps = {
@@ -183,6 +189,13 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
     </StandaloneBox>
   )
 
+  const totalMagnitudeVoted = proposal
+    ? proposal?.voteMagnitudeYes.add(proposal?.voteMagnitudeNo)
+    : Utils.toBN('0')
+  const hasMetQuorum = proposal
+    ? totalMagnitudeVoted.gte(proposal.quorum)
+    : false
+
   return (
     <Paper className={styles.container}>
       {proposal && proposal.proposer ? (
@@ -210,6 +223,22 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
                   </div>
                 )}
               </div>
+              {isActive && hasMetQuorum && (
+                <div className={styles.quorumStatusContainer}>
+                  <div className={clsx(styles.circle, styles.met)}>
+                    <IconCheck className={styles.icon} />
+                  </div>
+                  {messages.quorumMet}
+                </div>
+              )}
+              {isActive && !hasMetQuorum && (
+                <div className={styles.quorumStatusContainer}>
+                  <div className={clsx(styles.circle, styles.notMet)}>
+                    <IconRemove className={styles.icon} />
+                  </div>
+                  {messages.quorumNotMet}
+                </div>
+              )}
             </div>
             <div className={styles.stats}>
               <VoteMeter
@@ -223,6 +252,25 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
               >
                 {`${formatShortAud(amountAbstained)} ${messages.notVoted}`}
               </Tooltip>
+              {isActive && (
+                <div className={styles.quorumContainer}>
+                  <Tooltip
+                    text={formatWei(totalMagnitudeVoted)}
+                    position={Position.BOTTOM}
+                    className={styles.quorumValue}
+                  >
+                    {`${formatShortAud(totalMagnitudeVoted)} ${messages.voted}`}
+                  </Tooltip>
+                  {' / '}
+                  <Tooltip
+                    text={formatWei(proposal.quorum)}
+                    position={Position.BOTTOM}
+                    className={styles.quorumValue}
+                  >
+                    {`${formatShortAud(proposal.quorum)} ${messages.quorum}`}
+                  </Tooltip>
+                </div>
+              )}
             </div>
           </div>
         </>

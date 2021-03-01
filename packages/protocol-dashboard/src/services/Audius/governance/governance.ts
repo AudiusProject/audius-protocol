@@ -222,6 +222,14 @@ export default class Governance {
     }))
   }
 
+  async getProposalQuorum(proposalId: number): Promise<BN> {
+    await this.aud.hasPermissions()
+    const quorumAmount: BN = await this.getContract().calculateQuorum(
+      proposalId
+    )
+    return quorumAmount
+  }
+
   /* -------------------- Governance Write -------------------- */
 
   async submitProposal(args: {
