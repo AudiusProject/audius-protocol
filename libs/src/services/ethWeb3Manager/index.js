@@ -19,12 +19,10 @@ class EthWeb3Manager {
       if (typeof provider === 'string') {
         if (provider.startsWith('http')) {
           return new Web3.providers.HttpProvider(provider)
-        } else {
-          return new Web3.providers.WebsocketProvider(provider)
         }
-      } else {
-        return provider.eth.currentProvider
+        return new Web3.providers.WebsocketProvider(provider)
       }
+      return provider.eth.currentProvider
     })
 
     const provider = new MultiProvider(providers)
