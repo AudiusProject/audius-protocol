@@ -43,7 +43,8 @@ const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
   operator: 'OPERATOR',
-  user: 'USER'
+  user: 'USER',
+  owner: 'Your Wallet'
 }
 
 type OwnProps = {}
@@ -102,10 +103,14 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
   const numContentNodes = (user as Operator)?.contentNodes?.length ?? 0
   const activeStake = user ? getActiveStake(user) : Utils.toBN('0')
   const inboundDelegation = useActiveInboundDelegation({ wallet })
-
+  const title = isOwner
+    ? messages.owner
+    : isServiceProvider
+    ? messages.operator
+    : messages.user
   return (
     <Page
-      title={isServiceProvider ? messages.operator : messages.user}
+      title={title}
       defaultPreviousPage={SERVICES_TITLE}
       defaultPreviousPageRoute={SERVICES}
     >
