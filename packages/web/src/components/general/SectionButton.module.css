@@ -23,7 +23,7 @@
 }
 
 .text {
-  color: var(--static-white);
+  color: var(--darkmode-static-white);
   font-size: var(--font-xs);
   font-weight: var(--font-bold);
   text-transform: uppercase;
@@ -39,5 +39,5 @@
 }
 
 .iconArrow path {
-  fill: var(--static-white);
+  fill: var(--darkmode-static-white);
 }

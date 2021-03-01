@@ -34,11 +34,11 @@
 .pill .pillText {
   padding-top: 1px;
   text-transform: uppercase;
-  color: var(--white);
+  color: var(--static-white);
 }
 
 .text {
-  color: var(--white);
+  color: var(--static-white);
   font-size: var(--font-m);
   font-weight: var(--font-bold);
   text-align: center;
@@ -55,5 +55,5 @@
 }
 
 .arrow g path {
-  fill: var(--white);
+  fill: var(--static-white);
 }

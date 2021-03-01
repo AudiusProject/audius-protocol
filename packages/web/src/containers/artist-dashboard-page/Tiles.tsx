@@ -22,7 +22,7 @@ import {
 } from 'store/token-dashboard/slice'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
 import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
-import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import TokenStill from 'assets/img/tokenSpinStill.png'
 import Theme from 'models/Theme'
 
 const TOKEN_ANIMATION_URL =
@@ -171,7 +171,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
       <>
         <div className={styles.tokenHero}>
           {isMatrixMode ? (
-            <IconGoldBadgeSVG />
+            <img src={TokenStill} alt='' />
           ) : (
             <video
               autoPlay

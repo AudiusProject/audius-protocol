@@ -89,7 +89,7 @@
 }
 
 .playAllButton .playAllButtonText {
-  color: var(--static-white);
+  color: var(--darkmode-static-white);
   font-family: var(--font-family);
   font-size: var(--font-xl);
   font-weight: var(--font-bold);

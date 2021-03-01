@@ -27,7 +27,7 @@
 .pill:hover:not(.selectedPill):not(.isMobile) {
   background-color: var(--secondary-light-2);
   border-color: var(--secondary-light-2);
-  color: var(--static-white);
+  color: var(--darkmode-static-white);
 }
 
 .pill:active {
@@ -35,14 +35,14 @@
 }
 
 .selectedPill {
-  color: var(--static-white);
+  color: var(--darkmode-static-white);
   background-color: var(--secondary);
   border-color: var(--secondary);
   transform: scale(1);
 }
 
 .pill:hover path {
-  fill: var(--static-white);
+  fill: var(--darkmode-static-white);
 }
 
 .pillContainer {

@@ -42,9 +42,9 @@
 }
 
 .icon path {
-  fill: white;
+  fill: var(--darkmode-static-white);
 }
 
 .text {
-  color: white;
+  color: var(--darkmode-static-white);
 }

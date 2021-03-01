@@ -2,7 +2,7 @@
   height: 18px;
   padding: 7px;
   border-radius: 8px;
-  background-color: rgba(133,129,153,0.1);
+  background-color: var(--neutral-light-8);
 
   display: inline-flex;
   align-items: center;
@@ -17,12 +17,12 @@
 
 .pill.clickable:hover {
   transform: perspective(1px) scale3d(1.05, 1.05, 1.05);
-  background-color: rgba(133,129,153,0.12);
+  background-color: var(--neutral-light-7);
 }
 
 .pill.clickable:active {
   transform: perspective(1px) scale3d(0.98, 0.98, 0.98);
-  background-color: rgba(133,129,153,0.1);
+  background-color: var(--neutral-light-8);
 }
 
 .pill .text {
