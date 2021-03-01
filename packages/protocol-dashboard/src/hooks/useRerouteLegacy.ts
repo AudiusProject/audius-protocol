@@ -5,15 +5,17 @@ import { useLocation } from 'react-router-dom'
  * NOTE: updated the route from the legacy url structure to hash routing.
  * ie. /services/service-providers => /#/services/service-providers
  *
- * NOTE: When switching to being served from ipfs, this needs to be updated for the
- * client to be loaded via ipns
+ * NOTE: After switching to ipfs hosted, we can remove entirely
  */
 
 // -------------------------------- Hooks  --------------------------------
 export const useRerouteLegacy = () => {
   const location = useLocation()
   useEffect(() => {
-    if (window.location.pathname !== '/') {
+    if (
+      window.location.pathname !== '/' &&
+      !window.location.pathname.includes('/ipns')
+    ) {
       window.history.replaceState({}, '', `/#${window.location.pathname}`)
     }
   }, [location])
