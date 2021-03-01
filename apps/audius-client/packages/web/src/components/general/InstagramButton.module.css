@@ -1,8 +1,13 @@
-.button {}
+.button {
+  background-color: var(--static-primary);
+}
 
 .button .text {
   font-size: var(--font-l);
   font-weight: var(--font-bold);
+  color: var(--static-white);
 }
 
-.button .icon path {}
+.button .icon path {
+  fill: var(--static-white);
+}

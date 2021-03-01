@@ -11,7 +11,7 @@ import styles from './SomethingWrong.module.css'
 import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import Theme from 'models/Theme'
-import { shouldShowDark } from 'utils/theme/theme'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 import { useIsMobile } from 'utils/clientUtil'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { track } from 'store/analytics/providers/segment'
@@ -66,7 +66,8 @@ export const SomethingWrong = ({
         className={styles.content}
         style={{
           backgroundImage: `url(${tiledBackground})`,
-          backgroundBlendMode: shouldShowDark(theme) ? 'color-burn' : 'none'
+          backgroundBlendMode:
+            shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
         }}
       >
         <div className={styles.body}>

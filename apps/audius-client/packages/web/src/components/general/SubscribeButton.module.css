@@ -53,6 +53,12 @@
   fill: var(--static-neutral-light-10);
 }
 
+.container.isMatrix.isSubscribed .icon path,
+.container.isMatrix:active .icon path,
+.container.isMatrix:not(.isMobile):hover .icon path {
+  fill: var(--darkmode-static-white);
+}
+
 .container.notFollowing {
   opacity: 0;
   width: 0%;

@@ -91,7 +91,7 @@
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #C675FF;
+  color: rgba(255, 255, 255, 0.5);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
@@ -299,7 +299,7 @@
   margin: 66px 64px 66px 102px;
 }
 
-.tokenHero svg {
+.tokenHero svg, .tokenHero img {
   width: 200px;
   height: 200px;
 }

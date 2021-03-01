@@ -3,6 +3,10 @@
   align-items: center;
 }
 
+.editableRow path {
+  fill: var(--neutral);
+}
+
 .left {
   min-width: 100px;
   color: var(--neutral);

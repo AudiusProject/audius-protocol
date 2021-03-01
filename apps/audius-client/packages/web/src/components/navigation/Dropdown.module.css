@@ -71,6 +71,10 @@
   width: 10px;
 }
 
+.iconCaret path {
+  fill: var(--neutral);
+}
+
 .dropdown :global(.ant-dropdown) {
   border-radius: 4px;
   background-color: var(--white);

@@ -9,6 +9,16 @@
   margin-right: 4px;
 }
 
+.matrix {}
+
+.iconRemix path {
+  fill: url(#linearGradient-1);
+}
+
+.iconRemix.matrix path {
+  fill: url(#matrixHeaderGradient);
+}
+
 .subHeader {
   margin-top: 10px;
   display: flex;

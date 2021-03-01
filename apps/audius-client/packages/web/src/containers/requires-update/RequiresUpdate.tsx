@@ -5,7 +5,7 @@ import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import tileBackground from 'assets/img/notFoundTiledBackround.png'
 import styles from './RequiresUpdate.module.css'
 import Theme from 'models/Theme'
-import { shouldShowDark } from 'utils/theme/theme'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 const messages = {
   title: 'Please Update ✨',
@@ -30,7 +30,8 @@ const SomethingWrong = ({
       className={styles.content}
       style={{
         backgroundImage: `url(${tileBackground})`,
-        backgroundBlendMode: shouldShowDark(theme) ? 'color-burn' : 'none'
+        backgroundBlendMode:
+          shouldShowDark(theme) || isMatrix() ? 'color-burn' : 'none'
       }}
     >
       <div className={styles.title}>{messages.title}</div>

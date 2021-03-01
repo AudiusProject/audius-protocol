@@ -379,7 +379,8 @@ const NowPlaying = g(
             includeTimestamps
             onScrubRelease={seek}
             style={{
-              handleColor: 'var(--static-white)'
+              railListenedColor: 'var(--track-slider-rail)',
+              handleColor: 'var(--track-slider-handle)'
             }}
           />
         </div>

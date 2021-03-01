@@ -5,6 +5,7 @@ import { ReactComponent as IconNotification } from 'assets/img/iconNotification.
 import { ReactComponent as IconNotificationOff } from 'assets/img/iconNotificationOff.svg'
 import styles from './SubscribeButton.module.css'
 import { isMobile } from 'utils/clientUtil'
+import { isMatrix } from 'utils/theme/theme'
 
 type SubscribeButtonProps = {
   className?: string
@@ -36,7 +37,8 @@ const SubscribeButton = ({
         [className as string]: !!className,
         [styles.notFollowing]: !isFollowing,
         [styles.isSubscribed]: isSubscribed,
-        [styles.isMobile]: isMobile()
+        [styles.isMobile]: isMobile(),
+        [styles.isMatrix]: isMatrix()
       })}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}

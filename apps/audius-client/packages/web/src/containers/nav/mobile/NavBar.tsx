@@ -27,6 +27,7 @@ import { History } from 'history'
 import { getIsIOS } from 'utils/browser'
 import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
 import { useLocation } from 'react-router-dom'
+import { isMatrix } from 'utils/theme/theme'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -194,6 +195,8 @@ const NavBar = ({
     left = leftElement
   }
 
+  const matrix = isMatrix()
+
   return (
     <div className={styles.container}>
       <div
@@ -204,7 +207,10 @@ const NavBar = ({
         {left}
       </div>
       {centerElement === CenterPreset.LOGO && (
-        <div className={styles.logo} onClick={logoClicked}>
+        <div
+          className={cn(styles.logo, { [styles.matrixLogo]: matrix })}
+          onClick={logoClicked}
+        >
           {logoTransitions.map(
             ({ item, props, key }) =>
               item && (

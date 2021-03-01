@@ -70,3 +70,7 @@
 .playButton :global(#primaryBG) path, .playButton :global(#Primary) path {
   fill: var(--primary);
 }
+
+.playButton :global(#playpause1) path, .playButton :global(#playpause2) path, .playButton :global(#White) path{
+  fill: var(--play-button-triangle);
+}

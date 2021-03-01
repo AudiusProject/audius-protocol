@@ -122,13 +122,17 @@
   cursor: pointer;
 }
 
+.arrow path {
+  fill: var(--neutral);
+}
+
 .dropdownInput :global(.ant-select-selection-selected-value) {
   opacity: 1 !important;
   position: absolute;
   /* This is pretty hacky, but we can't override display: flex here to center since
      ant relies on being able to inline style the component to display: none.
   */
-  
+
   color: var(--neutral);
   font-weight: 500;
 }

@@ -212,7 +212,9 @@ const SettingsPage = (props: SettingsPageProps) => {
           <img
             src={horizontalLogo}
             alt='Audius Logo'
-            className={cn({ [styles.whiteTint]: isDarkMode() })}
+            className={cn({
+              [styles.whiteTint]: isDarkMode() || theme === Theme.MATRIX
+            })}
           />
         </div>
         <GroupableList>

@@ -11,6 +11,8 @@ import User from 'models/User'
 import { pluralize } from 'utils/formatUtil'
 import { fullTrackRemixesPage } from 'utils/route'
 import UserBadges from 'containers/user-badges/UserBadges'
+import cn from 'classnames'
+import { isMatrix } from 'utils/theme/theme'
 
 const messages = {
   remixes: 'Remix',
@@ -50,7 +52,9 @@ const RemixesPage = g(
         wrapperClassName={styles.header}
         primary={
           <div className={styles.headerPrimary}>
-            <IconRemixes className={styles.iconRemix} />
+            <IconRemixes
+              className={cn(styles.iconRemix, { [styles.matrix]: isMatrix() })}
+            />
             <span>{title}</span>
           </div>
         }
