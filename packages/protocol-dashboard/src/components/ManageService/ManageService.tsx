@@ -279,10 +279,12 @@ const ManageService: React.FC<ManageServiceProps> = (
             ) : (
               <div className={styles.btnContainer}>
                 <RegisterNewServiceBtn />
-                <div>
-                  <IncreaseStake isDisabled={increaseStakeDisabled} />
-                  <DecreaseStake isDisabled={decreaseStakeDisabled} />
-                </div>
+                {isServiceProvider && (
+                  <div>
+                    <IncreaseStake isDisabled={increaseStakeDisabled} />
+                    <DecreaseStake isDisabled={decreaseStakeDisabled} />
+                  </div>
+                )}
               </div>
             )}
           </div>

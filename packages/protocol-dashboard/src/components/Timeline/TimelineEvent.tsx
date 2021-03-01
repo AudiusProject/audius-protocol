@@ -1,19 +1,17 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import clsx from 'clsx'
 
+import { getUser } from 'store/cache/user/hooks'
 import { useProposal } from 'store/cache/proposals/hooks'
 import Proposal from 'components/Proposal'
 import { useBlock } from 'store/cache/protocol/hooks'
 import { getDate, formatWei, formatAud, formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
-import {
-  accountPage,
-  contentNodePage,
-  discoveryNodePage,
-  operatorPage
-} from 'utils/routes'
+import { accountPage } from 'utils/routes'
 import { TICKER } from 'utils/consts'
 import Tooltip, { Position } from 'components/Tooltip'
+import { Address } from 'types'
 
 import desktopStyles from './TimelineEvent.module.css'
 import mobileStyles from './TimelineEventMobile.module.css'
@@ -32,8 +30,41 @@ import {
   ServiceProviderRegisteredEvent,
   TimelineEvent as TimelineEventType
 } from 'models/TimelineEvents'
-
 const styles = createStyles({ desktopStyles, mobileStyles })
+
+const DisplayUser = ({ wallet }: { wallet: Address }) => {
+  const user = useSelector(getUser(wallet))
+  const pushRoute = usePushRoute()
+  const onClick = useCallback(
+    e => {
+      e.preventDefault()
+      e.stopPropagation()
+      pushRoute(accountPage(wallet))
+    },
+    [pushRoute, wallet]
+  )
+
+  if (!user || !user.name) {
+    return (
+      <Tooltip
+        position={Position.TOP}
+        text={wallet}
+        className={clsx(styles.userWalletName)}
+      >
+        <span onClick={onClick}>{formatShortWallet(wallet)}</span>
+      </Tooltip>
+    )
+  }
+  return (
+    <Tooltip
+      position={Position.TOP}
+      text={wallet}
+      className={clsx(styles.userWalletName)}
+    >
+      <span onClick={onClick}>{user.name}</span>
+    </Tooltip>
+  )
+}
 
 const VoteTimelineEvent = ({
   className,
@@ -121,14 +152,13 @@ const GenericTimelineEvent = ({
 const DelegationIncreaseEvent: React.FC<{
   event: DelegateIncreaseStakeEvent
   parentOnClick?: () => void
-  pushRoute: ReturnType<typeof usePushRoute>
   className?: string
-}> = ({ event, pushRoute, className, parentOnClick }) => {
+}> = ({ event, className, parentOnClick }) => {
   const received = event.direction === 'Received'
+  const userWallet = received ? event.delegator : event.serviceProvider
 
   const onClick = () => {
     if (parentOnClick) parentOnClick()
-    pushRoute(accountPage(received ? event.delegator : event.serviceProvider))
   }
 
   const header = received ? 'DELEGATION' : 'DELEGATED'
@@ -144,7 +174,7 @@ const DelegationIncreaseEvent: React.FC<{
       </Tooltip>
       {`${TICKER} ${received ? 'from' : 'to'} `}
       <span className={styles.titleSpacingLeft}>
-        {formatShortWallet(received ? event.delegator : event.serviceProvider)}
+        <DisplayUser wallet={userWallet} />
       </span>
     </span>
   )
@@ -162,16 +192,10 @@ const DelegationIncreaseEvent: React.FC<{
 const DelegationDecreaseEvent: React.FC<{
   event: DelegateDecreaseStakeEvent
   parentOnClick?: () => void
-  pushRoute: ReturnType<typeof usePushRoute>
   className?: string
-}> = ({ event, pushRoute, className, parentOnClick }) => {
+}> = ({ event, className, parentOnClick }) => {
   const onClick = () => {
     if (parentOnClick) parentOnClick()
-    const route =
-      event.direction === 'Sent'
-        ? operatorPage(event.serviceProvider)
-        : accountPage(event.delegator)
-    pushRoute(route)
   }
 
   // Text looks like
@@ -190,7 +214,7 @@ const DelegationDecreaseEvent: React.FC<{
       <>
         {`Requested to decrease delegation to`}
         <span className={styles.titleSpacingLeft}>
-          {formatShortWallet(event.serviceProvider)}
+          <DisplayUser wallet={event.serviceProvider} />
         </span>
         <span className={styles.titleSpacingLeft}>{' by'}</span>
         <Tooltip
@@ -210,7 +234,7 @@ const DelegationDecreaseEvent: React.FC<{
       <>
         {`Delegator`}
         <span className={styles.titleSpacingLeft}>
-          {formatShortWallet(event.delegator)}
+          <DisplayUser wallet={event.delegator} />
         </span>
         <span
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
@@ -242,7 +266,7 @@ const DelegationDecreaseEvent: React.FC<{
         </Tooltip>
         {`${TICKER} to `}
         <span className={styles.titleSpacingLeft}>
-          {formatShortWallet(event.serviceProvider)}
+          <DisplayUser wallet={event.serviceProvider} />
         </span>
       </>
     )
@@ -253,7 +277,7 @@ const DelegationDecreaseEvent: React.FC<{
       <>
         {`Delegator`}
         <span className={styles.titleSpacingLeft}>
-          {formatShortWallet(event.delegator)}
+          <DisplayUser wallet={event.delegator} />
         </span>
         <span
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
@@ -275,11 +299,11 @@ const DelegationDecreaseEvent: React.FC<{
   const renderCancelledSent = () => {
     return (
       <>
-        {`Cancelled request to decrease delegation to`}
+        {`Cancelled request to decrease delegation to `}
         <span className={styles.titleSpacingLeft}>
-          {formatShortWallet(event.serviceProvider)}
+          <DisplayUser wallet={event.serviceProvider} />
         </span>
-        <span className={styles.titleSpacingLeft}>{'by'}</span>
+        <span className={styles.titleSpacingLeft}>{' by'}</span>
         <Tooltip
           position={Position.TOP}
           text={formatWei(event.amount)}
@@ -295,9 +319,13 @@ const DelegationDecreaseEvent: React.FC<{
   const renderCancelledReceived = () => {
     return (
       <>
-        {`Delegator ${formatShortWallet(
-          event.delegator
-        )} cancelled request to decrease delegation by`}
+        {'Delegator '}
+        <span className={styles.titleSpacingLeft}>
+          <DisplayUser wallet={event.delegator} />
+        </span>
+        <span className={styles.titleSpacingLeft}>
+          {` cancelled request to decrease delegation by`}
+        </span>
         <Tooltip
           position={Position.TOP}
           text={formatWei(event.amount)}
@@ -347,21 +375,14 @@ const DelegationDecreaseEvent: React.FC<{
 
 const RegistrationDeregistrationEvent: React.FC<{
   parentOnClick?: () => void
-  pushRoute: ReturnType<typeof usePushRoute>
   event: ServiceProviderRegisteredEvent | ServiceProviderDeregisteredEvent
   className?: string
-}> = ({ event, parentOnClick, pushRoute, className }) => {
+}> = ({ event, parentOnClick, className }) => {
   const didRegister = event._type === 'ServiceProviderRegistered'
 
   // is it discovery-node or creator-node
-  const isDiscovery =
-    event.serviceType in ['discovery-node', 'discovery-provider']
   const onClick = () => {
     if (parentOnClick) parentOnClick()
-    const route = isDiscovery
-      ? discoveryNodePage(event.spID)
-      : contentNodePage(event.spID)
-    pushRoute(route)
   }
   const header = didRegister ? 'REGISTERED SERVICE' : 'DEREGISTERED SERVICE'
   const title = (
@@ -384,18 +405,16 @@ const RegistrationDeregistrationEvent: React.FC<{
 const ClaimEvent: React.FC<{
   parentOnClick?: () => void
   event: DelegateClaimEvent | ClaimProcessedEvent
-  pushRoute: ReturnType<typeof usePushRoute>
   className?: string
-}> = ({ event, parentOnClick, className, pushRoute }) => {
+}> = ({ event, parentOnClick, className }) => {
   const onClick = () => {
     if (parentOnClick) parentOnClick()
-    pushRoute(accountPage(event.claimer))
   }
   const header = 'CLAIMED'
   const title = (
     <span className={styles.titleContainer}>
       <span className={styles.titleSpacingRight}>
-        {formatShortWallet(event.claimer)}
+        <DisplayUser wallet={event.claimer} />
       </span>
       {` Claims`}
       <Tooltip
@@ -518,8 +537,6 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
   className,
   event
 }: TimelineEventProps) => {
-  const pushRoute = usePushRoute()
-
   if (!event) return null
 
   switch (event._type) {
@@ -545,19 +562,11 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     // Delegation
     case 'DelegateIncreaseStake':
       return (
-        <DelegationIncreaseEvent
-          event={event}
-          pushRoute={pushRoute}
-          parentOnClick={parentOnClick}
-        />
+        <DelegationIncreaseEvent event={event} parentOnClick={parentOnClick} />
       )
     case 'DelegateDecreaseStake':
       return (
-        <DelegationDecreaseEvent
-          event={event}
-          pushRoute={pushRoute}
-          parentOnClick={parentOnClick}
-        />
+        <DelegationDecreaseEvent event={event} parentOnClick={parentOnClick} />
       )
 
     // SP
@@ -566,7 +575,6 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
       return (
         <RegistrationDeregistrationEvent
           event={event}
-          pushRoute={pushRoute}
           parentOnClick={parentOnClick}
         />
       )
@@ -588,7 +596,6 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
           event={event}
           className={className}
           parentOnClick={parentOnClick}
-          pushRoute={pushRoute}
         />
       )
   }
@@ -596,6 +603,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
   return (
     <GenericTimelineEvent
       className={className}
+      onClick={parentOnClick}
       title={JSON.stringify(event)}
       blockNumber={event.blockNumber}
     />
