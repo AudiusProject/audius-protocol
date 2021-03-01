@@ -5,12 +5,12 @@ import BN from 'bn.js'
 import styles from './VotesTable.module.css'
 import Table from 'components/Table'
 import { VoteEvent, Address } from 'types'
-import { formatAud, formatShortWallet, formatWei } from 'utils/format'
+import { formatAud, formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
 import { useUser } from 'store/cache/user/hooks'
 import Modal from 'components/Modal'
-import Tooltip from 'components/Tooltip'
+import DisplayAudio from 'components/DisplayAudio'
 
 const User = ({ wallet }: { wallet: Address }) => {
   const { user } = useUser({ wallet })
@@ -35,12 +35,10 @@ const RenderRow = ({ data }: { data: VoteEvent }) => {
       <div className={clsx(styles.rowCol, styles.colAddresses)}>
         {data && <User wallet={data.voter} />}
       </div>
-      <Tooltip
-        text={data ? formatWei(data.voterStake) : ''}
+      <DisplayAudio
         className={clsx(styles.rowCol, styles.colVoteWeight)}
-      >
-        {data && formatAud(data.voterStake)}
-      </Tooltip>
+        amount={data.voterStake}
+      />
     </div>
   )
 }

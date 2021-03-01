@@ -18,8 +18,8 @@ import ConfirmTransactionModal, {
   NewStake
 } from 'components/ConfirmTransactionModal'
 import { TICKER } from 'utils/consts'
-import Tooltip, { Position } from 'components/Tooltip'
-import { formatWei } from 'utils/format'
+import { Position } from 'components/Tooltip'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   increaseTitle: 'Increase Stake',
@@ -194,27 +194,20 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
           <div className={styles.stakingChange}>
             <div className={styles.stakingRow}>
               <div className={styles.stakingLabel}>Current Staking:</div>
-              <Tooltip
-                position={Position.TOP}
-                text={formatWei(deployerStake)}
+              <DisplayAudio
                 className={styles.stakingValue}
-              >
-                {`${AudiusClient.displayShortAud(
-                  deployerStake
-                ).toString()} ${TICKER}`}
-              </Tooltip>
+                amount={deployerStake}
+                label={TICKER}
+              />
             </div>
             <div className={styles.stakingRow}>
               <div className={styles.stakingLabel}>Change:</div>
-              <Tooltip
+              <DisplayAudio
                 position={Position.BOTTOM}
-                text={formatWei(stakeChange)}
                 className={clsx(styles.stakingValue, styles.changeValue)}
-              >
-                {`${AudiusClient.displayShortAud(
-                  stakeChange
-                ).toString()} ${TICKER}`}
-              </Tooltip>
+                amount={stakeChange}
+                label={TICKER}
+              />
             </div>
           </div>
         </div>

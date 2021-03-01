@@ -6,7 +6,7 @@ import { getUser } from 'store/cache/user/hooks'
 import { useProposal } from 'store/cache/proposals/hooks'
 import Proposal from 'components/Proposal'
 import { useBlock } from 'store/cache/protocol/hooks'
-import { getDate, formatWei, formatAud, formatShortWallet } from 'utils/format'
+import { getDate, formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
 import { TICKER } from 'utils/consts'
@@ -30,6 +30,7 @@ import {
   ServiceProviderRegisteredEvent,
   TimelineEvent as TimelineEventType
 } from 'models/TimelineEvents'
+import DisplayAudio from 'components/DisplayAudio'
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 const DisplayUser = ({ wallet }: { wallet: Address }) => {
@@ -165,13 +166,10 @@ const DelegationIncreaseEvent: React.FC<{
   const title = (
     <span className={styles.titleContainer}>
       {received ? `Received` : `Delegated`}
-      <Tooltip
-        position={Position.TOP}
-        text={formatWei(event.increaseAmount)}
+      <DisplayAudio
         className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-      >
-        {formatAud(event.increaseAmount)}
-      </Tooltip>
+        amount={event.increaseAmount}
+      />
       {`${TICKER} ${received ? 'from' : 'to'} `}
       <span className={styles.titleSpacingLeft}>
         <DisplayUser wallet={userWallet} />
@@ -217,14 +215,11 @@ const DelegationDecreaseEvent: React.FC<{
           <DisplayUser wallet={event.serviceProvider} />
         </span>
         <span className={styles.titleSpacingLeft}>{' by'}</span>
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(event.amount)}
+        <DisplayAudio
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-        >
-          {formatAud(event.amount)}
-        </Tooltip>
-        {TICKER}
+          amount={event.amount}
+          label={TICKER}
+        />
       </>
     )
   }
@@ -241,14 +236,11 @@ const DelegationDecreaseEvent: React.FC<{
         >
           {`requested to decrease delegation by`}
         </span>
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(event.amount)}
-          className={styles.titleSpacingRight}
-        >
-          {formatAud(event.amount)}
-        </Tooltip>
-        {TICKER}
+        <DisplayAudio
+          className={clsx(styles.titleSpacingRight)}
+          amount={event.amount}
+          label={TICKER}
+        />
       </>
     )
   }
@@ -257,13 +249,10 @@ const DelegationDecreaseEvent: React.FC<{
     return (
       <>
         {`Decreased delegation`}
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(event.amount)}
+        <DisplayAudio
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-        >
-          {formatAud(event.amount)}
-        </Tooltip>
+          amount={event.amount}
+        />
         {`${TICKER} to `}
         <span className={styles.titleSpacingLeft}>
           <DisplayUser wallet={event.serviceProvider} />
@@ -284,13 +273,10 @@ const DelegationDecreaseEvent: React.FC<{
         >
           {'decreased delegation by'}
         </span>
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(event.amount)}
-          className={styles.titleSpacingRight}
-        >
-          {formatAud(event.amount)}
-        </Tooltip>
+        <DisplayAudio
+          className={clsx(styles.titleSpacingRight)}
+          amount={event.amount}
+        />
         {TICKER}
       </>
     )
@@ -304,13 +290,10 @@ const DelegationDecreaseEvent: React.FC<{
           <DisplayUser wallet={event.serviceProvider} />
         </span>
         <span className={styles.titleSpacingLeft}>{' by'}</span>
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(event.amount)}
+        <DisplayAudio
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-        >
-          {formatAud(event.amount)}
-        </Tooltip>
+          amount={event.amount}
+        />
         {TICKER}
       </>
     )
@@ -326,13 +309,10 @@ const DelegationDecreaseEvent: React.FC<{
         <span className={styles.titleSpacingLeft}>
           {` cancelled request to decrease delegation by`}
         </span>
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(event.amount)}
+        <DisplayAudio
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-        >
-          {formatAud(event.amount)}
-        </Tooltip>
+          amount={event.amount}
+        />
         {TICKER}
       </>
     )
@@ -417,13 +397,10 @@ const ClaimEvent: React.FC<{
         <DisplayUser wallet={event.claimer} />
       </span>
       {` Claims`}
-      <Tooltip
-        position={Position.TOP}
-        text={formatWei(event.rewards)}
+      <DisplayAudio
         className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-      >
-        {formatAud(event.rewards)}
-      </Tooltip>
+        amount={event.rewards}
+      />
       {` ${TICKER}`}
     </span>
   )
@@ -484,27 +461,21 @@ const ServiceProviderStakeEvent: React.FC<{
     return (
       <span className={styles.titleContainer}>
         {`${sentenceFragment1} stake by`}
-        <Tooltip
-          position={Position.TOP}
-          text={formatWei(amount)}
+        <DisplayAudio
           className={clsx(styles.titleSpacingLeft, styles.titleSpacingRight)}
-        >
-          {formatAud(amount)}
-        </Tooltip>
+          amount={amount}
+        />
         {newAmount ? (
           <>
             {'to'}
-            <Tooltip
-              position={Position.TOP}
-              text={formatWei(newAmount)}
+            <DisplayAudio
               className={clsx(
                 styles.titleSpacingLeft,
                 styles.titleSpacingRight
               )}
-            >
-              {formatAud(newAmount)}
-            </Tooltip>
-            {TICKER}
+              amount={newAmount}
+              label={TICKER}
+            />
           </>
         ) : (
           TICKER

@@ -30,6 +30,7 @@ const TooltipText: React.FC<{
 interface TooltipProps {
   className?: string
   text: string
+  onClick?: (e: React.MouseEvent) => void
   isDisabled?: boolean
   position?: Position
 }
@@ -48,6 +49,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   className,
   children,
   text,
+  onClick = () => {},
   isDisabled = true,
   position = Position.TOP
 }) => {
@@ -99,6 +101,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     <span
       ref={containerRef}
       className={clsx(styles.tooltipContainer, { [className!]: !!className })}
+      onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >

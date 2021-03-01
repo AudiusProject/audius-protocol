@@ -1,12 +1,10 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
-import Audius from 'services/Audius'
 import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
 import styles from './TopOperatorsTable.module.css'
 import Table from 'components/Table'
-import Tooltip from 'components/Tooltip'
-import { formatShortWallet, formatWei } from 'utils/format'
+import { formatShortWallet } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
 import { Address, Operator, Status } from 'types'
@@ -14,6 +12,7 @@ import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import BN from 'bn.js'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   topAddresses: 'Top Service Operators by Active Stake',
@@ -104,12 +103,10 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
         </div>
         {!isMobile && (
           <>
-            <Tooltip
+            <DisplayAudio
               className={clsx(styles.rowCol, styles.totalStakedColumn)}
-              text={formatWei(data.staked)}
-            >
-              {Audius.displayShortAud(data.staked)}
-            </Tooltip>
+              amount={data.staked}
+            />
           </>
         )}
       </div>
