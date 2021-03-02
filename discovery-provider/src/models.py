@@ -154,6 +154,7 @@ class User(Base):
     created_at = Column(DateTime, nullable=False)
     primary_id = Column(Integer, nullable=True)
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
+    replica_set_update_signer = Column(String, nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
@@ -185,6 +186,7 @@ metadata_multihash={self.metadata_multihash},\
 creator_node_endpoint={self.creator_node_endpoint},\
 primary_id={self.primary_id},\
 secondary_ids={self.secondary_ids},\
+replica_set_update_signer={self.replica_set_update_signer},\
 updated_at={self.updated_at},\
 created_at={self.created_at})>"
 
@@ -619,7 +621,7 @@ class URSMContentNode(Base):
     proposer_1_delegate_owner_wallet = Column(String, nullable=False)
     proposer_2_delegate_owner_wallet = Column(String, nullable=False)
     proposer_3_delegate_owner_wallet = Column(String, nullable=False)
-    endpoint = Column(String, nullable=False)
+    endpoint = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash)

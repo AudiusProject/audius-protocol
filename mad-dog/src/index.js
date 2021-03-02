@@ -15,6 +15,7 @@ const {
 const DEFAULT_NUM_CREATOR_NODES = 3
 const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
+const USER_REPLICA_SET_NUM_USERS = 4
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
@@ -164,12 +165,11 @@ async function main () {
         break
       }
       case 'test-ursm': {
-        const ursmUsers = 4
         const test = makeTest(
           'userReplicaSetManager',
           userReplicaSetManagerTest,
           {
-            numUsers: ursmUsers
+            numUsers: USER_REPLICA_SET_NUM_USERS
           })
         await testRunner([test])
         break
@@ -194,7 +194,21 @@ async function main () {
             })
         )
 
-        const tests = [coreIntegrationTests, snapbackTest, ...blacklistTests]
+        // User replica set manager tests
+        // Enabled in CI only until contract has been deployed
+        const ursmTest = makeTest(
+          'userReplicaSetManager',
+          userReplicaSetManagerTest,
+          {
+            numUsers: USER_REPLICA_SET_NUM_USERS
+        })
+
+        const tests = [
+          coreIntegrationTests,
+          snapbackTest,
+          ...blacklistTests,
+          ursmTest
+        ]
 
         await testRunner(tests)
         logger.info('Exiting testrunner')

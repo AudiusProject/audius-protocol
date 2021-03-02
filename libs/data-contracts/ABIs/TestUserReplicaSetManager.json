@@ -345,6 +345,11 @@
           "indexed": false,
           "name": "_secondaryIds",
           "type": "uint256[]"
+        },
+        {
+          "indexed": false,
+          "name": "_signer",
+          "type": "address"
         }
       ],
       "name": "UpdateReplicaSet",

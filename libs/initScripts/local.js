@@ -122,8 +122,7 @@ const run = async () => {
         break
 
       case 'query-sps-ursm':
-        let ursmLibs = await getUrsmLibs(audiusLibs)
-        await queryLocalServices(audiusLibs, serviceTypesList, ursmLibs)
+        await queryLocalServices(audiusLibs, serviceTypesList, true)
         break
 
       case 'update-cnode-config': {
@@ -347,13 +346,16 @@ const updateUserReplicaSet = async (
   // UserReplicaBootstrapLibs, logged in as the known bootstrap address
   let userReplicaBootstrapAddressLibs = await getUrsmLibs(defaultAudiusLibs, 9)
   let sp1Id = primaryId
-  let sp1DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp1Id)
+  let sp1ContentNodeWallets = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(sp1Id)
+  let sp1DelWal = sp1ContentNodeWallets.delegateOwnerWallet
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp1Id} - ${sp1DelWal}`)
   let sp2Id = secondaryIds[0]
-  let sp2DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp2Id)
+  let sp2ContentNodeWallets = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(sp2Id)
+  let sp2DelWal = sp2ContentNodeWallets.delegateOwnerWallet
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp2Id} - ${sp2DelWal}`)
   let sp3Id = secondaryIds[1]
-  let sp3DelWal = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallet(sp3Id)
+  let sp3ContentNodeWallets = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(sp3Id)
+  let sp3DelWal = sp3ContentNodeWallets.delegateOwnerWallet
   console.log(`spId <-> delegateWallet from UserReplicaSetManager: ${sp3Id} - ${sp3DelWal}`)
   let user1ReplicaSet = await userReplicaBootstrapAddressLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
   console.log(`User ${userId} replica set prior to update: ${JSON.stringify(user1ReplicaSet)}`)

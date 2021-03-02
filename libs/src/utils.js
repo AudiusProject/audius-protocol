@@ -5,7 +5,6 @@ const axios = require('axios')
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 class Utils {
-
   static importDataContractABI (pathStr) {
     // need to specify part of path here because of https://github.com/webpack/webpack/issues/4921#issuecomment-357147299
     const importFile = require(`../data-contracts/ABIs/${pathStr}`)

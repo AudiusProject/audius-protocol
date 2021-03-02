@@ -2,7 +2,6 @@ const axios = require('axios')
 const FormData = require('form-data')
 
 const SchemaValidator = require('../schemaValidator')
-const { CREATOR_NODE_SERVICE_NAME } = require('./constants')
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {

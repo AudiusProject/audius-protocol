@@ -1,7 +1,10 @@
 const Web3 = require('web3')
 const web3 = new Web3()
 
-// 5 minutes in ms is the maximum age of a signature
+/**
+ * Max age of signature in milliseconds
+ * Set to 5 minutes
+ */
 const MAX_SIGNATURE_AGE_MS = 300000
 
 /**
@@ -14,7 +17,6 @@ const generateTimestampAndSignature = (data, privateKey) => {
   const toSignObj = { ...data, timestamp }
   // JSON stringify automatically removes white space given 1 param
   const toSignStr = JSON.stringify(sortKeys(toSignObj))
-  // console.log(`TOSIGNSTR: ${toSignStr}`)
   const toSignHash = web3.utils.keccak256(toSignStr)
   const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
 
@@ -29,7 +31,6 @@ const generateTimestampAndSignature = (data, privateKey) => {
 // eslint-disable-next-line no-unused-vars
 const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(sortKeys(data))
-  // console.log(`structuredata: ${structuredData}`)
   const hashedData = web3.utils.keccak256(structuredData)
   const recoveredWallet = web3.eth.accounts.recover(hashedData, signature)
 
@@ -37,8 +38,8 @@ const recoverWallet = (data, signature) => {
 }
 
 /**
- * 
- * @param {*} signatureTimestamp 
+ * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
+ * @param {string} signatureTimestamp unix timestamp string when signature was generated
  */
 const signatureHasExpired = (signatureTimestamp) => {
   const signatureTimestampDate = new Date(signatureTimestamp)

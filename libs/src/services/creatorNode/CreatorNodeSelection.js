@@ -2,12 +2,16 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
+/**
+ * In memory dictionary used to query spID from endpoint
+ * Eliminates duplicate web3 calls within same session
+ */
 let contentNodeEndpointToSpID = { }
-function getSpIDFromEndpoint (endpoint) {
+function getSpIDForEndpoint (endpoint) {
   return contentNodeEndpointToSpID[endpoint]
 }
 
-function setEndpointToSpID (spID, endpoint) {
+function setSpIDForEndpoint (endpoint, spID) {
   contentNodeEndpointToSpID[endpoint] = spID
 }
 
@@ -18,7 +22,7 @@ class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
-    maxStorageUsedPercent = 90,
+    maxStorageUsedPercent = 95,
     timeout = null
   }) {
     super({
@@ -26,7 +30,7 @@ class CreatorNodeSelection extends ServiceSelection {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
         return services.map((e) => {
-          contentNodeEndpointToSpID[e.endpoint] = e.spID
+          setSpIDForEndpoint(e.endpoint, e.spID)
           return e.endpoint
         })
       },
@@ -175,7 +179,10 @@ class CreatorNodeSelection extends ServiceSelection {
       }
     }
 
-    this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS, val: services })
+    this.decisionTree.push({
+      stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS,
+      val: successfulSyncCheckServices
+    })
 
     return successfulSyncCheckServices
   }
@@ -200,16 +207,23 @@ class CreatorNodeSelection extends ServiceSelection {
       let isHealthy = false
 
       // Check that the health check:
-      // 1. Responded with status code 200 and that the
+      // 1. Responded with status code 200
       // 2. Version is up to date on major and minor
-      // 3. Has enough storage space -- max capacity defined at the variable `this.maxStorageUsedPercent`
+      // 3. Has enough storage space
+      //    - Max capacity percent is defined from CN health check response. If not present,
+      //      use existing value from `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
           this.currentVersion,
           resp.response.data.data.version
         )
-        const { storagePathSize, storagePathUsed } = resp.response.data.data
+        let { storagePathSize, storagePathUsed, maxStorageUsedPercent } = resp.response.data.data
+        if (maxStorageUsedPercent) {
+          this.maxStorageUsedPercent = maxStorageUsedPercent
+        } else {
+          console.warn(`maxStorageUsedPercent not found in health check response. Using constructor value of ${this.maxStorageUsedPercent}% as maxStorageUsedPercent.`)
+        }
         const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
         isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
       }
@@ -232,30 +246,32 @@ class CreatorNodeSelection extends ServiceSelection {
     // Record metrics
     if (this.creatorNode.monitoringCallbacks.healthCheck) {
       healthCheckedServices.forEach(check => {
-        const url = new URL(check.request.url)
-        const data = check.response.data.data
-        try {
-          this.creatorNode.monitoringCallbacks.healthCheck({
-            endpoint: url.origin,
-            pathname: url.pathname,
-            queryString: url.queryrString,
-            version: data.version,
-            git: data.git,
-            selectedDiscoveryNode: data.selectedDiscoveryProvider,
-            databaseSize: data.databaseSize,
-            databaseConnections: data.databaseConnections,
-            totalMemory: data.totalMemory,
-            usedMemory: data.usedMemory,
-            totalStorage: data.storagePathSize,
-            usedStorage: data.storagePathUsed,
-            maxFileDescriptors: data.maxFileDescriptors,
-            allocatedFileDescriptors: data.allocatedFileDescriptors,
-            receivedBytesPerSec: data.receivedBytesPerSec,
-            transferredBytesPerSec: data.transferredBytesPerSec
-          })
-        } catch (e) {
-          // Swallow errors -- this method should not throw generally
-          console.error(e)
+        if (check.response && check.response.data) {
+          const url = new URL(check.request.url)
+          const data = check.response.data.data
+          try {
+            this.creatorNode.monitoringCallbacks.healthCheck({
+              endpoint: url.origin,
+              pathname: url.pathname,
+              queryString: url.queryrString,
+              version: data.version,
+              git: data.git,
+              selectedDiscoveryNode: data.selectedDiscoveryProvider,
+              databaseSize: data.databaseSize,
+              databaseConnections: data.databaseConnections,
+              totalMemory: data.totalMemory,
+              usedMemory: data.usedMemory,
+              totalStorage: data.storagePathSize,
+              usedStorage: data.storagePathUsed,
+              maxFileDescriptors: data.maxFileDescriptors,
+              allocatedFileDescriptors: data.allocatedFileDescriptors,
+              receivedBytesPerSec: data.receivedBytesPerSec,
+              transferredBytesPerSec: data.transferredBytesPerSec
+            })
+          } catch (e) {
+            // Swallow errors -- this method should not throw generally
+            console.error(e)
+          }
         }
       })
     }
@@ -278,6 +294,6 @@ class CreatorNodeSelection extends ServiceSelection {
 
 module.exports = {
   CreatorNodeSelection,
-  getSpIDFromEndpoint,
-  setEndpointToSpID
+  getSpIDForEndpoint,
+  setSpIDForEndpoint
 }

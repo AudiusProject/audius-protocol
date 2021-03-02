@@ -161,6 +161,22 @@ class DiscoveryProvider {
   }
 
   /**
+   * Gets random tracks from trending tracks for a given genre.
+   * If genre not given, will return trending tracks across all genres.
+   * Excludes specified track ids.
+   *
+   * @param {string} genre
+   * @param {number} limit
+   * @param {number[]} exclusionList
+   * @param {string} time
+   * @returns {(Array)} track
+   */
+  async getRandomTracks (genre, limit, exclusionList, time) {
+    const req = Requests.getRandomTracks(genre, limit, exclusionList, time)
+    return this._makeRequest(req)
+  }
+
+  /**
    * Gets all stems for a given trackId as an array of tracks.
    * @param {number} trackId
    * @returns {(Array)} track

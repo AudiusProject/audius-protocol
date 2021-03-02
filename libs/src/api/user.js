@@ -2,7 +2,7 @@ const { pick } = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
-const { getSpIDFromEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
+const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values
@@ -364,14 +364,11 @@ class Users extends Base {
     // Preserve old metadata object
     const oldMetadata = { ...user }
 
-    console.log(`Updating from ${oldMetadata.creator_node_endpoint}`)
-    console.log(`Updating to ${newMetadata.creator_node_endpoint}`)
-
     // Update user creator_node_endpoint on chain if applicable
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
       // Perform update to new contract
-      const updateEndpointTxReceipt = await this._updateReplicaSet(userId, newMetadata)
+      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
@@ -461,14 +458,13 @@ class Users extends Base {
       await this.creatorNode.setEndpoint(newPrimary)
 
       // Update user creator_node_endpoint on chain if applicable
-      const updateEndpointTxReceipt = await this._updateReplicaSet(userId, newMetadata)
+      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
       await this._waitForCreatorNodeEndpointIndexing(
         newMetadata.user_id,
-        newMetadata.creator_node_endpoint,
-        newMetadata.handle
+        newMetadata.creator_node_endpoint
       )
     }
 
@@ -557,7 +553,7 @@ class Users extends Base {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this._updateReplicaSet(userId, newMetadata)
+        await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
         // Ensure DN has indexed creator_node_endpoint change
         await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
       }
@@ -689,26 +685,29 @@ class Users extends Base {
     return pick(metadata, USER_PROPS.concat('user_id'))
   }
 
-  async _updateReplicaSet (userId, metadata) {
+  // Perform replica set update
+  // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
+  // This behavior is to ensure backwards compatibility prior to contract deploy
+  async _updateReplicaSetOnChain (userId, creatorNodeEndpoint) {
     // Attempt to update through UserReplicaSetManagerClient if present
     if (!this.contracts.UserReplicaSetManagerClient) {
       await this.contracts.initUserReplicaSetManagerClient()
     }
-
     // If still uninitialized, proceed with legacy update - else move forward with new contract update
     if (!this.contracts.UserReplicaSetManagerClient) {
       const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
         userId,
-        metadata.creator_node_endpoint
+        creatorNodeEndpoint
       )
       return updateEndpointTxReceipt
     }
-
-    let primaryEndpoint = CreatorNode.getPrimary(metadata.creator_node_endpoint)
-    let secondaries = CreatorNode.getSecondaries(metadata.creator_node_endpoint)
-    let primarySpID = await this._retrieveSpIDFromEndpoint(primaryEndpoint)
-    let secondary1SpID = await this._retrieveSpIDFromEndpoint(secondaries[0])
-    let secondary2SpID = await this._retrieveSpIDFromEndpoint(secondaries[1])
+    let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
+    let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
+    let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
+      this._retrieveSpIDFromEndpoint(primaryEndpoint),
+      this._retrieveSpIDFromEndpoint(secondaries[0]),
+      this._retrieveSpIDFromEndpoint(secondaries[1])
+    ])
     // Update in new contract
     let tx = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
       userId,
@@ -718,14 +717,22 @@ class Users extends Base {
     return tx
   }
 
+  // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
+  // Any error in the web3 fetch will short circuit the entire operation as expected
   async _retrieveSpIDFromEndpoint (endpoint) {
-    let cachedSpID = await getSpIDFromEndpoint(endpoint)
+    let cachedSpID = getSpIDForEndpoint(endpoint)
     let spID = cachedSpID
     if (!spID) {
       let spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
         endpoint
       )
+      // Throw if this spID is 0, indicating invalid
       spID = spEndpointInfo.spID
+      if (spID === 0) {
+        throw new Error(`Failed to find spID for ${endpoint}`)
+      }
+      // Cache value if it is valid
+      setSpIDForEndpoint(endpoint, spID)
     }
     return spID
   }

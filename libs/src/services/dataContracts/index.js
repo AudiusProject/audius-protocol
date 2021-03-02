@@ -102,6 +102,9 @@ class AudiusContracts {
     }
   }
 
+  // Special case initialization flow for UserReplicaSetManagerClient backwards compatibility
+  // Until the contract is deployed and added to the data contract registry, replica set
+  // operations will flow through the existing UserFactory
   async initUserReplicaSetManagerClient () {
     try {
       if (
@@ -119,7 +122,7 @@ class AudiusContracts {
       )
       await this.UserReplicaSetManagerClient.init()
       if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
-        throw new Error(`Failed to retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
+        throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
       }
     } catch (e) {
       // Nullify failed attempt to initialize

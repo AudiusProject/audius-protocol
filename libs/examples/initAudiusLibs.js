@@ -20,8 +20,7 @@ async function initAudiusLibs (
   let audiusLibsConfig
   let ethWallet = ethOwnerWalletOverride === null ? ethContractsConfig.ownerWallet : ethOwnerWalletOverride
   if (useExternalWeb3) {
-    // const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoints[0]))
-    const dataWeb3 = new Web3(dataWeb3ProviderEndpoints[0])
+    const dataWeb3 = new Web3(new Web3.providers.HttpProvider(dataWeb3ProviderEndpoints[0]))
     audiusLibsConfig = {
       // Network id does not need to be checked in the test environment.
       web3Config: AudiusLibs.configExternalWeb3(

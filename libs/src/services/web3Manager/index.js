@@ -51,7 +51,6 @@ class Web3Manager {
       this.useExternalWeb3 = false
 
       if (web3Config.internalWeb3Config.privateKey) {
-        console.log(`WEB3MANGERINDEX PKEY: ${web3Config.internalWeb3Config.privateKey}`)
         let pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
         this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)
         return
@@ -155,14 +154,6 @@ class Web3Manager {
         this.ownerWallet.getPrivateKey(),
         { data: signatureData }
       )
-    }
-  }
-
-  getWalletAddressString () {
-    if (this.useExternalWeb3) {
-      return this.ownerWallet
-    } else {
-      return this.ownerWallet.getAddressString()
     }
   }
 

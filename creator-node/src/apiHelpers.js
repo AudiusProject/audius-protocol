@@ -192,6 +192,10 @@ module.exports.errorResponseSocketTimeout = (socketTimeout) => {
   return errorResponse(500, `${socketTimeout} socket timeout exceeded for request`)
 }
 
+/**
+ * Define custom api error subclasses to be thrown in components and handled in route controllers
+ */
+
 class ErrorBadRequest extends Error {}
 Object.defineProperty(ErrorBadRequest.prototype, 'name', {
   value: 'ErrorBadRequest'
@@ -205,11 +209,10 @@ module.exports.ErrorBadRequest = ErrorBadRequest
 module.exports.ErrorServerError = ErrorServerError
 
 /**
- * TODO
- * @param {*} error 
+ * Given an error instance, returns the corresponding error response to request
+ * @param {Error} error instance of error class or subclass
  */
 module.exports.handleApiError = (error) => {
-  // logger.info(`e: ${e} // ${e.name} // ${e.message}`)
   switch (error) {
     case ErrorBadRequest:
       return this.errorResponseBadRequest(error.message)
@@ -220,12 +223,20 @@ module.exports.handleApiError = (error) => {
   }
 }
 
-module.exports.parseCNodeResponse = (respObj, requiredFields) => {
+/**
+ * Helper function to parse responses from axios requests to other Content Nodes.
+ *    Given a response object and required fields, errors if any required fields missing.
+ *    Also errors if any signature fields missing.
+ *    Unnests response data.data and returns formatted data, along with raw response object.
+ *    Uses response schema defined above in successResponse()
+ * @param {Object} respObj original response object from axios request to content node
+ * @param {string[]} requiredFields
+ */
+module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
   if (!respObj.data || !respObj.data.data) {
-    throw new Error('Missing')
+    throw new Error('Unexpected respObj format')
   }
 
-  requiredFields = requiredFields
   requiredFields.map(requiredField => {
     if (!respObj.data.data[requiredField]) {
       throw new Error(`CNodeResponse missing required data field: ${requiredField}`)

@@ -5,32 +5,20 @@ const { logger } = require('../logger.js')
 const {
   addAndUpgradeUsers
 } = require('../helpers.js')
-// const { exec } = require('child_process')
 
 const DEFAULT_INDEX = 1
 
-/*
-const {
-  uploadTrack,
-  getTrackMetadata,
-  getUser,
-  verifyCIDExistsOnCreatorNode
-} = ServiceCommands
-*/
-
-let contentNodeList = null
 let contentNodeEndpointToInfoMapping = {}
+let walletIndexToUserIdMap
 
 const {
     getUser
 } = ServiceCommands
 
-// const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
-let walletIndexToUserIdMap
-
 const verifyUserReplicaSetStatus = async (
   userId,
-  libs
+  libs,
+  replicaSetUpdaterAddress = null
 ) =>
 {
   try {
@@ -40,6 +28,17 @@ const verifyUserReplicaSetStatus = async (
     // Query user object
     let usrQueryInfo = await getUser(libs, userId)
 
+    // Validate the latest updater indexed into discovery node matches expected value
+    let replicaSetUpdateSigner = replicaSetUpdaterAddress
+    if (!replicaSetUpdateSigner) {
+      replicaSetUpdateSigner = libs.getWalletAddress()
+    }
+    let queriedReplicaSetUpdateSigner = usrQueryInfo.replica_set_update_signer.toLowerCase()
+    let expectedUpdaterFound = replicaSetUpdateSigner === queriedReplicaSetUpdateSigner
+    if (!expectedUpdaterFound) {
+      throw new Error('Invalid replica set updater found')
+    }
+
     // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
     let replicaEndpointArray = usrQueryInfo.creator_node_endpoint.split(",")
     let primaryEndpointString = replicaEndpointArray[0]
@@ -47,7 +46,7 @@ const verifyUserReplicaSetStatus = async (
     let primaryInfo = contentNodeEndpointToInfoMapping[primaryEndpointString]
     let primaryID = usrQueryInfo.primary_id
 
-    // Throw if mismatch between queried primaryID and assigned 
+    // Throw if mismatch between queried primaryID and assigned
     //    spID on chain for this endpoint
     if (primaryID !== primaryInfo.spID) {
       throw new Error(`Mismatch spID values. Expected endpoint for ${primaryID}, found ${primaryInfo.spID}`)
@@ -201,23 +200,36 @@ const verifyUrsmContentNodes = async (executeOne) => {
     let queriedContentNodes = await libs.getURSMContentNodes()
     await Promise.all(queriedContentNodes.map(async (queriedNodeInfo) => {
       let spID = queriedNodeInfo.cnode_sp_id
-      let wallet = queriedNodeInfo.delegate_owner_wallet
-      let walletsInfo = await libs.getContentNodeWallets(spID)
-      let delegateWalletFromChain = walletsInfo.delegateOwnerWallet
-      if (wallet !== delegateWalletFromChain) {
+      let queriedDelegatOwnerWallet = queriedNodeInfo.delegate_owner_wallet
+      let queriedOwnerWallet = queriedNodeInfo.owner_wallet
+      let walletInfoFromChain = await libs.getContentNodeWallets(spID)
+      let delegateWalletFromChain = walletInfoFromChain.delegateOwnerWallet
+      let ownerWalletFromChain = walletInfoFromChain.ownerWallet
+      // Query POA contract and confirm IDs
+      if (queriedDelegatOwnerWallet !== delegateWalletFromChain) {
         throw new Error(
-          `Mismatch between UserReplicaSetManager chain wallet: ${delegateWalletFromChain} and queried wallet: ${wallet}`
+          `Mismatch between UserReplicaSetManager chain delegateOwnerWallet: ${delegateWalletFromChain} and queried delegateownerWallet: ${queriedDelegatOwnerWallet}`
+        )
+      }
+      if (queriedOwnerWallet !== ownerWalletFromChain) {
+        throw new Error(
+          `Mismatch between UserReplicaSetManager chain ownerWallet: ${ownerWalletFromChain} and queried ownerWallet: ${queriedOwnerWallet}`
         )
       }
       // Query eth-contracts and confirm IDs
-      logger.info(`Found UserReplicaSetManager and Discovery Provider match for spID=${spID}, delegateWallet=${wallet}`)
+      logger.info(`Found UserReplicaSetManager and Discovery Provider match for spID=${spID}, delegateWallet=${queriedDelegatOwnerWallet}`)
       let ethSpInfo = await libs.getServiceEndpointInfo('content-node', spID)
       if (delegateWalletFromChain !== ethSpInfo.delegateOwnerWallet) {
         throw new Error(
-          `Mismatch between UserReplicaSetManager chain wallet: ${delegateWalletFromChain} and SP eth-contracts wallet: ${ethSpInfo.delegateOwnerWallet}`
+          `Mismatch between UserReplicaSetManager chain delegateOwnerWallet: ${delegateWalletFromChain} and SP eth-contracts delegateOwnerWallet: ${ethSpInfo.delegateOwnerWallet}`
         )
       }
-      logger.info(`Found UserReplicaSetManager and ServiceProviderFactory match for spID=${spID}, delegateWallet=${delegateWalletFromChain}`)
+      if (ownerWalletFromChain !== ethSpInfo.owner) {
+        throw new Error(
+          `Mismatch between UserReplicaSetManager chain ownerWallet: ${ownerWalletFromChain} and SP eth-contracts ownerWallet: ${ethSpInfo.owner}`
+        )
+      }
+      logger.info(`Found UserReplicaSetManager and ServiceProviderFactory match for spID=${spID}, delegateWallet=${delegateWalletFromChain}, ownerWallet=${ownerWalletFromChain}`)
     }))
   })
   logger.info(`Finished validating content-nodes on UserReplicaSetManager`)

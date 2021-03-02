@@ -45,7 +45,8 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     event UpdateReplicaSet(
         uint _userId,
         uint _primaryId,
-        uint[] _secondaryIds
+        uint[] _secondaryIds,
+        address _signer
     );
 
     event AddOrUpdateContentNode(
@@ -158,7 +159,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
     {
         _requireSeed();
         // For every entry in spIds/Nonces/Sigs
-        //  Recover signer using the signature for inner function (tmp is addOrUpdateCreatorNode)
+        //  Recover signer using the signature for inner function
         //  Confirm that the spId <-> recoveredSigner DOES exist and match what is stored on chain
         address proposer1DelegateOwnerWallet = _recoverProposeAddOrUpdateContentNodeSignerAddress(
             _cnodeSpId,
@@ -192,15 +193,15 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
         );
         require(
             spIdToContentNodeWallets[_proposerSpIds[0]].delegateOwnerWallet == proposer1DelegateOwnerWallet,
-            "Invalid wallet provided for 1st proposer"
+            "Invalid delegateOwnerWallet provided for 1st proposer"
         );
         require(
             spIdToContentNodeWallets[_proposerSpIds[1]].delegateOwnerWallet == proposer2DelegateOwnerWallet,
-            "Invalid wallet provided for 2nd proposer"
+            "Invalid delegateOwnerWallet provided for 2nd proposer"
         );
         require(
             spIdToContentNodeWallets[_proposerSpIds[2]].delegateOwnerWallet == proposer3DelegateOwnerWallet,
-            "Invalid wallet provided for 3rd proposer"
+            "Invalid delegateOwnerWallet provided for 3rd proposer"
         );
 
         // Require distinct ownerWallet for each proposer
@@ -323,7 +324,7 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             secondaryIds: _secondaryIds
         });
 
-        emit UpdateReplicaSet(_userId, _primaryId, _secondaryIds);
+        emit UpdateReplicaSet(_userId, _primaryId, _secondaryIds, signer);
     }
 
     /// @notice Update configured userReplicaSetBootstrapAddress

@@ -94,6 +94,30 @@ class UserReplicaSetManagerClient extends ContractClient {
   }
 
   /**
+   * Return the current replica set associated with a given user
+   * @param {number} userId
+   */
+  async getUserReplicaSet (userId) {
+    const method = await this.getMethod('getUserReplicaSet', userId)
+    let currentWallet = this.web3Manager.getWalletAddress()
+    let resp = await method.call({ from: currentWallet })
+    return {
+      primaryId: parseInt(resp.primaryId),
+      secondaryIds: resp.secondaryIds.map(x => parseInt(x))
+    }
+  }
+
+  /**
+   * Return the current ownerWallet and delegateOwnerWallet for a given spID
+   * @param {number} userId
+   */
+  async getContentNodeWallets (spId) {
+    const method = await this.getMethod('getContentNodeWallets', spId)
+    let currentWallet = this.web3Manager.getWalletAddress()
+    return method.call({ from: currentWallet })
+  }
+
+  /**
    * Submit update transaction to UserReplicaSetManager to modify a user's replica set
    * Can be sent by user's wallet, or any content node in the replica set
    * @param {number} userId
@@ -135,26 +159,6 @@ class UserReplicaSetManagerClient extends ContractClient {
       contractAddress
     )
     return tx
-  }
-
-  /**
-   * Return the current replica set associated with a given user
-   * @param {number} userId
-   */
-  async getUserReplicaSet (userId) {
-    const method = await this.getMethod('getUserReplicaSet', userId)
-    let currentWallet = this.web3Manager.getWalletAddress()
-    return method.call({ from: currentWallet })
-  }
-
-  /**
-   * Return the current wallet address associated with a given spID
-   * @param {number} userId
-   */
-  async getContentNodeWallets (spId) {
-    const method = await this.getMethod('getContentNodeWallets', spId)
-    let currentWallet = this.web3Manager.getWalletAddress()
-    return method.call({ from: currentWallet })
   }
 }
 

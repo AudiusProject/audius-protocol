@@ -1,5 +1,1 @@
 export CREATOR_NODE_IS_USER_METADATA=false
-export delegateOwnerWallet=0x87a9b6f236a5f60285dd820d7640df797e7bd7f6
-export delegatePrivateKey=0xbb390479db6c10c5b962ab3ecbd0bcc5fc86df3de59d329170343da6f9d94a65
-export creatorNodeEndpoint=http://cn4_creator-node_1:4003
-export spOwnerWallet=0x87a9b6f236a5f60285dd820d7640df797e7bd7f6
