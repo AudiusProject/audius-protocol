@@ -1,11 +1,12 @@
 import json
 import logging
+import concurrent.futures
 from datetime import datetime, timedelta
 import requests
 from src import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
+from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
 from src.utils.redis_metrics import metrics_prefix, metrics_applications, \
     metrics_routes, metrics_visited_nodes, merge_route_metrics, merge_app_metrics, \
     parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL
@@ -136,6 +137,13 @@ def refresh_metrics_matviews(db):
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_all_time')
         logger.info('index_metrics.py | refreshed metrics matviews')
 
+# Perform eth web3 call to fetch endpoint info
+def fetch_discovery_node_info(sp_id, sp_factory_instance):
+    return sp_factory_instance.functions.getServiceEndpointInfo(
+        discovery_node_service_type,
+        sp_id
+    ).call()
+
 def get_all_other_nodes():
     """
     Get number of discovery nodes
@@ -156,14 +164,29 @@ def get_all_other_nodes():
     sp_factory_inst = eth_web3.eth.contract(
         address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
     )
-    num_discovery_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(discovery_node_service_type).call()
-    logger.info(f"number of discovery providers: {num_discovery_providers}")
-    service_infos = [sp_factory_inst.functions.getServiceEndpointInfo(discovery_node_service_type, i).call() \
-                     for i in range(1, num_discovery_providers + 1)]
+    num_discovery_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(discovery_node_service_type).call()
+    logger.info(f"number of discovery nodes: {num_discovery_nodes}")
+
+    ids_list = list(range(1, num_discovery_nodes + 1))
+    all_other_nodes = []
+
+    # fetch all discovery nodes info in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        discovery_node_futures = {executor.submit(fetch_discovery_node_info, i, sp_factory_inst): i for i in ids_list}
+        for future in concurrent.futures.as_completed(discovery_node_futures):
+            node_op = discovery_node_futures[future]
+            try:
+                node_info = future.result()
+                if node_info[3] != shared_config["delegate"]["owner_wallet"]:
+                    endpoint = node_info[1]
+                    if is_fqdn(endpoint):
+                        all_other_nodes.append(endpoint)
+            except Exception as e:
+                logger.error(
+                    f"index_metrics.py | ERROR in discovery_node_futures {node_op} generated {e}"
+                )
 
     logger.info(f"this node's delegate owner wallet: {shared_config['delegate']['owner_wallet']}")
-    all_other_nodes = [service_info[1] for service_info in service_infos \
-                       if service_info[3] != shared_config["delegate"]["owner_wallet"]]
     logger.info(f"all the other nodes: {all_other_nodes}")
     return all_other_nodes
 
