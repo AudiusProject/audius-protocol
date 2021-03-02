@@ -469,6 +469,7 @@ const WebApp = ({
             'tel://*',
             'mailto://*'
           ]}
+          cacheEnabled={false}
           onScroll={onScroll}
           overScrollMode='never'
           onMessage={onMessageHandler}
