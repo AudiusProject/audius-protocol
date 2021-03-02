@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Config from "react-native-config"
 import { Image, ImageSourcePropType, StyleSheet, TouchableOpacity, View } from 'react-native'
 import { getUserListRoute, getUserRoute } from '../routeUtil'
@@ -46,14 +46,28 @@ const getImageURI = (user: any) => {
   return null
 }
 
+const UserImage = ({
+  source
+}: { source: ImageSourcePropType }) => {
+  const imageStyle = useTheme(styles.image, {
+    backgroundColor: 'neutralLight4',
+  })
+  const [didError, setDidError] = useState(false)
+  return (
+    <Image
+      style={imageStyle}
+      source={didError ? require('../../../assets/images/imageProfilePicEmpty2X.png') : source}
+      // TODO: Gracefully handle error and select secondary node
+      onError={({nativeEvent: {error}}: any) => setDidError(true)}
+    />
+  )
+}
+
 const UserImages = ({
   notification,
   users,
   onGoToRoute
 }: UserImagesProps) => {
-  const imageStyle = useTheme(styles.image, {
-    backgroundColor: 'neutralLight4',
-  })
   const isMultiUser = users.length > 1
 
   const renderUsers = () => <View style={styles.container}>
@@ -66,13 +80,7 @@ const UserImages = ({
         } else {
           source = require('../../../assets/images/imageProfilePicEmpty2X.png')
         }
-        const image = <Image
-          style={imageStyle}
-          key={user.user_id}
-          source={source}
-          // TODO: Gracefully handle error and select secondary node
-          // onError={({nativeEvent: {error}}: any) => ...}
-        />
+        const image = <UserImage source={source} key={user.user_id} />
         return isMultiUser ? image : (
           <TouchableOpacity
             activeOpacity={0.7}

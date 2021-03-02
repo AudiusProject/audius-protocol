@@ -20,6 +20,7 @@ const store = createStore(
   createRootReducer(),
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
 )
+export const dispatch = store.dispatch
 
 const Airplay = Platform.select({
   ios: () => require('./components/audio/Airplay').default,
