@@ -197,6 +197,7 @@ const SettingsPage = (props: SettingsPageProps) => {
         options={options}
         selected={theme || Theme.DEFAULT}
         onSelectOption={option => toggleTheme(option)}
+        key={`tab-slider-${options.length}`}
       />
     )
   }
