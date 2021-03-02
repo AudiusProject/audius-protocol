@@ -13,6 +13,9 @@ const redis = require('./redis')
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
+const { promisify } = require('util')
+
+const readFile = promisify(fs.readFile)
 
 class Utils {
   static verifySignature (data, sig) {
@@ -152,6 +155,14 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
     let options = {}
     if (length) options.length = length
     if (timeout) options.timeout = timeout
+
+    // using a js timeout because IPFS cat sometimes does not resolve the timeout and gets
+    // stuck in this function indefinitely
+    // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
+    setTimeout(() => {
+      return reject(new Error('ipfsCat timed out'))
+    }, 2 * timeout)
+
     // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
     for await (const chunk of ipfs.cat(path, options)) {
@@ -179,6 +190,14 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
     let chunks = []
     let options = {}
     if (timeout) options.timeout = timeout
+
+    // using a js timeout because IPFS get sometimes does not resolve the timeout and gets
+    // stuck in this function indefinitely
+    // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
+    setTimeout(() => {
+      return reject(new Error('ipfsGet timed out'))
+    }, 2 * timeout)
+
     // ipfs.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
     for await (const file of ipfs.get(path, options)) {
@@ -338,7 +357,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
     for (var entry of findOriginalFileQuery) {
       let sourceFilePath = entry.storagePath
       try {
-        let bufferedFile = fs.readFileSync(sourceFilePath)
+        let bufferedFile = await readFile(sourceFilePath)
         let originalSource = entry.sourceFile
         ipfsAddArray.push({
           path: originalSource,
@@ -396,7 +415,7 @@ async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   for (let entry of findOriginalFileQuery) {
     let sourceFilePath = entry.storagePath
     try {
-      let bufferedFile = fs.readFileSync(sourceFilePath)
+      let bufferedFile = await readFile(sourceFilePath)
       let originalSource = entry.sourceFile
       ipfsAddArray.push({
         path: originalSource,

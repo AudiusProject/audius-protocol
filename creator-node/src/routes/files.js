@@ -22,12 +22,21 @@ const { recoverWallet } = require('../apiSigning')
 const models = require('../models')
 const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const { authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, triggerSecondarySyncs } = require('../middlewares')
+const {
+  authMiddleware,
+  ensurePrimaryMiddleware,
+  syncLockMiddleware,
+  triggerSecondarySyncs,
+  ensureStorageMiddleware
+} = require('../middlewares')
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
+const { promisify } = require('util')
+
+const fsStat = promisify(fs.stat)
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 
@@ -46,7 +55,7 @@ const streamFromFileSystem = async (req, res, path) => {
     let fileStream
 
     let stat
-    stat = fs.statSync(path)
+    stat = await fsStat(path)
     // Add 'Accept-Ranges' if streamable
     if (req.params.streamable) {
       res.set('Accept-Ranges', 'bytes')
@@ -303,7 +312,7 @@ module.exports = function (app) {
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */
-  app.post('/image_upload', authMiddleware, ensurePrimaryMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
+  app.post('/image_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, uploadTempDiskStorage.single('file'), handleResponseWithHeartbeat(async (req, res) => {
     if (!req.body.square || !(req.body.square === 'true' || req.body.square === 'false')) {
       return errorResponseBadRequest('Must provide square boolean param in request body')
     }

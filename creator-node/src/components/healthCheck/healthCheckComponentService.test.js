@@ -91,6 +91,7 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceCountry', 'US')
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
+    config.set('maxStorageUsedPercent', 95)
 
     const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock)
     assert.deepStrictEqual(res, {
@@ -114,7 +115,8 @@ describe('Test Health Check Verbose', function () {
       maxFileDescriptors: 524288,
       allocatedFileDescriptors: 3392,
       receivedBytesPerSec: 776.7638177541248,
-      transferredBytesPerSec: 269500
+      transferredBytesPerSec: 269500,
+      maxStorageUsedPercent: 95
     })
   })
 })

@@ -9,8 +9,11 @@ const { MONITORS } = require('../../monitors/monitors')
  * the current git SHA, and service version info.
  * @param {*} ServiceRegistry
  * @param {*} logger
+ * @param {*} sequelize
+ * @param {string?} randomBytesToSign optional bytes string to be included in response object
+ *    and used in signature generation
  */
-const healthCheck = async ({ audiusLibs } = {}, logger, sequelize, randomBytesToSign) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign = null) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -26,10 +29,10 @@ const healthCheck = async ({ audiusLibs } = {}, logger, sequelize, randomBytesTo
     response.randomBytesToSign = randomBytesToSign
   }
 
-  if (audiusLibs) {
-    response.selectedDiscoveryProvider = audiusLibs.discoveryProvider.discoveryProviderEndpoint
+  if (libs) {
+    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
   } else {
-    logger.warn('Health check with no audiusLibs')
+    logger.warn('Health check with no libs')
   }
 
   // we have a /db_check route for more granular detail, but the service health check should
@@ -53,6 +56,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors)
   const country = config.get('serviceCountry')
   const latitude = config.get('serviceLatitude')
   const longitude = config.get('serviceLongitude')
+  const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
 
   // System information
   const [
@@ -93,7 +97,8 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors)
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
-    transferredBytesPerSec
+    transferredBytesPerSec,
+    maxStorageUsedPercent
   }
 
   return response

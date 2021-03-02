@@ -10,6 +10,7 @@ const { runMigrations } = require('./migrationManager')
 const { logger } = require('./logging')
 const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
+const { pinCID } = require('./pinCID')
 
 const exitWithError = (...msg) => {
   logger.error(...msg)
@@ -73,8 +74,10 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info('Initialized services')
 
-    appInfo = await initializeApp(config.get('port'), serviceRegistry)
+    appInfo = initializeApp(config.get('port'), serviceRegistry)
     logger.info('Initialized app and server')
+
+    await pinCID(serviceRegistry.ipfsLatest)
   }
 
   // when app terminates, close down any open DB connections gracefully

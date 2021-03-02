@@ -4,7 +4,6 @@ const BlacklistManager = require('./blacklistManager')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
-const URSMService = require('./URSMService')
 const config = require('./config')
 
 /**
@@ -18,7 +17,7 @@ const config = require('./config')
  *  - `blackListManager`: responsible for handling blacklisted content
  *  - `audiusLibs`: an instance of Audius Libs
  *
- * `initServices` must be called prior to consuming servies from the registry.
+ * `initServices` must be called prior to consuming services from the registry.
  */
 class ServiceRegistry {
   constructor () {
@@ -30,13 +29,12 @@ class ServiceRegistry {
     this.nodeConfig = config
 
     // below properties aren't initialized until 'initServices' is called
-    this.audiusLibs = null
+    this.libs = null
     this.snapbackSM = null
-    this.URSMService = null
   }
 
   /**
-   * Configure services, init libs.
+   * Configure all services, including libs init
    */
   async initServices () {
     // Initialize private IPFS gateway counters
@@ -46,14 +44,10 @@ class ServiceRegistry {
     await this.blacklistManager.init()
 
     if (!config.get('isUserMetadataNode')) {
-      this.audiusLibs = await initAudiusLibs()
+      this.libs = await initAudiusLibs()
 
-      this.snapbackSM = new SnapbackSM(this.audiusLibs)
+      this.snapbackSM = new SnapbackSM(this.libs)
       await this.snapbackSM.init()
-
-      if (this.nodeConfig.get('spID')) {
-        this.URSMService = new URSMService(this.nodeConfig, this.audiusLibs)
-      }
     }
 
     this.monitoringQueue.start()
@@ -74,7 +68,7 @@ const initAudiusLibs = async () => {
   )
 
   if (!ethWeb3 || !dataWeb3) {
-    throw new Error('Web3 incorrectly configured')
+    throw new Error('Failed to init audiusLibs due to web3 configuration error')
   }
 
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
@@ -89,24 +83,18 @@ const initAudiusLibs = async () => {
       ethWeb3,
       config.get('ethOwnerWallet')
     ),
-    // web3Config: {
-    //   registryAddress: config.get('dataRegistryAddress'),
-    //   useExternalWeb3: true,
-    //   externalWeb3Config: {
-    //     web3: dataWeb3,
-    //     ownerWallet: config.get('delegateOwnerWallet')
-    //   }
-    // },
-    web3Config: AudiusLibs.configInternalWeb3(
-      config.get('dataRegistryAddress'),
-      [config.get('dataProviderUrl')],
-      config.get('delegatePrivateKey').replace('0x', '')
-    ),
+    web3Config: {
+      registryAddress: config.get('dataRegistryAddress'),
+      useExternalWeb3: true,
+      externalWeb3Config: {
+        web3: dataWeb3,
+        ownerWallet: config.get('delegateOwnerWallet')
+      }
+    },
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
     // If an identity service config is present, set up libs with the connection, otherwise do nothing
     identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
-    isDebug: config.get('creatorNodeIsDebug'),
-    isServer: true
+    isDebug: config.get('creatorNodeIsDebug')
   })
 
   await audiusLibs.init()

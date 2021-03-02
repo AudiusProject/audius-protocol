@@ -84,6 +84,10 @@ const healthCheckDurationController = async (req) => {
  * Will be used for cnode selection.
  */
 const healthCheckVerboseController = async (req) => {
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError()
+  }
+
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(
     serviceRegistry,

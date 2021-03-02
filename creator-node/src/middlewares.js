@@ -3,7 +3,9 @@ const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
+const { hasEnoughStorageSpace } = require('./fileManager')
 const { serviceRegistry } = require('./serviceRegistry')
+const { getMonitors, MONITORS } = require('./monitors/monitors')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -96,6 +98,41 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
   next()
+}
+
+/** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
+async function ensureStorageMiddleware (req, res, next) {
+  // Get storage data and max storage percentage allowed
+  const [storagePathSize, storagePathUsed] = await getMonitors([
+    MONITORS.STORAGE_PATH_SIZE,
+    MONITORS.STORAGE_PATH_USED
+  ])
+
+  const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
+
+  // Check to see if CNode has enough storage
+  let hasEnoughStorage = hasEnoughStorageSpace({
+    storagePathSize,
+    storagePathUsed,
+    maxStorageUsedPercent
+  })
+
+  if (hasEnoughStorage) {
+    next()
+  } else {
+    const errorMsg = `Node is reaching storage space capacity. Current usage=${(100 * storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
+    req.logger.error(errorMsg)
+    return sendResponse(
+      req,
+      res,
+      errorResponseServerError(
+        {
+          msg: errorMsg,
+          state: 'NODE_REACHED_CAPACITY'
+        }
+      )
+    )
+  }
 }
 
 /**
@@ -306,4 +343,12 @@ function _isFQDN (url) {
   return FQDN.test(url)
 }
 
-module.exports = { authMiddleware, ensurePrimaryMiddleware, triggerSecondarySyncs, syncLockMiddleware, getOwnEndpoint, getCreatorNodeEndpoints }
+module.exports = {
+  authMiddleware,
+  ensurePrimaryMiddleware,
+  ensureStorageMiddleware,
+  triggerSecondarySyncs,
+  syncLockMiddleware,
+  getOwnEndpoint,
+  getCreatorNodeEndpoints
+}
