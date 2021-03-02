@@ -105,20 +105,7 @@ class Utils {
   }
 
   static async configureWeb3 (web3Provider, chainNetworkId, requiresAccount = true) {
-    let web3Instance
-    if (typeof web3Provider === 'string') {
-      web3Instance = new Web3(
-        new MultiProvider(
-          web3Provider
-            .split(',')
-            .map((providerUrl) => (new Web3(providerUrl)).eth.currentProvider)
-        )
-      )
-    } else if (Array.isArray(web3Provider)) {
-      web3Instance = new Web3(new MultiProvider(web3Provider))
-    } else {
-      web3Instance = new Web3(web3Provider)
-    }
+    const web3Instance = new Web3(new MultiProvider(web3Provider))
 
     try {
       const networkId = await web3Instance.eth.net.getId()

@@ -15,17 +15,7 @@ class EthWeb3Manager {
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
 
     // Pick a provider at random to spread the load
-    const providers = web3Config.providers.map(provider => {
-      if (typeof provider === 'string') {
-        if (provider.startsWith('http')) {
-          return new Web3.providers.HttpProvider(provider)
-        }
-        return new Web3.providers.WebsocketProvider(provider)
-      }
-      return provider.eth.currentProvider
-    })
-
-    const provider = new MultiProvider(providers)
+    const provider = new MultiProvider(web3Config.providers)
 
     this.web3Config = web3Config
     this.identityService = identityService

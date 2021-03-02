@@ -1,8 +1,17 @@
 const { promisify, callbackify } = require('util')
+const Web3 = require('../web3')
 const { shuffle } = require('lodash')
 
 class MultiProvider {
   constructor (providers) {
+    if (typeof providers === 'string') {
+      providers = providers.split(',')
+    } else if (!Array.isArray(providers)) {
+      providers = [providers]
+    }
+
+    providers = providers.map(provider => (new Web3(provider)).eth.currentProvider)
+
     if (!providers.every(provider => provider.sendAsync || provider.send)) {
       throw new Error('Some providers do not have a send method to use.')
     }
