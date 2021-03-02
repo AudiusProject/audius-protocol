@@ -136,6 +136,7 @@ const Notifications = ({
         useNativeDriver: true
       }).start()
     close()
+    markAsViewed()
   }, [initialPosition, close, markAsViewed, webRef])
 
   useAppState(null, () => {
