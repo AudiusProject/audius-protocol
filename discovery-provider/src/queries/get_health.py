@@ -17,6 +17,8 @@ disc_prov_version = helpers.get_discovery_provider_version()
 
 default_healthy_block_diff = int(
     shared_config["discprov"]["healthy_block_diff"])
+default_indexing_interval_seconds = int(
+    shared_config["discprov"]["block_processing_interval"])
 
 # Returns DB block state & diff
 def _get_db_block_state():
@@ -125,6 +127,12 @@ def get_health(args, use_redis_cache=True):
         latest_block = web3.eth.getBlock("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
+
+        if use_redis_cache:
+            # if we had attempted to use redis cache and the values weren't there, set the values now
+            # ex sets expiration time and nx only sets if key doesn't exist in redis
+            redis.set(latest_block_redis_key, latest_block_num, ex=default_indexing_interval_seconds, nx=True)
+            redis.set(latest_block_hash_redis_key, latest_block_hash, ex=default_indexing_interval_seconds, nx=True)
 
     latest_indexed_block_num = None
     latest_indexed_block_hash = None

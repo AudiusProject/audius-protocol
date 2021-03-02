@@ -27,6 +27,8 @@ default_padded_start_hash = (
     "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
 default_config_start_hash = "0x0"
+default_indexing_interval_seconds = int(
+    shared_config["discprov"]["block_processing_interval"])
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
@@ -107,8 +109,9 @@ def get_latest_block(db):
 def update_latest_block_redis():
     latest_block_from_chain = update_task.web3.eth.getBlock('latest', True)
     redis = update_task.redis
-    redis.set(latest_block_redis_key, latest_block_from_chain.number)
-    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
+    # these keys have a TTL which is the indexing interval
+    redis.set(latest_block_redis_key, latest_block_from_chain.number, ex=default_indexing_interval_seconds)
+    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex(), ex=default_indexing_interval_seconds)
 
 def fetch_tx_receipt(transaction):
     web3 = update_task.web3
