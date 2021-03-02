@@ -13,6 +13,8 @@ import { MessagePostingWebView } from './types/MessagePostingWebView'
 import Config from "react-native-config"
 import { track, make } from './utils/analytics'
 import { EventNames } from './types/analytics'
+import { dispatch } from './App'
+import { open } from './store/notifications/actions'
 
 type Token = {
   token: string
@@ -81,13 +83,7 @@ class PushNotifications {
 
       if (!webRef || !webRef.current) return
 
-      postMessage(webRef.current, {
-          type: MessageType.PUSH_ROUTE,
-          // TODO: Be smarter about the notifs deep linking
-          // route: `/${url.replace(URL_SCHEME, '')}`,
-          route: '/notifications',
-          isAction: true
-      })
+      dispatch(open())
     }
   }
 
