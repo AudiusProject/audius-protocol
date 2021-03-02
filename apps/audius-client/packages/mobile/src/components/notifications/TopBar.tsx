@@ -1,7 +1,9 @@
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native'
 import IconRemove from '../../assets/images/iconRemove.svg'
 import React from 'react'
 import { useSpecialColor, useTheme } from '../../utils/theme'
+
+const IS_IOS = Platform.OS === 'ios'
 
 const messages = {
   notifications: 'NOTIFICATIONS'
@@ -9,7 +11,7 @@ const messages = {
 
 const styles = StyleSheet.create({
   topBar: {
-    height: 85
+    height: IS_IOS ? 85 : 55
   },
   container: {
     position: 'absolute',

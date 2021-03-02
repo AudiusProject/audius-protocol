@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, Animated } from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity, Animated, Platform } from 'react-native'
 import { Notification, NotificationType } from '../../store/notifications/types'
 import NotificationContent from './content/NotificationContent'
 import IconHeart from '../../assets/images/iconHeart.svg'
@@ -12,6 +12,8 @@ import IconTrending from '../../assets/images/iconTrending.svg'
 import IconAudius from '../../assets/images/iconAudius.svg'
 import { getNotificationRoute } from './routeUtil'
 import { useColor, useTheme } from '../../utils/theme'
+
+const IS_IOS = Platform.OS === 'ios'
 
 const typeIconMap = {
   [NotificationType.Announcement]: IconAudius,
@@ -131,7 +133,7 @@ const NotificationBlock = ({
       onPressIn={onPressIn}
       onPressOut={onPressOut}
       delayPressIn={50}
-      activeOpacity={notificationRoute ? 0.8 : 1}
+      activeOpacity={notificationRoute && IS_IOS ? 0.8 : 1}
     >
       <View
         style={[

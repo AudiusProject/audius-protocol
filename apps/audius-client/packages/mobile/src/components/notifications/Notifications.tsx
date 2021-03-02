@@ -6,7 +6,8 @@ import {
   Animated,
   Dimensions,
   PanResponder,
-  View
+  View,
+  Text
 } from 'react-native'
 
 import { AppState } from '../../store'
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: '100%',
     height: '100%',
+    elevation: 1,
     zIndex: 2
   },
   container: {
