@@ -3,6 +3,10 @@ const Web3 = require('../web3')
 const { shuffle } = require('lodash')
 
 class MultiProvider {
+  // web3 consumes a provider object on initialization
+  // MultiProivder implements AbstractProvider which can be consumed by web3
+  // ref: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3-core/types/index.d.ts#L429
+
   constructor (providers) {
     if (typeof providers === 'string') {
       providers = providers.split(',')
@@ -31,16 +35,6 @@ class MultiProvider {
     }
 
     throw new Error('All requests failed')
-  }
-
-  /**
-   * Returns the desired boolean.
-   *
-   * @method supportsSubscriptions
-   * @returns {boolean}
-   */
-  supportsSubscriptions () {
-    return this.providers.every(provider => provider.supportsSubscriptions())
   }
 }
 

@@ -14,7 +14,7 @@ class EthWeb3Manager {
     if (!web3Config.providers) throw new Error('missing web3Config property: providers')
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
 
-    // Pick a provider at random to spread the load
+    // MultiProvider implements a web3 provider with fallback.
     const provider = new MultiProvider(web3Config.providers)
 
     this.web3Config = web3Config
