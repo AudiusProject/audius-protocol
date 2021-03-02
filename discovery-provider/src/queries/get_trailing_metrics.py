@@ -3,8 +3,8 @@ from functools import reduce
 from datetime import date, timedelta
 from sqlalchemy import desc, func
 from src.models import RouteMetricsTrailingWeek, RouteMetricsTrailingMonth, RouteMetricsAllTime, \
-    AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime, DailyUniqueUsersMetrics, \
-    DailyTotalUsersMetrics
+    AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime, AggregateDailyUniqueUsersMetrics, \
+    AggregateDailyTotalUsersMetrics
 from src.utils import db_session
 from src import exceptions
 
@@ -23,17 +23,17 @@ def get_aggregate_route_metrics_trailing_month():
         thirty_days_ago = today - timedelta(days=30)
 
         unique_count = (
-            session.query(func.sum(DailyUniqueUsersMetrics.count))
-            .filter(thirty_days_ago <= DailyUniqueUsersMetrics.timestamp)
-            .filter(DailyUniqueUsersMetrics.timestamp < today)
+            session.query(func.sum(AggregateDailyUniqueUsersMetrics.count))
+            .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
+            .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
             .first()
         )
         logger.info(f"trailing month unique count: {unique_count}")
 
         total_count = (
-            session.query(func.sum(DailyTotalUsersMetrics.count))
-            .filter(thirty_days_ago <= DailyTotalUsersMetrics.timestamp)
-            .filter(DailyTotalUsersMetrics.timestamp < today)
+            session.query(func.sum(AggregateDailyTotalUsersMetrics.count))
+            .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
+            .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
             .first()
         )
         logger.info(f"trailing month total count: {total_count}")

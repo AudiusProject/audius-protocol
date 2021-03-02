@@ -480,8 +480,8 @@ timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
-class DailyUniqueUsersMetrics(Base):
-    __tablename__ = "daily_unique_users_metrics"
+class AggregateDailyUniqueUsersMetrics(Base):
+    __tablename__ = "aggregate_daily_unique_users_metrics"
 
     id = Column(Integer, primary_key=True)
     count = Column(Integer, nullable=False)
@@ -490,14 +490,14 @@ class DailyUniqueUsersMetrics(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self):
-        return f"<DailyUniqueUsersMetrics(\
+        return f"<AggregateDailyUniqueUsersMetrics(\
 count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
-class DailyTotalUsersMetrics(Base):
-    __tablename__ = "daily_total_users_metrics"
+class AggregateDailyTotalUsersMetrics(Base):
+    __tablename__ = "aggregate_daily_total_users_metrics"
 
     id = Column(Integer, primary_key=True)
     count = Column(Integer, nullable=False)
@@ -506,14 +506,14 @@ class DailyTotalUsersMetrics(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self):
-        return f"<DailyTotalUsersMetrics(\
+        return f"<AggregateDailyTotalUsersMetrics(\
 count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
-class MonthlyUniqueUsersMetrics(Base):
-    __tablename__ = "monthly_unique_users_metrics"
+class AggregateMonthlyUniqueUsersMetrics(Base):
+    __tablename__ = "aggregate_monthly_unique_users_metrics"
 
     id = Column(Integer, primary_key=True)
     count = Column(Integer, nullable=False)
@@ -522,14 +522,14 @@ class MonthlyUniqueUsersMetrics(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self):
-        return f"<MonthlyUniqueUsersMetrics(\
+        return f"<AggregateMonthlyUniqueUsersMetrics(\
 count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
-class MonthlyTotalUsersMetrics(Base):
-    __tablename__ = "monthly_total_users_metrics"
+class AggregateMonthlyTotalUsersMetrics(Base):
+    __tablename__ = "aggregate_monthly_total_users_metrics"
 
     id = Column(Integer, primary_key=True)
     count = Column(Integer, nullable=False)
@@ -538,7 +538,7 @@ class MonthlyTotalUsersMetrics(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self):
-        return f"<MonthlyTotalUsersMetrics(\
+        return f"<AggregateMonthlyTotalUsersMetrics(\
 count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
@@ -564,8 +564,8 @@ timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
-class DailyAppNameMetrics(Base):
-    __tablename__ = "daily_app_name_metrics"
+class AggregateDailyAppNameMetrics(Base):
+    __tablename__ = "aggregate_daily_app_name_metrics"
 
     id = Column(Integer, primary_key=True)
     application_name = Column(String, nullable=False)
@@ -575,15 +575,15 @@ class DailyAppNameMetrics(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self):
-        return f"<DailyAppNameMetrics(\
+        return f"<AggregateDailyAppNameMetrics(\
 application_name={self.application_name},\
 count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
-class MonthlyAppNameMetrics(Base):
-    __tablename__ = "monthly_app_name_metrics"
+class AggregateMonthlyAppNameMetrics(Base):
+    __tablename__ = "aggregate_monthly_app_name_metrics"
 
     id = Column(Integer, primary_key=True)
     application_name = Column(String, nullable=False)
@@ -593,7 +593,7 @@ class MonthlyAppNameMetrics(Base):
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def __repr__(self):
-        return f"<MonthlyAppNameMetrics(\
+        return f"<AggregateMonthlyAppNameMetrics(\
 application_name={self.application_name},\
 count={self.count},\
 timestamp={self.timestamp},\

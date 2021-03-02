@@ -5,7 +5,7 @@ import requests
 from src import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
+from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
 from src.utils.redis_metrics import metrics_prefix, metrics_applications, \
     metrics_routes, metrics_visited_nodes, merge_route_metrics, merge_app_metrics, \
     parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL
@@ -159,11 +159,11 @@ def get_all_other_nodes():
     num_discovery_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(discovery_node_service_type).call()
     logger.info(f"number of discovery providers: {num_discovery_providers}")
     service_infos = [sp_factory_inst.functions.getServiceEndpointInfo(discovery_node_service_type, i).call() \
-        for i in range(1, num_discovery_providers + 1)]
+                     for i in range(1, num_discovery_providers + 1)]
 
     logger.info(f"this node's delegate owner wallet: {shared_config['delegate']['owner_wallet']}")
     all_other_nodes = [service_info[1] for service_info in service_infos \
-        if service_info[3] != shared_config["delegate"]["owner_wallet"]]
+                       if service_info[3] != shared_config["delegate"]["owner_wallet"]]
     logger.info(f"all the other nodes: {all_other_nodes}")
     return all_other_nodes
 
@@ -208,10 +208,8 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         start_time = int(start_time_obj.timestamp())
         new_route_metrics, new_app_metrics = get_metrics(node, start_time)
 
-        logger.info(f"received route metrics: {new_route_metrics}")
-        logger.info(f"received app metrics: {new_app_metrics}")
-
         if new_route_metrics is not None and new_app_metrics is not None:
+            logger.info(f"did receive route and app metrics from {node}")
             end_time = datetime.utcnow().strftime(datetime_format_secondary)
             visited_node_timestamps[node] = end_time
             if new_route_metrics:
@@ -277,12 +275,8 @@ def synchronize_all_node_metrics(self, db):
             update_app_metrics_count(daily_app_metrics, historical_metrics['apps']['daily'])
             update_app_metrics_count(monthly_app_metrics, historical_metrics['apps']['monthly'])
 
-    logger.info("synchronizing historical metrics")
-    logger.info(f"daily historical route metrics to update: {daily_route_metrics}")
-    logger.info(f"monthly historical route metrics to update: {monthly_route_metrics}")
-    logger.info(f"daily historical app metrics to update: {daily_app_metrics}")
-    logger.info(f"monthly historical app metrics to update: {monthly_app_metrics}")
     update_historical_metrics(db, daily_route_metrics, monthly_route_metrics, daily_app_metrics, monthly_app_metrics)
+    logger.info("synchronized historical route and app metrics")
 
 ######## CELERY TASKs ########
 

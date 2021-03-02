@@ -7,14 +7,16 @@ from flask.globals import request
 from src.utils.config import shared_config
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
 from src.utils.query_params import stringify_query_params, app_name_param
-from src.models import DailyUniqueUsersMetrics, DailyTotalUsersMetrics, \
-    MonthlyUniqueUsersMetrics, MonthlyTotalUsersMetrics, DailyAppNameMetrics, MonthlyAppNameMetrics
+from src.models import AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics, \
+    AggregateMonthlyUniqueUsersMetrics, AggregateMonthlyTotalUsersMetrics, \
+    AggregateDailyAppNameMetrics, AggregateMonthlyAppNameMetrics
 
 logger = logging.getLogger(__name__)
 
 REDIS_URL = shared_config["redis"]["url"]
 REDIS = redis.Redis.from_url(url=REDIS_URL)
 
+# interval in minutes for pulling metrics from other nodes
 METRICS_INTERVAL = 5
 
 # Redis Key Convention:
@@ -82,56 +84,56 @@ def parse_metrics_key(key):
 def persist_route_metrics(db, day, month, count, unique_daily_count, unique_monthly_count):
     with db.scoped_session() as session:
         day_unique_record = (
-            session.query(DailyUniqueUsersMetrics)
-            .filter(DailyUniqueUsersMetrics.timestamp == day)
+            session.query(AggregateDailyUniqueUsersMetrics)
+            .filter(AggregateDailyUniqueUsersMetrics.timestamp == day)
             .first()
         )
         if day_unique_record:
             day_unique_record.count += unique_daily_count
         else:
-            day_unique_record = DailyUniqueUsersMetrics(
+            day_unique_record = AggregateDailyUniqueUsersMetrics(
                 timestamp=day,
                 count=unique_daily_count
             )
         session.add(day_unique_record)
 
         day_total_record = (
-            session.query(DailyTotalUsersMetrics)
-            .filter(DailyTotalUsersMetrics.timestamp == day)
+            session.query(AggregateDailyTotalUsersMetrics)
+            .filter(AggregateDailyTotalUsersMetrics.timestamp == day)
             .first()
         )
         if day_total_record:
             day_total_record.count += count
         else:
-            day_total_record = DailyTotalUsersMetrics(
+            day_total_record = AggregateDailyTotalUsersMetrics(
                 timestamp=day,
                 count=count
             )
         session.add(day_total_record)
 
         month_unique_record = (
-            session.query(MonthlyUniqueUsersMetrics)
-            .filter(MonthlyUniqueUsersMetrics.timestamp == month)
+            session.query(AggregateMonthlyUniqueUsersMetrics)
+            .filter(AggregateMonthlyUniqueUsersMetrics.timestamp == month)
             .first()
         )
         if month_unique_record:
             month_unique_record.count += unique_monthly_count
         else:
-            month_unique_record = MonthlyUniqueUsersMetrics(
+            month_unique_record = AggregateMonthlyUniqueUsersMetrics(
                 timestamp=month,
                 count=unique_monthly_count
             )
         session.add(month_unique_record)
 
         month_total_record = (
-            session.query(MonthlyTotalUsersMetrics)
-            .filter(MonthlyTotalUsersMetrics.timestamp == month)
+            session.query(AggregateMonthlyTotalUsersMetrics)
+            .filter(AggregateMonthlyTotalUsersMetrics.timestamp == month)
             .first()
         )
         if month_total_record:
             month_total_record.count += count
         else:
-            month_total_record = MonthlyTotalUsersMetrics(
+            month_total_record = AggregateMonthlyTotalUsersMetrics(
                 timestamp=month,
                 count=count
             )
@@ -141,15 +143,15 @@ def persist_app_metrics(db, day, month, app_count):
     with db.scoped_session() as session:
         for application_name, count in app_count.items():
             day_record = (
-                session.query(DailyAppNameMetrics)
-                .filter(DailyAppNameMetrics.timestamp == day and \
-                    DailyAppNameMetrics.application_name == application_name)
+                session.query(AggregateDailyAppNameMetrics)
+                .filter(AggregateDailyAppNameMetrics.timestamp == day and \
+                    AggregateDailyAppNameMetrics.application_name == application_name)
                 .first()
             )
             if day_record:
                 day_record.count += count
             else:
-                day_record = DailyAppNameMetrics(
+                day_record = AggregateDailyAppNameMetrics(
                     timestamp=day,
                     application_name=application_name,
                     count=count
@@ -157,15 +159,15 @@ def persist_app_metrics(db, day, month, app_count):
             session.add(day_record)
 
             month_record = (
-                session.query(MonthlyAppNameMetrics)
-                .filter(MonthlyAppNameMetrics.timestamp == month and \
-                    MonthlyAppNameMetrics.application_name == application_name)
+                session.query(AggregateMonthlyAppNameMetrics)
+                .filter(AggregateMonthlyAppNameMetrics.timestamp == month and \
+                    AggregateMonthlyAppNameMetrics.application_name == application_name)
                 .first()
             )
             if month_record:
                 month_record.count += count
             else:
-                month_record = MonthlyAppNameMetrics(
+                month_record = AggregateMonthlyAppNameMetrics(
                     timestamp=month,
                     application_name=application_name,
                     count=count

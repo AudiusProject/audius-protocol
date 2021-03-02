@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('daily_unique_users_metrics',
+    op.create_table('aggregate_daily_unique_users_metrics',
         sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
         sa.Column('count', sa.Integer(), nullable=False),
         sa.Column('timestamp', sa.Date(), nullable=False),
@@ -25,7 +25,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, nullable=False, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('daily_total_users_metrics',
+    op.create_table('aggregate_daily_total_users_metrics',
         sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
         sa.Column('count', sa.Integer(), nullable=False),
         sa.Column('timestamp', sa.Date(), nullable=False),
@@ -33,7 +33,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, nullable=False, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('monthly_unique_users_metrics',
+    op.create_table('aggregate_monthly_unique_users_metrics',
         sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
         sa.Column('count', sa.Integer(), nullable=False),
         sa.Column('timestamp', sa.Date(), nullable=False),
@@ -41,7 +41,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, nullable=False, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('monthly_total_users_metrics',
+    op.create_table('aggregate_monthly_total_users_metrics',
         sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
         sa.Column('count', sa.Integer(), nullable=False),
         sa.Column('timestamp', sa.Date(), nullable=False),
@@ -49,7 +49,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, nullable=False, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('daily_app_name_metrics',
+    op.create_table('aggregate_daily_app_name_metrics',
         sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
         sa.Column('application_name', sa.String(), nullable=False),
         sa.Column('count', sa.Integer(), nullable=False),
@@ -58,7 +58,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, nullable=False, onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('monthly_app_name_metrics',
+    op.create_table('aggregate_monthly_app_name_metrics',
         sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
         sa.Column('application_name', sa.String(), nullable=False),
         sa.Column('count', sa.Integer(), nullable=False),
@@ -70,9 +70,9 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('daily_unique_users_metrics')
-    op.drop_table('daily_total_users_metrics')
-    op.drop_table('monthly_unique_users_metrics')
-    op.drop_table('monthly_total_users_metrics')
-    op.drop_table('daily_app_name_metrics')
-    op.drop_table('monthly_app_name_metrics')
+    op.drop_table('aggregate_daily_unique_users_metrics')
+    op.drop_table('aggregate_daily_total_users_metrics')
+    op.drop_table('aggregate_monthly_unique_users_metrics')
+    op.drop_table('aggregate_monthly_total_users_metrics')
+    op.drop_table('aggregate_daily_app_name_metrics')
+    op.drop_table('aggregate_monthly_app_name_metrics')
