@@ -62,7 +62,7 @@ program
   })
 
 program
-  .command('discovery-node')
+  .command('discovery-node-stack up')
   .description('Bring up relevant services for discovery node')
   .action(async () => await discoveryNodeUp())
 
