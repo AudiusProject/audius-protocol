@@ -5,7 +5,7 @@ import requests
 from src import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
+from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
 from src.utils.redis_metrics import metrics_prefix, metrics_applications, \
     metrics_routes, metrics_visited_nodes, merge_route_metrics, merge_app_metrics, \
     parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL

@@ -5,7 +5,8 @@ from datetime import date, timedelta
 from sqlalchemy import func, desc, or_
 from src import exceptions
 from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview, \
-    AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics, AggregateMonthlyUniqueUsersMetrics, AggregateMonthlyTotalUsersMetrics
+    AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics, \
+    AggregateMonthlyUniqueUsersMetrics, AggregateMonthlyTotalUsersMetrics
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
