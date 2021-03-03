@@ -10,11 +10,12 @@ export const useWeeklyRewardRate = () => {
     fundsPerRound.status === Status.Success &&
     totalActiveStake.status === Status.Success
   ) {
-    const percentage = AudiusClient.getBNPercentage(
-      fundsPerRound.amount!,
-      totalActiveStake.total!,
-      4
-    )
+    const percentage =
+      AudiusClient.getBNPercentage(
+        fundsPerRound.amount!,
+        totalActiveStake.total!,
+        4
+      ) * 100
     return { status: Status.Success, rate: percentage }
   }
   return { status: Status.Loading }

@@ -26,7 +26,7 @@ const ethProviderUrl =
   process.env.REACT_APP_ETH_PROVIDER_URL || 'ws://localhost:8546'
 
 const ethOwnerWallet = process.env.REACT_APP_ETH_OWNER_WALLET
-const ethNetworkId = '1614722803976' // process.env.REACT_APP_ETH_NETWORK_ID
+const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
 
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false

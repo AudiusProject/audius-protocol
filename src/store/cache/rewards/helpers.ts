@@ -124,7 +124,6 @@ export const getRewardForClaimBlock = async ({
 }) => {
   const user = users.find(u => u.wallet === wallet)
   let totalRewards = new BN('0')
-  console.log('staging')
   if ('serviceProvider' in user!) {
     const lockedPendingDecrease =
       (user as Operator).pendingDecreaseStakeRequest?.amount ?? new BN('0')
@@ -143,7 +142,6 @@ export const getRewardForClaimBlock = async ({
       user: user as Operator,
       totalRewards: mintedRewards
     })
-    console.log(`Stake Adding ${operatorRewards.toString()}`)
     totalRewards = totalRewards.add(operatorRewards)
   }
 
