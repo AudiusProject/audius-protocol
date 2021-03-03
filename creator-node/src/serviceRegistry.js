@@ -5,6 +5,7 @@ const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM')
 const AudiusLibs = require('@audius/libs')
 const config = require('./config')
+const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -21,6 +22,7 @@ const config = require('./config')
  */
 class ServiceRegistry {
   constructor () {
+
     this.redis = redisClient
     this.ipfs = ipfs
     this.ipfsLatest = ipfsLatest
@@ -31,6 +33,7 @@ class ServiceRegistry {
     // below properties aren't initialized until 'initServices' is called
     this.libs = null
     this.snapbackSM = null
+    this.URSMRegistrationManager = null
   }
 
   /**
@@ -48,6 +51,9 @@ class ServiceRegistry {
 
       this.snapbackSM = new SnapbackSM(this.libs)
       await this.snapbackSM.init()
+
+      // constructs URSMRegistrationManager without initializing, as that must happen after server is up
+      this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
     }
 
     this.monitoringQueue.start()

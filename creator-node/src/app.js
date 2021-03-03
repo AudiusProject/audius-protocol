@@ -50,15 +50,19 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
+/**
+ * TODO
+ * @param {*} port 
+ * @param {*} serviceRegistry 
+ */
 const initializeApp = async (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()
 
-  // TODO: Can remove these when all routes
-  // consume serviceRegistry
+  // TODO: Can remove these when all routes consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
-  app.set('audiusLibs', serviceRegistry.audiusLibs)
+  app.set('audiusLibs', serviceRegistry.libs)
   app.set('blacklistManager', serviceRegistry.blacklistManager)
 
   // add a newer version of ipfs as app property
@@ -76,11 +80,11 @@ const initializeApp = async (port, serviceRegistry) => {
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')
 
-  // initialize URSMService (requires server and /health_check to already be available)
-  app.set('serviceRegistry', serviceRegistry)
-  // await utils.timeout(1000)
-  // console.info(`SIDTEST ABOUT TO RUN URSMSERVICE INIT`)
-  // await serviceRegistry.URSMService.init()
+  if (serviceRegistry.URSMRegistrationManager) {
+    // register on URSM contract (requires server and /health_check to already be available)
+    await utils.timeout(1000)
+    await serviceRegistry.URSMRegistrationManager.run()
+  }
 
   return { app: app, server: server }
 }

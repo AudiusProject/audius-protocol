@@ -8,11 +8,6 @@ const { generateTimestampAndSignature } = require('./apiSigning')
 const { response } = require('express')
 
 
-
-/**
- * TODO move to services layer
- */
-
 /**
  * This Service is responsible for registering this content node (CN) on the UserReplicaSetManager L2 contract (URSM)
  *
@@ -22,7 +17,7 @@ const { response } = require('express')
  *    - keep attempting to submit requests until 3 successful or no remaining nodes
  * - Register self on URSM with 3 proposer signatures
  */
-class URSMService {
+class URSMRegistrationManager {
   constructor (nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
@@ -41,15 +36,15 @@ class URSMService {
   }
 
   logInfo (msg) {
-    logger.info(`URSMService || ${msg}`)
+    logger.info(`URSMRegistrationManager || ${msg}`)
   }
 
   logError (msg) {
-    logger.error(`URSMService ERROR || ${msg}`)
+    logger.error(`URSMRegistrationManager ERROR || ${msg}`)
   }
 
   /**
-   * TODO DESCRIPTION
+   * Registers node on UserReplicaSetManager contract (URSM)
    *
    * Steps: 
    *  1. Fetch node record from L1 ServiceProviderFactory for spID
@@ -64,8 +59,8 @@ class URSMService {
    *    b. Error if all available nodes contacted without 3 successful signatures
    *  5. Submit registration transaction to URSM with signatures
    */
-  async init () {
-    this.logInfo('STARTING INIT')
+  async run () {
+    this.logInfo('STARTING URSMREGISTRATIONMANAGER RUN')
 
     /**
      * 1. Fetch node record from L1 ServiceProviderFactory for spID
@@ -164,7 +159,6 @@ class URSMService {
     }
 
     this.logInfo(`receviedsigns: ${JSON.stringify(receivedSignatures, null, 2)}`)
-    return 'yes'
 
     /**
      * Submit proposal 
@@ -230,4 +224,4 @@ class URSMService {
   }
 }
 
-module.exports = URSMService
+module.exports = URSMRegistrationManager

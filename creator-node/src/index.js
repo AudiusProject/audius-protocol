@@ -53,7 +53,6 @@ const startApp = async () => {
   // fail if delegateOwnerWallet doesn't derive from delegatePrivateKey
   const privateKeyBuffer = Buffer.from(config.get('delegatePrivateKey').replace('0x', ''), 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer).getAddressString()
-  console.log(`PRIVATEKEY IS CORRECT for wallet: ${walletAddress}`)
   if (walletAddress !== config.get('delegateOwnerWallet').toLowerCase()) {
     throw new Error('Invalid delegatePrivateKey/delegateOwnerWallet pair')
   }
@@ -74,7 +73,7 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info('Initialized services')
 
-    appInfo = initializeApp(config.get('port'), serviceRegistry)
+    appInfo = await initializeApp(config.get('port'), serviceRegistry)
     logger.info('Initialized app and server')
 
     await pinCID(serviceRegistry.ipfsLatest)
