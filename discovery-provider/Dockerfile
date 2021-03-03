@@ -1,7 +1,7 @@
 # requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 as contracts
 
-FROM python:3.7.0-alpine
+FROM python:3.8.0-alpine
 MAINTAINER Hareesh Nagaraj <hareesh@audius.co>
 
 ENV INSTALL_PATH /audius-discovery-provider
