@@ -49,7 +49,7 @@ export function fetchRewards({
     await aud.awaitSetup()
     try {
       // If there is a pending claim, use the last funded block to estimate the amount
-      // the user is about to receive, else use the currentBlockNumber 
+      // the user is about to receive, else use the currentBlockNumber
       const blockNumber = hasClaim ? lastFundedBlock : currentBlockNumber
       const reward = await getRewardForClaimBlock({
         wallet,
