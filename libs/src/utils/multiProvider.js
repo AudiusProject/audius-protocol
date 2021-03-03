@@ -2,12 +2,10 @@ const { promisify, callbackify } = require('util')
 const Web3 = require('../web3')
 const { shuffle } = require('lodash')
 
-class MultiProvider {
-  // web3 consumes a provider object on initialization
-  // MultiProivder implements AbstractProvider which can be consumed by web3
-  // ref: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3-core/types/index.d.ts#L429
-
+class MultiProvider extends Web3.providers.HttpProvider {
   constructor (providers) {
+    super()
+
     if (typeof providers === 'string') {
       providers = providers.split(',')
     } else if (!Array.isArray(providers)) {
