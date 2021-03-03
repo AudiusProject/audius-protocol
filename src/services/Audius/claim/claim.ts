@@ -35,7 +35,7 @@ export default class Claim {
   async getFundsPerRound(): Promise<BN> {
     await this.aud.hasPermissions()
     const info = await this.getContract().getFundsPerRound()
-    return info
+    return new BN(info)
   }
 
   // Get the total amount claimed in the current round
