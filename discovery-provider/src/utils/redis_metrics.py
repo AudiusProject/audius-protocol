@@ -226,7 +226,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         monthly_metrics[month][new_value] = monthly_metrics[month][new_value] + new_count \
             if new_value in monthly_metrics[month] else new_count
 
-    # remove metrics METRICS_INTERVAL after the end of the day from daily_metrics
+    # clean up metrics METRICS_INTERVAL after the end of the day from daily_metrics
     yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime(datetime_format_secondary)
     daily_metrics = {timestamp: metrics for timestamp, metrics in daily_metrics.items() \
         if timestamp > yesterday_str}
@@ -234,7 +234,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         redis_set_and_dump(REDIS, daily_key, json.dumps(daily_metrics))
     logger.info(f"updated cached daily {metric_type} metrics: {daily_metrics}")
 
-    # remove metrics METRICS_INTERVAL after the end of the month from monthly_metrics
+    # clean up metrics METRICS_INTERVAL after the end of the month from monthly_metrics
     thirty_one_days_ago = (datetime.utcnow() - timedelta(days=31)).strftime(datetime_format_secondary)
     monthly_metrics = {timestamp: metrics for timestamp, metrics in monthly_metrics.items() \
         if timestamp > thirty_one_days_ago}
@@ -257,8 +257,8 @@ def merge_route_metrics(metrics, end_time, db):
 def merge_app_metrics(metrics, end_time, db):
     merge_metrics(metrics, end_time, 'app', db)
 
-def get_redis_metrics(start_time, metric_type):
-    redis_metrics_str = redis_get_or_restore(REDIS, metric_type)
+def get_redis_metrics(redis_handle, start_time, metric_type):
+    redis_metrics_str = redis_get_or_restore(redis_handle, metric_type)
     metrics = json.loads(redis_metrics_str) if redis_metrics_str else {}
     if not metrics:
         return {}
@@ -273,10 +273,10 @@ def get_redis_metrics(start_time, metric_type):
     return result
 
 def get_redis_route_metrics(start_time):
-    return get_redis_metrics(start_time, personal_route_metrics)
+    return get_redis_metrics(REDIS, start_time, personal_route_metrics)
 
 def get_redis_app_metrics(start_time):
-    return get_redis_metrics(start_time, personal_app_metrics)
+    return get_redis_metrics(REDIS, start_time, personal_app_metrics)
 
 def get_aggregate_metrics_info():
     info_str = redis_get_or_restore(REDIS, metrics_visited_nodes)
@@ -334,8 +334,9 @@ def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
     logger.info(f"updated cached {metric_type} metrics: {updated_metrics}")
 
 def record_aggregate_metrics():
-    timestamp = datetime.utcnow().strftime(datetime_format_secondary)
-    old_timestamp = (datetime.utcnow() - timedelta(minutes=METRICS_INTERVAL * 2)).strftime(datetime_format_secondary)
+    now = datetime.utcnow()
+    timestamp = now.strftime(datetime_format_secondary)
+    old_timestamp = (now - timedelta(minutes=METRICS_INTERVAL * 2)).strftime(datetime_format_secondary)
 
     update_personal_metrics(
         personal_route_metrics, old_timestamp, timestamp, get_request_ip(request), 'route'

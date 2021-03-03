@@ -146,6 +146,11 @@ def parse_unix_epoch_param(time, default=0):
         return datetime.utcfromtimestamp(default)
     return datetime.utcfromtimestamp(time)
 
+def parse_unix_epoch_param_non_utc(time, default=0):
+    if time is None:
+        return datetime.fromtimestamp(default)
+    return datetime.fromtimestamp(time)
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])

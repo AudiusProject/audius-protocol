@@ -3,8 +3,8 @@ from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
 from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.api.v1.helpers import make_response, success_response, to_dict, \
-    parse_bool_param, parse_unix_epoch_param, abort_bad_request_param, \
-    abort_bad_path_param, format_limit
+    parse_bool_param, parse_unix_epoch_param, parse_unix_epoch_param_non_utc, \
+    abort_bad_request_param, abort_bad_path_param, format_limit
 from .models.metrics import route_metric, app_name_metric, app_name, plays_metric, \
     genre_metric, route_trailing_metric, app_name_trailing_metric
 from src.queries.get_route_metrics import get_route_metrics, get_aggregate_route_metrics, \
@@ -62,7 +62,7 @@ class CachedRouteMetrics(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = metrics_route_parser.parse_args()
-        start_time = parse_unix_epoch_param(args.get("start_time"))
+        start_time = parse_unix_epoch_param_non_utc(args.get("start_time"))
         metrics = get_redis_route_metrics(start_time)
         response = success_response(metrics)
         return response
@@ -83,7 +83,7 @@ class CachedAppMetrics(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = metrics_route_parser.parse_args()
-        start_time = parse_unix_epoch_param(args.get("start_time"))
+        start_time = parse_unix_epoch_param_non_utc(args.get("start_time"))
         metrics = get_redis_app_metrics(start_time)
         response = success_response(metrics)
         return response
@@ -113,7 +113,7 @@ class AggregateHistoricalMetrics(Resource):
 class AggregateRouteMetricsTrailingMonth(Resource):
     @cache(ttl_sec=30 * 60)
     def get(self):
-        """Gets aggregated route metrics based on time range and bucket size"""
+        """Gets aggregated route metrics for the last trailing 30 days"""
         metrics = get_aggregate_route_metrics_trailing_month()
         response = success_response(metrics)
         return response

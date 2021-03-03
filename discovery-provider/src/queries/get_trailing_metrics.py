@@ -12,36 +12,39 @@ logger = logging.getLogger(__name__)
 
 def get_aggregate_route_metrics_trailing_month():
     """
-    Returns trailing count and unique count for all routes in the last month
+    Returns trailing count and unique count for all routes in the last trailing 30 days
 
     Returns:
-        { count, unique_count }
+        { unique_count, total_count }
     """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        today = date.today()
-        thirty_days_ago = today - timedelta(days=30)
+        return _get_aggregate_route_metrics_trailing_month(session)
 
-        unique_count = (
-            session.query(func.sum(AggregateDailyUniqueUsersMetrics.count))
-            .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
-            .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
-            .first()
-        )
-        logger.info(f"trailing month unique count: {unique_count}")
+def _get_aggregate_route_metrics_trailing_month(session):
+    today = date.today()
+    thirty_days_ago = today - timedelta(days=30)
 
-        total_count = (
-            session.query(func.sum(AggregateDailyTotalUsersMetrics.count))
-            .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
-            .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
-            .first()
-        )
-        logger.info(f"trailing month total count: {total_count}")
+    unique_count = (
+        session.query(func.sum(AggregateDailyUniqueUsersMetrics.count))
+        .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
+        .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
+        .first()
+    )
+    logger.info(f"trailing month unique count: {unique_count}")
 
-        return {
-            "unique_count": unique_count[0],
-            "count": total_count[0]
-        }
+    total_count = (
+        session.query(func.sum(AggregateDailyTotalUsersMetrics.count))
+        .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
+        .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
+        .first()
+    )
+    logger.info(f"trailing month total count: {total_count}")
+
+    return {
+        "unique_count": unique_count[0],
+        "total_count": total_count[0]
+    }
 
 def get_monthly_trailing_route_metrics():
     """
