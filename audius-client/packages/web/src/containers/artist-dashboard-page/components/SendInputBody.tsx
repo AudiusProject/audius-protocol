@@ -23,10 +23,13 @@ import styles from './SendInputBody.module.css'
 import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 import { convertFloatToWei } from 'utils/formatUtil'
 import { MIN_TRANSFERRABLE_WEI } from 'services/wallet-client/WalletClient'
+import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
 
 const messages = {
   warningTitle: 'PROCEED WITH CAUTION',
   warningSubtitle: 'If you send $AUDIO to the wrong address it will be lost.',
+  warningSubtitle2:
+    'WARNING: $AUDIO sent will not count towards badges, tiers, and unlocked features!',
   addressPlaceholder: '0xC7EF9651259197aA26544Af724441a46e491c12c',
   sendAudio: 'SEND $AUDIO',
   insufficientBalance: 'Account does not have enough $AUDIO',
@@ -179,6 +182,9 @@ const SendInputBody = ({
       <div className={styles.titleContainer}>
         <ModalBodyTitle text={messages.warningTitle} />
         <div className={styles.subtitle}>{messages.warningSubtitle}</div>
+        <div className={styles.subtitle2}>
+          {messages.warningSubtitle2} <IconGoldBadgeSVG />
+        </div>
       </div>
       <DashboardTokenValueSlider
         min={min}
