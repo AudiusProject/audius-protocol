@@ -105,7 +105,10 @@ class Utils {
   }
 
   static async configureWeb3 (web3Provider, chainNetworkId, requiresAccount = true) {
-    const web3Instance = new Web3(new MultiProvider(web3Provider)) // initializing web3 with a wrapper for multiple providers.
+    // initializing web3 with a AbstractProvider wrapper for multiple providers; references for the flow below,
+    // https://web3js.readthedocs.io/en/v1.3.4/web3.html#providers
+    // https://github.com/trufflesuite/provider-engine
+    const web3Instance = new Web3(new MultiProvider(web3Provider))
 
     try {
       const networkId = await web3Instance.eth.net.getId()
