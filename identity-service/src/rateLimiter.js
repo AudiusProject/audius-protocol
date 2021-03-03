@@ -67,7 +67,7 @@ try {
 
 const getReqKeyGenerator = (options = {}) => (req) => {
   const { query = [], body = [], withIp = true } = options
-  let key = withIp ? getIP(req) : ''
+  let key = withIp ? getIP(req).ip : ''
   if (req.query && query.length > 0) {
     query.forEach(queryKey => {
       if (queryKey in req.query) {
