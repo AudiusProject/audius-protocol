@@ -1,7 +1,8 @@
 .statsChip {
-  padding: 24px 0px 16px;
+  padding: 24px 0px;
   display: inline-flex;
   flex-direction: column;
+  justify-content: center;
   min-width: 228px;
   box-sizing: border-box;
 }

@@ -27,7 +27,7 @@
 .description {
   font-family: var(--font-family);
   font-weight: var(--font-bold);
-  font-size: var(--font-xs);
+  font-size: var(--font-l);
   line-height: 22px;
   text-align: center;
   letter-spacing: 0.04em;
