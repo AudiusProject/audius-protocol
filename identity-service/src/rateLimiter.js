@@ -6,7 +6,57 @@ const express = require('express')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
-const DEFAULT_KEY_GENERATOR = (req) => req.ip
+
+const isIPWhitelisted = (ip) => {
+  const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
+  return whitelistRegex && !!ip.match(whitelistRegex)
+}
+
+const getIP = (req) => {
+  // Gets the IP for rate-limiting based on X-Forwarded-For headers
+  // Algorithm:
+  // If 1 header or no headers:
+  //   We are not running behind a proxy, something is probably wonky, use req.ip (leftmost)
+  // If > 1 headers:
+  //   This assumes two proxies (some outer proxy like cloudflare and then some proxy like a load balancer)
+  //   Rightmost header is the outer proxy
+  //   Rightmost - 1 header is either a creator node OR the actual user
+  //    If creator node, use Rightmost - 2 (since creator node will pass this along)
+  //    Else, use Rightmost - 1 since it's the actual user
+
+  let ip = req.ip
+  const forwardedFor = req.get('X-Forwarded-For')
+
+  // This shouldn't ever happen since Identity will always be behind a proxy
+  if (!forwardedFor) {
+    req.logger.debug('_getIP: no forwarded-for')
+    return { ip }
+  }
+
+  const headers = forwardedFor.split(',')
+  // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
+  // We can just use req.ip which corresponds to the best guess forward-for that was added if any
+  if (headers.length === 1) {
+    req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
+    return { ip }
+  }
+
+  // Length is at least 2, length - 1 would be the outermost proxy, so length - 2 is the "sender"
+  // either the actual user or a content node
+  const senderIP = headers[headers.length - 2]
+
+  if (isIPWhitelisted(senderIP)) {
+    const forwardedIP = headers[headers.length - 3]
+    if (!forwardedIP) {
+      req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
+      return { ip: senderIP, senderIP }
+    }
+    req.logger.debug(`_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
+    return { ip: forwardedIP, senderIP }
+  }
+  req.logger.debug(`_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
+  return { ip: senderIP, senderIP }
+}
 
 let endpointRateLimits = {}
 try {
@@ -17,7 +67,7 @@ try {
 
 const getReqKeyGenerator = (options = {}) => (req) => {
   const { query = [], body = [], withIp = true } = options
-  let key = withIp ? req.ip : ''
+  let key = withIp ? getIP(req) : ''
   if (req.query && query.length > 0) {
     query.forEach(queryKey => {
       if (queryKey in req.query) {
@@ -53,7 +103,7 @@ const getRateLimiter = ({
   prefix,
   max,
   expiry = DEFAULT_EXPIRY,
-  keyGenerator = DEFAULT_KEY_GENERATOR,
+  keyGenerator = getIP,
   skip
 }) => {
   return rateLimit({
@@ -95,4 +145,4 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
-module.exports = { getRateLimiter, getRateLimiterMiddleware }
+module.exports = { getIP, isIPWhitelisted, getRateLimiter, getRateLimiterMiddleware }
