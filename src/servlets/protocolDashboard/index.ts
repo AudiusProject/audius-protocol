@@ -1,3 +1,4 @@
+import AbortController from 'abort-controller'
 import express from 'express'
 import fs from 'fs'
 import fetch from 'node-fetch'
@@ -9,12 +10,17 @@ import libs from '../../libs'
 
 export const router = express.Router()
 const BUILD_URL = process.env.PROTOCOL_DASHBOARD_BUILD_URL
+const PEER_IPFS_TIMEOUT = 1000 /* ms */ * 60 /* sec */ * 10 /* min */
+const CONTENT_NODE_PEER_TIMEOUT = 1000 /* ms */ * 30 /* sec */
 
 // Peers with all content nodes
 router.get('/peer_content_nodes', async (
   req: express.Request,
   res: express.Response) => {
   try {
+    res.setTimeout(PEER_IPFS_TIMEOUT, () => {
+      res.status(500).send(`Endpoint timeout hit: ${PEER_IPFS_TIMEOUT}ms`)
+    })
     // first get my own ipfs id
     const ipfsId = await ipfs.id()
 
@@ -31,12 +37,24 @@ router.get('/peer_content_nodes', async (
     const contentNodes = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
     const connections: { [name: string]: boolean } = {}
     for (let cn of contentNodes) {
-      // make a req to each CN /ipfs_peer_info with url query caller_ipfs_id
-      const response = await fetch(`${cn.endpoint}/ipfs_peer_info?caller_ipfs_id=${encodeURIComponent(addr)}`)
-      if (!response.ok) {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), CONTENT_NODE_PEER_TIMEOUT)
+      try {
+        // make a req to each CN /ipfs_peer_info with url query caller_ipfs_id
+        const response = await fetch(
+          `${cn.endpoint}/ipfs_peer_info?caller_ipfs_id=${encodeURIComponent(addr)}`,
+          { signal: controller.signal }
+        )
+        const responseJson = await response.json()
+        if (responseJson.data && responseJson.data.id) {
+          connections[cn.endpoint] = true
+        } else {
+          connections[cn.endpoint] = false
+        }
+      } catch (error) {
         connections[cn.endpoint] = false
-      } else {
-        connections[cn.endpoint] = true
+      } finally {
+        clearTimeout(timeout)
       }
     }
     if (Object.values(connections).every((isConnected) => !isConnected)) {
