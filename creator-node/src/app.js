@@ -52,10 +52,10 @@ app.use(errorHandler)
 
 /**
  * TODO
- * @param {*} port 
- * @param {*} serviceRegistry 
+ * @param {*} port
+ * @param {*} serviceRegistry
  */
-const initializeApp = async (port, serviceRegistry) => {
+const initializeApp = (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()
 
   // TODO: Can remove these when all routes consume serviceRegistry
@@ -71,7 +71,6 @@ const initializeApp = async (port, serviceRegistry) => {
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
 
-  // TODOSID need to make sure this is awaited
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
   // Increase from 2min default to accommodate long-lived requests.
@@ -79,12 +78,6 @@ const initializeApp = async (port, serviceRegistry) => {
   server.timeout = config.get('timeout')
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')
-
-  if (serviceRegistry.URSMRegistrationManager) {
-    // register on URSM contract (requires server and /health_check to already be available)
-    await utils.timeout(1000)
-    await serviceRegistry.URSMRegistrationManager.run()
-  }
 
   return { app: app, server: server }
 }

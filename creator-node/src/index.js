@@ -73,7 +73,7 @@ const startApp = async () => {
     await serviceRegistry.initServices()
     logger.info('Initialized services')
 
-    appInfo = await initializeApp(config.get('port'), serviceRegistry)
+    appInfo = initializeApp(config.get('port'), serviceRegistry)
     logger.info('Initialized app and server')
 
     await pinCID(serviceRegistry.ipfsLatest)

@@ -22,8 +22,10 @@ class Utils {
     return recoverPersonalSignature({ data, sig })
   }
 
-  static async timeout (ms) {
-    console.log(`starting timeout of ${ms}`)
+  static async timeout (ms, log = true) {
+    if (log) {
+      console.log(`starting timeout of ${ms}`)
+    }
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 }

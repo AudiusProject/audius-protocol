@@ -2,13 +2,16 @@ const axios = require('axios')
 const _ = require('lodash')
 const { Utils: LibsUtils } = require('@audius/libs')
 
-const { logger } = require('./logging')
-const { parseCNodeResponse } = require('./apiHelpers')
-const { generateTimestampAndSignature } = require('./apiSigning')
-const { response } = require('express')
+const { logger } = require('../logging')
+const { generateTimestampAndSignature } = require('../apiSigning')
+const { parseCNodeResponse } = require('../apiHelpers')
 
+const NumSignaturesRequired = 3
 
 /**
+ * TODO UPDATE
+ *
+ *
  * This Service is responsible for registering this content node (CN) on the UserReplicaSetManager L2 contract (URSM)
  *
  * Steps:
@@ -21,18 +24,17 @@ class URSMRegistrationManager {
   constructor (nodeConfig, audiusLibs) {
     this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
-    this.spID = nodeConfig.get('spID')
+
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
+    this.isUserMetadataNode = nodeConfig.get('isUserMetadataNode')
 
-    // Requires properly initialized libs instance and non-zero spID
-    // Currently spID is configured inside snapbackSM
-    if (!this.audiusLibs || !this.spID || !this.delegateOwnerWallet || !this.delegatePrivateKey || !this.spOwnerWallet) {
-      throw new Error('nope')
+    if (this.isUserMetadataNode &&
+      (!this.audiusLibs || !this.delegateOwnerWallet || !this.delegatePrivateKey || !this.spOwnerWallet)
+    ) {
+      throw new Error('URSMRegistrationManager cannot start due to missing required configs')
     }
-
-    this.numSignaturesRequired = 3
   }
 
   logInfo (msg) {
@@ -44,9 +46,11 @@ class URSMRegistrationManager {
   }
 
   /**
+   * TODO update description
+   *
    * Registers node on UserReplicaSetManager contract (URSM)
    *
-   * Steps: 
+   * Steps:
    *  1. Fetch node record from L1 ServiceProviderFactory for spID
    *    a. Short-circuit if no L1 record found
    *  2. Fetch node record from L2 UserReplicaSetManager for spID
@@ -62,12 +66,30 @@ class URSMRegistrationManager {
   async run () {
     this.logInfo('STARTING URSMREGISTRATIONMANAGER RUN')
 
+    if (this.isUserMetadataNode) {
+      this.logInfo('URSMRegistration cannot run in userMetadataNode. Exiting.')
+      return
+    }
+
+    const spID = this.nodeConfig.get('spID')
+    if (!spID) {
+      throw new Error('Cannot TODO')
+    }
+
+    /**
+     * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
+     */
+    if (!this.audiusLibs.contracts.UserReplicaSetManagerClient) {
+      this.logInfo('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
+      return
+    }
+
     /**
      * 1. Fetch node record from L1 ServiceProviderFactory for spID
      */
     const spRecordFromSPFactory = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
       'content-node',
-      this.spID
+      spID
     )
     let {
       owner: ownerWalletFromSPFactory,
@@ -76,14 +98,15 @@ class URSMRegistrationManager {
     } = spRecordFromSPFactory
     delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
 
+    this.logInfo(`sprecordfromspfactory: ${JSON.stringify(spRecordFromSPFactory, null, 2)}`)
 
     /**
      * 1-a. Short-circuit if no L1 record found
      */
     if (
-      LibsUtils.isZeroAddress(ownerWalletFromSPFactory)
-      || LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory)
-      || !endpointFromSPFactory
+      LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
+      LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
+      !endpointFromSPFactory
     ) {
       throw new Error('L1recordbad')
     }
@@ -92,15 +115,15 @@ class URSMRegistrationManager {
      * 2. Fetch node record from L2 UserReplicaSetManager for spID
      */
     const delegateOwnerWalletFromURSM = (
-      (await this.audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(this.spID))
-      .delegateOwnerWallet
+      (await this.audiusLibs.contracts.UserReplicaSetManagerClient.getContentNodeWallets(spID))
+        .delegateOwnerWallet
     ).toLowerCase()
 
     /**
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
     if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
-      // throw new Error('L2recordmatch')
+      throw new Error('L2recordmatch')
       this.logInfo(`l2recordbad`)
     }
 
@@ -110,10 +133,10 @@ class URSMRegistrationManager {
      *  b. Remove duplicates by owner_wallet key due to on-chain uniqueness constraint
      */
     let URSMContentNodes = await this.audiusLibs.discoveryProvider.getURSMContentNodes()
-    
-    // TODO - setting list to single value for testing purposes
-    const tmp = URSMContentNodes[0]
-    this.logInfo(`tmp: ${JSON.stringify(tmp, null, 2)}`)
+
+    // // TODO - setting list to single value for testing purposes
+    // const tmp = URSMContentNodes[0]
+    // this.logInfo(`tmp: ${JSON.stringify(tmp, null, 2)}`)
 
     URSMContentNodes = URSMContentNodes.filter(node => node.endpoint)
     URSMContentNodes = _.shuffle(URSMContentNodes)
@@ -123,52 +146,79 @@ class URSMRegistrationManager {
      * TODO document
      */
     // let numRemainingSignatures = 1
-    let numRemainingSignatures = 3
     // let availableNodes = [tmp]
-    let availableNodes = URSMContentNodes
+    // let numRemainingSignatures = 3
+    // let availableNodes = URSMContentNodes
+    // URSMContentNodes = [tmp]
     let receivedSignatures = []
 
-    while (numRemainingSignatures > 0) {
-      if (availableNodes.length < numRemainingSignatures) {
-        // TODO what is appropriate way to error -> kill proc, set flag to flip health check?
-        throw new Error('Failure to receive required attestation signatures for URSM Registration')
+    for (let i = 0; i < URSMContentNodes.length; i += NumSignaturesRequired) {
+      if (receivedSignatures.length >= 3) {
+        break
       }
 
-      let nodesToAttempt = availableNodes.slice(0, numRemainingSignatures)
-      availableNodes = availableNodes.slice(numRemainingSignatures)
-
+      const nodesToAttempt = URSMContentNodes.slice(i, NumSignaturesRequired)
       let responses = await Promise.all(nodesToAttempt.map(async (node) => {
         try {
-          const resp = await this._submitRequestForProposal(node.endpoint)
-          this.logInfo(`submitRFP resp: ${JSON.stringify(resp, null, 2)}`)
+          const resp = await this._submitRequestForSignature(node.endpoint, spID)
+          this.logInfo(`TODOREMOVE submitRFP resp: ${JSON.stringify(resp, null, 2)}`)
           return resp
         } catch (e) {
-          this.logError(`RFP failed to node ${node.endpoint} with error ${e}`)
+          this.logError(`TODOREMOVE RFP failed to node ${node.endpoint} with error ${e}`)
           return null
         }
       }))
+
       this.logInfo(`respones: ${JSON.stringify(responses, null, 2)}`)
       responses = responses.filter(Boolean)
 
-      numRemainingSignatures -= responses.length
       receivedSignatures = receivedSignatures.concat(responses)
     }
 
-    if (receivedSignatures.length !== 3) {
-      throw new Error('3 signatutres required')
+    // TODOREMOVE
+    // while (numRemainingSignatures > 0) {
+    //   if (availableNodes.length < numRemainingSignatures) {
+    //     // TODO what is appropriate way to error -> kill proc, set flag to flip health check?
+    //     throw new Error('Failure to receive required attestation signatures for URSM Registration')
+    //   }
+
+    //   let nodesToAttempt = availableNodes.slice(0, numRemainingSignatures)
+    //   availableNodes = availableNodes.slice(numRemainingSignatures)
+
+    //   let responses = await Promise.all(nodesToAttempt.map(async (node) => {
+    //     try {
+    //       const resp = await this._submitRequestForSignature(node.endpoint)
+    //       this.logInfo(`submitRFP resp: ${JSON.stringify(resp, null, 2)}`)
+    //       return resp
+    //     } catch (e) {
+    //       this.logError(`RFP failed to node ${node.endpoint} with error ${e}`)
+    //       return null
+    //     }
+    //   }))
+    //   this.logInfo(`respones: ${JSON.stringify(responses, null, 2)}`)
+    //   responses = responses.filter(Boolean)
+
+    //   numRemainingSignatures -= responses.length
+    //   receivedSignatures = receivedSignatures.concat(responses)
+    // }
+
+    if (receivedSignatures.length < 3) {
+      throw new Error('3 signatures required')
     }
 
     this.logInfo(`receviedsigns: ${JSON.stringify(receivedSignatures, null, 2)}`)
+    return
 
     /**
-     * Submit proposal 
+     * Register self on URSM contract
      */
 
     const proposerSpIDs = receivedSignatures.map(signatureObj => signatureObj.spID)
     const proposerNonces = receivedSignatures.map(signatureObj => signatureObj.nonce)
     try {
+      // internally this call will retry
       const regTx = await this.audiusLibs.contracts.UserReplicaSetManagerClient.addOrUpdateContentNode(
-        this.spID,
+        spID,
         [
           this.delegateOwnerWallet,
           this.spOwnerWallet
@@ -180,31 +230,28 @@ class URSMRegistrationManager {
         receivedSignatures[2].sig
       )
       this.logInfo('successfully relayed chain write')
-  
-      // TODO - p sure internally libs sendTransaction has retries, so should be gucci but want to make this configurable.
     } catch (e) {
-      // TODO better error handling
-      throw new Error(`shit failed ${e}`)
+      throw new Error(`URSMRegistration failed ${e}`)
     }
   }
 
   /**
-   * 
-   * @param {*} nodeEndpoint 
+   * Given endpoint of a content node, submits request for signature
+   * @param {string} nodeEndpoint
    */
-  async _submitRequestForProposal (nodeEndpoint) {
-    const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
+  async _submitRequestForSignature (nodeEndpoint, spID) {
+    const { timestamp, signature } = generateTimestampAndSignature({ spID }, this.delegatePrivateKey)
 
-    this.logInfo(`submitting RFP to ${nodeEndpoint} for spID ${this.spID} // ${timestamp} // ${signature} // privkey: ${this.delegatePrivateKey}`)
+    this.logInfo(`submitting RFP to ${nodeEndpoint} for spID ${spID} // ${timestamp} // ${signature} // privkey: ${this.delegatePrivateKey}`)
 
     let RFPResp = await axios({
       baseURL: nodeEndpoint,
-      url: '/ursm_request_for_proposal',
+      url: '/ursm_request_for_signature',
       method: 'get',
       // timeout needs to be several seconds as the route makes multiple web requests internally
       timeout: 5000,
       params: {
-        spID: this.spID,
+        spID: spID,
         timestamp,
         signature
       }
