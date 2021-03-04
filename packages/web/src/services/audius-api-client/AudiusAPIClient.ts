@@ -870,13 +870,11 @@ class AudiusAPIClient {
       return response.json()
     } catch (e) {
       // Something went wrong with the request and we should wait for the libs
-      // initialization state
+      // initialization state if needed before retrying
       if (this.initializationState.type === 'manual') {
         await waitForLibsInit()
-        return this._getResponse(path, sanitizedParams, retry)
       }
-      // Something is just broken, propagate the error out
-      throw e
+      return this._getResponse(path, sanitizedParams, retry)
     }
   }
 
