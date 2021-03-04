@@ -20,7 +20,9 @@ export const remoteConfigStringDefaults: {
   [StringKeys.APP_WIDE_NOTICE_TEXT]: null,
   [StringKeys.ETH_PROVIDER_URLS]: ETH_PROVIDER_URLS,
   [StringKeys.CONTENT_BLOCK_LIST]: null,
-  [StringKeys.CONTENT_NODE_BLOCK_LIST]: null
+  [StringKeys.CONTENT_NODE_BLOCK_LIST]: null,
+  [StringKeys.INSTAGRAM_API_PROFILE_URL]:
+    'https://instagram.com/$USERNAME$/?__a=1'
 }
 export const remoteConfigDoubleDefaults: {
   [key in DoubleKeys]: number | null
