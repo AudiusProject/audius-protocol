@@ -132,8 +132,11 @@ class ServiceRegistry {
         // Swallow any errors during registration attempt
       } catch (e) {
         this.logError(`RegisterNodeOnL2URSM Error: ${e}`)
+
+        if (e.msg === 'URSMRegistration cannot run until UserReplicaSetManager contract is deployed') {
+          await this.libs.contracts.initUserReplicaSetManagerClient()
+        }
       }
-      // registered = true
       await utils.timeout(retryTimeoutMs, false)
     }
 

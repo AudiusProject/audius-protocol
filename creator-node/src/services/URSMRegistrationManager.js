@@ -75,8 +75,11 @@ class URSMRegistrationManager {
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
      */
     if (!this.audiusLibs.contracts.UserReplicaSetManagerClient) {
-      this.logInfo('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
-      return
+      throw new Error('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
+      // TODO - currently this will retry until contract is deployed, definitely not ideal
+
+      // this.logInfo('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
+      // return
     }
 
     const spID = this.nodeConfig.get('spID')
