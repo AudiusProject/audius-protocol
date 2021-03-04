@@ -1,8 +1,10 @@
 import React, { ReactNode, useCallback } from 'react'
+import * as Sentry from '@sentry/browser'
 import cn from 'classnames'
 import 'url-search-params-polyfill'
 
 import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oauth'
+import { getRemoteVar, StringKeys } from 'services/remote-config'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
@@ -14,8 +16,14 @@ const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?clien
 )}&scope=user_profile,user_media&response_type=code`
 
 // Route to fetch instagram user data w/ the username
-export const getIGUserUrl = (username: string) =>
-  `https://instagram.com/${username}/?__a=1`
+export const getIGUserUrl = (
+  endpoint: string,
+  username: string,
+  maxAttempts?: number
+) => {
+  const url = endpoint.replace('$USERNAME$', username)
+  return maxAttempts ? `${url}&maxAttempts=${maxAttempts}` : url
+}
 
 // Instagram User profile fields to capture
 const igUserFields = [
@@ -84,7 +92,13 @@ const InstagramAuth = ({
         if (!profileRespJson.username) {
           return onFailure(new Error('Unable to fetch information'))
         }
-        const fetchIGUserUrl = getIGUserUrl(profileRespJson.username)
+        const profileEndpoint =
+          getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
+          'https://instagram.com/$USERNAME$/?__a=1'
+        const fetchIGUserUrl = getIGUserUrl(
+          profileEndpoint,
+          profileRespJson.username
+        )
         const igProfile = await window.fetch(fetchIGUserUrl)
         const igProfileJson = await igProfile.json()
         if (!igProfileJson.graphql || !igProfileJson.graphql.user) {
@@ -109,6 +123,7 @@ const InstagramAuth = ({
       } catch (err) {
         console.log(err)
         onFailure(err.message)
+        Sentry.captureException(`Instagram getProfile failed with ${err}`)
       }
     },
     [getUserUrl, setProfileUrl, onSuccess, onFailure]
