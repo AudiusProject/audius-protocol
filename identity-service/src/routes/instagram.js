@@ -26,10 +26,16 @@ module.exports = function (app) {
     setInterval(async () => {
       if (instagramQueue.length > 0) {
         const username = instagramQueue.shift()
-        const res = await doRequest(getInstagramURL(username))
-        const json = JSON.parse(res)
-        if (json.graphql.user.full_name) {
-          await redisClient.set(getInstagramProfileRedisKey(username), res, 'EX', 60 * 60 * 24)
+        try {
+          const res = await doRequest(getInstagramURL(username))
+          const json = JSON.parse(res)
+          if (json.graphql.user.full_name) {
+            await redisClient.set(getInstagramProfileRedisKey(username), res, 'EX', 60 * 60 * 24)
+          } else {
+            throw new Error(`Failed to fetch instagram profile for ${username}`)
+          }
+        } catch (e) {
+          await redisClient.set(getInstagramProfileRedisKey(username), 'error', 'EX', 60)
         }
       }
     }, INSTAGRAM_URL_POLLING_FREQ_MS)
@@ -46,6 +52,9 @@ module.exports = function (app) {
 
     const key = getInstagramProfileRedisKey(username)
     let value = await redis.get(key)
+    if (value === 'error') {
+      return errorResponseServerError(`Failed to fetch instagram profile for ${username}`)
+    }
     if (!value) {
       instagramQueue.push(username)
       req.logger.info(`Instagram queue (${instagramQueue.length}): ${instagramQueue}`)
