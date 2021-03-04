@@ -145,6 +145,7 @@ def configure_flask_app_logging(app, loglevel_str):
         ip = ip.split(',')[0].strip()
         host = request.host.split(':', 1)[0]
         args = request.query_string.decode("utf-8")
+        headers = dict(request.headers)
 
         log_params = {
             'method': request.method,
@@ -153,7 +154,8 @@ def configure_flask_app_logging(app, loglevel_str):
             'duration': duration,
             'ip': ip,
             'host': host,
-            'params': args
+            'params': args,
+            'headers': headers
         }
 
         request_user_id = request.headers.get('X-User-ID')
