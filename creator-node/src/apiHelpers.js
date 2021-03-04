@@ -7,8 +7,6 @@ const { generateTimestampAndSignature } = require('./apiSigning')
 module.exports.handleResponse = (func) => {
   return async function (req, res, next) {
     try {
-      console.log(`SIDTEST HANDLE RESPONSE: ${req.originalUrl}, ${req.hostname}`)
-
       const resp = await func(req, res, next)
 
       if (!isValidResponse(resp)) {

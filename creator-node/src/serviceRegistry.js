@@ -53,7 +53,6 @@ class ServiceRegistry {
 
     if (!config.get('isUserMetadataNode')) {
       this.libs = await this._initAudiusLibs()
-      this.logInfo(`SIDTEST LIBS INITTED`)
 
       this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
 
@@ -134,9 +133,11 @@ class ServiceRegistry {
       } catch (e) {
         this.logError(`RegisterNodeOnL2URSM Error: ${e}`)
       }
-      registered = true
+      // registered = true
       await utils.timeout(retryTimeoutMs, false)
     }
+
+    this.logInfo('URSM Registration completed')
   }
 
   /**

@@ -2,8 +2,6 @@ const { sendResponse, errorResponseUnauthorized } = require('./apiHelpers')
 const config = require('./config')
 
 async function userNodeMiddleware (req, res, next) {
-  next()
-
   const isUserMetadataNode = config.get('isUserMetadataNode')
   const userNodeRegex = new RegExp(/(users|version|db_check|health_check|image_upload|ipfs|export)/gm)
   if (isUserMetadataNode) {

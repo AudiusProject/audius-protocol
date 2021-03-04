@@ -55,8 +55,6 @@ class MonitoringQueue {
             }
           })
 
-          this.logStatus('SIDTEST FINISHED')
-
           done(null, {})
         } catch (e) {
           this.logStatus(`Error ${e}`)
