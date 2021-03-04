@@ -79,7 +79,12 @@ export enum StringKeys {
   /**
    * Blocks content nodes from selection
    */
-  CONTENT_NODE_BLOCK_LIST = 'CONTENT_NODE_BLOCK_LIST'
+  CONTENT_NODE_BLOCK_LIST = 'CONTENT_NODE_BLOCK_LIST',
+
+  /**
+   * Instagram Profile API url. Must contain $USERNAME$
+   */
+  INSTAGRAM_API_PROFILE_URL = 'INSTAGRAM_API_PROFILE_URL'
 }
 
 export type AllRemoteConfigKeys =
