@@ -24,7 +24,7 @@ export const useWeeklyRewardRate = () => {
 export const useAnnualRewardRate = () => {
   const weeklyClaim = useWeeklyRewardRate()
   if (weeklyClaim.status === Status.Success) {
-    const rate = (Math.pow(((weeklyClaim.rate! / 100) + 1), 52) - 1) * 100
+    const rate = weeklyClaim.rate! * 52
     return { status: Status.Success, rate }
   }
   return { status: Status.Loading }
