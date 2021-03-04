@@ -189,29 +189,29 @@ workflows:
           context: Audius Client
           requires:
             - build-staging
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - update-staging-ga-build:
           requires:
             - deploy-staging
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - hold-update-staging-records:
           type: approval
           requires:
             - update-staging-ga-build
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - update-staging-records:
           context: Audius Client
           requires:
             - hold-update-staging-records
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - build-prod:
           requires:
             - init
@@ -219,33 +219,33 @@ workflows:
           type: approval
           requires:
             - build-prod
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - deploy-prod:
           context: Audius Client
           requires:
             - hold-deploy-prod
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - update-prod-ga-build:
           requires:
             - deploy-prod
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - hold-update-prod-records:
           type: approval
           requires:
             - update-prod-ga-build
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
       - update-prod-records:
           context: Audius Client
           requires:
             - hold-update-prod-records
-          filters:
-            branches:
-              only: /^main$/
+          # filters:
+          #   branches:
+          #     only: /^main$/
