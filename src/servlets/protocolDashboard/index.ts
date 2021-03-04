@@ -1,7 +1,7 @@
+import AbortController from 'abort-controller'
 import express from 'express'
 import fs from 'fs'
 import fetch from 'node-fetch'
-import AbortController from 'abort-controller'
 import path from 'path'
 import unzipper from 'unzipper'
 // @ts-ignore
@@ -41,7 +41,10 @@ router.get('/peer_content_nodes', async (
       const timeout = setTimeout(() => controller.abort(), CONTENT_NODE_PEER_TIMEOUT)
       try {
         // make a req to each CN /ipfs_peer_info with url query caller_ipfs_id
-        const response = await fetch(`${cn.endpoint}/ipfs_peer_info?caller_ipfs_id=${encodeURIComponent(addr)}`, {signal: controller.signal})
+        const response = await fetch(
+          `${cn.endpoint}/ipfs_peer_info?caller_ipfs_id=${encodeURIComponent(addr)}`,
+          { signal: controller.signal }
+        )
         const responseJson = await response.json()
         if (responseJson.data && responseJson.data.id) {
           connections[cn.endpoint] = true
