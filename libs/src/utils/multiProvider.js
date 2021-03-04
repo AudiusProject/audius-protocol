@@ -30,6 +30,7 @@ class MultiProvider extends Web3.providers.HttpProvider {
     }
 
     this.providers = providers
+    // We replace HttpProvider.send with a custom function that supports fallback providers.
     this.send = callbackify(this._send.bind(this)) // web3 only supports callback functions and not async
   }
 
