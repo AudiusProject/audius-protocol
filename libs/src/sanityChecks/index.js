@@ -2,7 +2,7 @@ const isCreator = require('./isCreator')
 const sanitizeNodes = require('./sanitizeNodes')
 const addSecondaries = require('./addSecondaries')
 const syncNodes = require('./syncNodes')
-const rolloverNodes = require('./rolloverNodes')
+// const rolloverNodes = require('./rolloverNodes')
 const recoveryEmail = require('./needsRecoveryEmail')
 
 // Checks to run at startup to ensure a user is in a good state.
@@ -20,7 +20,8 @@ class SanityChecks {
     await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
     await syncNodes(this.libs)
-    await rolloverNodes(this.libs, creatorNodeWhitelist)
+    // TODO: reenable once we're on GCP
+    // await rolloverNodes(this.libs, creatorNodeWhitelist)
     await recoveryEmail(this.libs)
   }
 }
