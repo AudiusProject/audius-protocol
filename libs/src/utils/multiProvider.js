@@ -33,11 +33,12 @@ class MultiProvider extends Web3.providers.HttpProvider {
     this.send = callbackify(this._send.bind(this)) // web3 only supports callback functions and not async
   }
 
-  _send (payload) {
+  async _send (payload) {
     for (const provider of shuffle(this.providers)) {
       try {
         const send = promisify((provider.sendAsync || provider.send).bind(provider))
-        return send(payload)
+        const result = await send(payload)
+        return result
       } catch (e) {
         console.log(e)
       }
