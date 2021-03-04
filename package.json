@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@audius/libs": "1.1.5",
+    "abort-controller": "^3.0.0",
     "ethereumjs-tx": "^2.1.0",
     "express": "^4.17.1",
     "handlebars": "^4.1.2",
