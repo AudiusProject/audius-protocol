@@ -38,6 +38,7 @@ module.exports = function (app) {
 
   app.get('/instagram/profile', handleResponse(async (req, res, next) => {
     const username = req.query.username
+    const maxAttempts = req.query.maxAttempts || 100
     if (!username) {
       return errorResponseBadRequest('Missing username parameter')
     }
@@ -50,7 +51,7 @@ module.exports = function (app) {
       req.logger.info(`Instagram queue (${instagramQueue.length}): ${instagramQueue}`)
     }
     let attempts = 0
-    while (!value && attempts < 100) {
+    while (!value && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 500))
       value = await redis.get(key)
       attempts += 1
