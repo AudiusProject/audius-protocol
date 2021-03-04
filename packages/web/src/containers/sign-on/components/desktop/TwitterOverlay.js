@@ -35,7 +35,7 @@ const messages = {
 
 const TwitterOverlay = props => {
   const displayInstagram = useRemoteVar(
-    BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION
+    BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP
   )
 
   return (

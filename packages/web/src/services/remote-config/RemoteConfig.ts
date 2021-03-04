@@ -41,9 +41,13 @@ export enum IntKeys {
 
 export enum BooleanKeys {
   /*
-   * Boolean to show instagram verification.
+   * Boolean to show instagram verification on mobile.
    */
-  DISPLAY_INSTAGRAM_VERIFICATION = 'DISPLAY_INSTAGRAM_VERIFICATION'
+  DISPLAY_INSTAGRAM_VERIFICATION = 'DISPLAY_INSTAGRAM_VERIFICATION',
+  /*
+   * Boolean to show instagram verification on web + desktop.
+   */
+  DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP = 'DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP'
 }
 
 export enum DoubleKeys {}
