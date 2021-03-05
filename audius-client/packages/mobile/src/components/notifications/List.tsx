@@ -66,6 +66,9 @@ const List = ({
     onRefresh()
   }, [setStatus, onRefresh])
 
+  const refreshColor = useColor('neutralLight6')
+  const spinnerColor = useColor('neutralLight4')
+
   const renderPullToRefresh = () => {
     return (
       <RefreshControl
@@ -75,9 +78,6 @@ const List = ({
       />
     )
   }
-
-  const refreshColor = useColor('neutralLight6')
-  const spinnerColor = useColor('neutralLight4')
 
   if (
     status === Status.SUCCESS &&
