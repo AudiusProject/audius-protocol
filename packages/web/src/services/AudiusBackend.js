@@ -40,7 +40,7 @@ const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
 const COMSTOCK_URL = process.env.REACT_APP_COMSTOCK_URL
 const CLAIM_DISTRIBUTION_CONTRACT_ADDRESS =
   process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
-const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY
+// const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
@@ -366,7 +366,7 @@ class AudiusBackend {
           monitoringCallbacks.contentNode
         ),
         comstockConfig: AudiusLibs.configComstock(COMSTOCK_URL),
-        captchaConfig: { siteKey: RECAPTCHA_SITE_KEY },
+        // captchaConfig: { siteKey: RECAPTCHA_SITE_KEY },
         isServer: false
       })
       await audiusLibs.init()
