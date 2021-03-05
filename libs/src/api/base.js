@@ -19,6 +19,7 @@ class Base {
     ethContracts,
     creatorNode,
     comstock,
+    captcha,
     isServer
   ) {
     this.userStateManager = userStateManager
@@ -31,6 +32,7 @@ class Base {
     this.ethContracts = ethContracts
     this.creatorNode = creatorNode
     this.comstock = comstock
+    this.captcha = captcha
     this.isServer = isServer
 
     this._serviceMapping = {

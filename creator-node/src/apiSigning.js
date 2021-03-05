@@ -2,6 +2,12 @@ const Web3 = require('web3')
 const web3 = new Web3()
 
 /**
+ * Max age of signature in milliseconds
+ * Set to 5 minutes
+ */
+const MAX_SIGNATURE_AGE_MS = 300000
+
+/**
  * Generate the timestamp and signature for api signing
  * @param {object} data
  * @param {string} privateKey
@@ -31,6 +37,18 @@ const recoverWallet = (data, signature) => {
   return recoveredWallet
 }
 
+/**
+ * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
+ * @param {string} signatureTimestamp unix timestamp string when signature was generated
+ */
+const signatureHasExpired = (signatureTimestamp) => {
+  const signatureTimestampDate = new Date(signatureTimestamp)
+  const currentTimestampDate = new Date()
+  const signatureAge = currentTimestampDate - signatureTimestampDate
+
+  return (signatureAge >= MAX_SIGNATURE_AGE_MS)
+}
+
 const sortKeys = x => {
   if (typeof x !== 'object' || !x) { return x }
   if (Array.isArray(x)) { return x.map(sortKeys) }
@@ -40,5 +58,7 @@ const sortKeys = x => {
 module.exports = {
   generateTimestampAndSignature,
   recoverWallet,
-  sortKeys
+  sortKeys,
+  MAX_SIGNATURE_AGE_MS,
+  signatureHasExpired
 }

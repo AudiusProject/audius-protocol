@@ -187,7 +187,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with get', vals: multihash, time: Date.now() })
         // ipfsGet returns a BufferListStream object which is not a buffer
         // not compatible into writeFile directly, but it can be streamed to a file
-        let fileBL = await Utils.ipfsGet(multihash, req, 5000)
+        let fileBL = await Utils.ipfsGet(multihash, req, 1000)
         req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
         decisionTree.push({ stage: 'Retrieved file from local ipfs node with get', vals: multihash, time: Date.now() })
 
@@ -264,6 +264,8 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
+          // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
+          await unlink(expectedStoragePath)
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
       }

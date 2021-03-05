@@ -17,7 +17,7 @@ const config = require('./config')
  *  - `blackListManager`: responsible for handling blacklisted content
  *  - `audiusLibs`: an instance of Audius Libs
  *
- * `initServices` must be called prior to consuming servies from the registry.
+ * `initServices` must be called prior to consuming services from the registry.
  */
 class ServiceRegistry {
   constructor () {
@@ -26,16 +26,15 @@ class ServiceRegistry {
     this.ipfsLatest = ipfsLatest
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
+    this.nodeConfig = config
 
-    // this.audiusLibs isn't initialized until
-    // `initServices` is called.
-    this.audiusLibs = null
-    // this.snapbackSM isn't initialized until 'initServices'
+    // below properties aren't initialized until 'initServices' is called
+    this.libs = null
     this.snapbackSM = null
   }
 
   /**
-   * Configure services, init libs.
+   * Configure all services, including libs init
    */
   async initServices () {
     // Initialize private IPFS gateway counters
@@ -43,10 +42,10 @@ class ServiceRegistry {
     this.redis.set('ipfsStandaloneReqs', 0)
 
     await this.blacklistManager.init()
-    const audiusLibs = (config.get('isUserMetadataNode')) ? null : await initAudiusLibs()
-    this.libs = audiusLibs
-    // Conditionally initialize state machine
+
     if (!config.get('isUserMetadataNode')) {
+      this.libs = await initAudiusLibs()
+
       this.snapbackSM = new SnapbackSM(this.libs)
       await this.snapbackSM.init()
     }
@@ -64,9 +63,14 @@ const initAudiusLibs = async () => {
   )
   const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
     config.get('dataProviderUrl'),
-    null,
-    false
+    /* chainNetworkId */ null,
+    /* requiresAccount */ false
   )
+
+  if (!ethWeb3 || !dataWeb3) {
+    throw new Error('Failed to init audiusLibs due to web3 configuration error')
+  }
+
   const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
     ? new Set(config.get('discoveryProviderWhitelist').split(','))
     : null
@@ -92,6 +96,7 @@ const initAudiusLibs = async () => {
     identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
     isDebug: config.get('creatorNodeIsDebug')
   })
+
   await audiusLibs.init()
   return audiusLibs
 }

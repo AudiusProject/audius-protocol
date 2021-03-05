@@ -341,7 +341,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_user_balances": {
                 "task": "update_user_balances",
-                "schedule": timedelta(minutes=5)
+                "schedule": timedelta(seconds=60)
             },
             "monitoring_queue": {
                 "task": "monitoring_queue",

@@ -291,7 +291,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
         current_user_followee_follow_count_dict = {user_id: followee_follow_count for (
             user_id, followee_follow_count) in current_user_followee_follow_counts}
 
-    balance_dict = get_balances(session, redis, user_ids)
+    is_verified_ids_set = {user["user_id"] for user in users if user["is_verified"]}
+    balance_dict = get_balances(session, redis, user_ids, is_verified_ids_set)
 
     for user in users:
         user_id = user["user_id"]
