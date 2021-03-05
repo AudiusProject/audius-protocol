@@ -12,7 +12,7 @@ const {
 
 // Configuration.
 // Should be CLI configurable in the future.
-const DEFAULT_NUM_CREATOR_NODES = 3
+const DEFAULT_NUM_CREATOR_NODES = 4
 const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
