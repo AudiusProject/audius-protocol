@@ -235,10 +235,8 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
             logger.info(f"did receive route and app metrics from {node}")
             end_time = datetime.utcnow().strftime(datetime_format_secondary)
             visited_node_timestamps[node] = end_time
-            if new_route_metrics:
-                merge_route_metrics(new_route_metrics, end_time, db)
-            if new_app_metrics:
-                merge_app_metrics(new_app_metrics, end_time, db)
+            merge_route_metrics(new_route_metrics, end_time, db)
+            merge_app_metrics(new_app_metrics, end_time, db)
 
     logger.info(f"visited node timestamps: {visited_node_timestamps}")
     if visited_node_timestamps:
