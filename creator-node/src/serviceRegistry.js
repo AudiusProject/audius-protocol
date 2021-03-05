@@ -28,12 +28,12 @@ const utils = require('./utils')
  */
 class ServiceRegistry {
   constructor () {
+    this.nodeConfig = config
     this.redis = redisClient
     this.ipfs = ipfs
     this.ipfsLatest = ipfsLatest
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
-    this.nodeConfig = config
 
     // below properties aren't initialized until 'initServices' is called
     this.libs = null
@@ -159,7 +159,7 @@ class ServiceRegistry {
     let complete = false
     while (complete === false) {
       try {
-        this.snapbackSM = new SnapbackSM(this.libs)
+        this.snapbackSM = new SnapbackSM(this.nodeConfig, this.libs)
         await this.snapbackSM.init()
         complete = true
       } catch (e) {

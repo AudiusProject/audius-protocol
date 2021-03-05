@@ -1,4 +1,3 @@
-const config = require('./config')
 const Bull = require('bull')
 const axios = require('axios')
 const utils = require('./utils')
@@ -49,20 +48,19 @@ const SyncType = Object.freeze({
   Pending: User replica set management
 */
 class SnapbackSM {
-  constructor (audiusLibs) {
+  constructor (nodeConfig, audiusLibs) {
+    this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
 
     // Toggle to switch logs
     this.debug = true
 
-    // Cache endpoint config
-    this.endpoint = config.get('creatorNodeEndpoint')
-
-    this.spID = config.get('spID')
+    this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
+    this.spID = this.nodeConfig.get('spID')
 
     // Throw an error if running as creator node and no libs are provided
-    if (!config.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID)) {
-      throw new Error('Missing libs or spID - cannot start')
+    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
+      throw new Error('Missing required configs - cannot start')
     }
 
     // State machine queue processes all user operations
@@ -86,8 +84,8 @@ class SnapbackSM {
       `${queueName}-${Date.now()}`,
       {
         redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
+          port: this.nodeConfig.get('redisPort'),
+          host: this.nodeConfig.get('redisHost')
         },
         defaultJobOptions: {
           removeOnComplete: true,
@@ -106,10 +104,10 @@ class SnapbackSM {
 
   // Helper function to retrieve all relevant configs
   async getSPInfo () {
-    const spID = config.get('spID')
+    const spID = this.nodeConfig.get('spID')
     const endpoint = this.endpoint
-    const delegateOwnerWallet = config.get('delegateOwnerWallet')
-    const delegatePrivateKey = config.get('delegatePrivateKey')
+    const delegateOwnerWallet = this.nodeConfig.get('delegateOwnerWallet')
+    const delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
     return {
       spID,
       endpoint,
@@ -483,7 +481,7 @@ class SnapbackSM {
     await this.stateMachineQueue.empty()
     await this.syncQueue.empty()
 
-    const isUserMetadata = config.get('isUserMetadataNode')
+    const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
     if (isUserMetadata) {
       this.log(`SnapbackSM disabled for userMetadataNode. ${this.endpoint}, isUserMetadata=${isUserMetadata}`)
       return
@@ -498,7 +496,7 @@ class SnapbackSM {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {
           // Set timeout before re-adding job to queue. devMode runs with much shorter timeout.
-          if (config.get('snapbackDevModeEnabled')) {
+          if (this.nodeConfig.get('snapbackDevModeEnabled')) {
             this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
             await utils.timeout(DevDelayInMS)
           } else {

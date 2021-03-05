@@ -5,6 +5,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const assert = require('assert')
 const utils = require('../src/utils')
 const { getApp } = require('./lib/app')
+const nodeConfig = require('../src/config')
 
 const constants = {
   userWallet: 'user_wallet',
@@ -22,6 +23,8 @@ describe('test sync queue', function () {
     // init app to run migrations
     const appInfo = await getApp()
     server = appInfo.server
+
+    nodeConfig.set('spID', 1)
   })
 
   afterEach(async function () {
@@ -48,7 +51,7 @@ describe('test sync queue', function () {
       clock: constants.primaryClockVal
     })
 
-    const snapback = new SnapbackSM(getLibsMock())
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
     await snapback.init(MAX_CONCURRENCY)
 
     // Setup the recurring syncs
