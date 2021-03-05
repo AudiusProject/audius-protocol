@@ -76,14 +76,15 @@ const List = ({
     )
   }
 
+  const refreshColor = useColor('neutralLight6')
+  const spinnerColor = useColor('neutralLight4')
+
   if (
     status === Status.SUCCESS &&
     notifications.length === 0
   ) {
     return <Empty />
   }
-  const refreshColor = useColor('neutralLight6')
-  const spinnerColor = useColor('neutralLight4')
 
   return (
     <FlatList
