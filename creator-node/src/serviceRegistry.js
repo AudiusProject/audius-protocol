@@ -56,12 +56,18 @@ class ServiceRegistry {
 
       this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
 
-      // Kick off process to initialize node L1 and L2 identity without awaiting. This process will not complete
-      //    until server is up, which happens after serviceRegistry.initServices() is called.
-      this._initializeNodeIdentityConfig()
+      /**
+       * Do not await any of the below processes as they will not complete until after server is up.
+       * Server is started after serviceRegistry.initServices() is called.
+       */
 
-      // Kick off snapback init without awaiting. This process requires spID but is independent of L2 URSM Registration.
+      this._recoverNodeL1Identity()
+
+      // SnapbackSM init requires L1 identity recovery but is independent of L2 URSM Registration
       this._initSnapbackSM()
+
+      // L2URSMRegistration requires L1 identity recovery
+      this._registerNodeOnL2URSM()
     }
 
     this.monitoringQueue.start()
@@ -75,13 +81,8 @@ class ServiceRegistry {
     logger.error(`ServiceRegistry ERROR || ${msg}`)
   }
 
-  async _initializeNodeIdentityConfig () {
-    await this._recoverNodeL1Identity()
-    await this._registerNodeOnL2URSM()
-  }
-
   /**
-   * Poll L1 SPFactory for spID, set spID config once recovered.
+   * Poll L1 SPFactory for spID & set spID config once recovered.
    */
   async _recoverNodeL1Identity () {
     const endpoint = config.get('creatorNodeEndpoint')
