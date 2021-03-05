@@ -292,6 +292,9 @@ jobs:
       - run:
           name: Deploy to Cloudflare
           command: |
+            cd scripts/workers-site
+            npm i
+            cd ../../
             mv build-staging build
             cp ./resources/apple-app-site-association build
             echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env staging
@@ -370,6 +373,9 @@ jobs:
       - run:
           name: Deploy to Cloudflare
           command: |
+            cd scripts/workers-site
+            npm i
+            cd ../../
             mv build-production build
             cp ./resources/apple-app-site-association build
             cp ./robots.txt build
