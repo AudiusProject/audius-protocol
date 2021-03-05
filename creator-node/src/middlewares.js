@@ -58,12 +58,6 @@ async function ensurePrimaryMiddleware (req, res, next) {
     return next()
   }
 
-  /**
-   * UM is registered as CN
-   * UM.isUserMetadataNode = false
-   * user with endpoint = '' writes to UM
-   */
-
   const start = Date.now()
 
   if (!req.session || !req.session.wallet) {

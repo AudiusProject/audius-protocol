@@ -173,6 +173,8 @@ class ServiceRegistry {
 
   /**
    * Creates, initializes, and returns an audiusLibs instance
+   *
+   * Configures dataWeb3 to be internal to libs, logged in with delegatePrivateKey in order to write chain TX
    */
   async _initAudiusLibs () {
     const ethWeb3 = await AudiusLibs.Utils.configureWeb3(
@@ -180,14 +182,8 @@ class ServiceRegistry {
       config.get('ethNetworkId'),
       /* requiresAccount */ false
     )
-    const dataWeb3 = await AudiusLibs.Utils.configureWeb3(
-      config.get('dataProviderUrl'),
-      /* chainNetworkId */ null,
-      /* requiresAccount */ false
-    )
-
-    if (!ethWeb3 || !dataWeb3) {
-      throw new Error('Failed to init audiusLibs due to web3 configuration error')
+    if (!ethWeb3) {
+      throw new Error('Failed to init audiusLibs due to ethWeb3 configuration error')
     }
 
     const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
@@ -205,6 +201,7 @@ class ServiceRegistry {
       web3Config: AudiusLibs.configInternalWeb3(
         config.get('dataRegistryAddress'),
         [config.get('dataProviderUrl')],
+        // TODO - formatting this private key here is not ideal
         config.get('delegatePrivateKey').replace('0x', '')
       ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),

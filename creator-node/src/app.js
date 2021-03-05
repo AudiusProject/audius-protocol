@@ -51,9 +51,10 @@ function errorHandler (err, req, res, next) {
 app.use(errorHandler)
 
 /**
- * TODO
- * @param {*} port
- * @param {*} serviceRegistry
+ * Configures express app object with required properties and starts express server
+ *
+ * @param {number} port port number on which to expose server
+ * @param {ServiceRegistry} serviceRegistry object housing all Content Node Services
  */
 const initializeApp = (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()

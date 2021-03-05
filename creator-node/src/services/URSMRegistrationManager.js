@@ -9,16 +9,7 @@ const { parseCNodeResponse } = require('../apiHelpers')
 const NumSignaturesRequired = 3
 
 /**
- * TODO UPDATE
- *
- *
- * This Service is responsible for registering this content node (CN) on the UserReplicaSetManager L2 contract (URSM)
- *
- * Steps:
- * - If already registered on URSM, exit successfully
- * - Submit requests for proposal to 3 nodes already registered on URSM
- *    - keep attempting to submit requests until 3 successful or no remaining nodes
- * - Register self on URSM with 3 proposer signatures
+ * This Service is responsible for registering this node on the UserReplicaSetManager L2 contract (URSM)
  */
 class URSMRegistrationManager {
   constructor (nodeConfig, audiusLibs) {
@@ -30,7 +21,7 @@ class URSMRegistrationManager {
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
     this.isUserMetadataNode = nodeConfig.get('isUserMetadataNode')
 
-    if (this.isUserMetadataNode &&
+    if (!this.isUserMetadataNode &&
       (!this.audiusLibs || !this.delegateOwnerWallet || !this.delegatePrivateKey || !this.spOwnerWallet)
     ) {
       throw new Error('URSMRegistrationManager cannot start due to missing required configs')
@@ -46,8 +37,6 @@ class URSMRegistrationManager {
   }
 
   /**
-   * TODO update description
-   *
    * Registers node on UserReplicaSetManager contract (URSM)
    *
    * Steps:
@@ -56,11 +45,9 @@ class URSMRegistrationManager {
    *  2. Fetch node record from L2 UserReplicaSetManager for spID
    *    a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
    *  3. Fetch list of all nodes registered on URSM, in order to submit requests for proposal
-   *    a. Randomize list to minimize bias
-   *    b. Organize list to ensure requests are sent to nodes with unique ownerWallets
-   *  4. Submit requests for proposal to nodes until 3 successful signatures received
-   *    a. Must have signatures from nodes with unique ownerWallets
-   *    b. Error if all available nodes contacted without 3 successful signatures
+   *    a. Randomize list to minimize bias + de-dupe by ownerWallet to meet on-chain uniqueness constraint
+   *  4. Request signatures from all registered nodes, in batches of 3, until 3 successful signatures received
+   *    a. Error if all available nodes contacted without 3 successful signatures
    *  5. Submit registration transaction to URSM with signatures
    */
   async run () {
@@ -73,13 +60,11 @@ class URSMRegistrationManager {
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
+     *
+     * TODO - currently this will retry until contract is deployed, definitely not ideal
      */
     if (!this.audiusLibs.contracts.UserReplicaSetManagerClient) {
       throw new Error('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
-      // TODO - currently this will retry until contract is deployed, definitely not ideal
-
-      // this.logInfo('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
-      // return
     }
 
     const spID = this.nodeConfig.get('spID')
@@ -140,7 +125,7 @@ class URSMRegistrationManager {
     URSMContentNodes = Object.values(_.keyBy(URSMContentNodes, 'owner_wallet'))
 
     /**
-     * Request signatures from all registered nodes, in batches of 3, until 3 successful signatures received
+     * 4. Request signatures from all registered nodes, in batches of 3, until 3 successful signatures received
      */
     let receivedSignatures = []
     for (let i = 0; i < URSMContentNodes.length; i += NumSignaturesRequired) {
@@ -164,14 +149,16 @@ class URSMRegistrationManager {
       receivedSignatures = receivedSignatures.concat(responses)
     }
 
+    /**
+     * 4-a. Error if all available nodes contacted without 3 successful signatures
+     */
     if (receivedSignatures.length < 3) {
       throw new Error('Failed to receive 3 signatures after requesting from all available nodes')
     }
 
     /**
-     * Register self on URSM contract
+     * 5. Submit registration transaction to URSM with signatures
      */
-
     const proposerSpIDs = receivedSignatures.map(signatureObj => signatureObj.spID)
     const proposerNonces = receivedSignatures.map(signatureObj => signatureObj.nonce)
     try {
