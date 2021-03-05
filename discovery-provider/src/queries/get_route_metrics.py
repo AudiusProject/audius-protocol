@@ -2,7 +2,7 @@ import logging
 import time
 import functools as ft
 from datetime import date, timedelta
-from sqlalchemy import func, desc, or_
+from sqlalchemy import func, asc, desc, or_
 from src import exceptions
 from src.models import RouteMetrics, RouteMetricsDayMatview, RouteMetricsMonthMatview, \
     AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics, \
@@ -129,6 +129,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 )
                 .filter(seven_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
                 .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
+                .order_by(asc('timestamp'))
                 .all()
             )
             unique_count_records = ft.reduce(lambda acc, curr: \
@@ -141,6 +142,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 )
                 .filter(seven_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
                 .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
+                .order_by(asc('timestamp'))
                 .all()
             )
             total_count_records = ft.reduce(lambda acc, curr: \
@@ -165,6 +167,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 )
                 .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
                 .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
+                .order_by(asc('timestamp'))
                 .all()
             )
             unique_count_records = ft.reduce(lambda acc, curr: \
@@ -177,6 +180,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 )
                 .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
                 .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
+                .order_by(asc('timestamp'))
                 .all()
             )
             total_count_records = ft.reduce(lambda acc, curr: \
@@ -200,6 +204,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
                 .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
                 .group_by(func.date_trunc(bucket_size, AggregateDailyUniqueUsersMetrics.timestamp))
+                .order_by(asc('timestamp'))
                 .all()
             )
             unique_count_records = ft.reduce(lambda acc, curr: \
@@ -213,6 +218,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
                 .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
                 .group_by(func.date_trunc(bucket_size, AggregateDailyTotalUsersMetrics.timestamp))
+                .order_by(asc('timestamp'))
                 .all()
             )
             total_count_records = ft.reduce(lambda acc, curr: \
@@ -236,6 +242,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                     AggregateMonthlyUniqueUsersMetrics.count
                 )
                 .filter(AggregateMonthlyUniqueUsersMetrics.timestamp < today)
+                .order_by(asc('timestamp'))
                 .all()
             )
             unique_count_records = ft.reduce(lambda acc, curr: \
@@ -247,6 +254,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                     AggregateMonthlyTotalUsersMetrics.count
                 )
                 .filter(AggregateMonthlyTotalUsersMetrics.timestamp < today)
+                .order_by(asc('timestamp'))
                 .all()
             )
             total_count_records = ft.reduce(lambda acc, curr: \
@@ -269,6 +277,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 )
                 .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
                 .group_by(func.date_trunc(bucket_size, AggregateDailyUniqueUsersMetrics.timestamp))
+                .order_by(asc('timestamp'))
                 .all()
             )
             unique_count_records = ft.reduce(lambda acc, curr: \
@@ -280,6 +289,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                 )
                 .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
                 .group_by(func.date_trunc(bucket_size, AggregateDailyTotalUsersMetrics.timestamp))
+                .order_by(asc('timestamp'))
                 .all()
             )
             total_count_records = ft.reduce(lambda acc, curr: \
