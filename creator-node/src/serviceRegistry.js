@@ -134,7 +134,8 @@ class ServiceRegistry {
         this.logError(`RegisterNodeOnL2URSM Error: ${e}`)
 
         if (e.message === 'URSMRegistration cannot run until UserReplicaSetManager contract is deployed') {
-          await this.libs.contracts.initUserReplicaSetManagerClient()
+          this.logInfo(`Checking if URSM has since been deployed...`)
+          await this.libs.contracts.initUserReplicaSetManagerClient(false)
         }
       }
       await utils.timeout(retryTimeoutMs, false)
@@ -159,12 +160,15 @@ class ServiceRegistry {
       try {
         this.snapbackSM = new SnapbackSM(this.libs)
         await this.snapbackSM.init()
+        complete = true
       } catch (e) {
         this.logError(`_initSnapbackSM Error: ${e}`)
       }
 
       await utils.timeout(retryTimeoutMs, false)
     }
+
+    this.logInfo(`SnapbackSM Init completed`)
   }
 
   /**
