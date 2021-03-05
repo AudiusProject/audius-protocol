@@ -10,6 +10,8 @@ const NumSignaturesRequired = 3
 
 /**
  * This Service is responsible for registering this node on the UserReplicaSetManager L2 contract (URSM)
+ *
+ * @notice Service is backwards compatible, and will work before and after URSM contract deployment
  */
 class URSMRegistrationManager {
   constructor (nodeConfig, audiusLibs) {
