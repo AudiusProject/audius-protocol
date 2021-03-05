@@ -60,7 +60,7 @@ class ServiceRegistry {
       //    until server is up, which happens after serviceRegistry.initServices() is called.
       this._initializeNodeIdentityConfig()
 
-      // Kick off snapback init without awaiting. This process requires spID.
+      // Kick off snapback init without awaiting. This process requires spID but is independent of L2 URSM Registration.
       this._initSnapbackSM()
     }
 
@@ -133,7 +133,7 @@ class ServiceRegistry {
       } catch (e) {
         this.logError(`RegisterNodeOnL2URSM Error: ${e}`)
 
-        if (e.msg === 'URSMRegistration cannot run until UserReplicaSetManager contract is deployed') {
+        if (e.message === 'URSMRegistration cannot run until UserReplicaSetManager contract is deployed') {
           await this.libs.contracts.initUserReplicaSetManagerClient()
         }
       }
@@ -146,7 +146,7 @@ class ServiceRegistry {
   /**
    * Wait until spID config is set, then initialize SnapbackSM
    */
-  async _initSnapbackSM () {  
+  async _initSnapbackSM () {
     const retryTimeoutMs = 10000 // ms
 
     while (this.nodeConfig.get('spID') === 0) {

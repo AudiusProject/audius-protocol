@@ -126,7 +126,7 @@ class AudiusContracts {
       }
     } catch (e) {
       // Nullify failed attempt to initialize
-      console.log(`Failed to initialize UserReplicaSetManagerClient`)
+      console.log(`Failed to initialize UserReplicaSetManagerClient with error ${e.message}`)
       this.UserReplicaSetManagerClient = null
     }
   }
