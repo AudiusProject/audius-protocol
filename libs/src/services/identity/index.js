@@ -27,11 +27,13 @@ class IdentityService {
   }
 
   async setUserFn (obj) {
-    try {
-      const token = await this.captcha.generate('identity/user')
-      obj.token = token
-    } catch (e) {
-      console.warn(`CAPTCHA - Recaptcha may not have been instantiated properly`, e)
+    if (this.captcha) {
+      try {
+        const token = await this.captcha.generate('identity/user')
+        obj.token = token
+      } catch (e) {
+        console.warn(`CAPTCHA - Recaptcha failed to generate token:`, e)
+      }
     }
 
     return this._makeRequest({
