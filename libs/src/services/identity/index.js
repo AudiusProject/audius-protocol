@@ -27,8 +27,12 @@ class IdentityService {
   }
 
   async setUserFn (obj) {
-    const token = await this.captcha.generate('identity/user')
-    obj.token = token
+    try {
+      const token = await this.captcha.generate('identity/user')
+      obj.token = token
+    } catch (e) {
+      console.warn(`CAPTCHA - Recaptcha may not have been instantiated properly`, e)
+    }
 
     return this._makeRequest({
       url: '/user',
