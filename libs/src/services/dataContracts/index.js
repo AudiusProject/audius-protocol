@@ -133,10 +133,16 @@ class AudiusContracts {
 
   /* ------- CONTRACT META-FUNCTIONS ------- */
 
+  /**
+   * Retrieves contract address from Registry by key, caching previously retrieved data.
+   * Refreshes cache if cached value is empty or zero address.
+   * @param {string} contractName registry key of contract
+   */
   async getRegistryAddressForContract (contractName) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
     this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
     this.contractAddresses = this.contractAddresses || { 'registry': this.registryAddress }
+
     if (!this.contractAddresses[contractName] || Utils.isZeroAddress(this.contractAddresses[contractName])) {
       const address = await this.RegistryClient.getContract(contractName)
       this.contracts[address] = contractName
