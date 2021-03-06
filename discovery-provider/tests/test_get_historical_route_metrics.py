@@ -53,7 +53,7 @@ def test_get_historical_route_metrics(app):
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=2,
-                timestamp=yesterday
+                timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=3,
@@ -65,7 +65,7 @@ def test_get_historical_route_metrics(app):
             ),
             AggregateMonthlyTotalUsersMetrics(
                 count=4,
-                timestamp=yesterday
+                timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyTotalUsersMetrics(
                 count=6,
@@ -83,8 +83,8 @@ def test_get_historical_route_metrics(app):
         assert daily_aggregate_metrics[str(yesterday)]['unique_count'] == 3
         assert daily_aggregate_metrics[str(yesterday)]['total_count'] == 6
 
-        assert len(daily_aggregate_metrics.items()) == 2
+        assert len(monthly_aggregate_metrics.items()) == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['unique_count'] == 1
         assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['total_count'] == 2
-        assert monthly_aggregate_metrics[str(yesterday)]['unique_count'] == 2
-        assert monthly_aggregate_metrics[str(yesterday)]['total_count'] == 4
+        assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['unique_count'] == 2
+        assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['total_count'] == 4

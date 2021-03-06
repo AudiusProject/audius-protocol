@@ -164,7 +164,7 @@ def test_get_aggregate_route_metrics_all_time_monthly_bucket(app):
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=2,
-                timestamp=yesterday
+                timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=3,
@@ -176,7 +176,7 @@ def test_get_aggregate_route_metrics_all_time_monthly_bucket(app):
             ),
             AggregateMonthlyTotalUsersMetrics(
                 count=4,
-                timestamp=yesterday
+                timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyTotalUsersMetrics(
                 count=6,

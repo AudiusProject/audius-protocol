@@ -42,7 +42,7 @@ def test_get_historical_app_metrics(app):
             AggregateMonthlyAppNameMetrics(
                 application_name='best-app',
                 count=4,
-                timestamp=yesterday
+                timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyAppNameMetrics(
                 application_name='top-app',
@@ -61,4 +61,4 @@ def test_get_historical_app_metrics(app):
 
         assert len(daily_aggregate_metrics.items()) == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['top-app'] == 2
-        assert monthly_aggregate_metrics[str(yesterday)]['best-app'] == 4
+        assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['best-app'] == 4
