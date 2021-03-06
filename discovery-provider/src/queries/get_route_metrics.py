@@ -35,6 +35,7 @@ def get_historical_route_metrics():
 def _get_historical_route_metrics(session):
     today = date.today()
     thirty_days_ago = today - timedelta(days=30)
+    first_day_of_month = today.replace(day=1)
 
     daily_metrics = {}
     unique_daily_counts = (
@@ -74,7 +75,7 @@ def _get_historical_route_metrics(session):
             AggregateMonthlyUniqueUsersMetrics.timestamp,
             AggregateMonthlyUniqueUsersMetrics.count
         )
-        .filter(AggregateMonthlyUniqueUsersMetrics.timestamp < today)
+        .filter(AggregateMonthlyUniqueUsersMetrics.timestamp < first_day_of_month)
         .all()
     )
     unique_monthly_count_records = ft.reduce(lambda acc, curr: \
@@ -85,7 +86,7 @@ def _get_historical_route_metrics(session):
             AggregateMonthlyTotalUsersMetrics.timestamp,
             AggregateMonthlyTotalUsersMetrics.count
         )
-        .filter(AggregateMonthlyTotalUsersMetrics.timestamp < today)
+        .filter(AggregateMonthlyTotalUsersMetrics.timestamp < first_day_of_month)
         .all()
     )
     total_monthly_count_records = ft.reduce(lambda acc, curr: \
@@ -119,6 +120,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
     today = date.today()
     seven_days_ago = today - timedelta(days=7)
     thirty_days_ago = today - timedelta(days=30)
+    first_day_of_month = today.replace(day=1)
 
     if time_range == 'week':
         if bucket_size == 'day':
@@ -241,7 +243,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                     AggregateMonthlyUniqueUsersMetrics.timestamp,
                     AggregateMonthlyUniqueUsersMetrics.count
                 )
-                .filter(AggregateMonthlyUniqueUsersMetrics.timestamp < today)
+                .filter(AggregateMonthlyUniqueUsersMetrics.timestamp < first_day_of_month)
                 .order_by(asc('timestamp'))
                 .all()
             )
@@ -253,7 +255,7 @@ def _get_aggregate_route_metrics(session, time_range, bucket_size):
                     AggregateMonthlyTotalUsersMetrics.timestamp,
                     AggregateMonthlyTotalUsersMetrics.count
                 )
-                .filter(AggregateMonthlyTotalUsersMetrics.timestamp < today)
+                .filter(AggregateMonthlyTotalUsersMetrics.timestamp < first_day_of_month)
                 .order_by(asc('timestamp'))
                 .all()
             )

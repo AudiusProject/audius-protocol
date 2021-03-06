@@ -33,6 +33,7 @@ def get_historical_app_metrics():
 def _get_historical_app_metrics(session):
     today = date.today()
     thirty_days_ago = today - timedelta(days=30)
+    first_day_of_month = today.replace(day=1)
 
     daily_query = (
         session.query(
@@ -53,7 +54,7 @@ def _get_historical_app_metrics(session):
             AggregateMonthlyAppNameMetrics.application_name,
             AggregateMonthlyAppNameMetrics.count
         )
-        .filter(AggregateMonthlyAppNameMetrics.timestamp < today)
+        .filter(AggregateMonthlyAppNameMetrics.timestamp < first_day_of_month)
         .all()
     )
     monthly_metrics = ft.reduce(lambda acc, curr: \
