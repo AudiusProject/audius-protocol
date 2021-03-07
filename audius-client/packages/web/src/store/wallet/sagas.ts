@@ -30,6 +30,9 @@ import { Name } from 'services/analytics'
 import { getAccountUser } from 'store/account/selectors'
 
 // TODO: handle errors
+const errors = {
+  rateLimitError: 'Please wait before trying again'
+}
 
 function* sendAsync({
   payload: { recipientWallet, amount }
@@ -65,11 +68,18 @@ function* sendAsync({
       })
     )
   } catch (e) {
-    yield put(sendFailed({ error: e.message }))
+    const isRateLimit = e.message === errors.rateLimitError
+    let errorText = e.message
+    if (isRateLimit) {
+      errorText =
+        'If you’ve already sent $AUDIO today, please wait a day before trying again'
+    }
+    yield put(sendFailed({ error: errorText }))
     yield put(
       make(Name.SEND_AUDIO_FAILURE, {
         from: account?.wallet,
-        recipient: recipientWallet
+        recipient: recipientWallet,
+        error: errorText
       })
     )
   }
