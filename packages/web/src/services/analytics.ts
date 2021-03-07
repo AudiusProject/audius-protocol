@@ -720,6 +720,7 @@ type SendAudioFailure = {
   eventName: Name.SEND_AUDIO_FAILURE
   from: WalletAddress
   recipient: WalletAddress
+  error: string
 }
 
 type ServiceMonitorRequest = {
