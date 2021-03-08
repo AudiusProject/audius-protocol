@@ -12,7 +12,7 @@ const { shuffle } = require('lodash')
 class MultiProvider extends Web3.providers.HttpProvider {
   /**
    * Creates a MultiProvider
-   * @param {Array<String | Provider>} providers - The providers to use.
+   * @param {Array<string | Provider> | string} - The providers to use.
    */
   constructor (providers) {
     super()
