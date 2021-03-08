@@ -300,7 +300,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
     # default is 5 seconds
-    indexing_interval = int(shared_config["discprov"]["block_processing_interval_sec"])
+    indexing_interval_sec = int(shared_config["discprov"]["block_processing_interval_sec"])
 
     # Update celery configuration
     celery.conf.update(
@@ -313,7 +313,7 @@ def configure_celery(flask_app, celery, test_config=None):
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=indexing_interval),
+                "schedule": timedelta(seconds=indexing_interval_sec),
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",

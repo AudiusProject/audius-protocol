@@ -112,33 +112,14 @@ def get_health(args, use_redis_cache=True):
 
     latest_block_num = None
     latest_block_hash = None
-
-    # Get latest web block info
-    if use_redis_cache:
-        stored_latest_block_num = redis.get(latest_block_redis_key)
-        if stored_latest_block_num is not None:
-            latest_block_num = int(stored_latest_block_num)
-
-        stored_latest_blockhash = redis.get(latest_block_hash_redis_key)
-        if stored_latest_blockhash is not None:
-            latest_block_hash = stored_latest_blockhash.decode("utf-8")
-
-    if latest_block_num is None or latest_block_hash is None:
-        latest_block = web3.eth.getBlock("latest", True)
-        latest_block_num = latest_block.number
-        latest_block_hash = latest_block.hash.hex()
-
-        if use_redis_cache:
-            # if we had attempted to use redis cache and the values weren't there, set the values now
-            # ex sets expiration time and nx only sets if key doesn't exist in redis
-            redis.set(latest_block_redis_key, latest_block_num, ex=default_indexing_interval_seconds, nx=True)
-            redis.set(latest_block_hash_redis_key, latest_block_hash, ex=default_indexing_interval_seconds, nx=True)
-
     latest_indexed_block_num = None
     latest_indexed_block_hash = None
 
-    # Get latest indexed block info
     if use_redis_cache:
+        # get latest blockchain state from redis cache, or fallback to chain if None
+        latest_block_num, latest_block_hash = get_latest_block_or_set(redis, web3)
+
+        # get latest db state from redis cache
         latest_indexed_block_num = redis.get(
             most_recent_indexed_block_redis_key)
         if latest_indexed_block_num is not None:
@@ -150,7 +131,19 @@ def get_health(args, use_redis_cache=True):
             latest_indexed_block_hash = latest_indexed_block_hash.decode(
                 "utf-8")
 
-    if latest_indexed_block_num is None or latest_indexed_block_hash is None:
+    # fetch latest blockchain state from web3 if:
+    # we explicitly don't want to use redis cache or
+    # value from redis cache is None
+    if not use_redis_cache or latest_block_num is None or latest_block_hash is None:
+        # get latest blockchain state from web3
+        latest_block = web3.eth.getBlock("latest", True)
+        latest_block_num = latest_block.number
+        latest_block_hash = latest_block.hash.hex()
+
+    # fetch latest db state if:
+    # we explicitly don't want to use redis cache or
+    # value from redis cache is None
+    if not use_redis_cache or latest_indexed_block_num is None or latest_indexed_block_hash is None:
         db_block_state = _get_db_block_state()
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
@@ -200,3 +193,47 @@ def get_health(args, use_redis_cache=True):
         return health_results, True
 
     return health_results, False
+
+def get_latest_block_or_set(redis=None, web3=None):
+    """
+    Retrieves the latest block number and blockhash from redis if the keys exist.
+    Otherwise it sets these values and returns them
+
+    :param redis: redis connection
+    :param web3: web3 connection
+
+    :rtype (int, string)
+    """
+
+    latest_block_num = None
+    latest_block_hash = None
+
+    # also check for the eth attribute in web3 which means it's initialized and connected to a provider
+    if redis is None or web3 is None:
+        raise Exception(f"Invalid arguments for get_latest_block_or_set")
+    
+    if not hasattr(web3, 'eth'):
+        raise Exception(f"Invalid web3 argument for get_latest_block_or_set, web3 is not initialized")
+
+    stored_latest_block_num = redis.get(latest_block_redis_key)
+    if stored_latest_block_num is not None:
+        latest_block_num = int(stored_latest_block_num)
+
+    stored_latest_blockhash = redis.get(latest_block_hash_redis_key)
+    if stored_latest_blockhash is not None:
+        latest_block_hash = stored_latest_blockhash.decode("utf-8")
+    
+    if latest_block_num is None or latest_block_hash is None:
+        latest_block = web3.eth.getBlock("latest", True)
+        latest_block_num = latest_block.number
+        latest_block_hash = latest_block.hash.hex()
+        
+        # if we had attempted to use redis cache and the values weren't there, set the values now
+        try:
+            # ex sets expiration time and nx only sets if key doesn't exist in redis
+            redis.set(latest_block_redis_key, latest_block_num, ex=default_indexing_interval_seconds, nx=True)
+            redis.set(latest_block_hash_redis_key, latest_block_hash, ex=default_indexing_interval_seconds, nx=True)
+        except Exception as e:
+            logger.error(f"Could not set values in redis for get_latest_block_or_set: {e}")
+
+    return latest_block_num, latest_block_hash
