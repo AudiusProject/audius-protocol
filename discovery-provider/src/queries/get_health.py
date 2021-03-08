@@ -18,7 +18,7 @@ disc_prov_version = helpers.get_discovery_provider_version()
 default_healthy_block_diff = int(
     shared_config["discprov"]["healthy_block_diff"])
 default_indexing_interval_seconds = int(
-    shared_config["discprov"]["block_processing_interval"])
+    shared_config["discprov"]["block_processing_interval_sec"])
 
 # Returns DB block state & diff
 def _get_db_block_state():
