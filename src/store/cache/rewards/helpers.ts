@@ -29,7 +29,18 @@ export const getOperatorTotalLocked = (user: Operator) => {
   return totalLocked
 }
 
-// Reference processClaim in the claims manager contract
+/**
+ * Calculates the net minted amount for a service operator prior to
+ * distribution among the service provider and their delegators
+ * Reference processClaim in the claims manager contract
+ * NOTE: minted amount is calculated using values at the init claim block
+ * @param {AudiusClient} aud Instance of the audius client
+ * @param {string} wallet The service operator's wallet address
+ * @param {BN} totalLocked The total token currently locked (decrease stake and delegation)
+ * @param {number} blockNumber The blocknumber of the claim to process
+ * @param {BN} fundingAmount The amount of total funds allocated per claim round
+ * @returns {BN} The net minted amount
+ */
 export const getMintedAmountAtBlock = async ({
   aud,
   wallet,
@@ -109,6 +120,15 @@ export const getDelegateRewards = ({
   }
 }
 
+/**
+ * Calculates the total rewards for a user from a claim given a blocknumber
+ * @param {string} wallet The user's wallet address
+ * @param {Object} users An object of all user wallets to their User details
+ * @param {BN} fundsPerRound The amount of rewards given out in a round
+ * @param {number} blockNumber The block number to process the claim event for
+ * @param {AudiusClient} aud Instance of the audius client for contract reads
+ * @returns {BN} expected rewards for the user at the claim block
+ */
 export const getRewardForClaimBlock = async ({
   wallet,
   users,
@@ -124,6 +144,8 @@ export const getRewardForClaimBlock = async ({
 }) => {
   const user = users.find(u => u.wallet === wallet)
   let totalRewards = new BN('0')
+
+  // If the user is a service provider, retrieve their expected rewards for staking
   if ('serviceProvider' in user!) {
     const lockedPendingDecrease =
       (user as Operator).pendingDecreaseStakeRequest?.amount ?? new BN('0')
@@ -145,6 +167,7 @@ export const getRewardForClaimBlock = async ({
     totalRewards = totalRewards.add(operatorRewards)
   }
 
+  // For each service operator the user delegates to, calculate the expected rewards for delegating
   for (let delegate of (user as User).delegates) {
     const operator = users.find(u => u.wallet === delegate.wallet) as Operator
     const deployerCut = new BN(operator.serviceProvider.deployerCut.toString())
