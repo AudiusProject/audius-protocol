@@ -71,6 +71,7 @@ module.exports = function (app) {
         json: true
       }
       let userProfile = await doRequest(userRequest)
+      userProfile.verified = true
       try {
         let uuid = uuidv4()
         models.TwitterUser.create({
@@ -102,6 +103,7 @@ module.exports = function (app) {
       }
       let userProfile = await doRequest(userRequest)
 
+      userProfile[0].verified = true
       return successResponse({ profile: userProfile })
     } else return errorResponseBadRequest('Please enter a valid handle as a query param')
   }))

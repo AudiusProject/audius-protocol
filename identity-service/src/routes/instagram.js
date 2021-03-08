@@ -30,7 +30,17 @@ module.exports = function (app) {
           const res = await doRequest(getInstagramURL(username))
           const json = JSON.parse(res)
           if (json.graphql.user.full_name) {
-            await redisClient.set(getInstagramProfileRedisKey(username), res, 'EX', 60 * 60 * 24)
+            const newRes = JSON.stringify({
+              ...json,
+              graphql: {
+                ...json.graphql,
+                user: {
+                  ...json.graphql.user,
+                  is_verified: true
+                }
+              }
+            })
+            await redisClient.set(getInstagramProfileRedisKey(username), newRes, 'EX', 60 * 60 * 24)
           } else {
             throw new Error(`Failed to fetch instagram profile for ${username}`)
           }
