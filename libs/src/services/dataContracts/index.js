@@ -136,6 +136,8 @@ class AudiusContracts {
   /**
    * Retrieves contract address from Registry by key, caching previously retrieved data.
    * Refreshes cache if cached value is empty or zero address.
+   * Value is empty during first time call, and zero if call is made before contract is deployed,
+   *    since Registry sets default value of all contract keys to zero address if not registered.
    * @param {string} contractName registry key of contract
    */
   async getRegistryAddressForContract (contractName) {
