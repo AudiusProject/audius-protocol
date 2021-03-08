@@ -11,7 +11,7 @@ from flask import jsonify
 # pylint: disable=R0401
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
-from src.utils.redis_constants import latest_block_redis_key, most_recent_indexed_block_redis_key
+from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.queries.get_health import get_latest_block_or_set
 
 redis_url = shared_config["redis"]["url"]
