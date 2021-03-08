@@ -6,7 +6,7 @@ const { shuffle } = require('lodash')
  * web3 consumes a provider object on initialization
  * ref: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3/types/index.d.ts#L31
  * which references: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3-core/types/index.d.ts#L436
- * MultiProivder implements HttpProvider which can be consumed by web3
+ * MultiProvider implements HttpProvider which can be consumed by web3
  * ref for HttpProvider: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3-providers-http/types/index.d.ts#L46-L66
  */
 class MultiProvider extends Web3.providers.HttpProvider {
@@ -22,8 +22,8 @@ class MultiProvider extends Web3.providers.HttpProvider {
     }
 
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
-    super(providers[0])
     providers = providers.map(provider => (new Web3(provider)).eth.currentProvider)
+    super(providers[0].host)
 
     if (!providers.every(provider => provider.sendAsync || provider.send)) {
       throw new Error('Some providers do not have a send method to use.')
