@@ -27,10 +27,17 @@
   bottom: 0;
 }
 
-/* Fixes positioning on ios Safari */
+/*
+ * Fixes positioning on ios Safari due to the navigation
+ * bar that appears while scrolling up / down.
+ * When testing this, make sure to test Safari embedded inside Twitter.
+ */
 @supports (-webkit-overflow-scrolling: touch) {
   .drawer:not(.native).isOpen {
     top: calc(100vh - 100px);
+  }
+  .drawer:not(.native):not(.isOpen) {
+    top: calc(100vh + 100px);
   }
 }
 
