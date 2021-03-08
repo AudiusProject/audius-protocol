@@ -23,6 +23,7 @@ class MultiProvider extends Web3.providers.HttpProvider {
       providers = [providers]
     }
 
+    // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
     providers = providers.map(provider => (new Web3(provider)).eth.currentProvider)
 
     if (!providers.every(provider => provider.sendAsync || provider.send)) {
