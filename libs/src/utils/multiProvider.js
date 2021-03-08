@@ -15,8 +15,6 @@ class MultiProvider extends Web3.providers.HttpProvider {
    * @param {Array<string | Provider> | string} - The providers to use.
    */
   constructor (providers) {
-    super()
-
     if (typeof providers === 'string') {
       providers = providers.split(',')
     } else if (!Array.isArray(providers)) {
@@ -24,6 +22,7 @@ class MultiProvider extends Web3.providers.HttpProvider {
     }
 
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
+    super(providers[0])
     providers = providers.map(provider => (new Web3(provider)).eth.currentProvider)
 
     if (!providers.every(provider => provider.sendAsync || provider.send)) {
