@@ -211,7 +211,7 @@ def get_latest_block_or_set(redis=None, web3=None):
     # also check for the eth attribute in web3 which means it's initialized and connected to a provider
     if redis is None or web3 is None:
         raise Exception(f"Invalid arguments for get_latest_block_or_set")
-    
+
     if not hasattr(web3, 'eth'):
         raise Exception(f"Invalid web3 argument for get_latest_block_or_set, web3 is not initialized")
 
@@ -222,12 +222,12 @@ def get_latest_block_or_set(redis=None, web3=None):
     stored_latest_blockhash = redis.get(latest_block_hash_redis_key)
     if stored_latest_blockhash is not None:
         latest_block_hash = stored_latest_blockhash.decode("utf-8")
-    
+
     if latest_block_num is None or latest_block_hash is None:
         latest_block = web3.eth.getBlock("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
-        
+
         # if we had attempted to use redis cache and the values weren't there, set the values now
         try:
             # ex sets expiration time and nx only sets if key doesn't exist in redis
