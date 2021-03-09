@@ -38,6 +38,7 @@ import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { Genre, ELECTRONIC_SUBGENRES } from 'utils/genres'
 import { getIGUserUrl } from 'components/general/InstagramAuth'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { checkHandle } from './verifiedChecker'
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
@@ -145,8 +146,6 @@ function* validateHandle(action) {
     }
     yield delay(300) // Wait 300 ms to debounce user input
     const signOn = yield select(getSignOn)
-    const twitterScreenName = signOn.twitterScreenName
-    const instagramScreenName = signOn.instagramScreenName
     const verified = signOn.verified
 
     if (IS_PRODUCTION_BUILD || IS_PRODUCTION) {
@@ -155,39 +154,17 @@ function* validateHandle(action) {
         call(AudiusBackend.twitterHandle, action.handle),
         call(getInstagramUser, action.handle)
       ])
-      const {
-        user: { profile }
-      } = twitterUserQuery
-      if (
-        !verified ||
-        twitterScreenName.toLowerCase() !== action.handle.toLowerCase()
-      ) {
-        if (
-          Array.isArray(profile) &&
-          profile[0].verified &&
-          action.handle.toLowerCase() === profile[0].screen_name.toLowerCase()
-        ) {
-          yield put(
-            signOnActions.validateHandleSucceeded(false, 'twitterReserved')
-          )
-          return
-        }
-      }
-      if (
-        !verified ||
-        instagramScreenName.toLowerCase() !== action.handle.toLowerCase()
-      ) {
-        if (
-          instagramUser &&
-          action.handle.toLowerCase() ===
-            instagramUser.username.toLowerCase() &&
-          instagramUser.is_verified
-        ) {
-          yield put(
-            signOnActions.validateHandleSucceeded(false, 'instagramReserved')
-          )
-          return
-        }
+      const handleCheckStatus = checkHandle(
+        verified,
+        twitterUserQuery?.user?.profile?.[0] ?? null,
+        instagramUser || null
+      )
+
+      if (handleCheckStatus !== 'notReserved') {
+        yield put(
+          signOnActions.validateHandleSucceeded(false, handleCheckStatus)
+        )
+        return
       }
 
       yield put(signOnActions.validateHandleSucceeded(!inUse))
