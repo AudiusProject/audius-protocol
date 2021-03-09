@@ -594,22 +594,8 @@ module.exports = function (app) {
           return sendResponse(req, res, errorResponseServerError('Missing or malformatted track fetched from discovery node.'))
         }
 
-        // read the metadata multihash from from the file system
-        let metadataJSON
-
-        const fileBuffer = await readFile(file.storagePath)
-        metadataJSON = JSON.parse(fileBuffer)
-        if (
-          !metadataJSON ||
-          !metadataJSON.track_segments ||
-          !Array.isArray(metadataJSON.track_segments) ||
-          !metadataJSON.track_segments.length
-        ) {
-          return sendResponse(req, res, errorResponseServerError(`Malformatted metadataJSON stored for metadata multihash ${trackRecord.metadata_multihash}.`))
-        }
-
         // make sure all track segments have the same sourceFile
-        const segments = metadataJSON.track_segments.map(segment => segment.multihash)
+        const segments = trackRecord.track_segments.map(segment => segment.multihash)
 
         let fileSegmentRecords = await models.File.findAll({
           attributes: ['sourceFile'],
@@ -621,19 +607,26 @@ module.exports = function (app) {
         })
 
         // check that the number of files in the Files table for these segments for this user matches the number of segments from the metadata object
-        if (fileSegmentRecords.length !== metadataJSON.track_segments.length) {
-          return sendResponse(req, res, errorResponseServerError(`Track content mismatch for blockchainId ${blockchainId} - number of segments don't match between local and discovery`))
+        if (fileSegmentRecords.length !== trackRecord.track_segments.length) {
+          req.logger.warning(`Track stream content mismatch for blockchainId ${blockchainId} - number of segments don't match between local and discovery`)
         }
 
         // check that there's a single sourceFile that all File records share by getting an array of uniques
         const uniqSourceFiles = fileSegmentRecords.map(record => record.sourceFile).filter((v, i, a) => a.indexOf(v) === i)
 
         if (uniqSourceFiles.length !== 1) {
-          return sendResponse(req, res, errorResponseServerError(`Track content mismatch for blockchainId ${blockchainId} - there's not one sourceFile that matches all segments`))
+          req.logger.warning(`Track stream content mismatch for blockchainId ${blockchainId} - there's not one sourceFile that matches all segments`)
         }
 
         // search for the copy320 record based on the sourceFile
-        fileRecord = await models.File.findOne({ where: { type: 'copy320', sourceFile: uniqSourceFiles[0] }, raw: true })
+        fileRecord = await models.File.findOne({
+          attributes: ['multihash'],
+          where: {
+            type: 'copy320',
+            sourceFile: uniqSourceFiles[0]
+          },
+          raw: true
+        })
 
         // cache the fileRecord in redis for an hour so we don't have to keep making requests to discovery
         if (fileRecord) {
