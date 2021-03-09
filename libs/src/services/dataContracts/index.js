@@ -105,7 +105,7 @@ class AudiusContracts {
   // Special case initialization flow for UserReplicaSetManagerClient backwards compatibility
   // Until the contract is deployed and added to the data contract registry, replica set
   // operations will flow through the existing UserFactory
-  async initUserReplicaSetManagerClient () {
+  async initUserReplicaSetManagerClient (selectNewEndpointOnRetry = false) {
     try {
       if (
         this.UserReplicaSetManagerClient &&
@@ -120,24 +120,32 @@ class AudiusContracts {
         UserReplicaSetManagerRegistryKey,
         this.getRegistryAddressForContract
       )
-      await this.UserReplicaSetManagerClient.init()
+      await this.UserReplicaSetManagerClient.init(selectNewEndpointOnRetry)
       if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
         throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
       }
     } catch (e) {
       // Nullify failed attempt to initialize
-      console.log(`Failed to initialize UserReplicaSetManagerClient`)
+      console.log(`Failed to initialize UserReplicaSetManagerClient with error ${e.message}`)
       this.UserReplicaSetManagerClient = null
     }
   }
 
   /* ------- CONTRACT META-FUNCTIONS ------- */
 
+  /**
+   * Retrieves contract address from Registry by key, caching previously retrieved data.
+   * Refreshes cache if cached value is empty or zero address.
+   * Value is empty during first time call, and zero if call is made before contract is deployed,
+   *    since Registry sets default value of all contract keys to zero address if not registered.
+   * @param {string} contractName registry key of contract
+   */
   async getRegistryAddressForContract (contractName) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
     this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
     this.contractAddresses = this.contractAddresses || { 'registry': this.registryAddress }
-    if (!this.contractAddresses[contractName]) {
+
+    if (!this.contractAddresses[contractName] || Utils.isZeroAddress(this.contractAddresses[contractName])) {
       const address = await this.RegistryClient.getContract(contractName)
       this.contracts[address] = contractName
       this.contractAddresses[contractName] = address

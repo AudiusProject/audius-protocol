@@ -36,7 +36,7 @@ class ContractClient {
   }
 
   /** Inits the contract if necessary */
-  async init () {
+  async init (selectNewEndpointOnRetry = true) {
     // No-op if we are already initted
     if (this._isInitialized) return
 
@@ -78,13 +78,15 @@ class ContractClient {
         return
       }
 
-      await this.retryInit()
+      await this.retryInit(selectNewEndpointOnRetry)
     }
   }
 
-  async retryInit () {
+  async retryInit (selectNewEndpoint = true) {
     try {
-      await this.selectNewEndpoint()
+      if (selectNewEndpoint) {
+        await this.selectNewEndpoint()
+      }
       await this.init()
     } catch (e) {
       console.error(e.message)
@@ -96,7 +98,7 @@ class ContractClient {
     this.providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
 
     if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
-      throw new Error(`No available, healthy providers to init contract ${JSON.stringify(this.contractABI)}`)
+      throw new Error(`No available, healthy providers to init contract ${this.contractRegistryKey}`)
     }
 
     // Reset _isInitializing to false to retry init logic and avoid the _isInitialzing check
