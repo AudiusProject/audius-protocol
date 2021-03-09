@@ -581,16 +581,15 @@ module.exports = function (app) {
       try {
         let trackRecord = await libs.Track.getTracks(1, 0, [blockchainId])
         if (!trackRecord || trackRecord.length === 0 || !trackRecord[0].hasOwnProperty('blocknumber')) {
-          // TODO - return a server err response
           return sendResponse(req, res, errorResponseServerError('Missing or malformatted track fetched from discovery node.'))
         }
 
         trackRecord = trackRecord[0]
 
-        // query the files table for the metadata multihash from discovery
-        // no CNodeUserUUID, but because this track is associated with a user and contains that user_id
-        // inside it, it's unique to this user
-        const file = await models.File.findOne({ where: { multihash: trackRecord.metadata_multihash } })
+        // query the files table for a metadata multihash from discovery for a given track
+        // no need to add CNodeUserUUID to the filter because the track is associated with a user and that contains the
+        // user_id inside it which is unique to the user
+        const file = await models.File.findOne({ where: { multihash: trackRecord.metadata_multihash, type: 'metadata' } })
         if (!file) {
           return sendResponse(req, res, errorResponseServerError('Missing or malformatted track fetched from discovery node.'))
         }
