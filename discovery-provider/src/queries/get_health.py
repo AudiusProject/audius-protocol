@@ -117,7 +117,7 @@ def get_health(args, use_redis_cache=True):
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
-        latest_block_num, latest_block_hash = get_latest_block_or_set(redis, web3)
+        latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(redis, web3)
 
         # get latest db state from redis cache
         latest_indexed_block_num = redis.get(
@@ -194,10 +194,10 @@ def get_health(args, use_redis_cache=True):
 
     return health_results, False
 
-def get_latest_block_or_set(redis=None, web3=None):
+def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     """
     Retrieves the latest block number and blockhash from redis if the keys exist.
-    Otherwise it sets these values and returns them
+    Otherwise it sets these values in redis by querying web3 and returns them
 
     :param redis: redis connection
     :param web3: web3 connection
@@ -208,12 +208,12 @@ def get_latest_block_or_set(redis=None, web3=None):
     latest_block_num = None
     latest_block_hash = None
 
-    # also check for the eth attribute in web3 which means it's initialized and connected to a provider
     if redis is None or web3 is None:
-        raise Exception(f"Invalid arguments for get_latest_block_or_set")
+        raise Exception(f"Invalid arguments for get_latest_chain_block_set_if_nx")
 
+    # also check for 'eth' attribute in web3 which means it's initialized and connected to a provider
     if not hasattr(web3, 'eth'):
-        raise Exception(f"Invalid web3 argument for get_latest_block_or_set, web3 is not initialized")
+        raise Exception(f"Invalid web3 argument for get_latest_chain_block_set_if_nx, web3 is not initialized")
 
     stored_latest_block_num = redis.get(latest_block_redis_key)
     if stored_latest_block_num is not None:
@@ -234,6 +234,6 @@ def get_latest_block_or_set(redis=None, web3=None):
             redis.set(latest_block_redis_key, latest_block_num, ex=default_indexing_interval_seconds, nx=True)
             redis.set(latest_block_hash_redis_key, latest_block_hash, ex=default_indexing_interval_seconds, nx=True)
         except Exception as e:
-            logger.error(f"Could not set values in redis for get_latest_block_or_set: {e}")
+            logger.error(f"Could not set values in redis for get_latest_chain_block_set_if_nx: {e}")
 
     return latest_block_num, latest_block_hash
