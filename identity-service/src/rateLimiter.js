@@ -103,7 +103,7 @@ const getRateLimiter = ({
   prefix,
   max,
   expiry = DEFAULT_EXPIRY,
-  keyGenerator = getIP,
+  keyGenerator = (req) => getIP(req).ip,
   skip
 }) => {
   return rateLimit({

@@ -105,7 +105,11 @@ class AudiusContracts {
   // Special case initialization flow for UserReplicaSetManagerClient backwards compatibility
   // Until the contract is deployed and added to the data contract registry, replica set
   // operations will flow through the existing UserFactory
+<<<<<<< HEAD
   async initUserReplicaSetManagerClient (selectNewEndpointOnRetry = true) {
+=======
+  async initUserReplicaSetManagerClient (selectNewEndpointOnRetry = false) {
+>>>>>>> master
     try {
       if (
         this.UserReplicaSetManagerClient &&
@@ -133,6 +137,13 @@ class AudiusContracts {
 
   /* ------- CONTRACT META-FUNCTIONS ------- */
 
+  /**
+   * Retrieves contract address from Registry by key, caching previously retrieved data.
+   * Refreshes cache if cached value is empty or zero address.
+   * Value is empty during first time call, and zero if call is made before contract is deployed,
+   *    since Registry sets default value of all contract keys to zero address if not registered.
+   * @param {string} contractName registry key of contract
+   */
   async getRegistryAddressForContract (contractName) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
     this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
