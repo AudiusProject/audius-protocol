@@ -44,7 +44,7 @@
     "fs-extra": "^9.0.1",
     "hashids": "^2.2.1",
     "ioredis": "^4.9.3",
-    "ipfs-http-client": "^33.1.1",
+    "ipfs-http-client": "33.1.1",
     "ipfs-http-client-latest": "npm:ipfs-http-client@^42.0.0",
     "jimp": "^0.6.1",
     "lodash": "^4.17.15",
