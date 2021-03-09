@@ -132,7 +132,7 @@ const getRateLimiterMiddleware = () => {
           const { expiry, max, options = {} } = limit
           const keyGenerator = getReqKeyGenerator(options)
           return getRateLimiter({
-            prefix: `${route}:${method}:${expiry}:${max}`,
+            prefix: `${route}:${method}:${expiry}:${max}:`,
             expiry,
             max,
             keyGenerator
