@@ -369,7 +369,7 @@ async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContex
     }
 
     try {
-      let addResp = await ipfsLatest.add(ipfsAddArray, { pin: false })
+      let addResp = await ipfs.add(ipfsAddArray, { pin: false })
       logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
     } catch (e) {
       logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
