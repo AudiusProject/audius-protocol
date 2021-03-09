@@ -62,7 +62,9 @@ class CachedRouteMetrics(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = metrics_route_parser.parse_args()
+        logger.info(f"getting cached route metrics at {args.get('start_time')} before parsing")
         start_time = parse_unix_epoch_param_non_utc(args.get("start_time"))
+        logger.info(f"getting cached route metrics at {start_time} UTC")
         metrics = get_redis_route_metrics(start_time)
         response = success_response(metrics)
         return response
@@ -83,7 +85,9 @@ class CachedAppMetrics(Resource):
     @cache(ttl_sec=5)
     def get(self):
         args = metrics_route_parser.parse_args()
+        logger.info(f"getting cached app metrics at {args.get('start_time')} before parsing")
         start_time = parse_unix_epoch_param_non_utc(args.get("start_time"))
+        logger.info(f"getting cached app metrics at {start_time.now()} UTC")
         metrics = get_redis_app_metrics(start_time)
         response = success_response(metrics)
         return response

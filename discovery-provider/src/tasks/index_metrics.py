@@ -231,7 +231,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
         start_time = int(start_time_obj.timestamp())
         new_route_metrics, new_app_metrics = get_metrics(node, start_time)
 
-        logger.info(f"did attempt to receive route and app metrics from {node}")
+        logger.info(f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})")
 
         end_time = datetime.utcnow().strftime(datetime_format_secondary)
         merge_route_metrics(new_route_metrics or {}, end_time, db)
