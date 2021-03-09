@@ -89,12 +89,17 @@ def persist_route_metrics(db, day, month, count, unique_daily_count, unique_mont
             .first()
         )
         if day_unique_record:
+            logger.info(f"unique count record for day {day} before adding new unique count \
+                {unique_daily_count}: {day_unique_record.count}")
             day_unique_record.count += unique_daily_count
+            logger.info(f"unique count record for day {day} after adding new unique count \
+                {unique_daily_count}: {day_unique_record.count}")
         else:
             day_unique_record = AggregateDailyUniqueUsersMetrics(
                 timestamp=day,
                 count=unique_daily_count
             )
+            logger.info(f"new record for daily unique count with day {day} and unique count {unique_daily_count}")
         session.add(day_unique_record)
 
         day_total_record = (
@@ -103,12 +108,17 @@ def persist_route_metrics(db, day, month, count, unique_daily_count, unique_mont
             .first()
         )
         if day_total_record:
+            logger.info(f"total count record for day {day} before adding new total count \
+                {count}: {day_total_record.count}")
             day_total_record.count += count
+            logger.info(f"total count record for day {day} after adding new total count \
+                {count}: {day_total_record.count}")
         else:
             day_total_record = AggregateDailyTotalUsersMetrics(
                 timestamp=day,
                 count=count
             )
+            logger.info(f"new record for daily total count with day {day} and total count {count}")
         session.add(day_total_record)
 
         month_unique_record = (
@@ -117,12 +127,18 @@ def persist_route_metrics(db, day, month, count, unique_daily_count, unique_mont
             .first()
         )
         if month_unique_record:
+            logger.info(f"unique count record for month {month} before adding new unique count \
+                {unique_monthly_count}: {month_unique_record.count}")
             month_unique_record.count += unique_monthly_count
+            logger.info(f"unique count record for month {month} after adding new unique count \
+                {unique_monthly_count}: {month_unique_record.count}")
         else:
             month_unique_record = AggregateMonthlyUniqueUsersMetrics(
                 timestamp=month,
                 count=unique_monthly_count
             )
+            logger.info(f"new record for monthly unique count with month {month} and unique count \
+                {unique_monthly_count}")
         session.add(month_unique_record)
 
         month_total_record = (
@@ -131,12 +147,17 @@ def persist_route_metrics(db, day, month, count, unique_daily_count, unique_mont
             .first()
         )
         if month_total_record:
+            logger.info(f"total count record for month {month} before adding new total count \
+                {count}: {month_total_record.count}")
             month_total_record.count += count
+            logger.info(f"total count record for month {month} after adding new total count \
+                {count}: {month_total_record.count}")
         else:
             month_total_record = AggregateMonthlyTotalUsersMetrics(
                 timestamp=month,
                 count=count
             )
+            logger.info(f"new record for monthly total count with month {month} and total count {count}")
         session.add(month_total_record)
 
 def persist_app_metrics(db, day, month, app_count):
@@ -149,13 +170,19 @@ def persist_app_metrics(db, day, month, app_count):
                 .first()
             )
             if day_record:
+                logger.info(f"daily app record for day {day} and application {application_name} \
+                    before adding new count {count}: {day_record.count}")
                 day_record.count += count
+                logger.info(f"daily app record for day {day} and application {application_name} \
+                    after adding new count {count}: {day_record.count}")
             else:
                 day_record = AggregateDailyAppNameMetrics(
                     timestamp=day,
                     application_name=application_name,
                     count=count
                 )
+                logger.info(f"new record for daily app record with day {day}, \
+                    application {application_name}, and count {count}")
             session.add(day_record)
 
             month_record = (
@@ -165,13 +192,19 @@ def persist_app_metrics(db, day, month, app_count):
                 .first()
             )
             if month_record:
+                logger.info(f"monthly app record for month {month} and application {application_name} \
+                    before adding new count {count}: {month_record.count}")
                 month_record.count += count
+                logger.info(f"monthly app record for month {month} and application {application_name} \
+                    after adding new count {count}: {month_record.count}")
             else:
                 month_record = AggregateMonthlyAppNameMetrics(
                     timestamp=month,
                     application_name=application_name,
                     count=count
                 )
+                logger.info(f"new record for monthly app record with month {month}, \
+                    application {application_name}, and count {count}")
             session.add(month_record)
 
 def merge_metrics(metrics, end_time, metric_type, db):
@@ -244,8 +277,8 @@ def merge_metrics(metrics, end_time, metric_type, db):
 
     # persist aggregated metrics from other nodes
     day_format = datetime_format_secondary.split(':')[0]
-    day_obj = datetime.strptime(day, day_format)
-    month_obj = datetime.strptime(month, day_format)
+    day_obj = datetime.strptime(day, day_format).date()
+    month_obj = datetime.strptime(month, day_format).date()
     if metric_type == 'route':
         persist_route_metrics(db, day_obj, month_obj, sum(metrics.values()), unique_daily_count, unique_monthly_count)
     else:
