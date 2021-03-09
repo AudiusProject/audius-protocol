@@ -15,21 +15,23 @@ class MultiProvider extends Web3.providers.HttpProvider {
    * @param {Array<string | Provider> | string} - The providers to use.
    */
   constructor (providers) {
-    if (typeof providers === 'string') {
-      providers = providers.split(',')
-    } else if (!Array.isArray(providers)) {
-      providers = [providers]
+    let web3Providers = providers
+    if (typeof web3Providers === 'string') {
+      web3Providers = web3Providers.split(',')
+    } else if (!Array.isArray(web3Providers)) {
+      web3Providers = [web3Providers]
     }
 
     // The below line ensures that we support different types of providers i.e. comma separated strings, an array of strings or an array of providers.
-    providers = providers.map(provider => (new Web3(provider)).eth.currentProvider)
-    super(providers[0].host)
+    web3Providers = web3Providers.map(provider => (new Web3(provider)).eth.currentProvider)
+    super(web3Providers[0].host)
 
-    if (!providers.every(provider => provider.sendAsync || provider.send)) {
+    if (!web3Providers.every(provider => provider.sendAsync || provider.send)) {
       throw new Error('Some providers do not have a send method to use.')
     }
 
-    this.providers = providers
+    this.providers = web3Providers
+
     // We replace HttpProvider.send with a custom function that supports fallback providers.
     this.send = callbackify(this._send.bind(this)) // web3 only supports callback functions and not async
   }
