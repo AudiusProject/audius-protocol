@@ -42,7 +42,7 @@
 .statTitle {
   font-size: 12px;
   font-weight: bold;
-  color: var(--secondary-dark-1);
+  color: var(--stat-tile-text);
   letter-spacing: 1px;
   user-select: none;
   text-transform: uppercase;
