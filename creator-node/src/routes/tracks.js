@@ -560,17 +560,19 @@ module.exports = function (app) {
       order: [['clock', 'DESC']]
     })
 
-    try {
-      // see if there's a fileRecord in redis so we can short circuit all this logic
-      let redisFileRecord = await redisClient.get(`streamFallback:::${blockchainId}`)
-      if (redisFileRecord) {
-        redisFileRecord = JSON.parse(redisFileRecord)
-        if (redisFileRecord && redisFileRecord.multihash) {
-          fileRecord = redisFileRecord
+    if (!fileRecord) {
+      try {
+        // see if there's a fileRecord in redis so we can short circuit all this logic
+        let redisFileRecord = await redisClient.get(`streamFallback:::${blockchainId}`)
+        if (redisFileRecord) {
+          redisFileRecord = JSON.parse(redisFileRecord)
+          if (redisFileRecord && redisFileRecord.multihash) {
+            fileRecord = redisFileRecord
+          }
         }
+      } catch (e) {
+        req.logger.error(`Error looking for stream fallback in redis`, e)
       }
-    } catch (e) {
-      req.logger.error(`Error looking for stream fallback in redis`, e)
     }
 
     // if track didn't finish the upload process and was never associated, there may not be a trackBlockchainId for the File records,
