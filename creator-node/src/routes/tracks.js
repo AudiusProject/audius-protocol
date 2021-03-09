@@ -560,6 +560,19 @@ module.exports = function (app) {
       order: [['clock', 'DESC']]
     })
 
+    try {
+      // see if there's a fileRecord in redis so we can short circuit all this logic
+      let redisFileRecord = await redisClient.get(`streamFallback:::${blockchainId}`)
+      if (redisFileRecord) {
+        redisFileRecord = JSON.parse(redisFileRecord)
+        if (redisFileRecord && redisFileRecord.multihash) {
+          fileRecord = redisFileRecord
+        }
+      }
+    } catch (e) {
+      logger.info(`Error looking for stream fallback in redis`, e)
+    }
+
     // if track didn't finish the upload process and was never associated, there may not be a trackBlockchainId for the File records,
     // try to fall back to discovery to fetch the metadata multihash and see if you can deduce the copy320 file
     if (!fileRecord) {
@@ -619,7 +632,12 @@ module.exports = function (app) {
         }
 
         // search for the copy320 record based on the sourceFile
-        fileRecord = await models.File.findOne({ where: { type: 'copy320', sourceFile: uniqSourceFiles[0] } })
+        fileRecord = await models.File.findOne({ where: { type: 'copy320', sourceFile: uniqSourceFiles[0] }, raw: true })
+
+        // cache the fileRecord in redis for an hour so we don't have to keep making requests to discovery
+        if (fileRecord) {
+          redisClient.set(`streamFallback:::${blockchainId}`, JSON.stringify(fileRecord), 'EX', 60 * 60)
+        }
       } catch (e) {
         logger.error(`Error falling back to reconstructing data from discovery to stream`, e)
       }
