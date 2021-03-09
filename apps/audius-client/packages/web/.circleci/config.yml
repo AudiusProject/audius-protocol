@@ -598,6 +598,25 @@ workflows:
             branches:
               only: /(^master)|(^hotfix.*)$/
 
+      # Allow hotfix to go to staging on command
+      - hold-staging:
+          type: approval
+          requires:
+            - init
+            - build-staging
+          filters:
+            branches:
+              only: /(^hotfix.*)$/
+
+      - deploy-staging-cloudflare:
+          context: Audius Client
+          requires:
+            - init
+            - hold-staging
+          filters:
+            branches:
+              only: /(^hotfix.*)$/
+
       # Staging Native Mobile
       - build-mobile-staging:
           requires:
