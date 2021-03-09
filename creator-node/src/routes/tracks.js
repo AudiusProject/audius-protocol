@@ -570,7 +570,7 @@ module.exports = function (app) {
         }
       }
     } catch (e) {
-      logger.info(`Error looking for stream fallback in redis`, e)
+      req.logger.error(`Error looking for stream fallback in redis`, e)
     }
 
     // if track didn't finish the upload process and was never associated, there may not be a trackBlockchainId for the File records,
@@ -639,7 +639,7 @@ module.exports = function (app) {
           redisClient.set(`streamFallback:::${blockchainId}`, JSON.stringify(fileRecord), 'EX', 60 * 60)
         }
       } catch (e) {
-        logger.error(`Error falling back to reconstructing data from discovery to stream`, e)
+        req.logger.error(`Error falling back to reconstructing data from discovery to stream`, e)
       }
     }
 
