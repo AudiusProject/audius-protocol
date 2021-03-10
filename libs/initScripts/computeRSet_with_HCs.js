@@ -239,7 +239,6 @@ const run = async () => {
     .forEach(sp => {
       spIdToEndpointAndCount[sp.spID] = { endpoint: sp.endpoint, selected: 0 }
     })
-    // .map(sp => { return { id: sp.spID, endpoint: sp.endpoint } })
 
   console.log('spIds', spIdToEndpointAndCount)
 
@@ -287,7 +286,6 @@ const run = async () => {
   writeDataToFile(spIdToEndpointAndCount, userIdToRSet)
 
   // Trigger sync for newly selected secondaries
-  // TODO: consider sync size / batching the sync
   console.log(`\nSyncing across new secondaries....`)
   let userIdToRSetArr = Object.entries(userIdToRSet)
   for (i = 0; i < userIds.length; i++) {
