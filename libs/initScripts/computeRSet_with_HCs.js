@@ -32,17 +32,18 @@ const ETH_PROVIDER_ENDPOINT = 'http://localhost:8546'
 const DISCOVERY_NODE_ENDPOINT = 'http://localhost:5000'
 const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'http://localhost:8545'
 const USER_METADATA_ENDPOINT = 'http://cn-um_creator-node_1:4099'
+const IDENTITY_SERVICE_ENDPOINT = 'http://localhost:7000'
 const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
 const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
 const URSM_WALLET = dataContractsConfig.allWallets[9] // 9th index as according to URSM logic in local.js
-
+const URSM_WALLET_PRIVATE_KEY = ''
 const NUM_USERS_PER_BATCH_REQUEST = 500
-const SYNC_WAIT_TIME = 60000 /* 1 min */
+const SYNC_WAIT_TIME = 120000 /* 1 min */
 
 const configureAndInitLibs = async () => {
-  const dataWeb3 = new Web3(new Web3.providers.HttpProvider(DATA_CONTRACTS_PROVIDER_ENDPOINT))
+  // const dataWeb3 = new Web3(new Web3.providers.HttpProvider(DATA_CONTRACTS_PROVIDER_ENDPOINT))
 
   const audiusLibsConfig = {
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -51,15 +52,22 @@ const configureAndInitLibs = async () => {
       ETH_PROVIDER_ENDPOINT,
       ETH_OWNER_WALLET
     ),
-    web3Config: AudiusLibs.configExternalWeb3(
+    // web3Config: AudiusLibs.configExternalWeb3(
+    //   DATA_CONTRACTS_REGISTRY_ADDRESS,
+    //   dataWeb3,
+    //   null /* networkId */,
+    //   URSM_WALLET
+    // ),
+    web3Config: AudiusLibs.configInternalWeb3(
       DATA_CONTRACTS_REGISTRY_ADDRESS,
-      dataWeb3,
-      null /* networkId */,
-      URSM_WALLET
+      DATA_CONTRACTS_PROVIDER_ENDPOINT,
+      URSM_WALLET_PRIVATE_KEY
     ),
     creatorNodeConfig: AudiusLibs.configCreatorNode(USER_METADATA_ENDPOINT),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set([DISCOVERY_NODE_ENDPOINT])),
-    isServer: true
+    identityServiceConfig: AudiusLibs.configIdentityService(IDENTITY_SERVICE_ENDPOINT),
+    isServer: true,
+    isDebug: true
   }
 
   let audiusLibs = new AudiusLibs(audiusLibsConfig)
@@ -144,38 +152,23 @@ const getClockValue = async ({ id, endpoint, wallet, timeout = 5000 }) => {
 
 const setReplicaSet = async ({
   audiusLibs,
-  primarySpId,
-  secondary1SpId,
-  secondary2SpId,
+  primary,
+  secondary1,
+  secondary2,
   userId
 }) => {
-  // // Update local libs state with new CN primary
-  // await audiusLibs.creatorNode.setEndpoint(USER_METADATA_ENDPOINT)
-
-  // // Write MD file with updated endpoints to db
-  // // Update user creator_node_endpoint on chain if applicable
-  // const oldMetadata = audiusLibs.userStateManager.getCurrentUser()
-  // const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
-  //   USER_METADATA_ENDPOINT, secondaries
-  // )
-  // const newMetadata = { ...oldMetadata,
-  //   creator_node_endpoint: newCreatorNodeEndpoint
-  // }
-  // await audiusLibs.User.updateAndUploadMetadata({ newMetadata, userId })
-
-  // // Ensure DN has indexed creator_node_endpoint change
-  // // TODO: might not be the same after URSM migration?
-
   // Update in new contract
   let tx = await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
     userId,
-    primarySpId,
-    [secondary1SpId, secondary2SpId]
+    primary.spId,
+    [secondary1.spId, secondary2.spId]
   )
 
   console.log('tx for updating rset', tx)
-
-  // await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
+  const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
+    primary.endpoint, [secondary1.endpoint, secondary2.endpoint]
+  )
+  await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
 }
 
 let start
@@ -183,6 +176,8 @@ const run = async () => {
   // Set up libs
   start = Date.now()
   const audiusLibs = await configureAndInitLibs()
+
+  audiusLibs.discoveryProvider.setEndpoint(DISCOVERY_NODE_ENDPOINT)
 
   // Get all users that do not have a replica set assigned
   const numOfUsers = (await axios({
@@ -225,12 +220,16 @@ const run = async () => {
     }
   }
 
-  let userIds = Object.keys(userIdToWallet)
+  let userIds = [5] // Object.keys(userIdToWallet)
   console.log(`\n${userIds.length} users have no replica sets\nThis is ${userIds.length * 100 / numOfUsers}% of user base`)
 
   // Get all non-Audius SPs
   // const audiusInfraSpIdsArr = [1, 2, 3, 4/*, umID*/] // TODO: uncomment later
-  const audiusInfraSpIdsArr = []
+
+  // Compute secondaries for users while keeping UM as primary for the new replica set
+  const UMSpId = (await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(USER_METADATA_ENDPOINT)).spID
+
+  const audiusInfraSpIdsArr = [UMSpId]
   const audiusInfraSpIds = new Set(audiusInfraSpIdsArr) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
@@ -257,15 +256,12 @@ const run = async () => {
     .filter(response => response.status === 200)
     .map(response => parseInt(response.id))
 
-  // Compute secondaries for users while keeping UM as primary for the new replica set
-  const UMSpId = (await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(USER_METADATA_ENDPOINT)).spID
-
   console.log('\nComputing replica sets....')
 
   let userIdToRSet = {}
   userIds.forEach(id => {
     // Randomly select two secondaries from spIds
-    let replicaSet = [] // TODO: remove this primary
+    let replicaSet = []
     let secondary1Index = Math.floor(Math.random(0) * spIds.length)
     let secondary2Index = -1
     while (secondary2Index === -1 || secondary1Index === secondary2Index) {
@@ -295,7 +291,7 @@ const run = async () => {
   console.log(`\nSyncing across new secondaries....`)
   let userIdToRSetArr = Object.entries(userIdToRSet)
   for (i = 0; i < userIds.length; i++) {
-    const userId = userIdToRSetArr[i][0]
+    const userId = parseInt(userIdToRSetArr[i][0])
     const replicaSetSPIds = userIdToRSetArr[i][1]
 
     console.log(`Processing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSPIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSPIds[1]].endpoint}`)
@@ -321,7 +317,7 @@ const run = async () => {
       [UMSpId, ...replicaSetSPIds]
         .map(spId =>
           getClockValue({
-            endpoint: spId === 0 ? USER_METADATA_ENDPOINT : spIdToEndpointAndCount[spId].endpoint,
+            endpoint: spId === UMSpId ? USER_METADATA_ENDPOINT : spIdToEndpointAndCount[spId].endpoint,
             wallet: userIdToWallet[userId],
             id: spId
           })
@@ -347,9 +343,9 @@ const run = async () => {
     // If clock values are all synced, write to new contract
     await setReplicaSet({
       audiusLibs,
-      primarySpId: UMSpId,
-      secondary1SpId: replicaSetSPIds[0],
-      secondary2SpId: replicaSetSPIds[1],
+      primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
+      secondary1: { spId: replicaSetSPIds[0], endpoint: spIdToEndpointAndCount[replicaSetSPIds[0]].endpoint },
+      secondary2: { spId: replicaSetSPIds[1], endpoint: spIdToEndpointAndCount[replicaSetSPIds[1]].endpoint },
       userId
     })
   }
