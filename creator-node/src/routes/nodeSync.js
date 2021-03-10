@@ -312,9 +312,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
     req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
 
-    // Attempt to connect directly to target CNode's IPFS node.
-    await _initBootstrapAndRefreshPeers(req, body.data.ipfsIDObj.addresses, redisKey)
-    req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    try {
+      // Attempt to connect directly to target CNode's IPFS node.
+      await _initBootstrapAndRefreshPeers(req, body.data.ipfsIDObj.addresses, redisKey)
+      req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    } catch (e) {
+      // if there's an error peering to an IPFS node, do not stop execution
+      // since we have other fallbacks, attempt to keep going
+      req.logger.error(`Error running _initBootstrapAndRefreshPeers`, e)
+    }
 
     /**
      * For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.
@@ -563,27 +569,31 @@ async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redi
   req.logger.info(redisKey, 'Initializing Bootstrap Peers:')
   const ipfs = req.app.get('ipfsAPI')
 
-  // Get own IPFS node's peer addresses
-  const ipfsID = await ipfs.id()
-  if (!ipfsID.hasOwnProperty('addresses')) {
-    throw new Error('failed to retrieve ipfs node addresses')
-  }
-  const ipfsPeerAddresses = ipfsID.addresses
-
-  // For each targetPeerAddress, add to trusted peer list and open connection.
-  for (let targetPeerAddress of targetIPFSPeerAddresses) {
-    if (targetPeerAddress.includes('ip6') || targetPeerAddress.includes('127.0.0.1')) continue
-    if (ipfsPeerAddresses.includes(targetPeerAddress)) {
-      req.logger.info(redisKey, 'ipfs addresses are same - do not connect')
-      continue
+  try {
+    // Get own IPFS node's peer addresses
+    const ipfsID = await ipfs.id()
+    if (!ipfsID.hasOwnProperty('addresses')) {
+      throw new Error('failed to retrieve ipfs node addresses')
     }
+    const ipfsPeerAddresses = ipfsID.addresses
 
-    // Add to list of bootstrap peers.
-    let results = await ipfs.bootstrap.add(targetPeerAddress)
-    req.logger.info(redisKey, 'ipfs bootstrap add results:', results)
+    // For each targetPeerAddress, add to trusted peer list and open connection.
+    for (let targetPeerAddress of targetIPFSPeerAddresses) {
+      if (targetPeerAddress.includes('ip6') || targetPeerAddress.includes('127.0.0.1')) continue
+      if (ipfsPeerAddresses.includes(targetPeerAddress)) {
+        req.logger.info(redisKey, 'ipfs addresses are same - do not connect')
+        continue
+      }
 
-    // Manually connect to peer.
-    results = await ipfs.swarm.connect(targetPeerAddress)
-    req.logger.info(redisKey, 'peer connection results:', results.Strings[0])
+      // Add to list of bootstrap peers.
+      let results = await ipfs.bootstrap.add(targetPeerAddress)
+      req.logger.info(redisKey, 'ipfs bootstrap add results:', results)
+
+      // Manually connect to peer.
+      results = await ipfs.swarm.connect(targetPeerAddress)
+      req.logger.info(redisKey, 'peer connection results:', results.Strings[0])
+    }
+  } catch (e) {
+    req.logger.error(`Error running _initBootstrapAndRefreshPeers`, e)
   }
 }
