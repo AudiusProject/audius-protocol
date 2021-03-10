@@ -7,13 +7,15 @@ from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_full_response,\
     make_response, success_response, search_parser, abort_bad_request_param, decode_string_id, \
-    extend_user, get_default_max, get_current_user_id
+    extend_user, get_default_max, get_current_user_id, to_dict, format_offset, format_limit
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache
+from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from src.utils.redis_metrics import record_metrics
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
+from src.queries.get_trending_playlists import get_trending_playlists, TRENDING_LIMIT, TRENDING_TTL_SEC
+from flask.globals import request
 
 logger = logging.getLogger(__name__)
 
@@ -255,3 +257,52 @@ class FullPlaylistReposts(Resource):
         users = get_reposters_for_playlist(args)
         users = list(map(extend_user, users))
         return success_response(users)
+
+full_trending_playlists_response = make_full_response("trending_playlists_response", full_ns, fields.List(fields.Nested(full_playlist_model)))
+
+full_trending_parser = reqparse.RequestParser()
+full_trending_parser.add_argument('time', required=False)
+full_trending_parser.add_argument('limit', required=False)
+full_trending_parser.add_argument('offset', required=False)
+full_trending_parser.add_argument('user_id', required=False)
+
+@full_ns.route("/trending")
+class FullTrendingPlaylists(Resource):
+    def get_cache_key(self):
+        request_items = to_dict(request.args)
+        request_items.pop('limit', None)
+        request_items.pop('offset', None)
+        key = extract_key(request.path, request_items.items())
+        return key
+
+    @full_ns.marshal_with(full_trending_playlists_response)
+    def get(self):
+        # Parse args
+        args = full_trending_parser.parse_args()
+        offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
+        current_user_id, time = args.get("user_id"), args.get("time", "week")
+        time = "week" if time not in ["week", "month", "year"] else time
+        args = {
+            'time': time,
+            'with_users': True,
+        }
+
+        # If have a user_id, we have to call into get_trending_playlist,
+        # which fetches the cached unpopulated tracks and then
+        # populates metadata. Otherwise, just
+        # retrieve the last cached value.
+        if current_user_id:
+            decoded = decode_string_id(current_user_id)
+            args["current_user_id"] = decoded
+            playlists = get_trending_playlists(args)
+        else:
+            key = self.get_cache_key()
+            playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args))
+
+        # Extend playlists
+        playlists = list(map(extend_playlist, playlists))
+
+        # Apply limit + offset
+        playlists = playlists[offset: limit + offset]
+
+        return success_response(playlists)

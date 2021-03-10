@@ -56,6 +56,7 @@ activity_timestamp = 'activity_timestamp'
 track_owner_follower_count = 'track_owner_follower_count'
 track_owner_id = 'track_owner_id'
 track_id = 'track_id'
+playlist_id = 'playlist_id'
 listen_counts = 'listen_counts'
 
 tracks = 'tracks'
@@ -88,3 +89,6 @@ notification_followee_id = 'followee_user_id'
 
 notification_repost_counts = 'repost_counts'
 notification_favorite_counts = 'favorite_counts'
+
+# Trending
+owner_follower_count = 'owner_follower_count'
