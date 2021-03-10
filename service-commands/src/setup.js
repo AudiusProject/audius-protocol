@@ -274,6 +274,49 @@ const performHealthCheck = async (service, serviceNumber) => {
 }
 
 /**
+ * Brings up all services relevant to the discovery provider
+ * @returns {Promise<void>}
+ */
+const discoveryNodeUp = async () => {
+  console.log(`\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n`.error)
+
+  const options = { verbose: true }
+
+  const inParallel = [
+    [Service.CONTRACTS, SetupCommand.UP, options],
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options]
+  ]
+
+  const sequential = [
+    [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
+    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.UP],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.REGISTER,
+      { ...options, retries: 2 }
+    ]
+  ]
+
+  const start = Date.now()
+
+  // Start up the docker network `audius_dev`
+  await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Run parallel ops
+  await Promise.all(inParallel.map(s => runSetupCommand(...s)))
+
+  // Run sequential ops
+  for (const s of sequential) {
+    await runSetupCommand(...s)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`Services brought up in ${durationSeconds}s`.info)
+}
+
+/**
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
@@ -364,6 +407,7 @@ module.exports = {
   runSetupCommand,
   performHealthCheck,
   allUp,
+  discoveryNodeUp,
   SetupCommand,
   Service
 }

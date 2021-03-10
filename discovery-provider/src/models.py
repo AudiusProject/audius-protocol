@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Text,
@@ -479,6 +480,70 @@ timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
+class AggregateDailyUniqueUsersMetrics(Base):
+    __tablename__ = "aggregate_daily_unique_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # zeroed out to the day
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateDailyUniqueUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateDailyTotalUsersMetrics(Base):
+    __tablename__ = "aggregate_daily_total_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # zeroed out to the day
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateDailyTotalUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateMonthlyUniqueUsersMetrics(Base):
+    __tablename__ = "aggregate_monthly_unique_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # first day of month
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateMonthlyUniqueUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateMonthlyTotalUsersMetrics(Base):
+    __tablename__ = "aggregate_monthly_total_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # first day of month
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateMonthlyTotalUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
 class AppNameMetrics(Base):
     __tablename__ = "app_name_metrics"
 
@@ -495,6 +560,42 @@ class AppNameMetrics(Base):
 application_name={self.application_name},\
 count={self.count},\
 ip={self.ip},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateDailyAppNameMetrics(Base):
+    __tablename__ = "aggregate_daily_app_name_metrics"
+
+    id = Column(Integer, primary_key=True)
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # zeroed out to the day
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateDailyAppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateMonthlyAppNameMetrics(Base):
+    __tablename__ = "aggregate_monthly_app_name_metrics"
+
+    id = Column(Integer, primary_key=True)
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # first day of month
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateMonthlyAppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
