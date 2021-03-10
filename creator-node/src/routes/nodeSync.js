@@ -318,7 +318,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
-      // since we have other fallbacks, attempt to keep going
+      // since we have other fallbacks, keep going on with sync
       req.logger.error(`Error running _initBootstrapAndRefreshPeers`, e)
     }
 
