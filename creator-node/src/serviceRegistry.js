@@ -128,7 +128,7 @@ class ServiceRegistry {
    */
   async _registerNodeOnL2URSM () {
     // Wait until URSM contract has been deployed (for backwards-compatibility)
-    let retryTimeoutMs = (this.nodeConfig.get('snapbackDevModeEnabled')) ? 10000 /** 10sec */ : 600000 /* 10min */
+    let retryTimeoutMs = (this.nodeConfig.get('devMode')) ? 10000 /** 10sec */ : 600000 /* 10min */
     while (true) {
       this.logInfo(`Attempting to init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`)
       try {

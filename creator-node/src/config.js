@@ -415,6 +415,12 @@ const config = convict({
     env: 'snapbackDevModeEnabled',
     default: false
   },
+  devMode: {
+    doc: 'Used to differentiate production vs dev mode for node',
+    format: 'BooleanCustom',
+    env: 'devMode',
+    default: false
+  },
   maxStorageUsedPercent: {
     doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
