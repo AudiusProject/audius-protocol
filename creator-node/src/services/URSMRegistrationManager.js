@@ -146,7 +146,7 @@ class URSMRegistrationManager {
           this.logInfo(`Successfully received signature from ${node.endpoint}`)
           return resp
         } catch (e) {
-          this.logError(`Failed to receive signature from ${node.endpoint} with error`, e)
+          this.logError(`Failed to receive signature from ${node.endpoint} with error ${e}`)
           return null
         }
       }))

@@ -138,9 +138,13 @@ const run = async () => {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
         envPath = '../creator-node/compose/env/commonEnv.sh'
-        const account = ethAccounts[parseInt(serviceCount)]
+
+        // Local dev, delegate and owner wallet are equal
+        const ownerWallet = ethAccounts[parseInt(serviceCount)]
+        const delegateWallet = ownerWallet
         let endpoint = makeCreatorNodeEndpoint(serviceCount)
-        await _updateCreatorNodeConfig(account, envPath, envPath, endpoint, /* isShell */ true)
+
+        await _updateCreatorNodeConfig(ownerWallet, envPath, envPath, endpoint, /* isShell */ true, delegateWallet)
         break
       }
 
@@ -415,12 +419,17 @@ const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
   await updateServiceDelegateOwnerWallet(audiusLibs, contentNodeType, endpoint, ethAccounts[serviceNumber + 10])
 }
 
-const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath, endpoint = null, isShell = false) => {
-  let acct = account.toLowerCase()
+const _updateCreatorNodeConfig = async (ownerWallet, readPath, writePath = readPath, endpoint = null, isShell = false, delegateWallet) => {
+  delegateWallet = (delegateWallet || ownerWallet).toLowerCase()
+  ownerWallet = ownerWallet.toLowerCase()
+
   let ganacheEthAccounts = await getEthContractAccounts()
+
   // PKey is now recovered
-  let delegateWalletPkey = ganacheEthAccounts['private_keys'][`${acct}`]
-  await _updateCreatorNodeConfigFile(readPath, writePath, acct, delegateWalletPkey, endpoint, isShell)
+  let ownerWalletPrivKey = ganacheEthAccounts['private_keys'][`${ownerWallet}`]
+  let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${delegateWallet}`]
+
+  await _updateCreatorNodeConfigFile(readPath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -455,7 +464,7 @@ const _initEthContractTypes = async (libs) => {
 }
 
 // Write an update to either the common .sh file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ownerWalletPkey, endpoint, isShell) => {
+const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
@@ -467,9 +476,8 @@ const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ow
   let pkeyFound = false
   let endpointFound = false
 
-  // Local dev, delegate and owner wallet are equal
-  let delegateOwnerWallet = ownerWallet
-  let delegateWalletPkey = ownerWalletPkey
+  let delegateOwnerWallet = delegateWallet
+  let delegateWalletPkey = delegateWalletPrivKey
 
   const spOwnerWalletLine = `${isShell ? 'export ' : ''}spOwnerWallet=${ownerWallet}`
   const delegateOwnerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`

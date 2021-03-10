@@ -113,7 +113,7 @@ class ServiceRegistry {
 
         // Swallow any errors during recovery attempt
       } catch (e) {
-        this.logError(`RecoverNodeL1Identity Error`, e)
+        this.logError(`RecoverNodeL1Identity Error ${e}`)
       }
 
       await utils.timeout(retryTimeoutMs, false)
@@ -140,7 +140,7 @@ class ServiceRegistry {
 
         // Swallow any errors in contract client init
       } catch (e) {
-        this.logError(`Error initting UserReplicaSetManagerClient`, e)
+        this.logError(`Error initting UserReplicaSetManagerClient ${e}`)
       }
 
       await utils.timeout(retryTimeoutMs, false)
@@ -160,7 +160,7 @@ class ServiceRegistry {
 
         // Swallow any errors during registration attempt
       } catch (e) {
-        this.logError(`RegisterNodeOnL2URSM Error`, e)
+        this.logError(`RegisterNodeOnL2URSM Error ${e}`)
       }
 
       await utils.timeout(retryTimeoutMs, false)
@@ -186,7 +186,7 @@ class ServiceRegistry {
 
         // Swallow all init errors
       } catch (e) {
-        this.logError(`_initSnapbackSM Error`, e)
+        this.logError(`_initSnapbackSM Error ${e}`)
       }
 
       await utils.timeout(retryTimeoutMs, false)

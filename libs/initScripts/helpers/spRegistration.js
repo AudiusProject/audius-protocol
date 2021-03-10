@@ -55,7 +55,7 @@ async function updateServiceDelegateOwnerWallet (audiusLibs, serviceType, servic
     const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.updateDelegateOwnerWallet(
       serviceType, serviceEndpoint, updatedDelegateOwnerWallet
     )
-    console.log(`Successfully updated delegateOwnerWallet for ${serviceType} ${serviceEndpoint} with new wallet ${updatedDelegateOwnerWallet} - ${tx}`)
+    console.log(`Successfully updated delegateOwnerWallet for ${serviceType} ${serviceEndpoint} with new wallet ${updatedDelegateOwnerWallet} - ${JSON.stringify(tx, null, 2)}`)
   } catch (e) {
     throw new Error(`Failed to update delegateOwnerWallet for ${serviceType} ${serviceEndpoint} with new wallet ${updatedDelegateOwnerWallet} || ERROR ${e}`)
   }
