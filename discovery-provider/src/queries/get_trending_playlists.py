@@ -58,6 +58,7 @@ def get_scorable_playlist_data(session, time_range):
     ).all()
 
     # Build up a map of playlist data
+    # playlist_id -> data
     # Some fields initialized at zero
     playlist_map = {record[0]: {
         response_name_constants.playlist_id: record[0],
@@ -67,11 +68,19 @@ def get_scorable_playlist_data(session, time_range):
         response_name_constants.save_count: 0,
         response_name_constants.repost_count: 0,
         response_name_constants.windowed_repost_count: 0,
+        response_name_constants.owner_follower_count: 0,
         "listens": 1,
     } for record in playlists}
 
     playlist_ids = [record[0] for record in playlists]
-    playlist_owner_ids = [record[2] for record in playlists]
+    # map owner_id -> [playlist_id], accounting for multiple playlists with the same ID
+    # used in follows
+    playlist_owner_id_map = {}
+    for (playlist_id, _, owner_id, _) in playlists:
+        if owner_id not in playlist_owner_id_map:
+            playlist_owner_id_map[owner_id] = [playlist_id]
+        else:
+            playlist_owner_id_map[owner_id].append(playlist_id)
 
     # Add repost counts
     repost_counts = get_repost_counts(session, False, False, playlist_ids, [RepostType.playlist])
@@ -105,16 +114,15 @@ def get_scorable_playlist_data(session, time_range):
         .filter(
             Follow.is_current == True,
             Follow.is_delete == False,
-            Follow.followee_user_id.in_(playlist_owner_ids)
+            Follow.followee_user_id.in_(list(playlist_owner_id_map.keys()))
         )
         .group_by(Follow.followee_user_id)
         .all()
     )
-    follower_count_dict = {record[0]: record[1] for record in follower_counts}
-    for playlist in playlist_map.values():
-        owner_id = playlist[response_name_constants.owner_id]
-        follower_count = follower_count_dict[owner_id]
-        playlist[response_name_constants.owner_follower_count] = follower_count
+    for (followee_user_id, follower_count) in follower_counts:
+        owned_playlist_ids = playlist_owner_id_map[followee_user_id]
+        for playlist_id in owned_playlist_ids:
+            playlist_map[playlist_id][response_name_constants.owner_follower_count] = follower_count
 
     # Add karma
     karma_scores = get_karma(session, tuple(playlist_ids), None, True)
