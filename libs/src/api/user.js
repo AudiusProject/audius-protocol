@@ -283,12 +283,12 @@ class Users extends Base {
       didMetadataUpdate = true
     }
 
-    if (didMetadataUpdate) {
-      await this.updateAndUploadMetadata({
-        newMetadata: metadata,
-        userId: metadata.user_id
-      })
-    }
+    // if (didMetadataUpdate) {
+    //   await this.updateAndUploadMetadata({
+    //     newMetadata: metadata,
+    //     userId: metadata.user_id
+    //   })
+    // }
 
     return metadata
   }
@@ -551,12 +551,12 @@ class Users extends Base {
 
     try {
       // Update user creator_node_endpoint on chain if applicable
-      if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-        phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
-        // Ensure DN has indexed creator_node_endpoint change
-        await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
-      }
+      // if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
+      //   phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
+      //   await this.updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
+      //   // Ensure DN has indexed creator_node_endpoint change
+      //   await this.waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
+      // }
 
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA

@@ -131,17 +131,17 @@ class Account extends Base {
         }
       }
 
+      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+
       // Add user to chain
       phase = phases.ADD_USER
       userId = await this.User.addUser(metadata)
 
       // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
-      phase = phases.ADD_REPLICA_SET
-      metadata = await this.User.assignReplicaSet({ userId })
-
-      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
-      phase = phases.UPLOAD_PROFILE_IMAGES
-      await this.User.uploadProfileImages(profilePictureFile, coverPhotoFile, metadata)
+      // phase = phases.ADD_REPLICA_SET
+      // metadata = await this.User.assignReplicaSet({ userId })
     } catch (e) {
       return { error: e.message, phase }
     }

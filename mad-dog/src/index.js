@@ -158,7 +158,7 @@ async function main () {
           'snapback',
           snapbackSMParallelSyncTest,
           {
-            numUsers: snapbackNumUsers
+            numUsers: 1
           }
         )
         await testRunner([test])
