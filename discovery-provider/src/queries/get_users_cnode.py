@@ -32,7 +32,7 @@ def get_users_cnode(cnode_endpoint_string):
                     FROM
                     "users"
                     WHERE
-                    "is_creator" IS TRUE
+                    "creator_node_endpoint" IS NOT NULL
                     AND "is_current" IS TRUE
                     ORDER BY
                     "user_id" ASC
