@@ -215,7 +215,7 @@ async function main () {
         break
       }
       default:
-        logger.error('Usage: one of either `up`, `down`, `test`, or `test-ci`.')
+        logger.error('Usage: one of either `up`, `down`, `test`, `test-ci`, `test-ursm`, `test-snapback`.')
     }
     process.exit()
   } catch (e) {

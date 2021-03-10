@@ -35,7 +35,7 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
 
-    // below properties aren't initialized until 'initServices' is called
+    // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
     this.snapbackSM = null
     this.URSMRegistrationManager = null
@@ -128,10 +128,9 @@ class ServiceRegistry {
    */
   async _registerNodeOnL2URSM () {
     // Wait until URSM contract has been deployed (for backwards-compatibility)
-    let retryTimeoutMs = 600000 // 10min
+    let retryTimeoutMs = (this.nodeConfig.get('snapbackDevModeEnabled')) ? 10000 /** 10sec */ : 600000 /* 10min */
     while (true) {
-      this.logInfo(`Attempting to re-init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`)
-
+      this.logInfo(`Attempting to init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`)
       try {
         await this.libs.contracts.initUserReplicaSetManagerClient(false)
 
