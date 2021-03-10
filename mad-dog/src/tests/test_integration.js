@@ -417,6 +417,10 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
   return !failedCIDs.length
 }
 
+/**
+ * Confirms replica set is synced, metadata is available from every replica.
+ * Then uploads a photo and updates metadata, and performs validation once again.
+ */
 async function checkUserMetadataAndClockValues ({
   walletIndexes,
   walletIdMap,
