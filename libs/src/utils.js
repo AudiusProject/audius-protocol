@@ -1,6 +1,7 @@
 const bs58 = require('bs58')
 const Web3 = require('./web3')
 const axios = require('axios')
+const MultiProvider = require('./utils/multiProvider')
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -106,7 +107,9 @@ class Utils {
   }
 
   static async configureWeb3 (web3Provider, chainNetworkId, requiresAccount = true) {
-    const web3Instance = new Web3(web3Provider)
+    // Initializing web3 with a HttpProvider wrapper for multiple providers
+    // ref: https://github.com/ChainSafe/web3.js/blob/1.x/packages/web3/types/index.d.ts#L31.
+    const web3Instance = new Web3(new MultiProvider(web3Provider))
 
     try {
       const networkId = await web3Instance.eth.net.getId()
