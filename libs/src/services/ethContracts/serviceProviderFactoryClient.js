@@ -497,6 +497,8 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       updatedDelegateOwnerWallet
     )
 
+    console.log(`SIDTEST LIBS UPDATEDELWAL OWNERWALL: ${this.web3Manager.getWalletAddress()}`)
+
     const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
     return tx
   }

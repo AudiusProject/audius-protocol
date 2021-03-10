@@ -7,7 +7,8 @@ const { setServiceVersion, addServiceType } = require('./helpers/version')
 const {
   registerLocalService,
   queryLocalServices,
-  getStakingParameters
+  getStakingParameters,
+  updateServiceDelegateOwnerWallet
 } = require('./helpers/spRegistration')
 const { deregisterLocalService } = require('./helpers/spRegistration')
 const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
@@ -110,6 +111,13 @@ const run = async () => {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
         await _registerCnode(ethAccounts, parseInt(serviceCount))
+        break
+      }
+
+      case 'update-cnode-delegate-wallet': {
+        const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
+        await _updateCNodeDelegateOwnerWallet(ethAccounts, parseInt(serviceCount))
         break
       }
 
@@ -398,6 +406,12 @@ const _registerCnode = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
   await registerLocalService(audiusLibs, contentNodeType, endpoint, amountOfAuds)
+}
+
+const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const endpoint = makeCreatorNodeEndpoint(serviceNumber)
+  await updateServiceDelegateOwnerWallet(audiusLibs, contentNodeType, endpoint, ethAccounts[serviceNumber + 10])
 }
 
 const _updateCreatorNodeConfig = async (account, readPath, writePath = readPath, endpoint = null, isShell = false) => {
