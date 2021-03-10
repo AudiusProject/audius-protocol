@@ -210,7 +210,7 @@ async function main () {
           ursmTest
         ]
 
-        await testRunner(tests)
+        await testRunner([coreIntegrationTests])
         logger.info('Exiting testrunner')
         break
       }
