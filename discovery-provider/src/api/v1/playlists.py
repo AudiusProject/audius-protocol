@@ -268,6 +268,23 @@ full_trending_parser.add_argument('user_id', required=False)
 
 @full_ns.route("/trending")
 class FullTrendingPlaylists(Resource):
+    @record_metrics
+    @full_ns.expect(full_trending_parser)
+    @full_ns.doc(
+        id="""Returns trending playlists for a time period""",
+        params={
+            'user_id': 'A User ID',
+            'limit': 'Limit',
+            'offset': 'Offset',
+            'time': 'week / month / year'
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+
     def get_cache_key(self):
         request_items = to_dict(request.args)
         request_items.pop('limit', None)
@@ -277,6 +294,7 @@ class FullTrendingPlaylists(Resource):
 
     @full_ns.marshal_with(full_trending_playlists_response)
     def get(self):
+        """Get trending playlists"""
         # Parse args
         args = full_trending_parser.parse_args()
         offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
@@ -287,7 +305,7 @@ class FullTrendingPlaylists(Resource):
             'with_users': True,
         }
 
-        # If have a user_id, we have to call into get_trending_playlist,
+        # If we have a user_id, we call into `get_trending_playlist`
         # which fetches the cached unpopulated tracks and then
         # populates metadata. Otherwise, just
         # retrieve the last cached value.

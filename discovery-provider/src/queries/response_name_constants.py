@@ -57,6 +57,7 @@ track_owner_follower_count = 'track_owner_follower_count'
 track_owner_id = 'track_owner_id'
 track_id = 'track_id'
 playlist_id = 'playlist_id'
+owner_id = 'owner_id'
 listen_counts = 'listen_counts'
 
 tracks = 'tracks'
