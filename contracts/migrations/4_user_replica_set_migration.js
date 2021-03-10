@@ -16,6 +16,7 @@ const encodeCall = (name, args, values) => {
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
+    const config = contractConfig[network]
     let registry
     let registryAddress
     if (network === 'test_local' || network === 'development') {
@@ -31,7 +32,6 @@ module.exports = (deployer, network, accounts) => {
 
     const networkId = Registry.network_id
     console.log(`Deploying UserReplicaSetManager to ${network}`)
-    const config = contractConfig[network]
     // This is the blacklist's veriferAddress
     // Incoming proxy admin is identical to currently configured blacklisterAddress
     // If no blacklister is configured, the last known account is used as the proxy admin
