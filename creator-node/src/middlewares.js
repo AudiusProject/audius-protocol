@@ -140,7 +140,8 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - Is not a middleware so it can be run before responding to client.
  */
 async function triggerSecondarySyncs (req) {
-  if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) return
+  // if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) return
+  if (config.get('isUserMetadataNode')) return
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
