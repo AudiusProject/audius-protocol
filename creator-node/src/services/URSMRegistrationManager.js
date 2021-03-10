@@ -9,6 +9,12 @@ const { parseCNodeResponse } = require('../apiHelpers')
 const NumSignaturesRequired = 3
 
 /**
+ * Allow for several seconds for the request for signature response, as
+ *    the route makes multiple web requests internally
+ */
+const RequestForSignatureTimeoutMs = 30000 /** 30sec */
+
+/**
  * This Service is responsible for registering this node on the UserReplicaSetManager L2 contract (URSM)
  *
  * @notice Service is backwards compatible, and will work before and after URSM contract deployment
@@ -192,8 +198,7 @@ class URSMRegistrationManager {
       baseURL: nodeEndpoint,
       url: '/ursm_request_for_signature',
       method: 'get',
-      // timeout needs to be several seconds as the route makes multiple web requests internally
-      timeout: 5000,
+      timeout: RequestForSignatureTimeoutMs,
       params: {
         spID,
         timestamp,

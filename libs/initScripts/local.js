@@ -408,6 +408,7 @@ const _registerCnode = async (ethAccounts, serviceNumber) => {
   await registerLocalService(audiusLibs, contentNodeType, endpoint, amountOfAuds)
 }
 
+// NOTE - newly selected wallet is the ethAccount with index 10 + current service number
 const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)

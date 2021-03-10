@@ -418,6 +418,8 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
 }
 
 /**
+ * NOTE - function name is inaccurate
+ *
  * Confirms replica set is synced, metadata is available from every replica.
  * Then uploads a photo and updates metadata, and performs validation once again.
  */
