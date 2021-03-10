@@ -1,11 +1,12 @@
 import logging # pylint: disable=C0302
+from datetime import datetime
+from sqlalchemy import func, desc
 from src.models import Playlist, Save, SaveType, RepostType, Follow
-from datetime import datetime, timedelta
 from src.tasks.generate_trending import time_delta_map
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_repost_counts, get_karma, get_save_counts, populate_playlist_metadata, get_users_ids, get_users_by_id
+from src.queries.query_helpers import get_repost_counts, get_karma, get_save_counts, \
+     populate_playlist_metadata, get_users_ids, get_users_by_id
 from src.queries import response_name_constants
-from sqlalchemy import func, desc
 from src.queries.get_trending_tracks import z
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.utils.redis_cache import use_redis_cache
@@ -57,8 +58,15 @@ def get_scorable_playlist_data(session, time_range):
     for (playlist_id, repost_count) in repost_counts:
         playlist_map[playlist_id][response_name_constants.repost_count] = repost_count
 
-
-    repost_counts_for_time = get_repost_counts(session, False, False, playlist_ids, [RepostType.playlist], None, time_range)
+    repost_counts_for_time = get_repost_counts(
+        session,
+        False,
+        False,
+        playlist_ids,
+        [RepostType.playlist],
+        None,
+        time_range
+    )
     for (playlist_id, repost_count) in repost_counts_for_time:
         playlist_map[playlist_id][response_name_constants.windowed_repost_count] = repost_count
 
@@ -116,7 +124,9 @@ def make_trending_cache_key(time_range):
 def get_trending_playlists(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        current_user_id, with_users, time = args.get("current_user_id", None), args.get("with_users", False), args.get("time")
+        current_user_id = args.get("current_user_id", None)
+        with_users = args.get("with_users", False)
+        time = args.get("time")
         key = make_trending_cache_key(time)
 
         # Get unpopulated playlists,
