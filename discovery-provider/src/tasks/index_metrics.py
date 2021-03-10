@@ -9,7 +9,8 @@ from src.tasks.celery_app import celery
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
 from src.utils.redis_metrics import metrics_prefix, metrics_applications, \
     metrics_routes, metrics_visited_nodes, merge_route_metrics, merge_app_metrics, \
-    parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL
+    parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL, \
+    personal_route_metrics, personal_app_metrics
 from src.queries.update_historical_metrics import update_historical_daily_route_metrics, \
     update_historical_monthly_route_metrics, update_historical_daily_app_metrics, \
         update_historical_monthly_app_metrics
@@ -225,6 +226,35 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
     one_iteration_ago = datetime.utcnow() - timedelta(minutes=METRICS_INTERVAL)
     one_iteration_ago_str = one_iteration_ago.strftime(datetime_format_secondary)
+    end_time = datetime.utcnow().strftime(datetime_format_secondary)
+
+    # Merge & persist metrics for our personal node
+    personal_route_metrics_str = redis_get_or_restore(redis, personal_route_metrics)
+    personal_route_metrics_dict = json.loads(personal_route_metrics_str) if personal_route_metrics_str else {}
+    new_personal_route_metrics = {}
+    for timestamp, metrics in personal_route_metrics_dict.items():
+        if timestamp > one_iteration_ago_str:
+            for ip, count in metrics.items():
+                if ip in new_personal_route_metrics:
+                    new_personal_route_metrics[ip] += count
+                else:
+                    new_personal_route_metrics[ip] = count
+
+    personal_app_metrics_str = redis_get_or_restore(redis, personal_app_metrics)
+    personal_app_metrics_dict = json.loads(personal_app_metrics_str) if personal_app_metrics_str else {}
+    new_personal_app_metrics = {}
+    for timestamp, metrics in personal_app_metrics_dict.items():
+        if timestamp > one_iteration_ago_str:
+            for app_name, count in metrics.items():
+                if app_name in new_personal_app_metrics:
+                    new_personal_app_metrics[app_name] += count
+                else:
+                    new_personal_app_metrics[app_name] = count
+
+    merge_route_metrics(new_personal_route_metrics, end_time, db)
+    merge_app_metrics(new_personal_app_metrics, end_time, db)
+
+    # Merge & persiste metrics for other nodes
     for node in all_other_nodes:
         start_time_str = visited_node_timestamps[node] if node in visited_node_timestamps else one_iteration_ago_str
         start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
@@ -233,7 +263,6 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
         logger.info(f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})")
 
-        end_time = datetime.utcnow().strftime(datetime_format_secondary)
         merge_route_metrics(new_route_metrics or {}, end_time, db)
         merge_app_metrics(new_app_metrics or {}, end_time, db)
 
