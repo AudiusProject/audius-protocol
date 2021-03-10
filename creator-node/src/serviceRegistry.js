@@ -53,24 +53,33 @@ class ServiceRegistry {
 
     if (!config.get('isUserMetadataNode')) {
       this.libs = await this._initAudiusLibs()
-
-      this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
-
-      /**
-       * Do not await any of the below processes as they will not complete until after server is up.
-       * Server is started after serviceRegistry.initServices() is called.
-       */
-
-      this._recoverNodeL1Identity()
-
-      // SnapbackSM init requires L1 identity recovery but is independent of L2 URSM Registration
-      this._initSnapbackSM()
-
-      // L2URSMRegistration requires L1 identity recovery
-      this._registerNodeOnL2URSM()
     }
 
     this.monitoringQueue.start()
+  }
+
+  /**
+   * Some services require the node server to be running in order to initialize. Run those here.
+   * Specifically:
+   *  - recover node L1 identity (requires node health check from server to return success)
+   *  - initialize SnapbackSM service (requires node L1 identity)
+   *  - register node on L2 URSM contract (requires node L1 identity)
+   */
+  async initServicesThatRequireServer () {
+    if (config.get('isUserMetadataNode')) {
+      return
+    }
+
+    // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
+    await this._recoverNodeL1Identity()
+
+    // SnapbackSM init (requires L1 identity)
+    await this._initSnapbackSM()
+
+    // L2URSMRegistration (requires L1 identity)
+    await this._registerNodeOnL2URSM()
+
+    this.logInfo(`All services that require server successfully initialized!`)
   }
 
   logInfo (msg) {
@@ -87,58 +96,74 @@ class ServiceRegistry {
   async _recoverNodeL1Identity () {
     const endpoint = config.get('creatorNodeEndpoint')
 
+    const retryTimeoutMs = 5000 // 5sec
     let attempt = 0
-    while (this.nodeConfig.get('spID') === 0) {
-      this.logInfo(`Attempting to recover node L1 identity for endpoint ${endpoint} || attempt #${++attempt} ...`)
+    while (true) {
+      this.logInfo(`Attempting to recover node L1 identity for ${endpoint} on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`)
 
       try {
         const spID = await this.libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
           endpoint
         )
-        this.nodeConfig.set('spID', spID)
+
+        if (spID !== 0) {
+          this.nodeConfig.set('spID', spID)
+          break
+        }
 
         // Swallow any errors during recovery attempt
       } catch (e) {
-        this.logError(`RecoverNodeL1Identity Error: ${e}`)
+        this.logError(`RecoverNodeL1Identity Error`, e)
       }
 
-      await utils.timeout(5000, false)
+      await utils.timeout(retryTimeoutMs, false)
     }
 
     this.logInfo(`Successfully recovered node L1 identity for endpoint ${endpoint} on attempt #${attempt}. spID =  ${this.nodeConfig.get('spID')}`)
   }
 
   /**
-   * Wait until spID config is set, then attempt to register on L2 URSM with infinite retries
+   * Wait until URSM contract is deployed, then attempt to register on L2 URSM with infinite retries
+   * Requires L1 identity
    */
   async _registerNodeOnL2URSM () {
-    const retryTimeoutMs = 10000 // 10sec
+    // Wait until URSM contract has been deployed (for backwards-compatibility)
+    let retryTimeoutMs = 600000 // 10min
+    while (true) {
+      this.logInfo(`Attempting to re-init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`)
 
-    // Wait until spID config is set
-    while (this.nodeConfig.get('spID') === 0) {
-      this.logInfo(`Cannot register node on L2 URSM until L1 identity (spID) is set. Retrying in ${retryTimeoutMs}ms`)
+      try {
+        await this.libs.contracts.initUserReplicaSetManagerClient(false)
+
+        if (this.libs.contracts.UserReplicaSetManagerClient) {
+          break
+        }
+
+        // Swallow any errors in contract client init
+      } catch (e) {
+        this.logError(`Error initting UserReplicaSetManagerClient`, e)
+      }
+
       await utils.timeout(retryTimeoutMs, false)
     }
 
+    this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
+
     // Attempt to register on URSM with infinite retries
-    let registered = false
     let attempt = 0
-    while (registered === false) {
-      this.logInfo(`Attempting to register node on L2 URSM || attempt #${++attempt} ...`)
+    retryTimeoutMs = 10000 // 10sec
+    while (true) {
+      this.logInfo(`Attempting to register node on L2 URSM on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`)
 
       try {
         await this.URSMRegistrationManager.run()
-        registered = true
+        break
 
         // Swallow any errors during registration attempt
       } catch (e) {
-        this.logError(`RegisterNodeOnL2URSM Error: ${e}`)
-
-        if (e.message === 'URSMRegistration cannot run until UserReplicaSetManager contract is deployed') {
-          this.logInfo(`Checking if URSM has since been deployed...`)
-          await this.libs.contracts.initUserReplicaSetManagerClient(false)
-        }
+        this.logError(`RegisterNodeOnL2URSM Error`, e)
       }
+
       await utils.timeout(retryTimeoutMs, false)
     }
 
@@ -146,24 +171,23 @@ class ServiceRegistry {
   }
 
   /**
-   * Wait until spID config is set, then initialize SnapbackSM
+   * Initialize SnapbackSM
+   * Requires L1 identity
    */
   async _initSnapbackSM () {
+    this.snapbackSM = new SnapbackSM(this.nodeConfig, this.libs)
+
     const retryTimeoutMs = 10000 // ms
-
-    while (this.nodeConfig.get('spID') === 0) {
-      this.logInfo(`Cannot initialize SnapbackSM until L1 identity (spID) is set. Retrying in ${retryTimeoutMs}ms`)
-      await utils.timeout(retryTimeoutMs, false)
-    }
-
-    let complete = false
-    while (complete === false) {
+    while (true) {
       try {
-        this.snapbackSM = new SnapbackSM(this.nodeConfig, this.libs)
+        this.logInfo(`Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`)
+
         await this.snapbackSM.init()
-        complete = true
+        break
+
+        // Swallow all init errors
       } catch (e) {
-        this.logError(`_initSnapbackSM Error: ${e}`)
+        this.logError(`_initSnapbackSM Error`, e)
       }
 
       await utils.timeout(retryTimeoutMs, false)

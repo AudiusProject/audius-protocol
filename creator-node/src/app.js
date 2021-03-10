@@ -13,6 +13,7 @@ const {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
+  URSMRequestForSignatureReqLimiter,
   getRateLimiterMiddleware
 } = require('./reqLimiter')
 const config = require('./config')
@@ -35,6 +36,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
+app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
 app.use(getRateLimiterMiddleware())
 
 // import routes

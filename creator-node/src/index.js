@@ -77,6 +77,10 @@ const startApp = async () => {
     logger.info('Initialized app and server')
 
     await pinCID(serviceRegistry.ipfsLatest)
+
+    // Some Services cannot start until server is up. Start them now
+    // No need to await on this as this process can take a while and can run in the background
+    serviceRegistry.initServicesThatRequireServer()
   }
 
   // when app terminates, close down any open DB connections gracefully

@@ -218,14 +218,6 @@ class SnapbackSM {
       return
     }
 
-    // Additional verification that current spID is not 0
-    let spInfo = await this.getSPInfo()
-    if (spInfo.spID === 0) {
-      this.log(`Invalid spID, recovering ${spInfo}`)
-      await this.recoverSpID()
-      return
-    }
-
     // Retrieve users list for this node
     let usersList = await this.getNodePrimaryUsers()
 

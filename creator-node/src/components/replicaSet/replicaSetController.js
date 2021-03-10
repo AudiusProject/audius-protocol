@@ -31,9 +31,6 @@ const respondToURSMRequestForProposalController = async (req) => {
 
 // Routes
 
-/**
- * TODO rate limit route (?)
- */
 router.get('/ursm_request_for_signature', handleResponse(respondToURSMRequestForProposalController))
 
 module.exports = router

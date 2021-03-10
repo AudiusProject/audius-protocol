@@ -62,8 +62,6 @@ class URSMRegistrationManager {
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed
-     *
-     * TODO - currently this will retry until contract is deployed, definitely not ideal
      */
     if (!this.audiusLibs.contracts.UserReplicaSetManagerClient) {
       throw new Error('URSMRegistration cannot run until UserReplicaSetManager contract is deployed')
@@ -142,7 +140,7 @@ class URSMRegistrationManager {
           this.logInfo(`Successfully received signature from ${node.endpoint}`)
           return resp
         } catch (e) {
-          this.logError(`Failed to receive signature from ${node.endpoint} with error ${e}`)
+          this.logError(`Failed to receive signature from ${node.endpoint} with error`, e)
           return null
         }
       }))
