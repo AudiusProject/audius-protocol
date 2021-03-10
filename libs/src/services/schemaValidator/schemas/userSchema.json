@@ -40,6 +40,9 @@
                 },
                 "associated_wallets": {
                     "$ref": "#/definitions/AssociatedWallets"
+                },
+                "collectibles": {
+                    "$ref": "#/definitions/Collectibles"
                 }
             },
             "required": [
@@ -83,6 +86,28 @@
             "required": ["signature"],
             "$comment": "",
             "title": "WalletMetadata"
+        },
+        "Collectible": {
+            "type": "object",
+            "additionalProperties": false
+        },
+        "Collectibles": {
+            "type": ["object", "null"],
+            "default": null,
+            "additionalProperties": {
+                "$ref": "#/definitions/Collectible"
+            },
+            "properties": {
+                "order": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "order"
+            ]
         }
     }
 }
