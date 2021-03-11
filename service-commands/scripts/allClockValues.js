@@ -66,7 +66,7 @@ async function getClockValues(creatorNode, walletPublicKeys) {
     )
   ).data.users
 }
-async function filterCids(creatorNode, cids) {
+async function getCidsExist(creatorNode, cids) {
   return (
     await retry(
       () =>
@@ -79,8 +79,6 @@ async function filterCids(creatorNode, cids) {
       { retries: 5 }
     )
   ).data.cids
-    .filter(cid => cid.exists)
-    .map(cid => cid.cid)
 }
 async function run() {
   //  const discoveryProvider = 'https://discoveryprovider.audius.co/'
@@ -122,6 +120,26 @@ async function run() {
       })
     )
 
+    const trackCids = {}
+    batch.forEach(({ creator_node_endpoint, user_id }) => {
+      creator_node_endpoint.forEach(endpoint => {
+        trackCids[endpoint] = trackCids[endpoint] || []
+        trackCids[endpoint].push(...tracks[user_id])
+      })
+    })
+
+    const trackCidExists = {}
+    await Promise.all(
+      map(trackCids, async (batchTrackCids, creatorNode) => {
+        trackCidExists[creatorNode] = {}
+        ;(await getCidsExist(creatorNode, batchTrackCids)).forEach(
+          ({ cid, exists }) => {
+            trackCidExists[creatorNode][cid] = exists
+          }
+        )
+      })
+    )
+
     const data = await Promise.all(
       map(
         batch,
@@ -129,12 +147,14 @@ async function run() {
           user_id,
           handle,
           wallet,
-          trackCids: tracks[user_id],
+          trackCids: tracks[user_id] || [],
           creatorNodes: await Promise.all(
             creator_node_endpoint.map(async (endpoint, idx) => ({
               endpoint,
               clock: clockValues[endpoint][wallet],
-              trackCids: await filterCids(endpoint, tracks[user_id] || []),
+              trackCids: (tracks[user_id] || []).filter(
+                cid => trackCidExists[endpoint][cid]
+              ),
               primary: idx === 0
             }))
           )
