@@ -3,7 +3,7 @@ from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
-from src.api.v1.models.users import user_model, user_model_full
+from src.api.v1.models.users import user_model, user_model_full, associated_wallets, encoded_user_id
 
 from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
@@ -13,10 +13,12 @@ from src.queries.get_save_tracks import get_save_tracks
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
+from src.queries.get_associated_user_wallet import get_associated_user_wallet
+from src.queries.get_associated_user_id import get_associated_user_id
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, get_current_user_id, make_full_response, make_response, search_parser, success_response, abort_bad_request_param, \
-    get_default_max
+    get_default_max, encode_int_id
 from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache
@@ -625,3 +627,48 @@ class FullTopGenreUsers(Resource):
         top_users = get_top_genre_users(get_top_genre_users_args)
         users = list(map(extend_user, top_users['users']))
         return success_response(users)
+
+associated_wallet_route_parser = reqparse.RequestParser()
+associated_wallet_route_parser.add_argument('id', required=True)
+associated_wallet_response = make_response("associated_wallets_response", ns, fields.Nested(associated_wallets))
+@ns.route("/associated_wallets")
+class UserIdByAssociatedWallet(Resource):
+    @ns.expect(associated_wallet_route_parser)
+    @ns.doc(
+        id="""Get the User's id by associated wallet""",
+        params={'id': 'Encoded User ID'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(associated_wallet_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        args = associated_wallet_route_parser.parse_args()
+        user_id = decode_with_abort(args.get('id'), ns)
+        wallets = get_associated_user_wallet({ "user_id": user_id})
+        return success_response({ "wallets": wallets })
+
+user_associated_wallet_route_parser = reqparse.RequestParser()
+user_associated_wallet_route_parser.add_argument('associated_wallet', required=True)
+user_associated_wallet_response = make_response("user_associated_wallet_response", ns, fields.Nested(encoded_user_id))
+@ns.route("/id")
+class AssociatedWalletByUserId(Resource):
+    @ns.expect(user_associated_wallet_route_parser)
+    @ns.doc(
+        id="""Get the User's associated wallets""",
+        params={'associated_wallet': 'Wallet address'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(user_associated_wallet_response)
+    @cache(ttl_sec=1)
+    def get(self):
+        args = user_associated_wallet_route_parser.parse_args()
+        user_id = get_associated_user_id({ "wallet" :args.get('associated_wallet') })
+        return success_response({ "user_id": encode_int_id(user_id) if user_id else None })
