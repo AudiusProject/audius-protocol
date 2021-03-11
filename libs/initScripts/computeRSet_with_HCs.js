@@ -2,7 +2,6 @@ const axios = require('axios')
 const fs = require('fs')
 
 const AudiusLibs = require('../src/index')
-const Web3 = require('../src/web3')
 const Util = require('../src/utils')
 const CreatorNode = require('../src/services/creatorNode')
 
@@ -37,13 +36,11 @@ const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
 const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
-const URSM_WALLET = dataContractsConfig.allWallets[9] // 9th index as according to URSM logic in local.js
 const URSM_WALLET_PRIVATE_KEY = ''
 const NUM_USERS_PER_BATCH_REQUEST = 500
 const SYNC_WAIT_TIME = 120000 /* 1 min */
 
 const configureAndInitLibs = async () => {
-  // const dataWeb3 = new Web3(new Web3.providers.HttpProvider(DATA_CONTRACTS_PROVIDER_ENDPOINT))
 
   const audiusLibsConfig = {
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -52,12 +49,6 @@ const configureAndInitLibs = async () => {
       ETH_PROVIDER_ENDPOINT,
       ETH_OWNER_WALLET
     ),
-    // web3Config: AudiusLibs.configExternalWeb3(
-    //   DATA_CONTRACTS_REGISTRY_ADDRESS,
-    //   dataWeb3,
-    //   null /* networkId */,
-    //   URSM_WALLET
-    // ),
     web3Config: AudiusLibs.configInternalWeb3(
       DATA_CONTRACTS_REGISTRY_ADDRESS,
       DATA_CONTRACTS_PROVIDER_ENDPOINT,
@@ -220,7 +211,7 @@ const run = async () => {
     }
   }
 
-  let userIds = [5] // Object.keys(userIdToWallet)
+  let userIds = Object.keys(userIdToWallet)
   console.log(`\n${userIds.length} users have no replica sets\nThis is ${userIds.length * 100 / numOfUsers}% of user base`)
 
   // Get all non-Audius SPs
@@ -290,13 +281,13 @@ const run = async () => {
   let userIdToRSetArr = Object.entries(userIdToRSet)
   for (i = 0; i < userIds.length; i++) {
     const userId = parseInt(userIdToRSetArr[i][0])
-    const replicaSetSPIds = userIdToRSetArr[i][1]
+    const replicaSetSecondarySpIds = userIdToRSetArr[i][1]
 
-    console.log(`Processing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSPIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSPIds[1]].endpoint}`)
+    console.log(`Processing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`)
 
     // Sync UM data to newly selected secondaries
     await Promise.all(
-      replicaSetSPIds
+      replicaSetSecondarySpIds
         .map(spId => {
           return syncSecondary({
             primary: USER_METADATA_ENDPOINT,
@@ -312,7 +303,7 @@ const run = async () => {
 
     // Check that the clock values match the clock values on UM
     const clockValuesAcrossRSet = await Promise.all(
-      [UMSpId, ...replicaSetSPIds]
+      [UMSpId, ...replicaSetSecondarySpIds]
         .map(spId =>
           getClockValue({
             endpoint: spId === UMSpId ? USER_METADATA_ENDPOINT : spIdToEndpointAndCount[spId].endpoint,
@@ -342,8 +333,8 @@ const run = async () => {
     await setReplicaSet({
       audiusLibs,
       primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
-      secondary1: { spId: replicaSetSPIds[0], endpoint: spIdToEndpointAndCount[replicaSetSPIds[0]].endpoint },
-      secondary2: { spId: replicaSetSPIds[1], endpoint: spIdToEndpointAndCount[replicaSetSPIds[1]].endpoint },
+      secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
+      secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
       userId
     })
   }
