@@ -1,5 +1,7 @@
-const path = require('path')
 const axios = require('axios')
+const assert = require('assert')
+const _ = require('lodash')
+
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
@@ -7,6 +9,8 @@ const {
 } = require('../helpers.js')
 
 const DEFAULT_INDEX = 1
+const BOOTSTRAP_SP_IDS = new Set([1,2,3])
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 let contentNodeEndpointToInfoMapping = {}
 let walletIndexToUserIdMap
@@ -196,19 +200,37 @@ const swapSecondaries = async(executeAll) => {
 // Also confirms UserReplicaSetManager state maches eth-contracts
 const verifyUrsmContentNodes = async (executeOne) => {
   logger.info(`Validating content-nodes on UserReplicaSetManager`)
+
   await executeOne(DEFAULT_INDEX, async (libs)=> {
+    // Get Content Nodes indexed by Discovery Node
+    // TODO - how to test that DN has indexed all registered URSMContentNodes?
     let queriedContentNodes = await libs.getURSMContentNodes()
+
+    // Convert list of nodes to map by spID
+    const queriedContentNodesMap = queriedContentNodes.reduce((map, node) => {
+      map[node.cnode_sp_id] = node
+      return map
+    }, {})
+
+    // Perform validation on each node
     await Promise.all(queriedContentNodes.map(async (queriedNodeInfo) => {
       let spID = queriedNodeInfo.cnode_sp_id
-      let queriedDelegatOwnerWallet = queriedNodeInfo.delegate_owner_wallet
+      let queriedDelegateOwnerWallet = queriedNodeInfo.delegate_owner_wallet
       let queriedOwnerWallet = queriedNodeInfo.owner_wallet
+
+      /**
+       * Recover content node info from URSM
+       */
       let walletInfoFromChain = await libs.getContentNodeWallets(spID)
       let delegateWalletFromChain = walletInfoFromChain.delegateOwnerWallet
       let ownerWalletFromChain = walletInfoFromChain.ownerWallet
-      // Query POA contract and confirm IDs
-      if (queriedDelegatOwnerWallet !== delegateWalletFromChain) {
+
+      /**
+       * Query POA contract and confirm IDs
+       */
+      if (queriedDelegateOwnerWallet !== delegateWalletFromChain) {
         throw new Error(
-          `Mismatch between UserReplicaSetManager chain delegateOwnerWallet: ${delegateWalletFromChain} and queried delegateownerWallet: ${queriedDelegatOwnerWallet}`
+          `Mismatch between UserReplicaSetManager chain delegateOwnerWallet: ${delegateWalletFromChain} and queried delegateownerWallet: ${queriedDelegateOwnerWallet}`
         )
       }
       if (queriedOwnerWallet !== ownerWalletFromChain) {
@@ -216,8 +238,11 @@ const verifyUrsmContentNodes = async (executeOne) => {
           `Mismatch between UserReplicaSetManager chain ownerWallet: ${ownerWalletFromChain} and queried ownerWallet: ${queriedOwnerWallet}`
         )
       }
-      // Query eth-contracts and confirm IDs
-      logger.info(`Found UserReplicaSetManager and Discovery Provider match for spID=${spID}, delegateWallet=${queriedDelegatOwnerWallet}`)
+      logger.info(`Found UserReplicaSetManager and Discovery Provider match for spID=${spID}, delegateWallet=${queriedDelegateOwnerWallet}`)
+
+      /**
+       * Query eth-contracts and confirm IDs
+       */
       let ethSpInfo = await libs.getServiceEndpointInfo('content-node', spID)
       if (delegateWalletFromChain !== ethSpInfo.delegateOwnerWallet) {
         throw new Error(
@@ -230,8 +255,29 @@ const verifyUrsmContentNodes = async (executeOne) => {
         )
       }
       logger.info(`Found UserReplicaSetManager and ServiceProviderFactory match for spID=${spID}, delegateWallet=${delegateWalletFromChain}, ownerWallet=${ownerWalletFromChain}`)
+
+      /**
+       * Confirm nodes with spIDs 1-3 are correctly configured as bootstrappers and any additional nodes were registered with proposals from registered nodes
+       */
+      if (BOOTSTRAP_SP_IDS.has(spID)) {
+        assert.ok(_.isEqual(queriedNodeInfo.proposer_sp_ids, [0, 0, 0]))
+        assert.strictEqual(queriedNodeInfo.proposer_1_delegate_owner_wallet, ZERO_ADDRESS)
+        assert.strictEqual(queriedNodeInfo.proposer_2_delegate_owner_wallet, ZERO_ADDRESS)
+        assert.strictEqual(queriedNodeInfo.proposer_3_delegate_owner_wallet, ZERO_ADDRESS)
+      } else {
+        const proposerSpIDs = queriedNodeInfo.proposer_sp_ids
+        for (const proposerSpID of proposerSpIDs) {
+          const proposerNodeInfo = queriedContentNodesMap[proposerSpID]
+          assert.ok(proposerNodeInfo !== null)
+          assert.strictEqual(proposerSpID, proposerNodeInfo.cnode_sp_id)
+        }
+        assert.strictEqual(queriedNodeInfo.proposer_1_delegate_owner_wallet, queriedContentNodesMap[proposerSpIDs[0]].delegate_owner_wallet)
+        assert.strictEqual(queriedNodeInfo.proposer_2_delegate_owner_wallet, queriedContentNodesMap[proposerSpIDs[1]].delegate_owner_wallet)
+        assert.strictEqual(queriedNodeInfo.proposer_3_delegate_owner_wallet, queriedContentNodesMap[proposerSpIDs[2]].delegate_owner_wallet)
+      }
     }))
   })
+
   logger.info(`Finished validating content-nodes on UserReplicaSetManager`)
 }
 
@@ -240,7 +286,16 @@ const userReplicaSetManagerTest = async ({
   executeAll,
   executeOne,
 }) => {
+  // Initialize content node info mapping
   contentNodeEndpointToInfoMapping = {}
+  let contentNodeList = await executeOne(DEFAULT_INDEX, async (libsWrapper) => {
+    let endpointsList = await libsWrapper.getServices('content-node') 
+    return endpointsList
+  })
+  contentNodeList.forEach((info)=>{
+      contentNodeEndpointToInfoMapping[info.endpoint] = info
+  })
+
   // Initialize users
   if (!walletIndexToUserIdMap) {
     try {
@@ -254,15 +309,8 @@ const userReplicaSetManagerTest = async ({
     }
   }
 
-  let contentNodeList = await executeOne(DEFAULT_INDEX, async (libsWrapper) => {
-    let endpointsList = await libsWrapper.getServices('content-node') 
-    return endpointsList
-  })
-  contentNodeList.forEach((info)=>{
-      contentNodeEndpointToInfoMapping[info.endpoint] = info
-  })
-
   await verifyUrsmContentNodes(executeOne)
+
   // Start of actual test logic
   await verifyUserReplicaSets(executeAll)
   await promoteSecondary1ToPrimary(executeAll)

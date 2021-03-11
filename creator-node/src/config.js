@@ -183,6 +183,12 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+  URSMRequestForSignatureReqLimit: {
+    doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
+    format: 'nat',
+    env: 'URSMRequestForSignatureReqLimit',
+    default: null
+  },
 
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
@@ -407,6 +413,12 @@ const config = convict({
     doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
     format: 'BooleanCustom',
     env: 'snapbackDevModeEnabled',
+    default: false
+  },
+  devMode: {
+    doc: 'Used to differentiate production vs dev mode for node',
+    format: 'BooleanCustom',
+    env: 'devMode',
     default: false
   },
   maxStorageUsedPercent: {

@@ -13,6 +13,7 @@ const {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
+  URSMRequestForSignatureReqLimiter,
   getRateLimiterMiddleware
 } = require('./reqLimiter')
 const config = require('./config')
@@ -35,6 +36,7 @@ app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
+app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
 app.use(getRateLimiterMiddleware())
 
 // import routes
@@ -50,11 +52,16 @@ function errorHandler (err, req, res, next) {
 }
 app.use(errorHandler)
 
+/**
+ * Configures express app object with required properties and starts express server
+ *
+ * @param {number} port port number on which to expose server
+ * @param {ServiceRegistry} serviceRegistry object housing all Content Node Services
+ */
 const initializeApp = (port, serviceRegistry) => {
   const storagePath = DiskManager.getConfigStoragePath()
 
-  // TODO: Can remove these when all routes
-  // consume serviceRegistry
+  // TODO: Can remove these when all routes consume serviceRegistry
   app.set('ipfsAPI', serviceRegistry.ipfs)
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)

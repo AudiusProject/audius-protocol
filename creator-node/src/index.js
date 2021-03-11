@@ -70,13 +70,19 @@ const startApp = async () => {
 
     await logIpfsPeerIds()
 
+    const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+
     await serviceRegistry.initServices()
-    logger.info('Initialized services')
+    logger.info(`Initialized services (Node running in ${nodeMode})`)
 
     appInfo = initializeApp(config.get('port'), serviceRegistry)
     logger.info('Initialized app and server')
 
     await pinCID(serviceRegistry.ipfsLatest)
+
+    // Some Services cannot start until server is up. Start them now
+    // No need to await on this as this process can take a while and can run in the background
+    serviceRegistry.initServicesThatRequireServer()
   }
 
   // when app terminates, close down any open DB connections gracefully

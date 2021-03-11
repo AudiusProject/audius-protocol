@@ -1,4 +1,3 @@
-const config = require('./config')
 const Bull = require('bull')
 const axios = require('axios')
 const utils = require('./utils')
@@ -49,21 +48,27 @@ const SyncType = Object.freeze({
   Pending: User replica set management
 */
 class SnapbackSM {
-  constructor (audiusLibs) {
+  constructor (nodeConfig, audiusLibs) {
+    this.nodeConfig = nodeConfig
     this.audiusLibs = audiusLibs
-    this.initialized = false
-    // Cache endpoint config
-    this.endpoint = config.get('creatorNodeEndpoint')
+
     // Toggle to switch logs
     this.debug = true
+
+    this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
+    this.spID = this.nodeConfig.get('spID')
+
     // Throw an error if running as creator node and no libs are provided
-    if (!this.audiusLibs && !config.get('isUserMetadataNode')) {
-      throw new Error('Invalid libs provided to SnapbackSM')
+    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
+      throw new Error('Missing required configs - cannot start')
     }
+
     // State machine queue processes all user operations
     this.stateMachineQueue = this.createBullQueue('creator-node-state-machine')
+
     // Sync queue handles issuing sync request from primary -> secondary
     this.syncQueue = this.createBullQueue('creator-node-sync-queue')
+
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
   }
@@ -79,8 +84,8 @@ class SnapbackSM {
       `${queueName}-${Date.now()}`,
       {
         redis: {
-          port: config.get('redisPort'),
-          host: config.get('redisHost')
+          port: this.nodeConfig.get('redisPort'),
+          host: this.nodeConfig.get('redisHost')
         },
         defaultJobOptions: {
           removeOnComplete: true,
@@ -99,10 +104,10 @@ class SnapbackSM {
 
   // Helper function to retrieve all relevant configs
   async getSPInfo () {
-    const spID = config.get('spID')
+    const spID = this.nodeConfig.get('spID')
     const endpoint = this.endpoint
-    const delegateOwnerWallet = config.get('delegateOwnerWallet')
-    const delegatePrivateKey = config.get('delegatePrivateKey')
+    const delegateOwnerWallet = this.nodeConfig.get('delegateOwnerWallet')
+    const delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
     return {
       spID,
       endpoint,
@@ -116,7 +121,6 @@ class SnapbackSM {
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!currentlySelectedDiscProv) {
       // Re-initialize if no discovery provider has been selected
-      this.initialized = false
       throw new Error('No discovery provider currently selected, exiting')
     }
 
@@ -211,21 +215,6 @@ class SnapbackSM {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
     if (this.audiusLibs == null) {
       logger.error(`Invalid libs instance`)
-      return
-    }
-
-    // Ensure node identity config is initialized
-    if (!this.initialized) {
-      await this.initializeNodeIdentityConfig()
-      // Exit if failed to initialize
-      if (!this.initialized) return
-    }
-
-    // Additional verification that current spID is not 0
-    let spInfo = await this.getSPInfo()
-    if (spInfo.spID === 0) {
-      this.log(`Invalid spID, recovering ${spInfo}`)
-      await this.recoverSpID()
       return
     }
 
@@ -475,39 +464,6 @@ class SnapbackSM {
     this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
   }
 
-  // Query eth-contracts chain for endpoint to ID info
-  async recoverSpID () {
-    if (config.get('spID') !== 0) {
-      this.log(`Known spID=${config.get('spID')}`)
-      return config.get('spID')
-    }
-
-    const recoveredSpID = await this.audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(
-      this.endpoint
-    )
-    this.log(`Recovered ${recoveredSpID} for ${this.endpoint}`)
-    config.set('spID', recoveredSpID)
-    return config.get('spID')
-  }
-
-  // Function which ensures that state machine has been initialized correctly
-  // If not available on startup, subsequent state machine will attempt to initialize until success
-  async initializeNodeIdentityConfig () {
-    this.log(`Initializing SnapbackSM`)
-    this.log(`Retrieving spID for ${this.endpoint}`)
-    this.log(`Developer mode: ${config.get('snapbackDevModeEnabled')}`)
-    const recoveredSpID = await this.recoverSpID()
-    // A returned spID of 0 means this this.endpoint is currently not registered on chain
-    // In this case, the stateMachine is considered to be 'uninitialized'
-    if (recoveredSpID === 0) {
-      this.initialized = false
-      this.log(`Failed to recover spID for ${this.endpoint}, received ${config.get('spID')}`)
-      return
-    }
-    this.initialized = true
-    return this.initialized
-  }
-
   /**
    * Initialize the state machine
    *
@@ -517,7 +473,7 @@ class SnapbackSM {
     await this.stateMachineQueue.empty()
     await this.syncQueue.empty()
 
-    const isUserMetadata = config.get('isUserMetadataNode')
+    const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
     if (isUserMetadata) {
       this.log(`SnapbackSM disabled for userMetadataNode. ${this.endpoint}, isUserMetadata=${isUserMetadata}`)
       return
@@ -531,7 +487,8 @@ class SnapbackSM {
         } catch (e) {
           this.log(`stateMachineQueue error processing ${e}`)
         } finally {
-          if (config.get('snapbackDevModeEnabled')) {
+          // Set timeout before re-adding job to queue. devMode runs with much shorter timeout.
+          if (this.nodeConfig.get('snapbackDevModeEnabled')) {
             this.log(`DEV MODE next job in ${DevDelayInMS}ms at ${new Date(Date.now() + DevDelayInMS)}`)
             await utils.timeout(DevDelayInMS)
           } else {
@@ -561,7 +518,6 @@ class SnapbackSM {
         }
       }
     )
-    await this.initializeNodeIdentityConfig()
 
     // Enqueue first state machine operation
     await this.stateMachineQueue.add({ startTime: Date.now() })

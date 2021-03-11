@@ -45,6 +45,22 @@ async function registerLocalService (audiusLibs, serviceType, serviceEndpoint, a
   }
 }
 
+async function updateServiceDelegateOwnerWallet (audiusLibs, serviceType, serviceEndpoint, updatedDelegateOwnerWallet) {
+  if (!audiusLibs || !serviceType || !serviceEndpoint || !updatedDelegateOwnerWallet) {
+    throw new Error('Missing required params')
+  }
+
+  try {
+    console.log(`Updating delegateOwnerWallet for ${serviceType} ${serviceEndpoint} with new wallet ${updatedDelegateOwnerWallet}`)
+    const tx = await audiusLibs.ethContracts.ServiceProviderFactoryClient.updateDelegateOwnerWallet(
+      serviceType, serviceEndpoint, updatedDelegateOwnerWallet
+    )
+    console.log(`Successfully updated delegateOwnerWallet for ${serviceType} ${serviceEndpoint} with new wallet ${updatedDelegateOwnerWallet} - ${JSON.stringify(tx, null, 2)}`)
+  } catch (e) {
+    throw new Error(`Failed to update delegateOwnerWallet for ${serviceType} ${serviceEndpoint} with new wallet ${updatedDelegateOwnerWallet} || ERROR ${e}`)
+  }
+}
+
 /**
  * Local only
  * @param {Object} audiusLibs fully formed audius libs instance with eth contracts connection
@@ -119,4 +135,4 @@ eth-contracts delegateWallet=${cnode.delegateOwnerWallet}, data-contracts delega
   }
 }
 
-module.exports = { getStakingParameters, registerLocalService, deregisterLocalService, queryLocalServices }
+module.exports = { getStakingParameters, registerLocalService, deregisterLocalService, queryLocalServices, updateServiceDelegateOwnerWallet }

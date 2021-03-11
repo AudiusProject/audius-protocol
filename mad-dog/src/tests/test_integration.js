@@ -19,7 +19,8 @@ const {
   addUsers,
   r6,
   ensureReplicaSetSyncIsConsistent,
-  upgradeUsersToCreators
+  upgradeUsersToCreators,
+  delay
 } = require('../helpers.js')
 const { getContentNodeEndpoints } = require('@audius/service-commands')
 const {
@@ -30,7 +31,8 @@ const {
   verifyCIDExistsOnCreatorNode,
   uploadPhotoAndUpdateMetadata,
   setCreatorNodeEndpoint,
-  updateCreator
+  updateCreator,
+  getURSMContentNodes
 } = ServiceCommands
 
 // NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
@@ -53,6 +55,31 @@ module.exports = coreIntegration = async ({
   enableFaultInjection
 }) => {
   // Begin: Test Setup
+
+  // If running with UserReplicaSetManager deployed, wait until all Content Nodes are registered on it
+  const URSMClient = await executeOne(0, libs => libs.libsInstance.contracts.UserReplicaSetManagerClient)
+  if (URSMClient) {
+    let retryCount = 0
+    const retryLimit = 10
+    const retryIntervalMs = 10000 // 10sec
+    while (true) {
+      console.log(`Ensuring correct URSM state with interval ${retryIntervalMs} || attempt #${retryCount} ...`)
+
+      const URSMContentNodes = await executeOne(0, libs => getURSMContentNodes(libs))
+
+      if (URSMContentNodes.length === numCreatorNodes) {
+        break
+      }
+
+      if (retryCount >= retryLimit) {
+        return { error: `URSM state not correctly initialized after ${retryIntervalMs * retryLimit}ms` }
+      }
+
+      retryCount++
+
+      await delay(retryIntervalMs)
+    }
+  }
 
   // create tmp storage dir
   await fs.ensureDir(TEMP_STORAGE_PATH)
@@ -390,6 +417,12 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
   return !failedCIDs.length
 }
 
+/**
+ * NOTE - function name is inaccurate
+ *
+ * Confirms replica set is synced, metadata is available from every replica.
+ * Then uploads a photo and updates metadata, and performs validation once again.
+ */
 async function checkUserMetadataAndClockValues ({
   walletIndexes,
   walletIdMap,

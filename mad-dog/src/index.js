@@ -12,7 +12,7 @@ const {
 
 // Configuration.
 // Should be CLI configurable in the future.
-const DEFAULT_NUM_CREATOR_NODES = 3
+const DEFAULT_NUM_CREATOR_NODES = 4
 const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
@@ -215,7 +215,7 @@ async function main () {
         break
       }
       default:
-        logger.error('Usage: one of either `up`, `down`, `test`, or `test-ci`.')
+        logger.error('Usage: one of either `up`, `down`, `test`, `test-ci`, `test-ursm`, `test-snapback`.')
     }
     process.exit()
   } catch (e) {
