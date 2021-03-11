@@ -319,7 +319,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
       // since we have other fallbacks, keep going on with sync
-      req.logger.error(`Error in _nodeSync calling _initBootstrapAndRefreshPeers`, e)
+      req.logger.error(`Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`, e)
     }
 
     /**
@@ -569,31 +569,27 @@ async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redi
   req.logger.info(redisKey, 'Initializing Bootstrap Peers:')
   const ipfs = req.app.get('ipfsAPI')
 
-  try {
-    // Get own IPFS node's peer addresses
-    const ipfsID = await ipfs.id()
-    if (!ipfsID.hasOwnProperty('addresses')) {
-      throw new Error('failed to retrieve ipfs node addresses')
+  // Get own IPFS node's peer addresses
+  const ipfsID = await ipfs.id()
+  if (!ipfsID.hasOwnProperty('addresses')) {
+    throw new Error('failed to retrieve ipfs node addresses')
+  }
+  const ipfsPeerAddresses = ipfsID.addresses
+
+  // For each targetPeerAddress, add to trusted peer list and open connection.
+  for (let targetPeerAddress of targetIPFSPeerAddresses) {
+    if (targetPeerAddress.includes('ip6') || targetPeerAddress.includes('127.0.0.1')) continue
+    if (ipfsPeerAddresses.includes(targetPeerAddress)) {
+      req.logger.info(redisKey, 'ipfs addresses are same - do not connect')
+      continue
     }
-    const ipfsPeerAddresses = ipfsID.addresses
 
-    // For each targetPeerAddress, add to trusted peer list and open connection.
-    for (let targetPeerAddress of targetIPFSPeerAddresses) {
-      if (targetPeerAddress.includes('ip6') || targetPeerAddress.includes('127.0.0.1')) continue
-      if (ipfsPeerAddresses.includes(targetPeerAddress)) {
-        req.logger.info(redisKey, 'ipfs addresses are same - do not connect')
-        continue
-      }
+    // Add to list of bootstrap peers.
+    let results = await ipfs.bootstrap.add(targetPeerAddress)
+    req.logger.info(redisKey, 'ipfs bootstrap add results:', results)
 
-      // Add to list of bootstrap peers.
-      let results = await ipfs.bootstrap.add(targetPeerAddress)
-      req.logger.info(redisKey, 'ipfs bootstrap add results:', results)
-
-      // Manually connect to peer.
-      results = await ipfs.swarm.connect(targetPeerAddress)
-      req.logger.info(redisKey, 'peer connection results:', results.Strings[0])
-    }
-  } catch (e) {
-    req.logger.error(`Error running _initBootstrapAndRefreshPeers`, e)
+    // Manually connect to peer.
+    results = await ipfs.swarm.connect(targetPeerAddress)
+    req.logger.info(redisKey, 'peer connection results:', results.Strings[0])
   }
 }
