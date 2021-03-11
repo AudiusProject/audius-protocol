@@ -106,9 +106,11 @@ def get_latest_block(db):
 
 def update_latest_block_redis():
     latest_block_from_chain = update_task.web3.eth.getBlock('latest', True)
+    default_indexing_interval_seconds = int(update_task.shared_config["discprov"]["block_processing_interval_sec"])
     redis = update_task.redis
-    redis.set(latest_block_redis_key, latest_block_from_chain.number)
-    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
+    # these keys have a TTL which is the indexing interval
+    redis.set(latest_block_redis_key, latest_block_from_chain.number, ex=default_indexing_interval_seconds)
+    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex(), ex=default_indexing_interval_seconds)
 
 def fetch_tx_receipt(transaction):
     web3 = update_task.web3
