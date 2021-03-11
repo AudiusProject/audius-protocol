@@ -5,16 +5,19 @@ from src.models import Playlist, Save, SaveType, RepostType, Follow
 from src.tasks.generate_trending import time_delta_map
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_repost_counts, get_karma, get_save_counts, \
-     populate_playlist_metadata, get_users_ids, get_users_by_id
+     populate_playlist_metadata, get_users_ids, get_users_by_id, populate_track_metadata
 from src.queries import response_name_constants
 from src.queries.get_trending_tracks import z
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.utils.redis_cache import use_redis_cache
+from src.queries.get_playlist_tracks import get_playlist_tracks
+from src.api.v1.helpers import extend_playlist, extend_track
 
 logger = logging.getLogger(__name__)
 
-TRENDING_LIMIT = 100
+TRENDING_LIMIT = 30
 TRENDING_TTL_SEC = 30 * 60
+PLAYLIST_TRACKS_LIMIT = 5
 
 def get_scorable_playlist_data(session, time_range):
     """Gets data about playlists to be scored. Returns:
@@ -46,7 +49,7 @@ def get_scorable_playlist_data(session, time_range):
         .filter(
             Save.is_current == True,
             Save.is_delete == False,
-            Save.save_type == SaveType.playlist,
+            Save.save_type == SaveType.playlist, # Albums are filtered out
             Save.created_at > datetime.now() - delta,
             Playlist.is_current == True,
             Playlist.is_delete == False,
@@ -145,6 +148,11 @@ def make_get_unpopulated_playlists(session, time_range):
         playlist_ids = [playlist["playlist_id"] for playlist in sorted_playlists]
         playlists = get_unpopulated_playlists(session, playlist_ids)
 
+        playlist_tracks_map = get_playlist_tracks({"playlists": playlists})
+
+        for playlist in playlists:
+            playlist["tracks"] = playlist_tracks_map[playlist["playlist_id"]]
+
         return (playlists, playlist_ids)
     return wrapped
 
@@ -158,6 +166,7 @@ def get_trending_playlists(args):
         current_user_id = args.get("current_user_id", None)
         with_users = args.get("with_users", False)
         time = args.get("time")
+        limit, offset = args.get("limit"), args.get("offset")
         key = make_trending_cache_key(time)
 
         # Get unpopulated playlists,
@@ -168,6 +177,11 @@ def get_trending_playlists(args):
             make_get_unpopulated_playlists(session, time)
         )
 
+        # Apply limit + offset early to reduce the amount of
+        # population work we have to do
+        playlists = playlists[offset: limit + offset]
+        playlist_ids = playlist_ids[offset: limit + offset]
+
         # Populate playlist metadata
         playlists = populate_playlist_metadata(
             session,
@@ -177,20 +191,46 @@ def get_trending_playlists(args):
             [SaveType.playlist, SaveType.album],
             current_user_id
         )
+        for playlist in playlists:
+            playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
+
+        playlists_map = {playlist['playlist_id']: playlist for playlist in playlists}
+
+        # populate track metadata
+        tracks = []
+        for playlist in playlists:
+            playlist_tracks = playlist["tracks"]
+            tracks.extend(playlist_tracks)
+        track_ids = [track["track_id"] for track in tracks]
+
+        populated_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        # track_id -> populated_track
+        populated_track_map = {track["track_id"]: track for track in populated_tracks}
+        # add them back to playlist
+        for playlist in playlists_map.values():
+            for i in range(len(playlist["tracks"])):
+                track_id = playlist["tracks"][i]["track_id"]
+                populated = populated_track_map[track_id]
+                playlist["tracks"][i] = populated
+                playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
 
         # re-sort them to original order, because populate_playlist_metadata
         # unsorts.
-        playlists_map = {playlist['playlist_id']: playlist for playlist in playlists}
         sorted_playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
+
+        # TODO: Could we do this before?
 
         # Add users if we requested
         # (always requested for `full` endpoint)
-        if with_users:
-            user_id_list = get_users_ids(sorted_playlists)
-            users = get_users_by_id(session, user_id_list, current_user_id)
-            for playlist in sorted_playlists:
-                user = users[playlist['playlist_owner_id']]
-                if user:
-                    playlist['user'] = user
+        # this could *also* probably happen within unpopulated playlists?
+        # if with_users:
+        #     user_id_list = get_users_ids(sorted_playlists)
+        #     users = get_users_by_id(session, user_id_list, current_user_id)
+        #     for playlist in sorted_playlists:
+        #         user = users[playlist['playlist_owner_id']]
+        #         if user:
+        #             playlist['user'] = user
 
+
+        playlists = list(map(extend_playlist, playlists))
         return sorted_playlists
