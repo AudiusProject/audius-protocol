@@ -102,7 +102,7 @@ import {
 } from 'containers/sign-on/store/actions'
 import { setTheme } from 'store/application/ui/theme/actions'
 import lazyWithPreload from 'utils/lazyWithPreload'
-import { initializeSentry } from 'utils/sentry'
+import { initializeSentry } from 'services/sentry'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components/general/header/desktop/Header'
 import { HeaderContextConsumer } from 'components/general/header/mobile/HeaderContextProvider'
@@ -325,16 +325,6 @@ class App extends Component {
     ) {
       // Let the UI flush
       setImmediate(this.props.setReady)
-    }
-
-    // Update Sentry scope
-    if (prevProps.userId !== this.props.userId) {
-      Sentry.configureScope(currentScope => {
-        currentScope.setUser({
-          id: this.props.userId,
-          username: this.props.userHandle
-        })
-      })
     }
 
     if (
