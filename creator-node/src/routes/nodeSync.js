@@ -169,7 +169,7 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Multi wallet syncs are temporarily disabled`)
     }
 
-    // Log syncType
+    // If sync_type body param provided, log it (param is currently only used for logging)
     const syncType = req.body.sync_type
     if (syncType) {
       req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)

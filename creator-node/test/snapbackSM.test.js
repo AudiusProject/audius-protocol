@@ -1,8 +1,9 @@
 const nock = require('nock')
-const { SnapbackSM, SyncPriority, SyncType } = require('../src/snapbackSM')
+const assert = require('assert')
+
+const { SnapbackSM, SyncType } = require('../src/snapbackSM')
 const models = require('../src/models')
 const { getLibsMock } = require('./lib/libsMock')
-const assert = require('assert')
 const utils = require('../src/utils')
 const { getApp } = require('./lib/app')
 const nodeConfig = require('../src/config')
@@ -31,7 +32,9 @@ describe('test sync queue', function () {
     await server.close()
   })
 
-  it('prioritizes manual syncs', async function () {
+  it('Manual and recurring syncs are processed correctly', async function () {
+    const NodeResponseDelayMs = 500
+
     // Mock out the initial call to sync
     nock(constants.secondaryEndpoint)
       .persist()
@@ -42,7 +45,7 @@ describe('test sync queue', function () {
     nock(constants.secondaryEndpoint)
       .persist()
       .get(() => true)
-      .delayBody(500)
+      .delayBody(NodeResponseDelayMs)
       .reply(200, { data: { clockValue: constants.primaryClockVal } })
 
     // Mock out getUserPrimaryClockValues
@@ -55,53 +58,75 @@ describe('test sync queue', function () {
     await snapback.init(MAX_CONCURRENCY)
 
     // Setup the recurring syncs
-    const recurringSyncIds = new Set()
+    const recurringSyncIds = []
     for (let i = 0; i < 5; i++) {
       const { id } = await snapback.issueSecondarySync({
         userWallet: constants.userWallet,
         secondaryEndpoint: constants.secondaryEndpoint,
         primaryEndpoint: constants.primaryEndpoint,
-        priority: SyncPriority.Low,
         syncType: SyncType.Recurring,
         primaryClockValue: constants.primaryClockVal
       })
-      recurringSyncIds.add(id)
+      recurringSyncIds.push(id)
     }
 
     // setup manual syncs
-    const manualSyncIds = new Set()
+    const manualSyncIds = []
     for (let i = 0; i < 3; i++) {
       const { id } = await snapback.enqueueManualSync({
         userWallet: constants.userWallet,
         secondaryEndpoint: constants.secondaryEndpoint,
         primaryEndpoint: constants.primaryEndpoint,
-        priority: SyncPriority.High,
         syncType: SyncType.Manual
       })
-      manualSyncIds.add(id)
+      manualSyncIds.push(id)
     }
 
-    // Verify we complete manual jobs first
-    let jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
-    let lastRemainingRecurringCount = 0
+    const totalJobsAddedCount = recurringSyncIds.length + manualSyncIds.length
 
-    while (jobIds.length) {
-      const remainingManualCount = jobIds.filter(id => manualSyncIds.has(id)).length
-      const remainingRecurringCount = jobIds.filter(id => recurringSyncIds.has(id)).length
+    let syncQueueJobs = await snapback.getSyncQueueJobs(true)
+    console.log(`SIDTEST SYNCQUEUEJOBS`, JSON.stringify(syncQueueJobs, null, 2))
+    let [
+      manualWaitingJobIDs,
+      recurringWaitingJobIDs
+    ] = [
+      syncQueueJobs.manualWaiting.map(job => job.id),
+      syncQueueJobs.recurringWaiting.map(job => job.id)
+    ]
 
-      // We know we processed a recurring job before a manual job
-      // if there are still manual jobs left to process but we have fewer
-      // unprocessed recurring jobs remaining than we did last iteration through the loop
-      const didProcessRecurringBeforeManual = remainingManualCount > 0 && remainingRecurringCount < lastRemainingRecurringCount
+    // Keep polling until no waiting jobs remaining
+    // Set polling timeout to (2 * totalJobsAddedCount * NodeResponseDelayMs) to ensure jobs are being processed in a timely manner
+    let totalPollingTime = 0
+    while (manualWaitingJobIDs.length || recurringWaitingJobIDs.length) {
+      await utils.timeout(NodeResponseDelayMs)
 
-      if (didProcessRecurringBeforeManual) {
-        assert.fail('Should have done all manual high priority syncs first')
+      totalPollingTime += NodeResponseDelayMs
+      if (totalPollingTime > (2 * totalJobsAddedCount * NodeResponseDelayMs)) {
+        throw new Error('Snapback failed to process sync queue jobs in a timely manner')
       }
 
-      lastRemainingRecurringCount = remainingRecurringCount
-
-      await utils.timeout(500)
-      jobIds = (await snapback.getSyncQueueJobs()).pending.map(job => job.id)
+      syncQueueJobs = await snapback.getSyncQueueJobs(true);
+      [
+        manualWaitingJobIDs,
+        recurringWaitingJobIDs
+      ] = [
+        syncQueueJobs.manualWaiting.map(job => job.id),
+        syncQueueJobs.recurringWaiting.map(job => job.id)
+      ]
     }
+
+    assert.strictEqual(manualWaitingJobIDs.length, 0)
+    assert.strictEqual(recurringWaitingJobIDs.length, 0)
+
+    // // Ensure all jobs were completed
+    // let [
+    //   manualCompletedJobIDs,
+    //   recurringCompletedJobIDs
+    // ] = [
+    //   syncQueueJobs.manualCompleted.map(job => job.id),
+    //   syncQueueJobs.recurringCompleted.map(job => job.id)
+    // ]
+    // assert.strictEqual(manualSyncIds, manualCompletedJobIDs)
+    // assert.strictEqual(recurringSyncIds, recurringCompletedJobIDs)
   })
 })

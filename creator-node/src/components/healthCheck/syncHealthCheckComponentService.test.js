@@ -1,4 +1,4 @@
-const { SyncPriority } = require('../../snapbackSM')
+const { SyncType } = require('../../snapbackSM')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const assert = require('assert')
 
@@ -9,62 +9,71 @@ describe('Test sync health check', function () {
   it('Should return active and pending jobs', async function () {
     const mockSnapback = {
       getSyncQueueJobs: async () => Promise.resolve({
-        pending: [{
-          name: 'RECURRING',
+        recurringWaiting: [{
           id: 2,
           data: {
             syncRequestParameters: {
+              baseURL: SECONDARY,
               data: {
-                wallet: [WALLET]
-              },
-              baseURL: SECONDARY
+                wallet: [WALLET],
+                syncType: SyncType.Recurring
+              }
             }
-          },
-          opts:
-            {
-              priority: SyncPriority.Low
-            }
-        }, {
-          name: 'MANUAL',
-          id: 3,
-          data: {
-            syncRequestParameters: {
-              data: {
-                wallet: [WALLET]
-              },
-              baseURL: SECONDARY
-            }
-          },
-          opts:
-            {
-              priority: SyncPriority.High
-            }
-        }
-        ],
-        active: [{
-          name: 'MANUAL',
+          }
+        }],
+        recurringActive: [{
           id: 1,
           data: {
             syncRequestParameters: {
+              baseURL: SECONDARY,
               data: {
-                wallet: [WALLET]
-              },
-              baseURL: SECONDARY
+                wallet: [WALLET],
+                syncType: SyncType.Recurring
+              }
             }
-          },
-          opts:
-            {
-              priority: SyncPriority.High
+          }
+        }],
+        manualWaiting: [{
+          id: 3,
+          data: {
+            syncRequestParameters: {
+              baseURL: SECONDARY,
+              data: {
+                wallet: [WALLET],
+                syncType: SyncType.Manual
+              }
             }
-        }]
+          }
+        }],
+        manualActive: []
       })
     }
 
+    const expectedResp = {
+      manualWaiting: [{
+        id: 3,
+        syncType: SyncType.Manual,
+        secondary: SECONDARY,
+        wallet: WALLET
+      }],
+      manualActive: [],
+      recurringWaiting: [{
+        id: 2,
+        syncType: SyncType.Recurring,
+        secondary: SECONDARY,
+        wallet: WALLET
+      }],
+      recurringActive: [{
+        id: 1,
+        syncType: SyncType.Recurring,
+        secondary: SECONDARY,
+        wallet: WALLET
+      }],
+      manualWaitingCount: 1,
+      recurringWaitingCount: 1
+    }
+
     const res = await syncHealthCheck({ snapbackSM: mockSnapback })
-    assert.deepStrictEqual(res, {
-      pending: [{ type: 'RECURRING', id: 2, priority: 'LOW', wallet: WALLET, secondary: SECONDARY }, { type: 'MANUAL', id: 3, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],
-      active: [{ type: 'MANUAL', id: 1, priority: 'HIGH', wallet: WALLET, secondary: SECONDARY }],
-      pendingCount: 2
-    })
+    assert.deepStrictEqual(res, expectedResp)
   })
 })
