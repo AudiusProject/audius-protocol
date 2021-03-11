@@ -28,6 +28,7 @@ class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
+   * @param {Set<string>?} blacklist whether or not to exclude specified nodes (default no blacklist)
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
