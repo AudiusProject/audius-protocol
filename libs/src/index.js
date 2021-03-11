@@ -36,11 +36,12 @@ class AudiusLibs {
    */
   static configDiscoveryProvider (
     whitelist = null,
+    blacklist = null,
     reselectTimeout = null,
     selectionCallback = null,
     monitoringCallbacks = {}
   ) {
-    return { whitelist, reselectTimeout, selectionCallback, monitoringCallbacks }
+    return { whitelist, blacklist, reselectTimeout, selectionCallback, monitoringCallbacks }
   }
 
   /**
@@ -275,6 +276,7 @@ class AudiusLibs {
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider(
         this.discoveryProviderConfig.whitelist,
+        this.discoveryProviderConfig.blacklist,
         this.userStateManager,
         this.ethContracts,
         this.web3Manager,
