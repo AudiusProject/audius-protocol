@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
@@ -7,7 +8,8 @@ from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
-    most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key
+    most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key, \
+    trending_tracks_last_completion_redis_key
 
 
 logger = logging.getLogger(__name__)
@@ -148,6 +150,13 @@ def get_health(args, use_redis_cache=True):
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
+    trending_tracks_last_completion = redis.get(
+        trending_tracks_last_completion_redis_key
+    )
+    trending_tracks_age_sec = \
+        (int(time.time()) - int(trending_tracks_last_completion)) \
+        if trending_tracks_last_completion else None
+
     # Get system information monitor values
     sys_info = monitors.get_monitors([
         MONITORS[monitor_names.database_size],
@@ -171,6 +180,7 @@ def get_health(args, use_redis_cache=True):
             "blockhash": latest_indexed_block_hash
         },
         "git": os.getenv("GIT_SHA"),
+        "trending_tracks_age_sec": trending_tracks_age_sec,
         **sys_info
     }
 
