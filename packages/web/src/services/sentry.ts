@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/browser'
+import { ID } from 'models/common/Identifiers'
 
 const analyticsBlacklist = [
   'google-analytics',
@@ -46,5 +47,14 @@ export const initializeSentry = () => {
 
       return event
     }
+  })
+}
+
+export const setSentryUser = (userId: ID, handle: string) => {
+  Sentry.configureScope(currentScope => {
+    currentScope.setUser({
+      id: `${userId}`,
+      username: handle
+    })
   })
 }
