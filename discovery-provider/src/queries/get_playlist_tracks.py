@@ -8,11 +8,22 @@ from src.queries.query_helpers import populate_track_metadata, add_users_to_trac
 
 logger = logging.getLogger(__name__)
 
-# TODO: add args
 def get_playlist_tracks(args):
-    limit = args.get("limit")
-    offset = args.get("offset")
+    """Accepts args:
+        {
+            # optionally pass in full playlists to avoid having to fetch
+            "playlists": Playlist[]
 
+            # not needed if playlists are passed
+            "playlist_ids": string[]
+            "current_user_id": int
+            "populate_tracks": boolean # whether to add users & metadata to tracks
+        }
+
+        Returns: {
+            playlist_id: Playlist
+        }
+    """
     db = get_db_read_replica()
     with db.scoped_session() as session:
         try:
@@ -27,22 +38,16 @@ def get_playlist_tracks(args):
                         Playlist.playlist_id.in_(playlist_ids)
                     )
                 )
+                playlists = list(map(helpers.model_to_dictionary, playlists))
 
-            if playlists is None:
+            if not playlists:
                 return {}
-
-            # { playlist_id -> [track_id] }
-            # playlist_track_ids = {
-            #     playlist["playlist_id"]:
-            #         [track_id['track'] for track_id in playlist.playlist_contents['track_ids']]
-            #     for playlist in playlists
-            # }
 
             # track_id -> [playlist_id]
             track_ids_set = set()
             track_id_map = {}
             for playlist in playlists:
-                playlist_id = playlist["playlist_id"]
+                playlist_id = playlist['playlist_id']
                 for track_id_dict in playlist['playlist_contents']['track_ids']:
                     track_id = track_id_dict['track']
                     track_ids_set.add(track_id)
@@ -50,10 +55,6 @@ def get_playlist_tracks(args):
                         track_id_map[track_id] = [playlist_id]
                     else:
                         track_id_map[track_id].append(playlist_id)
-
-            # TODO:??
-            # if limit and offset:
-            #     playlist_track_ids = playlist_track_ids[offset:offset+limit]
 
             playlist_tracks = (
                 session
@@ -67,14 +68,12 @@ def get_playlist_tracks(args):
 
             tracks = helpers.query_result_to_list(playlist_tracks)
 
-            # TODO: do this later. Maybe we should
-            # populate after?
-            # tracks = populate_track_metadata(
-            #     session, playlist_track_ids, tracks, current_user_id)
+            if args.get("populate_tracks"):
+                current_user_id = args.get("current_user_id")
+                tracks = populate_track_metadata(
+                    session, list(track_ids_set), tracks, current_user_id)
 
-            # TODO: this
-            # if args.get("with_users", False):
-            #     add_users_to_tracks(session, tracks, current_user_id)
+                add_users_to_tracks(session, tracks, current_user_id)
 
             # { playlist_id => [track]}
             playlists_map = {}

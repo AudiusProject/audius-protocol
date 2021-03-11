@@ -37,9 +37,14 @@ def get_playlist(playlist_id, current_user_id):
         return extend_playlist(playlists[0])
     return None
 
-def get_tracks_for_playlist(playlist_ids, current_user_id=None):
-    args = {"playlist_ids": playlist_ids, "with_users": True, "current_user_id": current_user_id}
-    playlist_tracks = get_playlist_tracks(args)
+def get_tracks_for_playlist(playlist_id, current_user_id=None):
+    args = {
+        "playlist_ids": [playlist_id],
+        "populate_tracks": True,
+        "current_user_id": current_user_id
+    }
+    playlist_tracks_map = get_playlist_tracks(args)
+    playlist_tracks = playlist_tracks_map[playlist_id]
     tracks = list(map(extend_track, playlist_tracks))
     return tracks
 

@@ -5,7 +5,8 @@ from src.models import Playlist, Save, SaveType, RepostType, Follow
 from src.tasks.generate_trending import time_delta_map
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_repost_counts, get_karma, get_save_counts, \
-     populate_playlist_metadata, get_users_ids, get_users_by_id, populate_track_metadata
+    populate_playlist_metadata, get_users_ids, get_users_by_id, populate_track_metadata, \
+    add_users_to_tracks
 from src.queries import response_name_constants
 from src.queries.get_trending_tracks import z
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
@@ -202,11 +203,15 @@ def get_trending_playlists(args):
             playlist_tracks = playlist["tracks"]
             tracks.extend(playlist_tracks)
         track_ids = [track["track_id"] for track in tracks]
-
         populated_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+        # Add track users if necessary
+        if with_users:
+            add_users_to_tracks(session, populated_tracks, current_user_id)
+
+        # Re-associate tracks with playlists
         # track_id -> populated_track
         populated_track_map = {track["track_id"]: track for track in populated_tracks}
-        # add them back to playlist
         for playlist in playlists_map.values():
             for i in range(len(playlist["tracks"])):
                 track_id = playlist["tracks"][i]["track_id"]
@@ -214,22 +219,19 @@ def get_trending_playlists(args):
                 playlist["tracks"][i] = populated
                 playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
 
-        # re-sort them to original order, because populate_playlist_metadata
+        # re-sort playlists to original order, because populate_playlist_metadata
         # unsorts.
         sorted_playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
 
-        # TODO: Could we do this before?
-
         # Add users if we requested
         # (always requested for `full` endpoint)
-        # this could *also* probably happen within unpopulated playlists?
-        # if with_users:
-        #     user_id_list = get_users_ids(sorted_playlists)
-        #     users = get_users_by_id(session, user_id_list, current_user_id)
-        #     for playlist in sorted_playlists:
-        #         user = users[playlist['playlist_owner_id']]
-        #         if user:
-        #             playlist['user'] = user
+        if with_users:
+            user_id_list = get_users_ids(sorted_playlists)
+            users = get_users_by_id(session, user_id_list, current_user_id)
+            for playlist in sorted_playlists:
+                user = users[playlist['playlist_owner_id']]
+                if user:
+                    playlist['user'] = user
 
 
         playlists = list(map(extend_playlist, playlists))
