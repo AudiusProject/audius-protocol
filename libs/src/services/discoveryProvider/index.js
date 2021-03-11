@@ -36,7 +36,7 @@ class DiscoveryProvider {
     web3Manager,
     reselectTimeout,
     selectionCallback,
-    monitoringCallbacks = {},
+    monitoringCallbacks = {}
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
