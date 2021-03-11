@@ -4,7 +4,8 @@ import concurrent.futures
 import requests
 
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save, URSMContentNode
+from src.models import Block, User, Track, Repost, Follow, Playlist, \
+    Save, URSMContentNode, AssociatedWallet
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -396,6 +397,9 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_ursm_content_node_entries = (
                 session.query(URSMContentNode).filter(URSMContentNode.blockhash == revert_hash).all()
             )
+            revert_associated_wallets = (
+                session.query(AssociatedWallet).filter(AssociatedWallet.blockhash == revert_hash).all()
+            )
 
             # revert all of above transactions
 
@@ -511,6 +515,25 @@ def revert_blocks(self, db, revert_blocks_list):
                 # Remove outdated user entries
                 logger.info(f"Reverting user: {user_to_revert}")
                 session.delete(user_to_revert)
+
+            for associated_wallets_to_revert in revert_associated_wallets:
+                user_id = associated_wallets_to_revert.user_id
+                previous_associated_wallet_entry = (
+                    session.query(AssociatedWallet)
+                    .filter(AssociatedWallet.user_id == user_id)
+                    .filter(AssociatedWallet.blocknumber < revert_block_number)
+                    .order_by(AssociatedWallet.blocknumber.desc())
+                    .first()
+                )
+                if previous_associated_wallet_entry:
+                    session.query(AssociatedWallet).filter(
+                            AssociatedWallet.user_id == user_id
+                        ).filter(
+                            AssociatedWallet.blocknumber == previous_associated_wallet_entry.blocknumber
+                        ).update({ "is_current": True })
+                # Remove outdated associated wallets
+                logger.info(f"Reverting associated Wallet: {user_id}")
+                session.delete(associated_wallets_to_revert)
 
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
