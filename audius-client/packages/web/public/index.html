@@ -83,7 +83,15 @@
     <!-- end Google Analytics -->
 
     <!-- start reCAPTCHA -->
-    <!-- <script src="https://www.google.com/recaptcha/api.js?render=6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q"></script> -->
+    <script>
+      onRecaptchaLoad = () => grecaptcha.render('recaptcha-hidden', {
+        'sitekey' : '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
+        'size': 'invisible',
+        'expired-callback': () => null,
+        'expired-callback': () => null
+      })
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit"></script>
     <!-- end reCAPTCHA -->
 
     <!-- start Segment -->
@@ -156,5 +164,6 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="root"></div>
+    <div id="recaptcha-hidden" style='display: none;'></div>
   </body>
 </html>
