@@ -49,17 +49,23 @@ import {
   clearAudiusAccountUser
 } from 'services/LocalStorage'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
+import { setSentryUser } from 'services/sentry'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 // Tasks to be run on account successfully fetched, e.g.
 // recording metrics, setting user data
 function* onFetchAccount(account) {
-  if (account && account.handle) yield put(identify(account.handle))
+  if (account && account.handle) {
+    yield put(identify(account.handle))
+    setSentryUser(account.user_id, account.handle)
+  }
+
   if (shouldRequestBrowserPermission()) {
     setHasRequestedBrowserPermission()
     yield put(accountActions.showPushNotificationConfirmation())
   }
+
   yield fork(AudiusBackend.updateUserLocationTimezone)
   yield fork(AudiusBackend.updateUserEvent, {
     hasSignedInNativeMobile: !!NATIVE_MOBILE
