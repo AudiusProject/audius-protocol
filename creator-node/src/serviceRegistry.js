@@ -71,12 +71,15 @@ class ServiceRegistry {
     }
 
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
+    // Retries indefinitely
     await this._recoverNodeL1Identity()
 
     // SnapbackSM init (requires L1 identity)
+    // Retries indefinitely
     await this._initSnapbackSM()
 
     // L2URSMRegistration (requires L1 identity)
+    // Retries indefinitely
     await this._registerNodeOnL2URSM()
 
     this.logInfo(`All services that require server successfully initialized!`)
@@ -97,8 +100,9 @@ class ServiceRegistry {
     const endpoint = config.get('creatorNodeEndpoint')
 
     const retryTimeoutMs = 5000 // 5sec
+    let isInitialized = false
     let attempt = 0
-    while (true) {
+    while (!isInitialized) {
       this.logInfo(`Attempting to recover node L1 identity for ${endpoint} on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`)
 
       try {
@@ -108,6 +112,9 @@ class ServiceRegistry {
 
         if (spID !== 0) {
           this.nodeConfig.set('spID', spID)
+
+          isInitialized = true
+          // Short circuit earlier instead of waiting for another timeout and loop iteration
           break
         }
 
@@ -129,12 +136,16 @@ class ServiceRegistry {
   async _registerNodeOnL2URSM () {
     // Wait until URSM contract has been deployed (for backwards-compatibility)
     let retryTimeoutMs = (this.nodeConfig.get('devMode')) ? 10000 /** 10sec */ : 600000 /* 10min */
-    while (true) {
+
+    let isInitialized = false
+    while (!isInitialized) {
       this.logInfo(`Attempting to init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`)
       try {
         await this.libs.contracts.initUserReplicaSetManagerClient(false)
 
         if (this.libs.contracts.UserReplicaSetManagerClient) {
+          isInitialized = true
+          // Short circuit earlier instead of waiting for another timeout and loop iteration
           break
         }
 
@@ -149,13 +160,17 @@ class ServiceRegistry {
     this.URSMRegistrationManager = new URSMRegistrationManager(this.nodeConfig, this.libs)
 
     // Attempt to register on URSM with infinite retries
+    isInitialized = false
     let attempt = 0
     retryTimeoutMs = 10000 // 10sec
-    while (true) {
+    while (!isInitialized) {
       this.logInfo(`Attempting to register node on L2 URSM on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`)
 
       try {
         await this.URSMRegistrationManager.run()
+
+        isInitialized = true
+        // Short circuit earlier instead of waiting for another timeout and loop iteration
         break
 
         // Swallow any errors during registration attempt
@@ -176,12 +191,16 @@ class ServiceRegistry {
   async _initSnapbackSM () {
     this.snapbackSM = new SnapbackSM(this.nodeConfig, this.libs)
 
+    let isInitialized = false
     const retryTimeoutMs = 10000 // ms
-    while (true) {
+    while (!isInitialized) {
       try {
         this.logInfo(`Attempting to init SnapbackSM on ${retryTimeoutMs}ms interval...`)
 
         await this.snapbackSM.init()
+
+        isInitialized = true
+        // Short circuit earlier instead of waiting for another timeout and loop iteration
         break
 
         // Swallow all init errors
