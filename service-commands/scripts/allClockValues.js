@@ -22,6 +22,36 @@ async function getUsers(discoveryProvider, offset, limit) {
       : []
   }))
 }
+async function getTracks(discoveryProvider, batchSize = 500) {
+  const tracks = []
+
+  let prevBatch = true
+  for (let offset = 0; prevBatch; offset += batchSize) {
+    console.time(`Fetching tracks (${offset} - ${offset + batchSize})`)
+
+    const batch = (
+      await retry(
+        () =>
+          axios({
+            method: 'get',
+            url: '/tracks',
+            baseURL: discoveryProvider,
+            params: { offset, limit: batchSize }
+          }),
+        { retries: 5 }
+      )
+    ).data.data.map(({ metadata_multihash, owner_id }) => ({
+      metadata_multihash,
+      owner_id
+    }))
+    prevBatch = batch.length === batchSize
+    tracks.push(...batch)
+
+    console.timeEnd(`Fetching tracks (${offset} - ${offset + batchSize})`)
+  }
+
+  return tracks
+}
 async function getClockValues(creatorNode, walletPublicKeys) {
   return (
     await retry(
@@ -37,45 +67,40 @@ async function getClockValues(creatorNode, walletPublicKeys) {
   ).data.users
 }
 async function filterCids(creatorNode, cids) {
-  const result = await Promise.all(
-    cids.map(
-      async cid =>
-        await retry(
-          () =>
-            console.log(creatorNode, cids) ||
-            axios({
-              method: 'head',
-              url: `/ipfs/${cid}`,
-              baseURL: creatorNode,
-              validateStatus: status => status === 200 || status === 404
-            }),
-          { retries: 5 }
-        )
+  return (
+    await retry(
+      () =>
+        axios({
+          method: 'post',
+          url: '/batch_cids_exist',
+          baseURL: creatorNode,
+          data: { cids }
+        }),
+      { retries: 5 }
     )
-  )
-
-  console.log('done', creatorNode, cids)
-
-  return cids.filter((_, idx) => result[idx].status === 200)
+  ).data.cids
+    .filter(cid => cid.exists)
+    .map(cid => cid.cid)
 }
 async function run() {
-  const discoveryProvider = 'https://discoveryprovider.audius.co/'
+  //  const discoveryProvider = 'https://discoveryprovider.audius.co/'
+  const discoveryProvider = 'http://localhost:5000/'
   const batchSize = 50
 
   const tracks = {}
-  JSON.parse(fs.readFileSync('tracks.json')).forEach(
+  ;(await getTracks(discoveryProvider)).forEach(
     ({ owner_id, metadata_multihash }) => {
       tracks[owner_id] = tracks[owner_id] || []
       tracks[owner_id].push(metadata_multihash)
     }
   )
 
-  const prevBatch = true
+  let prevBatch = true
   for (let offset = 0; prevBatch; offset += batchSize) {
     console.time(`${offset} - ${offset + batchSize}`)
 
     const batch = await getUsers(discoveryProvider, offset, batchSize)
-    const prevBatch = batch.length !== 0
+    prevBatch = batch.length !== 0
 
     const wallets = {}
     batch.forEach(({ creator_node_endpoint, wallet }) => {

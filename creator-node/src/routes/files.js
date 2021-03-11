@@ -481,6 +481,26 @@ module.exports = function (app) {
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
 
+  app.post('/batch_cids_exist', handleResponse(async (req, res) => {
+    const { cids } = req.body
+
+    const knownCids = new Set((await models.File.findAll({
+      attributes: ['multihash'],
+      where: {
+        multihash: {
+          [models.Sequelize.Op.in]: cids
+        }
+      }
+    })).map(file => file.multihash))
+
+    return successResponse({
+      cids: cids.map(cid => ({
+        cid,
+        exists: knownCids.has(cid)
+      }))
+    })
+  }))
+
   /**
    * Serve file from FS given a storage path
    * This is a cnode-cnode only route, not to be consumed by clients. It has auth restrictions to only
