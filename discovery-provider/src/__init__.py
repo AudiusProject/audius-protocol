@@ -308,7 +308,8 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_plays", "src.tasks.index_metrics",
                  "src.tasks.index_materialized_views",
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
-                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue"
+                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
+                 "src.tasks.cache_trending_playlists"
                  ],
         beat_schedule={
             "update_discovery_provider": {
@@ -354,6 +355,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "monitoring_queue": {
                 "task": "monitoring_queue",
                 "schedule": timedelta(seconds=60)
+            },
+            "cache_trending_playlists": {
+                "task": "cache_trending_playlists",
+                "schedule": timedelta(minutes=30)
             }
         },
         task_serializer="json",

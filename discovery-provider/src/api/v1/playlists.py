@@ -16,6 +16,7 @@ from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_trending_playlists import get_trending_playlists, TRENDING_LIMIT, TRENDING_TTL_SEC
 from flask.globals import request
+from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +39,18 @@ def get_playlist(playlist_id, current_user_id):
     return None
 
 def get_tracks_for_playlist(playlist_id, current_user_id=None):
-    args = {
-        "playlist_ids": [playlist_id],
-        "populate_tracks": True,
-        "current_user_id": current_user_id
-    }
-    playlist_tracks_map = get_playlist_tracks(args)
-    playlist_tracks = playlist_tracks_map[playlist_id]
-    tracks = list(map(extend_track, playlist_tracks))
-    return tracks
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        args = {
+            "session": session,
+            "playlist_ids": [playlist_id],
+            "populate_tracks": True,
+            "current_user_id": current_user_id
+        }
+        playlist_tracks_map = get_playlist_tracks(args)
+        playlist_tracks = playlist_tracks_map[playlist_id]
+        tracks = list(map(extend_track, playlist_tracks))
+        return tracks
 
 PLAYLIST_ROUTE = "/<string:playlist_id>"
 @ns.route(PLAYLIST_ROUTE)

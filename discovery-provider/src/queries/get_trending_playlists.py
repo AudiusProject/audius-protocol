@@ -149,7 +149,7 @@ def make_get_unpopulated_playlists(session, time_range):
         playlist_ids = [playlist["playlist_id"] for playlist in sorted_playlists]
         playlists = get_unpopulated_playlists(session, playlist_ids)
 
-        playlist_tracks_map = get_playlist_tracks({"playlists": playlists})
+        playlist_tracks_map = get_playlist_tracks({"playlists": playlists, "session": session})
 
         for playlist in playlists:
             playlist["tracks"] = playlist_tracks_map[playlist["playlist_id"]]
@@ -217,7 +217,7 @@ def get_trending_playlists(args):
                 track_id = playlist["tracks"][i]["track_id"]
                 populated = populated_track_map[track_id]
                 playlist["tracks"][i] = populated
-                playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
+            playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
 
         # re-sort playlists to original order, because populate_playlist_metadata
         # unsorts.

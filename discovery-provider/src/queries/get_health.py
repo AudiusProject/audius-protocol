@@ -9,7 +9,7 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
     most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key, \
-    trending_tracks_last_completion_redis_key
+    trending_tracks_last_completion_redis_key, trending_playlists_last_completion_redis_key
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,11 @@ default_healthy_block_diff = int(
     shared_config["discprov"]["healthy_block_diff"])
 default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"])
+
+def get_elapsed_time_redis(redis, redis_key):
+    last_seen = redis.get(redis_key)
+    elapsed_time_in_sec = (int(time.time()) - int(last_seen)) if last_seen else None
+    return elapsed_time_in_sec
 
 # Returns DB block state & diff
 def _get_db_block_state():
@@ -150,12 +155,8 @@ def get_health(args, use_redis_cache=True):
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
-    trending_tracks_last_completion = redis.get(
-        trending_tracks_last_completion_redis_key
-    )
-    trending_tracks_age_sec = \
-        (int(time.time()) - int(trending_tracks_last_completion)) \
-        if trending_tracks_last_completion else None
+    trending_tracks_age_sec = get_elapsed_time_redis(redis, trending_tracks_last_completion_redis_key)
+    trending_playlists_age_sec = get_elapsed_time_redis(redis, trending_playlists_last_completion_redis_key)
 
     # Get system information monitor values
     sys_info = monitors.get_monitors([
@@ -181,6 +182,7 @@ def get_health(args, use_redis_cache=True):
         },
         "git": os.getenv("GIT_SHA"),
         "trending_tracks_age_sec": trending_tracks_age_sec,
+        "trending_playlists_age_sec": trending_playlists_age_sec,
         **sys_info
     }
 
