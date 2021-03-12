@@ -1,12 +1,9 @@
-from functools import reduce
 import logging
-from sqlalchemy import asc, desc, func
 
 from src.models import AssociatedWallet
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
-
 
 def get_associated_user_id(args):
     """
@@ -14,7 +11,7 @@ def get_associated_user_id(args):
 
     Args:
         args: dict The parsed args from the request
-        args.wallet: string The wallet to find associated with an user id 
+        args.wallet: string The wallet to find associated with an user id
 
     Returns:
         number representing the user id

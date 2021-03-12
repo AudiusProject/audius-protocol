@@ -1,6 +1,4 @@
-from functools import reduce
 import logging
-from sqlalchemy import asc, desc, func
 
 from src.models import AssociatedWallet
 from src.utils import db_session
@@ -14,7 +12,7 @@ def get_associated_user_wallet(args):
 
     Args:
         args: dict The parsed args from the request
-        args.user_id: number The blockchain user id 
+        args.user_id: number The blockchain user id
 
     Returns:
         Array of strings representing the user's associated wallets
@@ -28,4 +26,4 @@ def get_associated_user_wallet(args):
             .filter(AssociatedWallet.user_id == args.get('user_id'))
             .all()
         )
-        return [wallet for [wallet] in user_wallet]        
+        return [wallet for [wallet] in user_wallet]

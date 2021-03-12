@@ -39,9 +39,7 @@
                     "default": null
                 },
                 "associated_wallets": {
-                    "type": ["object", "null"],
-                    "$ref": "#/definitions/AssociatedWallets",
-                    "default": null
+                    "$ref": "#/definitions/AssociatedWallets"
                 }
             },
             "required": [
@@ -63,15 +61,28 @@
             "title": "CID"
         },
         "AssociatedWallets": {
-            "type": "object",
+            "type": ["object", "null"],
+            "default": null,
             "patternProperties": {
-                "^0x[a-fA-F0-9]{40}$": { "type": "string" }
+                "^0x[a-fA-F0-9]{40}$": { "$ref": "#/definitions/WalletMetadata" }
             },
             "additionalProperties": false,
             "properties": {},
             "required": [],
             "$comment": "",
             "title": "AssociatedWallets"
+        },
+        "WalletMetadata": {
+            "type": ["object"],
+            "additionalProperties": true,
+            "properties": {
+                "signature": {
+                    "type": "string"
+                }
+            },
+            "required": ["signature"],
+            "$comment": "",
+            "title": "WalletMetadata"
         }
     }
 }

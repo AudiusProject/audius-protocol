@@ -527,10 +527,10 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_associated_wallet_entry:
                     session.query(AssociatedWallet).filter(
-                            AssociatedWallet.user_id == user_id
-                        ).filter(
-                            AssociatedWallet.blocknumber == previous_associated_wallet_entry.blocknumber
-                        ).update({ "is_current": True })
+                        AssociatedWallet.user_id == user_id
+                    ).filter(
+                        AssociatedWallet.blocknumber == previous_associated_wallet_entry.blocknumber
+                    ).update({"is_current": True})
                 # Remove outdated associated wallets
                 logger.info(f"Reverting associated Wallet: {user_id}")
                 session.delete(associated_wallets_to_revert)
