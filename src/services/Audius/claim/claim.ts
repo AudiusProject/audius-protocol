@@ -34,8 +34,8 @@ export default class Claim {
   // Get the amount funded per round in wei
   async getFundsPerRound(): Promise<BN> {
     await this.aud.hasPermissions()
-    const info = await this.getContract().getFundsPerRound()
-    return info
+    const claimAmount = await this.getContract().getFundsPerRound()
+    return new BN(claimAmount)
   }
 
   // Get the total amount claimed in the current round

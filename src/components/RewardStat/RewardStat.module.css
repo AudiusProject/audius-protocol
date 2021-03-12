@@ -1,50 +1,43 @@
-.statsChip {
-  padding: 24px 0px;
+/* Stats Container */
+
+.container {
+  padding: 0px 16px;
   display: inline-flex;
   flex-direction: column;
   justify-content: center;
   min-width: 228px;
+  min-height: 150px;
   box-sizing: border-box;
+  align-items: center;
 }
 
-.divider {
-  width: 100%;
-  border-top: 1px solid #3F415B;
-  margin: 22px 0px 24px;
-}
-
-.tooltipStyle {
+.stat {
   font-family: var(--font-family);
-  font-weight: 800;
-  font-size: 48px;
-  line-height: 48px;
-  margin-bottom: 6px;
+  font-weight: 900;
+  font-size: 64px;
+  height: 76px;
   text-align: center;
-
+  display: inline;
   background: -webkit-linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  justify-content: center;
-
-  display: inline;
 }
 
-.label {
+.label,
+.description {
   font-family: var(--font-family);
   font-weight: var(--font-bold);
-  font-size: var(--font-s);
-  line-height: 17px;
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-align: center;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-
   color: #BEC5E0;
-  text-align: center;
+  user-select: none;
 }
 
 .loadingContainer {
-  height: 100%;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
+  height: 62px;
   display: flex;
+  align-items: center;
 }

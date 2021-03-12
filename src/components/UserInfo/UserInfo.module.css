@@ -2,7 +2,7 @@
 .userInfo {
   position: relative;
   flex: 1;
-  padding: 24px 0px;
+  padding: 24px 0px 18px;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -55,17 +55,18 @@
   text-align: center;
 
   color: #BEC5E0;
-  margin-bottom: 8px
 }
 
 .userName {
   font-size: var(--font-2xl);
   min-height: var(--font-2xl);
+  margin-bottom: 8px
 }
 
 
 .userWallet {
   font-size: var(--font-s);
+  margin-bottom: 24px
 }
 
 .buttonContainer {
