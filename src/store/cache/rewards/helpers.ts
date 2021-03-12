@@ -20,7 +20,7 @@ export const getOperatorTotalActiveStake = (user: Operator) => {
 export const getOperatorTotalLocked = (user: Operator) => {
   const lockedPendingDecrease =
     (user as Operator).pendingDecreaseStakeRequest?.amount ?? new BN('0')
-  // Another way to geth the locked delegation value from contract read
+  // Another way to get the locked delegation value from contract read
   // const lockedDelegation await aud.Delegate.getTotalLockedDelegationForServiceProvider(user.wallet)
   const lockedDelegation = user.delegators.reduce((totalLocked, delegate) => {
     return totalLocked.add(delegate.amount.sub(delegate.activeAmount))

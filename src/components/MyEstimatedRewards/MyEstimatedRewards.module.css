@@ -19,7 +19,7 @@
   font-size: var(--font-m);
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: #777C96;
+  color: var(--neutral-light-4);
 }
 
 .value {
@@ -29,5 +29,5 @@
   text-align: right;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: #BEC5E0;
+  color: var(--neutral);
 }

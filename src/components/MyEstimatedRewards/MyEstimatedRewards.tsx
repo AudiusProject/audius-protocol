@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react'
-import BN from 'bn.js'
 
 import Paper from 'components/Paper'
 import styles from './MyEstimatedRewards.module.css'
@@ -46,13 +45,14 @@ const MyEstimatedRewards: React.FC<MyEstimatedRewardsProps> = ({ wallet }) => {
   const isLoading =
     weeklyRewards.status === Status.Loading ||
     annualRewards.status === Status.Loading
-  const annual = <DisplayAudio amount={annualRewards?.reward ?? new BN('0')} />
+  const annual = annualRewards.reward ? (
+    <DisplayAudio amount={annualRewards.reward} />
+  ) : null
 
-  const weekly = (
-    <DisplayAudio
-      amount={'reward' in weeklyRewards ? weeklyRewards.reward : new BN('0')}
-    />
-  )
+  const weekly =
+    'reward' in weeklyRewards ? (
+      <DisplayAudio amount={weeklyRewards.reward} />
+    ) : null
 
   return (
     <Paper className={styles.container}>
