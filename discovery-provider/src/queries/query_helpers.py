@@ -900,26 +900,33 @@ def get_repost_counts(
     return repost_counts_query.all()
 
 
-def get_karma(session, track_ids, time=None):
-    """Gets the total karma for provided track_ids"""
+def get_karma(session, ids, time=None, is_playlist=False):
+    """Gets the total karma for provided ids (track or playlist)"""
+
+    repost_type = (RepostType.playlist if is_playlist else RepostType.track)
+    save_type = (SaveType.playlist if is_playlist else SaveType.track)
+
     reposters = (
         session.query(
             Repost.user_id.label('user_id'),
-            Repost.repost_item_id.label('track_id')
+            Repost.repost_item_id.label('item_id')
         )
         .filter(
-            Repost.repost_item_id.in_(track_ids),
-            Repost.is_current == True
+            Repost.repost_item_id.in_(ids),
+            Repost.is_current == True,
+            Repost.repost_type == repost_type
         )
     )
+
     savers = (
         session.query(
             Save.user_id.label('user_id'),
-            Save.save_item_id.label('track_id')
+            Save.save_item_id.label('item_id')
         )
         .filter(
-            Save.save_item_id.in_(track_ids),
-            Save.is_current == True
+            Save.save_item_id.in_(ids),
+            Save.is_current == True,
+            Save.save_type == save_type
         )
     )
     if time is not None:
@@ -935,7 +942,7 @@ def get_karma(session, track_ids, time=None):
 
     query = (
         session.query(
-            saves_and_reposts.c.track_id,
+            saves_and_reposts.c.item_id,
             func.count(Follow.followee_user_id)
         )
         .select_from(saves_and_reposts)
@@ -946,7 +953,7 @@ def get_karma(session, track_ids, time=None):
         .filter(
             Follow.is_current == True
         )
-        .group_by(saves_and_reposts.c.track_id)
+        .group_by(saves_and_reposts.c.item_id)
     )
 
     return query.all()
