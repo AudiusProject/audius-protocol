@@ -190,55 +190,51 @@ def parse_user_event(
     # New updated_at timestamp
     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
 
-    # If creator, look up metadata multihash in IPFS and override with metadata fields
-    metadata_overrides = get_metadata_overrides_from_ipfs(
-        update_task, user_record
-    )
-
-    if metadata_overrides:
-        # metadata_overrides properties are defined in get_metadata_overrides_from_ipfs
-        if "profile_picture" in metadata_overrides and \
-            metadata_overrides["profile_picture"]:
-            user_record.profile_picture = metadata_overrides["profile_picture"]
-
-        if "profile_picture_sizes" in metadata_overrides and \
-            metadata_overrides["profile_picture_sizes"]:
-            user_record.profile_picture = metadata_overrides["profile_picture_sizes"]
-
-        if "cover_photo" in metadata_overrides and \
-            metadata_overrides["cover_photo"]:
-            user_record.cover_photo = metadata_overrides["cover_photo"]
-
-        if "cover_photo_sizes" in metadata_overrides and \
-            metadata_overrides["cover_photo_sizes"]:
-            user_record.cover_photo = metadata_overrides["cover_photo_sizes"]
-
-        if "bio" in metadata_overrides and \
-            metadata_overrides["bio"]:
-            user_record.bio = metadata_overrides["bio"]
-
-        if "name" in metadata_overrides and \
-            metadata_overrides["name"]:
-            user_record.name = metadata_overrides["name"]
-
-        if "location" in metadata_overrides and \
-            metadata_overrides["location"]:
-            user_record.location = metadata_overrides["location"]
-
-        if "collectibles" in metadata_overrides and \
-            metadata_overrides["collectibles"] and \
-            isinstance(metadata_overrides["collectibles"], dict) and \
-            metadata_overrides["collectibles"].items():
-            user_record.has_collectibles = True
-
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
-    if event_type == user_event_types_lookup["update_multihash"] and user_record.handle:
-        user_ipfs_metadata = metadata_overrides
-        if not user_record.is_creator:
-            user_ipfs_metadata = get_ipfs_metadata(update_task, user_record)
-        if 'associated_wallets' in user_ipfs_metadata:
-            update_user_associated_wallets(session, update_task, user_record, user_ipfs_metadata['associated_wallets'])
+    if event_type == user_event_types_lookup["update_multihash"]:
+         # If creator, look up metadata multihash in IPFS and override with metadata fields
+        ipfs_metadata = get_ipfs_metadata(
+            update_task, user_record
+        )
 
+        if ipfs_metadata:
+            # ipfs_metadata properties are defined in get_ipfs_metadata
+            if "profile_picture" in ipfs_metadata and \
+                ipfs_metadata["profile_picture"]:
+                user_record.profile_picture = ipfs_metadata["profile_picture"]
+
+            if "profile_picture_sizes" in ipfs_metadata and \
+                ipfs_metadata["profile_picture_sizes"]:
+                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
+
+            if "cover_photo" in ipfs_metadata and \
+                ipfs_metadata["cover_photo"]:
+                user_record.cover_photo = ipfs_metadata["cover_photo"]
+
+            if "cover_photo_sizes" in ipfs_metadata and \
+                ipfs_metadata["cover_photo_sizes"]:
+                user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+
+            if "bio" in ipfs_metadata and \
+                ipfs_metadata["bio"]:
+                user_record.bio = ipfs_metadata["bio"]
+
+            if "name" in ipfs_metadata and \
+                ipfs_metadata["name"]:
+                user_record.name = ipfs_metadata["name"]
+
+            if "location" in ipfs_metadata and \
+                ipfs_metadata["location"]:
+                user_record.location = ipfs_metadata["location"]
+
+            if "collectibles" in ipfs_metadata and \
+                ipfs_metadata["collectibles"] and \
+                isinstance(ipfs_metadata["collectibles"], dict) and \
+                ipfs_metadata["collectibles"].items():
+                user_record.has_collectibles = True
+
+            if 'associated_wallets' in ipfs_metadata:
+                update_user_associated_wallets(session, update_task, user_record, ipfs_metadata['associated_wallets'])
 
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
@@ -327,21 +323,14 @@ def recover_user_id_hash(web3, user_id, signature):
     return wallet_address
 
 
-def get_metadata_overrides_from_ipfs(update_task, user_record):
-    user_metadata = user_metadata_format
-    if user_record.metadata_multihash:
-        user_metadata = get_ipfs_metadata(update_task, user_record)
-    return user_metadata
-
 def get_ipfs_metadata(update_task, user_record):
     user_metadata = user_metadata_format
-    if user_record.metadata_multihash and user_record.handle:
+    if user_record.metadata_multihash:
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
             user_metadata_format
         )
-        logger.warning(f'users.py | {user_metadata}')
-
+        logger.info(f'users.py | {user_metadata}')
     return user_metadata
 
 # Determine whether this user has identity established on the UserReplicaSetManager contract
