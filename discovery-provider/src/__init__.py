@@ -5,7 +5,7 @@ import ast
 import datetime
 import time
 
-from web3 import HTTPProvider, Web3
+from web3 import Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
@@ -24,6 +24,7 @@ from src import exceptions
 from src.queries import queries, search, search_queries, health_check, trending, notifications
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
+from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
@@ -138,11 +139,11 @@ def create_celery(test_config=None):
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
-    web3 = Web3(HTTPProvider(web3endpoint))
+    web3 = Web3(MultiProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
     # Initialize eth web
-    eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
+    eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     global registry
     global user_factory
