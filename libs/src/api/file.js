@@ -39,7 +39,12 @@ class File extends Base {
    *  [String, Bool](gateway, succeeded)
    *  Can be used for tracking metrics on which gateways were used.
    */
-  async fetchCID (cid, creatorNodeGateways, callback = null) {
+  async fetchCID (
+    cid,
+    creatorNodeGateways,
+    callback = null,
+    responseType = 'blob'
+  ) {
     const gateways = creatorNodeGateways
       .concat(publicGateways)
     const urls = gateways.map(gateway => urlJoin(gateway, cid))
@@ -48,7 +53,7 @@ class File extends Base {
       try {
         const { response } = await raceRequests(urls, callback, {
           method: 'get',
-          responseType: 'blob'
+          responseType
         }, /* timeout */ null)
         if (!response) throw new Error(`Could not fetch ${cid}`)
         return response
@@ -63,7 +68,7 @@ class File extends Base {
           try {
             const { response } = await raceRequests(legacyUrls, callback, {
               method: 'get',
-              responseType: 'blob'
+              responseType
             }, /* timeout */ null)
             if (!response) throw new Error(`Could not fetch ${cid} via legacy method`)
             return response

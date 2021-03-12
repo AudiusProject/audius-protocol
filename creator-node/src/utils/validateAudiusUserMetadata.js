@@ -8,7 +8,8 @@ const validateAssociatedWallets = (metadataJSON) => {
   if ('user_id' in metadataJSON && 'associated_wallets' in metadataJSON) {
     const userId = metadataJSON['user_id']
     const walletMappings = metadataJSON['associated_wallets']
-    if (typeof walletMappings !== 'object' || walletMappings === null) return true
+    if (!walletMappings) return true
+    if (typeof walletMappings !== 'object') return true
     const message = `AudiusUserID:${userId}`
     return Object.keys(walletMappings).every(wallet => {
       if (

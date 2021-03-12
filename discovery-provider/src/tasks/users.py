@@ -197,20 +197,39 @@ def parse_user_event(
 
     if metadata_overrides:
         # metadata_overrides properties are defined in get_metadata_overrides_from_ipfs
-        if metadata_overrides["profile_picture"]:
+        if "profile_picture" in metadata_overrides and \
+            metadata_overrides["profile_picture"]:
             user_record.profile_picture = metadata_overrides["profile_picture"]
-        if metadata_overrides["profile_picture_sizes"]:
+
+        if "profile_picture_sizes" in metadata_overrides and \
+            metadata_overrides["profile_picture_sizes"]:
             user_record.profile_picture = metadata_overrides["profile_picture_sizes"]
-        if metadata_overrides["cover_photo"]:
+
+        if "cover_photo" in metadata_overrides and \
+            metadata_overrides["cover_photo"]:
             user_record.cover_photo = metadata_overrides["cover_photo"]
-        if metadata_overrides["cover_photo_sizes"]:
+
+        if "cover_photo_sizes" in metadata_overrides and \
+            metadata_overrides["cover_photo_sizes"]:
             user_record.cover_photo = metadata_overrides["cover_photo_sizes"]
-        if metadata_overrides["bio"]:
+
+        if "bio" in metadata_overrides and \
+            metadata_overrides["bio"]:
             user_record.bio = metadata_overrides["bio"]
-        if metadata_overrides["name"]:
+
+        if "name" in metadata_overrides and \
+            metadata_overrides["name"]:
             user_record.name = metadata_overrides["name"]
-        if metadata_overrides["location"]:
+
+        if "location" in metadata_overrides and \
+            metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
+
+        if "collectibles" in metadata_overrides and \
+            metadata_overrides["collectibles"] and \
+            isinstance(metadata_overrides["collectibles"], dict) and \
+            metadata_overrides["collectibles"].items():
+            user_record.has_collectibles = True
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"] and user_record.handle:
@@ -310,7 +329,7 @@ def recover_user_id_hash(web3, user_id, signature):
 
 def get_metadata_overrides_from_ipfs(update_task, user_record):
     user_metadata = user_metadata_format
-    if user_record.is_creator:
+    if user_record.metadata_multihash:
         user_metadata = get_ipfs_metadata(update_task, user_record)
     return user_metadata
 

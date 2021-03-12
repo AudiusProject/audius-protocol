@@ -156,6 +156,7 @@ class User(Base):
     primary_id = Column(Integer, nullable=True)
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
     replica_set_update_signer = Column(String, nullable=True)
+    has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
