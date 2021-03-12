@@ -268,9 +268,9 @@ class FullPlaylistReposts(Resource):
         return success_response(users)
 
 trending_response = make_response("trending_playlists_response", ns, fields.List(fields.Nested(playlist_model)))
-
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('time', required=False)
+
 @ns.route("/trending")
 class TrendingPlaylists(Resource):
     @record_metrics
@@ -289,13 +289,13 @@ class TrendingPlaylists(Resource):
     @ns.marshal_with(trending_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self):
-        """Gets the top 100 trending playlists for time period on Audius"""
+        """Gets top trending playlists for time period on Audius"""
         args = trending_parser.parse_args()
         time = args.get("time")
         time = "week" if time not in ["week", "month", "year"] else time
         args = {
             "time": time,
-            "with_users": False
+            "with_tracks": False
         }
 
         playlists = get_trending_playlists(args)
@@ -348,7 +348,7 @@ class FullTrendingPlaylists(Resource):
         time = "week" if time not in ["week", "month", "year"] else time
         args = {
             'time': time,
-            'with_users': True,
+            'with_tracks': True,
             'limit': limit,
             'offset': offset
         }

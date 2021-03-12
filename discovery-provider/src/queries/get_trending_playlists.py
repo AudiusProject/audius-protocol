@@ -165,7 +165,7 @@ def get_trending_playlists(args):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         current_user_id = args.get("current_user_id", None)
-        with_users = args.get("with_users", False)
+        with_tracks = args.get("with_tracks", False)
         time = args.get("time")
         limit, offset = args.get("limit"), args.get("offset")
         key = make_trending_cache_key(time)
@@ -180,8 +180,9 @@ def get_trending_playlists(args):
 
         # Apply limit + offset early to reduce the amount of
         # population work we have to do
-        playlists = playlists[offset: limit + offset]
-        playlist_ids = playlist_ids[offset: limit + offset]
+        if limit and offset:
+            playlists = playlists[offset: limit + offset]
+            playlist_ids = playlist_ids[offset: limit + offset]
 
         # Populate playlist metadata
         playlists = populate_playlist_metadata(
@@ -197,42 +198,40 @@ def get_trending_playlists(args):
 
         playlists_map = {playlist['playlist_id']: playlist for playlist in playlists}
 
-        # populate track metadata
-        tracks = []
-        for playlist in playlists:
-            playlist_tracks = playlist["tracks"]
-            tracks.extend(playlist_tracks)
-        track_ids = [track["track_id"] for track in tracks]
-        populated_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        if with_tracks:
+            # populate track metadata
+            tracks = []
+            for playlist in playlists:
+                playlist_tracks = playlist["tracks"]
+                tracks.extend(playlist_tracks)
+            track_ids = [track["track_id"] for track in tracks]
+            populated_tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-        # Add track users if necessary
-        if with_users:
+            # Add users if necessary
             add_users_to_tracks(session, populated_tracks, current_user_id)
 
-        # Re-associate tracks with playlists
-        # track_id -> populated_track
-        populated_track_map = {track["track_id"]: track for track in populated_tracks}
-        for playlist in playlists_map.values():
-            for i in range(len(playlist["tracks"])):
-                track_id = playlist["tracks"][i]["track_id"]
-                populated = populated_track_map[track_id]
-                playlist["tracks"][i] = populated
-            playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
+            # Re-associate tracks with playlists
+            # track_id -> populated_track
+            populated_track_map = {track["track_id"]: track for track in populated_tracks}
+            for playlist in playlists_map.values():
+                for i in range(len(playlist["tracks"])):
+                    track_id = playlist["tracks"][i]["track_id"]
+                    populated = populated_track_map[track_id]
+                    playlist["tracks"][i] = populated
+                playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
 
         # re-sort playlists to original order, because populate_playlist_metadata
         # unsorts.
         sorted_playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
 
-        # Add users if we requested
-        # (always requested for `full` endpoint)
-        if with_users:
-            user_id_list = get_users_ids(sorted_playlists)
-            users = get_users_by_id(session, user_id_list, current_user_id)
-            for playlist in sorted_playlists:
-                user = users[playlist['playlist_owner_id']]
-                if user:
-                    playlist['user'] = user
+        # Add users to playlists
+        user_id_list = get_users_ids(sorted_playlists)
+        users = get_users_by_id(session, user_id_list, current_user_id)
+        for playlist in sorted_playlists:
+            user = users[playlist['playlist_owner_id']]
+            if user:
+                playlist['user'] = user
 
-
+        # Extend the playlists
         playlists = list(map(extend_playlist, playlists))
         return sorted_playlists
