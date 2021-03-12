@@ -17,7 +17,8 @@ const USER_PROPS = [
   'cover_photo_sizes',
   'bio',
   'location',
-  'creator_node_endpoint'
+  'creator_node_endpoint',
+  'associated_wallets'
 ]
 // User metadata fields that are required on the metadata object and only can have
 // non-null values

@@ -37,6 +37,11 @@
                 "location": {
                     "type": ["string", "null"],
                     "default": null
+                },
+                "associated_wallets": {
+                    "type": ["object", "null"],
+                    "$ref": "#/definitions/AssociatedWallets",
+                    "default": null
                 }
             },
             "required": [
@@ -56,6 +61,17 @@
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
+        },
+        "AssociatedWallets": {
+            "type": "object",
+            "patternProperties": {
+                "^0x[a-fA-F0-9]{40}$": { "type": "string" }
+            },
+            "additionalProperties": false,
+            "properties": {},
+            "required": [],
+            "$comment": "",
+            "title": "AssociatedWallets"
         }
     }
 }

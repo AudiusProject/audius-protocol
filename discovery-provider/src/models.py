@@ -754,3 +754,22 @@ class UserBalance(Base):
         return f"<UserBalance(\
 user_id={self.user_id},\
 balance={self.balance}>"
+
+class AssociatedWallet(Base):
+    __tablename__ = "associated_wallets"
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    is_delete = Column(Boolean, nullable=False)
+    id = Column(Integer, nullable=False, primary_key=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    wallet = Column(String, nullable=False, index=True)
+
+    def __repr__(self):
+        return f"<AssociatedWallet(blockhash={self.blockhash},\
+blocknumber={self.blocknumber},\
+is_current={self.is_current},\
+is_delete={self.is_delete},\
+id={self.id},\
+user_id={self.user_id},\
+wallet={self.wallet})>"
