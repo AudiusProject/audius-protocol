@@ -18,6 +18,7 @@ import { useModalControls } from 'utils/hooks'
 import { TICKER } from 'utils/consts'
 import { formatAud } from 'utils/format'
 import Loading from 'components/Loading'
+import MyEstimatedRewards from 'components/MyEstimatedRewards'
 
 import desktopStyles from './UserInfo.module.css'
 import mobileStyles from './UserInfoMobile.module.css'
@@ -183,6 +184,7 @@ const UserInfo = ({
       <img className={styles.userImg} src={image} alt={'User Profile'} />
       <div className={styles.userName}>{name}</div>
       <div className={styles.userWallet}>{wallet}</div>
+      <MyEstimatedRewards wallet={wallet} />
     </>
   )
 }

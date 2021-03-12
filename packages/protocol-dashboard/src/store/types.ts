@@ -11,6 +11,7 @@ import { State as PageHistoryState } from 'store/pageHistory/slice'
 import { State as ClaimsState } from 'store/cache/claims/slice'
 import { State as AnalyticsState } from 'store/cache/analytics/slice'
 import { State as MusicState } from 'store/cache/music/slice'
+import { State as RewardsState } from 'store/cache/rewards/slice'
 
 export type AppState = {
   router: RouterState
@@ -27,6 +28,7 @@ export type AppState = {
     claims: ClaimsState
     analytics: AnalyticsState
     music: MusicState
+    rewards: RewardsState
   }
 }
 

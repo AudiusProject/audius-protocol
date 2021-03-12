@@ -16,6 +16,7 @@ import protocol from 'store/cache/protocol/slice'
 import user from 'store/cache/user/slice'
 import proposals from 'store/cache/proposals/slice'
 import votes from 'store/cache/votes/slice'
+import rewards from 'store/cache/rewards/slice'
 import timeline from 'store/cache/timeline/slice'
 import claims from 'store/cache/claims/slice'
 import analytics from 'store/cache/analytics/slice'
@@ -59,7 +60,8 @@ const getReducer = (history: History) => {
       timeline,
       claims,
       analytics,
-      music
+      music,
+      rewards
     })
   })
 }

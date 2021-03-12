@@ -87,11 +87,16 @@ export function toChecksumAddress(this: AudiusClient, wallet: string) {
 }
 
 // Static Helpers
-export function getBNPercentage(n1: BigNumber, n2: BigNumber): number {
+export function getBNPercentage(
+  n1: BigNumber,
+  n2: BigNumber,
+  decimals: number = 2
+): number {
+  const divisor = Math.pow(10, decimals + 1)
   if (n2.toString() === '0') return 0
-  let num = n1.mul(Utils.toBN('1000')).div(n2)
-  if (num.gte(Utils.toBN('1000'))) return 1
-  return num.toNumber() / 1000
+  let num = n1.mul(Utils.toBN(divisor.toString())).div(n2)
+  if (num.gte(Utils.toBN(divisor.toString()))) return 1
+  return num.toNumber() / divisor
 }
 
 export function displayShortAud(amount: BigNumber) {

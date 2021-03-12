@@ -14,6 +14,8 @@ import { GOVERNANCE } from 'utils/routes'
 import TotalStakedStat from 'components/TotalStakedStat'
 import ApiCallsStat from 'components/ApiCallsStat'
 import UniqueUsersStat from 'components/UniqueUsersStat'
+import EstimatedWeeklyStat from 'components/EstimatedWeeklyStat'
+import EstimatedAnnualStat from 'components/EstimatedAnnualStat'
 
 import desktopStyles from './Home.module.css'
 import mobileStyles from './HomeMobile.module.css'
@@ -47,7 +49,10 @@ const Home: React.FC<HomeProps> = (props: HomeProps) => {
         <ApiCallsStat />
         <UniqueUsersStat />
       </div>
-
+      <div className={styles.rewards}>
+        <EstimatedWeeklyStat />
+        <EstimatedAnnualStat />
+      </div>
       {isLoggedIn && <ManageService />}
 
       <Paper className={styles.proposals}>
