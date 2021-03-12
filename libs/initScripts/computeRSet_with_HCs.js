@@ -36,12 +36,11 @@ const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
 const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
-const URSM_WALLET_PRIVATE_KEY = ''
-const NUM_USERS_PER_BATCH_REQUEST = 500
-const SYNC_WAIT_TIME = 120000 /* 1 min */
+const URSM_WALLET_PRIVATE_KEY = '60372e1baf4ead7733cd66c28180bd2833754fc5aad1c095831733b0be63bf14' // data
+const NUM_USERS_PER_BATCH_REQUEST = 5
+const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
 const configureAndInitLibs = async () => {
-
   const audiusLibsConfig = {
     ethWeb3Config: AudiusLibs.configEthWeb3(
       ETH_TOKEN_ADDRESS,
@@ -79,6 +78,61 @@ const configureAndInitLibs = async () => {
   return audiusLibs
 }
 
+async function getLatestUserId () {
+  return (await axios({
+    method: 'get',
+    url: '/latest/user',
+    baseURL: DISCOVERY_NODE_ENDPOINT
+  })).data.data
+}
+
+async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet) {
+  // TODO: use libs call like
+  // const subsetUsers = await audiusLibs.discoveryProvider.getUsers(NUM_USERS_PER_BATCH_REQUEST, 0, [1,2,3,....])
+  const subsetUsers = (await axios({
+    method: 'get',
+    url: '/users',
+    baseURL: DISCOVERY_NODE_ENDPOINT,
+    params: { limit: NUM_USERS_PER_BATCH_REQUEST, offset }
+  })).data.data
+
+  subsetUsers
+    // Filter to users that do not have a CNE
+    .filter(user => !user.creator_node_endpoint)
+    .forEach(user => {
+      // Add userId - wallet mapping
+      userIdToWallet[user.user_id] = user.wallet
+    })
+}
+
+async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
+  // TODO: uncomment later
+  const audiusInfraSpIds = new Set([UMSpId] /* [1, 2, 3, 4/*, UMSpId] */) // when UM is registered, exclude it as secondary
+  let spIdToEndpointAndCount = {}
+
+  const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
+  sps
+    .filter(sp => !audiusInfraSpIds.has(sp.spID))
+    .forEach(sp => {
+      spIdToEndpointAndCount[sp.spID] = { endpoint: sp.endpoint, selected: 0 }
+    })
+
+  // Do health check for all non-Audius SPs
+  const healthCheckedSPs = await Promise.all(
+    Object.entries(spIdToEndpointAndCount)
+      .map(entry => performHealthCheck(entry))
+  )
+
+  console.log('SP Health check responses:', healthCheckedSPs)
+
+  // Filter out unhealthy nodes and retrieve id of each healthy node
+  const spIds = healthCheckedSPs
+    .filter(response => response.status === 200)
+    .map(response => parseInt(response.id))
+
+  return { spIdToEndpointAndCount, spIds }
+}
+
 const performHealthCheck = async spInfo => {
   const endpoint = spInfo[1].endpoint
   const id = spInfo[0]
@@ -103,14 +157,25 @@ const performHealthCheck = async spInfo => {
   return { id, endpoint, status: 500 }
 }
 
-const writeDataToFile = (spIdToEndpointAndCount, userIdToRSet) => {
-  fs.writeFile('computeRSet_Data.txt', `\n<userIds - replica sets>:\n` + JSON.stringify(userIdToRSet), err => {
-    if (err) console.error(`Error with writing <userIds - replica sets> data:`, err)
-    else console.log('Saved <userIds - replica sets> data')
+const writeDataToFile = (spIdToEndpointAndCount, userIdToRSet, offset) => {
+  // Ranges of users that has been processed
+  const start = offset
+  const end = offset + NUM_USERS_PER_BATCH_REQUEST
+  const fileName = `computeRSet_batch_${start}_${end}.txt`
+
+  // Write replica set assignments to file for reference
+  let userIdToSecondariesFileContent = `BATCH ${start} to ${end}\n\nMapping <userId - replica secondaries set>\n${JSON.stringify(userIdToRSet, null, 2)}`
+  let spToEndpointAndCountFilecContent = `\nMapping <spId - {endpoint, number of times selected as a secondary}>\n${JSON.stringify(spIdToEndpointAndCount, null, 2)}`
+
+  console.log('userId to replica set mapping\n', userIdToRSet)
+  console.log('spId to endpoint and num times selected as secondary\n', spIdToEndpointAndCount)
+
+  fs.writeFile(fileName, userIdToSecondariesFileContent, err => {
+    if (err) console.error(`Error with writing to file ${fileName}`, err)
   })
-  fs.appendFile('computeRSet_Data.txt', '\n<service providers - number of times selected as secondary>:\n' + JSON.stringify(spIdToEndpointAndCount), err => {
-    if (err) console.error(`Error with writing <service providers - number of times selected as secondary> data:`, err)
-    else console.log('Saved <service providers - number of times selected as secondary> data')
+
+  fs.writeFile(`computeRSet_selection_count.txt`, spToEndpointAndCountFilecContent, err => {
+    if (err) console.error(`Error with writing to file computeRSet_selection_count.txt`, err)
   })
 }
 
@@ -141,6 +206,75 @@ const getClockValue = async ({ id, endpoint, wallet, timeout = 5000 }) => {
   }
 }
 
+async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondarySpIds, spIdToEndpointAndCount, userIdToWallet, userId, UMSpId) {
+  await Promise.all(
+    replicaSetSecondarySpIds
+      .map(spId => {
+        return syncSecondary({
+          primary: USER_METADATA_ENDPOINT,
+          secondary: spIdToEndpointAndCount[spId].endpoint,
+          wallet: userIdToWallet[userId]
+        })
+      })
+  )
+
+  // Get UM clock
+  let UMClockValue = null
+  const maxRetries = 10
+  let umClockCheckCount = 0
+  while (!UMClockValue && umClockCheckCount++ < maxRetries) {
+    UMClockValue = (await getClockValue({
+      endpoint: USER_METADATA_ENDPOINT,
+      wallet: userIdToWallet[userId],
+      id: UMSpId
+    })).clockValue
+  }
+
+  if (!UMClockValue) throw new Error('Unable to get UM clock value')
+
+  let synced = false
+  const startSyncTime = Date.now()
+  let clockValuesAcrossSecondaries
+  while (!synced && Date.now() - startSyncTime <= MAX_SYNC_TIMEOUT) {
+    try {
+      // Check that the clock values across secondaries match the clock values on UM
+      clockValuesAcrossSecondaries = await Promise.all(
+        replicaSetSecondarySpIds
+          .map(spId => getClockValue({
+            endpoint: spIdToEndpointAndCount[spId].endpoint,
+            wallet: userIdToWallet[userId],
+            id: spId
+          }))
+      )
+
+      console.log(`userId=${userId} | UM clock: ${UMClockValue} secondaries=${JSON.stringify(clockValuesAcrossSecondaries.map(value => value.clockValue))}`)
+
+      // If secondaries are synced up with UM, exit out of for loop
+      if (
+        UMClockValue === clockValuesAcrossSecondaries[0].clockValue &&
+        UMClockValue === clockValuesAcrossSecondaries[1].clockValue
+      ) {
+        synced = true
+      }
+    } catch (e) {
+      // If clock check fails, just swallow error and keep checking
+      console.error(`Error in checking sync for userId=${userId}`, e, 'Retrying clock check..')
+    }
+
+    // Else, keep checking
+    if (!synced) { await Util.wait(1000) }
+  }
+
+  // If still not synced after the while loop, throw error
+  if (!synced) {
+    const errorMsg = `Mismatch in clock values for userId=${userId}:\n UM primary clock value=${UMClockValue} | Most recent secondaries clock status ${clockValuesAcrossSecondaries}`
+    console.error(errorMsg)
+    throw new Error(errorMsg)
+  }
+
+  console.log(`Successful sync for userId=${userId}!`)
+}
+
 const setReplicaSet = async ({
   audiusLibs,
   primary,
@@ -155,188 +289,110 @@ const setReplicaSet = async ({
     [secondary1.spId, secondary2.spId]
   )
 
-  console.log('tx for updating rset', tx)
+  //   console.log('tx for updating rset', tx)
   const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
     primary.endpoint, [secondary1.endpoint, secondary2.endpoint]
   )
   await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
+
+  console.log(`Successful contract write for userId=${userId}`)
 }
 
-let start
 const run = async () => {
-  // Set up libs
-  start = Date.now()
+  // Set up libs and eligible SPs to select as secondaries
+  let start = Date.now()
   const audiusLibs = await configureAndInitLibs()
+  audiusLibs.discoveryProvider.setEndpoint(DISCOVERY_NODE_ENDPOINT) // to use waitForDPIndexing call
 
-  audiusLibs.discoveryProvider.setEndpoint(DISCOVERY_NODE_ENDPOINT)
+  // Get all non-Audius SPs, and create a mapping like:
+  //    <spId - {endpoint, number_of_times_selected}>
+  const UMSpId = (await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(USER_METADATA_ENDPOINT)).spID
+  const { spIdToEndpointAndCount, spIds } = await getSPsAndDoHealthCheck(audiusLibs, UMSpId)
 
   // Get all users that do not have a replica set assigned
-  const numOfUsers = (await axios({
-    method: 'get',
-    url: '/latest/user',
-    baseURL: DISCOVERY_NODE_ENDPOINT
-  })).data.data
-
+  const numOfUsers = await getLatestUserId()
   console.log(`There are ${numOfUsers} users on Audius\n`)
 
   // Batch DP /users calls
+  let offset
   let userIdToWallet = {}
-  let i
-  for (i = 0; i <= numOfUsers; i = i + NUM_USERS_PER_BATCH_REQUEST) {
-    console.log(`Processing users batch range ${i} to ${i + NUM_USERS_PER_BATCH_REQUEST}...`)
-    try {
-      const subsetUsers = (await axios({
-        method: 'get',
-        url: '/users',
-        baseURL: DISCOVERY_NODE_ENDPOINT,
-        params: { limit: NUM_USERS_PER_BATCH_REQUEST, offset: i }
-      })).data.data
+  let userIds = []
+  for (offset = 0; offset <= numOfUsers; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+    console.log('------------------------------------------------------')
+    console.log(`Processing users batch range ${offset} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
-      subsetUsers
-      // Filter to users that do not have a CNE
-        .filter(user => !user.creator_node_endpoint)
-        .forEach(user => {
-        // Add userId - wallet mapping
-          userIdToWallet[user.user_id] = user.wallet
-        })
+    // Get all the users with no creator_node_endpoint
+    userIdToWallet = {}
+    userIds = []
+    try {
+      await getAllUsersWithNoCreatorNodeEndpoint(offset, userIdToWallet)
     } catch (e) {
+      // For local dev -- if error is this, just retry
       if (e.message.includes('socket hang up')) {
         await Util.wait(500)
         console.log('socket hung up.. retrying')
-        i -= NUM_USERS_PER_BATCH_REQUEST
+        offset -= NUM_USERS_PER_BATCH_REQUEST
       } else {
         console.error(`Could not get users`, e)
         throw e
       }
     }
-  }
 
-  let userIds = Object.keys(userIdToWallet)
-  console.log(`\n${userIds.length} users have no replica sets\nThis is ${userIds.length * 100 / numOfUsers}% of user base`)
+    userIds = Object.keys(userIdToWallet)
 
-  // Get all non-Audius SPs
-  // const audiusInfraSpIdsArr = [1, 2, 3, 4/*, umID*/] // TODO: uncomment later
-
-  // Compute secondaries for users while keeping UM as primary for the new replica set
-  const UMSpId = (await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(USER_METADATA_ENDPOINT)).spID
-
-  const audiusInfraSpIdsArr = [UMSpId]
-  const audiusInfraSpIds = new Set(audiusInfraSpIdsArr) // when UM is registered, exclude it as secondary
-  let spIdToEndpointAndCount = {}
-
-  const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
-  sps
-    .filter(sp => !audiusInfraSpIds.has(sp.spID))
-    .forEach(sp => {
-      spIdToEndpointAndCount[sp.spID] = { endpoint: sp.endpoint, selected: 0 }
-    })
-
-  console.log('spIds', spIdToEndpointAndCount)
-
-  // Do health check for all non-Audius SPs
-  const healthCheckedSPs = await Promise.all(
-    Object.entries(spIdToEndpointAndCount)
-      .map(entry => performHealthCheck(entry))
-  )
-
-  console.log('Health check responses:', healthCheckedSPs)
-
-  // Filter out unhealthy nodes and retrieve id of each healthy node
-  const spIds = healthCheckedSPs
-    .filter(response => response.status === 200)
-    .map(response => parseInt(response.id))
-
-  console.log('\nComputing replica sets....')
-
-  let userIdToRSet = {}
-  userIds.forEach(id => {
-    // Randomly select two secondaries from spIds
-    let replicaSet = []
-    let secondary1Index = Math.floor(Math.random(0) * spIds.length)
-    let secondary2Index = -1
-    while (secondary2Index === -1 || secondary1Index === secondary2Index) {
-      secondary2Index = Math.floor(Math.random(0) * spIds.length)
+    if (userIds.length === 0) {
+      console.log(`No users in batch range ${offset} to ${offset + NUM_USERS_PER_BATCH_REQUEST} need replica sets. Continuing...`)
+      continue
+    } else {
+      console.log(`${userIds.length} users have no replica sets`)
     }
 
-    replicaSet.push(spIds[secondary1Index])
-    replicaSet.push(spIds[secondary2Index])
-
-    userIdToRSet[id] = replicaSet
-
-    // Keep track of number of times the secondary was chosen
-    spIdToEndpointAndCount[spIds[secondary1Index]].selected += 1
-    spIdToEndpointAndCount[spIds[secondary2Index]].selected += 1
-  })
-
-  // Print out user-to-rset mapping
-  console.log('<userIds - replica sets>:\n', userIdToRSet)
-  // Print out all healthy, non-Audius SPs to # of times they were assigned as secondaries
-  console.log('<service providers - number of times selected as secondary>:\n', spIdToEndpointAndCount, '\n')
-
-  // Write data to file
-  writeDataToFile(spIdToEndpointAndCount, userIdToRSet)
-
-  // Trigger sync for newly selected secondaries
-  console.log(`\nSyncing across new secondaries....`)
-  let userIdToRSetArr = Object.entries(userIdToRSet)
-  for (i = 0; i < userIds.length; i++) {
-    const userId = parseInt(userIdToRSetArr[i][0])
-    const replicaSetSecondarySpIds = userIdToRSetArr[i][1]
-
-    console.log(`Processing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`)
-
-    // Sync UM data to newly selected secondaries
-    await Promise.all(
-      replicaSetSecondarySpIds
-        .map(spId => {
-          return syncSecondary({
-            primary: USER_METADATA_ENDPOINT,
-            secondary: spIdToEndpointAndCount[spId].endpoint,
-            wallet: userIdToWallet[userId]
-          })
-        })
-    )
-
-    // TODO: make smarter maybe
-    console.log(`Waiting ${SYNC_WAIT_TIME}ms for syncs to propogate`)
-    await Util.wait(SYNC_WAIT_TIME)
-
-    // Check that the clock values match the clock values on UM
-    const clockValuesAcrossRSet = await Promise.all(
-      [UMSpId, ...replicaSetSecondarySpIds]
-        .map(spId =>
-          getClockValue({
-            endpoint: spId === UMSpId ? USER_METADATA_ENDPOINT : spIdToEndpointAndCount[spId].endpoint,
-            wallet: userIdToWallet[userId],
-            id: spId
-          })
-        )
-    )
-
-    const UMClockValue = clockValuesAcrossRSet[0].clockValue
-
-    console.log(`userId=${userId} | UM clock value=${UMClockValue}`)
-    clockValuesAcrossRSet.forEach(clockValueResp => {
-      if (clockValueResp.endpoint !== USER_METADATA_ENDPOINT) {
-        console.log(`userId=${userId} | secondary=${clockValueResp.endpoint} | clock value=${clockValueResp.clockValue}`)
-        if (UMClockValue !== clockValueResp.clockValue) {
-          const errorMsg = `Mismatch in clock values for userId=${userId}:\nUser Metadata primary clock value=${UMClockValue} | ${clockValueResp.endpoint} clock value=${clockValueResp.clockValue}`
-          console.error(errorMsg)
-          throw new Error(errorMsg)
-        }
+    console.log('\nComputing replica sets....')
+    let userIdToRSet = {}
+    userIds.forEach(id => {
+    // Randomly select two secondaries from spIds
+      let replicaSet = []
+      let secondary1Index = Math.floor(Math.random(0) * spIds.length)
+      let secondary2Index = -1
+      while (secondary2Index === -1 || secondary1Index === secondary2Index) {
+        secondary2Index = Math.floor(Math.random(0) * spIds.length)
       }
+
+      replicaSet.push(spIds[secondary1Index])
+      replicaSet.push(spIds[secondary2Index])
+
+      userIdToRSet[id] = replicaSet
+
+      // Keep track of number of times the secondary was chosen
+      spIdToEndpointAndCount[spIds[secondary1Index]].selected += 1
+      spIdToEndpointAndCount[spIds[secondary2Index]].selected += 1
     })
 
-    console.log('Success!')
+    // Write data to file
+    writeDataToFile(spIdToEndpointAndCount, userIdToRSet, offset)
 
-    // If clock values are all synced, write to new contract
-    await setReplicaSet({
-      audiusLibs,
-      primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
-      secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
-      secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
-      userId
-    })
+    // Trigger sync for newly selected secondaries
+    console.log(`\nSyncing across new secondaries....\n`)
+    let userIdToRSetArr = Object.entries(userIdToRSet)
+
+    let i
+    for (i = 0; i < userIds.length; i++) {
+      const userId = parseInt(userIdToRSetArr[i][0])
+      const replicaSetSecondarySpIds = userIdToRSetArr[i][1]
+      console.log(`\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`)
+
+      // Sync UM data to newly selected secondaries
+      await syncAcrossSecondariesAndEnsureClockIsSynced(replicaSetSecondarySpIds, spIdToEndpointAndCount, userIdToWallet, userId, UMSpId)
+
+      // If clock values are all synced, write to new contract
+      await setReplicaSet({
+        audiusLibs,
+        primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
+        secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
+        secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
+        userId
+      })
+    }
   }
 
   const end = Date.now() - start

@@ -62,7 +62,7 @@ class Users extends Base {
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
 
     this.getClockValuesFromReplicaSet = this.getClockValuesFromReplicaSet.bind(this)
-    this._waitForCreatorNodeEndpointIndexing = this._waitForCreatorNodeEndpointIndexing.bind(this)
+    this.waitForCreatorNodeEndpointIndexing = this.waitForCreatorNodeEndpointIndexing.bind(this)
     this._addUserOperations = this._addUserOperations.bind(this)
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
@@ -583,7 +583,7 @@ class Users extends Base {
   }
 
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
-  async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
+  async waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
     let isUpdated = false
     while (!isUpdated) {
       const userList = await this.discoveryProvider.getUsers(1, 0, [userId])

@@ -608,6 +608,9 @@ class DiscoveryProvider {
           // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
           // hopes it will catch up
           const blockDiff = chainBlock && indexedBlock ? ` [block diff: ${chainBlock - indexedBlock}]` : ''
+
+          await Utils.wait(2000)
+
           console.info(`${this.discoveryProviderEndpoint} is too far behind${blockDiff}. Retrying request at attempt #${attemptedRetries}...`)
           return this._makeRequest(requestObj, retry, attemptedRetries + 1)
         }

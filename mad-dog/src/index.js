@@ -153,12 +153,12 @@ async function main () {
         break
       }
       case 'test-snapback': {
-        const snapbackNumUsers = 40
+        const snapbackNumUsers = 10
         const test = makeTest(
           'snapback',
           snapbackSMParallelSyncTest,
           {
-            numUsers: 1
+            numUsers: snapbackNumUsers
           }
         )
         await testRunner([test])
@@ -201,7 +201,7 @@ async function main () {
           userReplicaSetManagerTest,
           {
             numUsers: USER_REPLICA_SET_NUM_USERS
-        })
+          })
 
         const tests = [
           coreIntegrationTests,
