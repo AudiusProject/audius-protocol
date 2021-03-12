@@ -42,12 +42,11 @@ def get_tracks_for_playlist(playlist_id, current_user_id=None):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         args = {
-            "session": session,
             "playlist_ids": [playlist_id],
             "populate_tracks": True,
             "current_user_id": current_user_id
         }
-        playlist_tracks_map = get_playlist_tracks(args)
+        playlist_tracks_map = get_playlist_tracks(session, args)
         playlist_tracks = playlist_tracks_map[playlist_id]
         tracks = list(map(extend_track, playlist_tracks))
         return tracks
@@ -270,7 +269,6 @@ class FullPlaylistReposts(Resource):
 trending_response = make_response("trending_playlists_response", ns, fields.List(fields.Nested(playlist_model)))
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('time', required=False)
-
 @ns.route("/trending")
 class TrendingPlaylists(Resource):
     @record_metrics

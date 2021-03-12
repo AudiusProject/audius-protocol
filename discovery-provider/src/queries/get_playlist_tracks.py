@@ -7,10 +7,9 @@ from src.queries.query_helpers import populate_track_metadata, add_users_to_trac
 
 logger = logging.getLogger(__name__)
 
-def get_playlist_tracks(args):
+def get_playlist_tracks(session, args):
     """Accepts args:
         {
-            session: Session
             # optionally pass in full playlists to avoid having to fetch
             "playlists": Playlist[]
 
@@ -24,7 +23,6 @@ def get_playlist_tracks(args):
             playlist_id: Playlist
         }
     """
-    session = args.get("session")
 
     try:
         playlists = args.get("playlists")

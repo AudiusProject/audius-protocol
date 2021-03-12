@@ -16,8 +16,14 @@ from src.api.v1.helpers import extend_playlist, extend_track
 
 logger = logging.getLogger(__name__)
 
+# How many playlists to include
 TRENDING_LIMIT = 30
+
+# Cache duration. Faster than trending tracks because
+# playlists refresh faster; we can afford to cache this more frequently.
 TRENDING_TTL_SEC = 30 * 60
+
+# Max tracks to include in a playlist.
 PLAYLIST_TRACKS_LIMIT = 5
 
 def get_scorable_playlist_data(session, time_range):
@@ -149,7 +155,7 @@ def make_get_unpopulated_playlists(session, time_range):
         playlist_ids = [playlist["playlist_id"] for playlist in sorted_playlists]
         playlists = get_unpopulated_playlists(session, playlist_ids)
 
-        playlist_tracks_map = get_playlist_tracks({"playlists": playlists, "session": session})
+        playlist_tracks_map = get_playlist_tracks(session, {"playlists": playlists})
 
         for playlist in playlists:
             playlist["tracks"] = playlist_tracks_map[playlist["playlist_id"]]
