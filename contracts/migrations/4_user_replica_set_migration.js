@@ -3,7 +3,7 @@ const Registry = artifacts.require('Registry')
 const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
-const userReplicaSetManagerKeyString = 'UserReplicaSetManager'
+const userReplicaSetManagerKeyString = 'TestUserReplicaSetManager'
 const userReplicaSetManagerKey = web3.utils.utf8ToHex(userReplicaSetManagerKeyString)
 const abi = require('ethereumjs-abi')
 
