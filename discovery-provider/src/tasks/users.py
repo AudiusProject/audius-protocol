@@ -251,26 +251,34 @@ def update_user_associated_wallets(session, update_task, user_record, associated
         previous_wallets = [wallet for [wallet] in prev_user_associated_wallets_response]
         added_associated_wallets = set()
 
-        session.query(AssociatedWallet).filter_by(user_id=user_record.user_id).update({ "is_current": False })
+        session.query(AssociatedWallet).filter_by(user_id=user_record.user_id).update({"is_current": False})
 
         # Verify the wallet signatures and create the user id to wallet associations
         for associated_wallet, wallet_metadata in associated_wallets.items():
             if not 'signature' in wallet_metadata or not isinstance(wallet_metadata['signature'], str):
                 continue
-            signed_wallet = recover_user_id_hash(update_task.web3, user_record.user_id, wallet_metadata['signature'])
+            signed_wallet = recover_user_id_hash(
+                update_task.web3,
+                user_record.user_id,
+                wallet_metadata['signature']
+            )
 
             if signed_wallet == associated_wallet:
                 # Check that the wallet doesn't already exist
-                wallet_exists = session.query(AssociatedWallet).filter_by(wallet = associated_wallet, is_current=True, is_delete=False).count() > 0
+                wallet_exists = (
+                    session.query(AssociatedWallet)
+                    .filter_by(wallet=associated_wallet, is_current=True, is_delete=False)
+                    .count() > 0
+                )
                 if not wallet_exists:
                     added_associated_wallets.add(signed_wallet)
                     associated_wallet_entry = AssociatedWallet(
-                        user_id = user_record.user_id,
-                        wallet = associated_wallet,
-                        is_current = True,
-                        is_delete = False,
-                        blocknumber = user_record.blocknumber,
-                        blockhash = user_record.blockhash
+                        user_id=user_record.user_id,
+                        wallet=associated_wallet,
+                        is_current=True,
+                        is_delete=False,
+                        blocknumber=user_record.blocknumber,
+                        blockhash=user_record.blockhash
                     )
                     session.add(associated_wallet_entry)
 
@@ -278,12 +286,12 @@ def update_user_associated_wallets(session, update_task, user_record, associated
         for previously_associated_wallet in previous_wallets:
             if not previously_associated_wallet in added_associated_wallets:
                 associated_wallet_entry = AssociatedWallet(
-                    user_id = user_record.user_id,
-                    wallet = previously_associated_wallet,
-                    is_current = True,
-                    is_delete = True,
-                    blocknumber = user_record.blocknumber,
-                    blockhash = user_record.blockhash
+                    user_id=user_record.user_id,
+                    wallet=previously_associated_wallet,
+                    is_current=True,
+                    is_delete=True,
+                    blocknumber=user_record.blocknumber,
+                    blockhash=user_record.blockhash
                 )
                 session.add(associated_wallet_entry)
 

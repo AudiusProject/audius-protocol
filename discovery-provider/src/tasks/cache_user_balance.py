@@ -1,6 +1,6 @@
 import logging
-from sqlalchemy import and_
 import time
+from sqlalchemy import and_
 from src import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet
@@ -68,18 +68,18 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         # Grab the users & associated_wallets we need to refresh
         user_query = (
             session.query(User.user_id, User.wallet, AssociatedWallet.wallet)
-                .outerjoin(
-                    AssociatedWallet,
-                    and_(
-                        AssociatedWallet.user_id == User.user_id,
-                        AssociatedWallet.is_current == True,
-                        AssociatedWallet.is_delete == False
-                    )
+            .outerjoin(
+                AssociatedWallet,
+                and_(
+                    AssociatedWallet.user_id == User.user_id,
+                    AssociatedWallet.is_current == True,
+                    AssociatedWallet.is_delete == False
                 )
-                .filter(
-                    User.user_id.in_(needs_refresh_map.keys()),
-                    User.is_current == True,
-                ).all()
+            )
+            .filter(
+                User.user_id.in_(needs_refresh_map.keys()),
+                User.is_current == True,
+            ).all()
         )
         user_id_wallets = {}
         for user in user_query:
@@ -107,7 +107,7 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
                 user_balance.balance = total
 
             except Exception as e:
-                logger.error(f"cache_user_balance.py | Error fetching balance for user {user.user_id}: {(e)}")
+                logger.error(f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}")
 
         # Commit the new balances
         session.commit()
