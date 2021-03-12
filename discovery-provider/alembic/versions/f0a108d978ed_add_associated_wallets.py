@@ -1,7 +1,7 @@
 """add associated wallets
 
 Revision ID: f0a108d978ed
-Revises: 5dd6a55bb738
+Revises: c967ae0fcaf6
 Create Date: 2021-03-09 15:34:32.229219
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'f0a108d978ed'
-down_revision = '5dd6a55bb738'
+down_revision = 'c967ae0fcaf6'
 branch_labels = None
 depends_on = None
 
