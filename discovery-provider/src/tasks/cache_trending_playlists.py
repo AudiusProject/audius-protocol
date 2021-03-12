@@ -18,7 +18,7 @@ def cache_trending(db, redis):
 
 @celery.task(name="cache_trending_playlists", bind=True)
 def cache_trending_playlists(self):
-    """Caches user Audio balances, in wei."""
+    """Caches trending playlists for time period"""
 
     db = cache_trending_playlists.db
     redis = cache_trending_playlists.redis
