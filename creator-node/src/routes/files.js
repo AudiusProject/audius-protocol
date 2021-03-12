@@ -484,19 +484,24 @@ module.exports = function (app) {
   app.post('/batch_cids_exist', handleResponse(async (req, res) => {
     const { cids } = req.body
 
-    const knownCids = new Set((await models.File.findAll({
-      attributes: ['multihash'],
+    const queryResults = (await models.File.findAll({
+      attributes: ['multihash', 'storagePath'],
       where: {
         multihash: {
           [models.Sequelize.Op.in]: cids
         }
       }
-    })).map(file => file.multihash))
+    }))
+
+    const cidExists = {}
+    queryResults.forEach(({ multihash, storagePath }) => {
+      cidExists[multihash] = fs.existsSync(storagePath)
+    })
 
     return successResponse({
       cids: cids.map(cid => ({
         cid,
-        exists: knownCids.has(cid)
+        exists: cidExists[cid] || false
       }))
     })
   }))
