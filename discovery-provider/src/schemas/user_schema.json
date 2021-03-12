@@ -39,8 +39,7 @@
                     "default": null
                 },
                 "associated_wallets": {
-                    "$ref": "#/definitions/AssociatedWallets",
-                    "default": null
+                    "$ref": "#/definitions/AssociatedWallets"
                 }
             },
             "required": [
@@ -63,6 +62,7 @@
         },
         "AssociatedWallets": {
             "type": ["object", "null"],
+            "default": null,
             "patternProperties": {
                 "^0x[a-fA-F0-9]{40}$": { "$ref": "#/definitions/WalletMetadata" }
             },
