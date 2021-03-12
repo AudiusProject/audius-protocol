@@ -180,7 +180,7 @@ module.exports = function (app) {
     try {
       await fundRelayerIfEmpty()
     } catch (err) {
-      return errorResponseServerError({ error: err.toString() })
+      req.logger.error(`Failed to fund relayer with error: ${err}`)
     }
 
     for (let account of RELAY_HEALTH_ACCOUNTS) {
