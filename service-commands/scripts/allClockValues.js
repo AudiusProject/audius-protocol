@@ -1,172 +1,174 @@
-const fs = require('fs')
+const fs = require("fs")
 
-const { map } = require('lodash')
-const axios = require('axios')
-const retry = require('async-retry')
-async function getUsers(discoveryProvider, offset, limit) {
+const axios = require("axios")
+const retry = require("async-retry")
+const { map } = require("lodash")
+
+function makeRequest(request) {
+  return retry(() => axios(request), { retries: 5 })
+}
+
+/**
+ * @param {string} discoveryProvider - Discovery Provider endpoint
+ * @param {number} offset
+ * @param {number} limit
+ * @returns {Array<Object>} userBatch
+ */
+async function getUsersBatch(discoveryProvider, offset, limit) {
   return (
-    await retry(
-      () =>
-        axios({
-          method: 'get',
-          url: '/users',
-          baseURL: discoveryProvider,
-          params: { offset, limit, is_creator: true }
-        }),
-      { retries: 5 }
-    )
-  ).data.data.map(user => ({
+    await makeRequest({
+      method: "get",
+      url: "/users",
+      baseURL: discoveryProvider,
+      params: { offset, limit, is_creator: true },
+    })
+  ).data.data.map((user) => ({
     ...user,
     creator_node_endpoint: user.creator_node_endpoint
-      ? user.creator_node_endpoint.split(',').filter(endpoint => endpoint)
-      : []
+      ? user.creator_node_endpoint.split(",").filter((endpoint) => endpoint)
+      : [],
   }))
 }
-async function getTracks(discoveryProvider, batchSize = 500) {
-  const tracks = []
 
-  let prevBatch = true
-  for (let offset = 0; prevBatch; offset += batchSize) {
+/**
+ * @param {string} discoveryProvider - Discovery Provider endpoint
+ * @param {number} batchSize - Batch Size to use for each request
+ * @returns {Object} trackCids - A object mapping user id to a list of track cids
+ */
+async function getTrackCids(discoveryProvider, batchSize) {
+  const trackCids = {}
+
+  let moreTracksRemaining = true
+  for (let offset = 0; moreTracksRemaining; offset += batchSize) {
     console.time(`Fetching tracks (${offset} - ${offset + batchSize})`)
 
-    const batch = (
-      await retry(
-        () =>
-          axios({
-            method: 'get',
-            url: '/tracks',
-            baseURL: discoveryProvider,
-            params: { offset, limit: batchSize }
-          }),
-        { retries: 5 }
-      )
-    ).data.data.map(({ metadata_multihash, owner_id }) => ({
-      metadata_multihash,
-      owner_id
-    }))
-    prevBatch = batch.length === batchSize
-    tracks.push(...batch)
+    const tracksBatch = (
+      await makeRequest({
+        method: "get",
+        url: "/tracks",
+        baseURL: discoveryProvider,
+        params: { offset, limit: batchSize },
+      })
+    ).data.data
+    moreTracksRemaining = tracksBatch.length === batchSize
+
+    tracksBatch.forEach(({ metadata_multihash, owner_id }) => {
+      trackCids[owner_id] = trackCids[owner_id] || []
+      trackCids[owner_id].push(metadata_multihash)
+    })
 
     console.timeEnd(`Fetching tracks (${offset} - ${offset + batchSize})`)
   }
 
-  return tracks
+  return trackCids
 }
+
+/**
+ * @param {string} creatorNode - Creator Node endpoint
+ * @param {Array<string>} walletPublicKeys
+ * @returns {Array<Object>} clockValues
+ */
 async function getClockValues(creatorNode, walletPublicKeys) {
   return (
-    await retry(
-      () =>
-        axios({
-          method: 'post',
-          url: '/users/batch_clock_status',
-          baseURL: creatorNode,
-          data: { walletPublicKeys }
-        }),
-      { retries: 5 }
-    )
+    await makeRequest({
+      method: "post",
+      url: "/users/batch_clock_status",
+      baseURL: creatorNode,
+      data: { walletPublicKeys },
+    })
   ).data.users
 }
+
+/**
+ * @param {string} creatorNode - Creator Node endpoint
+ * @param {Array<string>} cids
+ * @returns {Array<Object>} cidsExist
+ */
 async function getCidsExist(creatorNode, cids) {
   return (
-    await retry(
-      () =>
-        axios({
-          method: 'post',
-          url: '/batch_cids_exist',
-          baseURL: creatorNode,
-          data: { cids }
-        }),
-      { retries: 5 }
-    )
+    await makeRequest({
+      method: "post",
+      url: "/batch_cids_exist",
+      baseURL: creatorNode,
+      data: { cids },
+    })
   ).data.cids
 }
+
 async function run() {
-  //  const discoveryProvider = 'https://discoveryprovider.audius.co/'
-  const discoveryProvider = 'http://localhost:5000/'
-  const batchSize = 50
+  // const discoveryProvider = "https://discoveryprovider.audius.co/"
+  const discoveryProvider = "http://localhost:5000"
+  const trackBatchSize = 500
+  const userBatchSize = 500
 
-  const tracks = {}
-  ;(await getTracks(discoveryProvider)).forEach(
-    ({ owner_id, metadata_multihash }) => {
-      tracks[owner_id] = tracks[owner_id] || []
-      tracks[owner_id].push(metadata_multihash)
-    }
-  )
+  const trackCids = await getTrackCids(discoveryProvider, trackBatchSize)
 
-  let prevBatch = true
-  for (let offset = 0; prevBatch; offset += batchSize) {
-    console.time(`${offset} - ${offset + batchSize}`)
+  let moreUsersRemaining = true
+  for (let offset = 0; moreUsersRemaining; offset += userBatchSize) {
+    console.time(`${offset} - ${offset + userBatchSize}`)
 
-    const batch = await getUsers(discoveryProvider, offset, batchSize)
-    prevBatch = batch.length !== 0
+    const usersBatch = await getUsersBatch(
+      discoveryProvider,
+      offset,
+      userBatchSize
+    )
+    moreUsersRemaining = usersBatch.length === userBatchSize
 
-    const wallets = {}
-    batch.forEach(({ creator_node_endpoint, wallet }) => {
-      creator_node_endpoint.forEach(endpoint => {
-        wallets[endpoint] = wallets[endpoint] || []
-        wallets[endpoint].push(wallet)
+    const creatorNodes = new Set()
+    const cn2wallets = {} // creator node -> wallets
+    const cn2trackCids = {} // creator node -> trackCids
+    usersBatch.forEach(({ creator_node_endpoint, user_id, wallet }) => {
+      creator_node_endpoint.forEach((endpoint) => {
+        creatorNodes.add(endpoint)
+        cn2wallets[endpoint] = cn2wallets[endpoint] || []
+        cn2wallets[endpoint].push(wallet)
+        cn2trackCids[endpoint] = cn2trackCids[endpoint] || []
+        cn2trackCids[endpoint].push(...(trackCids[user_id] || []))
       })
     })
 
-    const clockValues = {}
+    const clockValues = {} // creator node -> wallet -> clock value
+    const trackCidExists = {} // creator node -> trackCid -> exists
     await Promise.all(
-      map(wallets, async (walletPublicKeys, creatorNode) => {
+      Array.from(creatorNodes).map(async (creatorNode) => {
+        const [clockValuesArr, trackCidExistsArr] = await Promise.all([
+          getClockValues(creatorNode, cn2wallets[creatorNode]),
+          getCidsExist(creatorNode, cn2trackCids[creatorNode]),
+        ])
+
         clockValues[creatorNode] = {}
-        ;(await getClockValues(creatorNode, walletPublicKeys)).forEach(
-          ({ walletPublicKey, clock }) => {
-            clockValues[creatorNode][walletPublicKey] = clock
-          }
-        )
-      })
-    )
-
-    const trackCids = {}
-    batch.forEach(({ creator_node_endpoint, user_id }) => {
-      creator_node_endpoint.forEach(endpoint => {
-        trackCids[endpoint] = trackCids[endpoint] || []
-        trackCids[endpoint].push(...tracks[user_id])
-      })
-    })
-
-    const trackCidExists = {}
-    await Promise.all(
-      map(trackCids, async (batchTrackCids, creatorNode) => {
-        trackCidExists[creatorNode] = {}
-        ;(await getCidsExist(creatorNode, batchTrackCids)).forEach(
-          ({ cid, exists }) => {
-            trackCidExists[creatorNode][cid] = exists
-          }
-        )
-      })
-    )
-
-    const data = await Promise.all(
-      map(
-        batch,
-        async ({ user_id, handle, wallet, creator_node_endpoint }) => ({
-          user_id,
-          handle,
-          wallet,
-          trackCids: tracks[user_id] || [],
-          creatorNodes: await Promise.all(
-            creator_node_endpoint.map(async (endpoint, idx) => ({
-              endpoint,
-              clock: clockValues[endpoint][wallet],
-              trackCids: (tracks[user_id] || []).filter(
-                cid => trackCidExists[endpoint][cid]
-              ),
-              primary: idx === 0
-            }))
-          )
+        clockValuesArr.forEach(({ walletPublicKey, clock }) => {
+          clockValues[creatorNode][walletPublicKey] = clock
         })
-      )
+
+        trackCidExists[creatorNode] = {}
+        trackCidExistsArr.forEach(({ cid, exists }) => {
+          trackCidExists[creatorNode][cid] = exists
+        })
+      })
     )
 
-    fs.writeFileSync(`data.${offset}.json`, JSON.stringify(data, null, 4))
+    const output = usersBatch.map(
+      ({ user_id, handle, wallet, creator_node_endpoint }) => ({
+        user_id,
+        handle,
+        wallet,
+        trackCids: trackCids[user_id] || [],
+        creatorNodes: creator_node_endpoint.map((endpoint, idx) => ({
+          endpoint,
+          clock: clockValues[endpoint][wallet],
+          trackCids: (trackCids[user_id] || []).filter(
+            (cid) => trackCidExists[endpoint][cid]
+          ),
+          primary: idx === 0,
+        })),
+      })
+    )
 
-    console.timeEnd(`${offset} - ${offset + batchSize}`)
+    fs.writeFileSync(`output.${offset}.json`, JSON.stringify(output, null, 4))
+
+    console.timeEnd(`${offset} - ${offset + userBatchSize}`)
   }
-
-  process.exit(0)
 }
+
 run()
