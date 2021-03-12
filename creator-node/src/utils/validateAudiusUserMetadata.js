@@ -26,7 +26,9 @@ const validateAssociatedWallets = (metadataJSON) => {
 
 const validateMetadata = (req, metadataJSON) => {
   // Check associated wallets
-  if (!validateAssociatedWallets(metadataJSON)) {
+  if (typeof metadataJSON !== 'object' || metadataJSON === null) {
+    return false
+  } else if (!validateAssociatedWallets(metadataJSON)) {
     req.logger.info('Associated Wallets do not match signatures')
     return false
   }
