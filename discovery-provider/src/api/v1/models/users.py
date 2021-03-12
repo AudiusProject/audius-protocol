@@ -52,5 +52,6 @@ user_model_full = ns.clone("user_full", user_model, {
     "cover_photo_legacy": fields.String,
     "profile_picture_sizes": fields.String,
     "profile_picture_legacy": fields.String,
-    "metadata_multihash": fields.String
+    "metadata_multihash": fields.String,
+    "has_collectibles": fields.Boolean(required=True)
 })

@@ -211,6 +211,10 @@ def parse_user_event(
             user_record.name = metadata_overrides["name"]
         if metadata_overrides["location"]:
             user_record.location = metadata_overrides["location"]
+        if metadata_overrides["collectibles"] and \
+            isinstance(metadata_overrides["collectibles"], dict) and \
+            len(metadata_overrides["collectibles"].items()) > 0:
+                user_record.has_collectibles = True
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"] and user_record.handle:
@@ -310,7 +314,7 @@ def recover_user_id_hash(web3, user_id, signature):
 
 def get_metadata_overrides_from_ipfs(update_task, user_record):
     user_metadata = user_metadata_format
-    if user_record.is_creator:
+    if user_record.metadata_multihash:
         user_metadata = get_ipfs_metadata(update_task, user_record)
     return user_metadata
 
