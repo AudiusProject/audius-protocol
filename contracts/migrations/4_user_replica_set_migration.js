@@ -54,6 +54,7 @@ module.exports = (deployer, network, accounts) => {
     }
 
     console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
+    /*
 
     // Deploy logic contract
     let deployLogicTx = await deployer.deploy(UserReplicaSetManager)
@@ -102,5 +103,6 @@ module.exports = (deployer, network, accounts) => {
     // Confirm registered address matches proxy
     let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
     console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)
+    */
   })
 }

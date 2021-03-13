@@ -16,6 +16,7 @@ require('babel-register')({
 })
 
 require('babel-polyfill')
+const HDWalletProvider = require('truffle-hdwallet-provider');
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -46,8 +47,15 @@ module.exports = {
       skipDryRun: true
     },
     poa_sokol: {
-      host: 'localhost',
-      port: 8545,
+      provider: function () {
+        return new HDWalletProvider(
+          [
+          ],
+          "https://sokol.poa.network",
+          0,
+          2
+        )
+      },
       network_id: '77',
       gas: 8000000,
       gasPrice: 1000000000,
