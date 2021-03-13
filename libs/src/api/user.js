@@ -682,8 +682,15 @@ class Users extends Base {
     this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
   }
 
-  // Metadata object may have extra fields. Only keep core fields in USER_PROPS and 'user_id'.
+  /**
+   * Metadata object may have extra fields.
+   * - Add what user props might be missing to normalize
+   * - Only keep core fields in USER_PROPS and 'user_id'.
+   */
   _cleanUserMetadata (metadata) {
+    USER_PROPS.forEach(prop => {
+      if (!(prop in metadata)) { metadata[prop] = null }
+    })
     return pick(metadata, USER_PROPS.concat('user_id'))
   }
 
