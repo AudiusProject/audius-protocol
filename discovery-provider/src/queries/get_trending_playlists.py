@@ -186,7 +186,7 @@ def get_trending_playlists(args):
 
         # Apply limit + offset early to reduce the amount of
         # population work we have to do
-        if limit and offset:
+        if limit is not None and offset is not None:
             playlists = playlists[offset: limit + offset]
             playlist_ids = playlist_ids[offset: limit + offset]
 

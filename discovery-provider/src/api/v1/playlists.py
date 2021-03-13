@@ -362,5 +362,6 @@ class FullTrendingPlaylists(Resource):
         else:
             key = self.get_cache_key()
             playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args))
+            playlists = playlists[offset: limit + offset]
 
         return success_response(playlists)
