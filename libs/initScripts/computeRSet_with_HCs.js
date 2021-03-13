@@ -86,21 +86,23 @@ async function getLatestUserId () {
   })).data.data
 }
 
-async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet) {
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+// Creates an array from [start+1, stop] e.g. range(0,500) -> [1,2,3,....,500]
+const range = (start, stop, step = 1) => Array.from({ length: ((stop - start) / step + 1) - 1 }, (_, i) => 1 + start + (i * step))
+
+async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, audiusLibs) {
   // TODO: use libs call like
-  // const subsetUsers = await audiusLibs.discoveryProvider.getUsers(NUM_USERS_PER_BATCH_REQUEST, 0, [1,2,3,....])
-  const subsetUsers = (await axios({
-    method: 'get',
-    url: '/users',
-    baseURL: DISCOVERY_NODE_ENDPOINT,
-    params: { limit: NUM_USERS_PER_BATCH_REQUEST, offset }
-  })).data.data
+  const subsetUsers = await audiusLibs.discoveryProvider.getUsers(
+    NUM_USERS_PER_BATCH_REQUEST /* limit */,
+    0 /* offset */,
+    range(offset, offset + NUM_USERS_PER_BATCH_REQUEST) /* idsArray */
+  )
 
   subsetUsers
     // Filter to users that do not have a CNE
     .filter(user => !user.creator_node_endpoint)
+    // Add userId - wallet mapping
     .forEach(user => {
-      // Add userId - wallet mapping
       userIdToWallet[user.user_id] = user.wallet
     })
 }
@@ -228,6 +230,8 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
       wallet: userIdToWallet[userId],
       id: UMSpId
     })).clockValue
+
+    if (!UMClockValue) await Util.wait(500)
   }
 
   if (!UMClockValue) throw new Error('Unable to get UM clock value')
@@ -295,7 +299,7 @@ const setReplicaSet = async ({
   )
   await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
 
-  console.log(`Successful contract write for userId=${userId}`)
+  console.log(`Successful contract write for userId=${userId}!`)
 }
 
 const run = async () => {
@@ -316,16 +320,18 @@ const run = async () => {
   // Batch DP /users calls
   let offset
   let userIdToWallet = {}
-  let userIds = []
+  let userIdsWithNoCreatorNodeEndpoint = []
+  let userIdsSuccess = []
+  let userIdsFail = []
   for (offset = 0; offset <= numOfUsers; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
-    console.log(`Processing users batch range ${offset} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
+    console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
     // Get all the users with no creator_node_endpoint
     userIdToWallet = {}
-    userIds = []
+    userIdsWithNoCreatorNodeEndpoint = []
     try {
-      await getAllUsersWithNoCreatorNodeEndpoint(offset, userIdToWallet)
+      await getAllUsersWithNoCreatorNodeEndpoint(offset, userIdToWallet, audiusLibs)
     } catch (e) {
       // For local dev -- if error is this, just retry
       if (e.message.includes('socket hang up')) {
@@ -338,19 +344,19 @@ const run = async () => {
       }
     }
 
-    userIds = Object.keys(userIdToWallet)
+    userIdsWithNoCreatorNodeEndpoint = Object.keys(userIdToWallet)
 
-    if (userIds.length === 0) {
+    if (userIdsWithNoCreatorNodeEndpoint.length === 0) {
       console.log(`No users in batch range ${offset} to ${offset + NUM_USERS_PER_BATCH_REQUEST} need replica sets. Continuing...`)
       continue
     } else {
-      console.log(`${userIds.length} users have no replica sets`)
+      console.log(`${userIdsWithNoCreatorNodeEndpoint.length} users have no replica sets`)
     }
 
     console.log('\nComputing replica sets....')
     let userIdToRSet = {}
-    userIds.forEach(id => {
-    // Randomly select two secondaries from spIds
+    userIdsWithNoCreatorNodeEndpoint.forEach(id => {
+      // Randomly select two secondaries from spIds
       let replicaSet = []
       let secondary1Index = Math.floor(Math.random(0) * spIds.length)
       let secondary2Index = -1
@@ -376,26 +382,33 @@ const run = async () => {
     let userIdToRSetArr = Object.entries(userIdToRSet)
 
     let i
-    for (i = 0; i < userIds.length; i++) {
+    for (i = 0; i < userIdsWithNoCreatorNodeEndpoint.length; i++) {
       const userId = parseInt(userIdToRSetArr[i][0])
       const replicaSetSecondarySpIds = userIdToRSetArr[i][1]
       console.log(`\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`)
+      try {
+        // Sync UM data to newly selected secondaries
+        await syncAcrossSecondariesAndEnsureClockIsSynced(replicaSetSecondarySpIds, spIdToEndpointAndCount, userIdToWallet, userId, UMSpId)
 
-      // Sync UM data to newly selected secondaries
-      await syncAcrossSecondariesAndEnsureClockIsSynced(replicaSetSecondarySpIds, spIdToEndpointAndCount, userIdToWallet, userId, UMSpId)
-
-      // If clock values are all synced, write to new contract
-      await setReplicaSet({
-        audiusLibs,
-        primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
-        secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
-        secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
-        userId
-      })
+        // If clock values are all synced, write to new contract
+        await setReplicaSet({
+          audiusLibs,
+          primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
+          secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
+          secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
+          userId
+        })
+        userIdsSuccess.push(userId)
+      } catch (e) {
+        console.error('Error with sync and or contract write', e)
+        userIdsFail.push({ userId, error: e.message })
+      }
     }
   }
 
   const end = Date.now() - start
+  console.log(`Sucessful upgrades for users=${userIdsSuccess}`)
+  console.log(`Failed upgrades for userIds=${JSON.stringify(userIdsFail, null, 2)}`)
   console.log(`\nTime Taken: ${end}ms`)
 }
 
