@@ -225,14 +225,10 @@ def parse_user_event(
             if "profile_picture_sizes" in ipfs_metadata and \
                 ipfs_metadata["profile_picture_sizes"]:
                 user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
-            else:
-                user_record.profile_picture = None
 
             if "cover_photo_sizes" in ipfs_metadata and \
                 ipfs_metadata["cover_photo_sizes"]:
                 user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
-            else:
-                user_record.cover_photo_sizes = None
 
             if "collectibles" in ipfs_metadata and \
                 ipfs_metadata["collectibles"] and \
