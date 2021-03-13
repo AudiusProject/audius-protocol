@@ -344,6 +344,17 @@ class AudiusBackend {
         contentNodeBlockList = null
       }
     }
+    let discoveryNodeBlockList = getRemoteVar(
+      StringKeys.DISCOVERY_NODE_BLOCK_LIST
+    )
+    if (discoveryNodeBlockList) {
+      try {
+        discoveryNodeBlockList = new Set(discoveryNodeBlockList.split(','))
+      } catch (e) {
+        console.error(e)
+        discoveryNodeBlockList = null
+      }
+    }
 
     try {
       audiusLibs = new AudiusLibs({
@@ -351,6 +362,7 @@ class AudiusBackend {
         ethWeb3Config,
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
           null,
+          discoveryNodeBlockList,
           getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS),
           AudiusBackend.discoveryProviderSelectionCallback,
           monitoringCallbacks.discoveryNode
