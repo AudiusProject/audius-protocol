@@ -86,6 +86,11 @@ export enum StringKeys {
   CONTENT_NODE_BLOCK_LIST = 'CONTENT_NODE_BLOCK_LIST',
 
   /**
+   * Blocks discovery nodes from selection
+   */
+  DISCOVERY_NODE_BLOCK_LIST = 'DISCOVERY_NODE_BLOCK_LIST',
+
+  /**
    * Instagram Profile API url. Must contain $USERNAME$
    */
   INSTAGRAM_API_PROFILE_URL = 'INSTAGRAM_API_PROFILE_URL'
