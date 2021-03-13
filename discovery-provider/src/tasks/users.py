@@ -192,28 +192,22 @@ def parse_user_event(
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
-         # If creator, look up metadata multihash in IPFS and override with metadata fields
+        # Look up metadata multihash in IPFS and override with metadata fields
         ipfs_metadata = get_ipfs_metadata(
             update_task, user_record
         )
 
         if ipfs_metadata:
             # ipfs_metadata properties are defined in get_ipfs_metadata
+
+            # Fields also stored on chain
             if "profile_picture" in ipfs_metadata and \
                 ipfs_metadata["profile_picture"]:
                 user_record.profile_picture = ipfs_metadata["profile_picture"]
 
-            if "profile_picture_sizes" in ipfs_metadata and \
-                ipfs_metadata["profile_picture_sizes"]:
-                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
-
             if "cover_photo" in ipfs_metadata and \
                 ipfs_metadata["cover_photo"]:
                 user_record.cover_photo = ipfs_metadata["cover_photo"]
-
-            if "cover_photo_sizes" in ipfs_metadata and \
-                ipfs_metadata["cover_photo_sizes"]:
-                user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
 
             if "bio" in ipfs_metadata and \
                 ipfs_metadata["bio"]:
@@ -227,11 +221,26 @@ def parse_user_event(
                 ipfs_metadata["location"]:
                 user_record.location = ipfs_metadata["location"]
 
+            # Fields with no on-chain counterpart
+            if "profile_picture_sizes" in ipfs_metadata and \
+                ipfs_metadata["profile_picture_sizes"]:
+                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
+            else:
+                user_record.profile_picture = None
+
+            if "cover_photo_sizes" in ipfs_metadata and \
+                ipfs_metadata["cover_photo_sizes"]:
+                user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+            else:
+                user_record.cover_photo_sizes = None
+
             if "collectibles" in ipfs_metadata and \
                 ipfs_metadata["collectibles"] and \
                 isinstance(ipfs_metadata["collectibles"], dict) and \
                 ipfs_metadata["collectibles"].items():
                 user_record.has_collectibles = True
+            else:
+                user_record.has_collectibles = False
 
             if 'associated_wallets' in ipfs_metadata:
                 update_user_associated_wallets(session, update_task, user_record, ipfs_metadata['associated_wallets'])
@@ -255,7 +264,10 @@ def update_user_associated_wallets(session, update_task, user_record, associated
     """ Updates the user associated wallets table """
     try:
         if not isinstance(associated_wallets, dict):
-            return
+            # With malformed associated wallets, we update the associated wallets
+            # to be an empty dict. This has the effect of generating new rows for the
+            # already associated wallets and marking them as deleted.
+            associated_wallets = {}
 
         prev_user_associated_wallets_response = (
             session.query(AssociatedWallet.wallet)
