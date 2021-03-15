@@ -64,7 +64,7 @@ const sendTransaction = async (req, resetNonce = false, txProps, reqBodySHA) => 
  *  to relay TXes from here but can today).
  */
 const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
-  const {
+  let {
     contractRegistryKey,
     contractAddress,
     encodedABI,
@@ -82,6 +82,10 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   // if this transaction has already been submitted before and succeeded, send this receipt
   if (existingTx) {
     return existingTx.receipt
+  }
+
+  if (contractRegistryKey === 'TestUserReplicaSetManager2') {
+    contractRegistryKey = 'UserReplicaSetManager'
   }
 
   const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
