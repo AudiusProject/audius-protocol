@@ -128,9 +128,13 @@ async function run() {
         metadata_multihash,
       }) => {
         cids[user_id] = Array.from(trackCids[user_id] || [])
-        cids[user_id].push(cover_photo_sizes)
-        cids[user_id].push(profile_picture_sizes)
         cids[user_id].push(metadata_multihash)
+        if (cover_photo_sizes) {
+          cids[user_id].push(cover_photo_sizes)
+        }
+        if (profile_picture_sizes) {
+          cids[user_id].push(profile_picture_sizes)
+        }
 
         creator_node_endpoint.forEach((endpoint) => {
           creatorNodes.add(endpoint)
