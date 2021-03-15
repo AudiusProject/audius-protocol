@@ -539,7 +539,7 @@ module.exports = function (app) {
         let fileStream
 
         let stat = null
-        // stat = await fsStat(storagePath)
+        stat = await fsStat(storagePath)
         // Add 'Accept-Ranges' if streamable
         if (req.params.streamable) {
           // res.set('Accept-Ranges', 'bytes')
