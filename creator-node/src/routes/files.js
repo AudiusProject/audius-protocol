@@ -481,8 +481,6 @@ module.exports = function (app) {
 
       storagePath = queryResults.storagePath
 
-      
-
       let fileStream = fs.createReadStream(storagePath)
       await new Promise((resolve, reject) => {
         fileStream
