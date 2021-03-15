@@ -73,7 +73,6 @@ function LibsWrapper (walletIndex = 0) {
       ETH_REGISTRY_ADDRESS,
       ETH_PROVIDER_URL,
       ETH_OWNER_WALLET,
-      DISCPROV_WHITELIST,
       USER_NODE,
       IDENTITY_SERVICE
     ] = [
@@ -83,7 +82,6 @@ function LibsWrapper (walletIndex = 0) {
       config.get('eth_registry_address'),
       config.get('eth_provider_url'),
       config.get('eth_owner_wallet'),
-      new Set(config.get('discprov_whitelist').split(',')),
       config.get('user_node'),
       config.get('identity_service')
     ]
@@ -110,9 +108,7 @@ function LibsWrapper (walletIndex = 0) {
       ETH_PROVIDER_URL,
       ETH_OWNER_WALLET
     )
-    const discoveryProviderConfig = AudiusLibs.configDiscoveryProvider(
-      DISCPROV_WHITELIST
-    )
+    const discoveryProviderConfig = AudiusLibs.configDiscoveryProvider()
 
     const creatorNodeConfig = AudiusLibs.configCreatorNode(USER_NODE, true)
     const identityServiceConfig = AudiusLibs.configIdentityService(
