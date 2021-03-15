@@ -116,24 +116,39 @@ async function run() {
 
     const creatorNodes = new Set()
     const cn2wallets = {} // creator node -> wallets
-    const cn2trackCids = {} // creator node -> trackCids
-    usersBatch.forEach(({ creator_node_endpoint, user_id, wallet }) => {
-      creator_node_endpoint.forEach((endpoint) => {
-        creatorNodes.add(endpoint)
-        cn2wallets[endpoint] = cn2wallets[endpoint] || []
-        cn2wallets[endpoint].push(wallet)
-        cn2trackCids[endpoint] = cn2trackCids[endpoint] || []
-        cn2trackCids[endpoint].push(...(trackCids[user_id] || []))
-      })
-    })
+    const cn2cids = {} // creator node -> cids
+    const cids = {} // user id -> cids
+    usersBatch.forEach(
+      ({
+        creator_node_endpoint,
+        user_id,
+        wallet,
+        cover_photo_sizes,
+        profile_picture_sizes,
+        metadata_multihash,
+      }) => {
+        cids[user_id] = Array.from(trackCids[user_id] || [])
+        cids[user_id].push(cover_photo_sizes)
+        cids[user_id].push(profile_picture_sizes)
+        cids[user_id].push(metadata_multihash)
+
+        creator_node_endpoint.forEach((endpoint) => {
+          creatorNodes.add(endpoint)
+          cn2wallets[endpoint] = cn2wallets[endpoint] || []
+          cn2wallets[endpoint].push(wallet)
+          cn2cids[endpoint] = cn2cids[endpoint] || []
+          cn2cids[endpoint].push(...cids[user_id])
+        })
+      }
+    )
 
     const clockValues = {} // creator node -> wallet -> clock value
-    const trackCidExists = {} // creator node -> trackCid -> exists
+    const cidExists = {} // creator node -> cid -> exists
     await Promise.all(
       Array.from(creatorNodes).map(async (creatorNode) => {
-        const [clockValuesArr, trackCidExistsArr] = await Promise.all([
+        const [clockValuesArr, cidExistsArr] = await Promise.all([
           getClockValues(creatorNode, cn2wallets[creatorNode]),
-          getCidsExist(creatorNode, cn2trackCids[creatorNode]),
+          getCidsExist(creatorNode, cn2cids[creatorNode]),
         ])
 
         clockValues[creatorNode] = {}
@@ -141,9 +156,9 @@ async function run() {
           clockValues[creatorNode][walletPublicKey] = clock
         })
 
-        trackCidExists[creatorNode] = {}
-        trackCidExistsArr.forEach(({ cid, exists }) => {
-          trackCidExists[creatorNode][cid] = exists
+        cidExists[creatorNode] = {}
+        cidExistsArr.forEach(({ cid, exists }) => {
+          cidExists[creatorNode][cid] = exists
         })
       })
     )
@@ -153,13 +168,11 @@ async function run() {
         user_id,
         handle,
         wallet,
-        trackCids: trackCids[user_id] || [],
+        cids: cids[user_id],
         creatorNodes: creator_node_endpoint.map((endpoint, idx) => ({
           endpoint,
           clock: clockValues[endpoint][wallet],
-          trackCids: (trackCids[user_id] || []).filter(
-            (cid) => trackCidExists[endpoint][cid]
-          ),
+          cids: cids[user_id].filter((cid) => cidExists[endpoint][cid]),
           primary: idx === 0,
         })),
       })
