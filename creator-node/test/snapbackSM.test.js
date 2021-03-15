@@ -85,7 +85,6 @@ describe('test sync queue', function () {
     const totalJobsAddedCount = recurringSyncIds.length + manualSyncIds.length
 
     let syncQueueJobs = await snapback.getSyncQueueJobs(true)
-    console.log(`SIDTEST SYNCQUEUEJOBS`, JSON.stringify(syncQueueJobs, null, 2))
     let [
       manualWaitingJobIDs,
       recurringWaitingJobIDs
@@ -118,6 +117,7 @@ describe('test sync queue', function () {
     assert.strictEqual(manualWaitingJobIDs.length, 0)
     assert.strictEqual(recurringWaitingJobIDs.length, 0)
 
+    // TODO - not sure why this isn't working, bull is not returning any jobs as completed 🤷‍♂️
     // // Ensure all jobs were completed
     // let [
     //   manualCompletedJobIDs,
