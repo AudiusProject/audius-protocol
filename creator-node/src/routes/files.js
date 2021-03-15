@@ -480,16 +480,16 @@ module.exports = function (app) {
       }
 
       storagePath = queryResults.storagePath
-      let fileStream = fs.createReadStream(storagePath)
 
       // Step 1 - works
+      // let fileStream = fs.createReadStream(storagePath)
       // await new Promise((resolve, reject) => {
       //   fileStream
       //     .on('open', () => fileStream.pipe(res))
       //     .on('end', () => { res.end(); resolve() })
       //     .on('error', e => { reject(e) })
       // })
-      
+
       // Step 2
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
