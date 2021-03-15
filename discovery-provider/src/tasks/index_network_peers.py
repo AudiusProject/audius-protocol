@@ -1,12 +1,10 @@
 import logging
 import concurrent.futures
-from urllib.parse import urljoin
-import requests
 from src.tasks.celery_app import celery
 from src import eth_abi_values
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
 from src.models import User
-from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_sp_id_key, get_pickled_key
+from src.utils.redis_cache import pickle_and_set, get_sp_id_key, get_pickled_key
 
 logger = logging.getLogger(__name__)
 
