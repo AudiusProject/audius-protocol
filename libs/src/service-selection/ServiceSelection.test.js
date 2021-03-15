@@ -123,6 +123,26 @@ describe('ServiceSelection', () => {
     assert.strictEqual(service, slow)
   })
 
+  it('respects a blacklist', async () => {
+    const fast = 'https://fast.audius.co'
+    nock(fast)
+      .get('/health_check')
+      .reply(200)
+
+    const slow = 'https://slow.audius.co'
+    nock(slow)
+      .get('/health_check')
+      .delay(200)
+      .reply(200)
+
+    const s = new ServiceSelection({
+      getServices: () => [fast, slow],
+      blacklist: new Set([fast])
+    })
+    const service = await s.select()
+    assert.strictEqual(service, slow)
+  })
+
   it('will recheck unhealthy ones', async () => {
     const atFirstHealthy = 'https://atFirstHealthy.audius.co'
     nock(atFirstHealthy)
@@ -278,6 +298,22 @@ describe('ServiceSelection withShortCircuit', () => {
     })
     const service = await s.select()
     assert.strictEqual(service, shortcircuit)
+  })
+
+  it('does not use a short circuit when a blacklist is present', async () => {
+    const other = 'https://other.audius.co'
+    nock(other)
+      .get('/health_check')
+      .reply(200, {
+        behind: true
+      })
+
+    const s = new ServiceSelectionWithShortCircuit({
+      getServices: () => [other],
+      blacklist: new Set([shortcircuit])
+    })
+    const service = await s.select()
+    assert.strictEqual(service, other)
   })
 })
 

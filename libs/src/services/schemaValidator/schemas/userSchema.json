@@ -37,6 +37,12 @@
                 "location": {
                     "type": ["string", "null"],
                     "default": null
+                },
+                "associated_wallets": {
+                    "$ref": "#/definitions/AssociatedWallets"
+                },
+                "collectibles": {
+                    "$ref": "#/definitions/Collectibles"
                 }
             },
             "required": [
@@ -56,6 +62,52 @@
             "maxLength": 46,
             "pattern": "^Qm[a-zA-Z0-9]{44}$",
             "title": "CID"
+        },
+        "AssociatedWallets": {
+            "type": ["object", "null"],
+            "default": null,
+            "patternProperties": {
+                "^0x[a-fA-F0-9]{40}$": { "$ref": "#/definitions/WalletMetadata" }
+            },
+            "additionalProperties": false,
+            "properties": {},
+            "required": [],
+            "$comment": "",
+            "title": "AssociatedWallets"
+        },
+        "WalletMetadata": {
+            "type": ["object"],
+            "additionalProperties": true,
+            "properties": {
+                "signature": {
+                    "type": "string"
+                }
+            },
+            "required": ["signature"],
+            "$comment": "",
+            "title": "WalletMetadata"
+        },
+        "Collectible": {
+            "type": "object",
+            "additionalProperties": false
+        },
+        "Collectibles": {
+            "type": ["object", "null"],
+            "default": null,
+            "additionalProperties": {
+                "$ref": "#/definitions/Collectible"
+            },
+            "properties": {
+                "order": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "order"
+            ]
         }
     }
 }

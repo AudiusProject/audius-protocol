@@ -111,7 +111,6 @@ function LibsWrapper (walletIndex = 0) {
       ETH_OWNER_WALLET
     )
     const discoveryProviderConfig = AudiusLibs.configDiscoveryProvider(
-      false,
       DISCPROV_WHITELIST
     )
 
