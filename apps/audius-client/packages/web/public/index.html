@@ -84,14 +84,16 @@
 
     <!-- start reCAPTCHA -->
     <script>
-      onRecaptchaLoad = () => grecaptcha.render('recaptcha-hidden', {
-        'sitekey' : '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q',
+      var onRecaptchaLoad = () => {
+        grecaptcha.render('recaptcha-hidden', {
+        'sitekey' : '%REACT_APP_RECAPTCHA_SITE_KEY%',
         'size': 'invisible',
         'expired-callback': () => null,
-        'expired-callback': () => null
+        'error-callback': () => null
       })
+    }
     </script>
-    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit"></script>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=%REACT_APP_RECAPTCHA_SITE_KEY%"></script>
     <!-- end reCAPTCHA -->
 
     <!-- start Segment -->
