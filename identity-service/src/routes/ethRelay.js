@@ -51,7 +51,29 @@ module.exports = function (app) {
    */
   app.get('/registered_creator_nodes', handleResponse(async (req, res, next) => {
     const audiusLibsInstance = req.app.get('audiusLibs')
-    const creatorNodes = await audiusLibsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
+    const redis = req.app.get('redis')
+    const contentNodeListRedisKey = 'service-provider-list:::content-node'
+
+    let creatorNodes = null
+    try {
+      const cnodesFromRedis = await redis.get(contentNodeListRedisKey)
+      if (cnodesFromRedis) {
+        creatorNodes = JSON.parse(cnodesFromRedis)
+      }
+    } catch (e) {
+      req.logger.error(`Could not read list of content nodes from redis`, e)
+    }
+
+    if (!creatorNodes) {
+      try {
+        creatorNodes = await audiusLibsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
+        await redis.set(contentNodeListRedisKey, JSON.stringify(creatorNodes), 'EX', 15)
+      } catch (e) {
+        req.logger.error(`Could not read list of content nodes from chain`, e)
+        return errorResponseServerError(`Could not read list of content nodes from chain: ${e.message}`)
+      }
+    }
+
     return successResponse(creatorNodes)
   }))
 }
