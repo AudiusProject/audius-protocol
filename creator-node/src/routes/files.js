@@ -459,6 +459,40 @@ module.exports = function (app) {
     return successResponse(ipfsIDObj)
   }))
 
+  app.get('/dm_stream', async (req, res) => {
+    try {
+      const CID = req.query.CID
+
+      let storagePath
+      // Don't serve if not found in DB.
+      const queryResults = await models.File.findOne({
+        where: {
+          multihash: CID
+        },
+        order: [['clock', 'DESC']]
+      })
+      if (!queryResults) {
+        return sendResponse(req, res, errorResponseNotFound(`No valid file found for provided CID: ${CID}`))
+      }
+
+      if (queryResults.type === 'dir') {
+        return sendResponse(req, res, errorResponseBadRequest('this dag node is a directory'))
+      }
+
+      storagePath = queryResults.storagePath
+      let fileStream = fs.createReadStream(storagePath)
+
+      await new Promise((resolve, reject) => {
+        fileStream
+          .on('open', () => fileStream.pipe(res))
+          .on('end', () => { res.end(); resolve() })
+          .on('error', e => { reject(e) })
+      })
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e.message))
+    }
+  })
+
   /**
    * Serve IPFS data hosted by creator node and create download route using query string pattern
    * `...?filename=<file_name.mp3>`.
