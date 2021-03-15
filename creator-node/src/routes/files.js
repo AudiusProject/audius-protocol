@@ -502,8 +502,8 @@ module.exports = function (app) {
         // Stream file from file system
         let fileStream
 
-        let stat
-        stat = await fsStat(storagePath)
+        let stat = null
+        // stat = await fsStat(storagePath)
         // Add 'Accept-Ranges' if streamable
         if (req.params.streamable) {
           // res.set('Accept-Ranges', 'bytes')
