@@ -490,8 +490,60 @@ module.exports = function (app) {
       //     .on('error', e => { reject(e) })
       // })
 
-      // Step 2
-      return await streamFromFileSystem(req, res, storagePath)
+      // Step 2 - didn't work
+      // return await streamFromFileSystem(req, res, storagePath)
+
+      try {
+        // If file cannot be found on disk, throw error
+        if (!fs.existsSync(storagePath)) {
+          throw new Error('File could not be found on disk.')
+        }
+
+        // Stream file from file system
+        let fileStream
+
+        let stat
+        stat = await fsStat(storagePath)
+        // Add 'Accept-Ranges' if streamable
+        if (req.params.streamable) {
+          // res.set('Accept-Ranges', 'bytes')
+        }
+
+        // If a range header is present, use that to create the readstream
+        // otherwise, stream the whole file.
+        const range = getRequestRange(req)
+
+        // TODO - route doesn't support multipart ranges.
+        if (stat && range) {
+          const { start, end } = range
+          if (end >= stat.size) {
+            // Set "Requested Range Not Satisfiable" header and exit
+            res.status(416)
+            return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
+          }
+
+          fileStream = fs.createReadStream(storagePath, { start, end: end || (stat.size - 1) })
+
+          // Add a content range header to the response
+          // res.set('Content-Range', formatContentRange(start, end, stat.size))
+          // res.set('Content-Length', end - start + 1)
+          // set 206 "Partial Content" success status response code
+          res.status(206)
+        } else {
+          fileStream = fs.createReadStream(storagePath)
+          // res.set('Content-Length', stat.size)
+        }
+
+        await new Promise((resolve, reject) => {
+          fileStream
+            .on('open', () => fileStream.pipe(res))
+            .on('end', () => { res.end(); resolve() })
+            .on('error', e => { reject(e) })
+        })
+      } catch (e) {
+        // Unable to stream from file system. Throw a server error message
+        throw e
+      }
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e.message))
     }
