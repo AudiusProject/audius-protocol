@@ -157,13 +157,13 @@ def update_user_replica_set_manager_address_if_necessary(self):
             address=registry_address, abi=abi_values["Registry"]["abi"]
         )
         user_replica_set_manager_address = registry_instance.functions.getContract(
-            bytes("TestUserReplicaSetManager", "utf-8")
+            bytes("TestUserReplicaSetManager2", "utf-8")
         ).call()
         if user_replica_set_manager_address != zero_address:
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
     logger.info(
-        f"index.py | update_ursm, found {user_replica_set_manager_address}, for TestUserReplicaSetManager"
+        f"index.py | update_ursm, found {user_replica_set_manager_address}, for TestUserReplicaSetManager2"
     )
 
 def index_blocks(self, db, blocks_list):

@@ -28,7 +28,7 @@ const SocialFeatureFactoryRegistryKey = 'SocialFeatureFactory'
 const PlaylistFactoryRegistryKey = 'PlaylistFactory'
 const UserLibraryFactoryRegistryKey = 'UserLibraryFactory'
 const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
-const UserReplicaSetManagerRegistryKey = 'TestUserReplicaSetManager'
+const UserReplicaSetManagerRegistryKey = 'TestUserReplicaSetManager2'
 
 class AudiusContracts {
   constructor (web3Manager, registryAddress, isServer) {
