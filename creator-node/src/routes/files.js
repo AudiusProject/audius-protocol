@@ -512,7 +512,7 @@ module.exports = function (app) {
         // If a range header is present, use that to create the readstream
         // otherwise, stream the whole file.
         const range = getRequestRange(req)
-
+        req.logger.info(`dm_stream range: ${range}`)
         // TODO - route doesn't support multipart ranges.
         if (stat && range) {
           const { start, end } = range
