@@ -173,6 +173,7 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
+        update_user_replica_set_manager_address_if_necessary(self)
         block = blocks_list[i]
         block_index = num_blocks - i
         block_number = block.number
@@ -585,7 +586,6 @@ def update_task(self):
         if have_lock:
             logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
-            update_user_replica_set_manager_address_if_necessary(self)
 
             latest_block = get_latest_block(db)
 
