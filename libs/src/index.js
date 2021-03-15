@@ -22,6 +22,7 @@ const Playlist = require('./api/playlist')
 const File = require('./api/file')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
+const Captcha = require('./utils/captcha')
 
 class AudiusLibs {
   /**
@@ -107,7 +108,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers) {
+  static configInternalWeb3 (registryAddress, providers, privateKey) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -123,7 +124,8 @@ class AudiusLibs {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoints: providerList
+        web3ProviderEndpoints: providerList,
+        privateKey
       }
     }
   }
@@ -168,6 +170,7 @@ class AudiusLibs {
     discoveryProviderConfig,
     creatorNodeConfig,
     comstockConfig,
+    captchaConfig,
     isServer,
     isDebug = false
   }) {
@@ -180,6 +183,7 @@ class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
+    this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
 
@@ -215,9 +219,14 @@ class AudiusLibs {
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
+    /** Captcha */
+    if (this.captchaConfig) {
+      this.captcha = new Captcha(this.captchaConfig)
+    }
+
     /** Identity Service */
     if (this.identityServiceConfig) {
-      this.identityService = new IdentityService(this.identityServiceConfig.url)
+      this.identityService = new IdentityService(this.identityServiceConfig.url, this.captcha)
       this.hedgehog = new Hedgehog(this.identityService)
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
@@ -314,6 +323,7 @@ class AudiusLibs {
       this.ethContracts,
       this.creatorNode,
       this.comstock,
+      this.captcha,
       this.isServer
     ]
     this.ServiceProvider = new ServiceProvider(...services)

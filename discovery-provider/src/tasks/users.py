@@ -177,7 +177,13 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = event_args._isVerified
     elif event_type == user_event_types_lookup["update_creator_node_endpoint"]:
-        user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
+        # Ensure any user consuming the new UserReplicaSetManager contract does not process
+        # legacy `creator_node_endpoint` changes
+        # Reference user_replica_set.py for the updated indexing flow around this field
+        replica_set_upgraded = user_replica_set_upgraded(user_record)
+        logger.info(f"users.py | {user_record.handle} Replica set upgraded: {replica_set_upgraded}")
+        if not replica_set_upgraded:
+            user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
 
     # New updated_at timestamp
     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
@@ -230,3 +236,8 @@ def get_metadata_overrides_from_ipfs(session, update_task, user_record):
         logger.warning(f'users.py | {user_metadata}')
 
     return user_metadata
+
+# Determine whether this user has identity established on the UserReplicaSetManager contract
+def user_replica_set_upgraded(user_record):
+    primary_replica_set_configured = (user_record.primary_id is not None and user_record.primary_id > 0)
+    return primary_replica_set_configured

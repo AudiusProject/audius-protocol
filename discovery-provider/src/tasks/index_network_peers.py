@@ -6,12 +6,14 @@ from src.tasks.celery_app import celery
 from src import eth_abi_values
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
 from src.models import User
-from src.utils.redis_cache import use_redis_cache
+from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_sp_id_key, get_pickled_key
 
 logger = logging.getLogger(__name__)
 
 sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
 content_node_service_type = bytes("content-node", "utf-8")
+
+cnode_info_redis_ttl = 1800
 
 # What is a "Peer" in this context?
 # A peer represents another known entity in the network
@@ -24,10 +26,21 @@ content_node_service_type = bytes("content-node", "utf-8")
 
 # Perform eth web3 call to fetch endpoint info
 def fetch_cnode_info(sp_id, sp_factory_instance):
+    redis = update_network_peers.redis
+    sp_id_key = get_sp_id_key(sp_id)
+    sp_info_cached = get_pickled_key(redis, sp_id_key)
+    if sp_info_cached:
+        logger.info(f"index_network_peers.py | Found cached value for spID={sp_id} - {sp_info_cached}")
+        return sp_info_cached
+
     cn_endpoint_info = sp_factory_instance.functions.getServiceEndpointInfo(
         content_node_service_type,
         sp_id
     ).call()
+    pickle_and_set(redis, sp_id_key, cn_endpoint_info, cnode_info_redis_ttl)
+    logger.info(
+        f"index_network_peers.py | Configured redis {sp_id_key} - {cn_endpoint_info} - TTL {cnode_info_redis_ttl}"
+    )
     return cn_endpoint_info
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
@@ -49,7 +62,7 @@ def retrieve_peers_from_eth_contracts(self):
     total_cn_type_providers = sp_factory_inst.functions.getTotalServiceTypeProviders(content_node_service_type).call()
     ids_list = list(range(1, total_cn_type_providers + 1))
     eth_cn_endpoints_set = set()
-   # Given the total number of nodes in the network we can now fetch node info in parallel
+    # Given the total number of nodes in the network we can now fetch node info in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         fetch_cnode_futures = {executor.submit(fetch_cnode_info, i, sp_factory_inst): i for i in ids_list}
         for future in concurrent.futures.as_completed(fetch_cnode_futures):
@@ -65,8 +78,10 @@ def retrieve_peers_from_eth_contracts(self):
                 if valid_endpoint:
                     eth_cn_endpoints_set.add(cn_endpoint_info[1])
             except Exception as exc:
-                logger.error(f"index_network_peers.py | fetch_cnode_futures {single_cnode_fetch_op} generated {exc}")
-   # Return dictionary with key = endpoint, formatted as { endpoint: True }
+                logger.error(
+                    f"index_network_peers.py | ERROR in fetch_cnode_futures {single_cnode_fetch_op} generated {exc}"
+                )
+    # Return dictionary with key = endpoint, formatted as { endpoint: True }
     return eth_cn_endpoints_set
 
 # Determine the known set of distinct peers currently within a user replica set

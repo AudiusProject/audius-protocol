@@ -1,7 +1,7 @@
 const Web3 = require('../../web3')
+const MultiProvider = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx')
 const retry = require('async-retry')
-const { sample } = require('lodash')
 const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
 const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
@@ -14,8 +14,8 @@ class EthWeb3Manager {
     if (!web3Config.providers) throw new Error('missing web3Config property: providers')
     if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
 
-    // Pick a provider at random to spread the load
-    const provider = sample(web3Config.providers)
+    // MultiProvider implements a web3 provider with fallback.
+    const provider = new MultiProvider(web3Config.providers)
 
     this.web3Config = web3Config
     this.identityService = identityService

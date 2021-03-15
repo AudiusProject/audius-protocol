@@ -2,6 +2,7 @@ const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
 const AudiusABIDecoder = require('../ABIDecoder/index')
+const EthereumWallet = require('ethereumjs-wallet')
 let XMLHttpRequestRef
 if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = require('xmlhttprequest').XMLHttpRequest
@@ -48,6 +49,12 @@ class Web3Manager {
       // either user has external web3 but it's not configured, or doesn't have web3
       this.web3 = new Web3(this.provider(web3Config.internalWeb3Config.web3ProviderEndpoints[0], 10000))
       this.useExternalWeb3 = false
+
+      if (web3Config.internalWeb3Config.privateKey) {
+        let pkeyBuffer = Buffer.from(web3Config.internalWeb3Config.privateKey, 'hex')
+        this.ownerWallet = EthereumWallet.fromPrivateKey(pkeyBuffer)
+        return
+      }
 
       // create private key pair here if it doesn't already exist
       const storedWallet = this.hedgehog.getWallet()
@@ -125,7 +132,11 @@ class Web3Manager {
 
   async signTypedData (signatureData) {
     if (this.useExternalWeb3) {
-      return ethSignTypedData(this.getWeb3(), this.getWalletAddress(), signatureData)
+      return ethSignTypedData(
+        this.getWeb3(),
+        this.getWalletAddress(),
+        signatureData
+      )
     } else {
       // Due to changes in ethereumjs-util's toBuffer method as of v6.2.0
       // non hex-prefixed string values are not permitted and need to be
@@ -139,7 +150,6 @@ class Web3Manager {
           signatureData.message[key] = Buffer.from(signatureData.message[key])
         }
       })
-
       return sigUtil.signTypedData(
         this.ownerWallet.getPrivateKey(),
         { data: signatureData }

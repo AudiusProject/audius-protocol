@@ -3,8 +3,9 @@ const axios = require('axios')
 const Requests = require('./requests')
 
 class IdentityService {
-  constructor (identityServiceEndpoint) {
+  constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
+    this.captcha = captcha
   }
 
   /* ------- HEDGEHOG AUTH ------- */
@@ -26,6 +27,15 @@ class IdentityService {
   }
 
   async setUserFn (obj) {
+    if (this.captcha) {
+      try {
+        const token = await this.captcha.generate('identity/user')
+        obj.token = token
+      } catch (e) {
+        console.warn(`CAPTCHA - Recaptcha failed to generate token:`, e)
+      }
+    }
+
     return this._makeRequest({
       url: '/user',
       method: 'post',

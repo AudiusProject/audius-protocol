@@ -1,5 +1,6 @@
 const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
+const { promisify } = require('util')
 
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
@@ -13,6 +14,8 @@ const {
   triggerSecondarySyncs
 } = require('../middlewares')
 const DBManager = require('../dbManager')
+
+const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
   /**
@@ -83,9 +86,10 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
+      const fileBuffer = await readFile(file.storagePath)
+      metadataJSON = JSON.parse(fileBuffer)
     } catch (e) {
-      return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
+      return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}: ${e}.`)
     }
 
     // Get coverArtFileUUID and profilePicFileUUID for multihashes in metadata object, if present.

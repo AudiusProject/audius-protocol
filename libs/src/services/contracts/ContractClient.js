@@ -36,7 +36,7 @@ class ContractClient {
   }
 
   /** Inits the contract if necessary */
-  async init () {
+  async init (selectNewEndpointOnRetry = true) {
     // No-op if we are already initted
     if (this._isInitialized) return
 
@@ -59,6 +59,10 @@ class ContractClient {
     try {
       if (!this._contractAddress) {
         this._contractAddress = await this.getRegistryAddress(this.contractRegistryKey)
+        if (this._contractAddress === '0x0000000000000000000000000000000000000000') {
+          this._isInitializing = false
+          throw new Error(`Failed retrieve address for ${this.contractRegistryKey}`)
+        }
       }
       const web3 = this.web3Manager.getWeb3()
       this._contract = new web3.eth.Contract(
@@ -70,17 +74,19 @@ class ContractClient {
     } catch (e) {
       // If using ethWeb3Manager or useExternalWeb3 is true, do not do reselect provider logic and fail
       if (!this.providerSelector) {
-        console.error(`Failed to initialize contract ${JSON.stringify(this.contractABI)}`, e)
+        console.error(`Failed to initialize ${this.contractRegistryKey} contract`, e)
         return
       }
 
-      await this.retryInit()
+      await this.retryInit(selectNewEndpointOnRetry)
     }
   }
 
-  async retryInit () {
+  async retryInit (selectNewEndpoint = true) {
     try {
-      await this.selectNewEndpoint()
+      if (selectNewEndpoint) {
+        await this.selectNewEndpoint()
+      }
       await this.init()
     } catch (e) {
       console.error(e.message)
@@ -92,7 +98,7 @@ class ContractClient {
     this.providerSelector.addUnhealthy(this.web3Manager.getWeb3().currentProvider.host)
 
     if (this.providerSelector.getUnhealthySize() === this.providerSelector.getServicesSize()) {
-      throw new Error(`No available, healthy providers to init contract ${JSON.stringify(this.contractABI)}`)
+      throw new Error(`No available, healthy providers to init contract ${this.contractRegistryKey}`)
     }
 
     // Reset _isInitializing to false to retry init logic and avoid the _isInitialzing check

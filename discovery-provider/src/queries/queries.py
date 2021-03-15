@@ -33,7 +33,7 @@ from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_t
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
-
+from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -548,5 +548,15 @@ def get_creator_node_users():
         cnode_url = request.args.get("creator_node_endpoint")
         users = get_users_cnode(cnode_url)
         return api_helpers.success_response(users)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+@bp.route("/ursm_content_nodes", methods=("GET",))
+def get_ursm_content_nodes():
+    try:
+        # Assign value only if not None or empty string
+        owner_wallet = request.args.get("owner_wallet") or None
+        cnodes = get_ursm_cnodes(owner_wallet)
+        return api_helpers.success_response(cnodes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

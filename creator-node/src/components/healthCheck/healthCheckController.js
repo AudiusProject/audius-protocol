@@ -51,8 +51,10 @@ const healthCheckController = async (req) => {
     return errorResponseServerError()
   }
 
+  let { randomBytesToSign } = req.query
+
   const logger = req.logger
-  const response = await healthCheck(serviceRegistry, logger, sequelize)
+  const response = await healthCheck(serviceRegistry, logger, sequelize, randomBytesToSign)
   return successResponse(response)
 }
 
@@ -82,6 +84,10 @@ const healthCheckDurationController = async (req) => {
  * Will be used for cnode selection.
  */
 const healthCheckVerboseController = async (req) => {
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError()
+  }
+
   const logger = req.logger
   const healthCheckResponse = await healthCheckVerbose(
     serviceRegistry,

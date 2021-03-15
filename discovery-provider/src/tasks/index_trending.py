@@ -4,6 +4,7 @@ from src.models import Track
 from src.tasks.celery_app import celery
 from src.queries.get_trending_tracks import make_trending_cache_key, generate_unpopulated_trending
 from src.utils.redis_cache import pickle_and_set
+from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
@@ -41,6 +42,8 @@ def index_trending(self, db, redis):
     update_end = time.time()
     update_total = update_end - update_start
     logger.info(f"index_trending.py | Finished indexing trending in {update_total} seconds")
+    # Update cache key to track the last time trending finished indexing
+    redis.set(trending_tracks_last_completion_redis_key, int(update_end))
 
 ######## CELERY TASKS ########
 @celery.task(name="index_trending", bind=True)

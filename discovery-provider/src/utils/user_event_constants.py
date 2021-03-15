@@ -27,3 +27,13 @@ user_event_types_arr = [
     user_event_types_lookup["update_is_verified"],
     user_event_types_lookup["update_creator_node_endpoint"]
 ]
+
+user_replica_set_manager_event_types_lookup = {
+    'update_replica_set': 'UpdateReplicaSet',
+    'add_or_update_content_node': 'AddOrUpdateContentNode'
+}
+
+user_replica_set_manager_event_types_arr = [
+    user_replica_set_manager_event_types_lookup['update_replica_set'],
+    user_replica_set_manager_event_types_lookup['add_or_update_content_node']
+]

@@ -312,9 +312,15 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
 
     req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
 
-    // Attempt to connect directly to target CNode's IPFS node.
-    await _initBootstrapAndRefreshPeers(req, body.data.ipfsIDObj.addresses, redisKey)
-    req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    try {
+      // Attempt to connect directly to target CNode's IPFS node.
+      await _initBootstrapAndRefreshPeers(req, body.data.ipfsIDObj.addresses, redisKey)
+      req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+    } catch (e) {
+      // if there's an error peering to an IPFS node, do not stop execution
+      // since we have other fallbacks, keep going on with sync
+      req.logger.error(`Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`, e)
+    }
 
     /**
      * For each CNodeUser, replace local DB state with retrieved data + fetch + save missing files.

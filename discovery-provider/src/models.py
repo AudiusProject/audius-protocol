@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Text,
@@ -129,7 +130,6 @@ class BlacklistedIPLD(Base):
 blocknumber={self.blocknumber},ipld={self.ipld}\
 is_blacklisted={self.is_blacklisted}, is_current={self.is_current})>"
 
-
 class User(Base):
     __tablename__ = "users"
 
@@ -153,6 +153,9 @@ class User(Base):
     creator_node_endpoint = Column(String)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
+    primary_id = Column(Integer, nullable=True)
+    secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
+    replica_set_update_signer = Column(String, nullable=True)
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
@@ -182,6 +185,9 @@ bio={self.bio},\
 location={self.location},\
 metadata_multihash={self.metadata_multihash},\
 creator_node_endpoint={self.creator_node_endpoint},\
+primary_id={self.primary_id},\
+secondary_ids={self.secondary_ids},\
+replica_set_update_signer={self.replica_set_update_signer},\
 updated_at={self.updated_at},\
 created_at={self.created_at})>"
 
@@ -474,6 +480,70 @@ timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
 
+class AggregateDailyUniqueUsersMetrics(Base):
+    __tablename__ = "aggregate_daily_unique_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # zeroed out to the day
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateDailyUniqueUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateDailyTotalUsersMetrics(Base):
+    __tablename__ = "aggregate_daily_total_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # zeroed out to the day
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateDailyTotalUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateMonthlyUniqueUsersMetrics(Base):
+    __tablename__ = "aggregate_monthly_unique_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # first day of month
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateMonthlyUniqueUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateMonthlyTotalUsersMetrics(Base):
+    __tablename__ = "aggregate_monthly_total_users_metrics"
+
+    id = Column(Integer, primary_key=True)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # first day of month
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateMonthlyTotalUsersMetrics(\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
 class AppNameMetrics(Base):
     __tablename__ = "app_name_metrics"
 
@@ -490,6 +560,42 @@ class AppNameMetrics(Base):
 application_name={self.application_name},\
 count={self.count},\
 ip={self.ip},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateDailyAppNameMetrics(Base):
+    __tablename__ = "aggregate_daily_app_name_metrics"
+
+    id = Column(Integer, primary_key=True)
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # zeroed out to the day
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateDailyAppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
+timestamp={self.timestamp},\
+created_at={self.created_at},\
+updated_at={self.updated_at}"
+
+class AggregateMonthlyAppNameMetrics(Base):
+    __tablename__ = "aggregate_monthly_app_name_metrics"
+
+    id = Column(Integer, primary_key=True)
+    application_name = Column(String, nullable=False)
+    count = Column(Integer, nullable=False)
+    timestamp = Column(Date, nullable=False) # first day of month
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AggregateMonthlyAppNameMetrics(\
+application_name={self.application_name},\
+count={self.count},\
 timestamp={self.timestamp},\
 created_at={self.created_at},\
 updated_at={self.updated_at}"
@@ -603,6 +709,36 @@ class TagTrackUserMatview(Base):
 tag={self.tag},\
 track_id={self.track_id},\
 owner_id={self.owner_id}>"
+
+class URSMContentNode(Base):
+    __tablename__ = "ursm_content_nodes"
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    cnode_sp_id = Column(Integer, nullable=False)
+    delegate_owner_wallet = Column(String, nullable=False)
+    owner_wallet = Column(String, nullable=False)
+    proposer_sp_ids = Column(postgresql.ARRAY(Integer), nullable=False)
+    proposer_1_delegate_owner_wallet = Column(String, nullable=False)
+    proposer_2_delegate_owner_wallet = Column(String, nullable=False)
+    proposer_3_delegate_owner_wallet = Column(String, nullable=False)
+    endpoint = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False)
+
+    PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash)
+
+    def __repr__(self):
+        return f"<URSMContentNode(blockhash={self.blockhash},\
+blocknumber={self.blocknumber},\
+is_current={self.is_current},\
+cnode_sp_id={self.cnode_sp_id},\
+delegate_owner_wallet={self.delegate_owner_wallet},\
+owner_wallet={self.owner_wallet},\
+proposer_sp_ids={self.proposer_sp_ids},\
+proposer_1_delegate_owner_wallet={self.proposer_1_delegate_owner_wallet},\
+proposer_2_delegate_owner_wallet={self.proposer_2_delegate_owner_wallet},\
+proposer_3_delegate_owner_wallet={self.proposer_3_delegate_owner_wallet},\
+endpoint={self.endpoint})>"
 
 class UserBalance(Base):
     __tablename__ = "user_balances"

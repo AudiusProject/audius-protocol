@@ -2,6 +2,7 @@ const { pick } = require('lodash')
 const { Base, Services } = require('./base')
 const Utils = require('../utils')
 const CreatorNode = require('../services/creatorNode')
+const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorNode/CreatorNodeSelection')
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values
@@ -366,11 +367,15 @@ class Users extends Base {
     // Update user creator_node_endpoint on chain if applicable
     let updateEndpointTxBlockNumber = null
     if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
-      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      // Perform update to new contract
+      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
-      await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+      await this._waitForCreatorNodeEndpointIndexing(
+        newMetadata.user_id,
+        newMetadata.creator_node_endpoint
+      )
     }
 
     // Upload new metadata object to CN
@@ -381,7 +386,7 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -453,11 +458,14 @@ class Users extends Base {
       await this.creatorNode.setEndpoint(newPrimary)
 
       // Update user creator_node_endpoint on chain if applicable
-      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+      const updateEndpointTxReceipt = await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
       updateEndpointTxBlockNumber = updateEndpointTxReceipt.blockNumber
 
       // Ensure DN has indexed creator_node_endpoint change
-      await this._waitForCreatorNodeEndpointIndexing(newMetadata.user_id, newMetadata.creator_node_endpoint)
+      await this._waitForCreatorNodeEndpointIndexing(
+        newMetadata.user_id,
+        newMetadata.creator_node_endpoint
+      )
     }
 
     // Upload new metadata object to CN
@@ -468,7 +476,7 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId, ['creator_node_endpoint'])
+    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -545,7 +553,7 @@ class Users extends Base {
       // Update user creator_node_endpoint on chain if applicable
       if (newMetadata.creator_node_endpoint !== oldMetadata.creator_node_endpoint) {
         phase = phases.UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN
-        await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, newMetadata['creator_node_endpoint'])
+        await this._updateReplicaSetOnChain(userId, newMetadata.creator_node_endpoint)
         // Ensure DN has indexed creator_node_endpoint change
         await this._waitForCreatorNodeEndpointIndexing(userId, newMetadata.creator_node_endpoint)
       }
@@ -618,9 +626,6 @@ class Users extends Base {
     if (metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]) {
       addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]))
     }
-    if (metadata[USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT]) {
-      addOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT]))
-    }
 
     // Execute update promises concurrently
     // TODO - what if one or more of these fails?
@@ -634,7 +639,6 @@ class Users extends Base {
     // Remove excluded keys from metadata object
     let metadata = { ...newMetadata }
     exclude.map(excludedKey => delete metadata[excludedKey])
-
     // Compare the existing metadata with the new values and conditionally
     // perform update operations
     for (const key in metadata) {
@@ -663,9 +667,6 @@ class Users extends Base {
             Utils.decodeMultihash(metadata[USER_PROP_NAME_CONSTANTS.COVER_PHOTO_SIZES]).digest
           ))
         }
-        if (key === USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT) {
-          updateOps.push(this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(userId, metadata[USER_PROP_NAME_CONSTANTS.CREATOR_NODE_ENDPOINT]))
-        }
       }
     }
 
@@ -682,6 +683,58 @@ class Users extends Base {
   // Metadata object may have extra fields. Only keep core fields in USER_PROPS and 'user_id'.
   _cleanUserMetadata (metadata) {
     return pick(metadata, USER_PROPS.concat('user_id'))
+  }
+
+  // Perform replica set update
+  // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
+  // This behavior is to ensure backwards compatibility prior to contract deploy
+  async _updateReplicaSetOnChain (userId, creatorNodeEndpoint) {
+    // Attempt to update through UserReplicaSetManagerClient if present
+    if (!this.contracts.UserReplicaSetManagerClient) {
+      await this.contracts.initUserReplicaSetManagerClient()
+    }
+    // If still uninitialized, proceed with legacy update - else move forward with new contract update
+    if (!this.contracts.UserReplicaSetManagerClient) {
+      const { txReceipt: updateEndpointTxReceipt } = await this.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
+        userId,
+        creatorNodeEndpoint
+      )
+      return updateEndpointTxReceipt
+    }
+    let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
+    let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
+    let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
+      this._retrieveSpIDFromEndpoint(primaryEndpoint),
+      this._retrieveSpIDFromEndpoint(secondaries[0]),
+      this._retrieveSpIDFromEndpoint(secondaries[1])
+    ])
+    // Update in new contract
+    let tx = await this.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primarySpID,
+      [secondary1SpID, secondary2SpID]
+    )
+    return tx
+  }
+
+  // Retrieve cached value for spID from endpoint if present, otherwise fetch from eth web3
+  // Any error in the web3 fetch will short circuit the entire operation as expected
+  async _retrieveSpIDFromEndpoint (endpoint) {
+    let cachedSpID = getSpIDForEndpoint(endpoint)
+    let spID = cachedSpID
+    if (!spID) {
+      let spEndpointInfo = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(
+        endpoint
+      )
+      // Throw if this spID is 0, indicating invalid
+      spID = spEndpointInfo.spID
+      if (spID === 0) {
+        throw new Error(`Failed to find spID for ${endpoint}`)
+      }
+      // Cache value if it is valid
+      setSpIDForEndpoint(endpoint, spID)
+    }
+    return spID
   }
 }
 

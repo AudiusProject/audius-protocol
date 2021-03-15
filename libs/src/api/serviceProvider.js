@@ -1,6 +1,6 @@
 const { Base } = require('./base')
 const { timeRequestsAndSortByVersion } = require('../utils/network')
-const CreatorNodeSelection = require('../services/creatorNode/CreatorNodeSelection')
+const { CreatorNodeSelection } = require('../services/creatorNode/CreatorNodeSelection')
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'

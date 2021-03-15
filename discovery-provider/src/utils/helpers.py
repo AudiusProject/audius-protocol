@@ -14,6 +14,44 @@ from jsonformatter import JsonFormatter
 from src import exceptions
 from . import multihash
 
+def redis_restore(redis, key):
+    logger = logging.getLogger(__name__)
+    try:
+        filename = f"{key}_dump"
+        with open(filename, 'rb') as f:
+            dumped = f.read()
+            redis.restore(key, 0, dumped)
+            logger.info(f"successfully restored redis value for key: {key}")
+            return redis.get(key)
+    except FileNotFoundError as not_found:
+        logger.error(f"could not read redis dump file: {filename}")
+        logger.error(not_found)
+        return None
+    except Exception as e:
+        logger.error(f"could not perform redis restore for key: {key}")
+        logger.error(e)
+        return None
+
+def redis_dump(redis, key):
+    logger = logging.getLogger(__name__)
+    try:
+        dumped = redis.dump(key)
+        filename = f"{key}_dump"
+        with open(filename, 'wb') as f:
+            f.write(dumped)
+            logger.info(f"successfully performed redis dump for key: {key}")
+    except Exception as e:
+        logger.error(f"could not perform redis dump for key: {key}")
+        logger.error(e)
+
+def redis_set_and_dump(redis, key, value):
+    redis.set(key, value)
+    redis_dump(redis, key)
+
+def redis_get_or_restore(redis, key):
+    value = redis.get(key)
+    return value if value else redis_restore(redis, key)
+
 @contextlib.contextmanager
 def cd(path):
     """Context manager that changes to directory `path` and return to CWD

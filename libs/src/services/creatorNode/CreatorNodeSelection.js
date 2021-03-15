@@ -2,6 +2,19 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
+/**
+ * In memory dictionary used to query spID from endpoint
+ * Eliminates duplicate web3 calls within same session
+ */
+let contentNodeEndpointToSpID = { }
+function getSpIDForEndpoint (endpoint) {
+  return contentNodeEndpointToSpID[endpoint]
+}
+
+function setSpIDForEndpoint (endpoint, spID) {
+  contentNodeEndpointToSpID[endpoint] = spID
+}
+
 class CreatorNodeSelection extends ServiceSelection {
   constructor ({
     creatorNode,
@@ -9,14 +22,17 @@ class CreatorNodeSelection extends ServiceSelection {
     ethContracts,
     whitelist,
     blacklist,
-    maxStorageUsedPercent = 90,
+    maxStorageUsedPercent = 95,
     timeout = null
   }) {
     super({
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
-        return services.map(e => e.endpoint)
+        return services.map((e) => {
+          setSpIDForEndpoint(e.endpoint, e.spID)
+          return e.endpoint
+        })
       },
       // Use the content node's configured whitelist if not provided
       whitelist: whitelist || creatorNode.passList,
@@ -191,16 +207,23 @@ class CreatorNodeSelection extends ServiceSelection {
       let isHealthy = false
 
       // Check that the health check:
-      // 1. Responded with status code 200 and that the
+      // 1. Responded with status code 200
       // 2. Version is up to date on major and minor
-      // 3. Has enough storage space -- max capacity defined at the variable `this.maxStorageUsedPercent`
+      // 3. Has enough storage space
+      //    - Max capacity percent is defined from CN health check response. If not present,
+      //      use existing value from `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
         const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
           this.currentVersion,
           resp.response.data.data.version
         )
-        const { storagePathSize, storagePathUsed } = resp.response.data.data
+        let { storagePathSize, storagePathUsed, maxStorageUsedPercent } = resp.response.data.data
+        if (maxStorageUsedPercent) {
+          this.maxStorageUsedPercent = maxStorageUsedPercent
+        } else {
+          console.warn(`maxStorageUsedPercent not found in health check response. Using constructor value of ${this.maxStorageUsedPercent}% as maxStorageUsedPercent.`)
+        }
         const hasEnoughStorage = this._hasEnoughStorageSpace({ storagePathSize, storagePathUsed })
         isHealthy = isUp && versionIsUpToDate && hasEnoughStorage
       }
@@ -269,4 +292,8 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 }
 
-module.exports = CreatorNodeSelection
+module.exports = {
+  CreatorNodeSelection,
+  getSpIDForEndpoint,
+  setSpIDForEndpoint
+}

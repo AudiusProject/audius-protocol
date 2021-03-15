@@ -28,6 +28,7 @@ from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
+from src.utils.redis_metrics import METRICS_INTERVAL
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -44,14 +45,16 @@ social_feature_factory = None
 playlist_factory = None
 user_library_factory = None
 ipld_blacklist_factory = None
+user_replica_set_manager = None
 contract_addresses = None
 
 logger = logging.getLogger(__name__)
 
 
-def initContracts():
+def init_contracts():
     registry_address = web3.toChecksumAddress(
-        shared_config["contracts"]["registry"])
+        shared_config["contracts"]["registry"]
+    )
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )
@@ -97,6 +100,13 @@ def initContracts():
         address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
     )
 
+    user_replica_set_manager_address = registry_instance.functions.getContract(
+        bytes("UserReplicaSetManager", "utf-8")
+    ).call()
+    user_replica_set_manager_inst = web3.eth.contract(
+        address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
+    )
+
     contract_address_dict = {
         "registry": registry_address,
         "user_factory": user_factory_address,
@@ -104,7 +114,8 @@ def initContracts():
         "social_feature_factory": social_feature_factory_address,
         "playlist_factory": playlist_factory_address,
         "user_library_factory": user_library_factory_address,
-        "ipld_blacklist_factory": ipld_blacklist_factory_address
+        "ipld_blacklist_factory": ipld_blacklist_factory_address,
+        "user_replica_set_manager": user_replica_set_manager_address
     }
 
     return (
@@ -115,6 +126,7 @@ def initContracts():
         playlist_factory_inst,
         user_library_factory_inst,
         ipld_blacklist_factory_inst,
+        user_replica_set_manager_inst,
         contract_address_dict,
     )
 
@@ -139,6 +151,7 @@ def create_celery(test_config=None):
     global playlist_factory
     global user_library_factory
     global ipld_blacklist_factory
+    global user_replica_set_manager
     global contract_addresses
     # pylint: enable=W0603
 
@@ -150,8 +163,9 @@ def create_celery(test_config=None):
         playlist_factory,
         user_library_factory,
         ipld_blacklist_factory,
+        user_replica_set_manager,
         contract_addresses
-    ) = initContracts()
+    ) = init_contracts()
 
     return create(test_config, mode="celery")
 
@@ -286,6 +300,8 @@ def configure_celery(flask_app, celery, test_config=None):
                 database_url = test_config["db"]["url"]
 
     ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
+    # default is 5 seconds
+    indexing_interval_sec = int(shared_config["discprov"]["block_processing_interval_sec"])
 
     # Update celery configuration
     celery.conf.update(
@@ -298,7 +314,7 @@ def configure_celery(flask_app, celery, test_config=None):
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=indexing_interval_sec),
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
@@ -311,6 +327,14 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_metrics": {
                 "task": "update_metrics",
                 "schedule": crontab(minute=0, hour="*")
+            },
+            "aggregate_metrics": {
+                "task": "aggregate_metrics",
+                "schedule": timedelta(minutes=METRICS_INTERVAL)
+            },
+            "synchronize_metrics": {
+                "task": "synchronize_metrics",
+                "schedule": crontab(minute=0, hour=1)
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",
@@ -326,7 +350,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_user_balances": {
                 "task": "update_user_balances",
-                "schedule": timedelta(minutes=5)
+                "schedule": timedelta(seconds=60)
             },
             "monitoring_queue": {
                 "task": "monitoring_queue",

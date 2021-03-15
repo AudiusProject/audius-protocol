@@ -1,12 +1,24 @@
+import json
 import logging
+import concurrent.futures
+from datetime import datetime, timedelta
+import requests
+from src import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
-
-from src.utils.redis_metrics import metrics_prefix, metrics_application, \
-    metrics_routes, parse_metrics_key, get_rounded_date_time
+from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
+from src.utils.redis_metrics import metrics_prefix, metrics_applications, \
+    metrics_routes, metrics_visited_nodes, merge_route_metrics, merge_app_metrics, \
+    parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL, \
+    personal_route_metrics, personal_app_metrics
+from src.queries.update_historical_metrics import update_historical_daily_route_metrics, \
+    update_historical_monthly_route_metrics, update_historical_daily_app_metrics, \
+        update_historical_monthly_app_metrics
 
 logger = logging.getLogger(__name__)
 
+sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
+discovery_node_service_type = bytes("discovery-node", "utf-8")
 
 def process_route_keys(session, redis, key, ip, date):
     """
@@ -61,10 +73,10 @@ def process_app_name_keys(session, redis, key, ip, date):
     """
     try:
         app_name_metrics = []
-        routes = redis.hgetall(key)
-        for key_bstr in routes:
+        app_names = redis.hgetall(key)
+        for key_bstr in app_names:
             app_name = key_bstr.decode('utf-8')
-            val = int(routes[key_bstr].decode('utf-8'))
+            val = int(app_names[key_bstr].decode('utf-8'))
 
             app_name_metrics.append(
                 AppNameMetrics(
@@ -104,7 +116,7 @@ def sweep_metrics(db, redis):
                 if key_date < current_date_time:
                     if source == metrics_routes:
                         process_route_keys(session, redis, key, ip, key_date)
-                    elif source == metrics_application:
+                    elif source == metrics_applications:
                         process_app_name_keys(session, redis, key, ip, key_date)
             except KeyError as e:
                 logger.warning(e)
@@ -126,7 +138,199 @@ def refresh_metrics_matviews(db):
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_all_time')
         logger.info('index_metrics.py | refreshed metrics matviews')
 
-######## CELERY TASK ########
+# Perform eth web3 call to fetch endpoint info
+def fetch_discovery_node_info(sp_id, sp_factory_instance):
+    return sp_factory_instance.functions.getServiceEndpointInfo(
+        discovery_node_service_type,
+        sp_id
+    ).call()
+
+def get_all_other_nodes():
+    """
+    Get number of discovery nodes
+    At each node, get the service info which includes the endpoint
+    Return all node endpoints except that of this node
+    """
+    shared_config = aggregate_metrics.shared_config
+    eth_web3 = aggregate_metrics.eth_web3
+    eth_registry_address = aggregate_metrics.eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    sp_factory_address = eth_registry_instance.functions.getContract(
+        sp_factory_registry_key
+    ).call()
+    sp_factory_inst = eth_web3.eth.contract(
+        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+    )
+    num_discovery_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(discovery_node_service_type).call()
+    logger.info(f"number of discovery nodes: {num_discovery_nodes}")
+
+    ids_list = list(range(1, num_discovery_nodes + 1))
+    all_other_nodes = []
+
+    # fetch all discovery nodes info in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        discovery_node_futures = {executor.submit(fetch_discovery_node_info, i, sp_factory_inst): i for i in ids_list}
+        for future in concurrent.futures.as_completed(discovery_node_futures):
+            node_op = discovery_node_futures[future]
+            try:
+                node_info = future.result()
+                if node_info[3] != shared_config["delegate"]["owner_wallet"]:
+                    endpoint = node_info[1]
+                    if is_fqdn(endpoint):
+                        all_other_nodes.append(endpoint)
+            except Exception as e:
+                logger.error(
+                    f"index_metrics.py | ERROR in discovery_node_futures {node_op} generated {e}"
+                )
+
+    logger.info(f"this node's delegate owner wallet: {shared_config['delegate']['owner_wallet']}")
+    logger.info(f"all the other nodes: {all_other_nodes}")
+    return all_other_nodes
+
+def get_metrics(endpoint, start_time):
+    try:
+        route_metrics_endpoint = f"{endpoint}/v1/metrics/routes/cached?start_time={start_time}"
+        logger.info(f"route metrics request to: {route_metrics_endpoint}")
+        route_metrics_response = requests.get(route_metrics_endpoint, timeout=10)
+        if route_metrics_response.status_code != 200:
+            raise Exception(f"Query to cached route metrics endpoint {route_metrics_endpoint} \
+                failed with status code {route_metrics_response.status_code}")
+
+        app_metrics_endpoint = f"{endpoint}/v1/metrics/apps/cached?start_time={start_time}"
+        logger.info(f"app metrics request to: {app_metrics_endpoint}")
+        app_metrics_response = requests.get(app_metrics_endpoint, timeout=10)
+        if app_metrics_response.status_code != 200:
+            raise Exception(f"Query to cached app metrics endpoint {app_metrics_endpoint} \
+                failed with status code {app_metrics_response.status_code}")
+
+        return route_metrics_response.json()['data'], app_metrics_response.json()['data']
+    except Exception as e:
+        logger.warning(f"Could not get metrics from node {endpoint} with start_time {start_time}")
+        logger.error(e)
+        return None, None
+
+def consolidate_metrics_from_other_nodes(self, db, redis):
+    """
+    Get recent route and app metrics from all other discovery nodes
+    and merge with this node's metrics so that this node will be aware
+    of all the metrics across users hitting different providers
+    """
+    all_other_nodes = get_all_other_nodes()
+
+    visited_node_timestamps_str = redis_get_or_restore(redis, metrics_visited_nodes)
+    visited_node_timestamps = json.loads(visited_node_timestamps_str) if visited_node_timestamps_str else {}
+
+    one_iteration_ago = datetime.utcnow() - timedelta(minutes=METRICS_INTERVAL)
+    one_iteration_ago_str = one_iteration_ago.strftime(datetime_format_secondary)
+    end_time = datetime.utcnow().strftime(datetime_format_secondary)
+
+    # Merge & persist metrics for our personal node
+    personal_route_metrics_str = redis_get_or_restore(redis, personal_route_metrics)
+    personal_route_metrics_dict = json.loads(personal_route_metrics_str) if personal_route_metrics_str else {}
+    new_personal_route_metrics = {}
+    for timestamp, metrics in personal_route_metrics_dict.items():
+        if timestamp > one_iteration_ago_str:
+            for ip, count in metrics.items():
+                if ip in new_personal_route_metrics:
+                    new_personal_route_metrics[ip] += count
+                else:
+                    new_personal_route_metrics[ip] = count
+
+    personal_app_metrics_str = redis_get_or_restore(redis, personal_app_metrics)
+    personal_app_metrics_dict = json.loads(personal_app_metrics_str) if personal_app_metrics_str else {}
+    new_personal_app_metrics = {}
+    for timestamp, metrics in personal_app_metrics_dict.items():
+        if timestamp > one_iteration_ago_str:
+            for app_name, count in metrics.items():
+                if app_name in new_personal_app_metrics:
+                    new_personal_app_metrics[app_name] += count
+                else:
+                    new_personal_app_metrics[app_name] = count
+
+    merge_route_metrics(new_personal_route_metrics, end_time, db)
+    merge_app_metrics(new_personal_app_metrics, end_time, db)
+
+    # Merge & persiste metrics for other nodes
+    for node in all_other_nodes:
+        start_time_str = visited_node_timestamps[node] if node in visited_node_timestamps else one_iteration_ago_str
+        start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
+        start_time = int(start_time_obj.timestamp())
+        new_route_metrics, new_app_metrics = get_metrics(node, start_time)
+
+        logger.info(f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})")
+
+        merge_route_metrics(new_route_metrics or {}, end_time, db)
+        merge_app_metrics(new_app_metrics or {}, end_time, db)
+
+        if new_route_metrics is not None and new_app_metrics is not None:
+            visited_node_timestamps[node] = end_time
+
+    logger.info(f"visited node timestamps: {visited_node_timestamps}")
+    if visited_node_timestamps:
+        redis_set_and_dump(redis, metrics_visited_nodes, json.dumps(visited_node_timestamps))
+
+def get_historical_metrics(node):
+    try:
+        endpoint = f"{node}/v1/metrics/aggregates/historical"
+        logger.info(f"historical metrics request to: {endpoint}")
+        response = requests.get(endpoint, timeout=10)
+        if response.status_code != 200:
+            raise Exception(f"Query to historical metrics endpoint {endpoint} \
+                failed with status code {response.status_code}")
+
+        return response.json()['data']
+    except Exception as e:
+        logger.warning(f"Could not get historical metrics from node {endpoint}")
+        logger.error(e)
+        return None
+
+def update_route_metrics_count(my_metrics, other_metrics):
+    for timestamp, values in other_metrics.items():
+        if timestamp in my_metrics:
+            my_metrics[timestamp] = {
+                'unique': max(values['unique'], my_metrics[timestamp]['unique']),
+                'total': max(values['total'], my_metrics[timestamp]['total'])
+            }
+        else:
+            my_metrics[timestamp] = values
+
+def update_app_metrics_count(my_metrics, other_metrics):
+    for timestamp, values in other_metrics.items():
+        if timestamp in my_metrics:
+            for app, count in values.items():
+                my_metrics[timestamp][app] = max(my_metrics[timestamp][app], count) \
+                    if app in my_metrics[timestamp] else count
+        else:
+            my_metrics[timestamp] = values
+
+def update_historical_metrics(db, daily_route_metrics, monthly_route_metrics, daily_app_metrics, monthly_app_metrics):
+    update_historical_daily_route_metrics(db, daily_route_metrics)
+    update_historical_monthly_route_metrics(db, monthly_route_metrics)
+    update_historical_daily_app_metrics(db, daily_app_metrics)
+    update_historical_monthly_app_metrics(db, monthly_app_metrics)
+
+# get historical monthly metrics and last month's daily metrics to periodically synchronize metrics across all nodes
+def synchronize_all_node_metrics(self, db):
+    daily_route_metrics = {}
+    monthly_route_metrics = {}
+    daily_app_metrics = {}
+    monthly_app_metrics = {}
+    for node in get_all_other_nodes():
+        historical_metrics = get_historical_metrics(node)
+        if historical_metrics:
+            update_route_metrics_count(daily_route_metrics, historical_metrics['routes']['daily'])
+            update_route_metrics_count(monthly_route_metrics, historical_metrics['routes']['monthly'])
+            update_app_metrics_count(daily_app_metrics, historical_metrics['apps']['daily'])
+            update_app_metrics_count(monthly_app_metrics, historical_metrics['apps']['monthly'])
+
+    update_historical_metrics(db, daily_route_metrics, monthly_route_metrics, daily_app_metrics, monthly_app_metrics)
+    logger.info("synchronized historical route and app metrics")
+
+######## CELERY TASKs ########
 
 
 @celery.task(name="update_metrics", bind=True)
@@ -158,6 +362,74 @@ def update_metrics(self):
     except Exception as e:
         logger.error(
             "Fatal error in main loop of update_metrics: %s", e, exc_info=True)
+        raise e
+    finally:
+        if have_lock:
+            update_lock.release()
+
+
+@celery.task(name="aggregate_metrics", bind=True)
+def aggregate_metrics(self):
+    # Cache custom task class properties
+    # Details regarding custom task context can be found in wiki
+    # Custom Task definition can be found in src/__init__.py
+    db = aggregate_metrics.db
+    redis = aggregate_metrics.redis
+
+    # Define lock acquired boolean
+    have_lock = False
+
+    # Define redis lock object
+    update_lock = redis.lock("aggregate_metrics_lock", blocking_timeout=25)
+    try:
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            logger.info(
+                f"index_metrics.py | aggregate_metrics | {self.request.id} | Acquired aggregate_metrics_lock")
+            consolidate_metrics_from_other_nodes(self, db, redis)
+            logger.info(
+                f"index_metrics.py | aggregate_metrics | {self.request.id} | Processing complete within session")
+        else:
+            logger.error(
+                f"index_metrics.py | aggregate_metrics | {self.request.id} | Failed to acquire aggregate_metrics_lock")
+    except Exception as e:
+        logger.error(
+            "Fatal error in main loop of aggregate_metrics: %s", e, exc_info=True)
+        raise e
+    finally:
+        if have_lock:
+            update_lock.release()
+
+@celery.task(name="synchronize_metrics", bind=True)
+def synchronize_metrics(self):
+    # Cache custom task class properties
+    # Details regarding custom task context can be found in wiki
+    # Custom Task definition can be found in src/__init__.py
+    db = synchronize_metrics.db
+    redis = synchronize_metrics.redis
+
+    # Define lock acquired boolean
+    have_lock = False
+
+    # Define redis lock object
+    update_lock = redis.lock("synchronize_metrics_lock", blocking_timeout=25)
+    try:
+        # Attempt to acquire lock - do not block if unable to acquire
+        have_lock = update_lock.acquire(blocking=False)
+        if have_lock:
+            logger.info(
+                f"index_metrics.py | synchronize_metrics | {self.request.id} | Acquired synchronize_metrics_lock")
+            synchronize_all_node_metrics(self, db)
+            logger.info(
+                f"index_metrics.py | synchronize_metrics | {self.request.id} | Processing complete within session")
+        else:
+            logger.error(
+                f"index_metrics.py | synchronize_metrics | {self.request.id} | \
+                    Failed to acquire synchronize_metrics_lock")
+    except Exception as e:
+        logger.error(
+            "Fatal error in main loop of synchronize_metrics: %s", e, exc_info=True)
         raise e
     finally:
         if have_lock:
