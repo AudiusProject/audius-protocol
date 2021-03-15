@@ -163,7 +163,7 @@ def update_user_replica_set_manager_address_if_necessary(self):
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
     logger.info(
-        f"index.py | update_user_replica_set_manager_address_if_necessary, found {user_replica_set_manager_address}, for TestUserReplicaSetManager"
+        f"index.py | update_ursm, found {user_replica_set_manager_address}, for TestUserReplicaSetManager"
     )
 
 def index_blocks(self, db, blocks_list):
