@@ -481,6 +481,8 @@ module.exports = function (app) {
 
       storagePath = queryResults.storagePath
 
+      
+
       let fileStream = fs.createReadStream(storagePath)
       await new Promise((resolve, reject) => {
         fileStream
@@ -539,6 +541,7 @@ module.exports = function (app) {
         let fileStream
 
         let stat = null
+        // await new Promise(resolve => setTimeout(resolve, 5000))
         stat = await fsStat(storagePath)
         // Add 'Accept-Ranges' if streamable
         if (req.params.streamable) {
@@ -549,6 +552,7 @@ module.exports = function (app) {
         // otherwise, stream the whole file.
         const range = getRequestRange(req)
         req.logger.info(`dm_stream range: ${range}`)
+        req.logger.info(`dm_stream stat`, stat)
         // TODO - route doesn't support multipart ranges.
         if (stat && range) {
           const { start, end } = range
