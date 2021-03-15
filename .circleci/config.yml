@@ -762,17 +762,17 @@ workflows:
             branches:
               only: /(^master$)|(.*?hotfix(.*)?)/
       # creator node: test, build and push
-      # - test-creator-node:
-      #     force: true
-      #     filters:
-      #       tags:
-      #         only: /^@audius/creator-node@\d+\.\d+\.\d+/
-      #       branches:
-      #         only: /(^master$)|(.*?hotfix(.*)?)/
-      # - test-mad-dog-e2e:
-      #     filters:
-      #       branches:
-      #         only: /(^master$)|(.*?mad-?dog(.*)?)/
+      - test-creator-node:
+          force: true
+          filters:
+            tags:
+              only: /^@audius/creator-node@\d+\.\d+\.\d+/
+            branches:
+              only: /(^master$)|(.*?hotfix(.*)?)/
+      - test-mad-dog-e2e:
+          filters:
+            branches:
+              only: /(^master$)|(.*?mad-?dog(.*)?)/
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
