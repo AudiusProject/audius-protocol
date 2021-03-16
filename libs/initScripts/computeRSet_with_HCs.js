@@ -36,7 +36,7 @@ const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
 const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
-const URSM_WALLET_PRIVATE_KEY = '60372e1baf4ead7733cd66c28180bd2833754fc5aad1c095831733b0be63bf14' // data
+const URSM_WALLET_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
 const NUM_USERS_PER_BATCH_REQUEST = 5
 const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
@@ -231,10 +231,10 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
       id: UMSpId
     })).clockValue
 
-    if (!UMClockValue) await Util.wait(500)
+    if (UMClockValue === null) await Util.wait(500)
   }
 
-  if (!UMClockValue) throw new Error('Unable to get UM clock value')
+  if (UMClockValue === null) throw new Error(`Unable to get UM clock value for userId=${userId}`)
 
   let synced = false
   const startSyncTime = Date.now()
@@ -251,7 +251,7 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
           }))
       )
 
-      console.log(`userId=${userId} | UM clock: ${UMClockValue} secondaries=${JSON.stringify(clockValuesAcrossSecondaries.map(value => value.clockValue))}`)
+      console.log(`userId=${userId} | UM clock: ${UMClockValue} secondaries=${JSON.stringify(clockValuesAcrossSecondaries.map(value => value.clockValue))} | Time passed: ${Date.now() - startSyncTime}ms`)
 
       // If secondaries are synced up with UM, exit out of for loop
       if (
@@ -271,7 +271,7 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
 
   // If still not synced after the while loop, throw error
   if (!synced) {
-    const errorMsg = `Mismatch in clock values for userId=${userId}:\n UM primary clock value=${UMClockValue} | Most recent secondaries clock status ${clockValuesAcrossSecondaries}`
+    const errorMsg = `Mismatch in clock values for userId=${userId}:\n UM primary clock value=${UMClockValue} | Most recent secondaries clock status ${JSON.stringify(clockValuesAcrossSecondaries)}`
     console.error(errorMsg)
     throw new Error(errorMsg)
   }
