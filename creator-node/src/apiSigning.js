@@ -1,6 +1,5 @@
 const Web3 = require('web3')
 const web3 = new Web3()
-const { logger } = require('./logging')
 
 /**
  * Max age of signature in milliseconds
@@ -36,7 +35,6 @@ const cachedSignatures = {}
  */
 const generateTimestampAndSignatureIfNecessary = (data, privateKey) => {
   if (data in cachedSignatures) {
-    logger.info('CNCHECK', 'FOUND SIGNATURE', JSON.stringify(cachedSignatures[data]))
     const signatureTimestamp = cachedSignatures[data].timestamp
     if (signatureHasExpired(signatureTimestamp)) {
       // If the signature has expired, remove it from the cache

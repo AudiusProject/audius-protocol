@@ -1,6 +1,9 @@
 const Web3 = require('web3')
 const web3 = new Web3()
 
+// TODO: This is copied from the same code path in content node
+// and should be standardized across this file as well as the method in libs
+
 /**
  * Max age of signature in milliseconds
  * Set to 5 minutes
