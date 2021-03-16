@@ -144,12 +144,15 @@ def fetch_tx_receipts(self, block_transactions):
 # has been set in the L2 contract registry - if so, update the global contract_addresses object
 # This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
 # added to the registry.
-def update_user_replica_set_manager_address_if_necessary(self):
+def update_ursm_address(self):
     web3 = update_task.web3
     shared_config = update_task.shared_config
     abi_values = update_task.abi_values
     user_replica_set_manager_address = contract_addresses["user_replica_set_manager"]
     if user_replica_set_manager_address == zero_address:
+        logger.info(
+            f"index.py | update_ursm_address, found {user_replica_set_manager_address}"
+        )
         registry_address = web3.toChecksumAddress(
             shared_config["contracts"]["registry"]
         )
@@ -162,9 +165,6 @@ def update_user_replica_set_manager_address_if_necessary(self):
         if user_replica_set_manager_address != zero_address:
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
-    logger.info(
-        f"index.py | update_user_replica_set_manager_address_if_necessary, found {user_replica_set_manager_address}"
-    )
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
@@ -173,6 +173,7 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
+        update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
         block_number = block.number
@@ -585,7 +586,6 @@ def update_task(self):
         if have_lock:
             logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
-            update_user_replica_set_manager_address_if_necessary(self)
 
             latest_block = get_latest_block(db)
 
