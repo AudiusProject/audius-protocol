@@ -24,6 +24,7 @@ import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import { Timer } from 'utils/performance'
 import { waitForRemoteConfig } from './remote-config/Provider'
 import { monitoringCallbacks } from './serviceMonitoring'
+import { isElectron } from 'utils/clientUtil'
 
 export const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 export const USER_NODE = process.env.REACT_APP_USER_NODE
@@ -378,7 +379,10 @@ class AudiusBackend {
           monitoringCallbacks.contentNode
         ),
         comstockConfig: AudiusLibs.configComstock(COMSTOCK_URL),
-        captchaConfig: { siteKey: RECAPTCHA_SITE_KEY },
+        // Electron cannot use captcha until it serves its assets from
+        // a "domain" (e.g. localhost) rather than the file system itself.
+        // i.e. there is no way to instruct captcha that the domain is "file://"
+        captchaConfig: isElectron ? undefined : { siteKey: RECAPTCHA_SITE_KEY },
         isServer: false
       })
       await audiusLibs.init()
