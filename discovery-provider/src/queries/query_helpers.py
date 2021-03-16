@@ -296,6 +296,7 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
 
     for user in users:
         user_id = user["user_id"]
+        user_balance = balance_dict.get(user_id, {})
         user[response_name_constants.track_count] = track_count_dict.get(
             user_id, 0)
         user[response_name_constants.playlist_count] = playlist_count_dict.get(
@@ -318,7 +319,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             user_id, False)
         user[response_name_constants.current_user_followee_follow_count] = current_user_followee_follow_count_dict.get(
             user_id, 0)
-        user[response_name_constants.balance] = balance_dict.get(user_id, 0)
+        user[response_name_constants.balance] = user_balance.get("owner_wallet_balance", 0)
+        user[response_name_constants.associated_wallets_balance] = user_balance.get("associated_wallets_balance", 0)
 
     return users
 

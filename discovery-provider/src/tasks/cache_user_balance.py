@@ -56,7 +56,7 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
         # not be present in the db, so make those
         not_present_set = {user_id for user_id in redis_user_ids} - {user.user_id for user in query}
         new_balances = [
-            UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0) 
+            UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
             for user_id in not_present_set
         ]
         if new_balances:
@@ -90,32 +90,34 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
         for user in user_query:
             user_id, user_wallet, associated_wallet = user
             if not user_id in user_id_wallets:
-                user_id_wallets[user_id] = [user_wallet]
+                user_id_wallets[user_id] = { "owner_wallet": user_wallet }
             if associated_wallet:
-                user_id_wallets[user_id].append(associated_wallet)
+                if not "associated_wallets" in user_id_wallets[user_id]:
+                    user_id_wallets[user_id]["associated_wallets"] = [associated_wallet]
+                else:
+                    user_id_wallets[user_id]["associated_wallets"].append(associated_wallet)
 
         logger.info(f"cache_user_balance.py | fetching for {len(user_query)} users: {needs_refresh_map.keys()}")
 
         # Fetch balances
         for user_id, wallets in user_id_wallets.items():
             try:
-                owner_walle_balance = 0
+                owner_wallet = wallets["owner_wallet"]
+                owner_wallet = eth_web3.toChecksumAddress(owner_wallet)
+                owner_wallet_balance = token_contract.functions.balanceOf(owner_wallet).call()
                 associated_balance = 0
-                for count, wallet in enumerate(wallets):
-                    wallet = eth_web3.toChecksumAddress(wallet)
 
-                    # get balance
-                    balance = token_contract.functions.balanceOf(wallet).call()
-                    delegation_balance = delegate_manager_contract.functions.getTotalDelegatorStake(wallet).call()
-                    stake_balance = staking_contract.functions.totalStakedFor(wallet).call()
-                    if count == 0:
-                        owner_walle_balance += balance + delegation_balance + stake_balance
-                    else:
+                if "associated_wallets" in wallets:
+                    for wallet in wallets["associated_wallets"]:
+                        wallet = eth_web3.toChecksumAddress(wallet)
+                        balance = token_contract.functions.balanceOf(wallet).call()
+                        delegation_balance = delegate_manager_contract.functions.getTotalDelegatorStake(wallet).call()
+                        stake_balance = staking_contract.functions.totalStakedFor(wallet).call()
                         associated_balance += balance + delegation_balance + stake_balance
 
                 # update the balance on the user model
                 user_balance = needs_refresh_map[user_id]
-                user_balance.balance = owner_walle_balance
+                user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = associated_balance
 
             except Exception as e:
