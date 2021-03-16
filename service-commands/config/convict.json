@@ -43,10 +43,6 @@
     "env": "ETH_OWNER_WALLET",
     "default": "0xcccc7428648c4AdC0ae262D3547584dDAE25c465"
   },
-  "discprov_whitelist": {
-    "env": "DISCPROV_WHITELIST",
-    "default": "http://localhost:5000"
-  },
   "user_node": {
     "env": "USER_NODE",
     "default": "http://cn-um_creator-node_1:4099"

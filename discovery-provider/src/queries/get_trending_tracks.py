@@ -54,7 +54,7 @@ def z(time, track):
     x=track['windowed_save_count']
     A=track['save_count']
     o=track['created_at']
-    l=track['track_owner_follower_count']
+    l=track['owner_follower_count']
     j=track['karma']
     if l<3:
         return{'score':0,**track}

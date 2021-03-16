@@ -21,7 +21,7 @@ import alembic
 import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
-from src.queries import queries, search, search_queries, health_check, trending, notifications
+from src.queries import queries, search, search_queries, health_check, notifications
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
 from src.utils.session_manager import SessionManager
@@ -276,7 +276,6 @@ def configure_flask(test_config, app, mode="app"):
 
     exceptions.register_exception_handlers(app)
     app.register_blueprint(queries.bp)
-    app.register_blueprint(trending.bp)
     app.register_blueprint(search.bp)
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
@@ -300,6 +299,8 @@ def configure_celery(flask_app, celery, test_config=None):
                 database_url = test_config["db"]["url"]
 
     ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
+    # default is 5 seconds
+    indexing_interval_sec = int(shared_config["discprov"]["block_processing_interval_sec"])
 
     # Update celery configuration
     celery.conf.update(
@@ -307,12 +308,13 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_plays", "src.tasks.index_metrics",
                  "src.tasks.index_materialized_views",
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
-                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue"
+                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
+                 "src.tasks.cache_trending_playlists"
                  ],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=indexing_interval_sec),
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
@@ -353,6 +355,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "monitoring_queue": {
                 "task": "monitoring_queue",
                 "schedule": timedelta(seconds=60)
+            },
+            "cache_trending_playlists": {
+                "task": "cache_trending_playlists",
+                "schedule": timedelta(minutes=30)
             }
         },
         task_serializer="json",

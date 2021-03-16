@@ -6,6 +6,7 @@ const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const validateMetadata = require('../utils/validateAudiusUserMetadata')
 const {
   authMiddleware,
   syncLockMiddleware,
@@ -26,6 +27,10 @@ module.exports = function (app) {
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID
+    let isValidMetadata = validateMetadata(req, metadataJSON)
+    if (!isValidMetadata) {
+      return errorResponseBadRequest('Invalid User Metadata')
+    }
 
     // Save file from buffer to IPFS and disk
     let multihash, dstPath

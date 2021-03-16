@@ -1,8 +1,9 @@
 import logging
 import time
+from sqlalchemy import and_
 from src import eth_abi_values
 from src.tasks.celery_app import celery
-from src.models import UserBalance, User
+from src.models import UserBalance, User, AssociatedWallet
 from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
 
 logger = logging.getLogger(__name__)
@@ -64,32 +65,49 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         # map user_id -> user_balance
         needs_refresh_map = {user.user_id: user for user in needs_refresh}
 
-        # Grab the users we need to refresh
-        user_query = ((
-            session.query(User)
-        ).filter(
-            User.user_id.in_(needs_refresh_map.keys()),
-            User.is_current == True,
-        )).all()
+        # Grab the users & associated_wallets we need to refresh
+        user_query = (
+            session.query(User.user_id, User.wallet, AssociatedWallet.wallet)
+            .outerjoin(
+                AssociatedWallet,
+                and_(
+                    AssociatedWallet.user_id == User.user_id,
+                    AssociatedWallet.is_current == True,
+                    AssociatedWallet.is_delete == False
+                )
+            )
+            .filter(
+                User.user_id.in_(needs_refresh_map.keys()),
+                User.is_current == True,
+            ).all()
+        )
+        user_id_wallets = {}
+        for user in user_query:
+            user_id, user_wallet, associated_wallet = user
+            if not user_id in user_id_wallets:
+                user_id_wallets[user_id] = [user_wallet]
+            if associated_wallet:
+                user_id_wallets[user_id].append(associated_wallet)
 
         logger.info(f"cache_user_balance.py | fetching for {len(user_query)} users: {needs_refresh_map.keys()}")
 
         # Fetch balances
-        for user in user_query:
-            wallet, user_id = user.wallet, user.user_id
-
+        for user_id, wallets in user_id_wallets.items():
             try:
-                wallet = eth_web3.toChecksumAddress(wallet)
+                total = 0
+                for wallet in wallets:
+                    wallet = eth_web3.toChecksumAddress(wallet)
 
-                # get balance
-                balance = token_contract.functions.balanceOf(wallet).call()
+                    # get balance
+                    balance = token_contract.functions.balanceOf(wallet).call()
+                    total += balance
 
                 # update the balance on the user model
                 user_balance = needs_refresh_map[user_id]
-                user_balance.balance = balance
+                user_balance.balance = total
 
             except Exception as e:
-                logger.error(f"cache_user_balance.py | Error fetching balance for user {user.user_id}: {(e)}")
+                logger.error(f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}")
 
         # Commit the new balances
         session.commit()
