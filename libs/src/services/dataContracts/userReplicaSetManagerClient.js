@@ -122,7 +122,7 @@ class UserReplicaSetManagerClient extends ContractClient {
    * Prior to seed, no replica sets can be written
    */
   async getSeedComplete () {
-    const method = await this.getMethod('getSeedComplete', spId)
+    const method = await this.getMethod('getSeedComplete')
     let currentWallet = this.web3Manager.getWalletAddress()
     return method.call({ from: currentWallet })
   }
