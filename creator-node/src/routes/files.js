@@ -67,14 +67,17 @@ const streamFromFileSystem = async (req, res, path) => {
 
     // TODO - route doesn't support multipart ranges.
     if (stat && range) {
-      const { start, end } = range
+      let { start, end } = range
       if (end >= stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
         res.status(416)
         return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
       }
 
-      fileStream = fs.createReadStream(path, { start, end: end || (stat.size - 1) })
+      // case if end is null or undefined
+      end = end || (stat.size - 1)
+
+      fileStream = fs.createReadStream(path, { start, end })
 
       // Add a content range header to the response
       res.set('Content-Range', formatContentRange(start, end, stat.size))
