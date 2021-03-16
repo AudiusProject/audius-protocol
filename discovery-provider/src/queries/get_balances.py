@@ -73,8 +73,8 @@ def get_balances(session, redis, user_ids, is_verified_ids_set=None):
 
     # Add new balances to result set
     no_balance_dict = {user_id: {
-            "owner_wallet_balance": 0,
-            "associated_wallets_balance": 0
+        "owner_wallet_balance": 0,
+        "associated_wallets_balance": 0
         } for user_id in needs_balance_set}
     result.update(no_balance_dict)
 

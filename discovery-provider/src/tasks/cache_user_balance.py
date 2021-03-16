@@ -90,7 +90,7 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
         for user in user_query:
             user_id, user_wallet, associated_wallet = user
             if not user_id in user_id_wallets:
-                user_id_wallets[user_id] = { "owner_wallet": user_wallet }
+                user_id_wallets[user_id] = {"owner_wallet": user_wallet}
             if associated_wallet:
                 if not "associated_wallets" in user_id_wallets[user_id]:
                     user_id_wallets[user_id]["associated_wallets"] = [associated_wallet]
