@@ -36,7 +36,7 @@ const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
 const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
-const URSM_WALLET_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
+const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
 const NUM_USERS_PER_BATCH_REQUEST = 5
 const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
@@ -51,7 +51,7 @@ const configureAndInitLibs = async () => {
     web3Config: AudiusLibs.configInternalWeb3(
       DATA_CONTRACTS_REGISTRY_ADDRESS,
       DATA_CONTRACTS_PROVIDER_ENDPOINT,
-      URSM_WALLET_PRIVATE_KEY
+      URSM_BOOTSTRAPPER_PRIVATE_KEY
     ),
     creatorNodeConfig: AudiusLibs.configCreatorNode(USER_METADATA_ENDPOINT),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set([DISCOVERY_NODE_ENDPOINT])),
