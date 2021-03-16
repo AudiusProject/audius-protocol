@@ -8,6 +8,8 @@ from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFI
 
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
+audius_staking_registry_key = bytes("StakingProxy", "utf-8")
+audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
@@ -33,7 +35,7 @@ REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 #     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
 
-def refresh_user_ids(redis, db, token_contract, eth_web3):
+def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staking_contract, eth_web3):
     # List users in Redis set, balances decoded as strings
     redis_user_ids = redis.smembers(REDIS_PREFIX)
     redis_user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
@@ -53,7 +55,7 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         # Balances from current user lookup may
         # not be present in the db, so make those
         not_present_set = {user_id for user_id in redis_user_ids} - {user.user_id for user in query}
-        new_balances = [UserBalance(user_id=user_id, balance=0) for user_id in not_present_set]
+        new_balances = [UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0) for user_id in not_present_set]
         if new_balances:
             session.add_all(new_balances)
             logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
@@ -94,17 +96,24 @@ def refresh_user_ids(redis, db, token_contract, eth_web3):
         # Fetch balances
         for user_id, wallets in user_id_wallets.items():
             try:
-                total = 0
-                for wallet in wallets:
+                owner_walle_balance = 0
+                associated_balance = 0
+                for count, wallet in enumerate(wallets):
                     wallet = eth_web3.toChecksumAddress(wallet)
 
                     # get balance
                     balance = token_contract.functions.balanceOf(wallet).call()
-                    total += balance
+                    delegation_balance = delegate_manager_contract.functions.getTotalDelegatorStake(wallet).call()
+                    stake_balance = staking_contract.functions.totalStakedFor(wallet).call()
+                    if count == 0:
+                        owner_walle_balance += balance + delegation_balance + stake_balance
+                    else:
+                        associated_balance += balance + delegation_balance + stake_balance
 
                 # update the balance on the user model
                 user_balance = needs_refresh_map[user_id]
-                user_balance.balance = total
+                user_balance.balance = owner_walle_balance
+                user_balance.associated_wallets_balance = associated_balance
 
             except Exception as e:
                 logger.error(f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}")
@@ -139,6 +148,43 @@ def get_token_contract(eth_web3, shared_config):
 
     return audius_token_instance
 
+def get_delegate_manager_contract(eth_web3, shared_config):
+    eth_registry_address = eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+
+    delegate_manager_address = eth_registry_instance.functions.getContract(
+        audius_delegate_manager_registry_key
+    ).call()
+
+    delegate_manager_instance = eth_web3.eth.contract(
+        address=delegate_manager_address, abi=eth_abi_values["DelegateManager"]["abi"]
+    )
+
+    return delegate_manager_instance
+
+def get_staking_contract(eth_web3, shared_config):
+    eth_registry_address = eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+
+    staking_address = eth_registry_instance.functions.getContract(
+        audius_staking_registry_key
+    ).call()
+
+    staking_instance = eth_web3.eth.contract(
+        address=staking_address, abi=eth_abi_values["Staking"]["abi"]
+    )
+
+    return staking_instance
 
 @celery.task(name="update_user_balances", bind=True)
 def update_user_balances_task(self):
@@ -159,7 +205,10 @@ def update_user_balances_task(self):
             start_time = time.time()
 
             token_inst = get_token_contract(eth_web3, shared_config)
-            refresh_user_ids(redis, db, token_inst, eth_web3)
+            delegate_manager_inst = get_delegate_manager_contract(eth_web3, shared_config)
+            staking_inst = get_staking_contract(eth_web3, shared_config)
+            token_inst = get_token_contract(eth_web3, shared_config)
+            refresh_user_ids(redis, db, token_inst, delegate_manager_inst, staking_inst, eth_web3)
 
             end_time = time.time()
             logger.info(f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds")
