@@ -1,11 +1,17 @@
 const fs = require("fs")
+const http = require("http")
+const https = require("https")
 
 const axios = require("axios")
 const retry = require("async-retry")
 const { map } = require("lodash")
 
+axios.defaults.timeout = 5000
+axios.defaults.httpAgent = new http.Agent({ timeout: 5000 })
+axios.defaults.httpsAgent = new https.Agent({ timeout: 5000 })
+
 function makeRequest(request) {
-  return retry(() => axios(request), { retries: 5 })
+  return retry(() => axios(request), { retries: 3 })
 }
 
 /**
@@ -69,14 +75,22 @@ async function getTrackCids(discoveryProvider, batchSize) {
  * @returns {Array<Object>} clockValues
  */
 async function getClockValues(creatorNode, walletPublicKeys) {
-  return (
-    await makeRequest({
-      method: "post",
-      url: "/users/batch_clock_status",
-      baseURL: creatorNode,
-      data: { walletPublicKeys },
-    })
-  ).data.users
+  try {
+    return (
+      await makeRequest({
+        method: "post",
+        url: "/users/batch_clock_status",
+        baseURL: creatorNode,
+        data: { walletPublicKeys },
+      })
+    ).data.users
+  } catch (e) {
+    console.log(`Got ${e} when fetching clock values from ${creatorNode}`)
+    return walletPublicKeys.map((walletPublicKey) => ({
+      walletPublicKey,
+      clock: 0,
+    }))
+  }
 }
 
 /**
@@ -85,19 +99,24 @@ async function getClockValues(creatorNode, walletPublicKeys) {
  * @returns {Array<Object>} cidsExist
  */
 async function getCidsExist(creatorNode, cids) {
-  return (
-    await makeRequest({
-      method: "post",
-      url: "/batch_cids_exist",
-      baseURL: creatorNode,
-      data: { cids },
-    })
-  ).data.cids
+  try {
+    return (
+      await makeRequest({
+        method: "post",
+        url: "/batch_cids_exist",
+        baseURL: creatorNode,
+        data: { cids },
+      })
+    ).data.cids
+  } catch (e) {
+    console.log(`Got ${e} when checking if cids exist in ${creatorNode}`)
+    return cids.map((cid) => ({ cid, exists: false }))
+  }
 }
 
 async function run() {
-  // const discoveryProvider = "https://discoveryprovider.audius.co/"
-  const discoveryProvider = "http://localhost:5000"
+  const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
+  // const discoveryProvider = "http://localhost:5000"
   const trackBatchSize = 500
   const userBatchSize = 500
 
