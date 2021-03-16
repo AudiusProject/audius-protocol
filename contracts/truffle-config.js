@@ -57,7 +57,11 @@ module.exports = {
           2
         )
       },
-    }
+      network_id: '77',
+      gas: 8000000,
+      gasPrice: 1000000000,
+      skipDryRun: true
+    },
   },
   mocha: {
     enableTimeouts: false
