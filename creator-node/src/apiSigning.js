@@ -1,5 +1,6 @@
 const Web3 = require('web3')
 const web3 = new Web3()
+const { logger } = require('./logging')
 
 /**
  * Max age of signature in milliseconds
@@ -21,6 +22,34 @@ const generateTimestampAndSignature = (data, privateKey) => {
   const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
 
   return { timestamp, signature: signedResponse.signature }
+}
+
+// Keeps track of cached signatures for `generateTimestampAndSignatureIfNecessary`
+const cachedSignatures = {}
+
+/**
+ * Generates a signature for `data` if only the previous signature
+ * generated is invalid (expired). Otherwise returns an existing signature.
+ * @param {string} data only string data supported
+ * @param {string} privateKey
+ * @returns {string} signature
+ */
+const generateTimestampAndSignatureIfNecessary = (data, privateKey) => {
+  if (data in cachedSignatures) {
+    logger.info('CNCHECK', 'FOUND SIGNATURE', JSON.stringify(cachedSignatures[data]))
+    const signatureTimestamp = cachedSignatures[data].timestamp
+    if (signatureHasExpired(signatureTimestamp)) {
+      // If the signature has expired, remove it from the cache
+      delete cachedSignatures[data]
+    } else {
+      // If the signature has not expired (still valid), use it!
+      return cachedSignatures[data]
+    }
+  }
+  // We don't have a signature already
+  const { timestamp, signature } = generateTimestampAndSignature({ data }, privateKey)
+  cachedSignatures[data] = { timestamp, signature }
+  return { timestamp, signature }
 }
 
 /**
@@ -57,6 +86,7 @@ const sortKeys = x => {
 
 module.exports = {
   generateTimestampAndSignature,
+  generateTimestampAndSignatureIfNecessary,
   recoverWallet,
   sortKeys,
   MAX_SIGNATURE_AGE_MS,
