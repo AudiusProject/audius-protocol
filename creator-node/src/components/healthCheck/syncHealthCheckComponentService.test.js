@@ -6,7 +6,7 @@ const WALLET = 'wallet_addr'
 const SECONDARY = 'http:test-cn.audius.co'
 
 describe('Test sync health check', function () {
-  it('Should return active and pending jobs', async function () {
+  it('Should return active and waiting jobs', async function () {
     const mockSnapback = {
       getSyncQueueJobs: async () => Promise.resolve({
         recurringWaiting: [{

@@ -91,7 +91,6 @@ if (cmd === 'add') {
     throw new Error('Misconfigured local env.\nEnsure AUDIUS_REMOTE_DEV_HOST has been exported and /etc/hosts file has necessary permissions.')
   }
   const hostMappings = SERVICES.map(s => `${REMOTE_DEV_HOST} ${s}`)
-  // hostMappings.push(`${REMOTE_DEV_HOST} audius_client`)
   lines = [...lines, START_SENTINEL, ...hostMappings, END_SENTINEL, '\n']
   writeArrayIntoFile(lines)
 }

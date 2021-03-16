@@ -6,7 +6,7 @@ const models = require('./models')
 const { logger } = require('./logging')
 
 // Represents the maximum number of syncs that can be issued at once
-const MaxParallelSyncJobs = 10
+const MaxParallelSyncJobs = 5
 
 // Maximum number of time to wait for a sync operation, 6 minutes by default
 const MaxSyncMonitoringDurationInMs = 360000
