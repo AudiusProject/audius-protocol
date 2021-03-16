@@ -187,13 +187,33 @@ async function run() {
     )
 
     const output = usersBatch.map(
-      ({ user_id, handle, wallet, creator_node_endpoint }) => ({
+      ({
         user_id,
         handle,
         wallet,
+        creator_node_endpoint,
+        cover_photo_sizes,
+        profile_picture_sizes,
+        metadata_multihash,
+      }) => ({
+        user_id,
+        handle,
+        wallet,
+        metadata_multihash,
+        cover_photo: cover_photo_sizes,
+        profile_picture: profile_picture_sizes,
         cids: cids[user_id],
         creatorNodes: creator_node_endpoint.map((endpoint, idx) => ({
           endpoint,
+          metadata_multihash: metadata_multihash
+            ? cidExists[endpoint][metadata_multihash]
+            : null,
+          cover_photo: cover_photo_sizes
+            ? cidExists[endpoint][cover_photo_sizes]
+            : null,
+          profile_picture: profile_picture_sizes
+            ? cidExists[endpoint][profile_picture_sizes]
+            : null,
           clock: clockValues[endpoint][wallet],
           cids: cids[user_id].filter((cid) => cidExists[endpoint][cid]),
           primary: idx === 0,
