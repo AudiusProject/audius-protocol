@@ -199,8 +199,17 @@ def get_trending_playlists(args):
             [SaveType.playlist, SaveType.album],
             current_user_id
         )
+
+        trimmed_track_ids = None
         for playlist in playlists:
             playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
+            # Trim track_ids, which ultimately become added_timestamps
+            # and need to match the tracks.
+            trimmed_track_ids = {track["track_id"] for track in playlist["tracks"]}
+            playlist_track_ids = playlist["playlist_contents"]["track_ids"]
+            playlist_track_ids = list(filter(lambda track_id: track_id["track"]
+                                             in trimmed_track_ids, playlist_track_ids))
+            playlist["playlist_contents"]["track_ids"] = playlist_track_ids
 
         playlists_map = {playlist['playlist_id']: playlist for playlist in playlists}
 
