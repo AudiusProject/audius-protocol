@@ -42,6 +42,18 @@ class AudiusLibsWrapper {
   getAudiusLibs () {
     return this.audiusLibsInstance
   }
+
+  async getAudiusLibsAsync () {
+    return new Promise(resolve => {
+      const i = setInterval(() => {
+        const libs = this.getAudiusLibs()
+        if (libs) {
+          clearInterval(i)
+          resolve(libs)
+        }
+      }, 1000)
+    })
+  }
 }
 
 const audiusLibsWrapper = new AudiusLibsWrapper()

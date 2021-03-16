@@ -3,13 +3,22 @@ const RedisStore = require('rate-limit-redis')
 const config = require('./config.js')
 const rateLimit = require('express-rate-limit')
 const express = require('express')
+const { isIPFromContentNode } = require('./utils/contentNodeIPCheck')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 
-const isIPWhitelisted = (ip) => {
+const isIPWhitelisted = (ip, req) => {
+  // If the IP is either something in the regex whitelist or it is from
+  // a known content node, return true
   const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
-  return whitelistRegex && !!ip.match(whitelistRegex)
+  const isWhitelisted = whitelistRegex && !!ip.match(whitelistRegex)
+
+  const isFromContentNode = isIPFromContentNode(ip, req)
+
+  // Don't return early so we can see logs for both paths
+  req.logger.info(`isIPWhitelisted - isWhitelisted: ${isWhitelisted}, isFromContentNode: ${isFromContentNode}`)
+  return isWhitelisted || isFromContentNode
 }
 
 const getIP = (req) => {
@@ -145,4 +154,9 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
-module.exports = { getIP, isIPWhitelisted, getRateLimiter, getRateLimiterMiddleware }
+module.exports = {
+  getIP,
+  isIPWhitelisted,
+  getRateLimiter,
+  getRateLimiterMiddleware
+}
