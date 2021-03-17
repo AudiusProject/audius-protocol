@@ -124,6 +124,10 @@ class AudiusContracts {
       if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
         throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
       }
+      let seedComplete = await this.UserReplicaSetManagerClient.getSeedComplete()
+      if (!seedComplete) {
+        throw new Error(`UserReplicaSetManager pending seed operation`)
+      }
     } catch (e) {
       // Nullify failed attempt to initialize
       console.log(`Failed to initialize UserReplicaSetManagerClient with error ${e.message}`)

@@ -118,6 +118,16 @@ class UserReplicaSetManagerClient extends ContractClient {
   }
 
   /**
+   * Return boolean indicating status of URSM seed operation
+   * Prior to seed, no replica sets can be written
+   */
+  async getSeedComplete () {
+    const method = await this.getMethod('getSeedComplete')
+    let currentWallet = this.web3Manager.getWalletAddress()
+    return method.call({ from: currentWallet })
+  }
+
+  /**
    * Submit update transaction to UserReplicaSetManager to modify a user's replica set
    * Can be sent by user's wallet, or any content node in the replica set
    * @param {number} userId

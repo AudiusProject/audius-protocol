@@ -87,3 +87,8 @@ def ipld_block_check():
     return success_response(
         {"db":{"number": latest_ipld_indexed_block, "blockhash": latest_indexed_ipld_block_hash}}
     )
+
+@bp.route("/ip_check", methods=["GET"])
+def ip_check():
+    ip = helpers.get_ip(request)
+    return success_response(ip, sign_response=False)

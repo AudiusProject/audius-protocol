@@ -140,6 +140,7 @@ async function ensureStorageMiddleware (req, res, next) {
 /**
  * Tell all secondaries to sync against self.
  * @dev - Is not a middleware so it can be run before responding to client.
+ * @dev - TODO move this out of middlewares to Services layer
  */
 async function triggerSecondarySyncs (req) {
   if (config.get('snapbackDevModeEnabled')) return
