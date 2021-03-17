@@ -1,4 +1,3 @@
-const { SyncType } = require('../../snapbackSM')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const assert = require('assert')
 
@@ -15,8 +14,7 @@ describe('Test sync health check', function () {
             syncRequestParameters: {
               baseURL: SECONDARY,
               data: {
-                wallet: [WALLET],
-                syncType: SyncType.Recurring
+                wallet: [WALLET]
               }
             }
           }
@@ -27,8 +25,7 @@ describe('Test sync health check', function () {
             syncRequestParameters: {
               baseURL: SECONDARY,
               data: {
-                wallet: [WALLET],
-                syncType: SyncType.Recurring
+                wallet: [WALLET]
               }
             }
           }
@@ -39,8 +36,7 @@ describe('Test sync health check', function () {
             syncRequestParameters: {
               baseURL: SECONDARY,
               data: {
-                wallet: [WALLET],
-                syncType: SyncType.Manual
+                wallet: [WALLET]
               }
             }
           }
@@ -52,20 +48,17 @@ describe('Test sync health check', function () {
     const expectedResp = {
       manualWaiting: [{
         id: 3,
-        syncType: SyncType.Manual,
         secondary: SECONDARY,
         wallet: WALLET
       }],
       manualActive: [],
       recurringWaiting: [{
         id: 2,
-        syncType: SyncType.Recurring,
         secondary: SECONDARY,
         wallet: WALLET
       }],
       recurringActive: [{
         id: 1,
-        syncType: SyncType.Recurring,
         secondary: SECONDARY,
         wallet: WALLET
       }],

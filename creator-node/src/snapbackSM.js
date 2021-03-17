@@ -5,8 +5,12 @@ const utils = require('./utils')
 const models = require('./models')
 const { logger } = require('./logging')
 
-// Represents the maximum number of syncs that can be issued at once
-const MaxParallelSyncJobs = 5
+/**
+ * Represents the maximum number of syncs that can be issued at once
+ * @notice ManualSyncQueue and RecurringSyncQueue will each have this concurrency,
+ *    meaning that total max sync job concurrency = (2 * MaxParallelSyncJobs)
+ */
+const MaxParallelSyncJobs = 7
 
 // Maximum number of time to wait for a sync operation, 6 minutes by default
 const MaxSyncMonitoringDurationInMs = 360000
@@ -111,7 +115,7 @@ class SnapbackSM {
       maxParallelSyncJobs /* max concurrency */,
       async (job, done) => {
         try {
-          await this.processSyncOperation(job)
+          await this.processSyncOperation(job, SyncType.Manual)
         } catch (e) {
           this.log(`ManualSyncQueue processing error: ${e}`)
         }
@@ -128,7 +132,7 @@ class SnapbackSM {
       maxParallelSyncJobs /* max concurrency */,
       async (job, done) => {
         try {
-          await this.processSyncOperation(job)
+          await this.processSyncOperation(job, SyncType.Recurring)
         } catch (e) {
           this.log(`RecurringSyncQueue processing error ${e}`)
         }
@@ -257,6 +261,8 @@ class SnapbackSM {
 
   /**
    * Enqueues a sync request to secondary and returns job info
+   *
+   * @dev NOTE avoid using bull priority if possible as it significantly reduces performance
    */
   async issueSecondarySync ({
     primaryEndpoint,
@@ -265,6 +271,7 @@ class SnapbackSM {
     primaryClockValue,
     syncType
   }) {
+    // Define axios params for sync request to secondary
     const syncRequestParameters = {
       baseURL: secondaryEndpoint,
       url: '/sync',
@@ -281,8 +288,7 @@ class SnapbackSM {
     const jobProps = {
       syncRequestParameters,
       startTime: Date.now(),
-      primaryClockValue,
-      syncType
+      primaryClockValue
     }
     let jobInfo
     if (syncType === SyncType.Manual) {
@@ -525,9 +531,9 @@ class SnapbackSM {
    *
    * @param job instance of Bull queue job
    */
-  async processSyncOperation (job) {
+  async processSyncOperation (job, syncType) {
     const { id } = job
-    const { syncRequestParameters, syncType } = job.data
+    const { syncRequestParameters } = job.data
 
     const isValidSyncJobData = (
       ('baseURL' in syncRequestParameters) &&
@@ -557,9 +563,11 @@ class SnapbackSM {
 
   /**
    * Returns all jobs from manualSyncQueue and recurringSyncQueue, keyed by status
+   *
+   * @dev TODO for some reason completed jobs list is empty, but would be good to
+   *    return the list in a verbose mode for debugging + completedCount
    */
-  async getSyncQueueJobs (verbose = false) {
-    // Return jobs from every possible status
+  async getSyncQueueJobs () {
     const [
       manualWaiting,
       manualActive,
