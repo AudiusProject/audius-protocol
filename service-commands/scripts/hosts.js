@@ -31,7 +31,8 @@ const SERVICES = [
   'cn10_creator-node_1',
   'audius-disc-prov_web-server_1',
   'cn-um_creator-node_1',
-  'audius_ganache_cli'
+  'audius_ganache_cli',
+  'audius_client'
 ]
 
 const exitWithError = () => {
@@ -90,7 +91,6 @@ if (cmd === 'add') {
     throw new Error('Misconfigured local env.\nEnsure AUDIUS_REMOTE_DEV_HOST has been exported and /etc/hosts file has necessary permissions.')
   }
   const hostMappings = SERVICES.map(s => `${REMOTE_DEV_HOST} ${s}`)
-  hostMappings.push(`${REMOTE_DEV_HOST} audius_client`)
   lines = [...lines, START_SENTINEL, ...hostMappings, END_SENTINEL, '\n']
   writeArrayIntoFile(lines)
 }
