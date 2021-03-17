@@ -26,7 +26,7 @@ async function getUsersBatch(discoveryProvider, offset, limit) {
       method: "get",
       url: "/users",
       baseURL: discoveryProvider,
-      params: { offset, limit, is_creator: true },
+      params: { offset, limit },
     })
   ).data.data.map((user) => ({
     ...user,
@@ -44,8 +44,17 @@ async function getUsersBatch(discoveryProvider, offset, limit) {
 async function getTrackCids(discoveryProvider, batchSize) {
   const trackCids = {}
 
-  let moreTracksRemaining = true
-  for (let offset = 0; moreTracksRemaining; offset += batchSize) {
+  const totalTracks = (
+    await makeRequest({
+      method: 'get',
+      url: '/latest/track',
+      baseURL: discoveryProvider,
+    })
+  ).data.data
+
+  console.log(`Fetching tracks (total of ${totalTracks})`)
+
+  for (let offset = 0; offset < totalTracks; offset += batchSize) {
     console.time(`Fetching tracks (${offset} - ${offset + batchSize})`)
 
     const tracksBatch = (
@@ -56,7 +65,6 @@ async function getTrackCids(discoveryProvider, batchSize) {
         params: { offset, limit: batchSize },
       })
     ).data.data
-    moreTracksRemaining = tracksBatch.length === batchSize
 
     tracksBatch.forEach(({ metadata_multihash, owner_id }) => {
       trackCids[owner_id] = trackCids[owner_id] || []
@@ -115,15 +123,25 @@ async function getCidsExist(creatorNode, cids) {
 }
 
 async function run() {
-  const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
+  const discoveryProvider = "https://discoveryprovider.audius.co/"
+  // const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
   // const discoveryProvider = "http://localhost:5000"
   const trackBatchSize = 500
   const userBatchSize = 500
 
   const trackCids = await getTrackCids(discoveryProvider, trackBatchSize)
 
-  let moreUsersRemaining = true
-  for (let offset = 0; moreUsersRemaining; offset += userBatchSize) {
+  const totalUsers = (
+    await makeRequest({
+      method: 'get',
+      url: '/latest/user',
+      baseURL: discoveryProvider,
+    })
+  ).data.data
+
+  console.log(`Total Users: ${totalUsers}`)
+
+  for (let offset = 0; offset < totalUsers; offset += userBatchSize) {
     console.time(`${offset} - ${offset + userBatchSize}`)
 
     const usersBatch = await getUsersBatch(
@@ -131,12 +149,11 @@ async function run() {
       offset,
       userBatchSize
     )
-    moreUsersRemaining = usersBatch.length === userBatchSize
 
     const creatorNodes = new Set()
-    const cn2wallets = {} // creator node -> wallets
-    const cn2cids = {} // creator node -> cids
-    const cids = {} // user id -> cids
+    const creatorNodeWalletMap = {} // map of creator node to wallets
+    const creatorNodeCidMap = {} // map of creator node to cids
+    const cids = {} // map of user id to cids
     usersBatch.forEach(
       ({
         creator_node_endpoint,
@@ -157,10 +174,10 @@ async function run() {
 
         creator_node_endpoint.forEach((endpoint) => {
           creatorNodes.add(endpoint)
-          cn2wallets[endpoint] = cn2wallets[endpoint] || []
-          cn2wallets[endpoint].push(wallet)
-          cn2cids[endpoint] = cn2cids[endpoint] || []
-          cn2cids[endpoint].push(...cids[user_id])
+          creatorNodeWalletMap[endpoint] = creatorNodeWalletMap[endpoint] || []
+          creatorNodeWalletMap[endpoint].push(wallet)
+          creatorNodeCidMap[endpoint] = creatorNodeCidMap[endpoint] || []
+          creatorNodeCidMap[endpoint].push(...cids[user_id])
         })
       }
     )
@@ -170,8 +187,8 @@ async function run() {
     await Promise.all(
       Array.from(creatorNodes).map(async (creatorNode) => {
         const [clockValuesArr, cidExistsArr] = await Promise.all([
-          getClockValues(creatorNode, cn2wallets[creatorNode]),
-          getCidsExist(creatorNode, cn2cids[creatorNode]),
+          getClockValues(creatorNode, creatorNodeWalletMap[creatorNode]),
+          getCidsExist(creatorNode, creatorNodeCidMap[creatorNode]),
         ])
 
         clockValues[creatorNode] = {}
