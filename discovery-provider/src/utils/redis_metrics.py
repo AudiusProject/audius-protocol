@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import redis
 from flask.globals import request
 from src.utils.config import shared_config
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
+from src.utils.helpers import get_ip, redis_set_and_dump, redis_get_or_restore
 from src.utils.query_params import stringify_query_params, app_name_param
 from src.models import AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics, \
     AggregateMonthlyUniqueUsersMetrics, AggregateMonthlyTotalUsersMetrics, \
@@ -52,10 +52,7 @@ def format_ip(ip):
     return ip.strip().replace(":", "_")
 
 def get_request_ip(request_obj):
-    header_ips = request_obj.headers.get('X-Forwarded-For', request_obj.remote_addr)
-    # Use the left most IP, representing the user's IP
-    first_ip = header_ips.split(',')[0]
-    return format_ip(first_ip)
+    return format_ip(get_ip(request_obj))
 
 def parse_metrics_key(key):
     """
