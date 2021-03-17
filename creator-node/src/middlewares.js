@@ -82,7 +82,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   // Special case for UserMetadata promotion - unblocks legacy non-creator users writing to UM
   if (creatorNodeEndpoints.length === 0 && config.get('isUserMetadataNode')) {
-    next()
+    return next()
   }
 
   const primary = creatorNodeEndpoints[0]
@@ -99,7 +99,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   req.session.creatorNodeEndpoints = creatorNodeEndpoints
 
   req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
-  next()
+  return next()
 }
 
 /** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
@@ -298,7 +298,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
 
         // Prematurely exit if this is a UM node processing a legacy user
-        if (config.get('isUserMetadataNode') && fetchedUser.length >= 1 && fetchedUser[0].creator_node_endpoint === '') {
+        if (config.get('isUserMetadataNode') && fetchedUser.length >= 1 && !fetchedUser[0].creator_node_endpoint) {
           return []
         }
 
