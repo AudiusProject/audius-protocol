@@ -280,6 +280,12 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+  isRegisteredOnURSM: {
+    doc: 'boolean indicating whether or not node has been registered on dataContracts UserReplicaSetManager contract (URSM)',
+    format: Boolean,
+    env: 'isRegisteredOnURSM',
+    default: false
+  },
 
   spID: {
     doc: 'ID of creator node in ethContracts ServiceProviderFactory',
