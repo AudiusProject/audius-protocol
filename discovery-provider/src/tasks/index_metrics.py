@@ -254,7 +254,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     merge_route_metrics(new_personal_route_metrics, end_time, db)
     merge_app_metrics(new_personal_app_metrics, end_time, db)
 
-    # Merge & persiste metrics for other nodes
+    # Merge & persist metrics for other nodes
     for node in all_other_nodes:
         start_time_str = visited_node_timestamps[node] if node in visited_node_timestamps else one_iteration_ago_str
         start_time_obj = datetime.strptime(start_time_str, datetime_format_secondary)
