@@ -54,10 +54,6 @@ async function syncLockMiddleware (req, res, next) {
 
 /** Blocks writes if node is not the primary for audiusUser associated with wallet. */
 async function ensurePrimaryMiddleware (req, res, next) {
-  if (config.get('isUserMetadataNode')) {
-    return next()
-  }
-
   const start = Date.now()
 
   if (!req.session || !req.session.wallet) {
@@ -83,6 +79,12 @@ async function ensurePrimaryMiddleware (req, res, next) {
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
+
+  if (creatorNodeEndpoints.length == 0 && config.get('isUserMetadataMode'))
+  {
+    next()
+  }
+
   const primary = creatorNodeEndpoints[0]
 
   // Error if this node is not primary for user.
@@ -140,7 +142,7 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - Is not a middleware so it can be run before responding to client.
  */
 async function triggerSecondarySyncs (req) {
-  if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) return
+  // if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) return
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
@@ -240,6 +242,11 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
 
+        // Prematurely exit if this is a UM node processing a legacy user
+        if (fetchedUser.length >= 1 && fetchedUser[0].creator_node_endpoint === '' && config.get('isUserMetadataMode')) {
+          return []
+        }
+
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
           throw new Error('Missing or malformatted user fetched from discprov.')
         }
@@ -289,6 +296,10 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+        // Prematurely exit if this is a UM node processing a legacy user
+        if (fetchedUser.length >= 1 && fetchedUser[0].creator_node_endpoint === '' && config.get('isUserMetadataMode')) {
+          return []
+        }
 
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('creator_node_endpoint')) {
           throw new Error('Missing or malformatted user fetched from discprov.')
