@@ -15,4 +15,7 @@ class MultiProvider(BaseProvider):
         raise Exception("All requests failed")
 
     def isConnected(self):
-        return all(provider.isConnected() for provider in self.providers)
+        return any(provider.isConnected() for provider in self.providers)
+
+    def __str__(self):
+        return "MultiProvider({})".format(self.providers)
