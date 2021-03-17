@@ -80,8 +80,8 @@ async function ensurePrimaryMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
 
-  if (creatorNodeEndpoints.length == 0 && config.get('isUserMetadataMode'))
-  {
+  // Special case for UserMetadata promotion - unblocks legacy non-creator users writing to UM
+  if (creatorNodeEndpoints.length === 0 && config.get('isUserMetadataNode')) {
     next()
   }
 
@@ -143,11 +143,18 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - TODO move this out of middlewares to Services layer
  */
 async function triggerSecondarySyncs (req) {
-  if (config.get('snapbackDevModeEnabled')) return
+  if (config.get('snapbackDevModeEnabled')) {
+    return
+  }
+
   try {
-    if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
+    if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) {
+      return
+    }
+
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
     const { snapbackSM } = serviceRegistry
+
     await Promise.all(secondaries.map(async secondary => {
       if (!secondary || !_isFQDN(secondary)) return
       const userWallet = req.session.wallet
@@ -164,6 +171,8 @@ async function triggerSecondarySyncs (req) {
  * @notice TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
  *    services has been registered, and we can't register the service unless the service starts up.
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
+ *
+ * @notice will error if called in UM pre-registration
  */
 async function getOwnEndpoint (req) {
   const libs = req.app.get('audiusLibs')
@@ -238,11 +247,6 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
 
-        // Prematurely exit if this is a UM node processing a legacy user
-        if (fetchedUser.length >= 1 && fetchedUser[0].creator_node_endpoint === '' && config.get('isUserMetadataMode')) {
-          return []
-        }
-
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
           throw new Error('Missing or malformatted user fetched from discprov.')
         }
@@ -292,8 +296,9 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
         // Prematurely exit if this is a UM node processing a legacy user
-        if (fetchedUser.length >= 1 && fetchedUser[0].creator_node_endpoint === '' && config.get('isUserMetadataMode')) {
+        if (config.get('isUserMetadataNode') && fetchedUser.length >= 1 && fetchedUser[0].creator_node_endpoint === '') {
           return []
         }
 

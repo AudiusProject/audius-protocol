@@ -50,8 +50,8 @@ class SnapbackSM {
     this.spID = this.nodeConfig.get('spID')
     this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
 
-    // Throw an error if running as creator node and no libs are provided
-    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
+    // Error if missing required configs
+    if (!this.audiusLibs || !this.spID || !this.endpoint) {
       throw new Error('Missing required configs - cannot start')
     }
 
@@ -77,12 +77,6 @@ class SnapbackSM {
     await this.stateMachineQueue.empty()
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
-
-    const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
-    if (isUserMetadata) {
-      this.log(`SnapbackSM disabled for userMetadataNode. ${this.endpoint}, isUserMetadata=${isUserMetadata}`)
-      return
-    }
 
     /**
      * Initialize stateMachineQueue job processor

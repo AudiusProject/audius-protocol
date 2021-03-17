@@ -1,6 +1,9 @@
 const { sendResponse, errorResponseUnauthorized } = require('./apiHelpers')
 const config = require('./config')
 
+/**
+ * TODO - this middleware is no longer in use and will be deprecated along with `isUserMetadataNode`
+ */
 async function userNodeMiddleware (req, res, next) {
   const isUserMetadataNode = config.get('isUserMetadataNode')
   const userNodeRegex = new RegExp(/(users|version|db_check|health_check|image_upload|ipfs|export)/gm)
