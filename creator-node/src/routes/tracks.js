@@ -29,7 +29,7 @@ const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
-const { generateTimestampAndSignatureIfNecessary } = require('../apiSigning.js')
+const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 
 const readFile = promisify(fs.readFile)
 
@@ -644,8 +644,8 @@ module.exports = function (app) {
 
     if (libs.identityService) {
       req.logger.info(`Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`)
-      const signatureData = generateTimestampAndSignatureIfNecessary(
-        'listen', config.get('delegatePrivateKey')
+      const signatureData = generateListenTimestampAndSignature(
+        config.get('delegatePrivateKey')
       )
       // Fire and forget listen recording
       // TODO: Consider queueing these requests

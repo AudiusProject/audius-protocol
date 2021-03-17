@@ -23,30 +23,32 @@ const generateTimestampAndSignature = (data, privateKey) => {
   return { timestamp, signature: signedResponse.signature }
 }
 
-// Keeps track of cached signatures for `generateTimestampAndSignatureIfNecessary`
-const cachedSignatures = {}
+// Keeps track of a cached listen signature
+let cachedListenSignature = null
 
 /**
  * Generates a signature for `data` if only the previous signature
  * generated is invalid (expired). Otherwise returns an existing signature.
- * @param {string} data only string data supported
  * @param {string} privateKey
  * @returns {string} signature
  */
-const generateTimestampAndSignatureIfNecessary = (data, privateKey) => {
-  if (data in cachedSignatures) {
-    const signatureTimestamp = cachedSignatures[data].timestamp
+const generateListenTimestampAndSignature = (privateKey) => {
+  if (cachedListenSignature) {
+    const signatureTimestamp = cachedListenSignature.timestamp
     if (signatureHasExpired(signatureTimestamp)) {
       // If the signature has expired, remove it from the cache
-      delete cachedSignatures[data]
+      cachedListenSignature = null
     } else {
       // If the signature has not expired (still valid), use it!
-      return cachedSignatures[data]
+      return cachedListenSignature
     }
   }
   // We don't have a signature already
-  const { timestamp, signature } = generateTimestampAndSignature({ data }, privateKey)
-  cachedSignatures[data] = { timestamp, signature }
+  const { timestamp, signature } = generateTimestampAndSignature(
+    { data: 'listen' },
+    privateKey
+  )
+  cachedListenSignature = { timestamp, signature }
   return { timestamp, signature }
 }
 
@@ -84,7 +86,7 @@ const sortKeys = x => {
 
 module.exports = {
   generateTimestampAndSignature,
-  generateTimestampAndSignatureIfNecessary,
+  generateListenTimestampAndSignature,
   recoverWallet,
   sortKeys,
   MAX_SIGNATURE_AGE_MS,

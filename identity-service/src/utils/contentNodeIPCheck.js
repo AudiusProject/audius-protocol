@@ -52,8 +52,8 @@ const _isIPFromContentNode = (ip, req, knownContentNodeWallets, knownContentNode
   req.logger.info(`isIPFromContentNode - Known wallets: ${[...knownContentNodeWallets]}, ips: ${[...knownContentNodeIPAddresses]}`)
   const wallet = recoverWallet({
     data: 'listen',
-    timestamp: req.body.timestamp
-  }, req.body.signature)
+    timestamp
+  }, signature)
 
   req.logger.info(`isIPFromContentNode - Recovered wallet: ${wallet}`)
   if (knownContentNodeWallets.has(wallet)) {
