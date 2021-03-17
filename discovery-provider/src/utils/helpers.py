@@ -14,6 +14,11 @@ from jsonformatter import JsonFormatter
 from src import exceptions
 from . import multihash
 
+def get_ip(request_obj):
+    """Gets the IP address from a request using the X-Forwarded-For header if present"""
+    ip = request_obj.headers.get('X-Forwarded-For', request_obj.remote_addr)
+    return ip.split(',')[0].strip()
+
 def redis_restore(redis, key):
     logger = logging.getLogger(__name__)
     try:
@@ -179,8 +184,7 @@ def configure_flask_app_logging(app, loglevel_str):
 
         now = time.time()
         duration = int((now - g.start) * 1000)
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-        ip = ip.split(',')[0].strip()
+        ip = get_ip(request)
         host = request.host.split(':', 1)[0]
         args = request.query_string.decode("utf-8")
 
