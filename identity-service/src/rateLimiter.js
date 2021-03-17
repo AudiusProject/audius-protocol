@@ -14,7 +14,13 @@ const isIPWhitelisted = (ip, req) => {
   const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
   const isWhitelisted = whitelistRegex && !!ip.match(whitelistRegex)
 
-  const isFromContentNode = isIPFromContentNode(ip, req)
+  let isFromContentNode = false
+  try {
+    isFromContentNode = isIPFromContentNode(ip, req)
+  } catch (e) {
+    // Log out and continue if for some reason signature validation threw
+    req.logger.error(e)
+  }
 
   // Don't return early so we can see logs for both paths
   req.logger.info(`isIPWhitelisted - isWhitelisted: ${isWhitelisted}, isFromContentNode: ${isFromContentNode}`)
