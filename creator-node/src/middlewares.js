@@ -142,7 +142,7 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - Is not a middleware so it can be run before responding to client.
  */
 async function triggerSecondarySyncs (req) {
-  // if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) return
+  if (config.get('snapbackDevModeEnabled')) return
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
@@ -165,7 +165,6 @@ async function triggerSecondarySyncs (req) {
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
  */
 async function getOwnEndpoint (req) {
-  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
   const libs = req.app.get('audiusLibs')
 
   let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
@@ -212,10 +211,6 @@ async function getOwnEndpoint (req) {
  * @returns {Array} - array of strings of replica set
  */
 async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
-  if (config.get('isUserMetadataNode')) {
-    throw new Error('Not available for userMetadataNode')
-  }
-
   req.logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const libs = req.app.get('audiusLibs')
   const start = Date.now()
