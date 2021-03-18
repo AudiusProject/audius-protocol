@@ -713,7 +713,7 @@ class Users extends Base {
     let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
     let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
 
-    if (secondaries.length <= 1) {
+    if (secondaries.length < 2) {
       throw new Error(`Invalid number of secondaries found - recieved ${secondaries}`)
     }
 
