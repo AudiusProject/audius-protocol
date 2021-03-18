@@ -292,8 +292,8 @@ def update_route_metrics_count(my_metrics, other_metrics):
     for timestamp, values in other_metrics.items():
         if timestamp in my_metrics:
             my_metrics[timestamp] = {
-                'unique': max(values['unique'], my_metrics[timestamp]['unique']),
-                'total': max(values['total'], my_metrics[timestamp]['total'])
+                'unique_count': max(values['unique_count'], my_metrics[timestamp]['unique_count']),
+                'total_count': max(values['total_count'], my_metrics[timestamp]['total_count'])
             }
         else:
             my_metrics[timestamp] = values
@@ -321,6 +321,7 @@ def synchronize_all_node_metrics(self, db):
     monthly_app_metrics = {}
     for node in get_all_other_nodes():
         historical_metrics = get_historical_metrics(node)
+        logger.info(f"got historical metrics from {node}: {historical_metrics}")
         if historical_metrics:
             update_route_metrics_count(daily_route_metrics, historical_metrics['routes']['daily'])
             update_route_metrics_count(monthly_route_metrics, historical_metrics['routes']['monthly'])
