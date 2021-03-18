@@ -1,6 +1,7 @@
 const untildify = require('untildify')
 const Web3 = require('web3')
 const axios = require('axios')
+
 const AudiusLibs = require('@audius/libs')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const Utils = require('@audius/libs/src/utils')
@@ -384,12 +385,12 @@ function LibsWrapper (walletIndex = 0) {
       this.getWalletAddress()
     )
 
-    if (!users.length) {
-      throw new Error('No users!')
+    // If a user is found, set this libs instance's userId
+    if (users.length > 0 && !this.userId) {
+      this.userId = users[0].user_id
     }
 
-    if (!this.userId) this.userId = users[0].user_id
-
+    // May be a user or undefined
     return users[0]
   }
 

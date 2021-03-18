@@ -1,4 +1,5 @@
 const ServiceCommands = require('@audius/service-commands')
+const ContainerLogs = require('@audius/service-commands/src/ContainerLogs')
 const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
@@ -16,6 +17,33 @@ const DEFAULT_NUM_CREATOR_NODES = 4
 const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
+
+const SERVICES = [
+  {
+    service: ServiceCommands.Service.CREATOR_NODE,
+    serviceNumber: 1
+  },
+  {
+    service: ServiceCommands.Service.CREATOR_NODE,
+    serviceNumber: 2
+  },
+  {
+    service: ServiceCommands.Service.CREATOR_NODE,
+    serviceNumber: 3
+  },
+  {
+    service: ServiceCommands.Service.DISCOVERY_PROVIDER,
+    serviceNumber: null
+  },
+  {
+    service: ServiceCommands.Service.IDENTITY_SERVICE,
+    serviceNumber: null
+  },
+  {
+    service: ServiceCommands.Service.USER_METADATA_NODE,
+    serviceNumber: null
+  }
+]
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
@@ -132,7 +160,24 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
 // with a separate command.
 async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
+
+  logger.info('Ensuring all nodes are healthy..')
+  try {
+    await Promise.all(
+      SERVICES.map(entry =>
+        ServiceCommands.performHealthCheckWithRetry(
+          entry.service,
+          entry.serviceNumber
+        )
+      )
+    )
+  } catch (e) {
+    logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
+    return
+  }
+
   const cmd = process.argv[3]
+  const verbose = true // process.argv[4]
 
   try {
     switch (cmd) {
@@ -199,9 +244,8 @@ async function main () {
         const ursmTest = makeTest(
           'userReplicaSetManager',
           userReplicaSetManagerTest,
-          {
-            numUsers: USER_REPLICA_SET_NUM_USERS
-        })
+          { numUsers: USER_REPLICA_SET_NUM_USERS }
+        )
 
         const tests = [
           coreIntegrationTests,
@@ -221,6 +265,19 @@ async function main () {
   } catch (e) {
     logger.error('Exiting testrunner with errors')
     logger.error(e.message)
+
+    if (verbose) {
+      const containerLogs = Object.entries(ContainerLogs.logs)
+      if (containerLogs.length === 0) return
+      logger.info('Displaying logs from container time of error..')
+      containerLogs.map(entry => {
+        entry[1].forEach(containerLogInfo => {
+          logger.error(`method name=${entry[0]}, userId=${containerLogInfo.userId}, container=${containerLogInfo.containerName}`, 'Error info with stack trace', containerLogInfo.error)
+          logger.error('Relevant container logs:')
+          console.error(containerLogInfo.stdout)
+        })
+      })
+    }
     process.exit(1)
   }
 }

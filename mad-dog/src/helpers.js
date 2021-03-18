@@ -27,7 +27,7 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
-const MAX_SYNC_TIMEOUT = 60000
+const MAX_SYNC_TIMEOUT = 120000
 
 /**
  * Adds and upgrades `userCount` users.
@@ -186,26 +186,15 @@ const logOps = async (name, work) => {
 }
 
 /**
- * Checks to see if user exists at wallet index. Returns the user
+ * Checks to see if a user with the wallet addr a the wallet index exists
  * @param {*} executeOne
- * @param {*} walletIndex
+ * @param {number} walletIndex index of wallet in config.json
+ * @returns the found user or undefined
  */
 const getUser = async ({ executeOne, walletIndex }) => {
-  let user
-  try {
-    // if a user is already created for walletIndex, use that user for test
-    user = await executeOne(walletIndex, libsWrapper => {
-      return getLibsUserInfo(libsWrapper)
-    })
-  } catch (e) {
-    if (e.message !== 'No users!') {
-      logger.error(`Error with getting user with wallet index ${walletIndex}`)
-      console.error(e)
-      throw e
-    }
-  }
-
-  return user
+  return await executeOne(walletIndex, libsWrapper => {
+    return getLibsUserInfo(libsWrapper)
+  })
 }
 
 /**
