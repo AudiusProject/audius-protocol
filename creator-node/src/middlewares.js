@@ -141,15 +141,32 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - TODO move this out of middlewares to Services layer
  */
 async function triggerSecondarySyncs (req) {
-  if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) return
+  const { snapbackSM } = serviceRegistry
+
+  if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
+    return
+  }
+
   try {
-    if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) return
+    if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) {
+      return
+    }
+
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
-    const { snapbackSM } = serviceRegistry
+
+    // Enqueue a manual sync for all secondaries
     await Promise.all(secondaries.map(async secondary => {
-      if (!secondary || !_isFQDN(secondary)) return
+      if (!secondary || !_isFQDN(secondary)) {
+        return
+      }
+
       const userWallet = req.session.wallet
-      await snapbackSM.enqueueManualSync({ userWallet, secondaryEndpoint: secondary, primaryEndpoint: primary })
+
+      await snapbackSM.enqueueManualSync({
+        userWallet,
+        secondaryEndpoint: secondary,
+        primaryEndpoint: primary
+      })
     }))
   } catch (e) {
     req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)

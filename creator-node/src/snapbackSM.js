@@ -74,9 +74,19 @@ class SnapbackSM {
    * @param maxParallelSyncJobs - Optionally accepts `maxParallelSyncJobs` to override sync concurrency limit `MaxParallelSyncJobs`
    */
   async init (maxParallelSyncJobs = MaxParallelSyncJobs) {
+    // Empty all queues to minimize memory consumption
     await this.stateMachineQueue.empty()
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
+
+    /**
+     * Maintain an in-memory mapping of user wallet -> boolean indicating waiting sync for user
+     * This is used to prevent enqueueing duplicate syncs for a user
+     * We maintain this mapping to maximize query performance; Bull does not provide any api for querying
+     *    jobs by property and would require a linear iteration over the full job list
+     */
+    this.waitingManualSyncsByUserWallet = {}
+    this.waitingRecurringSyncsByUserWallet = {}
 
     const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
     if (isUserMetadata) {
@@ -160,6 +170,7 @@ class SnapbackSM {
           host: this.nodeConfig.get('redisHost')
         },
         defaultJobOptions: {
+          // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
           removeOnComplete: true,
           removeOnFail: true
         }
@@ -245,10 +256,10 @@ class SnapbackSM {
     try {
       const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
 
-      const jobInfo = await this.issueSecondarySync({
+      const jobInfo = await this._enqueueSync({
         userWallet,
-        secondaryEndpoint,
         primaryEndpoint,
+        secondaryEndpoint,
         primaryClockValue,
         syncType: SyncType.Manual
       })
@@ -260,17 +271,50 @@ class SnapbackSM {
   }
 
   /**
-   * Enqueues a sync request to secondary and returns job info
+   * Enqueues a sync request to manualSyncQueue & returns job info
+   *
+   * Accepts `primaryClockValue` as param since Snapback pre-computes this before enqueuing
+   */
+  async enqueueRecurringSync ({
+    primaryEndpoint,
+    secondaryEndpoint,
+    userWallet,
+    primaryClockValue
+  }) {
+    try {
+      primaryClockValue = primaryClockValue || (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
+
+      const jobInfo = await this._enqueueSync({
+        userWallet,
+        primaryEndpoint,
+        secondaryEndpoint,
+        primaryClockValue,
+        syncType: SyncType.Recurring
+      })
+
+      return jobInfo
+    } catch (e) {
+      logger.error(`Error enqueing manual sync for user: ${userWallet}, error: ${e.message}`)
+    }
+  }
+
+  /**
+   * Internal function to enqueue a sync request to secondary; returns job info
    *
    * @dev NOTE avoid using bull priority if possible as it significantly reduces performance
+   * @dev TODO no need to accept `primaryEndpoint` as param, it always equals `this.endpoint`
    */
-  async issueSecondarySync ({
+  async _enqueueSync ({
     primaryEndpoint,
     secondaryEndpoint,
     userWallet,
     primaryClockValue,
     syncType
   }) {
+    const queue = (syncType === SyncType.Manual) ? this.manualSyncQueue : this.recurringSyncQueue
+
+    // Only add to queue if a waiting job for user does not already exist
+
     // Define axios params for sync request to secondary
     const syncRequestParameters = {
       baseURL: secondaryEndpoint,
@@ -290,15 +334,12 @@ class SnapbackSM {
       startTime: Date.now(),
       primaryClockValue
     }
-    let jobInfo
-    if (syncType === SyncType.Manual) {
-      jobInfo = await this.manualSyncQueue.add(jobProps)
-    } else {
-      jobInfo = await this.recurringSyncQueue.add(jobProps)
-    }
+
+    const jobInfo = await this.queue.add(jobProps)
 
     return jobInfo
   }
+
 
   /**
    * Main state machine processing function
@@ -422,24 +463,23 @@ class SnapbackSM {
 
             // Enqueue sync for secondary1 if required
             if (secondary1SyncRequired && secondary1 != null) {
-              await this.issueSecondarySync({
+              await this.enqueueRecurringSync({
                 userWallet,
                 secondaryEndpoint: secondary1,
                 primaryEndpoint: this.endpoint,
-                primaryClockValue,
-                syncType: SyncType.Recurring
+                primaryClockValue
               })
+
               numSyncsIssued += 1
             }
 
             // Enqueue sync for secondary2 if required
             if (secondary2SyncRequired && secondary2 != null) {
-              await this.issueSecondarySync({
+              await this.enqueueRecurringSync({
                 userWallet,
                 secondaryEndpoint: secondary2,
                 primaryEndpoint: this.endpoint,
-                primaryClockValue,
-                syncType: SyncType.Recurring
+                primaryClockValue
               })
 
               numSyncsIssued += 1
@@ -514,12 +554,11 @@ class SnapbackSM {
     // enqueue another sync if secondary is still behind
     // TODO max retry limit
     if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
-      await this.issueSecondarySync({
+      await this.enqueueRecurringSync({
         userWallet,
         secondaryEndpoint: secondaryUrl,
         primaryEndpoint: this.endpoint,
-        primaryClockValue,
-        syncType
+        primaryClockValue
       })
     }
   }
