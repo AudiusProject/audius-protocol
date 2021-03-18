@@ -228,11 +228,8 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
     const start2 = Date.now()
 
     // In total, will try for 200 seconds.
-    const MaxRetries = 200
+    const MaxRetries = 201
     const RetryTimeout = 1000 // 1 seconds
-
-    // Initial delay before polling
-    await utils.timeout(1000)
 
     let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
@@ -278,11 +275,8 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
     const start2 = Date.now()
 
     // Will poll every sec for up to 1 minute (60 sec)
-    const MaxRetries = 60
+    const MaxRetries = 61
     const RetryTimeout = 1000 // 1 seconds
-
-    // Initial delay before polling
-    await utils.timeout(1000)
 
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
