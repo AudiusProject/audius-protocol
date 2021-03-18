@@ -13,11 +13,11 @@
 }
 
 .rewards {
-  margin-bottom: 16px;
   margin-left: -8px;
   margin-right: -8px;
   display: flex;
   align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .rewards > * {
@@ -29,7 +29,7 @@
 .proposals {
   flex-direction: column;
   box-sizing: border-box;
-  margin: 16px 0;
+  margin: 0px 0px 16px;
 }
 
 .loading {
