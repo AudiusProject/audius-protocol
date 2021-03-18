@@ -22,7 +22,6 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
     spOwnerWallet: config.get('spOwnerWallet'),
-    delegateOwnerWallet: config.get('delegateOwnerWallet'),
     isRegisteredOnURSM: config.get('isRegisteredOnURSM')
   }
 

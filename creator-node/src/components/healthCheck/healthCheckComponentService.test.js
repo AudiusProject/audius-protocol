@@ -67,7 +67,6 @@ describe('Test Health Check', function () {
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      delegateOwnerWallet: config.get('delegateOwnerWallet'),
       isRegisteredOnURSM: false
     })
   })
@@ -84,7 +83,6 @@ describe('Test Health Check', function () {
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      delegateOwnerWallet: config.get('delegateOwnerWallet'),
       isRegisteredOnURSM: false
     })
   })
@@ -108,7 +106,6 @@ describe('Test Health Check Verbose', function () {
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      delegateOwnerWallet: config.get('delegateOwnerWallet'),
       isRegisteredOnURSM: false,
 
       country: 'US',
