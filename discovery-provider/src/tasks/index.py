@@ -1,7 +1,5 @@
-from urllib.parse import urljoin
 import logging
 import concurrent.futures
-import requests
 
 from src import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, \
@@ -545,23 +543,6 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
-
-# calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
-def fetch_cnode_endpoints_from_chain(task_context):
-    try:
-        identity_url = task_context.shared_config['discprov']['identity_service_url']
-        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
-
-        r = requests.get(identity_endpoint, timeout=3)
-        if r.status_code != 200:
-            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
-
-        registered_cnodes = r.json()
-        logger.info(f"Fetched registered creator nodes from chain via {identity_endpoint}")
-        return registered_cnodes
-    except Exception as e:
-        logger.error(f"Identity fetch failed {e}")
-        return []
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
