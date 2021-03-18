@@ -21,7 +21,8 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
-    spOwnerWallet: config.get('spOwnerWallet')
+    spOwnerWallet: config.get('spOwnerWallet'),
+    isRegisteredOnURSM: config.get('isRegisteredOnURSM')
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object

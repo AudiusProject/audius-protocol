@@ -280,6 +280,12 @@ const config = convict({
     env: 'delegatePrivateKey',
     default: null
   },
+  // `env` property is not defined as this should never be passed in as an envvar and should only be set programatically
+  isRegisteredOnURSM: {
+    doc: 'boolean indicating whether or not node has been registered on dataContracts UserReplicaSetManager contract (URSM)',
+    format: Boolean,
+    default: false
+  },
 
   spID: {
     doc: 'ID of creator node in ethContracts ServiceProviderFactory',
