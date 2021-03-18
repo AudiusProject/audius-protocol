@@ -712,6 +712,11 @@ class Users extends Base {
     }
     let primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
     let secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
+
+    if (secondaries.length < 2) {
+      throw new Error(`Invalid number of secondaries found - recieved ${secondaries}`)
+    }
+
     let [primarySpID, secondary1SpID, secondary2SpID] = await Promise.all([
       this._retrieveSpIDFromEndpoint(primaryEndpoint),
       this._retrieveSpIDFromEndpoint(secondaries[0]),
