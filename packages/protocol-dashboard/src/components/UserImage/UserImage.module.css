@@ -1,0 +1,16 @@
+.skeleton {
+  background: var(--skeleton);
+}
+
+.noSkeleton {
+  background: none;
+}
+
+img {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+img.show {
+  opacity: 1;
+}

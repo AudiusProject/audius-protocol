@@ -23,6 +23,7 @@ import MyEstimatedRewards from 'components/MyEstimatedRewards'
 import desktopStyles from './UserInfo.module.css'
 import mobileStyles from './UserInfoMobile.module.css'
 import { createStyles } from 'utils/mobile'
+import UserImage from 'components/UserImage'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -45,7 +46,6 @@ type UserInfoProps = {
 }
 
 const UserInfo = ({
-  className,
   user,
   rank,
   isOwner,
@@ -54,7 +54,7 @@ const UserInfo = ({
   delegatesStatus
 }: UserInfoProps) => {
   // TODO: Get Rank
-  const { name, wallet, image } = user
+  const { name, wallet } = user
   const { isLoggedIn } = useAccount()
   const [isOpen, setIsOpen] = useState(false)
   const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
@@ -181,8 +181,12 @@ const UserInfo = ({
           <div className={styles.rankValue}>{rank}</div>
         </div>
       )}
-      <img className={styles.userImg} src={image} alt={'User Profile'} />
-      <div className={styles.userName}>{name}</div>
+      <UserImage
+        className={styles.userImg}
+        wallet={wallet}
+        alt={'User Profile'}
+      />
+      <div className={styles.userName}>{name !== wallet && name}</div>
       <div className={styles.userWallet}>{wallet}</div>
       <MyEstimatedRewards wallet={wallet} />
     </>

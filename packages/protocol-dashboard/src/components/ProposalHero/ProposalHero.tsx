@@ -14,7 +14,6 @@ import { useSubmitVote } from 'store/actions/submitVote'
 import { StandaloneBox } from 'components/ConfirmTransactionModal/ConfirmTransactionModal'
 import Loading from 'components/Loading'
 import DisplayAudio from 'components/DisplayAudio'
-import { useUser } from 'store/cache/user/hooks'
 import {
   useProposalTimeRemaining,
   useAmountAbstained
@@ -28,6 +27,7 @@ import desktopStyles from './ProposalHero.module.css'
 import mobileStyles from './ProposalHeroMobile.module.css'
 import getActiveStake from 'utils/activeStake'
 import clsx from 'clsx'
+import UserImage from 'components/UserImage'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -108,12 +108,10 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
 }
 
 const User = ({ wallet }: { wallet: Address }) => {
-  const { user } = useUser({ wallet })
-
   return (
     <div className={styles.user}>
       <div className={styles.image}>
-        {user?.image && <img src={user.image} alt="User" />}
+        <UserImage wallet={wallet} alt="User" />
       </div>
       {wallet}
     </div>

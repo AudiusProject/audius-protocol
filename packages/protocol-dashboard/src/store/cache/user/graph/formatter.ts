@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import { getUserProfile as get3BoxProfile } from 'services/3box'
 import { User, ServiceType, Operator } from 'types'
 import Audius from 'services/Audius'
 import { FullUser } from './types'
@@ -9,17 +8,7 @@ export const formatUser = async (
   user: FullUser
 ): Promise<User | Operator> => {
   const userWallet = aud.toChecksumAddress(user.id)
-  const profile = await get3BoxProfile(userWallet)
-
-  // TODO: Make this part faster by async loading the profiles
-  const delegatesProfiles = await Promise.all(
-    (user.delegateTo || [])
-      .map(delegate => delegate.toUser.id)
-      .map(id => get3BoxProfile(aud.toChecksumAddress(id)))
-  )
-
   let formattedUser: User = {
-    ...profile,
     wallet: userWallet,
     audToken: new BN(user.balance),
     totalDelegatorStake: new BN(user.delegationSentAmount),
@@ -27,9 +16,7 @@ export const formatUser = async (
       user.delegateTo?.map((delegate, i) => ({
         wallet: aud.toChecksumAddress(delegate.toUser.id),
         amount: new BN(delegate.amount),
-        activeAmount: new BN(delegate.claimableAmount),
-        name: delegatesProfiles[i].name,
-        img: delegatesProfiles[i].image
+        activeAmount: new BN(delegate.claimableAmount)
       })) ?? [],
     events: [],
     voteHistory: user.votes.map(vote => ({
@@ -51,16 +38,8 @@ export const formatUser = async (
   if (user.services.length === 0 && user.stakeAmount === '0')
     return formattedUser
 
-  // TODO: Make this part faster
-  const delegatorProfiles = await Promise.all(
-    (user.delegateFrom || [])
-      .map(delegate => delegate.fromUser.id)
-      .map(id => get3BoxProfile(aud.toChecksumAddress(id)))
-  )
-
   return {
     ...formattedUser,
-    // Operator Fields
     serviceProvider: {
       deployerCut: parseInt(user.deployerCut),
       deployerStake: new BN(user.stakeAmount),
@@ -73,9 +52,7 @@ export const formatUser = async (
       user.delegateFrom?.map((delegate, i) => ({
         wallet: aud.toChecksumAddress(delegate.fromUser.id),
         amount: new BN(delegate.amount),
-        activeAmount: new BN(delegate.claimableAmount),
-        name: delegatorProfiles[i].name,
-        img: delegatorProfiles[i].image
+        activeAmount: new BN(delegate.claimableAmount)
       })) ?? [],
     totalStakedFor: new BN(user.stakeAmount).add(
       new BN(user.delegationReceivedAmount)

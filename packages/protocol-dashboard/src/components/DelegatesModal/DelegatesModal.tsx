@@ -6,10 +6,11 @@ import styles from './DelegatesModal.module.css'
 import ModalTable from 'components/ModalTable'
 import BN from 'bn.js'
 import { Delegate, Address } from 'types'
-import { formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
 import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   title: 'Delegates',
@@ -18,7 +19,7 @@ const messages = {
 }
 
 type Delegator = {
-  img: string
+  img?: string
   name?: string
   address: Address
   amount: BN
@@ -50,14 +51,15 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
   const renderRow = (data: Delegator) => {
     return (
       <div className={styles.rowContainer}>
-        <img
+        <UserImage
           className={clsx(styles.rowCol, styles.colImg)}
-          src={data.img}
+          wallet={data.address}
           alt={'User Profile'}
         />
-        <div className={clsx(styles.rowCol, styles.colAddress)}>
-          {data.name || formatShortWallet(data.address)}
-        </div>
+        <UserName
+          className={clsx(styles.rowCol, styles.colAddress)}
+          wallet={data.address}
+        />
         <DisplayAudio
           className={clsx(styles.rowCol, styles.colAmount)}
           amount={data.amount}
