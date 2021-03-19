@@ -68,12 +68,10 @@ class ContainerLogs {
       let stdout = ''
       let stderr = ''
 
-      // Stream the stdout
       proc.stdout.on('data', data => {
         stdout += data
       })
 
-      // Stream the stderr
       proc.stderr.on('data', data => {
         stderr += data
       })
