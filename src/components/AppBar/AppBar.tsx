@@ -18,6 +18,7 @@ import desktopStyles from './AppBar.module.css'
 import mobileStyles from './AppBarMobile.module.css'
 import { useIsMobile } from 'utils/hooks'
 import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -80,7 +81,12 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
 
   return (
     <div className={styles.snippetContainer} onClick={onClickUser}>
-      <img src={user.image} className={styles.snippetImg} alt="User Profile" />
+      <UserImage
+        wallet={user.wallet}
+        className={styles.snippetImg}
+        alt="User Profile"
+        useSkeleton={false}
+      />
       <div className={styles.snippetText}>
         <div className={styles.walletText}>
           {formatShortWallet(user.wallet)}

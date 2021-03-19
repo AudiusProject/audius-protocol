@@ -5,22 +5,19 @@ import BN from 'bn.js'
 import styles from './VotesTable.module.css'
 import Table from 'components/Table'
 import { VoteEvent, Address } from 'types'
-import { formatAud, formatShortWallet } from 'utils/format'
+import { formatAud } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
 import { accountPage } from 'utils/routes'
-import { useUser } from 'store/cache/user/hooks'
 import Modal from 'components/Modal'
 import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const User = ({ wallet }: { wallet: Address }) => {
-  const { user } = useUser({ wallet })
-
   return (
     <div className={styles.user}>
-      <div className={styles.image}>
-        {user?.image && <img src={user.image} alt="User" />}
-      </div>
-      {user?.name || formatShortWallet(wallet)}
+      <UserImage className={styles.image} wallet={wallet} alt="User" />
+      <UserName className={styles.name} wallet={wallet} />
     </div>
   )
 }
