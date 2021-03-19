@@ -490,7 +490,7 @@ module.exports = function (app) {
    * Serves information on existence of given cids
    * @param req
    * @param req.body
-   * @param {string} req.body.cids the cids to check existence for, these cids can also be directories
+   * @param {string[]} req.body.cids the cids to check existence for, these cids can also be directories
    * @dev This route can have a large number of CIDs as input, therefore we use a POST request.
    */
   app.post('/batch_cids_exist', handleResponse(async (req, res) => {
