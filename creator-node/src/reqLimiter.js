@@ -95,6 +95,16 @@ const URSMRequestForSignatureReqLimiter = rateLimit({
   keyGenerator: ipKeyGenerator
 })
 
+const batchCidsExistReqLimiter = rateLimit({
+  store: new RedisStore({
+    client: client,
+    prefix: 'batchCidsExistReqLimiter',
+    expiry: 60 * 60 // one hour in seconds
+  }),
+  max: config.get('batchCidsExistReqLimiter'), // max requests per hour
+  keyGenerator: ipKeyGenerator
+})
+
 const onLimitReached = (req, res, options) => {
   req.logger.warn(req.rateLimit, `Rate Limit Hit`)
 }
@@ -162,5 +172,6 @@ module.exports = {
   metadataReqLimiter,
   imageReqLimiter,
   URSMRequestForSignatureReqLimiter,
+  batchCidsExistReqLimiter,
   getRateLimiterMiddleware
 }
