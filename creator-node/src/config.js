@@ -183,6 +183,12 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+  rateLimitingBatchCidsExistLimit: {
+    doc: 'Total requests per hour rate limit for /track routes',
+    format: 'nat',
+    env: 'rateLimitingBatchCidsExistLimit',
+    default: null
+  },
   URSMRequestForSignatureReqLimit: {
     doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
     format: 'nat',
