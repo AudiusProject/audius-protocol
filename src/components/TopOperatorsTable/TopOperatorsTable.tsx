@@ -4,7 +4,6 @@ import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
 import styles from './TopOperatorsTable.module.css'
 import Table from 'components/Table'
-import { formatShortWallet } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
 import { Address, Operator, Status } from 'types'
@@ -13,6 +12,8 @@ import { useIsMobile } from 'utils/hooks'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import BN from 'bn.js'
 import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   topAddresses: 'Top Service Operators by Active Stake',
@@ -93,14 +94,15 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
     return (
       <div className={styles.rowContainer}>
         <div className={clsx(styles.rowCol, styles.colRank)}>{data.rank}</div>
-        <img
+        <UserImage
           className={clsx(styles.rowCol, styles.colImg)}
-          src={data.img}
+          wallet={data.wallet}
           alt={'User Profile'}
         />
-        <div className={clsx(styles.rowCol, styles.colAddress)}>
-          {data.name || formatShortWallet(data.wallet)}
-        </div>
+        <UserName
+          className={clsx(styles.rowCol, styles.colAddress)}
+          wallet={data.wallet}
+        />
         {!isMobile && (
           <>
             <DisplayAudio
