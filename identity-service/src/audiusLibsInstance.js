@@ -43,6 +43,9 @@ class AudiusLibsWrapper {
     return this.audiusLibsInstance
   }
 
+  /**
+   * Async getter for libs. Resolves when libs is initialized.
+   */
   async getAudiusLibsAsync () {
     if (this.audiusLibsInstance) {
       return this.audiusLibsInstance

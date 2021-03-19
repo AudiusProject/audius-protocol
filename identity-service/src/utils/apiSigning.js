@@ -3,6 +3,7 @@ const web3 = new Web3()
 
 // TODO: This is copied from the same code path in content node
 // and should be standardized across this file as well as the method in libs
+// Do not modify this file without touching the other!
 
 /**
  * Max age of signature in milliseconds
@@ -27,11 +28,10 @@ const generateTimestampAndSignature = (data, privateKey) => {
 }
 
 /**
-   * Recover the public wallet address
-   * @param {*} data obj with structure {...data, timestamp}
-   * @param {*} signature signature generated with signed data
-   */
-// eslint-disable-next-line no-unused-vars
+ * Recover the public wallet address
+ * @param {object} data obj with structure {...data, timestamp}
+ * @param {string} signature signature generated with signed data
+ */
 const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)

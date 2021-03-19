@@ -60,7 +60,7 @@ const getIP = (req) => {
   // either the actual user or a content node
   const senderIP = headers[headers.length - 2]
 
-  if (isIPWhitelisted(senderIP)) {
+  if (isIPWhitelisted(senderIP, req)) {
     const forwardedIP = headers[headers.length - 3]
     if (!forwardedIP) {
       req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)

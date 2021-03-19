@@ -24,13 +24,14 @@ const generateTimestampAndSignature = (data, privateKey) => {
 }
 
 // Keeps track of a cached listen signature
+// Two field object: { timestamp, signature }
 let cachedListenSignature = null
 
 /**
  * Generates a signature for `data` if only the previous signature
  * generated is invalid (expired). Otherwise returns an existing signature.
  * @param {string} privateKey
- * @returns {string} signature
+ * @returns {object} {signature, timestamp} signature data
  */
 const generateListenTimestampAndSignature = (privateKey) => {
   if (cachedListenSignature) {

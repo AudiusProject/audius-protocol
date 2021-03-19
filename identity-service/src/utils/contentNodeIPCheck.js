@@ -31,6 +31,8 @@ setInterval(findContentNodes, FIND_CONTENT_NODES_INTERVAL_MS)
  * wallet and determine whether it is a registered content node
  * @param {string} ip
  * @param {Request} req
+ * @param {Set<string>} knownContentNodeWallets
+ * @param {Set<string>} knownContentNodeIPAddresses
  */
 const _isIPFromContentNode = (ip, req, knownContentNodeWallets, knownContentNodeIPAddresses) => {
   if (knownContentNodeIPAddresses.has(ip)) {
