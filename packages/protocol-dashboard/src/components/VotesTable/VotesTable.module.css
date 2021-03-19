@@ -36,6 +36,11 @@
   height: 100%;
 }
 
+.user .name {
+  margin-right: 25px;
+  flex-grow: 1;
+}
+
 .modalTable {
   width: 100%;
   box-shadow: none;

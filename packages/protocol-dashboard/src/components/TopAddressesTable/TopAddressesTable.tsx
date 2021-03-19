@@ -6,7 +6,7 @@ import { SERVICES_USERS, accountPage } from 'utils/routes'
 
 import styles from './TopAddressesTable.module.css'
 import Table from 'components/Table'
-import { formatShortWallet, formatWeight } from 'utils/format'
+import { formatWeight } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
 import { Address, Status } from 'types'
@@ -14,6 +14,8 @@ import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake from 'utils/activeStake'
 import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   topAddresses: 'Top Addresses by Voting Weight',
@@ -22,7 +24,7 @@ const messages = {
 
 type TableUser = {
   rank: number
-  img: string
+  img?: string
   name?: string
   wallet: Address
   staked: BN
@@ -100,14 +102,15 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     return (
       <div className={styles.rowContainer}>
         <div className={clsx(styles.rowCol, styles.colRank)}>{data.rank}</div>
-        <img
+        <UserImage
           className={clsx(styles.rowCol, styles.colImg)}
-          src={data.img}
+          wallet={data.wallet}
           alt={'User Profile'}
         />
-        <div className={clsx(styles.rowCol, styles.colAddress)}>
-          {data.name || formatShortWallet(data.wallet)}
-        </div>
+        <UserName
+          className={clsx(styles.rowCol, styles.colAddress)}
+          wallet={data.wallet}
+        />
         {!isMobile && (
           <>
             <DisplayAudio

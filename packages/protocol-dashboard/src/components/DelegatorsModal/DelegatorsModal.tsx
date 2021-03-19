@@ -9,7 +9,6 @@ import { ReactComponent as TrashIcon } from 'assets/img/iconTrash.svg'
 import styles from './DelegatorsModal.module.css'
 import { Address, Delegate, Status } from 'types'
 import ModalTable from 'components/ModalTable'
-import { formatShortWallet } from 'utils/format'
 import { useAccount } from 'store/account/hooks'
 import { useRemoveDelegator } from 'store/actions/removeDelegator'
 import ConfirmTransactionModal, {
@@ -19,6 +18,8 @@ import { useUndelegateStake } from 'store/actions/undelegateStake'
 import { accountPage } from 'utils/routes'
 import { usePushRoute } from 'utils/effects'
 import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   title: 'Delegators',
@@ -28,9 +29,9 @@ const messages = {
 }
 
 type Delegator = {
-  img: string
+  img?: string
   address: string
-  name: string | undefined
+  name?: string
   amount: BN
 }
 
@@ -125,14 +126,15 @@ const DelegatorsTable: React.FC<DelegatorsTableProps> = ({
   const renderTableRow = (data: Delegator) => {
     return (
       <div className={styles.rowContainer} onClick={() => onRowClick(data)}>
-        <img
+        <UserImage
           className={clsx(styles.rowCol, styles.colImg)}
-          src={data.img}
+          wallet={data.address}
           alt={'User Profile'}
         />
-        <div className={clsx(styles.rowCol, styles.colAddress)}>
-          {data.name || formatShortWallet(data.address)}
-        </div>
+        <UserName
+          className={clsx(styles.rowCol, styles.colAddress)}
+          wallet={data.address}
+        />
         <DisplayAudio
           className={clsx(styles.rowCol, styles.colAmount)}
           amount={data.amount}

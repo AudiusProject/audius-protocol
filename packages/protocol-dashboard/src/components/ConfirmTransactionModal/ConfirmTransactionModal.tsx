@@ -11,6 +11,7 @@ import styles from './ConfirmTransactionModal.module.css'
 import { BigNumber, ServiceType, Address, Status } from 'types'
 import Loading from 'components/Loading'
 import { TICKER } from 'utils/consts'
+import UserImage from 'components/UserImage'
 
 const messages = {
   title: 'Confirm Transaction',
@@ -33,18 +34,19 @@ const messages = {
 
 type OperatorStakingProps = {
   className?: string
-  image: string
+  image?: string
   name: string
   amount: BigNumber
+  wallet: Address
 }
 export const OperatorStaking: React.FC<OperatorStakingProps> = props => {
   return (
     <Box
       className={clsx(styles.topBox, { [props.className!]: !!props.className })}
     >
-      <img
+      <UserImage
         alt={'User Profile'}
-        src={props.image}
+        wallet={props.wallet}
         className={clsx(styles.operatorStakingImage, styles.boxImage)}
       />
       <div className={styles.operatorStakingName}>{props.name}</div>
@@ -180,9 +182,9 @@ export const ToOperator: React.FC<ToOperatorProps> = props => {
       })}
     >
       <div>To Operator</div>
-      <img
+      <UserImage
         alt={'User Profile'}
-        src={props.image}
+        wallet={props.wallet}
         className={clsx(styles.boxImage, styles.toOperatorImg)}
       />
       <div className={styles.toOperatorName}>{props.name}</div>

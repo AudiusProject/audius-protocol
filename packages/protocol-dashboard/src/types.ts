@@ -59,7 +59,7 @@ export type Delegate = {
   amount: BN
   activeAmount: BN
   name?: string
-  img: string
+  img?: string
 }
 
 type EventID = string
@@ -67,7 +67,7 @@ type EventID = string
 export type User = {
   wallet: Address
   name?: string
-  image: string
+  image?: string
   audToken: BigNumber
   totalDelegatorStake: BigNumber
   pendingUndelegateRequest: GetPendingUndelegateRequestResponse

@@ -1,7 +1,5 @@
 import AudiusClient from './AudiusClient'
 import { Address } from 'types'
-import { getUserProfile as get3BoxProfile } from 'services/3box'
-import { getRandomDefaultImage } from 'utils/identicon'
 
 /**
  * Wrapper functions for libs
@@ -43,15 +41,10 @@ export async function getUserDelegates(this: AudiusClient, delegator: Address) {
         activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
       }
 
-      const profile = await get3BoxProfile(sp)
-      let img = profile.image || getRandomDefaultImage(sp)
-
       delegates.push({
         wallet: sp,
         amount: amountDelegated,
-        activeAmount,
-        img,
-        name: profile.name
+        activeAmount
       })
     }
   }

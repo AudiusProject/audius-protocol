@@ -3,8 +3,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 import { Utils } from '@audius/libs'
-import { getUserProfile as get3BoxProfile } from 'services/3box'
-import { getRandomDefaultImage } from 'utils/identicon'
 import BN from 'bn.js'
 import {
   Address,
@@ -18,7 +16,7 @@ import {
 } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
-import { setLoading, setUsers } from './slice'
+import { setLoading, setUsers, setUserProfile } from './slice'
 import { useEffect } from 'react'
 import {
   getFilteredNodes as getDPNodes,
@@ -35,6 +33,7 @@ import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
 } from './graph/hooks'
+import getUserProfile from 'services/3box'
 
 type UseUsersProp = {
   sortBy?: SortUser
@@ -75,7 +74,6 @@ export const getUsers = ({ sortBy, limit, filter }: UseUsersProp) => (
 
 const getUserMetadata = async (wallet: Address, aud: Audius): Promise<User> => {
   const audToken = await aud.AudiusToken.balanceOf(wallet)
-  const profile = await get3BoxProfile(wallet)
   const delegates = await aud.getUserDelegates(wallet)
   const totalDelegatorStake = await aud.Delegate.getTotalDelegatorStake(wallet)
   const pendingUndelegateRequest = await aud.Delegate.getPendingUndelegateRequest(
@@ -85,8 +83,6 @@ const getUserMetadata = async (wallet: Address, aud: Audius): Promise<User> => {
 
   const user = {
     wallet,
-    name: profile.name,
-    image: profile.image || getRandomDefaultImage(wallet),
     totalDelegatorStake,
     pendingUndelegateRequest,
     audToken,
@@ -149,8 +145,8 @@ const getDelegatorAmounts = async (
   wallet: Address
   amount: BN
   activeAmount: BN
-  name?: string
-  img: string
+  // name?: string
+  // img: string
 }>> => {
   const delegators = await aud.Delegate.getDelegatorsList(wallet)
   let delegatorAmounts = []
@@ -171,15 +167,10 @@ const getDelegatorAmounts = async (
       activeAmount = activeAmount.sub(pendingUndelegateRequest.amount)
     }
 
-    const profile = await get3BoxProfile(delegatorWallet)
-    let img = profile.image || getRandomDefaultImage(delegatorWallet)
-
     delegatorAmounts.push({
       wallet: delegatorWallet,
       amount: amountDelegated,
-      activeAmount,
-      name: profile.name,
-      img
+      activeAmount
     })
   }
   return delegatorAmounts
@@ -275,6 +266,21 @@ export function fetchUser(
       )
     }
     if (setStatus) setStatus(Status.Success)
+  }
+}
+
+export function fetchUserProfile(
+  wallet: Address
+): ThunkAction<void, AppState, Audius, Action<string>> {
+  return async (dispatch, getState, aud) => {
+    const profile = await getUserProfile(wallet)
+    dispatch(
+      setUserProfile({
+        wallet,
+        image: profile.image,
+        name: profile.name
+      })
+    )
   }
 }
 
@@ -396,4 +402,23 @@ export const useUserDelegates = ({ wallet }: UseUserDelegates) => {
     return { status: Status.Success, delegates: userDelegates.amount }
   }
   return { status: Status.Success, delegates: Utils.toBN('0') }
+}
+
+const inFlight = new Set<Address>([])
+type UseUserProfile = { wallet: Address }
+export const useUserProfile = ({ wallet }: UseUserProfile) => {
+  const { user } = useUser({ wallet })
+
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (user && !inFlight.has(wallet)) {
+      inFlight.add(wallet)
+      dispatch(fetchUserProfile(wallet))
+    }
+  }, [dispatch, user, wallet])
+
+  if (user) {
+    return { image: user.image, name: user.name }
+  }
+  return {}
 }

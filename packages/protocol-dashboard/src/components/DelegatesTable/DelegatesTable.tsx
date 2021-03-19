@@ -10,8 +10,9 @@ import styles from './DelegatesTable.module.css'
 import { Delegate, Address } from 'types'
 import DelegatesModal from 'components/DelegatesModal'
 import DisplayAudio from 'components/DisplayAudio'
-import { formatShortWallet } from 'utils/format'
 import BN from 'bn.js'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   title: 'Delegates',
@@ -58,14 +59,15 @@ const DelegatesTable: React.FC<DelegatesTableProps> = ({
   const renderRow = (data: Delegator) => {
     return (
       <div className={styles.rowContainer}>
-        <img
+        <UserImage
           className={clsx(styles.rowCol, styles.colImg)}
-          src={data.img}
+          wallet={data.address}
           alt={'User Profile'}
         />
-        <div className={clsx(styles.rowCol, styles.colAddress)}>
-          {data.name || formatShortWallet(data.address)}
-        </div>
+        <UserName
+          className={clsx(styles.rowCol, styles.colAddress)}
+          wallet={data.address}
+        />
         <DisplayAudio
           className={clsx(styles.rowCol, styles.colAmount)}
           amount={data.activeAmount}

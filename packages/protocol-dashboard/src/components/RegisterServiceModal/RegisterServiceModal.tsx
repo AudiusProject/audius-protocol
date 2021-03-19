@@ -188,6 +188,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
       image={user.image}
       name={user.name || formatShortWallet(user.wallet)}
       amount={stakingBN}
+      wallet={user.wallet}
     />
   )
   const bottomBox = (

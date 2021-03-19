@@ -12,3 +12,19 @@ export const useIsMobile = () =>
   useMemo(() => {
     return isMobile()
   }, [])
+
+/**
+ * Returns { has: true, inc: incrementCount: () => void } when incrementCount
+ * has been invoked `targetCount` times
+ * @param targetCount target count
+ */
+export const useHasCounted = (targetCount: number) => {
+  const [currentCount, setCurrentCount] = useState(0)
+  const incrementCount = useCallback(() => {
+    setCurrentCount(count => count + 1)
+  }, [setCurrentCount])
+  if (currentCount === targetCount) {
+    return { has: true, inc: incrementCount }
+  }
+  return { has: false, inc: incrementCount }
+}
