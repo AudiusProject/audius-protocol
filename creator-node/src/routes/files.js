@@ -40,7 +40,7 @@ const fsStat = promisify(fs.stat)
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
-const CID_EXISTS_CONCURRENCY_LIMIT = 10
+const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 10
 
 /**
  * Helper method to stream file from file system on creator node
@@ -513,8 +513,8 @@ module.exports = function (app) {
     let cidExists = {}
 
     // Check if hash exists in disk in batches (to limit concurrent load)
-    for (let i = 0; i < queryResults.length; i += CID_EXISTS_CONCURRENCY_LIMIT) {
-      const batch = queryResults.slice(i, i + CID_EXISTS_CONCURRENCY_LIMIT)
+    for (let i = 0; i < queryResults.length; i += BATCH_CID_EXISTS_CONCURRENCY_LIMIT) {
+      const batch = queryResults.slice(i, i + BATCH_CID_EXISTS_CONCURRENCY_LIMIT)
       const exists = await Promise.all(batch.map(
         (storagePath) => fs.pathExists(storagePath)
       ))
