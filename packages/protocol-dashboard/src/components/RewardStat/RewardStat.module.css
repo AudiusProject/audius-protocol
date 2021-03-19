@@ -5,10 +5,11 @@
   display: inline-flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 228px;
+  min-width: 338px;
   min-height: 150px;
   box-sizing: border-box;
   align-items: center;
+  margin-bottom: 16px;
 }
 
 .stat {
