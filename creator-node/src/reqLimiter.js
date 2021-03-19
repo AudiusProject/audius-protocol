@@ -98,10 +98,10 @@ const URSMRequestForSignatureReqLimiter = rateLimit({
 const batchCidsExistReqLimiter = rateLimit({
   store: new RedisStore({
     client: client,
-    prefix: 'batchCidsExistReqLimiter',
+    prefix: 'batchCidsExistLimit',
     expiry: 60 * 60 // one hour in seconds
   }),
-  max: config.get('batchCidsExistReqLimiter'), // max requests per hour
+  max: config.get('rateLimitingBatchCidsExistLimit'), // max requests per hour
   keyGenerator: ipKeyGenerator
 })
 
