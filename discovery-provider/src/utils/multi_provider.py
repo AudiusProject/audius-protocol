@@ -3,6 +3,12 @@ from web3.providers import HTTPProvider, BaseProvider
 
 
 class MultiProvider(BaseProvider):
+    """
+    Implements a custom web3 provider
+
+    ref: https://web3py.readthedocs.io/en/stable/internals.html#writing-your-own-provider
+    """
+
     def __init__(self, providers):
         self.providers = [HTTPProvider(provider) for provider in providers.split(",")]
 
