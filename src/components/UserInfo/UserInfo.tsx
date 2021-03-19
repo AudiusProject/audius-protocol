@@ -186,7 +186,7 @@ const UserInfo = ({
         wallet={wallet}
         alt={'User Profile'}
       />
-      <div className={styles.userName}>{name}</div>
+      <div className={styles.userName}>{name !== wallet && name}</div>
       <div className={styles.userWallet}>{wallet}</div>
       <MyEstimatedRewards wallet={wallet} />
     </>
