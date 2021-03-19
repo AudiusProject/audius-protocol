@@ -267,16 +267,8 @@ async function main () {
     logger.error(e.message)
 
     if (verbose) {
-      const containerLogs = Object.entries(ContainerLogs.logs)
-      if (containerLogs.length === 0) return
-      logger.info('Displaying logs from container time of error..')
-      containerLogs.map(entry => {
-        entry[1].forEach(containerLogInfo => {
-          logger.error(`method name=${entry[0]}, userId=${containerLogInfo.userId}, container=${containerLogInfo.containerName}`, 'Error info with stack trace', containerLogInfo.error)
-          logger.error('Relevant container logs:')
-          console.error(containerLogInfo.stdout)
-        })
-      })
+      logger.info('Displaying container logs..')
+      await ContainerLogs.print()
     }
     process.exit(1)
   }

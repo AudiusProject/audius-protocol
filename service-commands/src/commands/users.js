@@ -1,11 +1,16 @@
-const { exec } = require('child_process')
-const moment = require('moment')
-
-const config = require('../../config/config')
 const fs = require('fs')
+const Command = require('./Command')
+const config = require('../../config/config')
 const ContainerLogs = require('../ContainerLogs')
+const {
+  DISCOVERY_NODE,
+  IDENTITY_SERVICE,
+  CONTENT_NODE_1,
+  CONTENT_NODE_2,
+  CONTENT_NODE_3
+} = ContainerLogs.services
 
-let User = {}
+const User = {}
 
 User.addUser = async (libsWrapper, metadata) => {
   const { error, phase, userId } = await libsWrapper.signUp({ metadata })
@@ -162,149 +167,47 @@ User.getClockValuesFromReplicaSet = async libsWrapper => {
 }
 
 /**
- * Depending on the method call, return the appropriate endpoint to be later destructured
- * for the container name.
+ * Depending on the method call, return the appropriate containers to log out.
  * @param {Object} libs the wrapper libs instance
- * @param {*} endpoint an optional endpoint override
+ * @param {string} methodName the name of the called method
  * @returns
  */
-const determineContainerEndpoint = (libs, { methodName }) => {
-  // TODO: make this uh smarter lol
-  let endpoints = []
+function determineContainers (libs, methodName) {
+  let containers = []
   switch (methodName) {
     case 'addUser':
-      endpoints = endpoints.concat(['http://cn1_creator-node_1', 'http://cn2_creator-node_1', 'http://cn2_creator-node_1'])
-      endpoints.push('http://audius-identity-service_identity-service_1')
+      containers = [CONTENT_NODE_1, CONTENT_NODE_2, CONTENT_NODE_3, IDENTITY_SERVICE]
       break
     case 'uploadProfileImagesAndAddUser':
     case 'uploadPhotoAndUpdateMetadata':
     case 'upgradeToCreator':
       if (libs.creatorNode && libs.creatorNode.creatorNodeEndpoint) {
-        endpoints.push(libs.creatorNode.creatorNodeEndpoint)
+        const { hostname: containerName } = new URL(libs.creatorNode.creatorNodeEndpoint)
+        containers.push(containerName)
       } else {
-        endpoints = endpoints.concat(['http://cn1_creator-node_1', 'http://cn2_creator-node_1', 'http://cn2_creator-node_1'])
+        containers = [CONTENT_NODE_1, CONTENT_NODE_2, CONTENT_NODE_3]
       }
       break
     case 'autoSelectCreatorNodes':
-      endpoints = ['http://cn1_creator-node_1', 'http://cn2_creator-node_1', 'http://cn2_creator-node_1']
+      containers = [CONTENT_NODE_1, CONTENT_NODE_2, CONTENT_NODE_3]
       break
     case 'getUser':
     case 'getUsers':
     case 'getUserAccount':
     case 'getLibsUserInfo':
-      endpoints.push('http://audius-disc-prov_web-server_1')
+      containers.push(DISCOVERY_NODE)
       break
-    default:
   }
 
-  return endpoints
+  return containers
 }
 
-const generateDockerLogCommand = (endpoint, { start, end }) => {
-  return new Promise((resolve, reject) => {
-    const containerName = (new URL(endpoint)).hostname
-    const proc = exec(
-      `docker logs ${containerName} --since ${start.format('YYYY-MM-DDTHH:mm:ss[.]SSSS')} --until ${end.format('YYYY-MM-DDTHH:mm:ss[.]SSSS')}`,
-      { maxBuffer: 1024 * 1024 }
-    )
-    let output = ''
-    let stdout = ''
-    let stderr = ''
-
-    // Stream the stdout
-    proc.stdout.on('data', data => {
-      stdout += data
-    })
-
-    // Stream the stderr
-    proc.stderr.on('data', data => {
-      stderr += data
-    })
-
-    proc.on('close', exitCode => {
-      if (stdout) {
-        output += 'stdout:\n' + stdout
-      }
-
-      if (stderr) {
-        output += '\nstderr:\n' + stderr
-      }
-      resolve({ containerName, stdout: output })
-    })
+const userMethodNames = Object.keys(User)
+userMethodNames.forEach(methodName => {
+  User[methodName] = Command.wrapFn({
+    methodName,
+    fn: User[methodName],
+    determineContainersFn: determineContainers
   })
-}
-
-/**
- * Retrieves the docker logs from the domain name stripped of the endpoint and records
- * the log into ContainerLogs.logs
- *
- * @param {string} endpoints endpoint of which the libs action was performed on
- * @param {number} timeOfCall ms of when the call was approximately made
- * @param {Object} metadata metadata giving more info on call context
- * @param {string} metadata.fn the libs function called
- * @param {string} metadata.userId the user on which the libs fn was called on
- * @param {string} metadata.error the in code error the libs fn threw
- */
-
-// todo: need to dedupe....
-const recordContainerLogs = async (endpoints, metadata) => {
-  try {
-    // Get domain name from endpoint -> domain name (if not localhost) = name of container
-    if (endpoints.length > 0) {
-      // ({ hostname: containerName } = new URL(endpoint))
-      const { start, end } = metadata
-      const responses = await Promise.all(
-        endpoints.map(endpoint => generateDockerLogCommand(endpoint, { start, end }))
-      )
-
-      responses.forEach(resp => {
-        ContainerLogs.append({
-          containerName: resp.containerName || '',
-          stdout: resp.stdout || '',
-          metadata
-        })
-      })
-    } else {
-      console.warn(`recordContainerLogs - No container provided. metadata=${JSON.stringify(metadata)}`)
-    }
-  } catch (e) {
-    if (e.stderr) {
-      console.error(`recordContainerLogs - Issue with logging container with endpoint ${endpoints}:`, e.stderr)
-    } else {
-      console.error('recordContainerLogs - err:', e)
-    }
-  }
-}
-
-const wrapFn = function (methodName, fn) {
-  return async function () {
-    let timeOfCall
-    let resp
-    try {
-      timeOfCall = moment()// .format('YYYY-MM-DDTHH:mm:ss[.]SSSS')
-      resp = await fn.apply(null, arguments)
-    } catch (e) {
-      const endTimeOfCall = moment()// .format('YYYY-MM-DDTHH:mm:ss[.]SSSS')
-      const libs = arguments[0] // should be libs
-      const metadata = {
-        methodName,
-        userId: libs.userId,
-        error: e,
-        start: timeOfCall,
-        end: endTimeOfCall
-      }
-      const endpoints = determineContainerEndpoint(libs, { methodName })
-      await recordContainerLogs(endpoints, metadata)
-      throw e
-    }
-
-    return resp
-  }
-}
-
-const UserCopy = { ...User }
-Object.keys(User).forEach(method => {
-  UserCopy[method] = wrapFn(method, User[method])
 })
-User = UserCopy
 module.exports = User
