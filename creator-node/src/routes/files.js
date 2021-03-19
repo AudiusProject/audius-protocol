@@ -497,12 +497,13 @@ module.exports = function (app) {
   app.post('/batch_cids_exist', handleResponse(async (req, res) => {
     const { cids } = req.body
 
-    if (cids.length > BATCH_CID_ROUTE_LIMIT) {
+    if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {
       return errorResponseBadRequest(`Too many CIDs passed in, limit is ${BATCH_CID_ROUTE_LIMIT}`)
     }
 
     const queryResults = (await models.File.findAll({
       attributes: ['multihash', 'storagePath'],
+      raw: true,
       where: {
         multihash: {
           [models.Sequelize.Op.in]: cids
@@ -510,13 +511,13 @@ module.exports = function (app) {
       }
     }))
 
-    const cidExists = {}
+    let cidExists = {}
 
     // Check if hash exists in disk in batches (to limit concurrent load)
     for (let i = 0; i < queryResults.length; i += CID_EXISTS_CONCURRENCY_LIMIT) {
       const batch = queryResults.slice(i, i + CID_EXISTS_CONCURRENCY_LIMIT)
       const exists = await Promise.all(batch.map(
-        ({ multihash, storagePath }) => fs.pathExists(storagePath)
+        (storagePath) => fs.pathExists(storagePath)
       ))
       batch.map(({ multihash }, idx) => {
         cidExists[multihash] = exists[idx]
