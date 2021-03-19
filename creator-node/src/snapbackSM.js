@@ -260,7 +260,6 @@ class SnapbackSM {
         userWallet,
         primaryEndpoint,
         secondaryEndpoint,
-        primaryClockValue,
         syncType: SyncType.Manual
       })
 
@@ -288,7 +287,6 @@ class SnapbackSM {
         userWallet,
         primaryEndpoint,
         secondaryEndpoint,
-        primaryClockValue,
         syncType: SyncType.Recurring
       })
 
@@ -305,15 +303,15 @@ class SnapbackSM {
    * @dev TODO no need to accept `primaryEndpoint` as param, it always equals `this.endpoint`
    */
   async _enqueueSync ({
+    userWallet,
     primaryEndpoint,
     secondaryEndpoint,
-    userWallet,
-    primaryClockValue,
     syncType
   }) {
     const queue = (syncType === SyncType.Manual) ? this.manualSyncQueue : this.recurringSyncQueue
 
     // Only add to queue if a waiting job for user does not already exist
+
 
     // Define axios params for sync request to secondary
     const syncRequestParameters = {
@@ -331,8 +329,7 @@ class SnapbackSM {
     // Add job to manualSyncQueue or recurringSyncQueue based on `syncType` param
     const jobProps = {
       syncRequestParameters,
-      startTime: Date.now(),
-      primaryClockValue
+      startTime: Date.now()
     }
 
     const jobInfo = await this.queue.add(jobProps)
@@ -466,8 +463,7 @@ class SnapbackSM {
               await this.enqueueRecurringSync({
                 userWallet,
                 secondaryEndpoint: secondary1,
-                primaryEndpoint: this.endpoint,
-                primaryClockValue
+                primaryEndpoint: this.endpoint
               })
 
               numSyncsIssued += 1
@@ -478,8 +474,7 @@ class SnapbackSM {
               await this.enqueueRecurringSync({
                 userWallet,
                 secondaryEndpoint: secondary2,
-                primaryEndpoint: this.endpoint,
-                primaryClockValue
+                primaryEndpoint: this.endpoint
               })
 
               numSyncsIssued += 1
@@ -505,7 +500,7 @@ class SnapbackSM {
    * Track an ongoing sync operation for a given secondaryUrl and user wallet
    *  - Will re-enqueue sync if it fails or is still behind after retries or max duration
    */
-  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl, syncType) {
+  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl) {
     const startTime = Date.now()
 
     // Define axios request object for secondary sync status request
@@ -556,9 +551,8 @@ class SnapbackSM {
     if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
       await this.enqueueRecurringSync({
         userWallet,
-        secondaryEndpoint: secondaryUrl,
         primaryEndpoint: this.endpoint,
-        primaryClockValue
+        secondaryEndpoint: secondaryUrl
       })
     }
   }
@@ -586,9 +580,11 @@ class SnapbackSM {
     }
 
     const syncWallet = syncRequestParameters.data.wallet[0]
-    const primaryClockValue = job.data.primaryClockValue
     const secondaryUrl = syncRequestParameters.baseURL
-    this.log(`------------------Process SYNC | User ${syncWallet} | Target: ${secondaryUrl} | type: ${syncType} | jobID: ${id} ------------------`)
+
+    const primaryClockValue = (await this.getUserPrimaryClockValues([syncWallet]))[userWallet]
+
+    this.log(`------------------Process SYNC | User ${syncWallet} | Secondary: ${secondaryUrl} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
 
     // Issue sync request to secondary
     await axios(syncRequestParameters)
