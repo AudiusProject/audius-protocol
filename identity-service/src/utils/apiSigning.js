@@ -1,11 +1,15 @@
 const Web3 = require('web3')
 const web3 = new Web3()
 
+// TODO: This is copied from the same code path in content node
+// and should be standardized across this file as well as the method in libs
+// Do not modify this file without touching the other!
+
 /**
  * Max age of signature in milliseconds
  * Set to 5 minutes
  */
-const MAX_SIGNATURE_AGE_MS = 300000
+const MAX_SIGNATURE_AGE_MS = 5 * 60 * 1000
 
 /**
  * Generate the timestamp and signature for api signing
@@ -23,42 +27,11 @@ const generateTimestampAndSignature = (data, privateKey) => {
   return { timestamp, signature: signedResponse.signature }
 }
 
-// Keeps track of a cached listen signature
-// Two field object: { timestamp, signature }
-let cachedListenSignature = null
-
 /**
- * Generates a signature for `data` if only the previous signature
- * generated is invalid (expired). Otherwise returns an existing signature.
- * @param {string} privateKey
- * @returns {object} {signature, timestamp} signature data
+ * Recover the public wallet address
+ * @param {object} data obj with structure {...data, timestamp}
+ * @param {string} signature signature generated with signed data
  */
-const generateListenTimestampAndSignature = (privateKey) => {
-  if (cachedListenSignature) {
-    const signatureTimestamp = cachedListenSignature.timestamp
-    if (signatureHasExpired(signatureTimestamp)) {
-      // If the signature has expired, remove it from the cache
-      cachedListenSignature = null
-    } else {
-      // If the signature has not expired (still valid), use it!
-      return cachedListenSignature
-    }
-  }
-  // We don't have a signature already
-  const { timestamp, signature } = generateTimestampAndSignature(
-    { data: 'listen' },
-    privateKey
-  )
-  cachedListenSignature = { timestamp, signature }
-  return { timestamp, signature }
-}
-
-/**
-   * Recover the public wallet address
-   * @param {*} data obj with structure {...data, timestamp}
-   * @param {*} signature signature generated with signed data
-   */
-// eslint-disable-next-line no-unused-vars
 const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(sortKeys(data))
   const hashedData = web3.utils.keccak256(structuredData)
@@ -87,7 +60,6 @@ const sortKeys = x => {
 
 module.exports = {
   generateTimestampAndSignature,
-  generateListenTimestampAndSignature,
   recoverWallet,
   sortKeys,
   MAX_SIGNATURE_AGE_MS,

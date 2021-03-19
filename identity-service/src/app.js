@@ -13,7 +13,12 @@ const NotificationProcessor = require('./notifications/index.js')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
-const { getRateLimiter, getRateLimiterMiddleware, isIPWhitelisted, getIP } = require('./rateLimiter.js')
+const {
+  getRateLimiter,
+  getRateLimiterMiddleware,
+  isIPWhitelisted,
+  getIP
+} = require('./rateLimiter.js')
 
 const DOMAIN = 'mail.audius.co'
 
@@ -127,7 +132,7 @@ class App {
         const { ip, senderIP } = getIP(req)
         const ipToCheck = senderIP || ip
         // Do not apply user-specific rate limits for any whitelisted IP
-        return isIPWhitelisted(ipToCheck)
+        return isIPWhitelisted(ipToCheck, req)
       },
       keyGenerator: function (req) {
         const trackId = req.params.id
@@ -184,7 +189,7 @@ class App {
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerIPPerDay'),
       skip: function (req) {
-        return isIPWhitelisted(req.ip)
+        return isIPWhitelisted(req.ip, req)
       }
     })
     const ethRelayWalletRateLimiter = getRateLimiter({
@@ -192,7 +197,7 @@ class App {
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerWalletPerDay'),
       skip: function (req) {
-        return isIPWhitelisted(req.ip)
+        return isIPWhitelisted(req.ip, req)
       },
       keyGenerator: function (req) {
         return req.body.senderAddress
