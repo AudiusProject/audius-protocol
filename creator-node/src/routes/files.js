@@ -39,6 +39,8 @@ const { promisify } = require('util')
 const fsStat = promisify(fs.stat)
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
+const BATCH_CID_ROUTE_LIMIT = 500
+const CID_EXISTS_CONCURRENCY_LIMIT = 10
 
 /**
  * Helper method to stream file from file system on creator node
@@ -484,8 +486,20 @@ module.exports = function (app) {
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
 
+  /**
+   * Serves information on existence of given cids
+   * @param req
+   * @param req.body
+   * @param {string} req.body.cids the cids to check existence for
+   * @dev This route can have a large number of CIDs as input, therefore we use a POST request.
+   * TODO: Remove support for directories
+   */
   app.post('/batch_cids_exist', handleResponse(async (req, res) => {
     const { cids } = req.body
+
+    if (cids.length > BATCH_CID_ROUTE_LIMIT) {
+      return errorResponseBadRequest(`Too many CIDs passed in, limit is ${BATCH_CID_ROUTE_LIMIT}`)
+    }
 
     const queryResults = (await models.File.findAll({
       attributes: ['multihash', 'storagePath'],
@@ -497,16 +511,20 @@ module.exports = function (app) {
     }))
 
     const cidExists = {}
-    queryResults.forEach(({ multihash, storagePath }) => {
-      cidExists[multihash] = fs.existsSync(storagePath)
-    })
 
-    return successResponse({
-      cids: cids.map(cid => ({
-        cid,
-        exists: cidExists[cid] || false
+    // Check if hash exists in disk in batches (to limit concurrent load)
+    for (let i = 0; i < queryResults.length; i += CID_EXISTS_CONCURRENCY_LIMIT) {
+      const batch = queryResults.slice(i, i + CID_EXISTS_CONCURRENCY_LIMIT)
+      await Promise.all(batch.map(async ({ multihash, storagePath }) => {
+        cidExists[multihash] = await fs.pathExists(storagePath)
       }))
-    })
+    }
+
+    const cidExistanceMap = {
+      cids: cids.map(cid => ({ cid, exists: cidExists[cid] || false }))
+    }
+
+    return successResponse(cidExistanceMap)
   }))
 
   /**
