@@ -9,7 +9,7 @@ const web3 = new Web3()
  * Max age of signature in milliseconds
  * Set to 5 minutes
  */
-const MAX_SIGNATURE_AGE_MS = 300000
+const MAX_SIGNATURE_AGE_MS = 5 * 60 * 1000
 
 /**
  * Generate the timestamp and signature for api signing
