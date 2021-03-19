@@ -4,7 +4,7 @@ const https = require("https")
 
 const axios = require("axios")
 const retry = require("async-retry")
-const { map } = require("lodash")
+const { flatten, chunk } = require("lodash")
 
 axios.defaults.timeout = 5000
 axios.defaults.httpAgent = new http.Agent({ timeout: 5000 })
@@ -46,8 +46,8 @@ async function getTrackCids(discoveryProvider, batchSize) {
 
   const totalTracks = (
     await makeRequest({
-      method: 'get',
-      url: '/latest/track',
+      method: "get",
+      url: "/latest/track",
       baseURL: discoveryProvider,
     })
   ).data.data
@@ -108,14 +108,21 @@ async function getClockValues(creatorNode, walletPublicKeys) {
  */
 async function getCidsExist(creatorNode, cids) {
   try {
-    return (
-      await makeRequest({
-        method: "post",
-        url: "/batch_cids_exist",
-        baseURL: creatorNode,
-        data: { cids },
-      })
-    ).data.cids
+    return flatten(
+      await Promise.all(
+        chunk(cids).map(
+          async (batch) =>
+            (
+              await makeRequest({
+                method: "post",
+                url: "/batch_cids_exist",
+                baseURL: creatorNode,
+                data: { cids: batch },
+              })
+            ).data.cids
+        )
+      )
+    )
   } catch (e) {
     console.log(`Got ${e} when checking if cids exist in ${creatorNode}`)
     return cids.map((cid) => ({ cid, exists: false }))
@@ -133,8 +140,8 @@ async function run() {
 
   const totalUsers = (
     await makeRequest({
-      method: 'get',
-      url: '/latest/user',
+      method: "get",
+      url: "/latest/user",
       baseURL: discoveryProvider,
     })
   ).data.data
