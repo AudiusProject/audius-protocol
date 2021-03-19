@@ -202,6 +202,7 @@ function determineContainers (libs, methodName) {
   return containers
 }
 
+// Wrapping the existing User APIs around the container logging wrapper
 const userMethodNames = Object.keys(User)
 userMethodNames.forEach(methodName => {
   User[methodName] = Command.wrapFn({

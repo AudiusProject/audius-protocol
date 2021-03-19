@@ -2,6 +2,25 @@ const { exec } = require('child_process')
 const NUMBER_OF_CONTENT_NODES = 10
 
 class ContainerLogs {
+  /**
+   * Append a log entry with the structure:
+   * {
+   *    containerName: metadata
+   * }
+   *
+   * When print() is called, will get the docker logs of the container from the containerName.
+   * This method is used for deduping docker logs calls by keeping track of the start and end times.
+   * @param {Object} param
+   * @param {string} param.containerName name of the container to log
+   * @param {Object} param.metadata follows the structure
+   * {
+   *     methodName: <string; name of the method that errored>,
+   *     userId: <number; impacted userId of the method that errored>,
+   *     error: <Object; the error message thrown>,
+   *     start: <momentjs Object; time errored method was called>,
+   *     end: <momentjs Object; time errored method was caught in try/catch>
+   *  }
+   */
   static append ({ containerName, metadata }) {
     const { start, end, error, userId, methodName } = metadata
     const errorContext = {
@@ -31,6 +50,14 @@ class ContainerLogs {
     }
   }
 
+  /**
+   * Logs out the container logs and returns the output
+   * @param {Object} param
+   * @param {string} param.containerName name of the container to log
+   * @param {Moment} param.start start time of docker logs to log
+   * @param {Moment} param.end end time of docker logs to log
+   * @returns the output from docker logs command
+   */
   static getLogs ({ containerName, start, end }) {
     return new Promise((resolve, reject) => {
       const proc = exec(
@@ -64,6 +91,9 @@ class ContainerLogs {
     })
   }
 
+  /**
+   * Prints the docker log command in a pretty way
+   */
   static async print () {
     const entries = Object.entries(this.logs)
     for (const entry of entries) {
