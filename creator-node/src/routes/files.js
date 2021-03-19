@@ -515,9 +515,12 @@ module.exports = function (app) {
     // Check if hash exists in disk in batches (to limit concurrent load)
     for (let i = 0; i < queryResults.length; i += CID_EXISTS_CONCURRENCY_LIMIT) {
       const batch = queryResults.slice(i, i + CID_EXISTS_CONCURRENCY_LIMIT)
-      await Promise.all(batch.map(async ({ multihash, storagePath }) => {
-        cidExists[multihash] = await fs.pathExists(storagePath)
-      }))
+      const exists = await Promise.all(batch.map(
+        ({ multihash, storagePath }) => fs.pathExists(storagePath)
+      ))
+      batch.map(({ multihash }, idx) => {
+        cidExists[multihash] = exists[idx]
+      })
     }
 
     const cidExistanceMap = {
