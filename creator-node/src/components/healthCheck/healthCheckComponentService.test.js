@@ -55,24 +55,25 @@ describe('Test Health Check', function () {
   it('Should pass', async function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
-    let expectedEndpoint = config.get('creatorNodeEndpoint')
-    let expectedSpID = config.get('spID')
-    let expectedSpOwnerWallet = config.get('spOwnerWallet')
+
     const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
+
     assert.deepStrictEqual(res, {
       ...version,
       service: 'content-node',
       healthy: true,
       git: undefined,
       selectedDiscoveryProvider: TEST_ENDPOINT,
-      spID: expectedSpID,
-      spOwnerWallet: expectedSpOwnerWallet,
-      creatorNodeEndpoint: expectedEndpoint
+      spID: config.get('spID'),
+      spOwnerWallet: config.get('spOwnerWallet'),
+      creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
+      isRegisteredOnURSM: false
     })
   })
 
   it('Should handle no libs', async function () {
     const res = await healthCheck({}, mockLogger, sequelizeMock)
+
     assert.deepStrictEqual(res, {
       ...version,
       service: 'content-node',
@@ -81,7 +82,8 @@ describe('Test Health Check', function () {
       selectedDiscoveryProvider: 'none',
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
-      creatorNodeEndpoint: config.get('creatorNodeEndpoint')
+      creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
+      isRegisteredOnURSM: false
     })
   })
 })
@@ -94,6 +96,7 @@ describe('Test Health Check Verbose', function () {
     config.set('maxStorageUsedPercent', 95)
 
     const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock)
+
     assert.deepStrictEqual(res, {
       ...version,
       service: 'content-node',
@@ -103,6 +106,8 @@ describe('Test Health Check Verbose', function () {
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
+      isRegisteredOnURSM: false,
+
       country: 'US',
       latitude: '37.7749',
       longitude: '-122.4194',

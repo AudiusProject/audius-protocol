@@ -750,11 +750,13 @@ class UserBalance(Base):
 
     # balance in Wei
     balance = Column(String, nullable=False)
+    associated_wallets_balance = Column(String, nullable=False)
 
     def __repr__(self):
         return f"<UserBalance(\
 user_id={self.user_id},\
-balance={self.balance}>"
+balance={self.balance},\
+associated_wallets_balance={self.associated_wallets_balance}>"
 
 class AssociatedWallet(Base):
     __tablename__ = "associated_wallets"

@@ -1,30 +1,32 @@
-const { priorityMap } = require('../../snapbackSM')
-
-const getJobInfo = job => ({
-  type: job.name,
-  priority: priorityMap[job.opts.priority],
+const getJobInfo = (job) => ({
   id: job.id,
-  wallet: job.data.syncRequestParameters.data.wallet[0],
-  secondary: job.data.syncRequestParameters.baseURL
+  secondary: job.data.syncRequestParameters.baseURL,
+  wallet: job.data.syncRequestParameters.data.wallet[0]
 })
 
-const makeResponse = (pendingJobs, activeJobs) => ({
-  pending: pendingJobs.map(getJobInfo),
-  active: activeJobs.map(getJobInfo),
-  pendingCount: pendingJobs.length
+const makeResponse = (manualWaitingJobs, manualActiveJobs, recurringWaitingJobs, recurringActiveJobs) => ({
+  manualWaiting: manualWaitingJobs.map(getJobInfo),
+  manualActive: manualActiveJobs.map(getJobInfo),
+  recurringWaiting: recurringWaitingJobs.map(getJobInfo),
+  recurringActive: recurringActiveJobs.map(getJobInfo),
+  manualWaitingCount: manualWaitingJobs.length,
+  recurringWaitingCount: recurringWaitingJobs.length
 })
 
 /**
  * Returns information about sync queue.
  * Response: {
- *  pending: Array<{ type, priority, id }>,
- *  active: Array<{ type, priority, id }>,
- *  pendingCount: number
+ *  manualWaiting: Array<{ id, secondary, wallet }>,
+ *  manualActive: Array<{ id, secondary, wallet }>,
+ *  recurringWaiting: Array<{ id, secondary, wallet }>,
+ *  recurringActive: Array<{ id, secondary, wallet }>,
+ *  manualWaitingCount: number,
+ *  recurringWaitingCount: number
  * }
  */
 const syncHealthCheck = async ({ snapbackSM }) => {
   const jobs = await snapbackSM.getSyncQueueJobs()
-  return makeResponse(jobs.pending, jobs.active)
+  return makeResponse(jobs.manualWaiting, jobs.manualActive, jobs.recurringWaiting, jobs.recurringActive)
 }
 
 module.exports = { syncHealthCheck }

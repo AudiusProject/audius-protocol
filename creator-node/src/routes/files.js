@@ -69,14 +69,17 @@ const streamFromFileSystem = async (req, res, path) => {
 
     // TODO - route doesn't support multipart ranges.
     if (stat && range) {
-      const { start, end } = range
+      let { start, end } = range
       if (end >= stat.size) {
         // Set "Requested Range Not Satisfiable" header and exit
         res.status(416)
         return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
       }
 
-      fileStream = fs.createReadStream(path, { start, end: end || (stat.size - 1) })
+      // set end in case end is undefined or null
+      end = end || (stat.size - 1)
+
+      fileStream = fs.createReadStream(path, { start, end })
 
       // Add a content range header to the response
       res.set('Content-Range', formatContentRange(start, end, stat.size))
@@ -185,15 +188,18 @@ const getCID = async (req, res) => {
       const range = getRequestRange(req)
 
       if (req.params.streamable && range) {
-        const { start, end } = range
+        let { start, end } = range
         if (end >= stat.size) {
           // Set "Requested Range Not Satisfiable" header and exit
           res.status(416)
           return sendResponse(req, res, errorResponseRangeNotSatisfiable('Range not satisfiable'))
         }
 
+        // set end in case end is undefined or null
+        end = end || (stat.size - 1)
+
         // Set length to be end - start + 1 so it matches behavior of fs.createReadStream
-        const length = end ? end - start + 1 : stat.size - start
+        const length = end - start + 1
         stream = req.app.get('ipfsAPI').catReadableStream(
           CID, { offset: start, length }
         )

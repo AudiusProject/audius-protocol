@@ -42,6 +42,7 @@ track_blocknumber = 'track_blocknumber'
 windowed_repost_count = 'windowed_repost_count'
 windowed_save_count = 'windowed_save_count'
 balance = 'balance'
+associated_wallets_balance = 'associated_wallets_balance'
 
 # current user specific
 # boolean - does current user follow given user

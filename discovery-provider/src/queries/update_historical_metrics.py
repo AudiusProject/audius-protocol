@@ -14,11 +14,11 @@ def update_historical_daily_route_metrics(db, metrics):
                 .first()
             )
             if day_unique_record:
-                day_unique_record.count = values['unique']
+                day_unique_record.count = values['unique_count']
             else:
                 day_unique_record = AggregateDailyUniqueUsersMetrics(
                     timestamp=day,
-                    count=values['unique']
+                    count=values['unique_count']
                 )
             session.add(day_unique_record)
 
@@ -28,11 +28,11 @@ def update_historical_daily_route_metrics(db, metrics):
                 .first()
             )
             if day_total_record:
-                day_total_record.count = values['total']
+                day_total_record.count = values['total_count']
             else:
                 day_total_record = AggregateDailyTotalUsersMetrics(
                     timestamp=day,
-                    count=values['total']
+                    count=values['total_count']
                 )
             session.add(day_total_record)
 
@@ -45,11 +45,11 @@ def update_historical_monthly_route_metrics(db, metrics):
                 .first()
             )
             if month_unique_record:
-                month_unique_record.count = values['unique']
+                month_unique_record.count = values['unique_count']
             else:
                 month_unique_record = AggregateMonthlyUniqueUsersMetrics(
                     timestamp=month,
-                    count=values['unique']
+                    count=values['unique_count']
                 )
             session.add(month_unique_record)
 
@@ -59,11 +59,11 @@ def update_historical_monthly_route_metrics(db, metrics):
                 .first()
             )
             if month_total_record:
-                month_total_record.count = values['total']
+                month_total_record.count = values['total_count']
             else:
                 month_total_record = AggregateMonthlyTotalUsersMetrics(
                     timestamp=month,
-                    count=values['total']
+                    count=values['total_count']
                 )
             session.add(month_total_record)
 

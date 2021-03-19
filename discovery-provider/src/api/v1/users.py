@@ -667,7 +667,7 @@ class AssociatedWalletByUserId(Resource):
         }
     )
     @ns.marshal_with(user_associated_wallet_response)
-    @cache(ttl_sec=1)
+    @cache(ttl_sec=10)
     def get(self):
         args = user_associated_wallet_route_parser.parse_args()
         user_id = get_associated_user_id({ "wallet" :args.get('associated_wallet') })
