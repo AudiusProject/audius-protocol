@@ -29,7 +29,7 @@ const {
   triggerSecondarySyncs,
   ensureStorageMiddleware
 } = require('../middlewares')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork, timeout } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
@@ -40,7 +40,7 @@ const fsStat = promisify(fs.stat)
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
-const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 10
+const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
 
 /**
  * Helper method to stream file from file system on creator node
@@ -521,6 +521,8 @@ module.exports = function (app) {
       batch.map(({ multihash }, idx) => {
         cidExists[multihash] = exists[idx]
       })
+
+      await timeout(250)
     }
 
     const cidExistanceMap = {
