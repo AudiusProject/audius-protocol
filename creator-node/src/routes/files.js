@@ -522,7 +522,7 @@ module.exports = function (app) {
     for (let i = 0; i < queryResults.length; i += BATCH_CID_EXISTS_CONCURRENCY_LIMIT) {
       const batch = queryResults.slice(i, i + BATCH_CID_EXISTS_CONCURRENCY_LIMIT)
       const exists = await Promise.all(batch.map(
-        (storagePath) => fs.pathExists(storagePath)
+        ({ storagePath }) => fs.pathExists(storagePath)
       ))
       batch.map(({ multihash }, idx) => {
         cidExists[multihash] = exists[idx]
