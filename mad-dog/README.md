@@ -14,9 +14,20 @@
 **Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
 
 ### Running Tests
-`npm run start test` or `npm run start test-ci` (depending on the test suite you want to run)
+<!-- `npm run start test` or `npm run start test-ci` (depending on the test suite you want to run)
 Add the cli argument `verbose` to print out the docker logs of the time of any failed tests.
-i.e. `npm run start test verbose`
+i.e. `npm run start test <offset> verbose` -->
+**Run all the tests in test suite**: 
+- `npm run start <test name>`
+
+**Run all the tests in test suite with specified account offset**: 
+- `npm run start <test name> <0-99>`
+
+**Run all the tests in test suite in verbose mode (prints out container logs if tests fail)**: 
+- `npm run start <test name> verbose` 
+- `npm run start <test name> <0-99> verbose` 
+
+
 
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
