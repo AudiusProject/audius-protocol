@@ -27,14 +27,12 @@ i.e. `npm run start test <offset> verbose` -->
 - `npm run start <test name> verbose` 
 - `npm run start <test name> <0-99> verbose` 
 
-
-
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
 
 ## Code Structure
 - The single test in mad-dog is based on the class `EmitterBasedTest`. This class
-sets up a test that uses emitters to fire off events representing requests to our services, and then fires events for handling those responess. The test implementer is responsible for fleshing out listeners for emitted events. **To see an example of this, look at `tests/test_1.js`**
+sets up a test that uses emitters to fire off events representing requests to our services, and then fires events for handling those responess. The test implementer is responsible for fleshing out listeners for emitted events. **To see an example of this, look at `tests/test_integration.js`**
 
 - If you want to run tests without the emitter system, look at `tests/test_ipldBlacklist.js`
 

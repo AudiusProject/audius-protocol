@@ -1,3 +1,4 @@
+const moment = require('moment')
 const { exec } = require('child_process')
 const NUMBER_OF_CONTENT_NODES = 3
 
@@ -16,14 +17,16 @@ class ContainerLogs {
    */
   static append (errorInfo) {
     const { start, end, error } = errorInfo
-    this.logs.start = start
-    this.logs.end = end
 
-    if (!this.logs.errors) {
-      this.logs.errors = [error]
-    } else {
-      this.logs.errors.push(error)
+    if (this.logs.start.isAfter(start)) {
+      this.logs.start = start
     }
+
+    if (this.logs.end.isBefore(end)) {
+      this.logs.end = end
+    }
+
+    this.logs.errors.push(error)
   }
 
   /**
@@ -92,7 +95,12 @@ class ContainerLogs {
   }
 }
 
-ContainerLogs.logs = {}
+ContainerLogs.logs = {
+  // Initial values
+  start: moment().add(10, 'days'),
+  end: moment().subtract(10, 'days'),
+  errors: []
+}
 
 // Services and their respective container names
 ContainerLogs.services = (() => {
