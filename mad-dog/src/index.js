@@ -177,7 +177,7 @@ async function main () {
   }
 
   const cmd = process.argv[3]
-  const verbose = true // process.argv[4]
+  const verbose = process.argv[4].toLowerCase() === 'verbose'
 
   try {
     switch (cmd) {

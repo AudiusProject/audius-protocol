@@ -1,59 +1,34 @@
 const { exec } = require('child_process')
-const NUMBER_OF_CONTENT_NODES = 10
+const NUMBER_OF_CONTENT_NODES = 3
 
 class ContainerLogs {
   /**
    * Append a log entry with the structure:
    * {
-   *    containerName: metadata
+   *    containerName: errorInfo
    * }
-   *
-   * When print() is called, will get the docker logs of the container from the containerName.
-   * This method is used for deduping docker logs calls by keeping track of the start and end times.
-   * @param {Object} param
-   * @param {string} param.containerName name of the container to log
-   * @param {Object} param.metadata follows the structure
+   * @param {Object} errorInfo follows the structure
    * {
-   *     methodName: <string; name of the method that errored>,
-   *     userId: <number; impacted userId of the method that errored>,
    *     error: <Object; the error message thrown>,
    *     start: <momentjs Object; time errored method was called>,
    *     end: <momentjs Object; time errored method was caught in try/catch>
    *  }
    */
-  static append ({ containerName, metadata }) {
-    const { start, end, error, userId, methodName } = metadata
-    const errorContext = {
-      error,
-      userId,
-      methodName
-    }
+  static append (errorInfo) {
+    const { start, end, error } = errorInfo
+    this.logs.start = start
+    this.logs.end = end
 
-    if (!this.logs[containerName]) {
-      this.logs[containerName] = {
-        start,
-        end,
-        errorContexts: [errorContext]
-      }
+    if (!this.logs.errors) {
+      this.logs.errors = [error]
     } else {
-      const entry = this.logs[containerName]
-
-      if (start.isBefore(entry.start)) {
-        entry.start = start
-      }
-
-      if (end.isAfter(entry.end)) {
-        entry.end = end
-      }
-
-      entry.errorContexts.push(errorContext)
+      this.logs.errors.push(error)
     }
   }
 
   /**
    * Logs out the container logs and returns the output
    * @param {Object} param
-   * @param {string} param.containerName name of the container to log
    * @param {Moment} param.start start time of docker logs to log
    * @param {Moment} param.end end time of docker logs to log
    * @returns the output from docker logs command
@@ -90,27 +65,29 @@ class ContainerLogs {
   }
 
   /**
-   * Prints the docker log command in a pretty way
+   * Prints the docker logs in a pretty way
    */
   static async print () {
-    const entries = Object.entries(this.logs)
-    for (const entry of entries) {
-      console.log(`Container Name: ${entry[0]}`)
-      console.log('Error Contexts:')
-      entry[1].errorContexts.forEach(ec => {
-        const { error, userId, methodName } = ec
-        console.log(`\tuserId=${userId}, method: ${methodName}`)
-        console.log('\terror:', error)
-      })
+    // Print general error messages from tests
+    console.log('Error Contexts:')
+    this.logs.errors.forEach((e, i) => {
+      console.log(`\t(${i}) error: `, e)
+    })
 
-      const { start, end } = entry[1]
+    // Print container logs
+    const services = Object.values(ContainerLogs.services)
+
+    const { start, end } = this.logs
+    console.log(`Displaying logs from ${start} to ${end}`)
+    for (const service of services) {
+      console.log(`------------------- ${service} logs start -------------------`)
       const containerLogs = await this.getLogs({
-        containerName: entry[0],
+        containerName: service,
         start,
         end
       })
-      console.log(`Container Logs: ${containerLogs}`)
-      console.log('-------------------------------------')
+      console.log(containerLogs)
+      console.log(`------------------- ${service} logs end -------------------`)
     }
   }
 }
@@ -121,7 +98,7 @@ ContainerLogs.logs = {}
 ContainerLogs.services = (() => {
   const services = {
     DISCOVERY_NODE: 'audius-disc-prov_web-server_1',
-    IDENTITY_SERVICE: 'audius-identity-service_identity-service_1',
+    IDENTITY_SERVICE: 'compose_identity-service_1',
     USER_METADATA_NODE: 'cn-um_creator-node_1'
   }
 

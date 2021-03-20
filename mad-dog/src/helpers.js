@@ -1,3 +1,4 @@
+const moment = require('moment')
 const { _ } = require('lodash')
 const fs = require('fs-extra')
 const path = require('path')
@@ -15,6 +16,7 @@ const {
   getLibsUserInfo,
   getClockValuesFromReplicaSet
 } = ServiceCommands
+const ContainerLogs = require('@audius/service-commands/src/ContainerLogs')
 
 const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Gipsy.mp3',
@@ -345,12 +347,47 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
  * an array of libs wrappers in parallel.
  */
 const makeExecuteAll = libsArray => async operation => {
-  return Promise.all(libsArray.map(operation))
+  let responses
+  let timeOfCall
+  try {
+    timeOfCall = moment()
+    responses = await Promise.all(libsArray.map(operation))
+  } catch (e) {
+    const endTimeOfCall = moment()
+    const errorInfo = {
+      error: e,
+      start: timeOfCall,
+      end: endTimeOfCall
+    }
+
+    ContainerLogs.append(errorInfo)
+    throw e
+  }
+
+  return responses
 }
 
 const makeExecuteOne = libsArray => async (index, operation) => {
   if (index > libsArray.length) throw new Error(`Cannot execute operation - index ${index} out of bounds`)
-  return operation(libsArray[index])
+
+  let response
+  let timeOfCall
+  try {
+    timeOfCall = moment()
+    response = await operation(libsArray[index])
+  } catch (e) {
+    const endTimeOfCall = moment()
+    const errorInfo = {
+      error: e,
+      start: timeOfCall,
+      end: endTimeOfCall
+    }
+
+    ContainerLogs.append(errorInfo)
+    throw e
+  }
+
+  return response
 }
 
 module.exports = {

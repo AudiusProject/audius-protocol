@@ -1,15 +1,5 @@
 const fs = require('fs')
-const Command = require('./Command')
 const config = require('../../config/config')
-const ContainerLogs = require('../ContainerLogs')
-const {
-  DISCOVERY_NODE,
-  IDENTITY_SERVICE,
-  CONTENT_NODE_1,
-  CONTENT_NODE_2,
-  CONTENT_NODE_3
-} = ContainerLogs.services
-
 const User = {}
 
 User.addUser = async (libsWrapper, metadata) => {
@@ -166,49 +156,4 @@ User.getClockValuesFromReplicaSet = async libsWrapper => {
   return libsWrapper.getClockValuesFromReplicaSet()
 }
 
-/**
- * Depending on the method call, return the appropriate containers to log out.
- * @param {Object} libs the wrapper libs instance
- * @param {string} methodName the name of the called method
- * @returns
- */
-function determineContainers (libs, methodName) {
-  let containers = []
-  switch (methodName) {
-    case 'addUser':
-      containers = [CONTENT_NODE_1, CONTENT_NODE_2, CONTENT_NODE_3, IDENTITY_SERVICE]
-      break
-    case 'uploadProfileImagesAndAddUser':
-    case 'uploadPhotoAndUpdateMetadata':
-    case 'upgradeToCreator':
-      if (libs.creatorNode && libs.creatorNode.creatorNodeEndpoint) {
-        const { hostname: containerName } = new URL(libs.creatorNode.creatorNodeEndpoint)
-        containers.push(containerName)
-      } else {
-        containers = [CONTENT_NODE_1, CONTENT_NODE_2, CONTENT_NODE_3]
-      }
-      break
-    case 'autoSelectCreatorNodes':
-      containers = [CONTENT_NODE_1, CONTENT_NODE_2, CONTENT_NODE_3]
-      break
-    case 'getUser':
-    case 'getUsers':
-    case 'getUserAccount':
-    case 'getLibsUserInfo':
-      containers.push(DISCOVERY_NODE)
-      break
-  }
-
-  return containers
-}
-
-// Wrapping the existing User APIs around the container logging wrapper
-const userMethodNames = Object.keys(User)
-userMethodNames.forEach(methodName => {
-  User[methodName] = Command.wrapFn({
-    methodName,
-    fn: User[methodName],
-    determineContainersFn: determineContainers
-  })
-})
 module.exports = User

@@ -15,6 +15,8 @@
 
 ### Running Tests
 `npm run start test` or `npm run start test-ci` (depending on the test suite you want to run)
+Add the cli argument `verbose` to print out the docker logs of the time of any failed tests.
+i.e. `npm run start test verbose`
 
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
