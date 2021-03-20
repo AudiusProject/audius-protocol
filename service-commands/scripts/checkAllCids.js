@@ -10,6 +10,10 @@ axios.defaults.timeout = 5000
 axios.defaults.httpAgent = new http.Agent({ timeout: 5000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 5000 })
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function makeRequest(request) {
   return retry(() => axios(request), { retries: 3 })
 }
@@ -72,6 +76,8 @@ async function getTrackCids(discoveryProvider, batchSize) {
     })
 
     console.timeEnd(`Fetching tracks (${offset} - ${offset + batchSize})`)
+
+    break
   }
 
   return trackCids
@@ -106,23 +112,27 @@ async function getClockValues(creatorNode, walletPublicKeys) {
  * @param {Array<string>} cids
  * @returns {Array<Object>} cidsExist
  */
-async function getCidsExist(creatorNode, cids) {
+async function getCidsExist(creatorNode, cids, batchSize = 500) {
   try {
-    return flatten(
-      await Promise.all(
-        chunk(cids).map(
-          async (batch) =>
-            (
-              await makeRequest({
-                method: "post",
-                url: "/batch_cids_exist",
-                baseURL: creatorNode,
-                data: { cids: batch },
-              })
-            ).data.cids
-        )
+    const cidsExist = []
+
+    for (let offset = 0; offset < cids.length; offset += batchSize) {
+      const batch = cids.slice(offset, offset + batchSize)
+      cidsExist.push(
+        ...(
+          await makeRequest({
+            method: "post",
+            url: "/batch_cids_exist",
+            baseURL: creatorNode,
+            data: { cids: batch },
+          })
+        ).data.cids
       )
-    )
+
+      await sleep(5000);
+    }
+
+    return cidsExist
   } catch (e) {
     console.log(`Got ${e} when checking if cids exist in ${creatorNode}`)
     return cids.map((cid) => ({ cid, exists: false }))
@@ -130,8 +140,8 @@ async function getCidsExist(creatorNode, cids) {
 }
 
 async function run() {
-  const discoveryProvider = "https://discoveryprovider.audius.co/"
-  // const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
+  // const discoveryProvider = "https://discoveryprovider.audius.co/"
+  const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
   // const discoveryProvider = "http://localhost:5000"
   const trackBatchSize = 500
   const userBatchSize = 500
