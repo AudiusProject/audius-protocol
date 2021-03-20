@@ -11,7 +11,7 @@ orbs:
 jobs:
   test-mad-dog-e2e:
     machine:
-      image: ubuntu-1604:201903-01    # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
+      image: ubuntu-1604:201903-01 # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
     steps:
       - add_ssh_keys
       - checkout
@@ -20,18 +20,18 @@ jobs:
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
-      
+
       # Download and cache dependencies
 
       # libs
       - restore_cache:
           name: Restore libs cache
           keys:
-          - v1-libs-{{ checksum "libs/package-lock.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-libs-
+            - v1-libs-{{ checksum "libs/package-lock.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-libs-
       - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
-      - run: 
+      - run:
           name: libs repo init
           command: |
             cd libs
@@ -44,10 +44,10 @@ jobs:
 
       # data contracts
       - restore_cache:
-          name: Restore contracts cache 
+          name: Restore contracts cache
           keys:
-          - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
-          - v1-data-contracts- 
+            - v1-data-contracts-{{ checksum "contracts/package-lock.json" }}
+            - v1-data-contracts-
       - run:
           name: contract repo init
           command: |
@@ -66,8 +66,8 @@ jobs:
       - restore_cache:
           name: Restore eth-contracts cache
           keys:
-          - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
-          - v1-eth-contracts-
+            - v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
+            - v1-eth-contracts-
       - run:
           name: eth-contracts repo init
           command: |
@@ -86,8 +86,8 @@ jobs:
       - restore_cache:
           name: Restore content-node cache
           keys:
-          - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
-          - v1-content-node- 
+            - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
+            - v1-content-node-
       - run:
           name: content-node repo init
           command: |
@@ -105,8 +105,8 @@ jobs:
       - restore_cache:
           name: Restore identity-service cache
           keys:
-          - v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
-          - v1-identity-service-
+            - v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
+            - v1-identity-service-
       - run:
           name: identity-service repo init
           command: |
@@ -116,14 +116,14 @@ jobs:
           name: Save identity-service cache
           paths:
             - identity-service/node_modules
-          key: v1-identity-service-{{ checksum "identity-service/package-lock.json" }} 
+          key: v1-identity-service-{{ checksum "identity-service/package-lock.json" }}
 
       # mad-dog
       - restore_cache:
           name: Restore mad-dog cache
           keys:
-          - v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
-          - v1-mad-dog-
+            - v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
+            - v1-mad-dog-
       - run:
           name: mad-dog repo init
           command: |
@@ -133,14 +133,14 @@ jobs:
           name: Save mad-dog cache
           paths:
             - mad-dog/node_modules
-          key: v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }} 
+          key: v1-mad-dog-{{ checksum "mad-dog/package-lock.json" }}
 
       # service commands
       - restore_cache:
           name: Restore service-commands cache
           keys:
-          - v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
-          - v1-service-commands-
+            - v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
+            - v1-service-commands-
       - run:
           name: service-commands repo init
           command: |
@@ -152,7 +152,7 @@ jobs:
           name: Save service-commands cache
           paths:
             - service-commands/node_modules
-          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }} 
+          key: v1-service-commands-{{ checksum "service-commands/package-lock.json" }}
 
       - run:
           name: execute
@@ -190,11 +190,11 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-a", "50"]
+        command: ['-l', '8000000', '-a', '50']
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000", "-p", "8546", "-a", "50"]
+        command: ['-l', '8000000', '-p', '8546', '-a', '50']
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -215,9 +215,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "libs/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "libs/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
       - run: rm -rf /home/circleci/project/libs/node_modules/websocket/.git
       - run: |
           cd libs
@@ -229,8 +229,8 @@ jobs:
 
       - restore_cache:
           keys:
-          - data-contracts-{{ checksum "contracts/package.json" }}
-          - data-contracts-
+            - data-contracts-{{ checksum "contracts/package.json" }}
+            - data-contracts-
       - run:
           name: contract repo init
           command: |
@@ -243,8 +243,8 @@ jobs:
 
       - restore_cache:
           keys:
-          - eth-contracts-{{ checksum "eth-contracts/package.json" }}
-          - eth-contracts-
+            - eth-contracts-{{ checksum "eth-contracts/package.json" }}
+            - eth-contracts-
       - run:
           name: eth-contracts repo init
           command: |
@@ -267,7 +267,7 @@ jobs:
     docker:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8555", "-a", "100", "-l", "8000000"]
+        command: ['--port=8555', '-a', '100', '-l', '8000000']
     parameters:
       force:
         type: boolean
@@ -281,9 +281,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "contracts/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "contracts/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
       - run:
           name: installation
@@ -308,7 +308,7 @@ jobs:
     docker:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8546", "-a", "50", "-l", "8000000"]
+        command: ['--port=8546', '-a', '50', '-l', '8000000']
     parameters:
       force:
         type: boolean
@@ -322,9 +322,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ checksum "eth-contracts/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
       - run:
           name: installation
           command: |
@@ -455,7 +455,7 @@ jobs:
         # Bring up ganache
       - image: redis:3.0-alpine
       - image: trufflesuite/ganache-cli:latest
-        command: ["--port=8555", "-a", "100", "-l", "8000000"]
+        command: ['--port=8555', '-a', '100', '-l', '8000000']
     parameters:
       force:
         type: boolean
@@ -489,9 +489,9 @@ jobs:
             sh scripts/lint.sh
       - restore_cache:
           keys:
-          - disc-prov-contracts-{{ checksum "contracts/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - disc-prov-contracts-
+            - disc-prov-contracts-{{ checksum "contracts/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - disc-prov-contracts-
       - run:
           name: contract repo init
           command: |
@@ -520,7 +520,7 @@ jobs:
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
-        command: ["-l", "8000000"]
+        command: ['-l', '8000000']
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -539,8 +539,8 @@ jobs:
       # restores data-contracts
       - restore_cache:
           keys:
-          - data-contracts-{{ checksum "contracts/package.json" }}
-          - data-contracts-
+            - data-contracts-{{ checksum "contracts/package.json" }}
+            - data-contracts-
       - run:
           name: contract repo init
           command: |
@@ -549,9 +549,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - identity-service-dep1-{{ checksum "identity-service/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - identity-service-dep1-
+            - identity-service-dep1-{{ checksum "identity-service/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - identity-service-dep1-
       - run:
           name: setup identity
           command: |
@@ -656,65 +656,16 @@ workflows:
           force: true
     triggers:
       - schedule:
-          cron: "0 5 * * *"
+          cron: '0 5 * * *'
           filters:
             branches:
               only: /(^master$)/
 
-  # run tests for PRs/branches other than master
-  test-branch:
-    jobs:
-      - test-libs:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-contracts:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-eth-contracts:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-creator-node:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-discovery-provider:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      - test-identity-service:
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-      # - hold-test-mad-dog-e2e:
-      #     type: approval
-      #     filters:
-      #       branches:
-      #         ignore: /(^master$)|(.*?mad-?dog(.*)?)/
-      - test-mad-dog-e2e:
-          # requires:
-          #   - hold-test-mad-dog-e2e
-          filters:
-            branches:
-              ignore: /(^master$)|(.*?hotfix(.*)?)/
-
-
-
-  # push public docker images when a git tag is present
-  # tag must be in the format @audius/<service>@x.x.x
-  # else, any changes to master will be tagged `latest`
-  dockerhub-build-and-push:
+  audius-workflow:
     jobs:
       # libs: test, build and push
       - test-libs:
           force: true
-          filters:
-            tags:
-              only: /^@audius/libs@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-libs
           repo: libs
@@ -728,11 +679,6 @@ workflows:
       # contracts: test, build and push
       - test-contracts:
           force: true
-          filters:
-            tags:
-              only: /^@audius/contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
@@ -746,11 +692,6 @@ workflows:
       # eth-contracts: test, build and push
       - test-eth-contracts:
           force: true
-          filters:
-            tags:
-              only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
@@ -764,15 +705,7 @@ workflows:
       # creator node: test, build and push
       - test-creator-node:
           force: true
-          filters:
-            tags:
-              only: /^@audius/creator-node@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      - test-mad-dog-e2e:
-          filters:
-            branches:
-              only: /(^master$)|(.*?mad-?dog(.*)?)/
+      - test-mad-dog-e2e
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
@@ -786,11 +719,6 @@ workflows:
       # discovery provider: test, build and push
       - test-discovery-provider:
           force: true
-          filters:
-            tags:
-              only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
@@ -804,11 +732,6 @@ workflows:
       # identity service: test, build and push
       - test-identity-service:
           force: true
-          filters:
-            tags:
-              only: /^@audius/identity-service@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
