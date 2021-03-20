@@ -76,8 +76,6 @@ async function getTrackCids(discoveryProvider, batchSize) {
     })
 
     console.timeEnd(`Fetching tracks (${offset} - ${offset + batchSize})`)
-
-    break
   }
 
   return trackCids
