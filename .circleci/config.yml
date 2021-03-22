@@ -603,41 +603,6 @@ jobs:
             docker push audius/<< parameters.repo >>:$IMAGE_TAG
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
-  deploy:
-    executor: aws-eks/python3
-    parameters:
-      cluster-name:
-        type: string
-      aws-region:
-        type: string
-      deploy-args:
-        type: string
-    steps:
-      - add_ssh_keys
-      - run:
-          command: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-      - run:
-          name: Clone audius-k8s repo
-          command: git clone git@github.com:AudiusProject/audius-k8s.git
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
-          aws-region: << parameters.aws-region >>
-          install-kubectl: true
-          verbose: true
-      - helm/install-helm-client
-      - run:
-          name: configure BASH_ENV
-          command: echo $'export TILLER_NAMESPACE=tiller\nexport HELM_HOST=:44134' >> $BASH_ENV
-      - run:
-          name: run local tiller
-          background: true
-          command: tiller -listen=localhost:44134 -storage=secret -logtostderr
-      - run:
-          name: deploy environment [<< parameters.cluster-name >>]
-          command: |
-            cd audius-k8s
-            ./ops/scripts/deploy.py << parameters.deploy-args >>
-
 workflows:
   # test master at midnight daily
   test-nightly:
@@ -705,22 +670,5 @@ workflows:
           repo: identity-service
           requires:
             - test-identity-service
-
-      # Deploy master to CI environment
-      - deploy:
-          name: deploy-ci
-          cluster-name: audius-ci
-          aws-region: us-west-2
-          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
-          requires:
-            - build-libs
-            - build-contracts
-            - build-eth-contracts
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
-          filters:
-            branches:
-              only: /(^master$)/
 
       - test-mad-dog-e2e
