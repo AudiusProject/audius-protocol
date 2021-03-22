@@ -384,6 +384,8 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("update_play_count_lock")
     redis_inst.delete("ipld_blacklist_lock")
     redis_inst.delete("update_discovery_lock")
+    redis_inst.delete("aggregate_metrics_lock")
+    redis_inst.delete("synchronize_metrics_lock")
     logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object

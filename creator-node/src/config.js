@@ -183,6 +183,12 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+  rateLimitingBatchCidsExistLimit: {
+    doc: 'Total requests per hour rate limit for /track routes',
+    format: 'nat',
+    env: 'rateLimitingBatchCidsExistLimit',
+    default: null
+  },
   URSMRequestForSignatureReqLimit: {
     doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
     format: 'nat',
@@ -279,6 +285,12 @@ const config = convict({
     format: String,
     env: 'delegatePrivateKey',
     default: null
+  },
+  // `env` property is not defined as this should never be passed in as an envvar and should only be set programatically
+  isRegisteredOnURSM: {
+    doc: 'boolean indicating whether or not node has been registered on dataContracts UserReplicaSetManager contract (URSM)',
+    format: Boolean,
+    default: false
   },
 
   spID: {

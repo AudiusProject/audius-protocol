@@ -29,7 +29,7 @@ const {
   triggerSecondarySyncs,
   ensureStorageMiddleware
 } = require('../middlewares')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork } = require('../utils')
+const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork, timeout } = require('../utils')
 const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
@@ -39,6 +39,8 @@ const { promisify } = require('util')
 const fsStat = promisify(fs.stat)
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
+const BATCH_CID_ROUTE_LIMIT = 500
+const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
 
 /**
  * Helper method to stream file from file system on creator node
@@ -489,6 +491,52 @@ module.exports = function (app) {
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
   app.get('/ipfs/:dirCID/:filename', getDirCID)
+
+  /**
+   * Serves information on existence of given cids
+   * @param req
+   * @param req.body
+   * @param {string[]} req.body.cids the cids to check existence for, these cids can also be directories
+   * @dev This route can have a large number of CIDs as input, therefore we use a POST request.
+   */
+  app.post('/batch_cids_exist', handleResponse(async (req, res) => {
+    const { cids } = req.body
+
+    if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {
+      return errorResponseBadRequest(`Too many CIDs passed in, limit is ${BATCH_CID_ROUTE_LIMIT}`)
+    }
+
+    const queryResults = (await models.File.findAll({
+      attributes: ['multihash', 'storagePath'],
+      raw: true,
+      where: {
+        multihash: {
+          [models.Sequelize.Op.in]: cids
+        }
+      }
+    }))
+
+    let cidExists = {}
+
+    // Check if hash exists in disk in batches (to limit concurrent load)
+    for (let i = 0; i < queryResults.length; i += BATCH_CID_EXISTS_CONCURRENCY_LIMIT) {
+      const batch = queryResults.slice(i, i + BATCH_CID_EXISTS_CONCURRENCY_LIMIT)
+      const exists = await Promise.all(batch.map(
+        ({ storagePath }) => fs.pathExists(storagePath)
+      ))
+      batch.map(({ multihash }, idx) => {
+        cidExists[multihash] = exists[idx]
+      })
+
+      await timeout(250)
+    }
+
+    const cidExistanceMap = {
+      cids: cids.map(cid => ({ cid, exists: cidExists[cid] || false }))
+    }
+
+    return successResponse(cidExistanceMap)
+  }))
 
   /**
    * Serve file from FS given a storage path
