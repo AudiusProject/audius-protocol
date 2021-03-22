@@ -270,12 +270,11 @@ async function main () {
     process.exit()
   } catch (e) {
     logger.error('Exiting testrunner with errors')
-    logger.error(e.message)
-
     if (verbose) {
       logger.info('Displaying container logs..')
       await ContainerLogs.print()
     }
+    logger.error(e.message)
     process.exit(1)
   }
 }
