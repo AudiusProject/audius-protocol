@@ -3,7 +3,7 @@ import cn from 'classnames'
 
 import styles from './Drawer.module.css'
 
-import { useSpring, animated } from 'react-spring'
+import { useSpring, animated, useTransition } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 import useInstanceVar from 'hooks/useInstanceVar'
 import {
@@ -11,7 +11,7 @@ import {
   DisablePullToRefreshMessage
 } from 'services/native-mobile-interface/android/pulltorefresh'
 import { usePortal } from 'hooks/usePortal'
-import { useClickOutside } from '@audius/stems'
+import { IconRemove, useClickOutside } from '@audius/stems'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -36,6 +36,11 @@ const wobble = {
   tension: 250,
   friction: 25
 }
+const slowWobble = {
+  mass: 1,
+  tension: 175,
+  friction: 20
+}
 const stiff = {
   mass: 1,
   tension: 215,
@@ -57,9 +62,10 @@ type DrawerProps = {
   keyboardVisible?: boolean
   shouldClose?: boolean
   onClose?: () => void
+  isFullscreen?: boolean
 }
 
-const Drawer = ({
+const DraggableDrawer = ({
   isOpen,
   children,
   keyboardVisible,
@@ -272,6 +278,71 @@ const Drawer = ({
       {/* Display transparent BG to block clicks behind drawer */}
       {isOpen && <div className={styles.background} />}
     </Portal>
+  )
+}
+
+const interpolateBorderRadius = (r: number) => {
+  // multiply R by some constant and then clamp so that for the majority
+  // of the transition, it stays at it's initial value
+  const r2 = Math.max(Math.min(r * 10, 40), 0)
+  return `${r2}px ${r2}px 0px 0px`
+}
+
+const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
+  const Portal = usePortal({})
+  // @ts-ignore
+  const transitions = useTransition(isOpen, null, {
+    from: {
+      y: 1,
+      borderRadius: 40
+    },
+    enter: {
+      y: 0,
+      borderRadius: 0
+    },
+    leave: {
+      y: 1,
+      borderRadius: 40
+    },
+    config: slowWobble
+  })
+  return (
+    <Portal>
+      {transitions.map(
+        // @ts-ignore
+        ({ item, props, key }) =>
+          // @ts-ignore
+          item && (
+            <animated.div
+              className={(styles.drawer, styles.fullDrawer)}
+              key={key}
+              style={{
+                // @ts-ignore
+                transform: props.y.interpolate(y =>
+                  interpY(window.innerHeight * y)
+                ),
+                borderRadius: props.borderRadius?.interpolate(
+                  // @ts-ignore
+                  interpolateBorderRadius
+                )
+              }}
+            >
+              <div className={styles.dismissContainer} onClick={onClose}>
+                <IconRemove />
+              </div>
+              {children}
+            </animated.div>
+          )
+      )}
+    </Portal>
+  )
+}
+
+export const Drawer = (props: DrawerProps) => {
+  return props.isFullscreen ? (
+    <FullscreenDrawer {...props} />
+  ) : (
+    <DraggableDrawer {...props} />
   )
 }
 
