@@ -179,7 +179,7 @@ async function main () {
     )
   } catch (e) {
     logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
-    return
+    process.exit(1)
   }
 
   const cmd = process.argv[3]
