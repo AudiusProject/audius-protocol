@@ -95,10 +95,13 @@ class AudiusContracts {
     ]
   }
 
-  async init () {
+  async init (enableUserReplicaSetManagerContract = true) {
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
-      await this.initUserReplicaSetManagerClient()
+
+      if (enableUserReplicaSetManagerContract) {
+        await this.initUserReplicaSetManagerClient()
+      }
     }
   }
 
