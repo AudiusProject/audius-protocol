@@ -44,23 +44,19 @@ class ContainerLogs {
       )
       let output = ''
       let stdout = ''
-      let stderr = ''
 
       proc.stdout.on('data', data => {
         stdout += data
       })
 
+      // All stderr and stdout will be piped to stdout
       proc.stderr.on('data', data => {
-        stderr += data
+        stdout += data
       })
 
       proc.on('close', exitCode => {
         if (stdout) {
-          output += 'stdout:\n' + stdout
-        }
-
-        if (stderr) {
-          output += '\nstderr:\n' + stderr
+          output += stdout
         }
         resolve(output)
       })
