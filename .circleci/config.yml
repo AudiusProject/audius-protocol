@@ -661,8 +661,8 @@ workflows:
             branches:
               only: /(^master$)/
 
-  # run tests for PRs/branches other than master
-  test-branch:
+  # test and build all commits
+  test-and-build:
     jobs:
       - test-libs:
           force: true
