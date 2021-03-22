@@ -175,7 +175,7 @@ class AudiusLibs {
     captchaConfig,
     isServer,
     isDebug = false,
-    enableUserReplicaSetManagerContract = true
+    enableUserReplicaSetManagerContract = false
   }) {
     // set version
     this.version = packageJSON.version
