@@ -31,7 +31,7 @@ const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
 const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 
 class AudiusContracts {
-  constructor (web3Manager, registryAddress, isServer, enableUserReplicaSetManagerContract = true) {
+  constructor (web3Manager, registryAddress, isServer, enableUserReplicaSetManagerContract) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
     this.isServer = isServer
