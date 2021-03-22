@@ -167,6 +167,8 @@
           } catch (e) {
             window.bItems = new Set()
           }
+        } else {
+          window.bItems = new Set()
         }
         window.dispatchEvent(new CustomEvent('B_ITEMS_LOADED'))
       }
