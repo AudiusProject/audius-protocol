@@ -159,7 +159,7 @@ def make_get_unpopulated_playlists(session, time_range):
         playlist_tracks_map = get_playlist_tracks(session, {"playlists": playlists})
 
         for playlist in playlists:
-            playlist["tracks"] = playlist_tracks_map[playlist["playlist_id"]]
+            playlist["tracks"] = playlist_tracks_map.get(playlist["playlist_id"], [])
 
         return (playlists, playlist_ids)
     return wrapped
@@ -203,6 +203,7 @@ def get_trending_playlists(args):
 
         trimmed_track_ids = None
         for playlist in playlists:
+            playlist["track_count"] = len(playlist["tracks"])
             playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
             # Trim track_ids, which ultimately become added_timestamps
             # and need to match the tracks.
