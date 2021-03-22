@@ -712,4 +712,21 @@ workflows:
           requires:
             - test-identity-service
 
+      # Deploy master to CI environment
+      - deploy:
+          name: deploy-ci
+          cluster-name: audius-ci
+          aws-region: us-west-2
+          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
+          requires:
+            - build-libs
+            - build-contracts
+            - build-eth-contracts
+            - build-creator-node
+            - build-discovery-provider
+            - build-identity-service
+          filters:
+            branches:
+              only: /(^master$)/
+
       - test-mad-dog-e2e
