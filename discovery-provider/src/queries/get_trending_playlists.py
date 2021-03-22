@@ -79,6 +79,7 @@ def get_scorable_playlist_data(session, time_range):
         response_name_constants.repost_count: 0,
         response_name_constants.windowed_repost_count: 0,
         response_name_constants.owner_follower_count: 0,
+        "karma": 1,
         "listens": 1,
     } for record in playlists}
 
