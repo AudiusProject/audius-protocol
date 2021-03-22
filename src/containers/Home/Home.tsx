@@ -53,7 +53,11 @@ const Home: React.FC<HomeProps> = (props: HomeProps) => {
         <EstimatedWeeklyStat />
         <EstimatedAnnualStat />
       </div>
-      {isLoggedIn && <ManageService />}
+      {isLoggedIn && (
+        <div className={styles.manageServices}>
+          <ManageService />
+        </div>
+      )}
 
       <Paper className={styles.proposals}>
         <div className={styles.title}>{messages.recentProposals}</div>
