@@ -661,9 +661,9 @@ workflows:
             branches:
               only: /(^master$)/
 
-  audius-workflow:
+  # run tests for PRs/branches other than master
+  test-branch:
     jobs:
-      # libs: test, build and push
       - test-libs:
           force: true
       - docker-build-and-push:
@@ -671,12 +671,7 @@ workflows:
           repo: libs
           requires:
             - test-libs
-          filters:
-            tags:
-              only: /^@audius/libs@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # contracts: test, build and push
+
       - test-contracts:
           force: true
       - docker-build-and-push:
@@ -684,39 +679,23 @@ workflows:
           repo: contracts
           requires:
             - test-contracts
-          filters:
-            tags:
-              only: /^@audius/contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # eth-contracts: test, build and push
+
       - test-eth-contracts:
-          force: true
+          force: false
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
           requires:
             - test-eth-contracts
-          filters:
-            tags:
-              only: /^@audius/eth-contracts@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # creator node: test, build and push
+
       - test-creator-node:
           force: true
-      - test-mad-dog-e2e
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
           requires:
             - test-creator-node
-          filters:
-            tags:
-              only: /^@audius/creator-node@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # discovery provider: test, build and push
+
       - test-discovery-provider:
           force: true
       - docker-build-and-push:
@@ -724,12 +703,7 @@ workflows:
           repo: discovery-provider
           requires:
             - test-discovery-provider
-          filters:
-            tags:
-              only: /^@audius/discovery-provider@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # identity service: test, build and push
+
       - test-identity-service:
           force: true
       - docker-build-and-push:
@@ -737,24 +711,5 @@ workflows:
           repo: identity-service
           requires:
             - test-identity-service
-          filters:
-            tags:
-              only: /^@audius/identity-service@\d+\.\d+\.\d+/
-            branches:
-              only: /(^master$)|(.*?hotfix(.*)?)/
-      # DEPLOY MASTER TO CI ENVIRONMENT
-      - deploy:
-          name: deploy-ci
-          cluster-name: audius-ci
-          aws-region: us-west-2
-          deploy-args: ci contracts-1 eth-contracts-1 discovery-1 creator-1 identity-1 --force-tag $CIRCLE_SHA1 --first-time
-          requires:
-            - build-libs
-            - build-contracts
-            - build-eth-contracts
-            - build-creator-node
-            - build-discovery-provider
-            - build-identity-service
-          filters:
-            branches:
-              only: /(^master$)/
+
+      - test-mad-dog-e2e
