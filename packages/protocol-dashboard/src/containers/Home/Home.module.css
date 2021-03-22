@@ -26,6 +26,10 @@
   margin-right: 8px;
 }
 
+.manageServices {
+  margin-bottom: 16px;
+}
+
 .proposals {
   flex-direction: column;
   box-sizing: border-box;
