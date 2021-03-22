@@ -12,7 +12,12 @@ import { Name } from 'services/analytics'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
 import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
-import { IntKeys, getRemoteVar, StringKeys } from 'services/remote-config'
+import {
+  IntKeys,
+  getRemoteVar,
+  StringKeys,
+  FeatureFlags
+} from 'services/remote-config'
 import {
   waitForLibsInit,
   withEagerOption,
@@ -22,7 +27,10 @@ import {
 import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
 import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import { Timer } from 'utils/performance'
-import { waitForRemoteConfig } from './remote-config/Provider'
+import {
+  getFeatureEnabled,
+  waitForRemoteConfig
+} from './remote-config/Provider'
 import { monitoringCallbacks } from './serviceMonitoring'
 import { isElectron } from 'utils/clientUtil'
 
@@ -383,7 +391,10 @@ class AudiusBackend {
         // a "domain" (e.g. localhost) rather than the file system itself.
         // i.e. there is no way to instruct captcha that the domain is "file://"
         captchaConfig: isElectron ? undefined : { siteKey: RECAPTCHA_SITE_KEY },
-        isServer: false
+        isServer: false,
+        enableUserReplicaSetManagerContract: getFeatureEnabled(
+          FeatureFlags.ENABLE_USER_REPLICA_SET_MANAGER
+        )
       })
       await audiusLibs.init()
       window.audiusLibs = audiusLibs
