@@ -33,7 +33,8 @@ try {
   const REACT_APP_ETH_TOKEN_ADDRESS = ethConfigFile.audiusTokenAddress
   const REACT_APP_ETH_OWNER_WALLET = ethConfigFile.ownerWallet
 
-  const REACT_APP_RECAPTCHA_SITE_KEY = '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q'
+  const REACT_APP_RECAPTCHA_SITE_KEY =
+    '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q'
 
   const contents = `
   # DO NOT MODIFY. SEE /scripts/configureLocalEnv.js
@@ -53,6 +54,7 @@ try {
   REACT_APP_ETH_OWNER_WALLET=${REACT_APP_ETH_OWNER_WALLET}
 
   REACT_APP_RECAPTCHA_SITE_KEY=${REACT_APP_RECAPTCHA_SITE_KEY}
+  REACT_APP_B_ITEMS_URL=
   `
 
   // Note .env.dev.local takes precidence over .env.dev
