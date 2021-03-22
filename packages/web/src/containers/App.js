@@ -27,6 +27,7 @@ import {
   SAVED_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  AUDIO_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -124,6 +125,7 @@ import NotificationPage from 'containers/notification/NotificationPage'
 import AnnouncementPage from 'containers/announcement-page/AnnoucementPage'
 import NotFoundPage from 'containers/not-found-page/NotFoundPage'
 import ArtistDashboardPage from 'containers/artist-dashboard-page/ArtistDashboardPage'
+import AudioRewardsPage from 'containers/audio-rewards-page/AudioRewardsPage'
 import SearchPage from 'containers/search-page/SearchPage'
 import HistoryPage from 'containers/history-page/HistoryPage'
 import SavedPage from 'containers/saved-page/SavedPage'
@@ -699,6 +701,12 @@ class App extends Component {
                 path={DASHBOARD_PAGE}
                 isMobile={isMobileClient}
                 component={ArtistDashboardPage}
+              />
+              <DesktopRoute
+                exact
+                path={AUDIO_PAGE}
+                isMobile={isMobileClient}
+                component={AudioRewardsPage}
               />
               <Route
                 exact
