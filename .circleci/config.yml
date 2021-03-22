@@ -661,51 +661,45 @@ workflows:
             branches:
               only: /(^master$)/
 
-  # test and build all commits
-  test-and-build:
+  # test, build and push all commits
+  test-build-and-push:
     jobs:
-      - test-libs:
-          force: true
+      - test-libs
       - docker-build-and-push:
           name: build-libs
           repo: libs
           requires:
             - test-libs
 
-      - test-contracts:
-          force: true
+      - test-contracts
       - docker-build-and-push:
           name: build-contracts
           repo: contracts
           requires:
             - test-contracts
 
-      - test-eth-contracts:
-          force: false
+      - test-eth-contracts
       - docker-build-and-push:
           name: build-eth-contracts
           repo: eth-contracts
           requires:
             - test-eth-contracts
 
-      - test-creator-node:
-          force: true
+      - test-creator-node
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
           requires:
             - test-creator-node
 
-      - test-discovery-provider:
-          force: true
+      - test-discovery-provider
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
           requires:
             - test-discovery-provider
 
-      - test-identity-service:
-          force: true
+      - test-identity-service
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
