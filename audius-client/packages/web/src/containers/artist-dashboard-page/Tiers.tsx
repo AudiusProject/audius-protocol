@@ -17,6 +17,7 @@ import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import { Nullable } from 'utils/typeUtils'
+import { LEARN_MORE_URL, Tile } from './Tiles'
 import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import { useDispatch } from 'react-redux'
 import { pressDiscord } from 'store/token-dashboard/slice'
@@ -55,18 +56,6 @@ export const audioTierMapPng: {
 }
 
 export const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
-
-export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
-
-type TileProps = {
-  className?: string
-}
-
-export const Tile: React.FC<TileProps> = ({ className, children }) => {
-  return (
-    <div className={cn([styles.tileContainer, className])}> {children}</div>
-  )
-}
 
 const useShowConfetti = (tier: BadgeTier) => {
   // No tier or no local storage, never show confetti
