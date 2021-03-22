@@ -210,7 +210,7 @@ class AudiusLibs {
     this.Playlist = null
     this.File = null
 
-    this.enableUserReplicaSetManagerContract = (enableUserReplicaSetManagerContract == true)
+    this.enableUserReplicaSetManagerContract = enableUserReplicaSetManagerContract
 
     // Schemas
     const schemaValidator = new SchemaValidator()
