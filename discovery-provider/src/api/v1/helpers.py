@@ -217,6 +217,8 @@ def extend_playlist(playlist):
     playlist["added_timestamps"] = add_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
+    # If a trending playlist, we have 'track_count'
+    # already to preserve the original, non-abbreviated track count
     playlist["track_count"] = (playlist["track_count"] if "track_count"
                                in playlist else len(playlist["playlist_contents"]["track_ids"]))
     return playlist
