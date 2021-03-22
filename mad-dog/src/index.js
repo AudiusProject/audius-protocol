@@ -152,6 +152,12 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
   )
 }
 
+// Check to see if verbose mode (print out container logs)
+const isVerbose = () => {
+  return (process.argv[4] && process.argv[4].toLowerCase() === 'verbose') ||
+  (process.argv[5] && process.argv[5].toLowerCase() === 'verbose')
+}
+
 // This should go away when we have multiple tests.
 //
 // Currently there's a bug where standing up services
@@ -177,8 +183,7 @@ async function main () {
   }
 
   const cmd = process.argv[3]
-  const verbose = process.argv[4].toLowerCase() === 'verbose' ||
-    process.argv[5].toLowerCase() === 'verbose'
+  const verbose = isVerbose()
 
   try {
     switch (cmd) {
