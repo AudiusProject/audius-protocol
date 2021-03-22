@@ -1,0 +1,30 @@
+.pageContainer {
+  user-select: none;
+}
+
+.contentContainer {
+  display: inline-flex;
+  flex-direction: column;
+  width: 1104px;
+  margin: -18px 0px 16px;
+}
+
+.cryptoContentContainer {
+  display: inline-flex;
+  height: 243px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.explainerTile {
+  margin-bottom: 32px;
+}
+
+.balance {
+  margin-right: 24px;
+}
+
+
+.claimTile {
+  margin-right: 24px;
+}
