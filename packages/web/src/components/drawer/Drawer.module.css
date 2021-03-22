@@ -15,6 +15,21 @@
   transition: box-shadow 0.3s ease-in-out;
 }
 
+.fullDrawer {
+  top: 0px;
+  height: 110vh;
+}
+
+.dismissContainer {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.dismissContainer path {
+  fill: var(--neutral-light-4);
+}
+
 .drawer.isOpen {
   box-shadow: 0px -15px 50px -5px rgba(0, 0, 0, 0.25);
 }
@@ -33,10 +48,10 @@
  * When testing this, make sure to test Safari embedded inside Twitter.
  */
 @supports (-webkit-overflow-scrolling: touch) {
-  .drawer:not(.native).isOpen {
+  .drawer:not(.native):not(.fullDrawer).isOpen {
     top: calc(100vh - 100px);
   }
-  .drawer:not(.native):not(.isOpen) {
+  .drawer:not(.native):not(.fullDrawer):not(.isOpen) {
     top: calc(100vh + 100px);
   }
 }
