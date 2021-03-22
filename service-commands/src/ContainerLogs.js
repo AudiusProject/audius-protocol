@@ -106,7 +106,7 @@ ContainerLogs.logs = {
 ContainerLogs.services = (() => {
   const services = {
     DISCOVERY_NODE: 'audius-disc-prov_web-server_1',
-    IDENTITY_SERVICE: 'compose_identity-service_1',
+    IDENTITY_SERVICE: 'audius-identity-service_identity-service_1',
     USER_METADATA_NODE: 'cn-um_creator-node_1'
   }
 
