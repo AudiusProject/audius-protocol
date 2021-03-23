@@ -16,28 +16,34 @@ const CONTENT_NODE_TYPE = 'content-node'
 // const ETH_OWNER_WALLET = '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5'
 
 // STAGING
-// const ETH_PROVIDER_URL = 'https://eth.staging.audius.co'
-// const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.staging.audius.co'
-// const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
-// const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
-// const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
+const ETH_PROVIDER_ENDPOINT = 'https://eth.staging.audius.co'
+const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.staging.audius.co'
+const USER_METADATA_ENDPOINT = 'https://usermetadata.staging.audius.co'
+const IDENTITY_SERVICE_ENDPOINT = 'https://identityservice.staging.audius.co'
+const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'https://poa-gateway.staging.audius.co'
+const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
+const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
+const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
+const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
+const URSM_BOOTSTRAPPER_PRIVATE_KEY = ''
 
 // NOTE: Migrate URSM first via `node setup.js run user-replica-set-manager up`
 
 // LOCAL
-const ethContractsConfig = require('../eth-contracts/config.json')
-const dataContractsConfig = require('../data-contracts/config.json')
-const ETH_PROVIDER_ENDPOINT = 'http://localhost:8546'
-const DISCOVERY_NODE_ENDPOINT = 'http://localhost:5000'
-const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'http://localhost:8545'
-const USER_METADATA_ENDPOINT = 'http://cn-um_creator-node_1:4099'
-const IDENTITY_SERVICE_ENDPOINT = 'http://localhost:7000'
-const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
-const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
-const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
-const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
-const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
-const NUM_USERS_PER_BATCH_REQUEST = 5
+// const ethContractsConfig = require('../eth-contracts/config.json')
+// const dataContractsConfig = require('../data-contracts/config.json')
+// const ETH_PROVIDER_ENDPOINT = 'http://localhost:8546'
+// const DISCOVERY_NODE_ENDPOINT = 'http://localhost:5000'
+// const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'http://localhost:8545'
+// const USER_METADATA_ENDPOINT = 'http://cn-um_creator-node_1:4099'
+// const IDENTITY_SERVICE_ENDPOINT = 'http://localhost:7000'
+// const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
+// const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
+// const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
+// const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
+// const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
+
+const NUM_USERS_PER_BATCH_REQUEST = 1
 const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
 const configureAndInitLibs = async () => {
@@ -108,8 +114,7 @@ async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, aud
 }
 
 async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
-  // TODO: uncomment later
-  const audiusInfraSpIds = new Set([UMSpId] /* [1, 2, 3, 4/*, UMSpId] */) // when UM is registered, exclude it as secondary
+  const audiusInfraSpIds = new Set([1, 2, 3, 4/*, UMSpId] */]) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
   const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
@@ -323,7 +328,10 @@ const run = async () => {
   let userIdsWithNoCreatorNodeEndpoint = []
   let userIdsSuccess = []
   let userIdsFail = []
-  for (offset = 0; offset <= numOfUsers; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+
+  // const numUsersToProcess = numOfUsers
+  const numUsersToProcess = 1
+  for (offset = 0; offset <= 1; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
