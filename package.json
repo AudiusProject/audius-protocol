@@ -78,6 +78,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.10.4",
     "@openzeppelin/test-helpers": "^0.5.6",
+    "@pinata/sdk": "^1.1.13",
     "@types/3box": "^1.22.0",
     "@types/classnames": "^2.2.10",
     "@types/jest": "^24.9.1",
