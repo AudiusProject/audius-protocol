@@ -16,7 +16,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "1.1.16",
+    "@audius/libs": "1.1.19",
     "apn": "^2.2.0",
     "aws-sdk": "^2.595.0",
     "axios": "^0.19.0",
