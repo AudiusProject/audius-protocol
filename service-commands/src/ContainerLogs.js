@@ -20,15 +20,15 @@ class ContainerLogs {
   static append (errorInfo) {
     const { start, end, error } = errorInfo
 
-    if (this.logs.start.isAfter(start)) {
-      this.logs.start = start
+    if (ContainerLogs.logs.start.isAfter(start)) {
+      ContainerLogs.logs.start = start
     }
 
-    if (this.logs.end.isBefore(end)) {
-      this.logs.end = end
+    if (ContainerLogs.logs.end.isBefore(end)) {
+      ContainerLogs.logs.end = end
     }
 
-    this.logs.errors.push(error)
+    ContainerLogs.logs.errors.push(error)
   }
 
   /**
@@ -71,18 +71,18 @@ class ContainerLogs {
   static async print () {
     // Print general error messages from tests
     console.log('Error Contexts:')
-    this.logs.errors.forEach((e, i) => {
+    ContainerLogs.logs.errors.forEach((e, i) => {
       console.log(`\t(${i}) error: `, e)
     })
 
     // Print container logs
     const services = Object.values(ContainerLogs.services)
 
-    const { start, end } = this.logs
+    const { start, end } = ContainerLogs.logs
     console.log(`Displaying logs from ${start} to ${end}`)
     for (const service of services) {
       console.log(`------------------- ${service} logs start -------------------`)
-      const containerLogs = await this.getLogs({
+      const containerLogs = await ContainerLogs.getLogs({
         containerName: service,
         start,
         end
