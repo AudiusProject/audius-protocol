@@ -314,7 +314,7 @@ const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
           // @ts-ignore
           item && (
             <animated.div
-              className={(styles.drawer, styles.fullDrawer)}
+              className={cn(styles.drawer, styles.fullDrawer)}
               key={key}
               style={{
                 // @ts-ignore
