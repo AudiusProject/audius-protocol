@@ -106,7 +106,8 @@ async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, aud
 
   subsetUsers
     // Filter to users that do not have a CNE
-    .filter(user => !user.creator_node_endpoint)
+    // .filter(user => !user.creator_node_endpoint) // users with no rset
+    .filter(user => user.creator_node_endpoint && !user.secondary_ids && !user.primary_id) // users with rset not on contract
     // Add userId - wallet mapping
     .forEach(user => {
       userIdToWallet[user.user_id] = user.wallet
