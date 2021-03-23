@@ -11,7 +11,7 @@ axios.defaults.httpAgent = new http.Agent({ timeout: 5000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 5000 })
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function makeRequest(request) {
@@ -127,7 +127,48 @@ async function getCidsExist(creatorNode, cids, batchSize = 500) {
         ).data.cids
       )
 
-      await sleep(5000);
+      await sleep(5000)
+    }
+
+    return cidsExist
+  } catch (e) {
+    console.log(`Got ${e} when checking if cids exist in ${creatorNode}`)
+    return cids.map((cid) => ({ cid, exists: false }))
+  }
+}
+
+/**
+ * @param {string} creatorNode - Creator Node endpoint
+ * @param {Array<string>} cids
+ * @returns {Array<Object>} cidsExist
+ */
+async function getDirCidsExist(creatorNode, cids, batchSize = 10) {
+  try {
+    const cidsExist = []
+
+    for (let offset = 0; offset < cids.length; offset += batchSize) {
+      console.log(creatorNode, `${offset} of ${cids.length}`)
+      const batch = cids.slice(offset, offset + batchSize)
+
+      const resps = await Promise.all(
+        batch.map((cid) =>
+          makeRequest({
+            method: "head",
+            url: `/ipfs/${cid}`,
+            baseURL: creatorNode,
+            validateStatus: (status) => true,
+          })
+        )
+      )
+
+      const batchExists = batch.map((cid, idx) => ({
+        cid,
+        exists: resps[idx].status === 200,
+      }))
+
+      cidsExist.push(...batchExists)
+
+      await sleep(5000)
     }
 
     return cidsExist
@@ -168,6 +209,7 @@ async function run() {
     const creatorNodes = new Set()
     const creatorNodeWalletMap = {} // map of creator node to wallets
     const creatorNodeCidMap = {} // map of creator node to cids
+    const creatorNodeDirCidMap = {} // map of creator node to dir cids
     const cids = {} // map of user id to cids
     usersBatch.forEach(
       ({
@@ -180,12 +222,6 @@ async function run() {
       }) => {
         cids[user_id] = Array.from(trackCids[user_id] || [])
         cids[user_id].push(metadata_multihash)
-        if (cover_photo_sizes) {
-          cids[user_id].push(cover_photo_sizes)
-        }
-        if (profile_picture_sizes) {
-          cids[user_id].push(profile_picture_sizes)
-        }
 
         creator_node_endpoint.forEach((endpoint) => {
           creatorNodes.add(endpoint)
@@ -193,17 +229,35 @@ async function run() {
           creatorNodeWalletMap[endpoint].push(wallet)
           creatorNodeCidMap[endpoint] = creatorNodeCidMap[endpoint] || []
           creatorNodeCidMap[endpoint].push(...cids[user_id])
+
+          creatorNodeDirCidMap[endpoint] = creatorNodeDirCidMap[endpoint] || []
+          if (cover_photo_sizes) {
+            creatorNodeDirCidMap[endpoint].push(
+              `${cover_photo_sizes}/original.jpg`
+            )
+          }
+          if (profile_picture_sizes) {
+            creatorNodeDirCidMap[endpoint].push(
+              `${profile_picture_sizes}/original.jpg`
+            )
+          }
         })
       }
     )
 
     const clockValues = {} // creator node -> wallet -> clock value
     const cidExists = {} // creator node -> cid -> exists
+    const dirCidExists = {} // creator node -> dir cid -> exists
     await Promise.all(
       Array.from(creatorNodes).map(async (creatorNode) => {
-        const [clockValuesArr, cidExistsArr] = await Promise.all([
+        const [
+          clockValuesArr,
+          cidExistsArr,
+          dirCidExistsArr,
+        ] = await Promise.all([
           getClockValues(creatorNode, creatorNodeWalletMap[creatorNode]),
           getCidsExist(creatorNode, creatorNodeCidMap[creatorNode]),
+          getDirCidsExist(creatorNode, creatorNodeDirCidMap[creatorNode]),
         ])
 
         clockValues[creatorNode] = {}
@@ -214,6 +268,11 @@ async function run() {
         cidExists[creatorNode] = {}
         cidExistsArr.forEach(({ cid, exists }) => {
           cidExists[creatorNode][cid] = exists
+        })
+
+        dirCidExists[creatorNode] = {}
+        dirCidExistsArr.forEach(({ cid, exists }) => {
+          dirCidExists[creatorNode][cid] = exists
         })
       })
     )
@@ -241,10 +300,10 @@ async function run() {
             ? cidExists[endpoint][metadata_multihash]
             : null,
           cover_photo: cover_photo_sizes
-            ? cidExists[endpoint][cover_photo_sizes]
+            ? dirCidExists[endpoint][`${cover_photo_sizes}/original.jpg`]
             : null,
           profile_picture: profile_picture_sizes
-            ? cidExists[endpoint][profile_picture_sizes]
+            ? dirCidExists[endpoint][`${profile_picture_sizes}/original.jpg`]
             : null,
           clock: clockValues[endpoint][wallet],
           cids: cids[user_id].filter((cid) => cidExists[endpoint][cid]),
