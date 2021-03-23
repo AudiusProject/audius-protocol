@@ -2,11 +2,6 @@ import { encodeUrlName } from 'utils/formatUtil'
 import { matchPath } from 'react-router'
 import { push as pushRoute } from 'connected-react-router'
 
-// Enternal Routes
-export const PRIVACY_POLICY = '/legal/privacy-policy'
-export const COOKIE_POLICY = PRIVACY_POLICY
-export const TERMS_OF_SERVICE = '/legal/terms-of-use'
-
 // Host/protocol.
 export const BASE_URL = `${
   process.env.REACT_APP_PUBLIC_PROTOCOL || 'https:'
@@ -15,6 +10,11 @@ export const BASE_GA_URL = `${
   process.env.REACT_APP_PUBLIC_PROTOCOL || 'https:'
 }//${process.env.REACT_APP_GA_HOSTNAME || 'audius.co'}`
 export const BASENAME = process.env.PUBLIC_URL
+
+// External Routes
+export const PRIVACY_POLICY = '/legal/privacy-policy'
+export const COOKIE_POLICY = `${BASE_URL}${PRIVACY_POLICY}`
+export const TERMS_OF_SERVICE = '/legal/terms-of-use'
 
 // Static routes.
 export const FEED_PAGE = '/feed'
