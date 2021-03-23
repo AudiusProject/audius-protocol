@@ -673,6 +673,7 @@ class CreatorNode {
           // Add a 10% inherit processing time for the file upload.
           onUploadProgress: (progressEvent) => {
             if (!total) total = progressEvent.total
+            console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
             onProgress(progressEvent.loaded, total)
           }
         }
