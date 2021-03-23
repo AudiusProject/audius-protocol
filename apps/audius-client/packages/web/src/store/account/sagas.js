@@ -282,11 +282,11 @@ export function* unsubscribeBrowserPushNotifcations() {
 }
 
 function* associateTwitterAccount(action) {
-  const { twitterId, profile } = action
+  const { uuid, profile } = action.payload
   try {
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)
-    yield call(AudiusBackend.associateTwitterAccount, twitterId, userId, handle)
+    yield call(AudiusBackend.associateTwitterAccount, uuid, userId, handle)
 
     const account = yield select(getAccountUser)
     const { verified } = profile
