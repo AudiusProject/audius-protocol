@@ -18,33 +18,6 @@ const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
 
-const SERVICES = [
-  {
-    service: ServiceCommands.Service.CREATOR_NODE,
-    serviceNumber: 1
-  },
-  {
-    service: ServiceCommands.Service.CREATOR_NODE,
-    serviceNumber: 2
-  },
-  {
-    service: ServiceCommands.Service.CREATOR_NODE,
-    serviceNumber: 3
-  },
-  {
-    service: ServiceCommands.Service.DISCOVERY_PROVIDER,
-    serviceNumber: null
-  },
-  {
-    service: ServiceCommands.Service.IDENTITY_SERVICE,
-    serviceNumber: null
-  },
-  {
-    service: ServiceCommands.Service.USER_METADATA_NODE,
-    serviceNumber: null
-  }
-]
-
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
 let accountOffset = commandLineOffset || 0
@@ -56,6 +29,27 @@ const {
   LibsWrapper,
   allUp
 } = ServiceCommands
+
+const numContentNodes = 3
+const contentNodeHealthChecks = _.range(1, numContentNodes + 1).reduce(
+  (acc, cur) => {
+    return [
+      ...acc,
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.HEALTH_CHECK,
+        { verbose: true, serviceNumber: cur }
+      ]
+    ]
+  },
+  []
+)
+const services = [
+  [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+  [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
+  [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+  ...contentNodeHealthChecks
+]
 
 async function setupAllServices () {
   logger.info('Setting up all services!')
@@ -154,8 +148,8 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
 
 // Check to see if verbose mode (print out container logs)
 const isVerbose = () => {
-  return (process.argv[4] && process.argv[4].toLowerCase() === 'verbose') ||
-  (process.argv[5] && process.argv[5].toLowerCase() === 'verbose')
+  const verbose = process.argv[process.argv.length - 1]
+  return verbose && verbose.toLowerCase() === 'verbose'
 }
 
 // This should go away when we have multiple tests.
@@ -170,12 +164,7 @@ async function main () {
   logger.info('Ensuring all nodes are healthy..')
   try {
     await Promise.all(
-      SERVICES.map(entry =>
-        ServiceCommands.performHealthCheckWithRetry(
-          entry.service,
-          entry.serviceNumber
-        )
-      )
+      services.map(s => runSetupCommand(...s))
     )
   } catch (e) {
     logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)

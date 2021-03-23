@@ -252,7 +252,8 @@ const performHealthCheckWithRetry = async (
     }
     attempts -= 1
   }
-  throw new Error(`Failed health check - ${service}, ${serviceNumber}`)
+  const serviceNumberString = serviceNumber ? `, spId=${serviceNumber}` : ''
+  throw new Error(`Failed health check - ${service}, ${serviceNumberString}`)
 }
 
 /**
@@ -378,6 +379,10 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     [
       Service.USER_METADATA_NODE,
       SetupCommand.UP_UM
+    ],
+    [
+      Service.USER_METADATA_NODE,
+      SetupCommand.HEALTH_CHECK
     ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
