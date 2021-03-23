@@ -162,7 +162,7 @@ module.exports = function (app) {
           return errorResponseBadRequest(e)
         }
       } else {
-        req.logger.error('Twitter profile does not exist or userId has already been set', twitterObj)
+        req.logger.error(`Twitter profile does not exist or userId has already been set for uuid: ${uuid}`, twitterObj)
         return errorResponseBadRequest('Twitter profile does not exist or userId has already been set')
       }
     } catch (err) {

@@ -1,12 +1,10 @@
 import logging
 import concurrent.futures
-from urllib.parse import urljoin
-import requests
 from src.tasks.celery_app import celery
 from src import eth_abi_values
 from src.utils.helpers import get_ipfs_info_from_cnode_endpoint, is_fqdn
 from src.models import User
-from src.utils.redis_cache import use_redis_cache, pickle_and_set, get_sp_id_key, get_pickled_key
+from src.utils.redis_cache import pickle_and_set, get_sp_id_key, get_pickled_key
 
 logger = logging.getLogger(__name__)
 
@@ -107,32 +105,6 @@ def retrieve_peers_from_db(self):
                     cnode_endpoints_set.add(cnode_url)
     return cnode_endpoints_set
 
-# calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
-def fetch_cnode_endpoints_from_identity(self):
-    try:
-        identity_url = update_network_peers.shared_config['discprov']['identity_service_url']
-        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
-
-        r = requests.get(identity_endpoint, timeout=3)
-        if r.status_code != 200:
-            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
-
-        registered_cnodes = r.json()
-        logger.info(
-            f"index_network_peers.py | Fetched registered creator nodes from chain via"
-            f"{identity_endpoint} - {registered_cnodes}"
-        )
-        return registered_cnodes
-    except Exception as e:
-        logger.error(f"Identity fetch failed {e}")
-        return []
-
-def refresh_cnodes_from_identity(self):
-    registered_cnodes = use_redis_cache(
-        'registered_cnodes_from_identity', 30, lambda: fetch_cnode_endpoints_from_identity(self)
-    )
-    return registered_cnodes
-
 # Function submitted to future in threadpool executor
 def connect_peer(endpoint, ipfs_client):
     logger.info(f"index_network_peers.py | Peering with {endpoint}")
@@ -179,11 +151,6 @@ def update_network_peers(self):
             # Combine the set of known peers from ethereum and within local database
             all_peers = peers_from_ethereum
             all_peers.update(peers_from_local)
-
-            # Legacy list of cnodes from identity
-            identity_cnodes_map = refresh_cnodes_from_identity(self)
-            for node_info in identity_cnodes_map:
-                all_peers.add(node_info['endpoint'])
 
             # Legacy user metadata node is always added to set of known peers
             user_metadata_url = update_network_peers.shared_config["discprov"]["user_metadata_service_url"]

@@ -162,8 +162,8 @@ def persist_app_metrics(db, day, month, app_count):
         for application_name, count in app_count.items():
             day_record = (
                 session.query(AggregateDailyAppNameMetrics)
-                .filter(AggregateDailyAppNameMetrics.timestamp == day and \
-                    AggregateDailyAppNameMetrics.application_name == application_name)
+                .filter(AggregateDailyAppNameMetrics.timestamp == day)
+                .filter(AggregateDailyAppNameMetrics.application_name == application_name)
                 .first()
             )
             if day_record:
@@ -184,8 +184,8 @@ def persist_app_metrics(db, day, month, app_count):
 
             month_record = (
                 session.query(AggregateMonthlyAppNameMetrics)
-                .filter(AggregateMonthlyAppNameMetrics.timestamp == month and \
-                    AggregateMonthlyAppNameMetrics.application_name == application_name)
+                .filter(AggregateMonthlyAppNameMetrics.timestamp == month)
+                .filter(AggregateMonthlyAppNameMetrics.application_name == application_name)
                 .first()
             )
             if month_record:
