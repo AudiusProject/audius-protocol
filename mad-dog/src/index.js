@@ -30,8 +30,7 @@ const {
   allUp
 } = ServiceCommands
 
-const numContentNodes = 3
-const contentNodeHealthChecks = _.range(1, numContentNodes + 1).reduce(
+const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce(
   (acc, cur) => {
     return [
       ...acc,

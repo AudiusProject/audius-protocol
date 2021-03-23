@@ -257,7 +257,7 @@ const performHealthCheckWithRetry = async (
     attempts -= 1
   }
   const serviceNumberString = serviceNumber ? `, spId=${serviceNumber}` : ''
-  throw new Error(`Failed health check - ${service}, ${serviceNumberString}`)
+  throw new Error(`Failed health check - ${service}${serviceNumberString}`)
 }
 
 /**
