@@ -1,5 +1,7 @@
 const moment = require('moment')
 const { exec } = require('child_process')
+const { Service, getContentNodeContainerName } = require('./setup')
+const serviceCommands = require('./commands/service-commands.json')
 const NUMBER_OF_CONTENT_NODES = 3
 
 class ContainerLogs {
@@ -100,15 +102,15 @@ ContainerLogs.logs = {
 
 // Services and their respective container names
 ContainerLogs.services = (() => {
-  const services = {
-    DISCOVERY_NODE: 'audius-disc-prov_web-server_1',
-    IDENTITY_SERVICE: 'audius-identity-service_identity-service_1',
-    USER_METADATA_NODE: 'cn-um_creator-node_1'
-  }
+  const services = [
+    Service.DISCOVERY_PROVIDER,
+    Service.USER_METADATA_NODE,
+    Service.IDENTITY_SERVICE
+  ].map(s => serviceCommands[s].host)
 
   let i
   for (i = 1; i <= NUMBER_OF_CONTENT_NODES; i++) {
-    services[`CONTENT_NODE_${i}`] = `cn${i}_creator-node_1`
+    services.push(getContentNodeContainerName(i))
   }
 
   return services

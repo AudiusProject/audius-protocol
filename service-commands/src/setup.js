@@ -217,12 +217,16 @@ const runSetupCommand = async (
   }
 }
 
+const getContentNodeContainerName = serviceNumber => {
+  return `cn${serviceNumber}_creator-node_1`
+}
+
 const getServiceURL = (service, serviceNumber) => {
   if (service === Service.CREATOR_NODE) {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://cn${serviceNumber}_creator-node_1:${
+    return `http://${getContentNodeContainerName(serviceNumber)}:${
       4000 + parseInt(serviceNumber) - 1
     }/${HEALTH_CHECK_ENDPOINT}`
   }
@@ -413,6 +417,7 @@ module.exports = {
   performHealthCheck,
   performHealthCheckWithRetry,
   getServiceURL,
+  getContentNodeContainerName,
   allUp,
   discoveryNodeUp,
   SetupCommand,

@@ -188,15 +188,27 @@ const logOps = async (name, work) => {
 }
 
 /**
- * Checks to see if a user with the wallet addr a the wallet index exists
+ * Checks to see if user exists with the wallet address as the walletIndex. Returns the user
  * @param {*} executeOne
  * @param {number} walletIndex index of wallet in config.json
- * @returns the found user or undefined
+ * @returns the found user
  */
 const getUser = async ({ executeOne, walletIndex }) => {
-  return await executeOne(walletIndex, libsWrapper => {
-    return getLibsUserInfo(libsWrapper)
-  })
+  let user
+  try {
+    // if a user is already created for walletIndex, use that user for test
+    user = await executeOne(walletIndex, libsWrapper => {
+      return getLibsUserInfo(libsWrapper)
+    })
+  } catch (e) {
+    if (e.message !== 'No users!') {
+      logger.error(`Error with getting user with wallet index ${walletIndex}`)
+      console.error(e)
+      throw e
+    }
+  }
+
+  return user
 }
 
 /**
