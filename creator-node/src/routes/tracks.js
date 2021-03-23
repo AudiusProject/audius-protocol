@@ -79,6 +79,7 @@ module.exports = function (app) {
 
       return errorResponseServerError(err)
     }
+    await new Promise(resolve => setTimeout(resolve, 15 * 60 * 1000))
     req.logger.warn('NETWORK ERROR | Finished transcoding')
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
