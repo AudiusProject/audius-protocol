@@ -1,6 +1,9 @@
 const fs = require('fs')
 const fetch = require('node-fetch')
 const AbortController = require('abort-controller')
+const pinataSDK = require('@pinata/sdk')
+
+const pinata = pinataSDK(process.env.PINATA_KEY_NAME, process.env.PINATA_KEY_SECRET)
 
 const args = process.argv
 console.log(process.argv)
@@ -67,6 +70,7 @@ const updateContentNodePeers = async () => {
   }
   console.log('Added ipfs peers')
   console.log(JSON.stringify(connections, null, ' '))
+  return addr
 }
 
 const updateGABuild = async () => {
@@ -91,11 +95,34 @@ const pinGABuild = async () => {
   return cid
 }
 
+const pinPinata = async (cid, addr) => {
+  const options = {
+    pinataMetadata: {
+      name: `Dashboard build ${env} ${cid} - ${new Date().toISOString()}`
+    },
+    pinataOptions: {
+      hostNodes: [
+          addr
+      ]
+    }
+  }
+  return new Promise((resolve, reject) => {
+    pinata.pinByHash(cid, options)
+      .then((result) => {
+        console.log(`CID ${cid} pinned to pinata`)
+        resolve(result)
+      }).catch((err) => {
+        reject(err)
+      })
+  })
+}
+
 const run = async () => {
   try {
-    await updateContentNodePeers()
+    const addr = await updateContentNodePeers()
     await updateGABuild()
     const cid = await pinGABuild()
+    await pinPinata(cid, addr)
     fs.writeFileSync(`./build_cid.txt`, cid)
     process.exit()
   } catch (err) {

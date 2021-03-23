@@ -93,20 +93,20 @@ jobs:
   update-staging-records:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/python:2.7-jessie
+      - image: circleci/node:10.13
     steps:
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
       - attach_workspace:
           at: ./
       - run:
-          name: Update AWS records
+          name: Update Cloudflare records
           command: |
             DNS_NAME=_dnslink.dashboard.staging.audius.org
             CID=$(cat ./build_cid.txt)
-            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": "'"$DNS_NAME"'","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/'"$CID"'\"" } ] } } ]}' | tee change-record.json
-            aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch file://$(pwd)/change-record.json
+            curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE}/dns_records/${CLOUDFLARE_STAGE_DASHBOARD_DNS_ID}" \
+              -H "X-Auth-Email: ${CLOUDFLARE_AUTH_EMAIL}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_AUTH_KEY}" \
+              -H "Content-Type: application/json" \
+              --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
 
   build-prod:
     working_directory: ~/protocol-dashboard
@@ -162,20 +162,20 @@ jobs:
   update-prod-records:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/python:2.7-jessie
+      - image: circleci/node:10.13
     steps:
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
       - attach_workspace:
           at: ./
       - run:
-          name: Update AWS records
+          name: Update Cloudflare records
           command: |
             DNS_NAME=_dnslink.dashboard.audius.org
             CID=$(cat ./build_cid.txt)
-            echo '{"Comment": "Update the ipfs CID for the protocol dashboard","Changes": [ {"Action": "UPSERT","ResourceRecordSet": {"Name": "'"$DNS_NAME"'","Type": "TXT","TTL": 600,"ResourceRecords": [ {"Value": "\"dnslink=/ipfs/'"$CID"'\"" } ] } } ]}' | tee change-record.json
-            aws route53 change-resource-record-sets --hosted-zone-id Z1MUWPKHC6C6L4 --change-batch file://$(pwd)/change-record.json
+            curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE}/dns_records/${CLOUDFLARE_PROD_DASHBOARD_DNS_ID}" \
+              -H "X-Auth-Email: ${CLOUDFLARE_AUTH_EMAIL}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_AUTH_KEY}" \
+              -H "Content-Type: application/json" \
+              --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
 
 workflows:
   version: 2
@@ -193,6 +193,7 @@ workflows:
             branches:
               only: /^main$/
       - update-staging-ga-build:
+          context: Pinata
           requires:
             - deploy-staging
           filters:
@@ -206,7 +207,9 @@ workflows:
             branches:
               only: /^main$/
       - update-staging-records:
-          context: Audius Client
+          context:
+            - Audius Client
+            - Cloudflare API
           requires:
             - hold-update-staging-records
           filters:
@@ -230,6 +233,7 @@ workflows:
             branches:
               only: /^main$/
       - update-prod-ga-build:
+          context: Pinata
           requires:
             - deploy-prod
           filters:
@@ -243,7 +247,9 @@ workflows:
             branches:
               only: /^main$/
       - update-prod-records:
-          context: Audius Client
+          context:
+            - Audius Client
+            - Cloudflare API
           requires:
             - hold-update-prod-records
           filters:
