@@ -73,6 +73,14 @@ export function fetchTotalStaked(): ThunkAction<
   }
 }
 
+let isWindowActive = true
+window.addEventListener('focus', () => {
+  isWindowActive = true
+})
+window.addEventListener('blur', () => {
+  isWindowActive = false
+})
+
 export function fetchEthBlockNumber(): ThunkAction<
   void,
   AppState,
@@ -81,9 +89,11 @@ export function fetchEthBlockNumber(): ThunkAction<
 > {
   return async (dispatch, getState, aud) => {
     setInterval(async () => {
-      const ethBlockNumber = await aud.getEthBlockNumber()
-      dispatch(setEthBlockNumber(ethBlockNumber))
-    }, 5000)
+      if (isWindowActive) {
+        const ethBlockNumber = await aud.getEthBlockNumber()
+        dispatch(setEthBlockNumber(ethBlockNumber))
+      }
+    }, 10000)
   }
 }
 
