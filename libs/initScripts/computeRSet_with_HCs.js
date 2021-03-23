@@ -114,6 +114,7 @@ async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, aud
 }
 
 async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
+  // TODO: update with actual sp ids of audius CNs
   const audiusInfraSpIds = new Set([1, 2, 3, 4/*, UMSpId] */]) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
@@ -331,7 +332,7 @@ const run = async () => {
 
   // const numUsersToProcess = numOfUsers
   const numUsersToProcess = 1
-  for (offset = 0; offset <= 1; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  for (offset = 0; offset <= numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
