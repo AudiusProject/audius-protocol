@@ -245,14 +245,14 @@ class DelegateManagerClient extends GovernedContractClient {
     }
   }
 
-  async claimRewards (serviceProvider, txRetries = 5) {
+  async claimRewards (serviceProvider, txRetries = 5, gas = DEFAULT_GAS_AMOUNT) {
     const method = await this.getMethod(
       'claimRewards',
       serviceProvider
     )
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT,
+      gas,
       null,
       null,
       txRetries

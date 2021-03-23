@@ -45,13 +45,4 @@ module.exports = function (app) {
     let gasInfo = await ethTxRelay.getProdGasInfo(req.app.get('redis'), req.logger)
     return successResponse(gasInfo)
   }))
-
-  /**
-   * Queries and returns all registered content nodes from chain
-   */
-  app.get('/registered_creator_nodes', handleResponse(async (req, res, next) => {
-    const audiusLibsInstance = req.app.get('audiusLibs')
-    const creatorNodes = await audiusLibsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
-    return successResponse(creatorNodes)
-  }))
 }

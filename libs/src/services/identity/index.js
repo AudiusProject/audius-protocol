@@ -114,14 +114,21 @@ class IdentityService {
    * Logs a track listen for a given user id.
    * @param {number} trackId
    * @param {number} userId
+   * @param {string} listenerAddress if logging this listen on behalf of another IP address, pass through here
+   * @param {object} signatureData if logging this listen via a 3p service, a signed piece of data proving authenticity
+   * @param {string} signatureData.signature
+   * @param {string} signatureData.timestamp
    */
-  async logTrackListen (trackId, userId, listenerAddress) {
+  async logTrackListen (trackId, userId, listenerAddress, signatureData) {
+    const data = { userId }
+    if (signatureData) {
+      data.signature = signatureData.signature
+      data.timestamp = signatureData.timestamp
+    }
     const request = {
       url: `/tracks/${trackId}/listen`,
       method: 'post',
-      data: {
-        userId: userId
-      }
+      data
     }
 
     if (listenerAddress) {

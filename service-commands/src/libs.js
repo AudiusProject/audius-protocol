@@ -121,7 +121,8 @@ function LibsWrapper (walletIndex = 0) {
       discoveryProviderConfig,
       identityServiceConfig,
       creatorNodeConfig,
-      isServer: true
+      isServer: true,
+      enableUserReplicaSetManagerContract: true
     })
 
     try {

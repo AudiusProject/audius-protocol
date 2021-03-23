@@ -42,8 +42,8 @@ def _get_aggregate_route_metrics_trailing_month(session):
     logger.info(f"trailing month total count: {total_count}")
 
     return {
-        "unique_count": unique_count[0],
-        "total_count": total_count[0]
+        'unique_count': unique_count[0],
+        'total_count': total_count[0]
     }
 
 def get_monthly_trailing_route_metrics():

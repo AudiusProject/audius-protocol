@@ -245,7 +245,8 @@ class ServiceRegistry {
       // If an identity service config is present, set up libs with the connection, otherwise do nothing
       identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
       isDebug: config.get('creatorNodeIsDebug'),
-      isServer: true
+      isServer: true,
+      enableUserReplicaSetManagerContract: true
     })
 
     await audiusLibs.init()
