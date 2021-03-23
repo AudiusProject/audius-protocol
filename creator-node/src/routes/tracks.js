@@ -73,15 +73,18 @@ module.exports = function (app) {
 
       req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
+      req.logger.warn(`NETWORK ERROR | Caught err ${err}`)
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
 
       return errorResponseServerError(err)
     }
+    req.logger.warn('NETWORK ERROR | Finished transcoding')
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
     const transcodeFileIPFSResp = await saveFileToIPFSFromFS(req, transcodedFilePath)
+    req.logger.warn('NETWORK ERROR | Saved to IFPS from FS')
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -96,11 +99,13 @@ module.exports = function (app) {
       segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
     }
     req.logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    req.logger.warn('NETWORK ERROR | Saved segments')
 
     // Retrieve all segment durations as map(segment srcFilePath => segment duration)
     codeBlockTimeStart = Date.now()
     const segmentDurations = await getSegmentsDuration(req.fileName, req.file.destination)
     req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    req.logger.warn('NETWORK ERROR | Got durations')
 
     // For all segments, build array of (segment multihash, segment duration)
     let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
@@ -125,6 +130,7 @@ module.exports = function (app) {
     try {
       await Promise.all(trackSegments.map(async segmentObj => {
         if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
+          req.logger.warn('NETWORK ERROR | wwas blacklisted')
           throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
         }
       }))
@@ -139,6 +145,7 @@ module.exports = function (app) {
       }
     }
 
+    req.logger.warn('NETWORK ERROR | writing DB')
     // Record entries for transcode and segment files in DB
     codeBlockTimeStart = Date.now()
     const transaction = await models.sequelize.transaction()
@@ -173,6 +180,7 @@ module.exports = function (app) {
       // Prune upload artifacts
       removeTrackFolder(req, req.fileDir)
 
+      req.logger.warn('NETWORK ERROR | Failed to write to db')
       return errorResponseServerError(e)
     }
     req.logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
@@ -181,6 +189,7 @@ module.exports = function (app) {
     removeTrackFolder(req, req.fileDir)
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
+    req.logger.warn('NETWORK ERROR | Success response!')
     return successResponse({
       'transcodedTrackCID': transcodeFileIPFSResp.multihash,
       'transcodedTrackUUID': transcodeFileUUID,

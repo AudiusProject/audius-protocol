@@ -29,6 +29,7 @@ module.exports.handleResponse = (func) => {
  */
 module.exports.handleResponseWithHeartbeat = (func) => {
   return async function (req, res, next) {
+    req.logger.warn('NETWORK ERROR | Handle with heartbeat')
     try {
       // First declare our content type since we will be sending heartbeats back
       // in JSON
@@ -40,16 +41,19 @@ module.exports.handleResponseWithHeartbeat = (func) => {
 
       // Write a key for the heartbeat
       res.write('{"_h":"')
+      req.logger.warn('NETWORK ERROR | Wrote first')
 
       // Fire up an interval that will append a single char to the res
       const heartbeatInterval = setInterval(() => {
         if (!res.finished) {
+          req.logger.warn('NETWORK ERROR | Wrote beat')
           res.write('1')
         }
       }, 5000)
 
       // Await the work of the endpoint
       const resp = await func(req, res, next)
+      req.logger.warn('NETWORK ERROR | Did work from endpoint')
 
       clearInterval(heartbeatInterval)
 
@@ -96,6 +100,7 @@ const sendResponse = module.exports.sendResponse = (req, res, resp) => {
 
 const sendResponseWithHeartbeatTerminator =
   module.exports.sendResponseWithHeartbeatTerminator = (req, res, resp) => {
+    req.logger.warn('NETWORK ERROR | Send terminator')
     const endTime = process.hrtime(req.startTime)
     const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
     let logger = req.logger.child({
@@ -121,9 +126,11 @@ const sendResponseWithHeartbeatTerminator =
     let response = '",'
     // Replace the first '{' since we already have that
     response += JSON.stringify(resp.object).replace('{', '')
+    req.logger.warn('NETWORK ERROR | time to terminate')
 
     // Terminate the response
     res.end(response)
+    req.logger.warn('NETWORK ERROR | Terminated')
   }
 
 const isValidResponse = module.exports.isValidResponse = (resp) => {
