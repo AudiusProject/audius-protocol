@@ -240,57 +240,12 @@ class SnapbackSM {
   }
 
   /**
-   * Enqueues a sync request to manualSyncQueue & returns job info
-   */
-  async enqueueManualSync ({
-    userWallet,
-    primaryEndpoint,
-    secondaryEndpoint
-  }) {
-    try {
-      const jobInfo = await this._enqueueSync({
-        userWallet,
-        primaryEndpoint,
-        secondaryEndpoint,
-        syncType: SyncType.Manual
-      })
-      return jobInfo
-    } catch (e) {
-      logger.error(`Error enqueing manual sync for user: ${userWallet}, error: ${e.message}`)
-    }
-  }
-
-  /**
-   * Enqueues a sync request to manualSyncQueue & returns job info
-   *
-   * Accepts `primaryClockValue` as param since Snapback pre-computes this before enqueuing
-   */
-  async enqueueRecurringSync ({
-    userWallet,
-    primaryEndpoint,
-    secondaryEndpoint
-  }) {
-    try {
-      const jobInfo = await this._enqueueSync({
-        userWallet,
-        primaryEndpoint,
-        secondaryEndpoint,
-        syncType: SyncType.Recurring
-      })
-
-      return jobInfo
-    } catch (e) {
-      logger.error(`Error enqueing manual sync for user: ${userWallet}, error: ${e.message}`)
-    }
-  }
-
-  /**
-   * Internal function to enqueue a sync request to secondary; returns job info
+   * Enqueues a sync request to secondary on specified syncQueue and returns job info
    *
    * @dev NOTE avoid using bull priority if possible as it significantly reduces performance
    * @dev TODO no need to accept `primaryEndpoint` as param, it always equals `this.endpoint`
    */
-  async _enqueueSync ({
+  async enqueueSync ({
     userWallet,
     primaryEndpoint,
     secondaryEndpoint,
@@ -301,7 +256,7 @@ class SnapbackSM {
     // If duplicate sync already exists, do not add and instead return existing sync job info
     const duplicateSyncJobInfo = this.syncDeDuplicator.getDuplicateSyncJobInfo(syncType, userWallet, secondaryEndpoint)
     if (duplicateSyncJobInfo) {
-      this.log(`_enqueueSync Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`)
+      this.log(`enqueueSync Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`)
 
       return duplicateSyncJobInfo
     }
@@ -455,10 +410,11 @@ class SnapbackSM {
 
             // Enqueue sync for secondary1 if required
             if (secondary1SyncRequired && secondary1 != null) {
-              await this.enqueueRecurringSync({
+              await this.enqueueSync({
                 userWallet,
                 secondaryEndpoint: secondary1,
-                primaryEndpoint: this.endpoint
+                primaryEndpoint: this.endpoint,
+                syncType: SyncType.Recurring
               })
 
               numSyncsIssued += 1
@@ -466,10 +422,11 @@ class SnapbackSM {
 
             // Enqueue sync for secondary2 if required
             if (secondary2SyncRequired && secondary2 != null) {
-              await this.enqueueRecurringSync({
+              await this.enqueueSync({
                 userWallet,
                 secondaryEndpoint: secondary2,
-                primaryEndpoint: this.endpoint
+                primaryEndpoint: this.endpoint,
+                syncType: SyncType.Recurring
               })
 
               numSyncsIssued += 1
@@ -544,19 +501,12 @@ class SnapbackSM {
     // enqueue another sync if secondary is still behind
     // TODO max retry limit
     if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
-      if (syncType === SyncType.Manual) {
-        await this.enqueueManualSync({
-          userWallet,
-          primaryEndpoint: this.endpoint,
-          secondaryEndpoint: secondaryUrl
-        })
-      } else {
-        await this.enqueueRecurringSync({
-          userWallet,
-          primaryEndpoint: this.endpoint,
-          secondaryEndpoint: secondaryUrl
-        })
-      }
+      await this.enqueueSync({
+        userWallet,
+        primaryEndpoint: this.endpoint,
+        secondaryEndpoint: secondaryUrl,
+        syncType
+      })
     }
   }
 
