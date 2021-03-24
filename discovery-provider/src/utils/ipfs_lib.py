@@ -117,6 +117,13 @@ class IPFSClient:
                 \ncnode_endpoints: {self._cnode_endpoints}")
 
         query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in gateway_endpoints]
+
+        logger.warning(f"IPFSCLIENT | Prepending foundation nodes")
+        query_urls.insert(0, f"https://creatornode.audius.co/ipfs/{multihash}")
+        query_urls.insert(0, f"https://creatornode2.audius.co/ipfs/{multihash}")
+        query_urls.insert(0, f"https://creatornode3.audius.co/ipfs/{multihash}")
+        query_urls.insert(0, f"https://content-node.audius.co/ipfs/{multihash}")
+        logger.warning(f"IPFSClient | Proceeding with {query_urls}")
         data = self.query_ipfs_metadata_json(query_urls, metadata_format)
         if data is None:
             raise Exception(
