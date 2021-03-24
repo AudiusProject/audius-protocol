@@ -1,5 +1,12 @@
 version: '3'
 services:
+  identity-solana:
+    image: ubuntu:20.04
+    command: sh ./scripts/setup-solana.sh
+    volumes:
+      - ..:/usr/src/app
+    networks:
+      - audius_dev
   identity-db:
     image: postgres:11.1
     environment:

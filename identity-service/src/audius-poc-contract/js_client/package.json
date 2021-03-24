@@ -1,0 +1,26 @@
+{
+  "name": "audius_clients",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node audius_instructions.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@solana/web3.js": "^0.91.2",
+    "commander": "^7.0.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^8.2.0",
+    "ethereum-public-key-to-address": "0.0.5",
+    "ethereumjs-util": "^7.0.8",
+    "inquirer": "^7.3.3",
+    "keccak256": "^1.0.2",
+    "nodemon": "^2.0.7",
+    "rimraf": "^3.0.2",
+    "secp256k1": "^4.0.2",
+    "borsh": "^0.3.1"
+  }
+}

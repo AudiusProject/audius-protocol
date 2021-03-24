@@ -1,0 +1,28 @@
+[package]
+name = "audius"
+version = "0.1.0"
+authors = [""]
+edition = "2018"
+
+[features]
+no-entrypoint = []
+test-bpf = []
+
+[dependencies]
+arrayref = "0.3.6"
+num-derive = "0.3"
+num-traits = "0.2"
+num_enum = "0.5.1"
+solana-program = "1.5.1"
+thiserror = "1.0"
+
+[dev-dependencies]
+solana-program-test = "1.5.3"
+solana-sdk = "1.5.0"
+tokio = { version = "0.3", features = ["macros"]}
+libsecp256k1 = { version = "0.3.5" }
+rand = { version = "0.8.3" }
+sha3 = { version = "0.9.1" }
+
+[lib]
+crate-type = ["cdylib", "lib"]
