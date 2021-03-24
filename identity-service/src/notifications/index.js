@@ -198,7 +198,7 @@ class NotificationProcessor {
       method: 'get',
       url: `${discoveryProvider.discoveryProviderEndpoint}/notifications`,
       params,
-      timeout: 10000
+      timeout: 30000
     }
 
     let body = (await axios(reqObj)).data
