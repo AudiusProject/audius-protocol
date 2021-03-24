@@ -14,14 +14,22 @@
 **Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
 
 ### Running Tests
-`npm run start test` or `npm run start test-ci` (depending on the test suite you want to run)
+**Run all the tests in test suite**: 
+- `npm run start <test name>`
+
+**Run all the tests in test suite with specified account offset**: 
+- `npm run start <test name> <0-99 offset of wallets in config.json>`
+
+**Run all the tests in test suite in verbose mode (prints out container logs if tests fail)**: 
+- `npm run start <test name> verbose` 
+- `npm run start <test name> <0-99 offset of wallets in config.json> verbose` 
 
 ## Notes
 - `service-commands` need to be linked, or the latest version published to npm.
 
 ## Code Structure
 - The single test in mad-dog is based on the class `EmitterBasedTest`. This class
-sets up a test that uses emitters to fire off events representing requests to our services, and then fires events for handling those responess. The test implementer is responsible for fleshing out listeners for emitted events. **To see an example of this, look at `tests/test_1.js`**
+sets up a test that uses emitters to fire off events representing requests to our services, and then fires events for handling those responess. The test implementer is responsible for fleshing out listeners for emitted events. **To see an example of this, look at `tests/test_integration.js`**
 
 - If you want to run tests without the emitter system, look at `tests/test_ipldBlacklist.js`
 
