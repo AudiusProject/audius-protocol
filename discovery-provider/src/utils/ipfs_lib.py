@@ -160,7 +160,7 @@ class IPFSClient:
 
     def cat(self, multihash):
         try:
-            res = self._api.cat(multihash, timeout=3)
+            res = self._api.cat(multihash, timeout=1)
             return res
         except:
             logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
