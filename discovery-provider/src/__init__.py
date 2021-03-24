@@ -5,7 +5,7 @@ import ast
 import datetime
 import time
 
-from web3 import Web3
+from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
@@ -139,7 +139,7 @@ def create_celery(test_config=None):
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
-    web3 = Web3(MultiProvider(web3endpoint))
+    web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
     # Initialize eth web
