@@ -1,7 +1,7 @@
 const nock = require('nock')
 const assert = require('assert')
 
-const { SnapbackSM } = require('../src/snapbackSM')
+const { SnapbackSM, SyncType } = require('../src/snapbackSM')
 const models = require('../src/models')
 const { getLibsMock } = require('./lib/libsMock')
 const utils = require('../src/utils')
@@ -63,10 +63,11 @@ describe('test sync queue', function () {
     // Setup the recurring syncs
     const recurringSyncIds = []
     for (let i = 0; i < NumRecurringSyncsToAdd; i++) {
-      const { id } = await snapback.enqueueRecurringSync({
+      const { id } = await snapback.enqueueSync({
         userWallet: `user_wallet_${i}`,
         secondaryEndpoint: constants.secondaryEndpoint,
-        primaryEndpoint: constants.primaryEndpoint
+        primaryEndpoint: constants.primaryEndpoint,
+        syncType: SyncType.Recurring
       })
       recurringSyncIds.push(id)
     }
@@ -75,10 +76,11 @@ describe('test sync queue', function () {
     // setup manual syncs
     const manualSyncIds = []
     for (let i = 0; i < NumManualSyncsToAdd; i++) {
-      const { id } = await snapback.enqueueManualSync({
+      const { id } = await snapback.enqueueSync({
         userWallet: `user_wallet_${i}`,
         secondaryEndpoint: constants.secondaryEndpoint,
-        primaryEndpoint: constants.primaryEndpoint
+        primaryEndpoint: constants.primaryEndpoint,
+        syncType: SyncType.Manual
       })
       manualSyncIds.push(id)
     }
