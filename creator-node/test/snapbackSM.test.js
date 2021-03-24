@@ -1,7 +1,7 @@
 const nock = require('nock')
 const assert = require('assert')
 
-const { SnapbackSM, SyncType } = require('../src/snapbackSM')
+const { SnapbackSM } = require('../src/snapbackSM')
 const models = require('../src/models')
 const { getLibsMock } = require('./lib/libsMock')
 const utils = require('../src/utils')
@@ -9,7 +9,6 @@ const { getApp } = require('./lib/app')
 const nodeConfig = require('../src/config')
 
 const constants = {
-  userWallet: 'user_wallet',
   secondaryEndpoint: 'http://test_cn_2.co',
   primaryEndpoint: 'http://test_cn.co',
   primaryClockVal: 1
@@ -34,6 +33,8 @@ describe('test sync queue', function () {
 
   it('Manual and recurring syncs are processed correctly', async function () {
     const NodeResponseDelayMs = 500
+    const NumRecurringSyncsToAdd = 5
+    const NumManualSyncsToAdd = 3
 
     // Mock out the initial call to sync
     nock(constants.secondaryEndpoint)
@@ -48,39 +49,40 @@ describe('test sync queue', function () {
       .delayBody(NodeResponseDelayMs)
       .reply(200, { data: { clockValue: constants.primaryClockVal } })
 
-    // Mock out getUserPrimaryClockValues
-    await models.CNodeUser.create({
-      walletPublicKey: constants.userWallet,
-      clock: constants.primaryClockVal
-    })
+    // Create CNodeUsers to use trigger syncs for
+    for (let i = 0; i < NumManualSyncsToAdd; i++) {
+      await models.CNodeUser.create({
+        walletPublicKey: `user_wallet_${i}`,
+        clock: constants.primaryClockVal
+      })
+    }
 
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
     await snapback.init(MAX_CONCURRENCY)
 
     // Setup the recurring syncs
     const recurringSyncIds = []
-    for (let i = 0; i < 5; i++) {
-      const { id } = await snapback.issueSecondarySync({
-        userWallet: constants.userWallet,
+    for (let i = 0; i < NumRecurringSyncsToAdd; i++) {
+      const { id } = await snapback.enqueueRecurringSync({
+        userWallet: `user_wallet_${i}`,
         secondaryEndpoint: constants.secondaryEndpoint,
-        primaryEndpoint: constants.primaryEndpoint,
-        syncType: SyncType.Recurring,
-        primaryClockValue: constants.primaryClockVal
+        primaryEndpoint: constants.primaryEndpoint
       })
       recurringSyncIds.push(id)
     }
+    assert.strictEqual(recurringSyncIds.length, NumRecurringSyncsToAdd, `Failed to add ${NumRecurringSyncsToAdd} recurring syncs`)
 
     // setup manual syncs
     const manualSyncIds = []
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < NumManualSyncsToAdd; i++) {
       const { id } = await snapback.enqueueManualSync({
-        userWallet: constants.userWallet,
+        userWallet: `user_wallet_${i}`,
         secondaryEndpoint: constants.secondaryEndpoint,
-        primaryEndpoint: constants.primaryEndpoint,
-        syncType: SyncType.Manual
+        primaryEndpoint: constants.primaryEndpoint
       })
       manualSyncIds.push(id)
     }
+    assert.strictEqual(manualSyncIds.length, NumManualSyncsToAdd, `Failed to add ${NumManualSyncsToAdd} manual syncs`)
 
     const totalJobsAddedCount = recurringSyncIds.length + manualSyncIds.length
 
@@ -97,6 +99,8 @@ describe('test sync queue', function () {
     // Set polling timeout to (2 * totalJobsAddedCount * NodeResponseDelayMs) to ensure jobs are being processed in a timely manner
     let totalPollingTime = 0
     while (manualWaitingJobIDs.length || recurringWaitingJobIDs.length) {
+      console.log(`Num manualWaitingJobIDs: ${manualWaitingJobIDs.length} || Num recurringWaitingJobIDs: ${recurringWaitingJobIDs.length}`)
+
       await utils.timeout(NodeResponseDelayMs)
 
       totalPollingTime += NodeResponseDelayMs

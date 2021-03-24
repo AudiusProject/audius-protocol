@@ -79,14 +79,8 @@ class SnapbackSM {
     await this.manualSyncQueue.empty()
     await this.recurringSyncQueue.empty()
 
-    /**
-     * Maintain an in-memory mapping of user wallet -> boolean indicating waiting sync for user
-     * This is used to prevent enqueueing duplicate syncs for a user
-     * We maintain this mapping to maximize query performance; Bull does not provide any api for querying
-     *    jobs by property and would require a linear iteration over the full job list
-     */
-    this.waitingManualSyncsByUserWallet = {}
-    this.waitingRecurringSyncsByUserWallet = {}
+    // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
+    this.syncDeDuplicator = new SyncDeDuplicator()
 
     const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
     if (isUserMetadata) {
@@ -249,20 +243,17 @@ class SnapbackSM {
    * Enqueues a sync request to manualSyncQueue & returns job info
    */
   async enqueueManualSync ({
+    userWallet,
     primaryEndpoint,
-    secondaryEndpoint,
-    userWallet
+    secondaryEndpoint
   }) {
     try {
-      const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
-
       const jobInfo = await this._enqueueSync({
         userWallet,
         primaryEndpoint,
         secondaryEndpoint,
         syncType: SyncType.Manual
       })
-
       return jobInfo
     } catch (e) {
       logger.error(`Error enqueing manual sync for user: ${userWallet}, error: ${e.message}`)
@@ -275,14 +266,11 @@ class SnapbackSM {
    * Accepts `primaryClockValue` as param since Snapback pre-computes this before enqueuing
    */
   async enqueueRecurringSync ({
-    primaryEndpoint,
-    secondaryEndpoint,
     userWallet,
-    primaryClockValue
+    primaryEndpoint,
+    secondaryEndpoint
   }) {
     try {
-      primaryClockValue = primaryClockValue || (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
-
       const jobInfo = await this._enqueueSync({
         userWallet,
         primaryEndpoint,
@@ -310,8 +298,13 @@ class SnapbackSM {
   }) {
     const queue = (syncType === SyncType.Manual) ? this.manualSyncQueue : this.recurringSyncQueue
 
-    // Only add to queue if a waiting job for user does not already exist
+    // If duplicate sync already exists, do not add and instead return existing sync job info
+    const duplicateSyncJobInfo = this.syncDeDuplicator.getDuplicateSyncJobInfo(syncType, userWallet, secondaryEndpoint)
+    if (duplicateSyncJobInfo) {
+      this.log(`_enqueueSync Failure - a sync of type ${syncType} is already waiting for user wallet ${userWallet} against secondary ${secondaryEndpoint}`)
 
+      return duplicateSyncJobInfo
+    }
 
     // Define axios params for sync request to secondary
     const syncRequestParameters = {
@@ -332,11 +325,13 @@ class SnapbackSM {
       startTime: Date.now()
     }
 
-    const jobInfo = await this.queue.add(jobProps)
+    const jobInfo = await queue.add(jobProps)
+
+    // Record sync in syncDeDuplicator
+    this.syncDeDuplicator.recordSync(syncType, userWallet, secondaryEndpoint, jobInfo)
 
     return jobInfo
   }
-
 
   /**
    * Main state machine processing function
@@ -579,18 +574,25 @@ class SnapbackSM {
       return
     }
 
-    const syncWallet = syncRequestParameters.data.wallet[0]
-    const secondaryUrl = syncRequestParameters.baseURL
+    const userWallet = syncRequestParameters.data.wallet[0]
+    const secondaryEndpoint = syncRequestParameters.baseURL
 
-    const primaryClockValue = (await this.getUserPrimaryClockValues([syncWallet]))[userWallet]
+    /**
+     * Remove sync from syncDeDuplicator once it moves to Active status, before processing
+     * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting
+     */
+    this.syncDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
 
-    this.log(`------------------Process SYNC | User ${syncWallet} | Secondary: ${secondaryUrl} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
+    // primaryClockValue is used in monitorSecondarySync call below
+    const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
+
+    this.log(`------------------Process SYNC | User ${userWallet} | Secondary: ${secondaryEndpoint} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
 
     // Issue sync request to secondary
     await axios(syncRequestParameters)
 
     // Wait until has sync has completed (up to a timeout) before moving on
-    await this.monitorSecondarySync(syncWallet, primaryClockValue, secondaryUrl, syncType)
+    await this.monitorSecondarySync(userWallet, primaryClockValue, secondaryEndpoint, syncType)
 
     // Exit when sync status is computed
     this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
@@ -621,6 +623,47 @@ class SnapbackSM {
       recurringWaiting,
       recurringActive
     }
+  }
+}
+
+/**
+ * Ensure a sync for (syncType, userWallet, secondaryEndpoint) can only be enqueued once
+ * This is used to ensure multiple concurrent sync tasks are not being redundantly used on a single user
+ * Implemented with an in-memory map of string(syncType, userWallet, secondaryEndpoint) -> object(syncJobInfo)
+ *
+ * @dev We maintain this map to maximize query performance; Bull does not provide any api for querying
+ *    jobs by property and would require a linear iteration over the full job list
+ */
+class SyncDeDuplicator {
+  constructor () {
+    this.waitingSyncsByUserWalletMap = {}
+  }
+
+  /** Stringify properties to enable storage with a flat map */
+  _getSyncKey (syncType, userWallet, secondaryEndpoint) {
+    return `${syncType}::${userWallet}::${secondaryEndpoint}`
+  }
+
+  /** Return job info of sync with given properties if present else null */
+  getDuplicateSyncJobInfo (syncType, userWallet, secondaryEndpoint) {
+    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
+
+    const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
+    return duplicateSyncJobInfo || null
+  }
+
+  /** Record job info for sync with given properties */
+  recordSync (syncType, userWallet, secondaryEndpoint, jobInfo) {
+    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
+
+    this.waitingSyncsByUserWalletMap[syncKey] = jobInfo
+  }
+
+  /** Remove sync with given properties */
+  removeSync (syncType, userWallet, secondaryEndpoint) {
+    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
+
+    delete this.waitingSyncsByUserWalletMap[syncKey]
   }
 }
 
