@@ -50,7 +50,7 @@ describe('test sync queue', function () {
       .reply(200, { data: { clockValue: constants.primaryClockVal } })
 
     // Create CNodeUsers to use trigger syncs for
-    for (let i = 0; i < NumManualSyncsToAdd; i++) {
+    for (let i = 0; i <= NumManualSyncsToAdd; i++) {
       await models.CNodeUser.create({
         walletPublicKey: `user_wallet_${i}`,
         clock: constants.primaryClockVal
