@@ -1,5 +1,6 @@
 const axios = require('axios')
 const FormData = require('form-data')
+const uuid = require('../../utils/uuid')
 
 const SchemaValidator = require('../schemaValidator')
 
@@ -567,6 +568,9 @@ class CreatorNode {
       axiosRequestObj.headers['User-Id'] = user.user_id
     }
 
+    const requestId = uuid()
+    axiosRequestObj.headers['X-Request-ID'] = requestId
+
     axiosRequestObj.baseURL = this.creatorNodeEndpoint
 
     // Axios throws for non-200 responses
@@ -615,7 +619,7 @@ class CreatorNode {
         }
       }
 
-      _handleErrorHelper(e, axiosRequestObj.url)
+      _handleErrorHelper(e, axiosRequestObj.url, requestId)
     }
   }
 
@@ -642,6 +646,9 @@ class CreatorNode {
     }
     headers['X-Session-ID'] = this.authToken
 
+    const requestId = uuid()
+    headers['X-Request-ID'] = requestId
+
     let total
     const url = this.creatorNodeEndpoint + route
     try {
@@ -666,6 +673,7 @@ class CreatorNode {
           // Add a 10% inherit processing time for the file upload.
           onUploadProgress: (progressEvent) => {
             if (!total) total = progressEvent.total
+            console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
             onProgress(progressEvent.loaded, total)
           }
         }
@@ -676,15 +684,16 @@ class CreatorNode {
       onProgress(total, total)
       return resp.data
     } catch (e) {
-      _handleErrorHelper(e, url)
+      _handleErrorHelper(e, url, requestId)
     }
   }
 }
 
-function _handleErrorHelper (e, requestUrl) {
+function _handleErrorHelper (e, requestUrl, requestId = null) {
   if (e.response && e.response.data && e.response.data.error) {
     const cnRequestID = e.response.headers['cn-request-id']
-    const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}]`
+    // cnRequestID will be the same as requestId if it receives the X-Request-ID header
+    const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}, ${requestId}]`
 
     console.error(errMessage)
     throw new Error(errMessage)
@@ -692,10 +701,12 @@ function _handleErrorHelper (e, requestUrl) {
     // delete headers, may contain tokens
     if (e.config && e.config.headers) delete e.config.headers
 
-    const errorMsg = `Network error while making request to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
+    const errorMsg = `Network error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
     console.error(errorMsg, e)
     throw new Error(`${errorMsg}${e}`)
   } else {
+    const errorMsg = `Unknown error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
+    console.error(errorMsg, e)
     throw e
   }
 }

@@ -344,15 +344,15 @@ trending_ids_route_parser = reqparse.RequestParser()
 trending_ids_route_parser.add_argument('limit', required=False, type=int, default=10)
 trending_ids_route_parser.add_argument('genre', required=False, type=str)
 
-track_id = ns.model('track_id', { "id": fields.String(required=True) })
-trending_times_ids = ns.model('trending_times_ids', {
+track_id = full_ns.model('track_id', { "id": fields.String(required=True) })
+trending_times_ids = full_ns.model('trending_times_ids', {
         "week": fields.List(fields.Nested(track_id)),
         "month": fields.List(fields.Nested(track_id)),
         "year": fields.List(fields.Nested(track_id))
 })
 trending_ids_response = make_response(
     "trending_ids_response",
-    ns,
+    full_ns,
     fields.Nested(trending_times_ids)
 )
 

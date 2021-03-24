@@ -1,6 +1,14 @@
 from flask_restx import fields
 from .common import ns
 
+associated_wallets = ns.model("associated_wallets", {
+    "wallets": fields.List(fields.String, required=True)
+})
+
+encoded_user_id = ns.model("encoded_user_id", {
+    "user_id": fields.String(allow_null=True)
+})
+
 profile_picture = ns.model("profile_picture", {
     "150x150": fields.String,
     "480x480": fields.String,
@@ -26,11 +34,12 @@ user_model = ns.model("user", {
     "playlist_count": fields.Integer(required=True),
     "profile_picture": fields.Nested(profile_picture, allow_null=True),
     "repost_count": fields.Integer(required=True),
-    "track_count": fields.Integer(required=True),
+    "track_count": fields.Integer(required=True)
 })
 
 user_model_full = ns.clone("user_full", user_model, {
     "balance": fields.String(required=True),
+    "associated_wallets_balance": fields.String(required=True),
     "blocknumber": fields.Integer(required=True),
     "wallet": fields.String(required=True),
     "created_at": fields.String(required=True),
@@ -43,5 +52,7 @@ user_model_full = ns.clone("user_full", user_model, {
     "cover_photo_sizes": fields.String,
     "cover_photo_legacy": fields.String,
     "profile_picture_sizes": fields.String,
-    "profile_picture_legacy": fields.String
+    "profile_picture_legacy": fields.String,
+    "metadata_multihash": fields.String,
+    "has_collectibles": fields.Boolean(required=True)
 })

@@ -3,13 +3,28 @@ const RedisStore = require('rate-limit-redis')
 const config = require('./config.js')
 const rateLimit = require('express-rate-limit')
 const express = require('express')
+const { isIPFromContentNode } = require('./utils/contentNodeIPCheck')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 
-const isIPWhitelisted = (ip) => {
+const isIPWhitelisted = (ip, req) => {
+  // If the IP is either something in the regex whitelist or it is from
+  // a known content node, return true
   const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
-  return whitelistRegex && !!ip.match(whitelistRegex)
+  const isWhitelisted = whitelistRegex && !!ip.match(whitelistRegex)
+
+  let isFromContentNode = false
+  try {
+    isFromContentNode = isIPFromContentNode(ip, req)
+  } catch (e) {
+    // Log out and continue if for some reason signature validation threw
+    req.logger.error(e)
+  }
+
+  // Don't return early so we can see logs for both paths
+  req.logger.info(`isIPWhitelisted - isWhitelisted: ${isWhitelisted}, isFromContentNode: ${isFromContentNode}`)
+  return isWhitelisted || isFromContentNode
 }
 
 const getIP = (req) => {
@@ -37,7 +52,7 @@ const getIP = (req) => {
   // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
   // We can just use req.ip which corresponds to the best guess forward-for that was added if any
   if (headers.length === 1) {
-    req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
+    req.logger.debug(`_getIP: found 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
     return { ip }
   }
 
@@ -45,7 +60,7 @@ const getIP = (req) => {
   // either the actual user or a content node
   const senderIP = headers[headers.length - 2]
 
-  if (isIPWhitelisted(senderIP)) {
+  if (isIPWhitelisted(senderIP, req)) {
     const forwardedIP = headers[headers.length - 3]
     if (!forwardedIP) {
       req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
@@ -145,4 +160,9 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
-module.exports = { getIP, isIPWhitelisted, getRateLimiter, getRateLimiterMiddleware }
+module.exports = {
+  getIP,
+  isIPWhitelisted,
+  getRateLimiter,
+  getRateLimiterMiddleware
+}

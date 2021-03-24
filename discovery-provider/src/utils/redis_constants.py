@@ -5,3 +5,4 @@ most_recent_indexed_block_hash_redis_key = 'most_recently_indexed_block_hash_fro
 most_recent_indexed_ipld_block_redis_key = 'most_recent_indexed_ipld_block_redis_key'
 most_recent_indexed_ipld_block_hash_redis_key = 'most_recent_indexed_ipld_block_hash_redis_key'
 trending_tracks_last_completion_redis_key = 'trending:tracks:last-completion'
+trending_playlists_last_completion_redis_key = 'trending-playlists:last-completion'

@@ -448,6 +448,7 @@ describe('DiscoveryProviderSelection', () => {
     localStorage.removeItem(DISCOVERY_PROVIDER_TIMESTAMP)
     const mockDP = new DiscoveryProvider(
       null, // whitelist
+      null, // blacklist
       audiusInstance.userStateManager,
       mockEthContracts([healthyThenUnhealthy, healthy], '1.2.3'),
       audiusInstance.web3Manager,

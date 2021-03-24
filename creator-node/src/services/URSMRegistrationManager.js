@@ -115,6 +115,9 @@ class URSMRegistrationManager {
      * 2-a. Short-circuit if L2 record for node already matches L1 record (i.e. delegateOwnerWallets match)
      */
     if (delegateOwnerWalletFromSPFactory === delegateOwnerWalletFromURSM) {
+      // Update config
+      this.nodeConfig.set('isRegisteredOnURSM', true)
+
       this.logInfo(`Node already registered on URSM with same delegateOwnerWallet`)
       return
     }
@@ -181,6 +184,10 @@ class URSMRegistrationManager {
         receivedSignatures[1].sig,
         receivedSignatures[2].sig
       )
+
+      // Update config
+      this.nodeConfig.set('isRegisteredOnURSM', true)
+
       this.logInfo('Successfully registered self on URSM')
     } catch (e) {
       throw new Error(`URSMRegistration contract call failed ${e}`)

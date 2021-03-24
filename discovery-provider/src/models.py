@@ -156,6 +156,7 @@ class User(Base):
     primary_id = Column(Integer, nullable=True)
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
     replica_set_update_signer = Column(String, nullable=True)
+    has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
 
     # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, user_id, blockhash)
@@ -749,8 +750,29 @@ class UserBalance(Base):
 
     # balance in Wei
     balance = Column(String, nullable=False)
+    associated_wallets_balance = Column(String, nullable=False)
 
     def __repr__(self):
         return f"<UserBalance(\
 user_id={self.user_id},\
-balance={self.balance}>"
+balance={self.balance},\
+associated_wallets_balance={self.associated_wallets_balance}>"
+
+class AssociatedWallet(Base):
+    __tablename__ = "associated_wallets"
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    is_delete = Column(Boolean, nullable=False)
+    id = Column(Integer, nullable=False, primary_key=True)
+    user_id = Column(Integer, nullable=False, index=True)
+    wallet = Column(String, nullable=False, index=True)
+
+    def __repr__(self):
+        return f"<AssociatedWallet(blockhash={self.blockhash},\
+blocknumber={self.blocknumber},\
+is_current={self.is_current},\
+is_delete={self.is_delete},\
+id={self.id},\
+user_id={self.user_id},\
+wallet={self.wallet})>"

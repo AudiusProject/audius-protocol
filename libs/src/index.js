@@ -28,6 +28,7 @@ class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
+   * @param {Set<string>?} blacklist whether or not to exclude specified nodes (default no blacklist)
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
@@ -36,11 +37,12 @@ class AudiusLibs {
    */
   static configDiscoveryProvider (
     whitelist = null,
+    blacklist = null,
     reselectTimeout = null,
     selectionCallback = null,
     monitoringCallbacks = {}
   ) {
-    return { whitelist, reselectTimeout, selectionCallback, monitoringCallbacks }
+    return { whitelist, blacklist, reselectTimeout, selectionCallback, monitoringCallbacks }
   }
 
   /**
@@ -172,7 +174,8 @@ class AudiusLibs {
     comstockConfig,
     captchaConfig,
     isServer,
-    isDebug = false
+    isDebug = false,
+    enableUserReplicaSetManagerContract = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -206,6 +209,8 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
+
+    this.enableUserReplicaSetManagerContract = enableUserReplicaSetManagerContract
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -249,7 +254,7 @@ class AudiusLibs {
       await this.web3Manager.init()
     }
 
-    /** Contracts */
+    /** Contracts - Eth and Data Contracts */
     let contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
@@ -266,7 +271,9 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer)
+        this.isServer,
+        this.enableUserReplicaSetManagerContract
+      )
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
@@ -275,6 +282,7 @@ class AudiusLibs {
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider(
         this.discoveryProviderConfig.whitelist,
+        this.discoveryProviderConfig.blacklist,
         this.userStateManager,
         this.ethContracts,
         this.web3Manager,

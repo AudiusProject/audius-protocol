@@ -1,12 +1,14 @@
 import logging
 from datetime import datetime
+from eth_account.messages import defunct_hash_message
 from sqlalchemy.orm.session import make_transient
 from src import contract_addresses
 from src.utils import helpers
-from src.models import User
+from src.models import User, AssociatedWallet
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
+from src.queries.get_balances import enqueue_balance_refresh
 
 logger = logging.getLogger(__name__)
 
@@ -188,27 +190,56 @@ def parse_user_event(
     # New updated_at timestamp
     user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
 
-    # If creator, look up metadata multihash in IPFS and override with metadata fields
-    metadata_overrides = get_metadata_overrides_from_ipfs(
-        session, update_task, user_record
-    )
+    # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
+    if event_type == user_event_types_lookup["update_multihash"]:
+        # Look up metadata multihash in IPFS and override with metadata fields
+        ipfs_metadata = get_ipfs_metadata(
+            update_task, user_record
+        )
 
-    if metadata_overrides:
-        # metadata_overrides properties are defined in get_metadata_overrides_from_ipfs
-        if metadata_overrides["profile_picture"]:
-            user_record.profile_picture = metadata_overrides["profile_picture"]
-        if metadata_overrides["profile_picture_sizes"]:
-            user_record.profile_picture = metadata_overrides["profile_picture_sizes"]
-        if metadata_overrides["cover_photo"]:
-            user_record.cover_photo = metadata_overrides["cover_photo"]
-        if metadata_overrides["cover_photo_sizes"]:
-            user_record.cover_photo = metadata_overrides["cover_photo_sizes"]
-        if metadata_overrides["bio"]:
-            user_record.bio = metadata_overrides["bio"]
-        if metadata_overrides["name"]:
-            user_record.name = metadata_overrides["name"]
-        if metadata_overrides["location"]:
-            user_record.location = metadata_overrides["location"]
+        if ipfs_metadata:
+            # ipfs_metadata properties are defined in get_ipfs_metadata
+
+            # Fields also stored on chain
+            if "profile_picture" in ipfs_metadata and \
+                ipfs_metadata["profile_picture"]:
+                user_record.profile_picture = ipfs_metadata["profile_picture"]
+
+            if "cover_photo" in ipfs_metadata and \
+                ipfs_metadata["cover_photo"]:
+                user_record.cover_photo = ipfs_metadata["cover_photo"]
+
+            if "bio" in ipfs_metadata and \
+                ipfs_metadata["bio"]:
+                user_record.bio = ipfs_metadata["bio"]
+
+            if "name" in ipfs_metadata and \
+                ipfs_metadata["name"]:
+                user_record.name = ipfs_metadata["name"]
+
+            if "location" in ipfs_metadata and \
+                ipfs_metadata["location"]:
+                user_record.location = ipfs_metadata["location"]
+
+            # Fields with no on-chain counterpart
+            if "profile_picture_sizes" in ipfs_metadata and \
+                ipfs_metadata["profile_picture_sizes"]:
+                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
+
+            if "cover_photo_sizes" in ipfs_metadata and \
+                ipfs_metadata["cover_photo_sizes"]:
+                user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+
+            if "collectibles" in ipfs_metadata and \
+                ipfs_metadata["collectibles"] and \
+                isinstance(ipfs_metadata["collectibles"], dict) and \
+                ipfs_metadata["collectibles"].items():
+                user_record.has_collectibles = True
+            else:
+                user_record.has_collectibles = False
+
+            if 'associated_wallets' in ipfs_metadata:
+                update_user_associated_wallets(session, update_task, user_record, ipfs_metadata['associated_wallets'])
 
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
@@ -225,16 +256,89 @@ def parse_user_event(
         user_record.cover_photo = None
     return user_record
 
-def get_metadata_overrides_from_ipfs(session, update_task, user_record):
-    user_metadata = user_metadata_format
+def update_user_associated_wallets(session, update_task, user_record, associated_wallets):
+    """ Updates the user associated wallets table """
+    try:
+        if not isinstance(associated_wallets, dict):
+            # With malformed associated wallets, we update the associated wallets
+            # to be an empty dict. This has the effect of generating new rows for the
+            # already associated wallets and marking them as deleted.
+            associated_wallets = {}
 
-    if user_record.metadata_multihash and user_record.is_creator and user_record.handle:
+        prev_user_associated_wallets_response = (
+            session.query(AssociatedWallet.wallet)
+            .filter_by(user_id=user_record.user_id, is_current=True, is_delete=False)
+            .all()
+        )
+
+        previous_wallets = [wallet for [wallet] in prev_user_associated_wallets_response]
+        added_associated_wallets = set()
+
+        session.query(AssociatedWallet).filter_by(user_id=user_record.user_id).update({"is_current": False})
+
+        # Verify the wallet signatures and create the user id to wallet associations
+        for associated_wallet, wallet_metadata in associated_wallets.items():
+            if not 'signature' in wallet_metadata or not isinstance(wallet_metadata['signature'], str):
+                continue
+            signed_wallet = recover_user_id_hash(
+                update_task.web3,
+                user_record.user_id,
+                wallet_metadata['signature']
+            )
+
+            if signed_wallet == associated_wallet:
+                # Check that the wallet doesn't already exist
+                wallet_exists = (
+                    session.query(AssociatedWallet)
+                    .filter_by(wallet=associated_wallet, is_current=True, is_delete=False)
+                    .count() > 0
+                )
+                if not wallet_exists:
+                    added_associated_wallets.add(signed_wallet)
+                    associated_wallet_entry = AssociatedWallet(
+                        user_id=user_record.user_id,
+                        wallet=associated_wallet,
+                        is_current=True,
+                        is_delete=False,
+                        blocknumber=user_record.blocknumber,
+                        blockhash=user_record.blockhash
+                    )
+                    session.add(associated_wallet_entry)
+
+        # Mark the previously associated wallets as deleted
+        for previously_associated_wallet in previous_wallets:
+            if not previously_associated_wallet in added_associated_wallets:
+                associated_wallet_entry = AssociatedWallet(
+                    user_id=user_record.user_id,
+                    wallet=previously_associated_wallet,
+                    is_current=True,
+                    is_delete=True,
+                    blocknumber=user_record.blocknumber,
+                    blockhash=user_record.blockhash
+                )
+                session.add(associated_wallet_entry)
+
+        is_updated_wallets = set(previous_wallets) != added_associated_wallets
+        if is_updated_wallets:
+            enqueue_balance_refresh(update_task.redis, [user_record.user_id])
+    except Exception as e:
+        logger.error(f"Fatal updating user associated wallets while indexing {e}", exc_info=True)
+
+
+def recover_user_id_hash(web3, user_id, signature):
+    message_hash = defunct_hash_message(text=f'AudiusUserID:{user_id}')
+    wallet_address = web3.eth.account.recoverHash(message_hash, signature=signature)
+    return wallet_address
+
+
+def get_ipfs_metadata(update_task, user_record):
+    user_metadata = user_metadata_format
+    if user_record.metadata_multihash:
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
             user_metadata_format
         )
-        logger.warning(f'users.py | {user_metadata}')
-
+        logger.info(f'users.py | {user_metadata}')
     return user_metadata
 
 # Determine whether this user has identity established on the UserReplicaSetManager contract
