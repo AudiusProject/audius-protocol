@@ -52,7 +52,7 @@ const getIP = (req) => {
   // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
   // We can just use req.ip which corresponds to the best guess forward-for that was added if any
   if (headers.length === 1) {
-    req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
+    req.logger.debug(`_getIP: found 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
     return { ip }
   }
 
