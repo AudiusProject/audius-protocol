@@ -46,7 +46,7 @@ const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
 const SUGGESTED_FOLLOW_USER_HANDLE_URL =
   process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES ||
   'https://download.audius.co/static-resources/signup-follows.json'
-const SIGN_UP_TIMEOUT_MILLIS = 5 /* min */ * 60 * 1000
+const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
 
 const messages = {
   incompleteAccount:
