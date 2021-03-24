@@ -47,7 +47,8 @@ function getRequestLoggingContext (req, requestID) {
 }
 
 function loggingMiddleware (req, res, next) {
-  const requestID = shortid.generate()
+  const providedRequestID = req.header('X-Request-ID')
+  const requestID = providedRequestID || shortid.generate()
   res.set('CN-Request-ID', requestID)
 
   req.logContext = getRequestLoggingContext(req, requestID)
