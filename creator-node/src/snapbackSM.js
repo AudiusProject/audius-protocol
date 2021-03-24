@@ -495,7 +495,7 @@ class SnapbackSM {
    * Track an ongoing sync operation for a given secondaryUrl and user wallet
    *  - Will re-enqueue sync if it fails or is still behind after retries or max duration
    */
-  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl) {
+  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl, syncType) {
     const startTime = Date.now()
 
     // Define axios request object for secondary sync status request
@@ -544,11 +544,19 @@ class SnapbackSM {
     // enqueue another sync if secondary is still behind
     // TODO max retry limit
     if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
-      await this.enqueueRecurringSync({
-        userWallet,
-        primaryEndpoint: this.endpoint,
-        secondaryEndpoint: secondaryUrl
-      })
+      if (syncType === SyncType.Manual) {
+        await this.enqueueManualSync({
+          userWallet,
+          primaryEndpoint: this.endpoint,
+          secondaryEndpoint: secondaryUrl
+        })
+      } else {
+        await this.enqueueRecurringSync({
+          userWallet,
+          primaryEndpoint: this.endpoint,
+          secondaryEndpoint: secondaryUrl
+        })
+      }
     }
   }
 
