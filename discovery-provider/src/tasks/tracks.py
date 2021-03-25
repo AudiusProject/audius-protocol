@@ -197,9 +197,6 @@ def parse_track_event(
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
         )
-        # user_record = user_record[0]
-        # handle = user_record.handle
-        # creator_node_endpoint = user_record.creator_node_endpoint
 
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,

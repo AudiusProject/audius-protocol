@@ -124,6 +124,7 @@ class IPFSClient:
                     raise Exception()
                 return data
             except Exception:
+                logger.error("IPFSCLIENT | get_metadata_from_gateway - failed to fetch metadata from user replica gateways")
                 # Remove replica set from gateway endpoints before querying
                 gateway_endpoints = list(filter(lambda endpoint: endpoint not in user_replicas, gateway_endpoints))
 
