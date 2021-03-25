@@ -70,10 +70,12 @@ const DisplayUser = ({ wallet }: { wallet: Address }) => {
 const VoteTimelineEvent = ({
   className,
   onClick,
+  isDisabled,
   event
 }: {
   className?: string
   onClick?: () => void
+  isDisabled?: boolean
   event: GovernanceVoteEvent | GovernanceVoteUpdateEvent
 }) => {
   const { proposal } = useProposal(event.proposalId)
@@ -84,6 +86,7 @@ const VoteTimelineEvent = ({
       onClick={onClick}
       className={className}
       proposal={proposal}
+      isDisabled={isDisabled}
       vote={event.vote}
     />
   ) : null
@@ -92,10 +95,12 @@ const VoteTimelineEvent = ({
 const ProposalTimelineEvent = ({
   event,
   className,
+  isDisabled,
   onClick
 }: {
   event: GovernanceProposalEvent
   className?: string
+  isDisabled?: boolean
   onClick?: () => void
 }) => {
   const { proposal } = useProposal(event.proposalId)
@@ -110,6 +115,7 @@ const ProposalTimelineEvent = ({
         header={header}
         onClick={onClick}
         className={className}
+        isDisabled={isDisabled}
         proposal={modified}
       />
     )
@@ -122,20 +128,22 @@ const GenericTimelineEvent = ({
   header,
   title,
   blockNumber,
+  isDisabled,
   onClick = () => {}
 }: {
   onClick?: () => void
   header?: string
   className?: string
+  isDisabled?: boolean
   title: ReactNode
   blockNumber: number
 }) => {
   const block = useBlock(blockNumber)
   return (
     <div
-      onClick={onClick}
+      onClick={isDisabled ? onClick : () => {}}
       className={clsx(styles.container, {
-        [styles.onClick]: !!onClick,
+        [styles.onClick]: !!onClick && !isDisabled,
         [className!]: !!className
       })}
     >
@@ -154,7 +162,8 @@ const DelegationIncreaseEvent: React.FC<{
   event: DelegateIncreaseStakeEvent
   parentOnClick?: () => void
   className?: string
-}> = ({ event, className, parentOnClick }) => {
+  isDisabled?: boolean
+}> = ({ event, className, isDisabled, parentOnClick }) => {
   const received = event.direction === 'Received'
   const userWallet = received ? event.delegator : event.serviceProvider
 
@@ -180,6 +189,7 @@ const DelegationIncreaseEvent: React.FC<{
     <GenericTimelineEvent
       header={header}
       onClick={onClick}
+      isDisabled={isDisabled}
       className={className}
       title={title}
       blockNumber={event.blockNumber}
@@ -191,7 +201,8 @@ const DelegationDecreaseEvent: React.FC<{
   event: DelegateDecreaseStakeEvent
   parentOnClick?: () => void
   className?: string
-}> = ({ event, className, parentOnClick }) => {
+  isDisabled?: boolean
+}> = ({ event, className, parentOnClick, isDisabled }) => {
   const onClick = () => {
     if (parentOnClick) parentOnClick()
   }
@@ -345,6 +356,7 @@ const DelegationDecreaseEvent: React.FC<{
   return (
     <GenericTimelineEvent
       onClick={onClick}
+      isDisabled={isDisabled}
       className={className}
       header={header}
       title={title}
@@ -357,7 +369,8 @@ const RegistrationDeregistrationEvent: React.FC<{
   parentOnClick?: () => void
   event: ServiceProviderRegisteredEvent | ServiceProviderDeregisteredEvent
   className?: string
-}> = ({ event, parentOnClick, className }) => {
+  isDisabled?: boolean
+}> = ({ event, parentOnClick, className, isDisabled }) => {
   const didRegister = event._type === 'ServiceProviderRegistered'
 
   // is it discovery-node or creator-node
@@ -367,14 +380,14 @@ const RegistrationDeregistrationEvent: React.FC<{
   const header = didRegister ? 'REGISTERED SERVICE' : 'DEREGISTERED SERVICE'
   const title = (
     <span className={styles.titleContainer}>
-      {`${didRegister ? 'Registered' : 'Deregistered'} ${
-        event.serviceType
-      } at ${event.endpoint}`}
+      {`${didRegister ? 'Registered' : 'Deregistered'} ${event.serviceType
+        } at ${event.endpoint}`}
     </span>
   )
   return (
     <GenericTimelineEvent
       onClick={onClick}
+      isDisabled={isDisabled}
       className={className}
       header={header}
       title={title}
@@ -386,7 +399,8 @@ const ClaimEvent: React.FC<{
   parentOnClick?: () => void
   event: DelegateClaimEvent | ClaimProcessedEvent
   className?: string
-}> = ({ event, parentOnClick, className }) => {
+  isDisabled?: boolean
+}> = ({ event, parentOnClick, className, isDisabled }) => {
   const onClick = () => {
     if (parentOnClick) parentOnClick()
   }
@@ -407,6 +421,7 @@ const ClaimEvent: React.FC<{
   return (
     <GenericTimelineEvent
       onClick={onClick}
+      isDisabled={isDisabled}
       className={className}
       header={header}
       title={title}
@@ -419,7 +434,8 @@ const ServiceProviderStakeEvent: React.FC<{
   parentOnClick?: () => void
   event: ServiceProviderIncreaseStakeEvent | ServiceProviderDecreaseStakeEvent
   className?: string
-}> = ({ event, parentOnClick, className }) => {
+  isDisabled?: boolean
+}> = ({ event, parentOnClick, className, isDisabled }) => {
   const onClick = () => {
     if (parentOnClick) parentOnClick()
     // do nothing for stake actions
@@ -488,6 +504,7 @@ const ServiceProviderStakeEvent: React.FC<{
     <GenericTimelineEvent
       onClick={onClick}
       className={className}
+      isDisabled={isDisabled}
       header={header}
       title={renderTitle()}
       blockNumber={event.blockNumber}
@@ -497,6 +514,7 @@ const ServiceProviderStakeEvent: React.FC<{
 
 type OwnProps = {
   className?: string
+  isDisabled?: boolean
   onClick?: () => void
   event: TimelineEventType
 }
@@ -506,6 +524,7 @@ type TimelineEventProps = OwnProps
 const TimelineEvent: React.FC<TimelineEventProps> = ({
   onClick: parentOnClick,
   className,
+  isDisabled,
   event
 }: TimelineEventProps) => {
   if (!event) return null
@@ -516,7 +535,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     case 'GovernanceVoteUpdate':
       return (
         <VoteTimelineEvent
-          onClick={parentOnClick}
+          onClick={parentOnClick} isDisabled={isDisabled}
           className={clsx(styles.proposalEvent, { [className!]: !!className })}
           event={event}
         />
@@ -524,7 +543,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     case 'GovernanceProposal':
       return (
         <ProposalTimelineEvent
-          onClick={parentOnClick}
+          onClick={parentOnClick} isDisabled={isDisabled}
           className={clsx(styles.proposalEvent, { [className!]: !!className })}
           event={event}
         />
@@ -533,11 +552,11 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     // Delegation
     case 'DelegateIncreaseStake':
       return (
-        <DelegationIncreaseEvent event={event} parentOnClick={parentOnClick} />
+        <DelegationIncreaseEvent event={event} parentOnClick={parentOnClick} isDisabled={isDisabled} />
       )
     case 'DelegateDecreaseStake':
       return (
-        <DelegationDecreaseEvent event={event} parentOnClick={parentOnClick} />
+        <DelegationDecreaseEvent event={event} parentOnClick={parentOnClick} isDisabled={isDisabled} />
       )
 
     // SP
@@ -546,7 +565,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
       return (
         <RegistrationDeregistrationEvent
           event={event}
-          parentOnClick={parentOnClick}
+          parentOnClick={parentOnClick} isDisabled={isDisabled}
         />
       )
     case 'ServiceProviderIncreaseStake':
@@ -555,7 +574,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
         <ServiceProviderStakeEvent
           event={event}
           className={className}
-          parentOnClick={parentOnClick}
+          parentOnClick={parentOnClick} isDisabled={isDisabled}
         />
       )
 
@@ -566,7 +585,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
         <ClaimEvent
           event={event}
           className={className}
-          parentOnClick={parentOnClick}
+          parentOnClick={parentOnClick} isDisabled={isDisabled}
         />
       )
   }
@@ -575,6 +594,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     <GenericTimelineEvent
       className={className}
       onClick={parentOnClick}
+      isDisabled={isDisabled}
       title={JSON.stringify(event)}
       blockNumber={event.blockNumber}
     />

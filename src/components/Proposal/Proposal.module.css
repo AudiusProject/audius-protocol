@@ -8,8 +8,12 @@
   user-select: none;
 }
 
-.proposal:hover {
+.proposal:hover:not(.disabled) {
   background: #393A54;
+}
+
+.proposal.disabled {
+  cursor: default;
 }
 
 .left {
