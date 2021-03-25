@@ -45,6 +45,7 @@ import { trackNewRemixEvent } from 'store/cache/tracks/sagas'
 import { reportSuccessAndFailureEvents } from './utils/sagaHelpers'
 
 const MAX_CONCURRENT_UPLOADS = 4
+const MAX_CONCURRENT_REGISTRATIONS = 4
 const MAX_CONCURRENT_TRACK_SIZE_BYTES = 40 /* MB */ * 1024 * 1024
 const UPLOAD_TIMEOUT_MILLIS = 60 /* min */ * 60 /* sec */ * 1000 /* ms */
 
@@ -526,10 +527,44 @@ export function* handleUploads({
       console.debug(
         `Attempting to register tracks: ${JSON.stringify(sortedMetadata)}`
       )
-      // Send it off to get our trackIDs
-      const { trackIds, error } = yield AudiusBackend.registerUploadedTracks(
-        sortedMetadata
-      )
+
+      // Send the tracks off to chain to get our trackIDs
+      //
+      // We want to limit the number of concurrent requests to chain here, as tons and tons of
+      // tracks lead to a lot of metadata being colocated on the same block and discovery nodes
+      // can have a hard time keeping up. [see AUD-462]. So, chunk the registration into "rounds."
+      //
+      // Multi-track upload does not have the same issue because we write to chain immediately
+      // after each upload succeeds and those fire on a rolling window.
+      // Realistically, with a higher throughput system, this should be a non-issue.
+      let trackIds = []
+      let error = null
+      for (
+        let i = 0;
+        i < sortedMetadata.length;
+        i += MAX_CONCURRENT_REGISTRATIONS
+      ) {
+        const concurrentMetadata = sortedMetadata.slice(
+          i,
+          i + MAX_CONCURRENT_REGISTRATIONS
+        )
+        const {
+          trackIds: roundTrackIds,
+          error: roundHadError
+        } = yield AudiusBackend.registerUploadedTracks(concurrentMetadata)
+
+        trackIds = trackIds.concat(roundTrackIds)
+        console.debug(
+          `Finished registering: ${roundTrackIds}, Registered so far: ${trackIds}`
+        )
+
+        // Any errors should break out, but we need to record the associated tracks first
+        // so that we can delete the orphaned ones.
+        if (roundHadError) {
+          error = roundHadError
+          break
+        }
+      }
 
       if (error) {
         console.error('Something went wrong registering tracks!')
