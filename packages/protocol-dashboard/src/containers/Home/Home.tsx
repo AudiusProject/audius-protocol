@@ -32,7 +32,7 @@ const messages = {
   wtfIsAudius: 'WTF is Audius?',
   wtf1: `Audius is a digital streaming service that connects fans directly with artists and exclusive new music`,
   wtf2: `It does this by being fully decentralized: Audius is owned and run by a vibrant, open-source community of artists, fans, and developers all around the world. Audius gives artists the power to share never-before-heard music and monetize streams directly. Developers can build their own apps on top of Audius, giving them access to one of the most unique audio catalogs in existence.`,
-  wtf3: `Backed by an all-star team of investors, Audius was founded in 2018 and serves over 1 million users every month, making it the largest non-financial crypto application ever built.`
+  wtf3: `Backed by an all-star team of investors, Audius was founded in 2018 and serves millions of users every month, making it the largest non-financial crypto application ever built.`
 }
 
 interface HomeProps {}
