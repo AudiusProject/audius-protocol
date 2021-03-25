@@ -455,8 +455,7 @@ async function checkUserMetadataAndClockValues ({
 
         // Update profile picture and metadata accordingly
         logger.info(`Updating metadata for user=${libs.userId}...`)
-        await uploadPhotoAndUpdateMetadata({
-          libsWrapper: libs,
+        await uploadPhotoAndUpdateMetadata(libs, {
           metadata: newMetadata,
           userId: libs.userId,
           picturePath,

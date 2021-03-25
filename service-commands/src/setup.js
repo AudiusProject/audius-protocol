@@ -217,12 +217,16 @@ const runSetupCommand = async (
   }
 }
 
+const getContentNodeContainerName = serviceNumber => {
+  return `cn${serviceNumber}_creator-node_1`
+}
+
 const getServiceURL = (service, serviceNumber) => {
   if (service === Service.CREATOR_NODE) {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://cn${serviceNumber}_creator-node_1:${
+    return `http://${getContentNodeContainerName(serviceNumber)}:${
       4000 + parseInt(serviceNumber) - 1
     }/${HEALTH_CHECK_ENDPOINT}`
   }
@@ -245,14 +249,15 @@ const performHealthCheckWithRetry = async (
     try {
       await wait(4000)
       await performHealthCheck(service, serviceNumber)
-      console.log(`Successful health check for ${service}`.happy)
+      console.log(`Successful health check for ${service}${serviceNumber || ''}`.happy)
       return
     } catch (e) {
       console.log(`${e}`)
     }
     attempts -= 1
   }
-  throw new Error(`Failed health check - ${service}, ${serviceNumber}`)
+  const serviceNumberString = serviceNumber ? `, spId=${serviceNumber}` : ''
+  throw new Error(`Failed health check - ${service}${serviceNumberString}`)
 }
 
 /**
@@ -278,7 +283,7 @@ const performHealthCheck = async (service, serviceNumber) => {
  * @returns {Promise<void>}
  */
 const discoveryNodeUp = async () => {
-  console.log(`\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n`.error)
+  console.log('\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'.error)
 
   const options = { verbose: true }
 
@@ -321,7 +326,7 @@ const discoveryNodeUp = async () => {
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
 const allUp = async ({ numCreatorNodes = 4 }) => {
-  console.log(`\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n`.error)
+  console.log('\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'.error)
 
   const options = { verbose: true }
 
@@ -379,9 +384,13 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
       Service.USER_METADATA_NODE,
       SetupCommand.UP_UM
     ],
+    [
+      Service.USER_METADATA_NODE,
+      SetupCommand.HEALTH_CHECK
+    ],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
     // Intentionally disabled until migration has been run on production
     // [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
@@ -406,6 +415,9 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
 module.exports = {
   runSetupCommand,
   performHealthCheck,
+  performHealthCheckWithRetry,
+  getServiceURL,
+  getContentNodeContainerName,
   allUp,
   discoveryNodeUp,
   SetupCommand,

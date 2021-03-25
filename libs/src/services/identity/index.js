@@ -1,4 +1,5 @@
 const axios = require('axios')
+const uuid = require('../../utils/uuid')
 
 const Requests = require('./requests')
 
@@ -286,6 +287,12 @@ class IdentityService {
   async _makeRequest (axiosRequestObj) {
     axiosRequestObj.baseURL = this.identityServiceEndpoint
 
+    const requestId = uuid()
+    axiosRequestObj.headers = {
+      ...(axiosRequestObj.headers || {}),
+      'X-Request-ID': requestId
+    }
+
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
@@ -293,7 +300,7 @@ class IdentityService {
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(
-          `Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`
+          `Server returned error for requestId ${requestId}: [${e.response.status.toString()}] ${e.response.data.error}`
         )
       }
       throw e
