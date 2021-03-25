@@ -25,7 +25,7 @@ const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
 const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
 const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
 const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
-const URSM_BOOTSTRAPPER_PRIVATE_KEY = ''
+const URSM_BOOTSTRAPPER_PRIVATE_KEY = '9b6611a4f31d498b2b5d08a9b877c314094ff1f5f88c936163159a09c8156f70'
 
 // NOTE: Migrate URSM first via `node setup.js run user-replica-set-manager up`
 
@@ -43,7 +43,7 @@ const URSM_BOOTSTRAPPER_PRIVATE_KEY = ''
 // const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
 // const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
 
-const NUM_USERS_PER_BATCH_REQUEST = 1
+const NUM_USERS_PER_BATCH_REQUEST = 500
 const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
 const configureAndInitLibs = async () => {
@@ -116,7 +116,8 @@ async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, aud
 
 async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
   // TODO: update with actual sp ids of audius CNs
-  const audiusInfraSpIds = new Set([1, 2, 3, 4/*, UMSpId] */]) // when UM is registered, exclude it as secondary
+  // const audiusInfraSpIds = new Set([1, 2, 3, 4/*, UMSpId] */]) // when UM is registered, exclude it as secondary
+  const audiusInfraSpIds = new Set([UMSpId]) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
   const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
@@ -300,7 +301,7 @@ const setReplicaSet = async ({
     [secondary1.spId, secondary2.spId]
   )
 
-  //   console.log('tx for updating rset', tx)
+  console.log('tx for updating rset', tx)
   const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
     primary.endpoint, [secondary1.endpoint, secondary2.endpoint]
   )
@@ -331,9 +332,9 @@ const run = async () => {
   let userIdsSuccess = []
   let userIdsFail = []
 
-  // const numUsersToProcess = numOfUsers
-  const numUsersToProcess = 1
-  for (offset = 0; offset <= numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  const numUsersToProcess = numOfUsers
+  // const numUsersToProcess = 500
+  for (offset = 7000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
@@ -391,28 +392,35 @@ const run = async () => {
     console.log(`\nSyncing across new secondaries....\n`)
     let userIdToRSetArr = Object.entries(userIdToRSet)
 
+    let sliceLength = 5
     let i
-    for (i = 0; i < userIdsWithNoCreatorNodeEndpoint.length; i++) {
-      const userId = parseInt(userIdToRSetArr[i][0])
-      const replicaSetSecondarySpIds = userIdToRSetArr[i][1]
-      console.log(`\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`)
-      try {
-        // Sync UM data to newly selected secondaries
-        await syncAcrossSecondariesAndEnsureClockIsSynced(replicaSetSecondarySpIds, spIdToEndpointAndCount, userIdToWallet, userId, UMSpId)
-
-        // If clock values are all synced, write to new contract
-        await setReplicaSet({
-          audiusLibs,
-          primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
-          secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
-          secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
-          userId
-        })
-        userIdsSuccess.push(userId)
-      } catch (e) {
-        console.error('Error with sync and or contract write', e)
-        userIdsFail.push({ userId, error: e.message })
-      }
+    for (i = 0; i < userIdsWithNoCreatorNodeEndpoint.length; i += sliceLength) {
+      const range = userIdsWithNoCreatorNodeEndpoint.slice(i, i + sliceLength)
+      console.log(range)
+      await Promise.all(range.map(async userId => {
+        const replicaSetSecondarySpIds = userIdToRSet[userId]
+        console.log(`Processing ${userId}, secondaryIDS: ${replicaSetSecondarySpIds}`)
+        console.log(
+          `\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`
+        )
+        try {
+          // Sync UM data to newly selected secondaries
+          await syncAcrossSecondariesAndEnsureClockIsSynced(replicaSetSecondarySpIds, spIdToEndpointAndCount, userIdToWallet, userId, UMSpId)
+          // If clock values are all synced, write to new contract
+          await setReplicaSet({
+            audiusLibs,
+            primary: { spId: UMSpId, endpoint: USER_METADATA_ENDPOINT },
+            secondary1: { spId: replicaSetSecondarySpIds[0], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint },
+            secondary2: { spId: replicaSetSecondarySpIds[1], endpoint: spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint },
+            userId: parseInt(userId)
+          })
+          userIdsSuccess.push(userId)
+        } catch (e) {
+          console.error('Error with sync and or contract write', e)
+          userIdsFail.push({ userId, error: e.message })
+        }
+      }))
+      console.log(`Finished processing ${i}, ${i + sliceLength}`)
     }
   }
 
