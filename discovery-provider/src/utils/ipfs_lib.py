@@ -39,12 +39,12 @@ class IPFSClient:
         retrieved_from_gateway = False
         start_time = time.time()
 
-        # # First try to retrieve from local ipfs node.
-        # try:
-        #     api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
-        #     retrieved_from_local_node = (api_metadata != metadata_format)
-        # except Exception:
-        #     logger.error(f"Failed to retrieve CID from local node, {multihash}", exc_info=True)
+        # First try to retrieve from local ipfs node.
+        try:
+            api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
+            retrieved_from_local_node = (api_metadata != metadata_format)
+        except Exception:
+            logger.error(f"Failed to retrieve CID from local node, {multihash}", exc_info=True)
 
         # Else, try to retrieve from gateways.
         if not retrieved_from_local_node:
