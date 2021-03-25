@@ -380,8 +380,9 @@ const RegistrationDeregistrationEvent: React.FC<{
   const header = didRegister ? 'REGISTERED SERVICE' : 'DEREGISTERED SERVICE'
   const title = (
     <span className={styles.titleContainer}>
-      {`${didRegister ? 'Registered' : 'Deregistered'} ${event.serviceType
-        } at ${event.endpoint}`}
+      {`${didRegister ? 'Registered' : 'Deregistered'} ${
+        event.serviceType
+      } at ${event.endpoint}`}
     </span>
   )
   return (
@@ -535,7 +536,8 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     case 'GovernanceVoteUpdate':
       return (
         <VoteTimelineEvent
-          onClick={parentOnClick} isDisabled={isDisabled}
+          onClick={parentOnClick}
+          isDisabled={isDisabled}
           className={clsx(styles.proposalEvent, { [className!]: !!className })}
           event={event}
         />
@@ -543,7 +545,8 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     case 'GovernanceProposal':
       return (
         <ProposalTimelineEvent
-          onClick={parentOnClick} isDisabled={isDisabled}
+          onClick={parentOnClick}
+          isDisabled={isDisabled}
           className={clsx(styles.proposalEvent, { [className!]: !!className })}
           event={event}
         />
@@ -552,11 +555,19 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
     // Delegation
     case 'DelegateIncreaseStake':
       return (
-        <DelegationIncreaseEvent event={event} parentOnClick={parentOnClick} isDisabled={isDisabled} />
+        <DelegationIncreaseEvent
+          event={event}
+          parentOnClick={parentOnClick}
+          isDisabled={isDisabled}
+        />
       )
     case 'DelegateDecreaseStake':
       return (
-        <DelegationDecreaseEvent event={event} parentOnClick={parentOnClick} isDisabled={isDisabled} />
+        <DelegationDecreaseEvent
+          event={event}
+          parentOnClick={parentOnClick}
+          isDisabled={isDisabled}
+        />
       )
 
     // SP
@@ -565,7 +576,8 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
       return (
         <RegistrationDeregistrationEvent
           event={event}
-          parentOnClick={parentOnClick} isDisabled={isDisabled}
+          parentOnClick={parentOnClick}
+          isDisabled={isDisabled}
         />
       )
     case 'ServiceProviderIncreaseStake':
@@ -574,7 +586,8 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
         <ServiceProviderStakeEvent
           event={event}
           className={className}
-          parentOnClick={parentOnClick} isDisabled={isDisabled}
+          parentOnClick={parentOnClick}
+          isDisabled={isDisabled}
         />
       )
 
@@ -585,7 +598,8 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({
         <ClaimEvent
           event={event}
           className={className}
-          parentOnClick={parentOnClick} isDisabled={isDisabled}
+          parentOnClick={parentOnClick}
+          isDisabled={isDisabled}
         />
       )
   }

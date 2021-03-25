@@ -54,7 +54,10 @@ const Proposal: React.FC<ProposalProps> = ({
 
   return (
     <div
-      className={clsx(styles.proposal, { [className!]: !!className, [styles.disabled]: isDisabled })}
+      className={clsx(styles.proposal, {
+        [className!]: !!className,
+        [styles.disabled]: isDisabled
+      })}
       onClick={isDisabled ? () => {} : onClickProposal}
     >
       <div className={styles.left}>
