@@ -120,7 +120,12 @@ async function ensureStorageMiddleware (req, res, next) {
   if (hasEnoughStorage) {
     next()
   } else {
-    const errorMsg = `Node is reaching storage space capacity. Current usage=${(100 * storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
+    let errorMsg
+    if (storagePathSize === null || storagePathSize === undefined || storagePathUsed === null || storagePathUsed === undefined) {
+      errorMsg = `The metrics storagePathUsed=${storagePathUsed} and/or storagePathSize=${storagePathSize} are unavailable.`
+    } else {
+      errorMsg = `Node is reaching storage space capacity. Current usage=${(100 * storagePathUsed / storagePathSize).toFixed(2)}% | Max usage=${maxStorageUsedPercent}%`
+    }
     req.logger.error(errorMsg)
     return sendResponse(
       req,
