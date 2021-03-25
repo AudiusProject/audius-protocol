@@ -9,7 +9,8 @@ const { handleResponse, successResponse, errorResponseBadRequest, errorResponseS
 
 const INSTAGRAM_URL_POLLING_FREQ_MS = 500
 const getInstagramURL = (username) => {
-  return `https://www.instagram.com/${username}/channel/?__a=1`
+  const instagramProfileUrl = config.get('instagramProfileUrl') || 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
+  return instagramProfileUrl.replace('%USERNAME%', username)
 }
 const getInstagramProfileRedisKey = (username) => {
   return `instagramProfile:${username}`
