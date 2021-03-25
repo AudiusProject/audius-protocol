@@ -6,6 +6,7 @@ from urllib.parse import urlparse, urljoin
 import requests
 import ipfshttpclient
 from cid import make_cid
+
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class IPFSClient:
         return metadata
 
     # pylint: disable=broad-except
-    def get_metadata(self, multihash, metadata_format):
+    def get_metadata(self, multihash, metadata_format, user_replica_set=None):
         """ Retrieve file from IPFS, validating metadata requirements prior to
             returning an object with no missing entries
         """
@@ -38,17 +39,17 @@ class IPFSClient:
         retrieved_from_gateway = False
         start_time = time.time()
 
-        # First try to retrieve from local ipfs node.
-        try:
-            api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
-            retrieved_from_local_node = (api_metadata != metadata_format)
-        except Exception:
-            logger.error(f"Failed to retrieve CID from local node, {multihash}", exc_info=True)
+        # # First try to retrieve from local ipfs node.
+        # try:
+        #     api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
+        #     retrieved_from_local_node = (api_metadata != metadata_format)
+        # except Exception:
+        #     logger.error(f"Failed to retrieve CID from local node, {multihash}", exc_info=True)
 
         # Else, try to retrieve from gateways.
         if not retrieved_from_local_node:
             try:
-                api_metadata = self.get_metadata_from_gateway(multihash, metadata_format)
+                api_metadata = self.get_metadata_from_gateway(multihash, metadata_format, user_replica_set)
                 retrieved_from_gateway = (api_metadata != metadata_format)
             except Exception:
                 logger.error(f"Failed to retrieve CID from gateway, {multihash}", exc_info=True)
@@ -107,11 +108,25 @@ class IPFSClient:
                     logger.error(f"IPFSClient | {url} generated an exception: {exc}")
         return formatted_json
 
-    def get_metadata_from_gateway(self, multihash, metadata_format):
+    def get_metadata_from_gateway(self, multihash, metadata_format, user_replica_set=None):
         # Default return initial metadata format
         gateway_metadata_json = metadata_format
-        logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash}")
+        logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash} replica set: {user_replica_set}")
         gateway_endpoints = self._cnode_endpoints
+
+        # first attempt to first fetch metadata from user replica set, if provided & non-empty
+        if (user_replica_set and isinstance(user_replica_set, str)):
+            user_replicas = user_replica_set.split(",")
+            try:
+                query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in user_replicas]
+                data = self.query_ipfs_metadata_json(query_urls, metadata_format)
+                if data is None:
+                    raise Exception()
+                return data
+            except Exception:
+                # Remove replica set from gateway endpoints before querying
+                gateway_endpoints = list(filter(lambda endpoint: endpoint not in user_replicas, gateway_endpoints))
+
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, \
                 \ncombined addresses: {gateway_endpoints}, \
                 \ncnode_endpoints: {self._cnode_endpoints}")
