@@ -26,6 +26,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTr
       isVerified: user.is_verified,
       coverArt,
       urlPath,
+      gateways: user.creator_node_endpoint,
       id: track.track_id
     }
   } catch (e) {
@@ -66,7 +67,8 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     segments: t.track_segments,
     urlPath: getTrackPath({ ownerHandle: userMap[t.owner_id].handle, title: t.title, id: t.track_id }),
     id: t.track_id,
-    isVerified: userMap[t.owner_id].is_verified
+    isVerified: userMap[t.owner_id].is_verified,
+    gateways: userMap[t.owner_id].creator_node_endpoint
   })).filter((t: any) => !t.is_delete)
 
   return parsedTracks
@@ -104,7 +106,8 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number): Pro
       tracks,
       coverArt,
       isVerified: ownerUser.is_verified,
-      id: collection.playlist_id
+      id: collection.playlist_id,
+      gateways: ownerUser.creator_node_endpoint
     }
   } catch (e) {
     const error = `Failed to get collection for ID [${collectionId}] with error: [${e.message}]`

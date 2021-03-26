@@ -3,7 +3,7 @@ export enum BedtimeFormat {
   COLLECTION = 'COLLECTION'
 }
 
-export type TrackResponse = {
+export interface TrackResponse {
   id: number
   title: string
   handle: string
@@ -11,13 +11,14 @@ export type TrackResponse = {
   isVerified: boolean
   segments: Array<{ duration: number, multihash: string }>
   urlPath: string
+  gateways: string
 }
 
 export type GetTracksResponse = TrackResponse & {
   coverArt: string
 }
 
-export type GetCollectionResponse = {
+export interface GetCollectionResponse {
   id: number
   name: string
   ownerHandle: string
@@ -26,4 +27,5 @@ export type GetCollectionResponse = {
   tracks: TrackResponse[]
   coverArt: string
   isVerified: boolean
+  gateways: string
 }
