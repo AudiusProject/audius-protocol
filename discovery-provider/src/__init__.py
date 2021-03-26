@@ -142,7 +142,9 @@ def create_celery(test_config=None):
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
-    # Initialize eth web
+    # Initialize eth_web3 with MultiProvider
+    # We use multiprovider to allow for multiple web3 providers and additional resiliency.
+    # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     global registry

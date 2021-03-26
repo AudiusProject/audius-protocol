@@ -1,13 +1,12 @@
 from __future__ import absolute_import
 import pytest
 from sqlalchemy_utils import database_exists, drop_database
-from web3 import Web3
+from web3 import HTTPProvider, Web3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
 from src import create_app, create_celery
 from src.utils import helpers
-from src.utils.multi_provider import MultiProvider
 from src.models import Base
 import src
 
@@ -75,7 +74,7 @@ def contracts(app):  # pylint: disable=redefined-outer-name
     web3endpoint = "http://{}:{}".format(
         app.config["web3"]["host"], app.config["web3"]["port"]
     )
-    web3 = Web3(MultiProvider(web3endpoint))
+    web3 = Web3(HTTPProvder(web3endpoint))
 
     # set pre-funded account as sender
     web3.eth.defaultAccount = web3.eth.accounts[0]
