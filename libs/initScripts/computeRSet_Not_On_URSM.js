@@ -25,7 +25,7 @@ const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
 const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
 const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
 const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
-const URSM_BOOTSTRAPPER_PRIVATE_KEY = ''
+const URSM_BOOTSTRAPPER_PRIVATE_KEY = '9b6611a4f31d498b2b5d08a9b877c314094ff1f5f88c936163159a09c8156f70'
 
 // NOTE: Migrate URSM first via `node setup.js run user-replica-set-manager up`
 
@@ -95,6 +95,7 @@ async function getLatestUserId () {
     totalNumUsers = 15000 // staging
     // totalNumUsers = 130000 // prod
   }
+  console.log(`Returning ${totalNumUsers} users`)
   return totalNumUsers
 }
 
@@ -105,6 +106,7 @@ const range = (start, stop, step = 1) => Array.from({ length: ((stop - start) / 
 async function getAllUsersWithRSetButNotOnURSM (offset, audiusLibs) {
   let userIdToWalletAndCreatorNodeEndpoint = {}
   try {
+    console.log(`getAllUsersWithRSetButNotOnURSM 1`)
     // Get all users with the ids in the range [offset, offset + NUM_USERS_PER_BATCH_REQUEST]
     // e.g. [1,2,3,...500] -> [501,502,....,1000] etc.
     // This is to iterate through every possible user
@@ -113,7 +115,9 @@ async function getAllUsersWithRSetButNotOnURSM (offset, audiusLibs) {
       0 /* offset */,
       range(offset, offset + NUM_USERS_PER_BATCH_REQUEST) /* idsArray */
     )
+    console.log(`getAllUsersWithRSetButNotOnURSM 2`)
 
+    console.lg(`Subset users: ${subsetUsers}`)
     subsetUsers
       // Filter to users that have an rset but not on URSM
       .filter(user => user.creator_node_endpoint && !user.secondary_ids && !user.primary_id) // users with rset not on contract
@@ -218,7 +222,7 @@ const run = async () => {
 
   // const numUsersToProcess = numOfUsers
   const numUsersToProcess = 1
-  for (offset = 0; offset <= numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  for (offset = 0; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
@@ -254,10 +258,11 @@ const run = async () => {
     writeDataToFile(spEndpointToSpIdAndCount, userIdToRSet, offset)
 
     let i
-    for (i = 0; i < userIdsWithRSetButNotOnURSM.length; i++) {
+    // for (i = 0; i < userIdsWithRSetButNotOnURSM.length; i++) {
+    for (i = 0; i < 1; i++) {
       const userId = parseInt(userIdsWithRSetButNotOnURSM[i])
       const replicaSetSecondarySpIds = userIdToRSet[userId]
-      console.log(`\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spEndpointToSpIdAndCount[replicaSetSecondarySpIds[0]].endpoint},${spEndpointToSpIdAndCount[replicaSetSecondarySpIds[1]].endpoint}`)
+      console.log(`\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spEndpointToSpIdAndCount[replicaSetSecondarySpIds[0]]},${spEndpointToSpIdAndCount[replicaSetSecondarySpIds[1]]}`)
       try {
         // Write to new contract
         await setReplicaSet({

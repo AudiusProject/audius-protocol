@@ -615,6 +615,7 @@ class CreatorNode {
         }
       }
 
+      console.log(axiosRequestObj)
       _handleErrorHelper(e, axiosRequestObj.url)
     }
   }
@@ -682,6 +683,7 @@ class CreatorNode {
 }
 
 function _handleErrorHelper (e, requestUrl) {
+  console.log(requestUrl)
   if (e.response && e.response.data && e.response.data.error) {
     const cnRequestID = e.response.headers['cn-request-id']
     const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}]`

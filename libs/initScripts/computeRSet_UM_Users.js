@@ -335,7 +335,7 @@ const run = async () => {
 
   const numUsersToProcess = numOfUsers
   // const numUsersToProcess = 500
-  for (offset = 0; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  for (offset = 8000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
