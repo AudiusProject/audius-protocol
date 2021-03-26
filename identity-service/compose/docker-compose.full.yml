@@ -2,7 +2,7 @@ version: '3'
 services:
   identity-solana:
     image: ubuntu:20.04
-    command: sh ./scripts/setup-solana.sh
+    command: sh /usr/src/app/scripts/setup-solana.sh
     volumes:
       - ..:/usr/src/app
     networks:

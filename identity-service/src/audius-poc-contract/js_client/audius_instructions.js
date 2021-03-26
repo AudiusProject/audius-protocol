@@ -8,12 +8,12 @@ const borsh = require("borsh");
 
 let SIGNER_GROUP_SIZE = 33;
 let VALID_SIGNER_SIZE = 53;
-let VALID_SIGNER = "CP1yiP6yYytqmxv9RQXNtSp9xSwqLHQrXPJCZSna5mFt"
+let VALID_SIGNER = "BfMDh5Zk4ACU8r2Gqapr3yWZ7wifXWUAyfg29aBLAY8f"
 let AUDIUS_PROGRAM = new solanaWeb3.PublicKey(
-  "GxcDzuozY9MPAnpoGw7gQD1dFYgtcwKq1Q7rpkDQUtNE"
+  "7qcxiUvgLr61vatiPP44ZZwV5ycU7sKewcbz4xes3R7U"
 );
 let CREATE_AND_VERIFY_PROGRAM = new solanaWeb3.PublicKey(
-  "GBpxjk4mKyRW77BwmJPvAL7nyG37pk6MwtQfuYYWkKTt"
+  "BeEFEJMprfmBMvZf9vvyiTXxBVStNF7JR2ACerEPQFZ8"
 );
 let INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
   "Sysvar1nstructions1111111111111111111111111"
