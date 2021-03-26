@@ -43,7 +43,8 @@ const URSM_BOOTSTRAPPER_PRIVATE_KEY = '9b6611a4f31d498b2b5d08a9b877c314094ff1f5f
 // const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
 // const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
 
-const NUM_USERS_PER_BATCH_REQUEST = 500
+// const NUM_USERS_PER_BATCH_REQUEST = 500
+const NUM_USERS_PER_BATCH_REQUEST = 50
 const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
 const configureAndInitLibs = async () => {
@@ -98,12 +99,12 @@ const range = (start, stop, step = 1) => Array.from({ length: ((stop - start) / 
 
 async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, audiusLibs) {
   // TODO: use libs call like
+  let usersRange = range(offset, offset + NUM_USERS_PER_BATCH_REQUEST)
   const subsetUsers = await audiusLibs.discoveryProvider.getUsers(
     NUM_USERS_PER_BATCH_REQUEST /* limit */,
     0 /* offset */,
-    range(offset, offset + NUM_USERS_PER_BATCH_REQUEST) /* idsArray */
+    usersRange /* idsArray */
   )
-
   subsetUsers
     // Filter to users that do not have a CNE
     .filter(user => !user.creator_node_endpoint) // users with no rset
@@ -334,7 +335,7 @@ const run = async () => {
 
   const numUsersToProcess = numOfUsers
   // const numUsersToProcess = 500
-  for (offset = 7000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  for (offset = 0; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
