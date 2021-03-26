@@ -74,7 +74,7 @@ def contracts(app):  # pylint: disable=redefined-outer-name
     web3endpoint = "http://{}:{}".format(
         app.config["web3"]["host"], app.config["web3"]["port"]
     )
-    web3 = Web3(HTTPProvder(web3endpoint))
+    web3 = Web3(HTTPProvider(web3endpoint))
 
     # set pre-funded account as sender
     web3.eth.defaultAccount = web3.eth.accounts[0]
