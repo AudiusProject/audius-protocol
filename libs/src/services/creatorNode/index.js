@@ -462,7 +462,7 @@ class CreatorNode {
         url = '/users/login'
       } else {
         const requestUrl = this.creatorNodeEndpoint + '/users/login/challenge'
-        _handleErrorHelper(e, requestUrl)
+        await this._handleErrorHelper(e, requestUrl)
       }
     }
 
@@ -619,7 +619,7 @@ class CreatorNode {
         }
       }
 
-      _handleErrorHelper(e, axiosRequestObj.url, requestId)
+      await this._handleErrorHelper(e, axiosRequestObj.url, requestId)
     }
   }
 
@@ -684,30 +684,43 @@ class CreatorNode {
       onProgress(total, total)
       return resp.data
     } catch (e) {
-      _handleErrorHelper(e, url, requestId)
+      await this._handleErrorHelper(e, url, requestId)
     }
   }
-}
-
-function _handleErrorHelper (e, requestUrl, requestId = null) {
-  if (e.response && e.response.data && e.response.data.error) {
-    const cnRequestID = e.response.headers['cn-request-id']
-    // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-    const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}, ${requestId}]`
-
-    console.error(errMessage)
-    throw new Error(errMessage)
-  } else if (!e.response) {
-    // delete headers, may contain tokens
-    if (e.config && e.config.headers) delete e.config.headers
-
-    const errorMsg = `Network error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
-    console.error(errorMsg, e)
-    throw new Error(`${errorMsg}${e}`)
-  } else {
-    const errorMsg = `Unknown error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
-    console.error(errorMsg, e)
-    throw e
+  
+  async _handleErrorHelper (e, requestUrl, requestId = null) {
+    if (e.response && e.response.data && e.response.data.error) {
+      const cnRequestID = e.response.headers['cn-request-id']
+      // cnRequestID will be the same as requestId if it receives the X-Request-ID header
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}, ${requestId}]`
+  
+      console.error(errMessage)
+      throw new Error(errMessage)
+    } else if (!e.response) {
+      // delete headers, may contain tokens
+      if (e.config && e.config.headers) delete e.config.headers
+  
+      const errorMsg = `Network error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
+      console.error(errorMsg, e)
+  
+      try {
+        const newRequestId = uuid()
+        const headers = {}
+        const endpoint = `${this.creatorNodeEndpoint}/health_check`
+        const res = await axios(endpoint, { headers: {
+          'X-Request-ID': newRequestId
+        }})
+        console.log(`Successfull health check: ${JSON.stringify(res.data)}`)
+      } catch (e) {
+        console.error(`Failed health check immediately after network error ${requestId}`, e)
+      }
+  
+      throw new Error(`${errorMsg}${e}`)
+    } else {
+      const errorMsg = `Unknown error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
+      console.error(errorMsg, e)
+      throw e
+    }
   }
 }
 
