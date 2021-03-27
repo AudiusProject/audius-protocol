@@ -59,6 +59,8 @@ type OwnProps = {
   togglePlay: (uid: UID, id: ID) => void
   isLoading: boolean
   hasLoaded: (index: number) => void
+  isTrending: boolean
+  showRankIcon: boolean
 }
 
 type ConnectedTrackTileProps = OwnProps &
@@ -81,7 +83,6 @@ const ConnectedTrackTile = memo(
     playingUid,
     isLoading,
     hasLoaded,
-    // showSkeleton,
     containerClassName,
     setRepostUsers,
     setFavoriteUsers,
@@ -91,7 +92,9 @@ const ConnectedTrackTile = memo(
     unsaveTrack,
     repostTrack,
     undoRepostTrack,
-    shareTrack
+    shareTrack,
+    isTrending,
+    showRankIcon
   }: ConnectedTrackTileProps) => {
     const {
       is_delete,
@@ -324,6 +327,8 @@ const ConnectedTrackTile = memo(
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
           onTogglePlay={onTogglePlay}
+          isTrending={isTrending}
+          showRankIcon={showRankIcon}
         />
       </Draggable>
     )

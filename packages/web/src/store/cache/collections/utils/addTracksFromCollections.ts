@@ -1,9 +1,9 @@
-import { UserCollection } from 'models/Collection'
+import { UserCollectionMetadata } from 'models/Collection'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { UserTrackMetadata } from 'models/Track'
 
 export function* addTracksFromCollections(
-  metadataArray: Array<UserCollection>
+  metadataArray: Array<UserCollectionMetadata>
 ) {
   const tracks: UserTrackMetadata[] = []
 

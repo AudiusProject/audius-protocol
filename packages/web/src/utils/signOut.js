@@ -7,7 +7,7 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
-import { BADGE_LOCAL_STORAGE_KEY } from 'containers/artist-dashboard-page/Tiers'
+import { BADGE_LOCAL_STORAGE_KEY } from 'containers/audio-rewards-page/Tiers'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const AUDIUS_EVENTS = 'events'

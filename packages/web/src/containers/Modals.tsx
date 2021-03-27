@@ -17,6 +17,7 @@ import { getClient } from 'utils/clientUtil'
 import Client from 'models/Client'
 import AppCTAModal from './app-cta-modal/AppCTAModal'
 import TierExplainerModal from './user-badges/TierExplainerModal'
+import RewardsModals from './audio-rewards-page/components/modals/RewardsModals'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -31,6 +32,7 @@ const Modals = () => {
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />
+      <RewardsModals />
 
       {!NATIVE_MOBILE && client !== Client.ELECTRON && (
         <BrowserPushConfirmationModal />

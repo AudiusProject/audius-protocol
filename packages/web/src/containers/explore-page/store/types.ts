@@ -23,7 +23,7 @@ export default interface ExplorePageState {
 export enum ExploreCollectionsVariant {
   LET_THEM_DJ = 'Let Them DJ',
   TOP_ALBUMS = 'Top Albums',
-  TOP_PLAYLISTS = 'Top Playlists',
   MOOD = 'Mood',
-  DIRECT_LINK = 'Direct Link'
+  DIRECT_LINK = 'Direct Link',
+  TRENDING_PLAYLISTS = 'Top Playlists'
 }

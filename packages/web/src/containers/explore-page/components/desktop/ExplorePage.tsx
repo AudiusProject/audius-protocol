@@ -30,16 +30,13 @@ import {
 import {
   LET_THEM_DJ,
   TOP_ALBUMS,
-  TOP_PLAYLISTS,
+  TRENDING_PLAYLISTS,
   CHILL_PLAYLISTS,
   UPBEAT_PLAYLISTS,
   INTENSE_PLAYLISTS,
   PROVOKING_PLAYLISTS,
-  INTIMATE_PLAYLISTS,
-  BLACK_LIVES_MATTER
+  INTIMATE_PLAYLISTS
 } from 'containers/explore-page/collections'
-import { useFlag } from 'containers/remote-config/hooks'
-import { FeatureFlags } from 'services/remote-config'
 import { ExploreCollectionsVariant } from 'containers/explore-page/store/types'
 
 const messages = {
@@ -55,12 +52,12 @@ reposts, and follows. Refreshes often so if you like a track, favorite it.`,
 }
 
 const justForYou = [
+  TRENDING_PLAYLISTS,
   HEAVY_ROTATION,
   LET_THEM_DJ,
   BEST_NEW_RELEASES,
   UNDER_THE_RADAR,
   TOP_ALBUMS,
-  TOP_PLAYLISTS,
   MOST_LOVED,
   FEELING_LUCKY
 ]
@@ -99,14 +96,6 @@ const ExplorePage = ({
     setDidLoad: setDidLoadProfile
   } = useOrderedLoad(profiles.length)
 
-  const enableBlackLivesMatterExploreTile = useFlag(
-    FeatureFlags.ENABLE_BLACK_LIVES_MATTER_EXPLORE_TILE
-  )
-  const prepended = enableBlackLivesMatterExploreTile
-    ? [BLACK_LIVES_MATTER]
-    : []
-  const justForYouCards = [...prepended, ...justForYou]
-
   const header = <Header primary={title} containerStyles={styles.header} />
   const onClickCard = useCallback(
     (url: string) => {
@@ -133,13 +122,9 @@ const ExplorePage = ({
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
-        layout={
-          enableBlackLivesMatterExploreTile
-            ? Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT
-            : Layout.TWO_COLUMN_DYNAMIC
-        }
+        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT}
       >
-        {justForYouCards.map(i => {
+        {justForYou.map(i => {
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =

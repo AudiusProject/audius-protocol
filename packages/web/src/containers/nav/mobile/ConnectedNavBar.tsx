@@ -3,7 +3,12 @@ import { AppState, Status } from 'store/types'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 import { push as pushRoute, goBack } from 'connected-react-router'
-import { TRENDING_PAGE, NOTIFICATION_PAGE, SETTINGS_PAGE } from 'utils/route'
+import {
+  TRENDING_PAGE,
+  NOTIFICATION_PAGE,
+  SETTINGS_PAGE,
+  AUDIO_PAGE
+} from 'utils/route'
 import { openSignOn } from 'containers/sign-on/store/actions'
 import { getAccountUser, getAccountStatus } from 'store/account/selectors'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -66,6 +71,11 @@ const ConnectedNavBar = ({
     setImmediate(() => openSignOn(false))
   }, [openSignOn, setStackReset])
 
+  const goToAudioPage = useCallback(() => {
+    setStackReset(true)
+    setImmediate(() => goToRoute(AUDIO_PAGE))
+  }, [goToRoute, setStackReset])
+
   return (
     <NavBar
       isSignedIn={!!account}
@@ -79,6 +89,7 @@ const ConnectedNavBar = ({
       searchStatus={searchStatus}
       goBack={goBack}
       history={history}
+      goToAudioPage={goToAudioPage}
     />
   )
 }

@@ -3,7 +3,6 @@
   flex-direction: column;
   align-items: center;
   background-color: var(--white);
-  min-width: 1080px;
 }
 
 .title {
@@ -18,16 +17,30 @@
   text-align: center;
 }
 
+.title.mobile {
+  font-size: 30px;
+}
+
 .subtitle {
-  font-size: 22px;
+  font-size: 20px;
   line-height: 35.2px;
   font-weight: 600;
   text-align: center;
 }
 
+.subtitle.mobile {
+  font-size: var(--font-xs);
+  line-height: 19px;
+  padding: 0px 10px;
+}
+
 .titleContainer {
   margin-bottom: 94px;
   max-width: 752px;
+}
+
+.titleContainer.mobile {
+  margin-bottom: 48px;
 }
 
 .tierNumberText {
@@ -39,7 +52,7 @@
 }
 
 .badgeTierText {
-  margin: 12px 0px;
+  margin: 8px 0px;
 }
 
 .divider {
@@ -61,10 +74,21 @@
 .tiersContainer {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
 }
 
-.tiersContainer > div {
+.tiersContainer.mobile {
+  flex-direction: column;
+  width: 100%;
+  padding: 0px 26px;
+}
+
+.tiersContainer:not(.mobile) > div {
   margin: 0px 8px;
+}
+
+.tiersContainer.mobile > div {
+  margin-bottom: 24px;
 }
 
 .tierContainer {
@@ -74,14 +98,15 @@
   align-items: center;
   width: 241px;
   min-height: 547px;
-  padding: 40px 18px;
+  padding: 40px 18px 14px;
   border-radius: 16px;
   border: 2px solid var(--neutral-light-7);
   background-color: var(--neutral-light-10);
 }
 
 .tierContainer.compact {
-  min-height: 338px;
+  min-height: 320px;
+  width: 100%;
 }
 
 .tierContainer.tierContainerActive {
@@ -91,6 +116,14 @@
 
 .tierContainerWrapper {
   position: relative;
+}
+
+.tierContainerWrapper.tierContainerActive.compact {
+  margin-top: 36px;
+}
+
+.tierContainerWrapper.compact {
+  width: 100%;
 }
 
 .tierContainerWrapper.tierContainerActive {
@@ -181,8 +214,17 @@
   margin: 48px 0px;
 }
 
-.buttonContainer > *:first-child {
+.buttonContainer.mobile {
+  flex-direction: column;
+  margin-top: 24px;
+}
+
+.buttonContainer:not(.mobile) > *:first-child {
   margin-right: 16px;
+}
+
+.buttonContainer.mobile > *:first-child {
+  margin-bottom: 16px;
 }
 
 .tierLevel {

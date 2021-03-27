@@ -6,7 +6,8 @@ import {
   IconCaretRight,
   IconRemove,
   IconNotification,
-  IconSettings
+  IconSettings,
+  IconCrown
 } from '@audius/stems'
 
 import styles from './NavBar.module.css'
@@ -39,6 +40,7 @@ interface NavBarProps {
   signUp: () => void
   goToNotificationPage: () => void
   goToSettingsPage: () => void
+  goToAudioPage: () => void
   search: (term: string) => void
   logoClicked: () => void
   goBack: () => void
@@ -61,6 +63,7 @@ const NavBar = ({
   goToSettingsPage,
   logoClicked,
   goBack,
+  goToAudioPage,
   history: {
     location: { pathname }
   }
@@ -185,11 +188,18 @@ const NavBar = ({
     )
   } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
     left = (
-      <IconButton
-        className={styles.leftIconButton}
-        icon={<IconSettings />}
-        onClick={goToSettingsPage}
-      />
+      <>
+        <IconButton
+          className={styles.leftIconButton}
+          icon={<IconSettings />}
+          onClick={goToSettingsPage}
+        />
+        <IconButton
+          icon={<IconCrown />}
+          className={styles.crownButton}
+          onClick={goToAudioPage}
+        />
+      </>
     )
   } else {
     left = leftElement

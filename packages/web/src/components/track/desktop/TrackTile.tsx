@@ -3,7 +3,7 @@ import cn from 'classnames'
 import styles from './TrackTile.module.css'
 import {
   TrackTileSize,
-  DeaktopTrackTileProps as TrackTileProps
+  DesktopTrackTileProps as TrackTileProps
 } from '../types'
 
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
@@ -21,10 +21,38 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { ComponentPlacement, MountPlacement } from 'components/types'
+import { IconCrown } from '@audius/stems'
 
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
   artistPick: 'Artist Pick'
+}
+
+const RankAndIndexIndicator = ({
+  hasOrdering,
+  showCrownIcon,
+  isLoading,
+  index
+}: {
+  hasOrdering: boolean
+  showCrownIcon: boolean
+  isLoading: boolean
+  index: number
+}) => {
+  return (
+    <>
+      {hasOrdering && (
+        <div className={styles.order}>
+          {showCrownIcon && (
+            <div className={styles.crownContainer}>
+              <IconCrown />
+            </div>
+          )}
+          {!isLoading && index}
+        </div>
+      )}
+    </>
+  )
 }
 
 const TrackTile = memo(
@@ -56,13 +84,15 @@ const TrackTile = memo(
     onClickRepost,
     onClickFavorite,
     onClickShare,
-    onTogglePlay
+    onTogglePlay,
+    showRankIcon
   }: TrackTileProps) => {
     const hasOrdering = order !== undefined
     const onStopPropagation = useCallback(
       (e: MouseEvent) => e.stopPropagation(),
       []
     )
+
     return (
       <div
         className={cn(styles.container, {
@@ -80,7 +110,12 @@ const TrackTile = memo(
         onClick={isLoading || isDisabled ? undefined : onTogglePlay}
       >
         {/* prefix ordering */}
-        {hasOrdering && <div className={styles.order}>{order}</div>}
+        <RankAndIndexIndicator
+          hasOrdering={hasOrdering}
+          showCrownIcon={showRankIcon}
+          isLoading={!!isLoading}
+          index={order ?? 0}
+        />
         {/* Track tile image */}
         <div
           className={cn(styles.imageContainer, {

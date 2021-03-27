@@ -178,11 +178,15 @@
 .emoji.bottle-with-popping-cork {
 	background-image: url('/fonts/emojis/bottle-with-popping-cork.png');
 }
-
 .emoji.rabbit {
 	background-image: url('/fonts/emojis/rabbit.png');
 }
-
 .emoji.hole {
 	background-image: url('/fonts/emojis/hole.png');
+}
+.emoji.chart-increasing {
+	background-image: url('/fonts/emojis/chart-increasing.png');
+}
+.emoji.nerd-face {
+	background-image: url('/fonts/emojis/nerd-face.png');
 }

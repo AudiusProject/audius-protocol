@@ -20,13 +20,13 @@ import {
   EXPLORE_BEST_NEW_RELEASES_PAGE,
   EXPLORE_UNDER_THE_RADAR_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
-  EXPLORE_TOP_PLAYLISTS_PAGE,
   EXPLORE_MOST_LOVED_PAGE,
   EXPLORE_FEELING_LUCKY_PAGE,
   EXPLORE_MOOD_PLAYLISTS_PAGE,
   SAVED_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  AUDIO_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -56,7 +56,8 @@ import {
   APP_REDIRECT,
   TRACK_ID_PAGE,
   USER_ID_PAGE,
-  PLAYLIST_ID_PAGE
+  PLAYLIST_ID_PAGE,
+  TRENDING_PLAYLISTS_PAGE
 } from 'utils/route'
 import 'utils/redirect'
 import { isMobile, getClient } from 'utils/clientUtil'
@@ -124,6 +125,7 @@ import NotificationPage from 'containers/notification/NotificationPage'
 import AnnouncementPage from 'containers/announcement-page/AnnoucementPage'
 import NotFoundPage from 'containers/not-found-page/NotFoundPage'
 import ArtistDashboardPage from 'containers/artist-dashboard-page/ArtistDashboardPage'
+import AudioRewardsPage from 'containers/audio-rewards-page/AudioRewardsPage'
 import SearchPage from 'containers/search-page/SearchPage'
 import HistoryPage from 'containers/history-page/HistoryPage'
 import SavedPage from 'containers/saved-page/SavedPage'
@@ -146,6 +148,7 @@ import Notice from './notice/Notice'
 import SignOn from 'containers/sign-on/SignOn'
 import EnablePushNotificationsDrawer from './enable-push-notifications-drawer/EnablePushNotificationsDrawer'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
+import TrendingPlaylistsPage from 'containers/trending-playlists/TrendingPlaylistPage'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -571,6 +574,15 @@ class App extends Component {
                   />
                 )}
               />
+              <Route
+                exact
+                path={TRENDING_PLAYLISTS_PAGE}
+                render={() => (
+                  <TrendingPlaylistsPage
+                    containerRef={this.state.mainContent}
+                  />
+                )}
+              />
 
               <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
               <Route
@@ -615,15 +627,6 @@ class App extends Component {
                 render={() => (
                   <ExploreCollectionsPage
                     variant={ExploreCollectionsVariant.TOP_ALBUMS}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_TOP_PLAYLISTS_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.TOP_PLAYLISTS}
                   />
                 )}
               />
@@ -699,6 +702,12 @@ class App extends Component {
                 path={DASHBOARD_PAGE}
                 isMobile={isMobileClient}
                 component={ArtistDashboardPage}
+              />
+              <Route
+                exact
+                path={AUDIO_PAGE}
+                isMobile={isMobileClient}
+                component={AudioRewardsPage}
               />
               <Route
                 exact

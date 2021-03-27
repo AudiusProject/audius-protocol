@@ -12,6 +12,7 @@ import { trackPage, profilePage } from 'utils/route'
 import { TrackTileSize } from '../types'
 import { OwnProps as TrackMenuProps } from 'containers/menu/TrackMenu'
 import { UID, ID } from 'models/common/Identifiers'
+import { EnhancedCollectionTrack } from 'store/cache/collections/selectors'
 
 const makeStrings = ({ deleted }: { deleted: boolean }) => ({
   deleted: deleted ? ` [Deleted By Artist]` : '',
@@ -28,7 +29,8 @@ type TrackListItemProps = {
   togglePlay: (uid: UID, id: ID) => void
   goToRoute: (route: string) => void
   artistHandle: string
-  track: any
+  track?: EnhancedCollectionTrack
+  forceSkeleton?: boolean
 }
 
 const TrackListItem = ({
@@ -40,8 +42,24 @@ const TrackListItem = ({
   size,
   goToRoute,
   togglePlay,
-  isLoading
+  isLoading,
+  forceSkeleton = false
 }: TrackListItemProps) => {
+  if (forceSkeleton) {
+    return (
+      <div
+        className={cn(styles.playlistTrack, {
+          [styles.large]: size === TrackTileSize.LARGE,
+          [styles.small]: size === TrackTileSize.SMALL
+        })}
+      >
+        <Skeleton className={styles.skeleton} width='96%' height='80%' />
+      </div>
+    )
+  }
+
+  if (!track) return null
+
   const { is_delete: deleted } = track
   const strings = makeStrings({ deleted })
 
