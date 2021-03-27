@@ -13,10 +13,13 @@ function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
     const collectionId = action.id
 
-    const {
-      collections,
-      uids: collectionUids
-    } = yield call(retrieveCollections, null, [collectionId])
+    const { collections, uids: collectionUids } = yield call(
+      retrieveCollections,
+      null,
+      [collectionId],
+      /* fetchTracks */ false,
+      /* requiresAllTracks */ true
+    )
 
     if (Object.values(collections).length === 0) {
       yield put(collectionActions.fetchCollectionFailed())

@@ -19,6 +19,7 @@ export const TERMS_OF_SERVICE = '/legal/terms-of-use'
 // Static routes.
 export const FEED_PAGE = '/feed'
 export const TRENDING_PAGE = '/trending'
+export const TRENDING_PLAYLISTS_PAGE = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
 export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
@@ -26,7 +27,6 @@ export const EXPLORE_LET_THEM_DJ_PAGE = '/explore/let-them-dj'
 export const EXPLORE_BEST_NEW_RELEASES_PAGE = '/explore/best-new-releases'
 export const EXPLORE_UNDER_THE_RADAR_PAGE = '/explore/under-the-radar'
 export const EXPLORE_TOP_ALBUMS_PAGE = '/explore/top-albums'
-export const EXPLORE_TOP_PLAYLISTS_PAGE = '/explore/top-playlists'
 export const EXPLORE_MOST_LOVED_PAGE = '/explore/most-loved'
 export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
 export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
@@ -35,6 +35,7 @@ export const SAVED_PAGE = '/favorites'
 export const FAVORITES_PAGE = '/favorites'
 export const HISTORY_PAGE = '/history'
 export const DASHBOARD_PAGE = '/dashboard'
+export const AUDIO_PAGE = '/audio'
 export const UPLOAD_PAGE = '/upload'
 export const UPLOAD_ALBUM_PAGE = '/upload/album'
 export const UPLOAD_PLAYLIST_PAGE = '/upload/playlist'
@@ -102,6 +103,7 @@ export const orderedRoutes = [
   SAVED_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  AUDIO_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
@@ -126,6 +128,7 @@ export const staticRoutes = new Set([
   FAVORITES_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  AUDIO_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,

@@ -24,6 +24,7 @@ import { Name } from 'services/analytics'
 
 import baseStyles from './DiscoverPageContent.module.css'
 import styles from './TrendingPageContent.module.css'
+import RewardsBanner from '../RewardsBanner'
 
 const messages = {
   thisWeek: 'THIS WEEK',
@@ -199,9 +200,13 @@ const TrendingPageContent = (props: DiscoverPageContentProps) => {
 
   const trendingLineups = [
     <div key='week' className={styles.lineupContainer}>
+      <div className={styles.bannerContainer}>
+        <RewardsBanner bannerType='tracks' />
+      </div>
       <Lineup
         key='trendingWeek'
         ordered
+        rankIconCount={5}
         {...weekProps}
         setInView={makeSetInView(TimeRange.WEEK)}
         loadMore={makeLoadMore(TimeRange.WEEK)}

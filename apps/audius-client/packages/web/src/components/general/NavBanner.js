@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import Dropdown from 'components/navigation/Dropdown'
+import IconPopup from './IconPopup'
+import { ReactComponent as SortIcon } from 'assets/img/iconSort.svg'
 
 import styles from './NavBanner.module.css'
 import cn from 'classnames'
@@ -33,7 +34,12 @@ const NavBanner = props => {
           {props.isArtist && (
             <div className={styles.dropdown}>
               {!props.dropdownDisabled && (
-                <Dropdown variant='border' menu={menu} disabled={false} />
+                <IconPopup
+                  icon={<SortIcon />}
+                  menu={menu}
+                  disabled={false}
+                  position='bottomLeft'
+                />
               )}
             </div>
           )}

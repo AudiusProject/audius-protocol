@@ -73,6 +73,7 @@ import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
 import Menu from 'containers/menu/Menu'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { range } from 'lodash'
 
 type OwnProps = {
   uid: UID
@@ -87,6 +88,9 @@ type OwnProps = {
   isUploading?: boolean
   isLoading: boolean
   hasLoaded: (index: number) => void
+  numLoadingSkeletonRows?: number
+  isTrending: boolean
+  showRankIcon: boolean
 }
 
 type ConnectedPlaylistTileProps = OwnProps &
@@ -113,6 +117,7 @@ const ConnectedPlaylistTile = memo(
     record,
     playingTrackId,
     isLoading,
+    numLoadingSkeletonRows,
     isUploading,
     hasLoaded,
     setRepostUsers,
@@ -122,7 +127,9 @@ const ConnectedPlaylistTile = memo(
     repostCollection,
     undoRepostCollection,
     saveCollection,
-    unsaveCollection
+    unsaveCollection,
+    isTrending,
+    showRankIcon
   }: ConnectedPlaylistTileProps) => {
     const {
       is_album: isAlbum,
@@ -135,7 +142,8 @@ const ConnectedPlaylistTile = memo(
       followee_reposts: followeeReposts,
       followee_saves: followeeSaves,
       has_current_user_reposted: isReposted,
-      has_current_user_saved: isFavorited
+      has_current_user_saved: isFavorited,
+      track_count: trackCount
     } = getCollectionWithFallback(collection)
 
     const { name, handle, is_creator: isCreator } = getUserWithFallback(user)
@@ -376,7 +384,29 @@ const ConnectedPlaylistTile = memo(
     )
 
     const renderTrackList = useCallback(() => {
-      return tracks.map((track: any, i: number) => (
+      const showSkeletons = !!(
+        !tracks.length &&
+        isLoading &&
+        numLoadingSkeletonRows
+      )
+      if (showSkeletons) {
+        return range(numLoadingSkeletonRows as number).map(i => (
+          <TrackListItem
+            index={i}
+            key={i}
+            isLoading={true}
+            forceSkeleton
+            active={false}
+            size={size}
+            disableActions={disableActions}
+            playing={isPlaying}
+            togglePlay={togglePlay}
+            goToRoute={goToRoute}
+            artistHandle={handle}
+          />
+        ))
+      }
+      return tracks.map((track, i) => (
         <Draggable
           key={`${track.title}+${i}`}
           text={track.title}
@@ -410,7 +440,8 @@ const ConnectedPlaylistTile = memo(
       isPlaying,
       togglePlay,
       goToRoute,
-      handle
+      handle,
+      numLoadingSkeletonRows
     ])
 
     const artwork = renderImage()
@@ -419,7 +450,7 @@ const ConnectedPlaylistTile = memo(
     const userName = renderUserName()
     const trackList = renderTrackList()
 
-    const order = ordered && index ? index : undefined
+    const order = ordered && index !== undefined ? index + 1 : undefined
     const header =
       size === TrackTileSize.LARGE
         ? isAlbum
@@ -436,6 +467,7 @@ const ConnectedPlaylistTile = memo(
         isReposted={isReposted}
         isOwner={isOwner}
         isLoading={isLoading}
+        numLoadingSkeletonRows={numLoadingSkeletonRows}
         isDarkMode={isDarkMode()}
         isMatrixMode={isMatrix()}
         isActive={isActive}
@@ -466,6 +498,9 @@ const ConnectedPlaylistTile = memo(
         tileClassName={cn(styles.trackTile)}
         tracksContainerClassName={cn(styles.tracksContainer)}
         trackList={trackList}
+        trackCount={trackCount}
+        isTrending={isTrending}
+        showRankIcon={showRankIcon}
       />
     )
   }

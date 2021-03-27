@@ -8,17 +8,40 @@ import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 
 type InstagramAuthButtonProps = {
-  className?: string
+  onSuccess?: (uuid: string, profile: any) => void
+  onFailure?: (error: any) => void
+  style?: object
+  disabled?: boolean
+} & InstagramButtonProps
+
+type InstagramButtonProps = {
+  text?: string
   textClassName?: string
   iconClassName?: string
   onClick?: () => void
-  onSuccess: (uuid: string, profile: any) => void
-  onFailure: (error: any) => void
-  style?: object
-  disabled?: boolean
-  text?: string
+  className?: string
 }
 
+export const InstagramButton = ({
+  text,
+  className,
+  onClick,
+  textClassName,
+  iconClassName
+}: InstagramButtonProps) => {
+  return (
+    <Button
+      type={ButtonType.PRIMARY_ALT}
+      leftIcon={<IconInstagram className={styles.icon} />}
+      className={cn(styles.button, { [className!]: !!className })}
+      textClassName={cn(styles.text, { [textClassName!]: !!textClassName })}
+      iconClassName={cn(styles.icon, { [iconClassName!]: !!iconClassName })}
+      size={ButtonSize.MEDIUM}
+      text={text}
+      onClick={onClick ?? (() => {})}
+    />
+  )
+}
 const InstagramAuthButton = ({
   className,
   textClassName,
@@ -33,18 +56,15 @@ const InstagramAuthButton = ({
     <InstagramAuth
       onClick={onClick}
       disabled={disabled}
-      onFailure={onFailure}
-      onSuccess={onSuccess}
+      onFailure={onFailure || (() => {})}
+      onSuccess={onSuccess || (() => {})}
       getUserUrl={`${IDENTITY_SERVICE}/instagram`}
       setProfileUrl={`${IDENTITY_SERVICE}/instagram/profile`}
     >
-      <Button
-        type={ButtonType.PRIMARY_ALT}
-        leftIcon={<IconInstagram className={styles.icon} />}
-        className={cn(styles.button, { [className!]: !!className })}
-        textClassName={cn(styles.text, { [textClassName!]: !!textClassName })}
-        iconClassName={cn(styles.icon, { [iconClassName!]: !!iconClassName })}
-        size={ButtonSize.MEDIUM}
+      <InstagramButton
+        className={className}
+        textClassName={textClassName}
+        iconClassName={iconClassName}
         text={text}
       />
     </InstagramAuth>

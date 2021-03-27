@@ -5,7 +5,10 @@ import { getCollections } from 'store/cache/collections/selectors'
 import { retrieve } from 'store/cache/sagas'
 import { getEntryTimestamp } from 'store/cache/selectors'
 import AudiusBackend from 'services/AudiusBackend'
-import Collection, { UserCollection } from 'models/Collection'
+import Collection, {
+  CollectionMetadata,
+  UserCollectionMetadata
+} from 'models/Collection'
 import { reformat } from './reformat'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -13,10 +16,11 @@ import { makeUid } from 'utils/uid'
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { getUserId } from 'store/account/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import Track from 'models/Track'
 
 function* markCollectionDeleted(
-  collectionMetadatas: Collection[]
-): Generator<any, Collection[], any> {
+  collectionMetadatas: CollectionMetadata[]
+): Generator<any, CollectionMetadata[], any> {
   const collections = yield select(getCollections, {
     ids: collectionMetadatas.map(c => c.playlist_id)
   })
@@ -30,7 +34,7 @@ function* markCollectionDeleted(
 }
 
 export function* retrieveTracksForCollections(
-  collections: Collection[],
+  collections: CollectionMetadata[],
   excludedTrackIdSet: Set<ID>
 ) {
   const allTrackIds = collections.reduce((acc, cur) => {
@@ -40,7 +44,9 @@ export function* retrieveTracksForCollections(
   const filteredTrackIds = [
     ...new Set(allTrackIds.filter(id => !excludedTrackIdSet.has(id)))
   ]
-  const tracks = yield call(retrieveTracks, { trackIds: filteredTrackIds })
+  const tracks: Track[] = yield call(retrieveTracks, {
+    trackIds: filteredTrackIds
+  })
 
   // If any tracks failed to be retrieved for some reason,
   // remove them from their collection.
@@ -77,37 +83,59 @@ export function* retrieveTracksForCollections(
  * @param playlistId
  */
 function* retrieveCollection(playlistId: ID) {
-  const userId = yield select(getUserId)
-  const playlists = yield apiClient.getPlaylist({
+  const userId: ReturnType<typeof getUserId> = yield select(getUserId)
+  const playlists: UserCollectionMetadata[] = yield apiClient.getPlaylist({
     playlistId,
     currentUserId: userId
   })
   return playlists
 }
 
+/**
+ * Retrieves collections from the cache or from source
+ * @param userId optional owner of collections to fetch (TODO: to be removed)
+ * @param collectionIds ids to retrieve
+ * @param fetchTracks whether or not to fetch the tracks inside the playlist
+ * @param requiresAllTracks whether or not fetching this collection requires it to have all its tracks.
+ * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
+ * @returns
+ */
 export function* retrieveCollections(
   userId: ID | null,
   collectionIds: ID[],
-  fetchTracks = false
+  fetchTracks = false,
+  requiresAllTracks = false
 ) {
   const { entries, uids } = yield call(retrieve, {
     ids: collectionIds,
     selectFromCache: function* (ids: ID[]) {
-      return yield select(getCollections, { ids })
+      const res: {
+        [id: number]: Collection
+      } = yield select(getCollections, { ids })
+      if (requiresAllTracks) {
+        const keys = Object.keys(res) as any
+        keys.forEach((collectionId: number) => {
+          const fullTrackCount = res[collectionId].track_count
+          const currentTrackCount = res[collectionId].tracks?.length ?? 0
+          if (currentTrackCount < fullTrackCount) {
+            // Remove the collection from the res so retrieve knows to get it from source
+            delete res[collectionId]
+          }
+        })
+      }
+      return res
     },
     getEntriesTimestamp: function* (ids: ID[]) {
-      const selected = yield select(
-        (state: AppState, ids) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.COLLECTIONS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
-        ids
-      )
+      const selector = (state: AppState, ids: ID[]) =>
+        ids.reduce((acc, id) => {
+          acc[id] = getEntryTimestamp(state, { kind: Kind.COLLECTIONS, id })
+          return acc
+        }, {} as { [id: number]: number | null })
+      const selected: ReturnType<typeof selector> = yield select(selector, ids)
       return selected
     },
     retrieveFromSource: function* (ids: ID[]) {
-      let metadatas: UserCollection[]
+      let metadatas: UserCollectionMetadata[]
 
       if (ids.length === 1) {
         metadatas = yield call(retrieveCollection, ids[0])
@@ -117,14 +145,14 @@ export function* retrieveCollections(
       }
 
       // Process any local deletions on the client
-      const metadatasWithDeleted: UserCollection[] = yield call(
+      const metadatasWithDeleted: UserCollectionMetadata[] = yield call(
         markCollectionDeleted,
         metadatas
       )
 
       return metadatasWithDeleted
     },
-    onBeforeAddToCache: function* (metadatas: UserCollection[]) {
+    onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
       yield addUsersFromCollections(metadatas)
       yield addTracksFromCollections(metadatas)
 

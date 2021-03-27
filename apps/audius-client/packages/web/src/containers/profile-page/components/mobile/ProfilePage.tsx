@@ -36,7 +36,7 @@ import MobilePageContainer from 'components/general/MobilePageContainer'
 import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
 import IconButton from 'components/general/IconButton'
 import { withNullGuard } from 'utils/withNullGuard'
-import { IconKebabHorizontal } from '@audius/stems'
+import { IconKebabHorizontal, IconShare } from '@audius/stems'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import TierExplainerDrawer from 'containers/user-badges/TierExplainerDrawer'
 
@@ -126,6 +126,7 @@ export type ProfilePageProps = {
   ) => Promise<void>
   setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
+  onShare: () => void
 }
 
 type EmptyTabProps = {
@@ -225,7 +226,8 @@ const ProfilePage = g(
     updateCoverPhoto,
     setNotificationSubscription,
     onClickMobileOverflow,
-    didChangeTabsFrom
+    didChangeTabsFrom,
+    onShare
   }) => {
     const { setHeader } = useContext(HeaderContext)
     useEffect(() => {
@@ -272,7 +274,13 @@ const ProfilePage = g(
         )
       } else {
         leftNav = isOwner ? LeftPreset.SETTINGS : LeftPreset.BACK
-        rightNav = (
+        rightNav = isOwner ? (
+          <IconButton
+            className={styles.shareButton}
+            icon={<IconShare />}
+            onClick={() => onShare()}
+          />
+        ) : (
           <IconButton
             className={styles.overflowNav}
             icon={<IconKebabHorizontal />}
@@ -295,7 +303,8 @@ const ProfilePage = g(
       onCancel,
       onSave,
       hasMadeEdit,
-      onClickOverflow
+      onClickOverflow,
+      onShare
     ])
 
     if (isLoading) {

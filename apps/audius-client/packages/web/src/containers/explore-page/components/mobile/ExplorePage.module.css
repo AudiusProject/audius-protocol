@@ -54,8 +54,23 @@
   flex-basis: calc(50% - 8px);
 }
 
+.doubleHeaderSection > *:nth-child(5n + 1),
+.doubleHeaderSection > *:nth-child(5n + 2) {
+  flex-basis: 100%;
+}
+
+.doubleHeaderSection > *:nth-child(5n + 3),
+.doubleHeaderSection > *:nth-child(5n + 4),
+.doubleHeaderSection > *:nth-child(5n + 5),
+.doubleHeaderSection > *:nth-child(5n + 6),
+.doubleHeaderSection > *:nth-child(5n + 7),
+.doubleHeaderSection > *:nth-child(5n + 8) {
+  flex-basis: calc(50% - 8px);
+}
+
+
 .spin {
-  padding-top: 40%; 
+  padding-top: 40%;
 }
 
 .spin :global(.ant-spin-dot i) {

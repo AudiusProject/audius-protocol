@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { forwardRef, ReactNode } from 'react'
 import cn from 'classnames'
 
 import styles from './IconButton.module.css'
@@ -13,27 +13,39 @@ type IconButtonProps = {
 }
 
 // A button that is just an icon, no text.
-const IconButton = ({
-  onClick,
-  className,
-  isActive,
-  activeClassName,
-  icon,
-  disabled = false
-}: IconButtonProps) => {
-  return (
-    <div
-      className={cn(
-        styles.container,
-        className,
-        { [activeClassName || '']: isActive },
-        { [styles.diabled]: disabled }
-      )}
-      onClick={onClick || undefined}
-    >
-      {icon}
-    </div>
-  )
-}
+const IconButton = forwardRef(
+  (
+    {
+      onClick,
+      className,
+      isActive,
+      activeClassName,
+      icon,
+      disabled = false
+    }: IconButtonProps,
+    ref?: React.Ref<HTMLDivElement>
+  ) => {
+    const handleClick = (event: React.MouseEvent) => {
+      if (!disabled && onClick) {
+        onClick(event)
+      }
+    }
+
+    return (
+      <div
+        className={cn(
+          styles.container,
+          className,
+          { [activeClassName || '']: isActive },
+          { [styles.disabled]: disabled }
+        )}
+        ref={ref}
+        onClick={handleClick}
+      >
+        {icon}
+      </div>
+    )
+  }
+)
 
 export default IconButton

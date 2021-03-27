@@ -9,20 +9,12 @@
   min-height: 210px;
 }
 
-
 /* Wallet Tile */
 .walletTile {
   background-color: var(--white);
-  padding: 36px 12px 0;
-}
-
-.balanceAmount {
-  font-weight: 800;
-  font-size: 64px;
-  background: var(--page-header-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .balanceLabel {
@@ -39,14 +31,14 @@
   justify-content: center;
 }
 
-.buttons > * {
-  margin: 2px 12px;
+.buttons > *:first-child {
+  margin-bottom: 16px;
 }
 
 .balanceBtn {
   background: transparent !important;
   border: 1px solid var(--neutral-light-6);
-  width: 144px;
+  width: 244px;
 }
 
 .balanceBtn .textClassName {
@@ -63,29 +55,26 @@
   background-color: hsla(0,0%,100%,.1);
 }
 
-/* Claim Tile */
-.claimTile {
+/* Balance Tile */
+.balanceTile {
   background: var(--page-header-gradient);
   display: inline-flex;
   flex-direction: column;
-  padding: 36px 16px 16px;
   transition: flex-grow 0.7s ease-in-out;
+  align-items: center;
+  justify-content: center;
 }
 
-.claimCollapsed {
-  flex: 0.55;
-}
-
-.claimAmount {
+.balanceAmount {
   font-weight: 800;
-  font-size: 64px;
+  font-size: 96px;
   text-align: center;
   color: var(--static-white);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   margin-bottom: 6px;
 }
 
-.unclaimed {
+.balance {
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-align: center;
@@ -93,7 +82,6 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
 }
 
 .noClaim {
@@ -105,106 +93,6 @@
   max-width: 250px;
   display: flex;
   flex-direction: column;
-}
-
-.claimTile .claimBtn {
-  background: linear-gradient(262.12deg, #FFC700 5.49%, rgba(255, 148, 0, 0) 97.25%), #FF9400;
-  box-shadow: 0px 5px 15px -2px rgba(0, 0, 0, 0.25);
-  border: 0px !important;
-}
-
-.claimBtn > * {
-  color: var(--white) !important;
-}
-
-.claimTile .claimBtn:hover {
-  background: linear-gradient(262.12deg, #FFC700 5.49%, rgba(255, 148, 0, 0) 97.25%), #FF9400;
-  box-shadow: 0px 5px 15px -2px rgba(0, 0, 0, 0.25);
-}
-
-.claimTile .claimBtn:active {
-  background: linear-gradient(262.12deg, #FFC700 5.49%, rgba(255, 148, 0, 0) 97.25%), #FF9400;
-  box-shadow: 0px 5px 15px -2px rgba(0, 0, 0, 0.25);
-}
-
-/* Explainer Tile */
-.explainerTile {
-  height: 331px;
-  background-color: var(--white);
-  display: inline-flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-  overflow: hidden;
-  text-align: left;
-}
-
-.whatIsAudioContainer {
-  flex: 1;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 44px 0px;
-  margin-bottom: 74px;
-}
-
-@media screen and (max-width: 1024px) {
-  .whatIsAudioContainer {
-    padding-right: 32px;
-  }
-}
-
-.whatIsAudio {
-  font-weight: 800;
-  font-size: 40px;
-  line-height: 49px;
-  background: var(--page-header-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0px 0px 2px 0px;
-}
-
-.whyCare {
-  font-weight: var(--font-bold);
-  font-size: var(--font-m);
-  line-height: 20px;
-  text-transform: uppercase;
-  color: var(--neutral-light-4);
-  margin-bottom: 18px;
-  text-align: left;
-}
-
-.description {
-  font-weight: var(--font-demi-bold);
-  font-size: 20px;
-  line-height: 160%;
-  color: var(--neutral);
-  margin-bottom: 16px;
-  max-width: 640px;
-}
-
-.learnMore {
-  font-weight: var(--font-bold);
-  font-size: 20px;
-  line-height: 17px;
-  text-align: right;
-  letter-spacing: 0.5px;
-  color: var(--secondary);
-  margin: 10px 0px 8px;
-  cursor: pointer;
-}
-
-.learnMore:hover {
-  text-decoration: underline;
-}
-
-.confused {
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-m);
-  line-height: 24px;
-  color: var(--neutral);
-  margin-bottom: 28px;
 }
 
 .levels {

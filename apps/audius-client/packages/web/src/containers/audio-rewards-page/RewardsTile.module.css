@@ -1,0 +1,96 @@
+.rewardsTile {
+  background-color: var(--white);
+  margin-bottom: 32px;
+  padding: 42px 28px 32px;
+}
+.title {
+  font-weight: 900;
+  font-size: 48px;
+  line-height: 49px;
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+
+.title.mobile {
+  font-size: 30px !important;
+}
+
+.subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--neutral);
+  font-weight: var(--font-bold);
+  line-height: 32px;
+  margin-bottom: 40px;
+  font-size: 20px;
+}
+
+.subtitle.mobile {
+  font-size: var(--font-xs);
+  font-weight: var(--font-regular);
+  margin: 0px -10px 16px;
+  line-height: 19px;
+}
+
+
+.rewardsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.rewardPanelContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px;
+  flex: 1 1 340px;
+  min-width: 340px;
+  max-width: 504px;
+  border: 2px solid var(--neutral-light-7);
+  border-radius: 16px;
+  margin: 8px;
+  cursor: pointer;
+  transition: all .18s ease-in-out;
+}
+.rewardPanelContainer.mobile {
+  flex: 1 1 320px;
+  min-width: 320px;
+}
+
+.rewardPanelContainer:not(:first-child):not(:last-child) {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+.rewardPanelContainer.mobile {
+  min-width: 320px;
+}
+
+.rewardTitle {
+  color: var(--neutral);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  margin-bottom: 8px;
+  text-align: left;
+}
+.rewardTitle i {
+  margin-right: 8px;
+}
+.rewardTitle.mobile {
+  font-size: var(--font-l);
+}
+
+.rewardDescription {
+  color: var(--secondary);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  margin-bottom: 24px;
+  text-align: left;
+}
+.rewardDescription.mobile {
+  font-size: var(--font-s);
+  line-height: 17px;
+}

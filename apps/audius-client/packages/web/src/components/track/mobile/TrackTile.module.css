@@ -331,3 +331,23 @@
   opacity: 1;
   transition: opacity ease-in-out 0.5s;
 }
+
+.rankContainer {
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+.rankContainer svg {
+  margin-right: 3px;
+  top: 0.2px;
+}
+
+.rankContainer path {
+  fill: var(--secondary);
+}
+
+.rankIconContainer {
+  margin-right: 4px !important;
+}

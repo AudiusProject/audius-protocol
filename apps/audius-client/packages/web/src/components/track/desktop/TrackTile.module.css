@@ -48,7 +48,21 @@
 
   font-weight: var(--font-bold);
   font-size: var(--font-m);
-  color: var(--neutral-light-4);
+  color: var(--neutral-light-2);
+  position: relative;
+}
+
+.crownContainer {
+  position: absolute;
+  top: 48px;
+}
+
+.crownContainer svg {
+  width: 18px;
+}
+
+.crownContainer path {
+  fill: var(--neutral-light-2);
 }
 
 .large .imageContainer {

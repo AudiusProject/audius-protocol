@@ -18,3 +18,7 @@
   max-width: 1100px;
   overflow: visible;
 }
+
+.bannerContainer {
+  margin-bottom: 14px;
+}

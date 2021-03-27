@@ -33,6 +33,8 @@ export type TileProps = {
   isLoading: boolean
   hasLoaded: (index: number) => void
   goToRoute: (route: string) => void
+  isTrending: boolean
+  showRankIcon: boolean
 }
 
 export type TrackTileProps = TileProps & {
@@ -71,6 +73,7 @@ export type PlaylistTileProps = TileProps & {
   activeTrackUid: UID | null
   saveCount: number
   tracks: LineupTrack[]
+  trackCount: number
   showArtworkIcon?: boolean
   showSkeleton?: boolean
   pauseTrack: () => void
@@ -82,9 +85,11 @@ export type PlaylistTileProps = TileProps & {
   ownerId: ID
   // TODO: remove when making all playlist tiles functional components
   record?: (event: any) => void
+  /** Number of rows to show when in loading state, if any */
+  numLoadingSkeletonRows?: number
 }
 
-export type DeaktopTrackTileProps = {
+export type DesktopTrackTileProps = {
   /** Size of the track Tile Large or Small */
   size: TrackTileSize
 
@@ -105,6 +110,9 @@ export type DeaktopTrackTileProps = {
 
   /** If track metadata is loading in */
   isLoading?: boolean
+
+  /** Number of rows to show when in loading state, if any */
+  numLoadingSkeletonRows?: number
 
   /** If the artist selected this track as featured, displays a star and artst pick label */
   isArtistPick?: boolean
@@ -168,6 +176,12 @@ export type DeaktopTrackTileProps = {
 
   /** On click track tile that's does not trigger another action (ie. button or text) */
   onTogglePlay: (e?: MouseEvent) => void
+
+  /** Are we in a trending lineup? Allows tiles to specialize their rendering */
+  isTrending?: boolean
+
+  /** Whether to show an icon indicating rank in lineup */
+  showRankIcon: boolean
 }
 
 export type DesktopPlaylistTileProps = {
@@ -185,6 +199,9 @@ export type DesktopPlaylistTileProps = {
 
   /** If track metadata is loading in */
   isLoading?: boolean
+
+  /** Number of rows to show when in loading state, if any */
+  numLoadingSkeletonRows?: number
 
   /** If the artist selected this track as featured, displays a star and artst pick label */
   isArtistPick?: boolean
@@ -256,10 +273,19 @@ export type DesktopPlaylistTileProps = {
   onTogglePlay: (e?: MouseEvent) => void
 
   /** The list of tracks to be rendered under the tracktile  */
-  trackList: ReactNode
+  trackList: ReactNode[]
+
+  /** The full track count for the playlist (may include tracks not rendered) */
+  trackCount: number
 
   /** The wrapper react compoenent for the track tile - can be used for drag and drop */
   TileTrackContainer?: any
+
+  /** Are we in a trending lineup? Allows tiles to specialize their rendering */
+  isTrending?: boolean
+
+  /** Whether to show an icon indicating rank in lineup */
+  showRankIcon: boolean
 }
 
 export type SkeletonTileProps = {
