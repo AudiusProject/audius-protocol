@@ -205,3 +205,12 @@
   transition: opacity 0s ease-in-out;
   opacity: 0.2;
 }
+
+.crownButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.crownButton svg path {
+  fill: var(--accent-orange);
+}

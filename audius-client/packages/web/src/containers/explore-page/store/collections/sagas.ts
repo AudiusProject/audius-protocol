@@ -36,7 +36,7 @@ const fetchMap = {
     EXPLORE_PAGE
   ),
   [ExploreCollectionsVariant.TOP_ALBUMS]: fetchTopAlbums,
-  [ExploreCollectionsVariant.TOP_PLAYLISTS]: fetchTopPlaylists,
+  [ExploreCollectionsVariant.TRENDING_PLAYLISTS]: fetchTopPlaylists,
   [ExploreCollectionsVariant.MOOD]: fetchMoodPlaylists
 }
 

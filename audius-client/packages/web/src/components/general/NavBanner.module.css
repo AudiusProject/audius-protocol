@@ -37,7 +37,6 @@
 .navBanner > .dropdown {
   position: absolute;
   right: 0;
-  width: 144px;
 }
 
 @media screen and (max-width: 1140px) {

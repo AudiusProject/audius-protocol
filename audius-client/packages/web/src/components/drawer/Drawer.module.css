@@ -18,6 +18,12 @@
 .fullDrawer {
   top: 0px;
   height: 110vh;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.fullDrawer > div {
+  margin-bottom: 10vh;
 }
 
 .dismissContainer {

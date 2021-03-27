@@ -15,11 +15,14 @@ import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
 import { LineupTrack } from 'models/Track'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { range } from 'lodash'
+import { RankIcon } from './TrackTile'
 
 type TrackItemProps = {
   index: number
-  track: LineupTrack
+  track?: LineupTrack
   active: boolean
+  forceSkeleton?: boolean
 }
 
 // Max number of track to display in a playlist
@@ -34,9 +37,18 @@ const TrackItem = (props: TrackItemProps) => {
           [styles.activeTrackItem]: props.active
         })}
       >
-        <div className={styles.index}> {props.index + 1} </div>
-        <div className={styles.trackTitle}> {props.track.title} </div>
-        <div className={styles.byArtist}> {`by ${props.track.user.name}`} </div>
+        {props.forceSkeleton ? (
+          <Skeleton width='100%' height='10px' />
+        ) : props.track ? (
+          <>
+            <div className={styles.index}> {props.index + 1} </div>
+            <div className={styles.trackTitle}> {props.track.title} </div>
+            <div className={styles.byArtist}>
+              {' '}
+              {`by ${props.track.user.name}`}{' '}
+            </div>
+          </>
+        ) : null}
       </div>
     </>
   )
@@ -46,24 +58,44 @@ type TrackListProps = {
   activeTrackUid: UID | null
   tracks: LineupTrack[]
   goToCollectionPage: (e: React.MouseEvent<HTMLElement>) => void
+  isLoading?: boolean
+  numLoadingSkeletonRows?: number
+  trackCount?: number
 }
 
-const TrackList = (props: TrackListProps) => {
+const TrackList = ({
+  tracks,
+  activeTrackUid,
+  goToCollectionPage,
+  isLoading,
+  numLoadingSkeletonRows,
+  trackCount
+}: TrackListProps) => {
+  if (!tracks.length && isLoading && numLoadingSkeletonRows) {
+    return (
+      <>
+        {range(numLoadingSkeletonRows).map(i => (
+          <TrackItem key={i} active={false} index={i} forceSkeleton />
+        ))}
+      </>
+    )
+  }
+
   return (
-    <div onClick={props.goToCollectionPage}>
-      {props.tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
+    <div onClick={goToCollectionPage}>
+      {tracks.slice(0, DISPLAY_TRACK_COUNT).map((track, index) => (
         <TrackItem
           key={track.uid}
-          active={props.activeTrackUid === track.uid}
+          active={activeTrackUid === track.uid}
           index={index}
           track={track}
         />
       ))}
-      {props.tracks.length > 5 && (
+      {trackCount && trackCount > 5 && (
         <>
           <div className={styles.trackItemDivider}></div>
           <div className={cn(styles.trackItem, styles.trackItemMore)}>
-            {`+${props.tracks.length - DISPLAY_TRACK_COUNT} more tracks`}
+            {`+${trackCount - tracks.length} more tracks`}
           </div>
         </>
       )}
@@ -91,7 +123,15 @@ type ExtraProps = {
 }
 
 const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
-  const { hasLoaded, index, showSkeleton } = props
+  const {
+    hasLoaded,
+    index,
+    showSkeleton,
+    numLoadingSkeletonRows,
+    isTrending,
+    showRankIcon,
+    trackCount
+  } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
     if (artworkLoaded && !showSkeleton) {
@@ -99,9 +139,10 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     }
   }, [artworkLoaded, hasLoaded, index, showSkeleton])
 
+  const shouldShow = artworkLoaded && !showSkeleton
   const fadeIn = {
-    [styles.show]: artworkLoaded,
-    [styles.hide]: !artworkLoaded
+    [styles.show]: shouldShow,
+    [styles.hide]: !shouldShow
   }
 
   return (
@@ -127,11 +168,11 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             <div className={styles.title} onClick={props.goToCollectionPage}>
               <div className={cn(fadeIn)}>{props.playlistTitle}</div>
               {props.isPlaying && <IconVolume />}
-              {!artworkLoaded && (
+              {!shouldShow && (
                 <Skeleton
                   className={styles.skeleton}
-                  width='80%'
-                  height='80%'
+                  width='90px'
+                  height='16px'
                 />
               )}
             </div>
@@ -144,17 +185,23 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                 badgeSize={10}
                 className={styles.iconVerified}
               />
-              {!artworkLoaded && (
+              {!shouldShow && (
                 <Skeleton
                   className={styles.skeleton}
-                  width='80%'
-                  height='80%'
+                  width='180px'
+                  height='16px'
                 />
               )}
             </div>
           </div>
         </div>
         <div className={cn(styles.stats, styles.statText)}>
+          <RankIcon
+            className={styles.rankIcon}
+            index={index}
+            isVisible={isTrending && shouldShow}
+            showCrown={showRankIcon}
+          />
           {!!(props.repostCount || props.saveCount) && (
             <>
               <div
@@ -196,24 +243,29 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             </>
           )}
         </div>
-        {artworkLoaded && (
+        {
           <TrackList
             activeTrackUid={props.activeTrackUid}
             goToCollectionPage={props.goToCollectionPage}
             tracks={props.tracks}
+            isLoading={showSkeleton}
+            numLoadingSkeletonRows={numLoadingSkeletonRows}
+            trackCount={trackCount}
           />
-        )}
-        <BottomButtons
-          hasSaved={props.hasCurrentUserSaved}
-          hasReposted={props.hasCurrentUserReposted}
-          toggleSave={props.toggleSave}
-          toggleRepost={props.toggleRepost}
-          onShare={props.onShare}
-          onClickOverflow={props.onClickOverflow}
-          isOwner={props.isOwner}
-          isDarkMode={props.darkMode}
-          isMatrixMode={props.isMatrix}
-        />
+        }
+        <div className={cn(fadeIn)}>
+          <BottomButtons
+            hasSaved={props.hasCurrentUserSaved}
+            hasReposted={props.hasCurrentUserReposted}
+            toggleSave={props.toggleSave}
+            toggleRepost={props.toggleRepost}
+            onShare={props.onShare}
+            onClickOverflow={props.onClickOverflow}
+            isOwner={props.isOwner}
+            isDarkMode={props.darkMode}
+            isMatrixMode={props.isMatrix}
+          />
+        </div>
       </div>
     </div>
   )

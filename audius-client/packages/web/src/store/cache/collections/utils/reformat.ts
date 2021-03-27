@@ -1,11 +1,15 @@
 import AudiusBackend from 'services/AudiusBackend'
-import Collection, { Variant } from 'models/Collection'
+import Collection, {
+  CollectionMetadata,
+  UserCollectionMetadata,
+  Variant
+} from 'models/Collection'
 import { omit } from 'lodash'
 
 /**
  * Adds cover_art_url to a collection object if it does not have one set
  */
-const addCollectionImages = (collection: Collection) => {
+const addCollectionImages = (collection: CollectionMetadata): Collection => {
   return AudiusBackend.getCollectionImages(collection)
 }
 
@@ -13,10 +17,9 @@ const addCollectionImages = (collection: Collection) => {
  * Reformats a collection to be used internally within the client
  * This method should *always* be called before a collection is cached.
  */
-export const reformat = (collection: Collection) => {
-  let c = collection
-  c = omit(c, 'user')
-  c = addCollectionImages(c)
-  c.variant = Variant.USER_GENERATED
-  return c
+export const reformat = (collection: UserCollectionMetadata) => {
+  const withoutUser = omit(collection, 'user')
+  const withImages = addCollectionImages(withoutUser)
+  withImages.variant = Variant.USER_GENERATED
+  return withImages
 }

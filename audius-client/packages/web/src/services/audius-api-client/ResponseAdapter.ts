@@ -220,6 +220,7 @@ export const makePlaylist = (
   const repost_count = 'repost_count' in playlist ? playlist.repost_count : 0
   const total_play_count =
     'total_play_count' in playlist ? playlist.total_play_count : 0
+  const track_count = 'track_count' in playlist ? playlist.track_count : 0
 
   const playlistContents = {
     track_ids: playlist.added_timestamps
@@ -256,6 +257,7 @@ export const makePlaylist = (
     has_current_user_saved,
     save_count,
     repost_count,
+    track_count,
     total_play_count,
     playlist_contents: playlistContents,
 

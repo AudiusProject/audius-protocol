@@ -1,0 +1,55 @@
+import React, { useCallback } from 'react'
+import { useModalState } from 'hooks/useModalState'
+import ModalDrawer from './ModalDrawer'
+import AudiusAPI from 'assets/img/audiusAPI.png'
+import ButtonWithArrow from '../ButtonWithArrow'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+
+import styles from './TopApi.module.css'
+
+const messages = {
+  modalTitle: 'Audius API',
+  title: "It's easy to build your own app on Audius",
+  description: 'The top 10 Audius API apps each month win',
+  button: 'Learn More About The Audius API'
+}
+
+const API_LINK = 'https://audius.org/api'
+
+const TopAPIBody = () => {
+  const wm = useWithMobileStyle(styles.mobile)
+
+  const onClickAudiusAPI = useCallback(() => {
+    window.open(API_LINK, '__blank')
+  }, [])
+
+  return (
+    <div className={wm(styles.container)}>
+      <img src={AudiusAPI} alt='Audius API Logo' />
+      <span className={styles.title}>{messages.title}</span>
+      <span className={styles.subtitle}>{messages.description}</span>
+      <ButtonWithArrow
+        text={messages.button}
+        className={styles.button}
+        onClick={onClickAudiusAPI}
+      />
+    </div>
+  )
+}
+
+const TopAPIModal = () => {
+  const [isOpen, setOpen] = useModalState('APIRewardsExplainer')
+
+  return (
+    <ModalDrawer
+      isOpen={isOpen}
+      onClose={() => setOpen(false)}
+      title={messages.modalTitle}
+      isFullscreen={false}
+    >
+      <TopAPIBody />
+    </ModalDrawer>
+  )
+}
+
+export default TopAPIModal

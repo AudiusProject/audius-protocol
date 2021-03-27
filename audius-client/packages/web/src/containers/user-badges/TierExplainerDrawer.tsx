@@ -3,7 +3,7 @@ import {
   audioTierMapPng,
   TierLevel,
   TierNumber
-} from 'containers/artist-dashboard-page/Tiers'
+} from 'containers/audio-rewards-page/Tiers'
 import React, { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'

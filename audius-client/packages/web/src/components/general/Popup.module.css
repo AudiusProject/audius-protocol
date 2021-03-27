@@ -1,5 +1,6 @@
 .placeholder {
   width: 100%;
+  visibility: hidden;
 }
 
 .wrapper {

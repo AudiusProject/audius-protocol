@@ -118,6 +118,8 @@
   display: flex;
   align-items: center;
   position: relative;
+  min-height: 20px;
+  min-width: 90px;
 }
 
 .title:active {
@@ -137,6 +139,7 @@
   flex-wrap: nowrap;
   align-items: center;
   position: relative;
+  min-height: 20px;
 }
 
 .artist:active {
@@ -253,10 +256,14 @@
 }
 
 .hide {
-  opacity: 0;
+  opacity: 0 !important;
 }
 
 .show {
   opacity: 1;
   transition: opacity ease-in-out 0.5s;
+}
+
+.rankIcon {
+  margin: 0px 16px 0px 10px !important;
 }

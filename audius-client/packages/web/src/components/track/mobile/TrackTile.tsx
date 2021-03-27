@@ -16,6 +16,7 @@ import TrackTileArt from './TrackTileArt'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { IconCrown, IconTrending } from '@audius/stems'
 
 const messages = {
   artistPick: "Artist's Pick",
@@ -63,6 +64,25 @@ const formatCoSign = ({
   return messages.reposted
 }
 
+export const RankIcon = ({
+  showCrown,
+  index,
+  className,
+  isVisible = true
+}: {
+  showCrown: boolean
+  index: number
+  isVisible?: boolean
+  className?: string
+}) => {
+  return isVisible ? (
+    <div className={cn(styles.rankContainer, className)}>
+      {showCrown ? <IconCrown /> : <IconTrending />}
+      {index + 1}
+    </div>
+  ) : null
+}
+
 const TrackTile = (props: TrackTileProps & ExtraProps) => {
   const {
     id,
@@ -76,7 +96,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     coSign,
     darkMode,
     isMatrix,
-    userId
+    userId,
+    isTrending,
+    showRankIcon
   } = props
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
@@ -191,6 +213,12 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           </div>
         )}
         <div className={cn(styles.stats, styles.statText)}>
+          <RankIcon
+            showCrown={showRankIcon}
+            index={index}
+            isVisible={isTrending && artworkLoaded && !showSkeleton}
+            className={styles.rankIconContainer}
+          />
           {!!(props.repostCount || props.saveCount) && (
             <>
               <div

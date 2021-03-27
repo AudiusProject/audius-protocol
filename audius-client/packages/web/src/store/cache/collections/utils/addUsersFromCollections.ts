@@ -1,5 +1,5 @@
 import { makeUid } from 'utils/uid'
-import { UserCollection } from 'models/Collection'
+import { UserCollectionMetadata } from 'models/Collection'
 import { Kind } from 'store/types'
 import { reformat as reformatUser } from 'store/cache/users/utils'
 import { put, select } from 'redux-saga/effects'
@@ -12,7 +12,9 @@ import { uniqBy } from 'lodash'
  * Dedupes users and removes self.
  * @param metadataArray
  */
-export function* addUsersFromCollections(metadataArray: Array<UserCollection>) {
+export function* addUsersFromCollections(
+  metadataArray: Array<UserCollectionMetadata>
+) {
   const accountUser: ReturnType<typeof getAccountUser> = yield select(
     getAccountUser
   )

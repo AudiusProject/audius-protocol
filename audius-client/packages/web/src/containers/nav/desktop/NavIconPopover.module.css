@@ -1,0 +1,75 @@
+.headerIconWrapper {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.iconClass {
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 50%;
+  background-color: var(--neutral-light-9);
+  height: 24px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.iconClass svg {
+  height: 20px;
+  width: 20px;
+  background-color: unset !important;
+}
+
+.iconClass > svg path {
+  fill: var(--neutral-light-4);
+}
+
+.scalingWrapper {
+  transition: all ease-in-out .07s;
+  /* Need to account for 2px popup placeholder */
+  height: 24px;
+}
+
+/* Apply color svg transitions on hover of outermost scalingWrapper */
+.scalingWrapper:hover > svg path, .scalingWrapper:active > svg path {
+  fill: var(--static-neutral-light-10);
+}
+
+.scalingWrapper:global(.active),
+.scalingWrapper:hover {
+  transform: scale3d(1.1,1.1,1.1);
+}
+
+.scalingWrapper:global(.active) .iconClass,
+.scalingWrapper:hover .iconClass {
+  background-color: var(--secondary-light-2);
+}
+
+.menu {
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--neutral);
+}
+
+.rewardsMenu {
+  color: var(--accent-orange)
+}
+
+.menuIcon {
+  border: none;
+  margin-right: 8px;
+}
+
+.menuIcon svg {
+  height: 24px;
+  width: 24px;
+  padding: 2px;
+}
+
+.crownIcon svg {
+  padding: 4px;
+  background: var(--accent-orange);
+}

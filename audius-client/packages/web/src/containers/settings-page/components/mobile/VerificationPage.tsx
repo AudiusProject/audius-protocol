@@ -38,8 +38,6 @@ const messages = {
       <b>exactly</b> {' match the verified handle you’re connecting.'}
     </span>
   ),
-  twitterButton: 'Verify With Twitter',
-  instagramButton: 'Verify With Instagram',
   failure: 'Sorry, unable to retrieve information',
   errorHandle: 'Sorry, your handle does not match',
   errorVerifiedTwitter: 'Your Twitter account isn’t verified',

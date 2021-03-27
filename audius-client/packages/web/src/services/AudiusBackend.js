@@ -46,7 +46,6 @@ const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
 const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS
 const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
 const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
-const COMSTOCK_URL = process.env.REACT_APP_COMSTOCK_URL
 const CLAIM_DISTRIBUTION_CONTRACT_ADDRESS =
   process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY
@@ -386,7 +385,6 @@ class AudiusBackend {
           contentNodeBlockList,
           monitoringCallbacks.contentNode
         ),
-        comstockConfig: AudiusLibs.configComstock(COMSTOCK_URL),
         // Electron cannot use captcha until it serves its assets from
         // a "domain" (e.g. localhost) rather than the file system itself.
         // i.e. there is no way to instruct captcha that the domain is "file://"

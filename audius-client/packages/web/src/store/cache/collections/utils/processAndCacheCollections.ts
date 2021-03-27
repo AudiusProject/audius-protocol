@@ -4,7 +4,7 @@ import { reformat } from './reformat'
 import { makeUid } from 'utils/uid'
 import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
-import { UserCollection } from 'models/Collection'
+import { UserCollectionMetadata } from 'models/Collection'
 import { retrieveTracksForCollections } from './retrieveCollections'
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { ID } from 'models/common/Identifiers'
@@ -17,7 +17,7 @@ import { ID } from 'models/common/Identifiers'
  * @param {Array<ID>} excludedTrackIds optional track ids to exclude from retrieve
  */
 export function* processAndCacheCollections(
-  collections: UserCollection[],
+  collections: UserCollectionMetadata[],
   shouldRetrieveTracks = true,
   excludedTrackIds: ID[] = []
 ) {

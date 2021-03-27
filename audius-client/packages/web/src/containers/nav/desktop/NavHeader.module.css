@@ -53,18 +53,7 @@ svg.logo.matrixLogo path {
   justify-content: center;
   align-items: center;
   transition: all ease-in-out .07s;
-}
-
-.dashboardIcon {
-  background-color: var(--accent-orange-light-1);
-}
-
-.dashboardIcon svg path {
-  fill: var(--static-white) !important;
-}
-
-.dashboardIcon:hover:not(:global(.active)) {
-  background-color: var(--accent-orange) !important;
+  background-color: var(--neutral-light-9);
 }
 
 .headerIconWrapper:global(.active),

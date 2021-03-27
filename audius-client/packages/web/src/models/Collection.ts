@@ -31,6 +31,7 @@ export type CollectionMetadata = {
     track_ids: Array<{ time: number; track: ID; uid?: UID }>
   }
   tracks?: UserTrackMetadata[]
+  track_count: number
   playlist_id: ID
   cover_art: CID | null
   playlist_name: string

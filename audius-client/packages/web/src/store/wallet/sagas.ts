@@ -119,8 +119,8 @@ function* claimAsync() {
   }
 }
 
-function* getWalletBalanceAndClaim() {
-  yield all([put(getClaim()), put(getBalance())])
+function* getWalletBalance() {
+  yield put(getBalance())
 }
 
 function* fetchBalanceAsync() {
@@ -159,7 +159,7 @@ function* watchGetClaims() {
 function* watchFetchAccountSucceeded() {
   try {
     yield all([take(fetchAccountSucceeded.type), take(SETUP_BACKEND_SUCCEEDED)])
-    yield getWalletBalanceAndClaim()
+    yield getWalletBalance()
   } catch (err) {
     console.error(err)
   }

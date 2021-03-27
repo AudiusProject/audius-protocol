@@ -13,8 +13,7 @@ export enum Layout {
   NORMAL = 'normal',
   // Two-columns with an alternating pattern of wide, medium, and narrow
   TWO_COLUMN_DYNAMIC = 'two-column-dynamic',
-  // Two-columns with an alternating pattern of wide, medium, and narrow
-  // that alternates with a single column every 9 items,
+  // Two-columns with rows of 100%x1, 50%x2, 33%x3, 67% 33% in that order
   TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT = 'two-column-dynamic-with-leading-element'
 }
 

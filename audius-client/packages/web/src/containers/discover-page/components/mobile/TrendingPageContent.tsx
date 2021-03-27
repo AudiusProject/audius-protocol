@@ -33,6 +33,7 @@ import { LineupVariant } from 'containers/lineup/types'
 import TrendingFilterButton from './TrendingFilterButton'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import { scrollWindowToTop } from 'utils/scroll'
+import RewardsBanner from '../RewardsBanner'
 
 const messages = {
   title: 'Trending',
@@ -136,22 +137,29 @@ const TrendingPageMobileContent = ({
 
   const lineups = useMemo(() => {
     return [
-      <Lineup
-        key='trendingWeek'
-        {...weekProps}
-        setInView={makeSetInView(TimeRange.WEEK)}
-        loadMore={makeLoadMore(TimeRange.WEEK)}
-        playTrack={makePlayTrack(TimeRange.WEEK)}
-        pauseTrack={makePauseTrack(TimeRange.WEEK)}
-        actions={trendingWeekActions}
-        variant={LineupVariant.MAIN}
-        endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
-        }
-      />,
+      <>
+        <div className={styles.rewardsContainer}>
+          <RewardsBanner bannerType='tracks' />
+        </div>
+        <Lineup
+          key='trendingWeek'
+          {...weekProps}
+          setInView={makeSetInView(TimeRange.WEEK)}
+          loadMore={makeLoadMore(TimeRange.WEEK)}
+          playTrack={makePlayTrack(TimeRange.WEEK)}
+          pauseTrack={makePauseTrack(TimeRange.WEEK)}
+          actions={trendingWeekActions}
+          variant={LineupVariant.MAIN}
+          isTrending
+          rankIconCount={5}
+          endOfLineup={
+            <EndOfLineup
+              key='endOfLineup'
+              description={messages.endOfLineupDescription}
+            />
+          }
+        />
+      </>,
       <Lineup
         key='trendingMonth'
         {...monthProps}
@@ -161,6 +169,7 @@ const TrendingPageMobileContent = ({
         pauseTrack={makePauseTrack(TimeRange.MONTH)}
         actions={trendingMonthActions}
         variant={LineupVariant.MAIN}
+        isTrending
         endOfLineup={
           <EndOfLineup
             key='endOfLineup'
@@ -177,6 +186,7 @@ const TrendingPageMobileContent = ({
         pauseTrack={makePauseTrack(TimeRange.YEAR)}
         actions={trendingYearActions}
         variant={LineupVariant.MAIN}
+        isTrending
         endOfLineup={
           <EndOfLineup
             key='endOfLineup'

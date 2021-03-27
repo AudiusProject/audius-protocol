@@ -34,6 +34,7 @@ const MAX_COUNT_LOADING_TILES = 18
 // The inital multiplier for number of tracks to fetch on lineup load
 // multiplied by the number of tracks that fit the browser height
 export const INITIAL_LOAD_TRACKS_MULTIPLIER = 1.75
+export const INITIAL_PLAYLISTS_MULTIPLER = 1
 
 // A multiplier for the number of tiles to fill a page to be
 // loaded in on each call (after the intial call)
@@ -51,14 +52,19 @@ const MINIMUM_INITIAL_LOAD_TRACKS_MULTIPLIER = 1
 const totalTileHeight = {
   main: 152 + 16,
   section: 124 + 16,
-  condensed: 124 + 8
+  condensed: 124 + 8,
+  playlist: 350
 }
 
 // Load TRACKS_AHEAD x the number of tiles to be displayed on the screen
 export const getLoadMoreTrackCount = (
   variant: LineupVariant,
-  multiplier: number
-) => Math.ceil((window.innerHeight / totalTileHeight[variant]) * multiplier)
+  multiplier: number | (() => number)
+) =>
+  Math.ceil(
+    (window.innerHeight / totalTileHeight[variant]) *
+      (typeof multiplier === 'function' ? multiplier() : multiplier)
+  )
 
 // Call load more when the user is LOAD_MORE_PAGE_THRESHOLD of the view height
 // away from the bottom of the scrolling window.
@@ -75,8 +81,7 @@ const shouldLoadMore = (
   const parentTop = (scrollParent.scrollTop || 0) + -1 * top
   const offset =
     scrollContainer.scrollHeight - parentTop - scrollParent.clientHeight
-  if (offset <= threshold) return true
-  return false
+  return offset <= threshold
 }
 
 const getInitPage = (
@@ -177,6 +182,14 @@ export interface LineupProviderProps {
   emptyElement?: JSX.Element
   actions: LineupActions
   delayLoad?: boolean
+  /** How many rows to show for a loading playlist tile. Defaults to 0 */
+  numPlaylistSkeletonRows?: number
+
+  /** Are we in a trending lineup? Allows tiles to specialize their rendering */
+  isTrending?: boolean
+
+  /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
+  rankIconCount?: number
 }
 
 interface LineupProviderState {
@@ -207,12 +220,17 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
     super(props)
     const loadMoreThreshold = getLoadMoreThreshold()
     const minimumTrackLoadCount = getLoadMoreTrackCount(
-      LineupVariant.MAIN,
+      this.props.variant === LineupVariant.PLAYLIST
+        ? LineupVariant.PLAYLIST
+        : LineupVariant.MAIN,
       MINIMUM_INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const initialTrackLoadCount = getLoadMoreTrackCount(
       this.props.variant,
-      INITIAL_LOAD_TRACKS_MULTIPLIER
+      () =>
+        this.props.variant === LineupVariant.PLAYLIST
+          ? INITIAL_PLAYLISTS_MULTIPLER
+          : INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const trackLoadMoreCount = getLoadMoreTrackCount(
       this.props.variant,
@@ -447,7 +465,10 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineupContainerStyles,
       isMobile,
       showLeadingElementArtistPick = true,
-      lineup: { isMetadataLoading, page }
+      lineup: { isMetadataLoading, page },
+      numPlaylistSkeletonRows,
+      isTrending = false,
+      rankIconCount = 0
     } = this.props
     const status = lineup.status
     const {
@@ -460,7 +481,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
     let tileSize: TrackTileSize
     let lineupStyle = {}
     let containerClassName: string
-    if (variant === LineupVariant.MAIN) {
+    if (variant === LineupVariant.MAIN || variant === LineupVariant.PLAYLIST) {
       tileSize = TrackTileSize.LARGE
       lineupStyle = styles.main
     } else if (variant === LineupVariant.SECTION) {
@@ -495,7 +516,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             uid: entry.uid,
             showArtistPick: showLeadingElementArtistPick && !!leadingElementId,
             isLoading: !this.canLoad(index),
-            hasLoaded: this.hasLoaded
+            hasLoaded: this.hasLoaded,
+            isTrending,
+            showRankIcon: index < rankIconCount
           }
           if (entry.id === leadingElementId) {
             trackProps = { ...trackProps, ...leadingElementTileProps }
@@ -510,12 +533,16 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             index,
             uid: entry.uid,
             size: tileSize,
+            ordered,
             playTrack,
             pauseTrack,
             playingTrackId,
             togglePlay: this.togglePlay,
             isLoading: !this.canLoad(index),
-            hasLoaded: this.hasLoaded
+            hasLoaded: this.hasLoaded,
+            numLoadingSkeletonRows: numPlaylistSkeletonRows,
+            isTrending,
+            showRankIcon: index < rankIconCount
           }
 
           return <this.props.playlistTile key={index} {...playlistProps} />
@@ -552,9 +579,16 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           index: tiles.length + index,
           size: tileSize,
           ordered: this.props.ordered,
-          isLoading: true
+          isLoading: true,
+          isTrending,
+          numLoadingSkeletonRows: numPlaylistSkeletonRows
         }
 
+        // Skeleton tile should change depending on variant
+        const SkeletonTileElement =
+          variant === LineupVariant.PLAYLIST
+            ? this.props.playlistTile
+            : this.props.trackTile
         // If elected to apply leading element styles to the skeletons
         // Create featured content structure around firest skeleton tile
         if (
@@ -576,7 +610,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                 }}
               >
                 <div className={styles.featuredContent}>
-                  <this.props.trackTile
+                  <SkeletonTileElement
                     {...{ ...skeletonTileProps, ...leadingElementTileProps }}
                     key={index}
                   />
@@ -587,7 +621,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           )
         }
         return (
-          <this.props.trackTile
+          <SkeletonTileElement
             {...skeletonTileProps}
             key={tiles.length + index}
           />

@@ -64,7 +64,7 @@ export const getStatuses = (state: AppState, props: { ids: ID[] }) => {
   return statuses
 }
 
-type EnhancedCollectionTrack = Track & { user: User; uid: UID }
+export type EnhancedCollectionTrack = Track & { user: User; uid: UID }
 const emptyList: EnhancedCollectionTrack[] = []
 export const getTracksFromCollection = (
   state: AppState,

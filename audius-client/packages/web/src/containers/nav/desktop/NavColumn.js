@@ -64,7 +64,6 @@ import NavHeader from './NavHeader'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name, CreatePlaylistSource } from 'services/analytics'
 import { Variant } from 'models/Collection'
-import { getClaimableBalance } from 'store/wallet/slice'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
 import UserBadges from 'containers/user-badges/UserBadges'
 
@@ -92,7 +91,6 @@ const NavColumn = ({
   goToRoute,
   goToSignUp: routeToSignup,
   goToUpload,
-  pendingClaim,
   averageRGBColor
 }) => {
   const record = useRecord()
@@ -218,8 +216,6 @@ const NavColumn = ({
   const navLoaded =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
 
-  const isPendingClaim = pendingClaim && !pendingClaim.isZero()
-
   return (
     <nav id='navColumn' className={styles.navColumn}>
       {isElectron && <RouteNav />}
@@ -230,7 +226,6 @@ const NavColumn = ({
         toggleNotificationPanel={onClickToggleNotificationPanel}
         goToRoute={goToRoute}
         isElectron={isElectron}
-        pendingClaim={isPendingClaim}
       />
       <div className={cn(styles.navContent, { [styles.show]: navLoaded })}>
         <SimpleBar className={styles.scrollable}>
@@ -478,7 +473,6 @@ const makeMapStateToProps = () => {
       notificationPanelIsOpen: getNotificationPanelIsOpen(state),
       upload: state.upload,
       showCreatePlaylistModal: getIsOpen(state),
-      pendingClaim: getClaimableBalance(state),
       averageRGBColor: getAverageColorByTrack(state, {
         track: currentQueueItem.track
       })

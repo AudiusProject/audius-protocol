@@ -52,7 +52,8 @@ const ENDPOINT_MAP = {
   getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
-  searchAutocomplete: `/search/autocomplete`
+  searchAutocomplete: `/search/autocomplete`,
+  trendingPlaylists: `/playlists/trending`
 }
 
 const TRENDING_LIMIT = 100
@@ -205,6 +206,15 @@ type TrendingIds = {
   month: ID[]
   year: ID[]
 }
+
+type GetTrendingPlaylistsArgs = {
+  currentUserId: Nullable<ID>
+  limit: number
+  offset: number
+  time: 'week' | 'month' | 'year'
+}
+
+type TrendingPlaylistsResponse = APIPlaylist[]
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -782,6 +792,31 @@ class AudiusAPIClient {
       isAutocomplete: true,
       ...adapted
     })
+  }
+
+  async getTrendingPlaylists({
+    currentUserId,
+    time,
+    limit,
+    offset
+  }: GetTrendingPlaylistsArgs) {
+    const encodedUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedUserId,
+      limit,
+      offset,
+      time
+    }
+
+    const response: Nullable<APIResponse<
+      APIPlaylist[]
+    >> = await this._getResponse(ENDPOINT_MAP.trendingPlaylists, params)
+
+    if (!response) return []
+    const adapted = response.data
+      .map(adapter.makePlaylist)
+      .filter(removeNullable)
+    return adapted
   }
 
   init() {

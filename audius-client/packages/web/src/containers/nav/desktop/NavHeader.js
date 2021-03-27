@@ -1,20 +1,11 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { NavLink } from 'react-router-dom'
 import cn from 'classnames'
-import {
-  HOME_PAGE,
-  DASHBOARD_PAGE,
-  SETTINGS_PAGE,
-  BASE_URL,
-  stripBaseUrl
-} from 'utils/route'
+import { HOME_PAGE, BASE_URL, stripBaseUrl } from 'utils/route'
 
 import NavButton from 'containers/nav/desktop/NavButton'
 import NotificationPanel from 'containers/notification/NotificationPanel'
 
-import { ReactComponent as IconDashboard } from 'assets/img/iconDashboard.svg'
-import { ReactComponent as IconSettings } from 'assets/img/iconSettings.svg'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { formatCount } from 'utils/formatUtil'
@@ -23,6 +14,7 @@ import { useRemoteVar } from 'containers/remote-config/hooks'
 import { StringKeys } from 'services/remote-config'
 import { getTheme } from 'utils/theme/theme'
 import Theme from 'models/Theme'
+import NavIconPopover from 'containers/nav/desktop/NavIconPopover'
 
 const NavHeader = ({
   account,
@@ -30,8 +22,7 @@ const NavHeader = ({
   notificationPanelIsOpen,
   toggleNotificationPanel,
   goToRoute,
-  isElectron,
-  pendingClaim
+  isElectron
 }) => {
   const logoVariant = useRemoteVar(StringKeys.AUDIUS_LOGO_VARIANT)
   const logoVariantClickTarget = useRemoteVar(
@@ -65,22 +56,7 @@ const NavHeader = ({
       </div>
       {account ? (
         <div className={styles.headerIconContainer}>
-          <NavLink
-            to={SETTINGS_PAGE}
-            activeClassName='active'
-            className={cn(styles.headerIconWrapper)}
-          >
-            <IconSettings />
-          </NavLink>
-          <NavLink
-            to={DASHBOARD_PAGE}
-            activeClassName='active'
-            className={cn(styles.headerIconWrapper, {
-              [styles.dashboardIcon]: pendingClaim
-            })}
-          >
-            <IconDashboard />
-          </NavLink>
+          <NavIconPopover />
           <div
             onClick={toggleNotificationPanel}
             className={cn(styles.headerIconWrapper, styles.iconNotification, {

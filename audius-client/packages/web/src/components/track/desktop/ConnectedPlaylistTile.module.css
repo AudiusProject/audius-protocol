@@ -13,6 +13,10 @@
   opacity: 0.5;
 }
 
+.loading .tracksContainer {
+  padding-bottom: 24px;
+}
+
 .tracksContainer :global(.simplebar-scrollbar:before) {
   width: 6px;
 }

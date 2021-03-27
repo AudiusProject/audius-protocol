@@ -1,0 +1,34 @@
+.modalHeader {
+  background: var(--page-header-gradient);
+}
+
+.modalTitle {
+  color: var(--static-white);
+  font-size: 24px;
+}
+
+.modalBody {
+  width: 720px;
+  max-height: 90vh;
+}
+
+.modalBody path {
+  fill: var(--static-white);
+}
+
+.drawer {
+  padding: 32px 12px;
+  width: 100%;
+}
+
+.drawerTitle {
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 49px;
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}

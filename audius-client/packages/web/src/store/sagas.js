@@ -34,6 +34,7 @@ import addToPlaylistSagas from 'containers/add-to-playlist/store/sagas'
 import remixSettingsModalSagas from 'containers/remix-settings-modal/store/sagas'
 import remoteConfigSagas from 'containers/remote-config/sagas'
 import enablePushNotificationsSagas from 'containers/enable-push-notifications-drawer/store/sagas'
+import trendingPlaylistSagas from 'containers/trending-playlists/store/sagas'
 
 import analyticsSagas from 'store/analytics/sagas'
 import accountSagas from 'store/account/sagas'
@@ -93,6 +94,7 @@ export default function* rootSaga() {
     serviceSelectionSagas(),
     passwordResetSagas(),
     settingsSagas(),
+    trendingPlaylistSagas(),
 
     // Cache
     coreCacheSagas(),

@@ -1,0 +1,97 @@
+.fitWrapper {
+  width: fit-content;
+  height: fit-content;
+}
+
+.fit {
+  width: fit-content;
+  height: fit-content;
+  box-shadow: 0 16px 20px var(--table-shadow);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 8px;
+}
+
+.popup {
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-xs);
+  background-color: var(--white);
+}
+
+.popup:hover {
+  border-radius: 4px;
+}
+
+.popup:hover svg {
+  background: var(--secondary);
+}
+
+.popup svg:active {
+  transform: scale(0.95);
+}
+
+.popup:hover path {
+  fill: var(--static-white);
+}
+
+.popup svg {
+  /* Scale the animation on the icon rather than the svg */
+  transform: none !important;
+}
+
+.popup.disabled {
+  cursor: default;
+}
+
+.popup.disabled:hover svg {
+  background: var(--white);
+}
+
+.popup.disabled path,
+.popup.disabled:hover path {
+  fill: var(--neutral-light-4);
+}
+
+.menu {
+  background-color: var(--white);
+  text-align: start;
+}
+
+.icon {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-6);
+  overflow: hidden;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: var(--font-l);
+  font-weight: var(--font-demi-bold);
+  color: var(--neutral);
+}
+
+.item svg {
+  border-radius: 100%;
+  background: var(--neutral-light-4);
+}
+
+.item path {
+  fill: var(--white);
+}
+
+.item:hover {
+  cursor: pointer;
+  color: var(--white);
+  background: var(--secondary);
+}
+
+.item:hover svg {
+  background: var(--white);
+}
+
+.item:hover path {
+  fill: var(--secondary);
+}

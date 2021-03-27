@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
-import { Tier } from 'containers/artist-dashboard-page/Tiers'
+import { Tier } from 'containers/audio-rewards-page/Tiers'
 
 import styles from './TierExplainerModal.module.css'
 import { useSelector } from 'utils/reducer'
@@ -65,7 +65,9 @@ const TierExplainerModal = () => {
             onClick={onClickLearnMore}
           />
         </div>
-        <Tier isCompact tier={tier} />
+        <div className={styles.tierWrapper}>
+          <Tier isCompact tier={tier} />
+        </div>
       </div>
     </Modal>
   )

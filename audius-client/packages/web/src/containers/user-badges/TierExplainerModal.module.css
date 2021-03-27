@@ -29,3 +29,7 @@
   flex-direction: column;
   align-items: flex-start;
 }
+
+.tierWrapper {
+  width: 242px;
+}

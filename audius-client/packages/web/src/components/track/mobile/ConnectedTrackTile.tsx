@@ -68,7 +68,9 @@ const ConnectedTrackTile = memo(
     setRepostTrackId,
     setFavoriteTrackId,
     clickOverflow,
-    darkMode
+    darkMode,
+    isTrending,
+    showRankIcon
   }: ConnectedTrackTileProps) => {
     const {
       is_delete,
@@ -214,6 +216,8 @@ const ConnectedTrackTile = memo(
         isOwner={isOwner}
         darkMode={darkMode}
         isMatrix={isMatrix()}
+        isTrending={isTrending}
+        showRankIcon={showRankIcon}
       />
     )
   }

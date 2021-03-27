@@ -32,9 +32,6 @@ import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import User from 'models/User'
 import { withClassNullGuard } from 'utils/withNullGuard'
 import lazyWithPreload from 'utils/lazyWithPreload'
-import { ClaimTile, ExplainerTile, WalletTile } from './Tiles'
-import WalletModal from './WalletModal'
-import Tiers from './Tiers'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import Theme from 'models/Theme'
 
@@ -354,17 +351,6 @@ export class ArtistDashboardPage extends Component<
     )
   }
 
-  renderCryptoContent() {
-    return (
-      <div className={styles.cryptoContentContainer}>
-        <ClaimTile />
-        <WalletTile />
-        <ExplainerTile className={styles.explainerTile} />
-        <Tiers />
-      </div>
-    )
-  }
-
   renderProfileSection() {
     const { account, goToRoute } = this.props
     if (!account) return null
@@ -394,13 +380,11 @@ export class ArtistDashboardPage extends Component<
         contentClassName={styles.pageContainer}
         header={header}
       >
-        <WalletModal />
         {!account || status === Status.LOADING ? (
           <Spin size='large' className={styles.spin} />
         ) : (
           <>
             {this.renderProfileSection()}
-            {this.renderCryptoContent()}
             {this.renderCreatorContent()}
           </>
         )}

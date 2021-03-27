@@ -17,11 +17,13 @@ import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import { Nullable } from 'utils/typeUtils'
-import { LEARN_MORE_URL, Tile } from './Tiles'
 import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import { useDispatch } from 'react-redux'
 import { pressDiscord } from 'store/token-dashboard/slice'
 import { show } from 'containers/music-confetti/store/slice'
+import { Tile } from './Tiles'
+import { isMobile } from 'utils/clientUtil'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 const messages = {
   title: '$AUDIO VIP TIERS',
@@ -56,6 +58,8 @@ export const audioTierMapPng: {
 }
 
 export const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
+
+export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 
 const useShowConfetti = (tier: BadgeTier) => {
   // No tier or no local storage, never show confetti
@@ -117,7 +121,8 @@ export const Tier = ({
   return (
     <div
       className={cn(styles.tierContainerWrapper, {
-        [styles.tierContainerActive]: isActive
+        [styles.tierContainerActive]: isActive,
+        [styles.compact]: isCompact
       })}
     >
       {isActive && (
@@ -208,25 +213,30 @@ const Tiers = () => {
     }
   }, [showConfetti, dispatch])
 
+  const wm = useWithMobileStyle(styles.mobile)
+
+  const mobile = isMobile()
+
   return (
     <Tile className={styles.container}>
-      <div className={styles.tileContainerWrapper}></div>
-      <div className={styles.titleContainer}>
-        <div className={styles.title}>{messages.title}</div>
-        <div className={styles.subtitle}>{messages.subtitle1}</div>
-        <div className={styles.subtitle}>{messages.subtitle2}</div>
+      <div className={wm(styles.tileContainerWrapper)}></div>
+      <div className={wm(styles.titleContainer)}>
+        <div className={wm(styles.title)}>{messages.title}</div>
+        <div className={wm(styles.subtitle)}>{messages.subtitle1}</div>
+        <div className={wm(styles.subtitle)}>{messages.subtitle2}</div>
       </div>
-      <div className={styles.tiersContainer}>
+      <div className={wm(styles.tiersContainer)}>
         {tiers.map(t => (
           <Tier
             tier={t}
             isActive={tier === t}
             key={t}
             onClickDiscord={onClickDiscord}
+            isCompact={mobile}
           />
         ))}
       </div>
-      <div className={styles.buttonContainer}>
+      <div className={wm(styles.buttonContainer)}>
         <Button
           text={messages.learnMore}
           type={ButtonType.GLASS}

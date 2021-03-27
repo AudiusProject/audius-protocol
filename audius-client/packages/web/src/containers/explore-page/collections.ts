@@ -4,14 +4,13 @@ import { ExploreCollectionsVariant } from './store/types'
 import {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
-  EXPLORE_TOP_PLAYLISTS_PAGE,
-  exploreMoodPlaylistsPage
+  exploreMoodPlaylistsPage,
+  TRENDING_PLAYLISTS_PAGE
 } from 'utils/route'
 
 import { ReactComponent as IconExploreDJ } from 'assets/img/iconExploreDJ.svg'
 import { ReactComponent as IconExploreTopAlbums } from 'assets/img/iconExploreTopAlbums.svg'
 import { ReactComponent as IconExploreTopPlaylists } from 'assets/img/iconExploreTopPlaylists.svg'
-import { ReactComponent as IconBLM } from 'assets/img/iconBLMGlyph.svg'
 
 export type ExploreCollection = {
   variant: ExploreCollectionsVariant
@@ -48,14 +47,14 @@ export const TOP_ALBUMS: ExploreCollection = {
   link: EXPLORE_TOP_ALBUMS_PAGE
 }
 
-export const TOP_PLAYLISTS: ExploreCollection = {
-  variant: ExploreCollectionsVariant.TOP_PLAYLISTS,
-  title: 'Top Playlists',
+export const TRENDING_PLAYLISTS: ExploreCollection = {
+  variant: ExploreCollectionsVariant.TRENDING_PLAYLISTS,
+  title: 'Trending Playlists',
   subtitle: 'The top playlists on Audius right now',
   gradient: 'linear-gradient(315deg, #57ABFF 0%, #CD98FF 100%)',
   shadow: 'rgba(87,170,255,0.35)',
   icon: IconExploreTopPlaylists,
-  link: EXPLORE_TOP_PLAYLISTS_PAGE
+  link: TRENDING_PLAYLISTS_PAGE
 }
 
 export const CHILL_PLAYLISTS: ExploreMoodCollection = {
@@ -111,7 +110,7 @@ export const INTENSE_PLAYLISTS: ExploreMoodCollection = {
 export const EXPLORE_COLLECTIONS_MAP = {
   [ExploreCollectionsVariant.LET_THEM_DJ]: LET_THEM_DJ,
   [ExploreCollectionsVariant.TOP_ALBUMS]: TOP_ALBUMS,
-  [ExploreCollectionsVariant.TOP_PLAYLISTS]: TOP_PLAYLISTS
+  [ExploreCollectionsVariant.TRENDING_PLAYLISTS]: TRENDING_PLAYLISTS
 }
 
 type ExploreMoodMap = { [key in string]: ExploreMoodCollection }
@@ -121,14 +120,4 @@ export const EXPLORE_MOOD_COLLECTIONS_MAP: ExploreMoodMap = {
   intimate: INTIMATE_PLAYLISTS,
   upbeat: UPBEAT_PLAYLISTS,
   intense: INTENSE_PLAYLISTS
-}
-
-export const BLACK_LIVES_MATTER: ExploreCollection = {
-  variant: ExploreCollectionsVariant.DIRECT_LINK,
-  title: 'Black Lives Matter',
-  subtitle: '',
-  gradient: ' linear-gradient(349.37deg, #333333 0.82%, #000000 99.02%)',
-  shadow: 'rgba(0, 0, 0, 0.35)',
-  icon: IconBLM,
-  link: 'https://audius.co/audius/playlist/black-voices-8313'
 }
