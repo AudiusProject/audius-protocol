@@ -630,7 +630,7 @@ class CreatorNode {
    * @param {function?} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
-  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}) {
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 1) {
     await this.ensureConnected()
 
     // form data is from browser, not imported npm module
@@ -684,6 +684,10 @@ class CreatorNode {
       onProgress(total, total)
       return resp.data
     } catch (e) {
+      if (!e.response && retries > 0) {
+        console.log(`Network Error in request ${requestId} with ${retries} retries... retrying`)
+        return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
+      }
       await this._handleErrorHelper(e, url, requestId)
     }
   }
@@ -710,7 +714,7 @@ class CreatorNode {
         const res = await axios(endpoint, { headers: {
           'X-Request-ID': newRequestId
         }})
-        console.log(`Successfull health check: ${JSON.stringify(res.data)}`)
+        console.log(`Successful health check: ${JSON.stringify(res.data)}`)
       } catch (e) {
         console.error(`Failed health check immediately after network error ${requestId}`, e)
       }
