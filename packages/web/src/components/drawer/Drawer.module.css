@@ -23,6 +23,7 @@
 }
 
 .fullDrawer > div {
+  margin-top: env(safe-area-inset-top, 0px);
   margin-bottom: 10vh;
 }
 

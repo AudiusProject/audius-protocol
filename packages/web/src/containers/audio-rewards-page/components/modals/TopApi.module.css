@@ -48,3 +48,8 @@
 .mobile .button {
   margin-bottom: 24px;
 }
+
+.mobile .buttonText {
+  font-size: 16px;
+}
+
