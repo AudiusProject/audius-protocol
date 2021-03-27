@@ -32,6 +32,7 @@ const TopAPIBody = () => {
         text={messages.button}
         className={styles.button}
         onClick={onClickAudiusAPI}
+        textClassName={styles.buttonText}
       />
     </div>
   )

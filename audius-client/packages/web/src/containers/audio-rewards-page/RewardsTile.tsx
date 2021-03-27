@@ -40,7 +40,11 @@ const RewardPanel = ({
         {title}
       </span>
       <span className={wm(styles.rewardDescription)}>{description}</span>
-      <ButtonWithArrow text={buttonText} onClick={onClickButton} />
+      <ButtonWithArrow
+        text={buttonText}
+        onClick={onClickButton}
+        textClassName={styles.panelButtonText}
+      />
     </div>
   )
 }

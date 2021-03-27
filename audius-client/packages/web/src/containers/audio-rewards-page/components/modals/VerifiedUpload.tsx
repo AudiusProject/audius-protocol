@@ -85,6 +85,7 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
         rightIcon={<IconUpload />}
         type={ButtonType.PRIMARY_ALT}
         onClick={onClickUpload}
+        textClassName={styles.uploadText}
       />
       <Divider />
       <span className={styles.title}>{messages.step3Title}</span>

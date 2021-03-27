@@ -94,3 +94,7 @@
   font-size: var(--font-s);
   line-height: 17px;
 }
+
+.panelButtonText {
+  font-size: 14px;
+}

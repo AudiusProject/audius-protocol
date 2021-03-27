@@ -21,14 +21,17 @@
   width: 100%;
 }
 
+.titleContainer {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
 .drawerTitle {
-  font-weight: 700;
+  font-weight: 900;
   font-size: 28px;
   line-height: 49px;
   background: var(--page-header-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: center;
 }

@@ -11,6 +11,7 @@ const ButtonWithArrow = (props: ButtonProps) => {
       type={ButtonType.PRIMARY_ALT}
       rightIcon={<IconArrow />}
       iconClassName={styles.buttonIcon}
+      textClassName={cn(styles.text, props.textClassName)}
       {...props}
     />
   )

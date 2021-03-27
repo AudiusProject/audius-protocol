@@ -5,6 +5,7 @@ import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
 import TokenStill from 'assets/img/tokenSpinStill.png'
 import Theme from 'models/Theme'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { isMobile } from 'utils/clientUtil'
 
 const TOKEN_ANIMATION_URL =
   'https://d1ne8ucs302cxl.cloudfront.net/animations/spinnytoken.mp4'
@@ -62,7 +63,7 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
     <Tile className={wm([styles.explainerTile, className])}>
       <>
         <div className={wm(styles.tokenHero)}>
-          {isMatrixMode ? (
+          {isMatrixMode || isMobile() ? (
             <img src={TokenStill} alt='' />
           ) : (
             <video

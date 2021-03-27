@@ -23,7 +23,9 @@ const ModalDrawer = (props: ModalDrawerProps) => {
         }
       >
         <div className={styles.drawer}>
-          <div className={styles.drawerTitle}>{props.title}</div>
+          <div className={styles.titleContainer}>
+            <span className={styles.drawerTitle}>{props.title}</span>
+          </div>
           {props.children}
         </div>
       </Drawer>

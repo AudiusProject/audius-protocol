@@ -26,6 +26,11 @@
 
 .explainerTile.mobile {
   margin-top: 34px;
+  flex-direction: column;
+  flex-wrap: unset;
+  display: flex;
+  flex: 1 0;
+  height: unset;
 }
 
 .whatIsAudioContainer {

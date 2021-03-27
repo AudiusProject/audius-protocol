@@ -2,6 +2,11 @@
   padding: 8px 12px;
   height: 34px !important;
 }
+
+.text {
+  font-size: 18px !important;
+}
+
 .buttonIcon {
   margin: 0 2px 0 0px !important;
 }

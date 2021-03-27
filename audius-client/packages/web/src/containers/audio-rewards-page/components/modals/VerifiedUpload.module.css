@@ -141,3 +141,7 @@
 .mobile .uploadButton {
   display: none;
 }
+
+.uploadText {
+  font-size: 18px !important;
+}

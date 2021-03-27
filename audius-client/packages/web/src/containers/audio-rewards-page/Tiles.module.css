@@ -74,6 +74,10 @@
   margin-bottom: 6px;
 }
 
+.mobile .balanceAmount {
+  font-size: 64px;
+}
+
 .balance {
   font-weight: var(--font-bold);
   font-size: var(--font-m);
