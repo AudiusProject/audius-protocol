@@ -21,9 +21,9 @@ import {
   sendSucceeded,
   sendFailed
 } from 'store/wallet/slice'
-import { FETCH_DASHBOARD } from 'containers/artist-dashboard-page/store/actions'
 import { addConfirmationCall, clear } from 'store/confirmer/actions'
 import AudiusBackend from 'services/AudiusBackend'
+import { fetchAccountSucceeded } from 'store/account/reducer'
 
 const CLAIM_UID = 'CLAIM_UID'
 
@@ -137,7 +137,7 @@ const getSignableData = () => {
 }
 
 function* watchForDiscordCode() {
-  yield take(FETCH_DASHBOARD)
+  yield take(fetchAccountSucceeded.type)
   const data = getSignableData()
   const signature = yield call(AudiusBackend.getSignature, data)
   const appended = `${signature}:${data}`

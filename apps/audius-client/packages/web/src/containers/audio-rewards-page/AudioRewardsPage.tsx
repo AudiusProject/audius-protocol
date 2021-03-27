@@ -59,7 +59,7 @@ const useMobileNavContext = () => {
   useMobileHeader({ title: messages.title })
   const { setLeft, setRight } = useContext(NavContext)!
   useEffect(() => {
-    setLeft(LeftPreset.NOTIFICATION)
+    setLeft(LeftPreset.BACK)
     setRight(RightPreset.SEARCH)
   }, [setLeft, setRight])
 }

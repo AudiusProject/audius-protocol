@@ -12,6 +12,7 @@ import { pressReceive, pressSend } from 'store/token-dashboard/slice'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
 import { isMobile } from 'utils/clientUtil'
 import { useModalState } from 'hooks/useModalState'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 const messages = {
   noClaim1: 'You earn $AUDIO by using Audius.',
@@ -37,8 +38,10 @@ export const Tile: React.FC<TileProps> = ({ className, children }) => {
 export const BalanceTile = ({ className }: { className?: string }) => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
 
+  const wm = useWithMobileStyle(styles.mobile)
+
   return (
-    <Tile className={cn(styles.balanceTile, className)}>
+    <Tile className={wm(styles.balanceTile, className)}>
       <>
         <TokenHoverTooltip balance={balance}>
           <div className={styles.balanceAmount}>{formatWei(balance, true)}</div>
