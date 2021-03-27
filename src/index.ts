@@ -10,6 +10,7 @@ import { getBedtimeResponse } from './servlets/bedtime'
 import { router as healthRouter } from './servlets/health'
 import getMetaTagsResponse from './servlets/metaTags'
 import { router as protocolDashboardRouter } from './servlets/protocolDashboard'
+import { router as proxyRouter } from './servlets/proxy'
 
 import libs from './libs'
 
@@ -116,6 +117,7 @@ app.use(express.static(path.resolve(__dirname + '/public')))
 app.use('/api', apiRouter)
 app.use('/protocol_dashboard', protocolDashboardRouter)
 app.use('/health_check', healthRouter)
+app.use('/proxy', proxyRouter)
 app.use('/', router)
 
 const start = async () => {
