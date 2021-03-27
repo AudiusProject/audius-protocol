@@ -90,6 +90,11 @@ http {
       proxy_pass ${BEDTIME_URL};
     }
 
+    # Proxy proxy
+    location /proxy {
+      proxy_pass http://node:8000;
+    }
+
     # metadata/dapp passthrough
     location / {
       proxy_set_header  Host              $host;
