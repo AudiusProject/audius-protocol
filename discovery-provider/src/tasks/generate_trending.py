@@ -15,6 +15,13 @@ trending_cache_miss_key = 'trending_cache_miss'
 trending_cache_total_key = 'trending_cache_total'
 
 
+time_delta_map = {
+    "year": timedelta(weeks=52),
+    "month": timedelta(days=30),
+    "week": timedelta(weeks=1),
+    "day": timedelta(days=1)
+}
+
 # Returns listens counts for tracks, subject to time and
 # genre restrictions.
 # Returns [{ track_id: number, listens: number }]
@@ -30,15 +37,8 @@ def get_listen_counts(session, time, genre, limit, offset):
         delta = None
         if not time:
             return base_query
-        if time == "year":
-            delta = timedelta(weeks=52)
-        elif time == "month":
-            delta = timedelta(days=30)
-        elif time == "week":
-            delta = timedelta(weeks=1)
-        elif time == "day":
-            delta = timedelta(days=1)
-        else:
+        delta = time_delta_map.get(time)
+        if not delta:
             logger.warning(f"Invalid time passed to get_listen_counts: {time}")
             return base_query
         return (base_query
@@ -124,7 +124,7 @@ def generate_trending(session, time, genre, limit, offset):
     track_repost_counts_for_time = \
         get_repost_counts(session, False, True, track_ids, None, None, time)
 
-    # Generate track_id --> windowed_save_count mapping
+    # Generate track_id --> windowed_repost_count mapping
     track_repost_counts_for_time = {
         repost_item_id: repost_count
         for (repost_item_id, repost_count, repost_type) in track_repost_counts_for_time
@@ -208,7 +208,7 @@ def generate_trending(session, time, genre, limit, offset):
         owner_id = track_owner_dict[track_id]
         owner_follow_count = follower_count_dict.get(owner_id, 0)
         track_entry[response_name_constants.track_owner_id] = owner_id
-        track_entry[response_name_constants.track_owner_follower_count] = owner_follow_count
+        track_entry[response_name_constants.owner_follower_count] = owner_follow_count
 
         # Populate created at timestamps
         if track_id in track_created_at_dict:

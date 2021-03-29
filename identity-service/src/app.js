@@ -13,7 +13,12 @@ const NotificationProcessor = require('./notifications/index.js')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
-const { getRateLimiter, getRateLimiterMiddleware } = require('./rateLimiter.js')
+const {
+  getRateLimiter,
+  getRateLimiterMiddleware,
+  isIPWhitelisted,
+  getIP
+} = require('./rateLimiter.js')
 
 const DOMAIN = 'mail.audius.co'
 
@@ -117,68 +122,17 @@ class App {
     this.express.use(cors())
   }
 
-  _isIPWhitelisted (ip) {
-    const whitelistRegex = config.get('rateLimitingListensIPWhitelist')
-    return whitelistRegex && !!ip.match(whitelistRegex)
-  }
-
-  _getIP (req) {
-    // Gets the IP for rate-limiting based on X-Forwarded-For headers
-    // Algorithm:
-    // If 1 header or no headers:
-    //   We are not running behind a proxy, something is probably wonky, use req.ip (leftmost)
-    // If > 1 headers:
-    //   This assumes two proxies (some outer proxy like cloudflare and then some proxy like a load balancer)
-    //   Rightmost header is the outer proxy
-    //   Rightmost - 1 header is either a creator node OR the actual user
-    //    If creator node, use Rightmost - 2 (since creator node will pass this along)
-    //    Else, use Rightmost - 1 since it's the actual user
-
-    let ip = req.ip
-    const forwardedFor = req.get('X-Forwarded-For')
-
-    // This shouldn't ever happen since Identity will always be behind a proxy
-    if (!forwardedFor) {
-      req.logger.debug('_getIP: no forwarded-for')
-      return ip
-    }
-
-    const headers = forwardedFor.split(',')
-    // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
-    // We can just use req.ip which corresponds to the best guess forward-for that was added if any
-    if (headers.length === 1) {
-      req.logger.debug(`_getIP: recording listen with 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`)
-      return ip
-    }
-
-    // Length is at least 2, length - 1 would be the outermost proxy, so length - 2 is the "sender"
-    // either the actual user or a content node
-    const senderIP = headers[headers.length - 2]
-
-    if (this._isIPWhitelisted(senderIP)) {
-      const forwardedIP = headers[headers.length - 3]
-      if (!forwardedIP) {
-        req.logger.debug(`_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
-        return senderIP
-      }
-      req.logger.debug(`_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`)
-      return forwardedIP
-    }
-    req.logger.debug(`_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`)
-    return senderIP
-  }
-
   // Create rate limits for listens on a per track per user basis and per track per ip basis
   _createRateLimitsForListenCounts (interval, timeInSeconds) {
-    const isIPWhitelisted = this._isIPWhitelisted
-    const getIP = this._getIP.bind(this)
-
     const listenCountLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-track:::`,
       expiry: timeInSeconds,
       max: config.get(`rateLimitingListensPerTrackPer${interval}`), // max requests per interval
       skip: function (req) {
-        return isIPWhitelisted(req.ip)
+        const { ip, senderIP } = getIP(req)
+        const ipToCheck = senderIP || ip
+        // Do not apply user-specific rate limits for any whitelisted IP
+        return isIPWhitelisted(ipToCheck, req)
       },
       keyGenerator: function (req) {
         const trackId = req.params.id
@@ -193,7 +147,7 @@ class App {
       max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
       keyGenerator: function (req) {
         const trackId = req.params.id
-        const ip = getIP(req)
+        const { ip } = getIP(req)
         return `${ip}:::${trackId}`
       }
     })
@@ -230,13 +184,12 @@ class App {
 
     // Eth relay rate limits
     // Default to 50 per ip per day and one of 10 per wallet per day
-    const isIPWhitelisted = this._isIPWhitelisted
     const ethRelayIPRateLimiter = getRateLimiter({
       prefix: 'ethRelayIPRateLimiter',
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerIPPerDay'),
       skip: function (req) {
-        return isIPWhitelisted(req.ip)
+        return isIPWhitelisted(req.ip, req)
       }
     })
     const ethRelayWalletRateLimiter = getRateLimiter({
@@ -244,7 +197,7 @@ class App {
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get('rateLimitingEthRelaysPerWalletPerDay'),
       skip: function (req) {
-        return isIPWhitelisted(req.ip)
+        return isIPWhitelisted(req.ip, req)
       },
       keyGenerator: function (req) {
         return req.body.senderAddress

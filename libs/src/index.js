@@ -22,11 +22,13 @@ const Playlist = require('./api/playlist')
 const File = require('./api/file')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
+const Captcha = require('./utils/captcha')
 
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
    * @param {Set<string>?} whitelist whether or not to include only specified nodes (default no whitelist)
+   * @param {Set<string>?} blacklist whether or not to exclude specified nodes (default no blacklist)
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
@@ -35,11 +37,12 @@ class AudiusLibs {
    */
   static configDiscoveryProvider (
     whitelist = null,
+    blacklist = null,
     reselectTimeout = null,
     selectionCallback = null,
     monitoringCallbacks = {}
   ) {
-    return { whitelist, reselectTimeout, selectionCallback, monitoringCallbacks }
+    return { whitelist, blacklist, reselectTimeout, selectionCallback, monitoringCallbacks }
   }
 
   /**
@@ -107,7 +110,7 @@ class AudiusLibs {
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    */
-  static configInternalWeb3 (registryAddress, providers) {
+  static configInternalWeb3 (registryAddress, providers, privateKey) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -123,7 +126,8 @@ class AudiusLibs {
       registryAddress,
       useExternalWeb3: false,
       internalWeb3Config: {
-        web3ProviderEndpoints: providerList
+        web3ProviderEndpoints: providerList,
+        privateKey
       }
     }
   }
@@ -168,8 +172,10 @@ class AudiusLibs {
     discoveryProviderConfig,
     creatorNodeConfig,
     comstockConfig,
+    captchaConfig,
     isServer,
-    isDebug = false
+    isDebug = false,
+    enableUserReplicaSetManagerContract = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -180,6 +186,7 @@ class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
+    this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
 
@@ -203,6 +210,8 @@ class AudiusLibs {
     this.Playlist = null
     this.File = null
 
+    this.enableUserReplicaSetManagerContract = enableUserReplicaSetManagerContract
+
     // Schemas
     const schemaValidator = new SchemaValidator()
     schemaValidator.init()
@@ -215,9 +224,14 @@ class AudiusLibs {
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
+    /** Captcha */
+    if (this.captchaConfig) {
+      this.captcha = new Captcha(this.captchaConfig)
+    }
+
     /** Identity Service */
     if (this.identityServiceConfig) {
-      this.identityService = new IdentityService(this.identityServiceConfig.url)
+      this.identityService = new IdentityService(this.identityServiceConfig.url, this.captcha)
       this.hedgehog = new Hedgehog(this.identityService)
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
@@ -240,7 +254,7 @@ class AudiusLibs {
       await this.web3Manager.init()
     }
 
-    /** Contracts */
+    /** Contracts - Eth and Data Contracts */
     let contractsToInit = []
     if (this.ethWeb3Manager) {
       this.ethContracts = new EthContracts(
@@ -257,7 +271,9 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer)
+        this.isServer,
+        this.enableUserReplicaSetManagerContract
+      )
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
@@ -266,6 +282,7 @@ class AudiusLibs {
     if (this.discoveryProviderConfig) {
       this.discoveryProvider = new DiscoveryProvider(
         this.discoveryProviderConfig.whitelist,
+        this.discoveryProviderConfig.blacklist,
         this.userStateManager,
         this.ethContracts,
         this.web3Manager,
@@ -314,6 +331,7 @@ class AudiusLibs {
       this.ethContracts,
       this.creatorNode,
       this.comstock,
+      this.captcha,
       this.isServer
     ]
     this.ServiceProvider = new ServiceProvider(...services)

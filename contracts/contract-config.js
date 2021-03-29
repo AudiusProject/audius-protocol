@@ -84,7 +84,7 @@ module.exports = {
   poa_sokol: { // Bootstrap arguments as of 03/22/21
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
     blacklisterAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
-    bootstrapSPIds: [ 3, 4, 5 ],
+    bootstrapSPIds: [3, 4, 5],
     bootstrapSPDelegateWallets: [
       '0x5Af47323Bd946A89d38F107A873ba6C83e3acee1',
       '0xA951cBC410c2C6e1D3047A8Ff2BC161C994FcbD8',
@@ -95,7 +95,7 @@ module.exports = {
       '0xA951cBC410c2C6e1D3047A8Ff2BC161C994FcbD8',
       '0xF24936714293a0FaF39A022138aF58D874289132'
     ],
-    userReplicaSetBootstrapAddress: null,
-    registryAddress: null
+    userReplicaSetBootstrapAddress: '0x3d2563ACCD9E6D189bA2a61F116905D520054286',
+    registryAddress: '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
   }
 }

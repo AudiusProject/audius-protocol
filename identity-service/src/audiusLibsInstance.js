@@ -3,6 +3,7 @@ const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 const registryAddress = config.get('registryAddress')
 const web3ProviderUrl = config.get('web3Provider')
+
 class AudiusLibsWrapper {
   constructor () {
     this.audiusLibsInstance = null
@@ -30,7 +31,8 @@ class AudiusLibsWrapper {
           ownerWallet: config.get('relayerPublicKey')
         }
       },
-      isServer: true
+      isServer: true,
+      captchaConfig: { serviceKey: config.get('recaptchaServiceKey') }
     })
 
     await audiusInstance.init()
@@ -39,6 +41,23 @@ class AudiusLibsWrapper {
 
   getAudiusLibs () {
     return this.audiusLibsInstance
+  }
+
+  /**
+   * Async getter for libs. Resolves when libs is initialized.
+   */
+  async getAudiusLibsAsync () {
+    if (this.audiusLibsInstance) {
+      return this.audiusLibsInstance
+    }
+    return new Promise(resolve => {
+      const i = setInterval(() => {
+        if (this.audiusLibsInstance) {
+          clearInterval(i)
+          resolve(this.audiusLibsInstance)
+        }
+      }, 1000)
+    })
   }
 }
 

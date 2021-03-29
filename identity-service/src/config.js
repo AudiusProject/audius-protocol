@@ -87,6 +87,12 @@ const config = convict({
     env: 'instagramRedirectUrl',
     default: null
   },
+  instagramProfileUrl: {
+    doc: 'Instagram profile url',
+    format: String,
+    env: 'instagramProfileUrl',
+    default: 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
+  },
   relayerPrivateKey: {
     doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
     format: String,
@@ -479,6 +485,18 @@ const config = convict({
     format: String,
     env: 'ethRelayerProdGasTier',
     default: 'fastGweiHex'
+  },
+  captchaScoreSecret: {
+    doc: 'The secret necessary to view user captcha scores',
+    format: String,
+    env: 'captchaScoreSecret',
+    default: 'captcha_score_secret'
+  },
+  recaptchaServiceKey: {
+    doc: 'The service key for Google recaptcha v3 API',
+    format: String,
+    env: 'recaptchaServiceKey',
+    default: ''
   }
 })
 

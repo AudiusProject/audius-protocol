@@ -73,7 +73,6 @@ function LibsWrapper (walletIndex = 0) {
       ETH_REGISTRY_ADDRESS,
       ETH_PROVIDER_URL,
       ETH_OWNER_WALLET,
-      DISCPROV_WHITELIST,
       USER_NODE,
       IDENTITY_SERVICE
     ] = [
@@ -83,7 +82,6 @@ function LibsWrapper (walletIndex = 0) {
       config.get('eth_registry_address'),
       config.get('eth_provider_url'),
       config.get('eth_owner_wallet'),
-      new Set(config.get('discprov_whitelist').split(',')),
       config.get('user_node'),
       config.get('identity_service')
     ]
@@ -110,10 +108,7 @@ function LibsWrapper (walletIndex = 0) {
       ETH_PROVIDER_URL,
       ETH_OWNER_WALLET
     )
-    const discoveryProviderConfig = AudiusLibs.configDiscoveryProvider(
-      false,
-      DISCPROV_WHITELIST
-    )
+    const discoveryProviderConfig = AudiusLibs.configDiscoveryProvider()
 
     const creatorNodeConfig = AudiusLibs.configCreatorNode(USER_NODE, true)
     const identityServiceConfig = AudiusLibs.configIdentityService(
@@ -126,7 +121,8 @@ function LibsWrapper (walletIndex = 0) {
       discoveryProviderConfig,
       identityServiceConfig,
       creatorNodeConfig,
-      isServer: true
+      isServer: true,
+      enableUserReplicaSetManagerContract: true
     })
 
     try {
@@ -563,7 +559,40 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.web3Manager.getWalletAddress()
   }
 
-  // Util fns
+  this.getServices = async (type) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(type)
+  }
+
+  this.getServiceEndpointInfo = async (serviceType, serviceId) => {
+    return this.libsInstance.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+      serviceType,
+      serviceId
+    )
+  }
+
+  this.getUserReplicaSet = async (userId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+  }
+
+  this.getContentNodeWallets = async (cnodeId) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.getContentNodeWallets(cnodeId)
+  }
+
+  this.updateReplicaSet = async (userId, primary, secondaries) => {
+    return this.libsInstance.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      primary,
+      secondaries
+    )
+  }
+
+  this.getDiscoveryNodeEndpoint = () => {
+    return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
+  }
+
+  this.getURSMContentNodes = (ownerWallet) => {
+    return this.libsInstance.discoveryProvider.getURSMContentNodes(ownerWallet)
+  }
 
   /**
   * Wait for the discovery node to catch up to the latest block on chain up to a max

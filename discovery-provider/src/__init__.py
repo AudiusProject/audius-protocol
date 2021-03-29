@@ -21,13 +21,15 @@ import alembic
 import alembic.config  # pylint: disable=E0611
 
 from src import exceptions
-from src.queries import queries, search, search_queries, health_check, trending, notifications
+from src.queries import queries, search, search_queries, health_check, notifications
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
+from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
+from src.utils.redis_metrics import METRICS_INTERVAL
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -140,8 +142,10 @@ def create_celery(test_config=None):
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
-    # Initialize eth web
-    eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
+    # Initialize eth_web3 with MultiProvider
+    # We use multiprovider to allow for multiple web3 providers and additional resiliency.
+    # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
+    eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     global registry
     global user_factory
@@ -275,7 +279,6 @@ def configure_flask(test_config, app, mode="app"):
 
     exceptions.register_exception_handlers(app)
     app.register_blueprint(queries.bp)
-    app.register_blueprint(trending.bp)
     app.register_blueprint(search.bp)
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
@@ -299,6 +302,8 @@ def configure_celery(flask_app, celery, test_config=None):
                 database_url = test_config["db"]["url"]
 
     ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
+    # default is 5 seconds
+    indexing_interval_sec = int(shared_config["discprov"]["block_processing_interval_sec"])
 
     # Update celery configuration
     celery.conf.update(
@@ -306,12 +311,13 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_plays", "src.tasks.index_metrics",
                  "src.tasks.index_materialized_views",
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
-                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue"
+                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
+                 "src.tasks.cache_trending_playlists"
                  ],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=indexing_interval_sec),
             },
             "update_ipld_blacklist": {
                 "task": "update_ipld_blacklist",
@@ -324,6 +330,14 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_metrics": {
                 "task": "update_metrics",
                 "schedule": crontab(minute=0, hour="*")
+            },
+            "aggregate_metrics": {
+                "task": "aggregate_metrics",
+                "schedule": timedelta(minutes=METRICS_INTERVAL)
+            },
+            "synchronize_metrics": {
+                "task": "synchronize_metrics",
+                "schedule": crontab(minute=0, hour=1)
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",
@@ -339,11 +353,15 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_user_balances": {
                 "task": "update_user_balances",
-                "schedule": timedelta(minutes=5)
+                "schedule": timedelta(seconds=60)
             },
             "monitoring_queue": {
                 "task": "monitoring_queue",
                 "schedule": timedelta(seconds=60)
+            },
+            "cache_trending_playlists": {
+                "task": "cache_trending_playlists",
+                "schedule": timedelta(minutes=30)
             }
         },
         task_serializer="json",
@@ -369,6 +387,8 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("update_play_count_lock")
     redis_inst.delete("ipld_blacklist_lock")
     redis_inst.delete("update_discovery_lock")
+    redis_inst.delete("aggregate_metrics_lock")
+    redis_inst.delete("synchronize_metrics_lock")
     logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object

@@ -177,7 +177,11 @@ module.exports = function (app) {
     let balances = []
 
     // run fundRelayerIfEmpty so it'll auto top off any accounts below the threshold
-    await fundRelayerIfEmpty()
+    try {
+      await fundRelayerIfEmpty()
+    } catch (err) {
+      req.logger.error(`Failed to fund relayer with error: ${err}`)
+    }
 
     for (let account of RELAY_HEALTH_ACCOUNTS) {
       let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))

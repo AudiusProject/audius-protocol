@@ -183,6 +183,18 @@ const config = convict({
     env: 'rateLimitingTrackReqLimit',
     default: null
   },
+  rateLimitingBatchCidsExistLimit: {
+    doc: 'Total requests per hour rate limit for /track routes',
+    format: 'nat',
+    env: 'rateLimitingBatchCidsExistLimit',
+    default: null
+  },
+  URSMRequestForSignatureReqLimit: {
+    doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
+    format: 'nat',
+    env: 'URSMRequestForSignatureReqLimit',
+    default: null
+  },
 
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
@@ -273,6 +285,12 @@ const config = convict({
     format: String,
     env: 'delegatePrivateKey',
     default: null
+  },
+  // `env` property is not defined as this should never be passed in as an envvar and should only be set programatically
+  isRegisteredOnURSM: {
+    doc: 'boolean indicating whether or not node has been registered on dataContracts UserReplicaSetManager contract (URSM)',
+    format: Boolean,
+    default: false
   },
 
   spID: {
@@ -409,11 +427,24 @@ const config = convict({
     env: 'snapbackDevModeEnabled',
     default: false
   },
+  devMode: {
+    doc: 'Used to differentiate production vs dev mode for node',
+    format: 'BooleanCustom',
+    env: 'devMode',
+    default: false
+  },
   maxStorageUsedPercent: {
     doc: 'Max percentage of storage capacity allowed to be used in CNode before blocking writes',
     format: 'nat',
     env: 'maxStorageUsedPercent',
     default: 95
+  },
+
+  pinAddCIDs: {
+    doc: 'Array of comma separated CIDs to pin',
+    format: String,
+    env: 'pinAddCIDs',
+    default: ''
   }
 
   // unsupported options at the moment

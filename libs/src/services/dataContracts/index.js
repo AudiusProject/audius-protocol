@@ -8,6 +8,7 @@ const SocialFeatureFactoryClient = require('./socialFeatureFactoryClient')
 const PlaylistFactoryClient = require('./playlistFactoryClient')
 const UserLibraryFactoryClient = require('./userLibraryFactoryClient')
 const IPLDBlacklistFactoryClient = require('./IPLDBlacklistFactoryClient')
+const UserReplicaSetManagerClient = require('./userReplicaSetManagerClient')
 
 // Make sure the json file exists before importing because it could silently fail
 // import data contract ABI's
@@ -18,6 +19,7 @@ const SocialFeatureFactoryABI = Utils.importDataContractABI('SocialFeatureFactor
 const PlaylistFactoryABI = Utils.importDataContractABI('PlaylistFactory.json').abi
 const UserLibraryFactoryABI = Utils.importDataContractABI('UserLibraryFactory.json').abi
 const IPLDBlacklistFactoryABI = Utils.importDataContractABI('IPLDBlacklistFactory.json').abi
+const UserReplicaSetManagerABI = Utils.importDataContractABI('UserReplicaSetManager.json').abi
 
 // define contract registry keys
 const UserFactoryRegistryKey = 'UserFactory'
@@ -26,9 +28,10 @@ const SocialFeatureFactoryRegistryKey = 'SocialFeatureFactory'
 const PlaylistFactoryRegistryKey = 'PlaylistFactory'
 const UserLibraryFactoryRegistryKey = 'UserLibraryFactory'
 const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
+const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 
 class AudiusContracts {
-  constructor (web3Manager, registryAddress, isServer) {
+  constructor (web3Manager, registryAddress, isServer, enableUserReplicaSetManagerContract) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
     this.isServer = isServer
@@ -90,21 +93,69 @@ class AudiusContracts {
       this.UserLibraryFactoryClient,
       this.IPLDBlacklistFactoryClient
     ]
+
+    this.enableUserReplicaSetManagerContract = enableUserReplicaSetManagerContract
   }
 
   async init () {
     if (this.isServer) {
       await Promise.all(this.contractClients.map(client => client.init()))
+      await this.initUserReplicaSetManagerClient()
+    }
+  }
+
+  // Special case initialization flow for UserReplicaSetManagerClient backwards compatibility
+  // Until the contract is deployed and added to the data contract registry, replica set
+  // operations will flow through the existing UserFactory
+  async initUserReplicaSetManagerClient (selectNewEndpointOnRetry = false) {
+    if (!this.enableUserReplicaSetManagerContract) {
+      return
+    }
+
+    try {
+      if (
+        this.UserReplicaSetManagerClient &&
+        this.UserReplicaSetManagerClient._contractAddress !== '0x0000000000000000000000000000000000000000'
+      ) {
+        return
+      }
+
+      this.UserReplicaSetManagerClient = new UserReplicaSetManagerClient(
+        this.web3Manager,
+        UserReplicaSetManagerABI,
+        UserReplicaSetManagerRegistryKey,
+        this.getRegistryAddressForContract
+      )
+      await this.UserReplicaSetManagerClient.init(selectNewEndpointOnRetry)
+      if (this.UserReplicaSetManagerClient._contractAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error(`Failed retrieve address for ${this.UserReplicaSetManagerClient.contractRegistryKey}`)
+      }
+      let seedComplete = await this.UserReplicaSetManagerClient.getSeedComplete()
+      if (!seedComplete) {
+        throw new Error(`UserReplicaSetManager pending seed operation`)
+      }
+    } catch (e) {
+      // Nullify failed attempt to initialize
+      console.log(`Failed to initialize UserReplicaSetManagerClient with error ${e.message}`)
+      this.UserReplicaSetManagerClient = null
     }
   }
 
   /* ------- CONTRACT META-FUNCTIONS ------- */
 
+  /**
+   * Retrieves contract address from Registry by key, caching previously retrieved data.
+   * Refreshes cache if cached value is empty or zero address.
+   * Value is empty during first time call, and zero if call is made before contract is deployed,
+   *    since Registry sets default value of all contract keys to zero address if not registered.
+   * @param {string} contractName registry key of contract
+   */
   async getRegistryAddressForContract (contractName) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
     this.contracts = this.contracts || { [this.registryAddress]: 'registry' }
     this.contractAddresses = this.contractAddresses || { 'registry': this.registryAddress }
-    if (!this.contractAddresses[contractName]) {
+
+    if (!this.contractAddresses[contractName] || Utils.isZeroAddress(this.contractAddresses[contractName])) {
       const address = await this.RegistryClient.getContract(contractName)
       this.contracts[address] = contractName
       this.contractAddresses[contractName] = address

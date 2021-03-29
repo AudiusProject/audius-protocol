@@ -2,6 +2,12 @@ const Web3 = require('web3')
 const web3 = new Web3()
 
 /**
+ * Max age of signature in milliseconds
+ * Set to 5 minutes
+ */
+const MAX_SIGNATURE_AGE_MS = 300000
+
+/**
  * Generate the timestamp and signature for api signing
  * @param {object} data
  * @param {string} privateKey
@@ -15,6 +21,36 @@ const generateTimestampAndSignature = (data, privateKey) => {
   const signedResponse = web3.eth.accounts.sign(toSignHash, privateKey)
 
   return { timestamp, signature: signedResponse.signature }
+}
+
+// Keeps track of a cached listen signature
+// Two field object: { timestamp, signature }
+let cachedListenSignature = null
+
+/**
+ * Generates a signature for `data` if only the previous signature
+ * generated is invalid (expired). Otherwise returns an existing signature.
+ * @param {string} privateKey
+ * @returns {object} {signature, timestamp} signature data
+ */
+const generateListenTimestampAndSignature = (privateKey) => {
+  if (cachedListenSignature) {
+    const signatureTimestamp = cachedListenSignature.timestamp
+    if (signatureHasExpired(signatureTimestamp)) {
+      // If the signature has expired, remove it from the cache
+      cachedListenSignature = null
+    } else {
+      // If the signature has not expired (still valid), use it!
+      return cachedListenSignature
+    }
+  }
+  // We don't have a signature already
+  const { timestamp, signature } = generateTimestampAndSignature(
+    { data: 'listen' },
+    privateKey
+  )
+  cachedListenSignature = { timestamp, signature }
+  return { timestamp, signature }
 }
 
 /**
@@ -31,6 +67,18 @@ const recoverWallet = (data, signature) => {
   return recoveredWallet
 }
 
+/**
+ * Returns boolean indicating if provided timestamp is older than MAX_SIGNATURE_AGE
+ * @param {string} signatureTimestamp unix timestamp string when signature was generated
+ */
+const signatureHasExpired = (signatureTimestamp) => {
+  const signatureTimestampDate = new Date(signatureTimestamp)
+  const currentTimestampDate = new Date()
+  const signatureAge = currentTimestampDate - signatureTimestampDate
+
+  return (signatureAge >= MAX_SIGNATURE_AGE_MS)
+}
+
 const sortKeys = x => {
   if (typeof x !== 'object' || !x) { return x }
   if (Array.isArray(x)) { return x.map(sortKeys) }
@@ -39,6 +87,9 @@ const sortKeys = x => {
 
 module.exports = {
   generateTimestampAndSignature,
+  generateListenTimestampAndSignature,
   recoverWallet,
-  sortKeys
+  sortKeys,
+  MAX_SIGNATURE_AGE_MS,
+  signatureHasExpired
 }

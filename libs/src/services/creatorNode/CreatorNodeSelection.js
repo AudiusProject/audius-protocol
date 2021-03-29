@@ -2,6 +2,19 @@ const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
+/**
+ * In memory dictionary used to query spID from endpoint
+ * Eliminates duplicate web3 calls within same session
+ */
+let contentNodeEndpointToSpID = { }
+function getSpIDForEndpoint (endpoint) {
+  return contentNodeEndpointToSpID[endpoint]
+}
+
+function setSpIDForEndpoint (endpoint, spID) {
+  contentNodeEndpointToSpID[endpoint] = spID
+}
+
 class CreatorNodeSelection extends ServiceSelection {
   constructor ({
     creatorNode,
@@ -16,7 +29,10 @@ class CreatorNodeSelection extends ServiceSelection {
       getServices: async () => {
         this.currentVersion = await ethContracts.getCurrentVersion(CREATOR_NODE_SERVICE_NAME)
         const services = await this.ethContracts.getServiceProviderList(CREATOR_NODE_SERVICE_NAME)
-        return services.map(e => e.endpoint)
+        return services.map((e) => {
+          setSpIDForEndpoint(e.endpoint, e.spID)
+          return e.endpoint
+        })
       },
       // Use the content node's configured whitelist if not provided
       whitelist: whitelist || creatorNode.passList,
@@ -276,4 +292,8 @@ class CreatorNodeSelection extends ServiceSelection {
   }
 }
 
-module.exports = CreatorNodeSelection
+module.exports = {
+  CreatorNodeSelection,
+  getSpIDForEndpoint,
+  setSpIDForEndpoint
+}

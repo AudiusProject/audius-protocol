@@ -1,15 +1,22 @@
 const ServiceCommands = require('@audius/service-commands')
+const ContainerLogs = require('@audius/service-commands/src/ContainerLogs')
 const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
 const { makeExecuteAll, makeExecuteOne } = require('./helpers.js')
-const { coreIntegration, snapbackSMParallelSyncTest, IpldBlacklistTest } = require('./tests')
+const {
+  coreIntegration,
+  snapbackSMParallelSyncTest,
+  userReplicaSetManagerTest,
+  IpldBlacklistTest
+} = require('./tests/')
 
 // Configuration.
 // Should be CLI configurable in the future.
-const DEFAULT_NUM_CREATOR_NODES = 3
+const DEFAULT_NUM_CREATOR_NODES = 4
 const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
+const USER_REPLICA_SET_NUM_USERS = 4
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])
@@ -22,6 +29,26 @@ const {
   LibsWrapper,
   allUp
 } = ServiceCommands
+
+const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce(
+  (acc, cur) => {
+    return [
+      ...acc,
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.HEALTH_CHECK,
+        { verbose: true, serviceNumber: cur }
+      ]
+    ]
+  },
+  []
+)
+const services = [
+  [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+  [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
+  [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+  ...contentNodeHealthChecks
+]
 
 async function setupAllServices () {
   logger.info('Setting up all services!')
@@ -118,6 +145,12 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
   )
 }
 
+// Check to see if verbose mode (print out container logs)
+const isVerbose = () => {
+  const verbose = process.argv[process.argv.length - 1]
+  return verbose && verbose.toLowerCase() === 'verbose'
+}
+
 // This should go away when we have multiple tests.
 //
 // Currently there's a bug where standing up services
@@ -126,7 +159,19 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
 // with a separate command.
 async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
+
+  logger.info('Ensuring all nodes are healthy..')
+  try {
+    await Promise.all(
+      services.map(s => runSetupCommand(...s))
+    )
+  } catch (e) {
+    logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
+    process.exit(1)
+  }
+
   const cmd = process.argv[3]
+  const verbose = isVerbose()
 
   try {
     switch (cmd) {
@@ -158,6 +203,16 @@ async function main () {
         await testRunner([test])
         break
       }
+      case 'test-ursm': {
+        const test = makeTest(
+          'userReplicaSetManager',
+          userReplicaSetManagerTest,
+          {
+            numUsers: USER_REPLICA_SET_NUM_USERS
+          })
+        await testRunner([test])
+        break
+      }
       case 'test-ci': {
         const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -178,18 +233,35 @@ async function main () {
             })
         )
 
-        const tests = [coreIntegrationTests, snapbackTest, ...blacklistTests]
+        // User replica set manager tests
+        // Enabled in CI only until contract has been deployed
+        const ursmTest = makeTest(
+          'userReplicaSetManager',
+          userReplicaSetManagerTest,
+          { numUsers: USER_REPLICA_SET_NUM_USERS }
+        )
+
+        const tests = [
+          coreIntegrationTests,
+          snapbackTest,
+          ...blacklistTests,
+          ursmTest
+        ]
 
         await testRunner(tests)
         logger.info('Exiting testrunner')
         break
       }
       default:
-        logger.error('Usage: one of either `up`, `down`, `test`, or `test-ci`.')
+        logger.error('Usage: one of either `up`, `down`, `test`, `test-ci`, `test-ursm`, `test-snapback`.')
     }
     process.exit()
   } catch (e) {
     logger.error('Exiting testrunner with errors')
+    if (verbose) {
+      logger.info('Displaying container logs..')
+      await ContainerLogs.print()
+    }
     logger.error(e.message)
     process.exit(1)
   }

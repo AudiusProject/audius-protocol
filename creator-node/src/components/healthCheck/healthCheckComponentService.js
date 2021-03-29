@@ -9,8 +9,11 @@ const { MONITORS } = require('../../monitors/monitors')
  * the current git SHA, and service version info.
  * @param {*} ServiceRegistry
  * @param {*} logger
+ * @param {*} sequelize
+ * @param {string?} randomBytesToSign optional bytes string to be included in response object
+ *    and used in signature generation
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign = null) => {
   let response = {
     ...versionInfo,
     healthy: true,
@@ -18,7 +21,13 @@ const healthCheck = async ({ libs } = {}, logger, sequelize) => {
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
-    spOwnerWallet: config.get('spOwnerWallet')
+    spOwnerWallet: config.get('spOwnerWallet'),
+    isRegisteredOnURSM: config.get('isRegisteredOnURSM')
+  }
+
+  // If optional `randomBytesToSign` query param provided, node will include string in signed object
+  if (randomBytesToSign) {
+    response.randomBytesToSign = randomBytesToSign
   }
 
   if (libs) {

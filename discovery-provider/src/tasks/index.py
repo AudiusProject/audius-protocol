@@ -1,10 +1,9 @@
-from urllib.parse import urljoin
 import logging
 import concurrent.futures
-import requests
 
 from src import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, Save, URSMContentNode
+from src.models import Block, User, Track, Repost, Follow, Playlist, \
+    Save, URSMContentNode, AssociatedWallet
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -106,9 +105,11 @@ def get_latest_block(db):
 
 def update_latest_block_redis():
     latest_block_from_chain = update_task.web3.eth.getBlock('latest', True)
+    default_indexing_interval_seconds = int(update_task.shared_config["discprov"]["block_processing_interval_sec"])
     redis = update_task.redis
-    redis.set(latest_block_redis_key, latest_block_from_chain.number)
-    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex())
+    # these keys have a TTL which is the indexing interval
+    redis.set(latest_block_redis_key, latest_block_from_chain.number, ex=default_indexing_interval_seconds)
+    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex(), ex=default_indexing_interval_seconds)
 
 def fetch_tx_receipt(transaction):
     web3 = update_task.web3
@@ -141,12 +142,15 @@ def fetch_tx_receipts(self, block_transactions):
 # has been set in the L2 contract registry - if so, update the global contract_addresses object
 # This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
 # added to the registry.
-def update_user_replica_set_manager_address_if_necessary(self):
+def update_ursm_address(self):
     web3 = update_task.web3
     shared_config = update_task.shared_config
     abi_values = update_task.abi_values
     user_replica_set_manager_address = contract_addresses["user_replica_set_manager"]
     if user_replica_set_manager_address == zero_address:
+        logger.info(
+            f"index.py | update_ursm_address, found {user_replica_set_manager_address}"
+        )
         registry_address = web3.toChecksumAddress(
             shared_config["contracts"]["registry"]
         )
@@ -159,9 +163,6 @@ def update_user_replica_set_manager_address_if_necessary(self):
         if user_replica_set_manager_address != zero_address:
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
-    logger.info(
-        f"index.py | update_user_replica_set_manager_address_if_necessary, found {user_replica_set_manager_address}"
-    )
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
@@ -170,6 +171,7 @@ def index_blocks(self, db, blocks_list):
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
     for i in block_order_range:
+        update_ursm_address(self)
         block = blocks_list[i]
         block_index = num_blocks - i
         block_number = block.number
@@ -396,6 +398,9 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_ursm_content_node_entries = (
                 session.query(URSMContentNode).filter(URSMContentNode.blockhash == revert_hash).all()
             )
+            revert_associated_wallets = (
+                session.query(AssociatedWallet).filter(AssociatedWallet.blockhash == revert_hash).all()
+            )
 
             # revert all of above transactions
 
@@ -512,6 +517,25 @@ def revert_blocks(self, db, revert_blocks_list):
                 logger.info(f"Reverting user: {user_to_revert}")
                 session.delete(user_to_revert)
 
+            for associated_wallets_to_revert in revert_associated_wallets:
+                user_id = associated_wallets_to_revert.user_id
+                previous_associated_wallet_entry = (
+                    session.query(AssociatedWallet)
+                    .filter(AssociatedWallet.user_id == user_id)
+                    .filter(AssociatedWallet.blocknumber < revert_block_number)
+                    .order_by(AssociatedWallet.blocknumber.desc())
+                    .first()
+                )
+                if previous_associated_wallet_entry:
+                    session.query(AssociatedWallet).filter(
+                        AssociatedWallet.user_id == user_id
+                    ).filter(
+                        AssociatedWallet.blocknumber == previous_associated_wallet_entry.blocknumber
+                    ).update({"is_current": True})
+                # Remove outdated associated wallets
+                logger.info(f"Reverting associated Wallet: {user_id}")
+                session.delete(associated_wallets_to_revert)
+
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
 
@@ -519,23 +543,6 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
-
-# calls GET identityservice/registered_creator_nodes to retrieve creator nodes currently registered on chain
-def fetch_cnode_endpoints_from_chain(task_context):
-    try:
-        identity_url = task_context.shared_config['discprov']['identity_service_url']
-        identity_endpoint = urljoin(identity_url, 'registered_creator_nodes')
-
-        r = requests.get(identity_endpoint, timeout=3)
-        if r.status_code != 200:
-            raise Exception(f"Query to identity_endpoint failed with status code {r.status_code}")
-
-        registered_cnodes = r.json()
-        logger.info(f"Fetched registered creator nodes from chain via {identity_endpoint}")
-        return registered_cnodes
-    except Exception as e:
-        logger.error(f"Identity fetch failed {e}")
-        return []
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
@@ -560,7 +567,6 @@ def update_task(self):
         if have_lock:
             logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
             initialize_blocks_table_if_necessary(db)
-            update_user_replica_set_manager_address_if_necessary(self)
 
             latest_block = get_latest_block(db)
 

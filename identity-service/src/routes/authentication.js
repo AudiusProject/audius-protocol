@@ -26,7 +26,8 @@ module.exports = function (app) {
    */
   app.post('/authentication', handleResponse(async (req, res, next) => {
     // body should contain {iv, cipherText, lookupKey}
-    let body = req.body
+    const body = req.body
+
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
         await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })

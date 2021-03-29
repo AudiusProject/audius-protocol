@@ -1,10 +1,12 @@
 const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
+const { promisify } = require('util')
 
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
+const validateMetadata = require('../utils/validateAudiusUserMetadata')
 const {
   authMiddleware,
   syncLockMiddleware,
@@ -13,6 +15,8 @@ const {
   triggerSecondarySyncs
 } = require('../middlewares')
 const DBManager = require('../dbManager')
+
+const readFile = promisify(fs.readFile)
 
 module.exports = function (app) {
   /**
@@ -23,6 +27,10 @@ module.exports = function (app) {
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID
+    let isValidMetadata = validateMetadata(req, metadataJSON)
+    if (!isValidMetadata) {
+      return errorResponseBadRequest('Invalid User Metadata')
+    }
 
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
@@ -83,9 +91,10 @@ module.exports = function (app) {
     }
     let metadataJSON
     try {
-      metadataJSON = JSON.parse(fs.readFileSync(file.storagePath))
+      const fileBuffer = await readFile(file.storagePath)
+      metadataJSON = JSON.parse(fileBuffer)
     } catch (e) {
-      return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}.`)
+      return errorResponseServerError(`No file stored on disk for metadataFileUUID ${metadataFileUUID} at storagePath ${file.storagePath}: ${e}.`)
     }
 
     // Get coverArtFileUUID and profilePicFileUUID for multihashes in metadata object, if present.

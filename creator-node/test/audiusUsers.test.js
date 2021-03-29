@@ -131,7 +131,7 @@ describe('Test AudiusUsers with real IPFS', function () {
     assert.deepStrictEqual(resp.body.error, 'Internal server error')
   })
 
-  it('should throw error response if saving metadata fails', async function () {
+  it('should throw 400 bad request response if metadata validation fails', async function () {
     sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
 
     const metadata = { metadata: 'spaghetti' }
@@ -139,9 +139,9 @@ describe('Test AudiusUsers with real IPFS', function () {
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
       .send(metadata)
-      .expect(500)
+      .expect(400)
 
-    assert.deepStrictEqual(resp.body.error, 'saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
+    assert.deepStrictEqual(resp.body.error, 'Invalid User Metadata')
   })
 
   it('successfully creates Audius user (POST /audius_users/metadata)', async function () {

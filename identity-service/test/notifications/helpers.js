@@ -19,7 +19,7 @@ async function _insertFollowersPreRead () {
       notificationTarget,
       { notifyWeb: true, notifyMobile: false }
     )
-    tx.commit()
+    await tx.commit()
   }
 
   // Notifications - there should be 1 for user 1 and 1 for user 3

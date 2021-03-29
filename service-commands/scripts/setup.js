@@ -1,8 +1,14 @@
 const ServiceCommands = require('../src/index')
 const { program } = require('commander')
-const { allUp, Service, SetupCommand, runSetupCommand } = ServiceCommands
+const {
+  allUp,
+  discoveryNodeUp,
+  Service,
+  SetupCommand,
+  runSetupCommand
+} = ServiceCommands
 
-const NUM_CREATOR_NODES = 2
+const NUM_CREATOR_NODES = 3
 const SERVICE_INSTANCE_NUMBER = 1
 
 const printOptions = () => {
@@ -54,6 +60,11 @@ program
     const numCnodes = parseInt(opts.numCnodes)
     await allUp({ numCreatorNodes: numCnodes })
   })
+
+program
+  .command('discovery-node-stack up')
+  .description('Bring up relevant services for discovery node')
+  .action(async () => await discoveryNodeUp())
 
 program
   .command('down')

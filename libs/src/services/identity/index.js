@@ -1,10 +1,12 @@
 const axios = require('axios')
+const uuid = require('../../utils/uuid')
 
 const Requests = require('./requests')
 
 class IdentityService {
-  constructor (identityServiceEndpoint) {
+  constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
+    this.captcha = captcha
   }
 
   /* ------- HEDGEHOG AUTH ------- */
@@ -26,6 +28,15 @@ class IdentityService {
   }
 
   async setUserFn (obj) {
+    if (this.captcha) {
+      try {
+        const token = await this.captcha.generate('identity/user')
+        obj.token = token
+      } catch (e) {
+        console.warn(`CAPTCHA - Recaptcha failed to generate token:`, e)
+      }
+    }
+
     return this._makeRequest({
       url: '/user',
       method: 'post',
@@ -104,14 +115,21 @@ class IdentityService {
    * Logs a track listen for a given user id.
    * @param {number} trackId
    * @param {number} userId
+   * @param {string} listenerAddress if logging this listen on behalf of another IP address, pass through here
+   * @param {object} signatureData if logging this listen via a 3p service, a signed piece of data proving authenticity
+   * @param {string} signatureData.signature
+   * @param {string} signatureData.timestamp
    */
-  async logTrackListen (trackId, userId, listenerAddress) {
+  async logTrackListen (trackId, userId, listenerAddress, signatureData) {
+    const data = { userId }
+    if (signatureData) {
+      data.signature = signatureData.signature
+      data.timestamp = signatureData.timestamp
+    }
     const request = {
       url: `/tracks/${trackId}/listen`,
       method: 'post',
-      data: {
-        userId: userId
-      }
+      data
     }
 
     if (listenerAddress) {
@@ -269,6 +287,12 @@ class IdentityService {
   async _makeRequest (axiosRequestObj) {
     axiosRequestObj.baseURL = this.identityServiceEndpoint
 
+    const requestId = uuid()
+    axiosRequestObj.headers = {
+      ...(axiosRequestObj.headers || {}),
+      'X-Request-ID': requestId
+    }
+
     // Axios throws for non-200 responses
     try {
       const resp = await axios(axiosRequestObj)
@@ -276,7 +300,7 @@ class IdentityService {
     } catch (e) {
       if (e.response && e.response.data && e.response.data.error) {
         console.error(
-          `Server returned error: [${e.response.status.toString()}] ${e.response.data.error}`
+          `Server returned error for requestId ${requestId}: [${e.response.status.toString()}] ${e.response.data.error}`
         )
       }
       throw e

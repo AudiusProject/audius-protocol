@@ -146,6 +146,11 @@ def parse_unix_epoch_param(time, default=0):
         return datetime.utcfromtimestamp(default)
     return datetime.utcfromtimestamp(time)
 
+def parse_unix_epoch_param_non_utc(time, default=0):
+    if time is None:
+        return datetime.fromtimestamp(default)
+    return datetime.fromtimestamp(time)
+
 def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
@@ -212,6 +217,10 @@ def extend_playlist(playlist):
     playlist["added_timestamps"] = add_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
+    # If a trending playlist, we have 'track_count'
+    # already to preserve the original, non-abbreviated track count
+    playlist["track_count"] = (playlist["track_count"] if "track_count"
+                               in playlist else len(playlist["playlist_contents"]["track_ids"]))
     return playlist
 
 
@@ -229,6 +238,9 @@ def extend_activity(item):
             "item": extend_playlist(item)
         }
     return None
+
+def abort_bad_path_param(param, namespace):
+    namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))
 
 def abort_bad_request_param(param, namespace):
     namespace.abort(400, "Oh no! Bad request parameter {}.".format(param))
