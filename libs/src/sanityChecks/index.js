@@ -17,7 +17,6 @@ class SanityChecks {
    * @param {Set<string>} creatorNodeWhitelist
    */
   async run (creatorNodeWhitelist = null) {
-    console.log("sanity check run options", this.options)
     await isCreator(this.libs)
     await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
