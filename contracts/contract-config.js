@@ -26,10 +26,10 @@ module.exports = {
     userReplicaSetBootstrapAddress: null,
     registryAddress: null
   },
-  poa_mainnet: { // Bootstrap arguments as of 03/22/21
+  poa_mainnet: { // Bootstrap arguments as of 03/29/21
     verifierAddress: '0xbeef8E42e8B5964fDD2b7ca8efA0d9aef38AA996',
     blacklisterAddress: '0xfeebEA99dE524ac668B6f151177EcA60b30A09c9',
-    bootstrapSPIds: [ 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 ],
+    bootstrapSPIds: [ 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ],
     bootstrapSPDelegateWallets: [
       '0xc8d0C29B6d540295e8fc8ac72456F2f4D41088c8',
       '0xf686647E3737d595C60c6DE2f5F90463542FE439',
@@ -52,7 +52,8 @@ module.exports = {
       '0x9b0D01bd7F01BD6916Ba139743Ce9C524B9375Dd',
       '0x68a4Bd6b4177ffB025AF9844cBE4Fe31348AEE1D',
       '0xf45a6DBf3ce0201F4012a19b1fB04D4f05B53a37',
-      '0x9708Fb04DeA029212126255B311a21F1F884cCB4'
+      '0x9708Fb04DeA029212126255B311a21F1F884cCB4',
+      '0x2661FBC1A6fE196cB0eD7a69858eaFdEFb9E8916'
     ],
     bootstrapSPOwnerWallets: [
       '0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d',
@@ -76,7 +77,8 @@ module.exports = {
       '0x3FE17C862d90489d0C2393E049fe331B088d8C45',
       '0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0',
       '0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0',
-      '0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0'
+      '0xc1f351FE81dFAcB3541e59177AC71Ed237BD15D0',
+      '0xD79819bAf3326FAbB7ba95b098e6515a0f6408B8'
     ],
     userReplicaSetBootstrapAddress: null,
     registryAddress: null
