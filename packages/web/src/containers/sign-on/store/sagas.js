@@ -117,7 +117,7 @@ async function getInstagramUser(handle) {
     const profileEndpoint =
       getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
       'https://instagram.com/$USERNAME$/?__a=1'
-    const fetchIGUserUrl = getIGUserUrl(profileEndpoint, handle, 5)
+    const fetchIGUserUrl = getIGUserUrl(profileEndpoint, handle, 8)
     const igProfile = await fetch(fetchIGUserUrl)
     if (!igProfile.ok) return null
     const igProfileJson = await igProfile.json()
