@@ -55,6 +55,14 @@ router.get([
   }
 )
 
+router.get('/trending/playlists', (
+  req: express.Request,
+  res: express.Response) => {
+    req.params.type = 'trending-playlists'
+    getMetaTagsResponse(MetaTagFormat.Explore, req, res)
+  }
+)
+
 router.get('/error', (
   req: express.Request,
   res: express.Response) => {

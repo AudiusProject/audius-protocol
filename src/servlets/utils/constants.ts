@@ -9,7 +9,7 @@ export const MOST_LOVED_URL = 'https://download.audius.co/static-resources/most-
 export const FEELING_LUCKY_URL = 'https://download.audius.co/static-resources/feeling-lucky.png'
 export const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
 
-export type ExploreInfoType = {
+export interface ExploreInfoType {
   title: string,
   description: string,
   image: string
@@ -44,6 +44,11 @@ export const exploreMap: { [key: string]: ExploreInfoType } = {
   'top-playlists': {
     title: 'Top Playlists',
     description: 'The top playlists on Audius right now',
+    image: TOP_PLAYLISTS_URL
+  },
+  'trending-playlists': {
+    title: 'Trending Playlists',
+    description: 'The trending playlists on Audius right now',
     image: TOP_PLAYLISTS_URL
   },
   'most-loved': {
