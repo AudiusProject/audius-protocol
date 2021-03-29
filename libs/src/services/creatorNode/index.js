@@ -714,7 +714,7 @@ class CreatorNode {
         const res = await axios(endpoint, { headers: {
           'X-Request-ID': newRequestId
         }})
-        console.log(`Successful health check: ${JSON.stringify(res.data)}`)
+        console.log(`Successful health check for ${requestId}: ${JSON.stringify(res.data)}`)
       } catch (e) {
         console.error(`Failed health check immediately after network error ${requestId}`, e)
       }
