@@ -16,6 +16,7 @@ import {
   IntKeys,
   getRemoteVar,
   StringKeys,
+  BooleanKeys,
   FeatureFlags
 } from 'services/remote-config'
 import {
@@ -312,7 +313,10 @@ class AudiusBackend {
 
   static async sanityChecks(audiusLibs) {
     try {
-      const sanityChecks = new SanityChecks(audiusLibs)
+      const sanityCheckOptions = {
+        skipRollover: getRemoteVar(BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK)
+      }
+      const sanityChecks = new SanityChecks(audiusLibs, sanityCheckOptions)
       await sanityChecks.run()
     } catch (e) {
       console.error(`Sanity checks failed: ${e}`)
