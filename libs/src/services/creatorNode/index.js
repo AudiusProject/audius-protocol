@@ -691,34 +691,33 @@ class CreatorNode {
       await this._handleErrorHelper(e, url, requestId)
     }
   }
-  
+
   async _handleErrorHelper (e, requestUrl, requestId = null) {
     if (e.response && e.response.data && e.response.data.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
       const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error}] for request: [${cnRequestID}, ${requestId}]`
-  
+
       console.error(errMessage)
       throw new Error(errMessage)
     } else if (!e.response) {
       // delete headers, may contain tokens
       if (e.config && e.config.headers) delete e.config.headers
-  
+
       const errorMsg = `Network error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
       console.error(errorMsg, e)
-  
+
       try {
         const newRequestId = uuid()
-        const headers = {}
         const endpoint = `${this.creatorNodeEndpoint}/health_check`
         const res = await axios(endpoint, { headers: {
           'X-Request-ID': newRequestId
-        }})
+        } })
         console.log(`Successful health check for ${requestId}: ${JSON.stringify(res.data)}`)
       } catch (e) {
         console.error(`Failed health check immediately after network error ${requestId}`, e)
       }
-  
+
       throw new Error(`${errorMsg}${e}`)
     } else {
       const errorMsg = `Unknown error while making request ${requestId} to ${requestUrl}:\nStringified Error:${JSON.stringify(e)}\n`
