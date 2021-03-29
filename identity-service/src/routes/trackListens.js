@@ -5,6 +5,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
+const instr = require('../audius-poc-contract/js_client/index')
 
 async function getListenHour () {
   let listenDate = new Date()
@@ -216,6 +217,13 @@ module.exports = function (app) {
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
+
+    await instr.validateSignature(
+      null,
+      'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
+      JSON.stringify({ hour: currentHour, trackId, userId }),
+    )
+
     await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
 
     // Clients will send a randomly generated string UUID for anonymous users.

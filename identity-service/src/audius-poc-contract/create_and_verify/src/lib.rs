@@ -16,4 +16,4 @@ mod entrypoint;
 pub use solana_program;
 
 
-solana_program::declare_id!("BeEFEJMprfmBMvZf9vvyiTXxBVStNF7JR2ACerEPQFZ8");
+solana_program::declare_id!("6tACpBqNuQnf7hUacMsd1my8uhehZgYByaz4wGjNuf82");

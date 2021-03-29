@@ -8,7 +8,7 @@ curr_dir=$(dirname "$(readlink -f "$0")")
 ln -snf /usr/share/zoneinfo/UTC /etc/localtime
 echo UTC > /etc/timezone
 
-apt-get update && apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git
+apt-get update && apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 sh -c "$(curl -sSfL https://release.solana.com/v1.6.1/install)"
 
@@ -28,18 +28,18 @@ cd "$curr_dir/../src/audius-poc-contract/create_and_verify"
 cargo build-bpf
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
-sed -i "s/$cur_address/$new_address/g" src/lib.rs ../js_client/audius_instructions.js ../python_listener/client.py
+sed -i "s/$cur_address/$new_address/g" src/lib.rs ../js_client/index.js
 
 cd "$curr_dir/../src/audius-poc-contract/program"
 cargo build-bpf
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
-sed -i "s/$cur_address/$new_address/g" src/lib.rs ../js_client/audius_instructions.js ../python_listener/client.py
+sed -i "s/$cur_address/$new_address/g" src/lib.rs ../js_client/index.js
 
 cd "$curr_dir/../src/audius-poc-contract/cli"
 signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
 valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
-old_valid_signer=$(grep -Po '(?<=VALID_SIGNER = ").*(?=")' ../js_client/audius_instructions.js)
-sed -i "s/$old_valid_signer/$valid_signer/g" ../js_client/audius_instructions.js
+old_valid_signer=$(grep -Po '(?<=VALID_SIGNER = ").*(?=")' ../js_client/index.js)
+sed -i "s/$old_valid_signer/$valid_signer/g" ../js_client/index.js
 
-sleep 10000000
+python -m http.server 8080 # open up port 8080 to signal completion
