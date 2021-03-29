@@ -29,7 +29,7 @@ node scripts/setup.js run init-repos up
 
 **Bringing up all services:**
 - In `<service-commands>/scripts/`, run `node setup.js up` to bring all services up.
-- `-nc, --num-cnodes <number>`, by default set to 1. Adjusts the number of creator nodes initialized within the system. 
+- `-nc, --num-cnodes <number>`, by default set to 4. Adjusts the number of creator nodes initialized within the system. 
 
 ```
 node setup.js up
@@ -68,7 +68,7 @@ node setup.js run ipfs-2 up
 node setup.js run contracts up
 ```
 
-`creator-node` is the only service that must be run with a corresponding `-i, --instance-num` flag - when the entire system is initialized with `--num-cnodes` set to 3, the commands that are executed to bring them up are as follows:
+`creator-node` is the only service that must be run with a corresponding `-i, --instance-num` flag - when the entire system is initialized with `--num-cnodes` set to 4, the commands that are executed to bring them up are as follows:
 
 ```
 node setup.js run creator-node up -i 1
@@ -84,7 +84,6 @@ node setup.js run network down
 node setup.js run ipfs down
 node setup.js run discovery-provider down
 node setup.js run contracts down
-
 ```
 
 
