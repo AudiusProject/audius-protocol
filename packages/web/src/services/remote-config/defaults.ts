@@ -38,5 +38,6 @@ export const remoteConfigBooleanDefaults: {
   [key in BooleanKeys]: boolean | null
 } = {
   [BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION]: true,
-  [BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP]: true
+  [BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP]: true,
+  [BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK]: false
 }

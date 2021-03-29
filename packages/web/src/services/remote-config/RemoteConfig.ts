@@ -47,7 +47,12 @@ export enum BooleanKeys {
   /*
    * Boolean to show instagram verification on web + desktop.
    */
-  DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP = 'DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP'
+  DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP = 'DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP',
+
+  /**
+   * Boolean to skip the rollover nodes sanity check.
+   */
+  SKIP_ROLLOVER_NODES_SANITY_CHECK = 'SKIP_ROLLOVER_NODES_SANITY_CHECK'
 }
 
 export enum DoubleKeys {}
