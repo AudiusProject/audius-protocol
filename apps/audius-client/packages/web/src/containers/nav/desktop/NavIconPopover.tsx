@@ -1,9 +1,5 @@
-import {
-  IconCrown,
-  IconDashboard,
-  IconKebabHorizontal,
-  IconSettings
-} from '@audius/stems'
+import { IconCrown, IconDashboard, IconSettings } from '@audius/stems'
+import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
 import IconPopup from 'components/general/IconPopup'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import React from 'react'
