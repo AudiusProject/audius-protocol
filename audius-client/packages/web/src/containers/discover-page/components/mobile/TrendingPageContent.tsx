@@ -43,6 +43,8 @@ const messages = {
   endOfLineupDescription: "Looks like you've reached the end of this list..."
 }
 
+const RANK_ICON_COUNT = 5
+
 const tabHeaders = [
   { icon: <IconDay />, text: messages.thisWeek, label: TimeRange.WEEK },
   { icon: <IconMonth />, text: messages.thisMonth, label: TimeRange.MONTH },
@@ -138,9 +140,11 @@ const TrendingPageMobileContent = ({
   const lineups = useMemo(() => {
     return [
       <>
-        <div className={styles.rewardsContainer}>
-          <RewardsBanner bannerType='tracks' />
-        </div>
+        {trendingGenre === null ? (
+          <div className={styles.rewardsContainer}>
+            <RewardsBanner bannerType='tracks' />
+          </div>
+        ) : null}
         <Lineup
           key='trendingWeek'
           {...weekProps}
@@ -151,7 +155,7 @@ const TrendingPageMobileContent = ({
           actions={trendingWeekActions}
           variant={LineupVariant.MAIN}
           isTrending
-          rankIconCount={5}
+          rankIconCount={trendingGenre === null ? RANK_ICON_COUNT : undefined}
           endOfLineup={
             <EndOfLineup
               key='endOfLineup'
@@ -202,7 +206,8 @@ const TrendingPageMobileContent = ({
     makeSetInView,
     monthProps,
     weekProps,
-    yearProps
+    yearProps,
+    trendingGenre
   ])
   const record = useRecord()
 
