@@ -42,6 +42,8 @@ const initialGenres = [
   'Alternative'
 ]
 
+const RANK_ICON_COUNT = 5
+
 // Creates a unique cache key for a time range & genre combination
 const getTimeGenreCacheKey = (timeRange: TimeRange, genre: string | null) => {
   const newGenre = genre || 'all'
@@ -200,13 +202,15 @@ const TrendingPageContent = (props: DiscoverPageContentProps) => {
 
   const trendingLineups = [
     <div key='week' className={styles.lineupContainer}>
-      <div className={styles.bannerContainer}>
-        <RewardsBanner bannerType='tracks' />
-      </div>
+      {trendingGenre === null ? (
+        <div className={styles.bannerContainer}>
+          <RewardsBanner bannerType='tracks' />
+        </div>
+      ) : null}
       <Lineup
         key='trendingWeek'
         ordered
-        rankIconCount={5}
+        rankIconCount={trendingGenre === null ? RANK_ICON_COUNT : undefined}
         {...weekProps}
         setInView={makeSetInView(TimeRange.WEEK)}
         loadMore={makeLoadMore(TimeRange.WEEK)}
