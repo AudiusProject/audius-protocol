@@ -71,12 +71,15 @@ export const actionsMap = {
 
     // Hack alert:
     // For lineups with max entries (such as trending playlists) and deleted content,
-    // manually set hasMore
-    if (
-      newState.maxEntries !== null &&
-      newState.entries.length + action.entries.length + action.deleted >=
-        newState.maxEntries
-    ) {
+    // manually set hasMore.
+    //
+    // Total entries is existing entries + deleted from both lineup & action
+    const totalEntries =
+      newState.entries.length +
+      action.entries.length +
+      newState.deleted +
+      action.deleted
+    if (newState.maxEntries !== null && totalEntries >= newState.maxEntries) {
       newState.hasMore = false
     }
 
