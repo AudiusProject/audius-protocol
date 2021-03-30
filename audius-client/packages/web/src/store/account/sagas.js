@@ -58,7 +58,7 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 function* onFetchAccount(account) {
   if (account && account.handle) {
     yield put(identify(account.handle))
-    setSentryUser(account.user_id, account.handle)
+    setSentryUser(account)
   }
 
   if (shouldRequestBrowserPermission()) {
