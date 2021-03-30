@@ -356,8 +356,7 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
   if (!synced) {
     const errorMsg = `Max sync monitoring timeout reached for user=${userId}`
     logger.error(errorMsg)
-    console.error(e)
-    throw new Error(`${errorMsg}: ${e.message}`)
+    throw new Error(`${errorMsg}`)
   }
 }
 
