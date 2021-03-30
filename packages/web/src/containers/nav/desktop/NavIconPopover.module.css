@@ -22,7 +22,6 @@
   width: 20px;
   background-color: unset !important;
   position: relative;
-  top: -1px;
 }
 
 .iconClass > svg path {
