@@ -1,4 +1,5 @@
 const ServiceCommands = require('@audius/service-commands')
+const ContainerLogs = require('@audius/service-commands/src/ContainerLogs')
 const { _ } = require('lodash')
 
 const { logger, addFileLogger } = require('./logger.js')
@@ -28,6 +29,26 @@ const {
   LibsWrapper,
   allUp
 } = ServiceCommands
+
+const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce(
+  (acc, cur) => {
+    return [
+      ...acc,
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.HEALTH_CHECK,
+        { verbose: true, serviceNumber: cur }
+      ]
+    ]
+  },
+  []
+)
+const services = [
+  [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+  [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
+  [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+  ...contentNodeHealthChecks
+]
 
 async function setupAllServices () {
   logger.info('Setting up all services!')
@@ -124,6 +145,12 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
   )
 }
 
+// Check to see if verbose mode (print out container logs)
+const isVerbose = () => {
+  const verbose = process.argv[process.argv.length - 1]
+  return verbose && verbose.toLowerCase() === 'verbose'
+}
+
 // This should go away when we have multiple tests.
 //
 // Currently there's a bug where standing up services
@@ -132,7 +159,19 @@ async function generateLibsInstances (numUsers, useZeroIndexedWallet = false) {
 // with a separate command.
 async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
+
+  logger.info('Ensuring all nodes are healthy..')
+  try {
+    await Promise.all(
+      services.map(s => runSetupCommand(...s))
+    )
+  } catch (e) {
+    logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
+    process.exit(1)
+  }
+
   const cmd = process.argv[3]
+  const verbose = isVerbose()
 
   try {
     switch (cmd) {
@@ -199,9 +238,8 @@ async function main () {
         const ursmTest = makeTest(
           'userReplicaSetManager',
           userReplicaSetManagerTest,
-          {
-            numUsers: USER_REPLICA_SET_NUM_USERS
-        })
+          { numUsers: USER_REPLICA_SET_NUM_USERS }
+        )
 
         const tests = [
           coreIntegrationTests,
@@ -220,6 +258,10 @@ async function main () {
     process.exit()
   } catch (e) {
     logger.error('Exiting testrunner with errors')
+    if (verbose) {
+      logger.info('Displaying container logs..')
+      await ContainerLogs.print()
+    }
     logger.error(e.message)
     process.exit(1)
   }

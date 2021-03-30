@@ -24,6 +24,7 @@ from src import exceptions
 from src.queries import queries, search, search_queries, health_check, notifications
 from src.api.v1 import api as api_v1
 from src.utils import helpers, config
+from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
@@ -141,8 +142,10 @@ def create_celery(test_config=None):
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     eth_abi_values = helpers.load_eth_abi_values()
-    # Initialize eth web
-    eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
+    # Initialize eth_web3 with MultiProvider
+    # We use multiprovider to allow for multiple web3 providers and additional resiliency.
+    # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
+    eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     global registry
     global user_factory

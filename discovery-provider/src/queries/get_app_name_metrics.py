@@ -1,6 +1,5 @@
 import logging
 import time
-import functools as ft
 from datetime import date, timedelta
 from sqlalchemy import func, desc, asc
 from src import exceptions
@@ -45,8 +44,13 @@ def _get_historical_app_metrics(session):
         .filter(AggregateDailyAppNameMetrics.timestamp < today)
         .all()
     )
-    daily_metrics = ft.reduce(lambda acc, curr: \
-        acc.update({str(curr[0]): {curr[1]: curr[2]}}) or acc, daily_query, {})
+    daily_metrics = {}
+    for attribute in daily_query:
+        day = str(attribute[0])
+        if day not in daily_metrics:
+            daily_metrics[day] = {attribute[1]: attribute[2]}
+        else:
+            daily_metrics[day][attribute[1]] = attribute[2]
 
     monthly_query = (
         session.query(
@@ -57,8 +61,13 @@ def _get_historical_app_metrics(session):
         .filter(AggregateMonthlyAppNameMetrics.timestamp < first_day_of_month)
         .all()
     )
-    monthly_metrics = ft.reduce(lambda acc, curr: \
-        acc.update({str(curr[0]): {curr[1]: curr[2]}}) or acc, monthly_query, {})
+    monthly_metrics = {}
+    for attribute in monthly_query:
+        month = str(attribute[0])
+        if month not in monthly_metrics:
+            monthly_metrics[month] = {attribute[1]: attribute[2]}
+        else:
+            monthly_metrics[month][attribute[1]] = attribute[2]
 
     return {
         'daily': daily_metrics,

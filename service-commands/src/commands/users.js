@@ -1,6 +1,5 @@
-const config = require('../../config/config')
 const fs = require('fs')
-
+const config = require('../../config/config')
 const User = {}
 
 User.addUser = async (libsWrapper, metadata) => {
@@ -28,9 +27,8 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
   metadata = await User.getUser(libsWrapper, userId)
 
   // Upload photo for profile picture
-  await User.uploadPhotoAndUpdateMetadata({
+  await User.uploadPhotoAndUpdateMetadata(libsWrapper, {
     metadata,
-    libsWrapper,
     userId,
     picturePath: userPicturePath
   })
@@ -48,9 +46,8 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
  * @param {boolean} param.[updateCoverPhoto=true] flag to update cover_photo_sizes hash
  * @param {boolean} param.[updateProfilePicture=true] flag to update profile_picture_sizes hash
  */
-User.uploadPhotoAndUpdateMetadata = async ({
+User.uploadPhotoAndUpdateMetadata = async (libsWrapper, {
   metadata,
-  libsWrapper,
   userId,
   picturePath,
   updateCoverPhoto = true,
