@@ -59,14 +59,16 @@ class CreatorNodeSelection extends ServiceSelection {
    * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
    * @param {boolean?} performSyncCheck whether or not to check whether the nodes need syncs before selection
    */
-  async select (performSyncCheck = true) {
+  async select (performSyncCheck = true, replicaSet = null) {
     // Reset decision tree and backups
     this.decisionTree = []
     this.clearBackups()
     this.clearUnhealthy()
 
-    // Get all the Content Node endpoints on chain and filter
     let services = await this.getServices()
+    services = filter(services, replicaSet)
+
+    // Get all the Content Node endpoints on chain and filter
     this.decisionTree.push({ stage: DECISION_TREE_STATE.GET_ALL_SERVICES, val: services })
 
     if (this.whitelist) { services = this.filterToWhitelist(services) }

@@ -102,7 +102,8 @@ class Account extends Base {
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
-    host = (typeof window !== 'undefined' && window.location.origin) || null
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    repicaSet = null
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -137,7 +138,7 @@ class Account extends Base {
 
       // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
       phase = phases.ADD_REPLICA_SET
-      metadata = await this.User.assignReplicaSet({ userId })
+      metadata = await this.User.assignReplicaSet({ userId, replicaSet })
 
       // Upload profile pic and cover photo to primary Content Node and sync across secondaries
       phase = phases.UPLOAD_PROFILE_IMAGES
@@ -234,6 +235,7 @@ class Account extends Base {
   /**
    * Updates a user's creator node endpoint. Sets the connected creator node in the libs instance
    * and updates the user's metadata blob.
+   * @notice This function is not used anywhere currently
    * @param {string} url
    */
   async updateCreatorNodeEndpoint (url) {

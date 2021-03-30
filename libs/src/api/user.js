@@ -206,7 +206,8 @@ class Users extends Base {
    * @param {number} param.userId
    */
   async assignReplicaSet ({
-    userId
+    userId,
+    replicaset = null // comma seperated string? or string[]
   }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
@@ -233,7 +234,8 @@ class Users extends Base {
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       phase = phases.AUTOSELECT_CONTENT_NODES
       const response = await this.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false
+        performSyncCheck: false,
+        replicaSet
       })
       // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
       // is chosen. If a primary was not selected (which also implies that secondaries were not chosen), throw
