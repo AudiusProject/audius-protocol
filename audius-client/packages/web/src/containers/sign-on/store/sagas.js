@@ -37,8 +37,9 @@ import { Pages, FollowArtistsCategory } from './types'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { Genre, ELECTRONIC_SUBGENRES } from 'utils/genres'
 import { getIGUserUrl } from 'components/general/InstagramAuth'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { getRemoteVar, IntKeys, StringKeys } from 'services/remote-config'
 import { checkHandle } from './verifiedChecker'
+import { withTimeout } from 'utils/network'
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
@@ -117,8 +118,9 @@ async function getInstagramUser(handle) {
     const profileEndpoint =
       getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
       'https://instagram.com/$USERNAME$/?__a=1'
-    const fetchIGUserUrl = getIGUserUrl(profileEndpoint, handle, 8)
-    const igProfile = await fetch(fetchIGUserUrl)
+    const timeout = getRemoteVar(IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT) || 4000
+    const fetchIGUserUrl = getIGUserUrl(profileEndpoint, handle)
+    const igProfile = await withTimeout(fetch(fetchIGUserUrl), timeout)
     if (!igProfile.ok) return null
     const igProfileJson = await igProfile.json()
     if (!igProfileJson.graphql || !igProfileJson.graphql.user) {

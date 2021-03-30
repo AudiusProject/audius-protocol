@@ -36,7 +36,12 @@ export enum IntKeys {
    * Service monitoring request analytics sample rate (int out of 100). A value of 50
    * means that half of all requests are recorded.
    */
-  SERVICE_MONITOR_REQUEST_SAMPLE_RATE = 'SERVICE_MONITOR_REQUEST_SAMPLE_RATE'
+  SERVICE_MONITOR_REQUEST_SAMPLE_RATE = 'SERVICE_MONITOR_REQUEST_SAMPLE_RATE',
+
+  /**
+   * Instagram handle taken check timeout
+   */
+  INSTAGRAM_HANDLE_CHECK_TIMEOUT = 'INSTAGRAM_HANDLE_CHECK_TIMEOUT'
 }
 
 export enum BooleanKeys {
