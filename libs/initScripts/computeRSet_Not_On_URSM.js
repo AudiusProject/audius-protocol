@@ -25,7 +25,7 @@ const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
 const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
 const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
 const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
-const URSM_BOOTSTRAPPER_PRIVATE_KEY = '9b6611a4f31d498b2b5d08a9b877c314094ff1f5f88c936163159a09c8156f70'
+
 
 // NOTE: Migrate URSM first via `node setup.js run user-replica-set-manager up`
 
@@ -43,7 +43,20 @@ const URSM_BOOTSTRAPPER_PRIVATE_KEY = '9b6611a4f31d498b2b5d08a9b877c314094ff1f5f
 // const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
 // const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
 
-const NUM_USERS_PER_BATCH_REQUEST = 1
+const getEnv = env => {
+  const value = process.env[env]
+  if (typeof value === 'undefined') {
+    console.log(`${env} has not been set.`)
+    return null
+  }
+  return value
+}
+
+// TODO: MOVE THIS TO ENV VAR AND PUSH THAT ALONE
+// export URSM_BOOTSTRAPPER_PRIVATE_KEY=
+const URSM_BOOTSTRAPPER_PRIVATE_KEY = getEnv('URSM_BOOTSTRAPPER_PRIVATE_KEY')
+
+const NUM_USERS_PER_BATCH_REQUEST = 25
 
 const configureAndInitLibs = async () => {
   const audiusLibsConfig = {
@@ -106,7 +119,6 @@ const range = (start, stop, step = 1) => Array.from({ length: ((stop - start) / 
 async function getAllUsersWithRSetButNotOnURSM (offset, audiusLibs) {
   let userIdToWalletAndCreatorNodeEndpoint = {}
   try {
-    console.log(`getAllUsersWithRSetButNotOnURSM 1`)
     // Get all users with the ids in the range [offset, offset + NUM_USERS_PER_BATCH_REQUEST]
     // e.g. [1,2,3,...500] -> [501,502,....,1000] etc.
     // This is to iterate through every possible user
@@ -115,9 +127,6 @@ async function getAllUsersWithRSetButNotOnURSM (offset, audiusLibs) {
       0 /* offset */,
       range(offset, offset + NUM_USERS_PER_BATCH_REQUEST) /* idsArray */
     )
-    console.log(`getAllUsersWithRSetButNotOnURSM 2`)
-
-    console.lg(`Subset users: ${subsetUsers}`)
     subsetUsers
       // Filter to users that have an rset but not on URSM
       .filter(user => user.creator_node_endpoint && !user.secondary_ids && !user.primary_id) // users with rset not on contract
@@ -142,9 +151,15 @@ async function getAllUsersWithRSetButNotOnURSM (offset, audiusLibs) {
 }
 
 async function getSPs (audiusLibs) {
+  // const UMSpId = (
+  //   await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderInfoFromEndpoint(USER_METADATA_ENDPOINT)
+  // ).spID
+  const audiusInfraSpIds = new Set([])
+
   let spEndpointToSpIdAndCount = {}
   const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
   sps
+    .filter(sp => !audiusInfraSpIds.has(sp.spID))
     .forEach(sp => {
       spEndpointToSpIdAndCount[sp.endpoint] = { id: sp.spID, selected: 0 }
     })
@@ -181,7 +196,7 @@ const setReplicaSet = async ({
   secondary2,
   userId
 }) => {
-  console.log(`\nWriting to URSM....\n`)
+  console.log(`userId=${userId} | primary=${JSON.stringify(primary)}, secondary1=${JSON.stringify(secondary1)}, secondary2=${JSON.stringify(secondary2)}\n`)
 
   // Update in new contract
   let tx = await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
@@ -189,14 +204,14 @@ const setReplicaSet = async ({
     primary.spId,
     [secondary1.spId, secondary2.spId]
   )
-
+  console.dir(tx, { depth: 5 })
   //   console.log('tx for updating rset', tx)
   const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
     primary.endpoint, [secondary1.endpoint, secondary2.endpoint]
   )
   await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
 
-  console.log(`Successful contract write for userId=${userId}!`)
+  console.log(`userId=${userId} - Successful contract write for ${newCreatorNodeEndpoint}`)
 }
 
 const run = async () => {
@@ -220,10 +235,10 @@ const run = async () => {
   let userIdsSuccess = []
   let userIdsFail = []
 
-  // const numUsersToProcess = numOfUsers
-  const numUsersToProcess = 1
-  for (offset = 0; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  const numUsersToProcess = numOfUsers
+  for (offset = 4000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
+    const batchStart = Date.now()
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
     userIdToWalletAndCreatorNodeEndpoint = await getAllUsersWithRSetButNotOnURSM(offset, audiusLibs)
@@ -237,47 +252,89 @@ const run = async () => {
     }
 
     console.log('\nMapping replica sets to their spIds....')
+    console.log(userIdsWithRSetButNotOnURSM)
     let userIdToRSet = {}
+    let allSpKeys = Object.keys(spEndpointToSpIdAndCount)
     userIdsWithRSetButNotOnURSM.forEach(id => {
-      // Should be a size of 3 [primary, secondary1, secondary2]
-      const replicaSetEndpoints = CreatorNode.getEndpoints(userIdToWalletAndCreatorNodeEndpoint[id].creatorNodeEndpoint)
+      try {
+        // Should be a size of 3 [primary, secondary1, secondary2]
+        const replicaSetEndpoints = CreatorNode.getEndpoints(userIdToWalletAndCreatorNodeEndpoint[id].creatorNodeEndpoint)
+        console.log(`Processing user ${id} - initial replicaSetEndpoints=${replicaSetEndpoints}`)
 
-      userIdToRSet[id] = {
-        primary: { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[0]].id, endpoint: replicaSetEndpoints[0] },
-        secondary1: { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[1]].id, endpoint: replicaSetEndpoints[1] },
-        secondary2: { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[2]].id, endpoint: replicaSetEndpoints[2] }
+        let primary = { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[0]].id, endpoint: replicaSetEndpoints[0] }
+        // let secondary1 = { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[1]].id, endpoint: replicaSetEndpoints[1] },
+        if (!replicaSetEndpoints[1]) {
+          let newSecondaryIndex = Math.floor(Math.random(0) * allSpKeys.length)
+          let newValue = allSpKeys[newSecondaryIndex]
+          while (newValue == replicaSetEndpoints[0]) {
+            newSecondaryIndex = Math.floor(Math.random(0) * allSpKeys.length)
+            newValue = allSpKeys[newSecondaryIndex]
+          }
+          replicaSetEndpoints[1] = newValue
+        }
+
+        if (!replicaSetEndpoints[2]) {
+          let newSecondaryIndex = Math.floor(Math.random(0) * allSpKeys.length)
+          let newValue = allSpKeys[newSecondaryIndex]
+          while (newValue === replicaSetEndpoints[1] || newValue == replicaSetEndpoints[0]) {
+            newSecondaryIndex = Math.floor(Math.random(0) * allSpKeys.length)
+            newValue = allSpKeys[newSecondaryIndex]
+          }
+          replicaSetEndpoints[2] = newValue
+        }
+
+        userIdToRSet[id] = {
+          primary,
+          secondary1: { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[1]].id, endpoint: replicaSetEndpoints[1] },
+          secondary2: { spId: spEndpointToSpIdAndCount[replicaSetEndpoints[2]].id, endpoint: replicaSetEndpoints[2] }
+        }
+
+        // Keep track of number of times the replica set was chosen (analytics)
+        spEndpointToSpIdAndCount[replicaSetEndpoints[0]].selected += 1
+        spEndpointToSpIdAndCount[replicaSetEndpoints[1]].selected += 1
+        spEndpointToSpIdAndCount[replicaSetEndpoints[2]].selected += 1
+      } catch(e) {
+        console.log(`userId=${id} - Error mapping replica set`)
+        console.dir(e, { depth: 5})
       }
-
-      // Keep track of number of times the replica set was chosen (analytics)
-      spEndpointToSpIdAndCount[replicaSetEndpoints[0]].selected += 1
-      spEndpointToSpIdAndCount[replicaSetEndpoints[1]].selected += 1
-      spEndpointToSpIdAndCount[replicaSetEndpoints[2]].selected += 1
     })
 
     // Write data to file
     writeDataToFile(spEndpointToSpIdAndCount, userIdToRSet, offset)
 
+    let sliceLength = 10
     let i
-    // for (i = 0; i < userIdsWithRSetButNotOnURSM.length; i++) {
-    for (i = 0; i < 1; i++) {
+    for (i = 0; i < userIdsWithRSetButNotOnURSM.length; i+= sliceLength) {
+      const range = userIdsWithRSetButNotOnURSM.slice(i, i + sliceLength)
+      await Promise.all(range.map(async stringId => {
+        const userWriteStart = Date.now()
+        const userId = parseInt(stringId)
+        const replicaSetSecondarySpIds = userIdToRSet[userId]
+        try {
+          // Write to new contract
+          await setReplicaSet({
+            audiusLibs,
+            primary: { spId: replicaSetSecondarySpIds.primary.spId, endpoint: replicaSetSecondarySpIds.primary.endpoint },
+            secondary1: { spId: replicaSetSecondarySpIds.secondary1.spId, endpoint: replicaSetSecondarySpIds.secondary1.endpoint },
+            secondary2: { spId: replicaSetSecondarySpIds.secondary2.spId, endpoint: replicaSetSecondarySpIds.secondary2.endpoint },
+            userId
+          })
+          userIdsSuccess.push(userId)
+          const userWriteDuration = Date.now() - userWriteStart
+          console.log(`userId=${userId} - Chain write took ${userWriteDuration}ms`)
+        } catch (e) {
+          console.error(`userId=${userId} | Error with sync and or contract write`, e)
+          userIdsFail.push({ userId, error: e.message })
+        }
+      }))
+      /*
       const userId = parseInt(userIdsWithRSetButNotOnURSM[i])
       const replicaSetSecondarySpIds = userIdToRSet[userId]
-      console.log(`\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spEndpointToSpIdAndCount[replicaSetSecondarySpIds[0]]},${spEndpointToSpIdAndCount[replicaSetSecondarySpIds[1]]}`)
-      try {
-        // Write to new contract
-        await setReplicaSet({
-          audiusLibs,
-          primary: { spId: replicaSetSecondarySpIds.primary.spId, endpoint: replicaSetSecondarySpIds.primary.endpoint },
-          secondary1: { spId: replicaSetSecondarySpIds.secondary1.spId, endpoint: replicaSetSecondarySpIds.secondary1.endpoint },
-          secondary2: { spId: replicaSetSecondarySpIds.secondary2.spId, endpoint: replicaSetSecondarySpIds.secondary2.endpoint },
-          userId
-        })
-        userIdsSuccess.push(userId)
-      } catch (e) {
-        console.error('Error with sync and or contract write', e)
-        userIdsFail.push({ userId, error: e.message })
-      }
+      */
     }
+    const batchEnd = Date.now()
+    const batchDuration = batchEnd - batchStart
+    console.log(`\nbatchDuration: ${batchDuration}ms`)
   }
 
   const end = Date.now() - start

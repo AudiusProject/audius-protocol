@@ -25,7 +25,18 @@ const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
 const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
 const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
 const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
-const URSM_BOOTSTRAPPER_PRIVATE_KEY = '9b6611a4f31d498b2b5d08a9b877c314094ff1f5f88c936163159a09c8156f70'
+
+const getEnv = env => {
+  const value = process.env[env]
+  if (typeof value === 'undefined') {
+    console.log(`${env} has not been set.`)
+    return null
+  }
+  return value
+}
+
+// export URSM_BOOTSTRAPPER_PRIVATE_KEY=
+const URSM_BOOTSTRAPPER_PRIVATE_KEY = getEnv('URSM_BOOTSTRAPPER_PRIVATE_KEY')
 
 // NOTE: Migrate URSM first via `node setup.js run user-replica-set-manager up`
 
@@ -335,7 +346,7 @@ const run = async () => {
 
   const numUsersToProcess = numOfUsers
   // const numUsersToProcess = 500
-  for (offset = 8000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  for (offset = 0; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
@@ -431,4 +442,55 @@ const run = async () => {
   console.log(`\nTime Taken: ${end}ms`)
 }
 
-run()
+const updateSingleUser = async (
+  userId,
+  primaryId,
+  secondaryIds
+) => {
+  const audiusLibs = await configureAndInitLibs()
+  let tx = await audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+    userId,
+    primaryId,
+    secondaryIds
+  )
+  console.dir(tx)
+}
+
+
+/*
+
+// Update in new contract
+userId=10720 | UM clock: -1 secondaries=[17,17] | Time passed: 57717ms
+Processing 10720, primaryId:4, secondaryIDS: 5,3
+
+"wallet": "0xb7aa6a4dd7c91f39127e609ee2a16b9ff340a2af"
+*/
+
+let args = process.argv
+let commandToRun = args[2]
+switch (commandToRun) {
+  case 'run':
+    run()
+    break
+  case 'update-user-replica-set':
+    const userIdStr = args[3]
+    const primaryReplicaIdStr = args[4]
+    const secondaryReplicaIdStr = args[5]
+    const userId = parseInt(userIdStr.split('=')[1])
+    const primaryReplicaId = parseInt(primaryReplicaIdStr.split('=')[1])
+    let secondaryReplicaIds = (secondaryReplicaIdStr.split('=')[1])
+    secondaryReplicaIds = secondaryReplicaIds.split(',').map(x => parseInt(x))
+    console.log(`Received userId: ${userId}`)
+    console.log(`Received primaryReplicaId: ${primaryReplicaId}`)
+    console.log(`Received secondaryReplicaIds: ${secondaryReplicaIds}`)
+    updateSingleUser(
+      userId,
+      primaryReplicaId,
+      secondaryReplicaIds
+    )
+    break
+  default:
+    break
+}
+
+// run()
