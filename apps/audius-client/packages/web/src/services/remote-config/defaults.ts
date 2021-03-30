@@ -9,7 +9,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS]: 5000,
   [IntKeys.NOTIFICATION_POLLING_FREQ_MS]: 60 * 1000,
   [IntKeys.SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE]: 0,
-  [IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE]: 0
+  [IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE]: 0,
+  [IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT]: 4000
 }
 
 export const remoteConfigStringDefaults: {
