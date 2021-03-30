@@ -217,7 +217,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
 
         Persist metrics in the database
     """
-    logger.info(f"about to merge {metric_type} metrics: {metrics}")
+    logger.info(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
     day = end_time.split(':')[0]
     month = f"{day[:7]}/01"
 
@@ -262,7 +262,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         if timestamp > yesterday_str}
     if daily_metrics:
         redis_set_and_dump(REDIS, daily_key, json.dumps(daily_metrics))
-    logger.info(f"updated cached daily {metric_type} metrics: {daily_metrics}")
+    logger.info(f"updated cached daily {metric_type} metrics")
 
     # clean up metrics METRICS_INTERVAL after the end of the month from monthly_metrics
     thirty_one_days_ago = (datetime.utcnow() - timedelta(days=31)).strftime(datetime_format_secondary)
@@ -270,7 +270,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         if timestamp > thirty_one_days_ago}
     if monthly_metrics:
         redis_set_and_dump(REDIS, monthly_key, json.dumps(monthly_metrics))
-    logger.info(f"updated cached monthly {metric_type} metrics: {monthly_metrics}")
+    logger.info(f"updated cached monthly {metric_type} metrics")
 
     # persist aggregated metrics from other nodes
     day_format = datetime_format_secondary.split(':')[0]
@@ -361,7 +361,7 @@ def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
     updated_metrics = {timestamp: metrics for timestamp, metrics in values.items() if timestamp > old_timestamp}
     if updated_metrics:
         redis_set_and_dump(REDIS, key, json.dumps(updated_metrics))
-    logger.info(f"updated cached {metric_type} metrics: {updated_metrics}")
+    logger.info(f"updated cached personal {metric_type} metrics")
 
 def record_aggregate_metrics():
     now = datetime.utcnow()
