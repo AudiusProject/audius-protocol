@@ -16,13 +16,9 @@ const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?clien
 )}&scope=user_profile,user_media&response_type=code`
 
 // Route to fetch instagram user data w/ the username
-export const getIGUserUrl = (
-  endpoint: string,
-  username: string,
-  maxAttempts?: number
-) => {
+export const getIGUserUrl = (endpoint: string, username: string) => {
   const url = endpoint.replace('$USERNAME$', username)
-  return maxAttempts ? `${url}&maxAttempts=${maxAttempts}` : url
+  return url
 }
 
 // Instagram User profile fields to capture

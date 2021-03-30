@@ -6,7 +6,7 @@
  * @param {Promise} requestPromise
  * @param {number} timeout
  */
-const withTimeout = async (requestPromise, timeout) => {
+export const withTimeout = async (requestPromise, timeout) => {
   const timeoutPromise = new Promise((resolve, reject) => {
     setTimeout(() => reject(new Error('Timeout')), timeout)
   })
