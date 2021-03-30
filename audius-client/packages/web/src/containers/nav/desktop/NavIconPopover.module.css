@@ -36,13 +36,16 @@
 }
 
 /* Apply color svg transitions on hover of outermost scalingWrapper */
-.scalingWrapper:hover > svg path, .scalingWrapper:active > svg path {
-  fill: var(--static-neutral-light-10);
+.scalingWrapper:hover path, .scalingWrapper:active path {
+  fill: var(--static-neutral-light-10) !important;
 }
 
-.scalingWrapper:global(.active),
 .scalingWrapper:hover {
   transform: scale3d(1.1,1.1,1.1);
+}
+
+.scalingWrapper:active {
+  transform: scale3d(0.95, 0.95, 0.95);
 }
 
 .scalingWrapper:global(.active) .iconClass,

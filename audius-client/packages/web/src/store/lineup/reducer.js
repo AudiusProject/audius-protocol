@@ -32,7 +32,9 @@ export const initialLineupState = {
   dedupe: false,
   // Boolean if the lineup fetch call returns deleted tracks/collections
   // - Used to know if the lineup should stop fetching more content
-  containsDeleted: true
+  containsDeleted: true,
+  // Whether the lineup is limited to a certain length
+  maxEntries: null
 }
 
 export const actionsMap = {
@@ -63,6 +65,17 @@ export const actionsMap = {
       !newState.containsDeleted &&
       !isNaN(action.deleted) &&
       action.deleted > 0
+    ) {
+      newState.hasMore = false
+    }
+
+    // Hack alert:
+    // For lineups with max entries (such as trending playlists) and deleted content,
+    // manually set hasMore
+    if (
+      newState.maxEntries !== null &&
+      newState.entries.length + action.entries.length + action.deleted >=
+        newState.maxEntries
     ) {
       newState.hasMore = false
     }

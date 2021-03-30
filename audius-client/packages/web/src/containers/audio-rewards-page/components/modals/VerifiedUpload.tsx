@@ -13,8 +13,9 @@ import { InstagramButton } from 'components/general/InstagramButton'
 
 import styles from './VerifiedUpload.module.css'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
+import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { isMobile } from 'utils/clientUtil'
 
 const messages = {
   title: 'Verified Upload',
@@ -23,7 +24,8 @@ const messages = {
   verifyTwitterButton: 'Verify With Twitter',
   verifyIGButton: 'Verify With Instagram',
   step2Title: 'Step 2: Upload a Track',
-  step2Subtitle: 'Upload some music to your verified Account',
+  step2SubtitleDesktop: 'Upload your first track from your verified account',
+  step2SubtitleMobile: 'Upload your first track from your computer',
   uploadButton: 'Upload',
   step3Title: 'Step 3: Tag us And Let Us Know',
   step3Subtitle:
@@ -54,7 +56,8 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
   }, [navigate, dismissModal])
 
   const onClickVerify = useCallback(() => {
-    navigate(SETTINGS_PAGE)
+    const destination = isMobile() ? ACCOUNT_SETTINGS_PAGE : SETTINGS_PAGE
+    navigate(destination)
     dismissModal()
   }, [navigate, dismissModal])
 
@@ -78,7 +81,11 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       </div>
       <Divider />
       <span className={styles.title}>{messages.step2Title}</span>
-      <span className={styles.subtitle}>{messages.step2Subtitle}</span>
+      <span className={styles.subtitle}>
+        {isMobile()
+          ? messages.step2SubtitleMobile
+          : messages.step2SubtitleDesktop}
+      </span>
       <Button
         className={styles.uploadButton}
         text={messages.uploadButton}

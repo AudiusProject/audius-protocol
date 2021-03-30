@@ -44,7 +44,9 @@ export const BalanceTile = ({ className }: { className?: string }) => {
     <Tile className={wm(styles.balanceTile, className)}>
       <>
         <TokenHoverTooltip balance={balance}>
-          <div className={styles.balanceAmount}>{formatWei(balance, true)}</div>
+          <div className={styles.balanceAmount}>
+            {formatWei(balance, true, 0)}
+          </div>
         </TokenHoverTooltip>
         <div className={styles.balance}>{messages.audio}</div>
       </>

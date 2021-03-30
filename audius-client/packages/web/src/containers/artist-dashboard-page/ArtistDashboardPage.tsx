@@ -7,7 +7,7 @@ import moment, { Moment } from 'moment'
 import { each } from 'lodash'
 import Spin from 'antd/lib/spin'
 import { formatCount } from 'utils/formatUtil'
-import { profilePage, trackPage } from 'utils/route'
+import { profilePage, trackPage, TRENDING_PAGE } from 'utils/route'
 import Header from 'components/general/header/desktop/Header'
 import Page from 'components/general/Page'
 import TracksTable, { alphaSortFn } from 'components/tracks-table/TracksTable'
@@ -244,6 +244,12 @@ export class ArtistDashboardPage extends Component<
   componentDidMount() {
     this.props.fetchDashboard()
     TotalPlaysChart.preload()
+  }
+
+  componentDidUpdate() {
+    if (!this.props.account?.is_creator) {
+      this.props.goToRoute(TRENDING_PAGE)
+    }
   }
 
   componentWillUnmount() {

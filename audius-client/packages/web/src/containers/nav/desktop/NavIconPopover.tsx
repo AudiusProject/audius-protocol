@@ -7,7 +7,10 @@ import {
 import IconPopup from 'components/general/IconPopup'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import React from 'react'
+import { getAccountIsCreator } from 'store/account/selectors'
+import { useSelector } from 'utils/reducer'
 import { AUDIO_PAGE, DASHBOARD_PAGE, SETTINGS_PAGE } from 'utils/route'
+import { removeNullable } from 'utils/typeUtils'
 import styles from './NavIconPopover.module.css'
 
 const messages = {
@@ -16,19 +19,27 @@ const messages = {
   audio: '$AUDIO & Rewards'
 }
 
+const useIsCreator = () => {
+  return useSelector(getAccountIsCreator)
+}
+
 const NavIconPopover = () => {
   const navigate = useNavigateToPage()
+  const isCreator = useIsCreator()
+
   const menuItems = [
     {
       text: messages.preferences,
       onClick: () => navigate(SETTINGS_PAGE),
       icon: <IconSettings />
     },
-    {
-      text: messages.dashboard,
-      onClick: () => navigate(DASHBOARD_PAGE),
-      icon: <IconDashboard />
-    },
+    isCreator
+      ? {
+          text: messages.dashboard,
+          onClick: () => navigate(DASHBOARD_PAGE),
+          icon: <IconDashboard />
+        }
+      : null,
     {
       text: messages.audio,
       onClick: () => navigate(AUDIO_PAGE),
@@ -36,7 +47,8 @@ const NavIconPopover = () => {
       menuIconClassName: styles.crownIcon,
       icon: <IconCrown />
     }
-  ]
+  ].filter(removeNullable)
+
   return (
     <div className={styles.headerIconWrapper}>
       <IconPopup

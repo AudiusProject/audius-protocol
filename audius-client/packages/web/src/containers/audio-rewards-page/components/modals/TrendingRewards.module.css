@@ -102,6 +102,7 @@
   text-decoration: underline;
   transition: all .07s ease-in-out;
   user-select: none;
+  cursor: pointer;
 }
 
 .terms:hover {
