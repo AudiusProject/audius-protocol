@@ -53,7 +53,7 @@ commands:
 
 jobs:
   init:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     steps:
@@ -70,7 +70,7 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - dependency-cache-
 
-      - run: rm -rf /home/circleci/audius-dapp/node_modules/websocket/.git
+      - run: rm -rf /home/circleci/audius-client/node_modules/websocket/.git
 
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > .npmrc
 
@@ -104,7 +104,7 @@ jobs:
             - storybook-static
 
   build-demo:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     resource_class: large
@@ -121,7 +121,7 @@ jobs:
             - build-demo
 
   build-staging:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     resource_class: large
@@ -138,7 +138,7 @@ jobs:
             - build-staging
 
   build-mobile-staging:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     resource_class: large
@@ -155,7 +155,7 @@ jobs:
             - build-mobile-staging
 
   build-ci:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     resource_class: large
@@ -208,7 +208,7 @@ jobs:
             npm run test:ci
 
   build-production:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     resource_class: large
@@ -225,7 +225,7 @@ jobs:
             - build-production
 
   build-mobile-production:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     resource_class: large
@@ -242,7 +242,7 @@ jobs:
             - build-mobile-production
 
   deploy-demo:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -259,7 +259,7 @@ jobs:
           comment: Preview this change https://frontend-demo.audius.co/${CIRCLE_BRANCH}
 
   deploy-staging-s3:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -276,7 +276,7 @@ jobs:
             aws s3 cp ./resources/apple-app-site-association s3://staging.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
 
   deploy-staging-cloudflare:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     steps:
@@ -301,7 +301,7 @@ jobs:
             npx wrangler publish --env staging
 
   deploy-mobile-staging:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -315,7 +315,7 @@ jobs:
           command: aws s3 sync build-mobile-staging s3://audius-mobile-staging/build --delete
 
   deploy-release:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -333,7 +333,7 @@ jobs:
             aws s3 cp ./resources/apple-app-site-association s3://release.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
 
   deploy-production-s3:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -357,7 +357,7 @@ jobs:
           command: aws cloudfront create-invalidation --distribution-id E1ZJ9Z971FJQJ8 --paths "/*"
 
   deploy-production-cloudflare:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     steps:
@@ -383,7 +383,7 @@ jobs:
             npx wrangler publish --env production
 
   deploy-sentry-sourcemaps:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
     steps:
@@ -398,16 +398,16 @@ jobs:
           command: npm install @sentry/cli
       - run:
           name: cut-sentry-release
-          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-dapp new ${CIRCLE_SHA1}
+          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client new ${CIRCLE_SHA1}
       - run:
           name: upload-sourcemaps
-          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-dapp files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production
+          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production
       - run:
           name: finalize-release
-          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-dapp finalize ${CIRCLE_SHA1}
+          command: node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client finalize ${CIRCLE_SHA1}
 
   deploy-mobile-production:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -421,7 +421,7 @@ jobs:
           command: aws s3 sync build-mobile-production s3://audius-mobile/build --delete
 
   deploy-storybook:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: circleci/python:2.7-jessie
     steps:
@@ -435,7 +435,7 @@ jobs:
           command: aws s3 sync storybook-static s3://storybook.audius.co --delete
 
   dist-mac-staging:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     macos: # Run on osx so dmg can be created and signed.
       xcode: "10.2.1"
     steps:
@@ -448,7 +448,7 @@ jobs:
           command: npm run dist:mac-publish
 
   dist-win-staging:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: electronuserland/builder:wine-mono
     steps:
@@ -461,7 +461,7 @@ jobs:
           command: npm run dist:win-publish
 
   dist-linux-staging:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: electronuserland/builder
     steps:
@@ -474,7 +474,7 @@ jobs:
           command: npm run dist:linux-publish
 
   dist-mac-production:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     macos: # Run on osx so dmg can be created and signed.
       xcode: "10.2.1"
     steps:
@@ -487,7 +487,7 @@ jobs:
           command: npm run dist:mac-publish-production
 
   dist-win-production:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: electronuserland/builder:wine-mono
     steps:
@@ -500,7 +500,7 @@ jobs:
           command: npm run dist:win-publish-production
 
   dist-linux-production:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: electronuserland/builder
     steps:
@@ -513,7 +513,7 @@ jobs:
           command: npm run dist:linux-publish-production
 
   publish-github-release:
-    working_directory: ~/audius-dapp
+    working_directory: ~/audius-client
     docker:
       - image: cibuilds/github:0.10
     steps:

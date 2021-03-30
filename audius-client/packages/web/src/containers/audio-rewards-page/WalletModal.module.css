@@ -11,6 +11,10 @@
   align-items: center;
 }
 
+.mobile .modalContainer {
+  width: 100%;
+}
+
 .title {
   font-weight: 800;
   font-size: 16px;
@@ -37,4 +41,8 @@
 
 .titleWrapper path {
   fill: var(--neutral-light-4);
+}
+
+.discordDrawerTitle {
+  margin-top: 24px;
 }

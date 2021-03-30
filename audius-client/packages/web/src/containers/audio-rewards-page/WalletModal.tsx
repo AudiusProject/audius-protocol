@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Modal, IconDiscord } from '@audius/stems'
+import { IconDiscord } from '@audius/stems'
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { useDispatch } from 'react-redux'
@@ -36,6 +36,9 @@ import ErrorBody from './components/ErrorBody'
 import styles from './WalletModal.module.css'
 import SendingModalBody from './components/SendingModalBody'
 import DiscordModalBody from './components/DiscordModalBody'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import ModalDrawer from './components/modals/ModalDrawer'
+import { isMobile } from 'utils/clientUtil'
 
 const DISCORD_URL = 'https://discord.com/invite/kZkT9ZK'
 
@@ -99,7 +102,9 @@ const titlesMap = {
     ),
     ERROR: messages.sendError
   },
-  DISCORD: (
+  DISCORD: isMobile() ? (
+    <div className={styles.discordDrawerTitle}>{messages.discord}</div>
+  ) : (
     <TitleWrapper label={messages.discord}>
       <IconDiscord />
     </TitleWrapper>
@@ -290,8 +295,10 @@ const WalletModal = () => {
 
   const allowDismiss = shouldAllowDismiss(modalState)
 
+  const wm = useWithMobileStyle(styles.mobile)
+
   return (
-    <Modal
+    <ModalDrawer
       isOpen={modalVisible}
       onClose={onClose}
       bodyClassName={styles.modalBody}
@@ -300,8 +307,9 @@ const WalletModal = () => {
       showDismissButton={allowDismiss}
       dismissOnClickOutside={allowDismiss}
       contentHorizontalPadding={24}
+      useGradientTitle={false}
     >
-      <div className={styles.modalContainer}>
+      <div className={wm(styles.modalContainer)}>
         <ModalContent
           modalState={modalState}
           onInputSendData={onInputSendData}
@@ -310,7 +318,7 @@ const WalletModal = () => {
           onLaunchDiscord={onLaunchDiscord}
         />
       </div>
-    </Modal>
+    </ModalDrawer>
   )
 }
 
