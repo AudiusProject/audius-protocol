@@ -2,10 +2,12 @@ import { Modal, ModalProps } from '@audius/stems'
 import React from 'react'
 import { isMobile } from 'utils/clientUtil'
 import Drawer, { DrawerProps } from 'components/drawer/Drawer'
+import cn from 'classnames'
 
 import styles from './ModalDrawer.module.css'
 
-type ModalDrawerProps = ModalProps & DrawerProps
+type ModalDrawerProps = ModalProps &
+  DrawerProps & { useGradientTitle?: boolean }
 
 /**
  * Either a modal or a drawer.
@@ -32,6 +34,8 @@ const ModalDrawer = (props: ModalDrawerProps) => {
     )
   }
 
+  const gradientTitle = props.useGradientTitle ?? true
+
   return (
     <Modal
       isOpen={props.isOpen}
@@ -39,9 +43,11 @@ const ModalDrawer = (props: ModalDrawerProps) => {
       showTitleHeader
       showDismissButton
       title={props.title}
-      titleClassName={styles.modalTitle}
-      headerContainerClassName={styles.modalHeader}
-      bodyClassName={styles.modalBody}
+      titleClassName={gradientTitle ? styles.modalTitle : undefined}
+      headerContainerClassName={gradientTitle ? styles.modalHeader : undefined}
+      bodyClassName={cn(styles.modalBody, {
+        [styles.gradientHeader]: gradientTitle
+      })}
     >
       {props.children}
     </Modal>
