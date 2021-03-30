@@ -1,19 +1,13 @@
-const Redis = require('ioredis')
 const request = require('request')
 const config = require('../config.js')
 const models = require('../models')
 const txRelay = require('../relay/txRelay')
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 
-const INSTAGRAM_URL_POLLING_FREQ_MS = 500
 const getInstagramURL = (username) => {
   const instagramProfileUrl = config.get('instagramProfileUrl') || 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
   return instagramProfileUrl.replace('%USERNAME%', username)
-}
-const getInstagramProfileRedisKey = (username) => {
-  return `instagramProfile:${username}`
 }
 
 /**
@@ -22,56 +16,19 @@ const getInstagramProfileRedisKey = (username) => {
  * https://www.instagram.com/developer/authentication/
  */
 module.exports = function (app) {
-  const instagramQueue = []
-  const doInstagramProfileFetching = () => {
-    setInterval(async () => {
-      if (instagramQueue.length > 0) {
-        const username = instagramQueue.shift()
-        try {
-          const res = await doRequest(getInstagramURL(username))
-          const json = JSON.parse(res)
-          if (json.graphql.user.full_name) {
-            await redisClient.set(getInstagramProfileRedisKey(username), res, 'EX', 60 * 60 * 24)
-          } else {
-            throw new Error(`Failed to fetch instagram profile for ${username}`)
-          }
-        } catch (e) {
-          await redisClient.set(getInstagramProfileRedisKey(username), 'error', 'EX', 60)
-        }
-      }
-    }, INSTAGRAM_URL_POLLING_FREQ_MS)
-  }
-  doInstagramProfileFetching()
-
   app.get('/instagram/profile', handleResponse(async (req, res, next) => {
     const username = req.query.username
-    const maxAttempts = req.query.maxAttempts || 100
+
     if (!username) {
       return errorResponseBadRequest('Missing username parameter')
     }
-    const redis = req.app.get('redis')
-
-    const key = getInstagramProfileRedisKey(username)
-    let value = await redis.get(key)
-    if (value === 'error') {
+    try {
+      const res = await doRequest(getInstagramURL(username))
+      const json = JSON.parse(res)
+      return successResponse(json)
+    } catch (e) {
       return errorResponseServerError(`Failed to fetch instagram profile for ${username}`)
     }
-    if (!value) {
-      instagramQueue.push(username)
-      req.logger.info(`Instagram queue (${instagramQueue.length}): ${instagramQueue}`)
-    }
-    let attempts = 0
-    while (!value && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      value = await redis.get(key)
-      attempts += 1
-    }
-
-    if (value) {
-      const json = JSON.parse(value)
-      return successResponse(json)
-    }
-    return errorResponseServerError(`Failed to fetch instagram profile for ${username}`)
   }))
 
   app.post('/instagram', handleResponse(async (req, res, next) => {
