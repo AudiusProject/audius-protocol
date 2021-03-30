@@ -9,8 +9,6 @@ import { isMobile } from 'utils/clientUtil'
 
 const TOKEN_ANIMATION_URL =
   'https://d1ne8ucs302cxl.cloudfront.net/animations/spinnytoken.mp4'
-const TOKEN_ANIMATION_DARK_URL =
-  'https://d1ne8ucs302cxl.cloudfront.net/animations/spinnytoken_dark.mp4'
 
 const messages = {
   whatIsAudio: 'WHAT IS $AUDIO',
@@ -57,18 +55,19 @@ export const ExplainerTile = ({ className }: { className?: string }) => {
 
   const isDarkMode = getIsDarkMode()
   const isMatrixMode = getTheme() === Theme.MATRIX
+  const showSvgToken = isDarkMode || isMatrixMode || isMobile()
 
   const wm = useWithMobileStyle(styles.mobile)
   return (
     <Tile className={wm([styles.explainerTile, className])}>
       <>
         <div className={wm(styles.tokenHero)}>
-          {isMatrixMode || isMobile() ? (
+          {showSvgToken ? (
             <img src={TokenStill} alt='' />
           ) : (
             <video
               autoPlay
-              src={isDarkMode ? TOKEN_ANIMATION_DARK_URL : TOKEN_ANIMATION_URL}
+              src={TOKEN_ANIMATION_URL}
               height={200}
               width={200}
               onMouseOver={() => setMouseOver(true)}

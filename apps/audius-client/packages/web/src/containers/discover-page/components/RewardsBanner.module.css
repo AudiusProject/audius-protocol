@@ -7,7 +7,7 @@
   background: var(--page-header-gradient);
   color: var(--static-white);
   align-items: center;
-  transition: all var(--quick);
+  transition: all 180ms;
   cursor: pointer;
   transform: scale3d(1, 1, 1);
 }
@@ -38,12 +38,12 @@
 
 .iconCrown {
   position: relative;
-  top: 1px;
   margin-right: 5px;
 }
 
 .iconCrown svg {
   width: 22px;
+  height: 15px;
 }
 
 .rewardsText.mobile {
