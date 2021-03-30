@@ -12,7 +12,7 @@
   max-height: 90vh;
 }
 
-.modalBody path {
+.modalBody.gradientHeader path {
   fill: var(--static-white);
 }
 

@@ -11,6 +11,10 @@
   justify-content: space-between;
 }
 
+.mobile.container {
+  min-width: unset;
+}
+
 .label {
   font-weight: var(--font-bold);
   font-size: var(--font-m);
