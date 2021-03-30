@@ -14,7 +14,7 @@ import { removeNullable } from 'utils/typeUtils'
 import styles from './NavIconPopover.module.css'
 
 const messages = {
-  preferences: 'Preferences',
+  settings: 'Settings',
   dashboard: 'Artist Dashboard',
   audio: '$AUDIO & Rewards'
 }
@@ -29,7 +29,7 @@ const NavIconPopover = () => {
 
   const menuItems = [
     {
-      text: messages.preferences,
+      text: messages.settings,
       onClick: () => navigate(SETTINGS_PAGE),
       icon: <IconSettings />
     },
