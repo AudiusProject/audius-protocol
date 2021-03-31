@@ -1,3 +1,13 @@
+.scrollContainer {
+  overflow-y: scroll;
+  max-height: calc(95vh - 64px);
+}
+
+.scrollContainer.mobile {
+  overflow-y: unset;
+  max-height: unset;
+}
+
 .container {
   display: flex;
   flex-direction: column;
