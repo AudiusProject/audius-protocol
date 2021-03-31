@@ -1,16 +1,16 @@
 
 Mapping <spId - {endpoint, number of times selected as a secondary}>
 {
-  "1": {
-    "endpoint": "http://cn1_creator-node_1:4000",
-    "selected": 1
-  },
-  "2": {
-    "endpoint": "http://cn2_creator-node_1:4001",
-    "selected": 2
-  },
   "3": {
-    "endpoint": "http://cn3_creator-node_1:4002",
-    "selected": 1
+    "endpoint": "https://creatornode.staging.audius.co",
+    "selected": 5
+  },
+  "4": {
+    "endpoint": "https://creatornode3.staging.audius.co",
+    "selected": 5
+  },
+  "5": {
+    "endpoint": "https://creatornode2.staging.audius.co",
+    "selected": 4
   }
 }
