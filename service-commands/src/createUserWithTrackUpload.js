@@ -1,10 +1,13 @@
 const { _ } = require('lodash')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
+const fetch = require('node-fetch')
+const assert = require('assert')
+const util = require('util')
+const streamPipeline = util.promisify(require('stream').pipeline)
+
 const AudiusLibs = require('@audius/libs')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
-const { Services } = require('@audius/libs/src/api/base')
-const { getRandomTrackMetadata, getRandomTrackFilePath } = require('@audius/service-commands/scripts/util')
 
 const ethContractsConfig = require('../../libs/eth-contracts/config.json')
 const dataContractsConfig = require('../../libs/data-contracts/config.json')
@@ -17,11 +20,24 @@ const ETH_REGISTRY_ADDRESS = ethContractsConfig.registryAddress
 const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
-const URSM_BOOTSTRAPPER_PRIVATE_KEY = '' // 9
+const TRACK_URLS = [
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Gipsy.mp3',
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/First+Rain.mp3',
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Miracle.mp3',
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Ice+Cream.mp3',
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Street+Tables+Cafe.mp3',
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Cowboy+Tears.mp3',
+  'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Happy.mp3'
+]
 
 const explicitPrimary = 'http://cn1_creator-node_1:4000'
+let userMetadata = {}
+let trackMetadata = {}
+let trackPath = ''
 
 let AudiusLibsInstance
+
+// =~*=~*=~*=~*=~*=~*=~*=~*=~*=~* START UTIL =~*=~*=~*=~*=~*=~*=~*=~*=~*=~*
 
 /**
  * Waits input ms
@@ -29,6 +45,7 @@ let AudiusLibsInstance
  * @returns
  */
 const wait = async milliseconds => {
+  console.log(`Waiting ${milliseconds}ms...`)
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
@@ -71,76 +88,78 @@ const getRandomUser = () => {
   }
 }
 
-async function createUser () {
-  const randomUserMetadata = getRandomUser()
-  console.log('User metadata:', randomUserMetadata)
-  const { email, password, profilePictureFile, coverPhotoFile } = randomUserMetadata
-  const signUpResp = await signUp({
-    email,
-    password,
-    metadata: randomUserMetadata,
-    profilePictureFile,
-    coverPhotoFile
-  })
-
-  return signUpResp
+/**
+ * Generates a random track.
+ */
+ const getRandomTrackMetadata = userId => {
+  return {
+    owner_id: userId,
+    cover_art: null,
+    cover_art_sizes: null,
+    title: `title_${r6()}`,
+    length: 0,
+    cover_art: null,
+    tags: '',
+    genre: 'SomeGenre',
+    mood: 'Dope',
+    credits_splits: '',
+    create_date: '',
+    release_date: '',
+    file_type: '',
+    description: `description_${r6()}`,
+    license: '',
+    isrc: '',
+    iswc: '',
+    track_segments: []
+  }
 }
 
-async function uploadTrack (userId) {
-  const trackPath = await getRandomTrackFilePath(path.resolve('./'))
-  const trackFile = fs.createReadStream(trackPath)
+/**
+ * Randomly selects url from TRACK_URLS, downloads track file from url to temp local storage, & returns its file path
+ *
+ * @notice this depends on TRACK_URLS pointing to valid urls in S3. Ideally we'd be able to
+ *    randomly select any file from the parent folder.
+ */
+ const getRandomTrackFilePath = async localDirPath => {
+  if (!fs.existsSync(localDirPath)) {
+    fs.mkdirSync(localDirPath)
+  }
 
-  const { trackId, error } = await AudiusLibsInstance.Track.uploadTrack(
-    trackFile,
-    null /* image */,
-    getRandomTrackMetadata(userId),
-    () => {} /* on progress */
-  )
+  const trackURL = _.sample(TRACK_URLS)
+  const targetFilePath = path.resolve(localDirPath, `${genRandomString(6)}.mp3`)
 
-  return { trackId, error }
+  const response = await fetch(trackURL)
+  if (!response.ok) {
+    throw new Error(`unexpected response ${response.statusText}`)
+  }
+
+  try {
+    await fs.ensureDir(localDirPath)
+    await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
+
+    console.info(`Wrote track to temp local storage at ${targetFilePath}`)
+  } catch (e) {
+    const errorMsg = `Error with writing track to path ${localDirPath}`
+    console.error(errorMsg, e)
+    throw new Error(`${errorMsg}: ${e.message}`)
+  }
+
+  // Return full file path
+  return targetFilePath
 }
 
-const assignExplicitPrimaryAndRandomSecondaries = async () => {
-  const user = AudiusLibsInstance.userStateManager.getCurrentUser()
-  if (!user) { throw new Error('No current user') }
-
-  const newMetadata = { ...user }
-
-  // Randomly select 2 secondaries
-  // NOTE: there must be at least 3 CNs up, not including the explicitPrimary for this to work
-  const { secondaries } = await AudiusLibsInstance.ServiceProvider.autoSelectCreatorNodes({
-    performSyncCheck: false,
-    blacklist: new Set([explicitPrimary]) // do not include primary into rset
-  })
-
-  // Explicitly set the primary as param input
-  const newContentNodeEndpoints = CreatorNode.buildEndpoint(explicitPrimary, secondaries)
-  await AudiusLibsInstance.creatorNode.setEndpoint(explicitPrimary)
-
-  // Update metadata of new creator_node_endpoint
-  newMetadata.creator_node_endpoint = newContentNodeEndpoints
-
-  // Update metadata in CN and on chain of newly assigned replica set
-  await AudiusLibsInstance.User.updateAndUploadMetadata({
-    newMetadata,
-    userId: newMetadata.user_id
-  })
-}
-
+// =~*=~*=~*=~*=~*=~*=~*=~*=~*=~* END UTIL =~*=~*=~*=~*=~*=~*=~*=~*=~*=~*
 const configureAndInitLibs = async () => {
   const audiusLibsConfig = {
     ethWeb3Config: AudiusLibs.configEthWeb3(
       ETH_TOKEN_ADDRESS,
       ETH_REGISTRY_ADDRESS,
-      ETH_PROVIDER_ENDPOINT
-
+      ETH_PROVIDER_ENDPOINT,
+      ETH_OWNER_WALLET
     ),
-
-    // make dis external
     web3Config: AudiusLibs.configInternalWeb3(
       DATA_CONTRACTS_REGISTRY_ADDRESS,
       DATA_CONTRACTS_PROVIDER_ENDPOINT
-      // URSM_BOOTSTRAPPER_PRIVATE_KEY // my key or THE ursm KEY
     ),
     creatorNodeConfig: AudiusLibs.configCreatorNode(USER_METADATA_ENDPOINT),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set([DISCOVERY_NODE_ENDPOINT])),
@@ -154,14 +173,8 @@ const configureAndInitLibs = async () => {
   try {
     await audiusLibs.init()
   } catch (e) {
-    if (e.message.includes('socket hang up')) {
-      await wait(500)
-      console.log('socket hung up during libs init.. retrying')
-      return configureAndInitLibs()
-    } else {
-      console.error('Couldn\'t init libs', e)
-      throw e
-    }
+    console.error('Couldn\'t init libs', e)
+    throw e
   }
 
   AudiusLibsInstance = audiusLibs
@@ -169,73 +182,116 @@ const configureAndInitLibs = async () => {
   return audiusLibs
 }
 
-const signUp = async ({
-  email,
-  password,
-  metadata,
-  profilePictureFile = null,
-  coverPhotoFile = null,
-  hasWallet = false,
-  host = null
-}) => {
-  const phases = {
-    ADD_REPLICA_SET: 'ADD_REPLICA_SET',
-    CREATE_USER_RECORD: 'CREATE_USER_RECORD',
-    HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
-    UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES', // do we want this too?
-    ADD_USER: 'ADD_USER'
-  }
-  let phase = ''
-  let userId
+async function createUser () {
+  userMetadata = getRandomUser()
+  console.log('Creating user with metadata:\n', userMetadata)
+  const { email, password, profilePictureFile, coverPhotoFile } = userMetadata
+  const signUpResp = await AudiusLibsInstance.Account.signUp(
+    email, password, userMetadata/*, profilePictureFile, coverPhotoFile */
+  )
 
+  wait(5000) // wait 5 sec indexing
+
+  // Option 1: Modify user state in userStateManager and then call this
+  // todo: need to update is_creator flag
+  // await AudiusLibsInstance.Account.updateCreatorNodeEndpoint(explicitPrimary)
+
+  // Option 2: c&p updateCreatorNodeEndpoint code and slightly modify it
+  console.log(`Updating replica set with primary ${explicitPrimary}...`)
+  let user = { ...AudiusLibsInstance.userStateManager.getCurrentUser() }
+  await AudiusLibsInstance.creatorNode.setEndpoint(explicitPrimary)
+  const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
+    explicitPrimary, 
+    CreatorNode.getSecondaries(user.creator_node_endpoint)
+  )
+  user.creator_node_endpoint = newCreatorNodeEndpoint
+  await AudiusLibsInstance.User.updateCreator(user.user_id, user)
+
+  wait(30000) // wait 30 sec indexing and sync(?)
+
+  return signUpResp
+}
+
+async function uploadTrack (userId) {
+  trackMetadata = getRandomTrackMetadata(userId)
+  console.log(`Uploading track for ${userId} with metadata:\n`, trackMetadata)
+  trackPath = await getRandomTrackFilePath(path.resolve('./'))
+  const trackFile = fs.createReadStream(trackPath)
+  const { trackId, error } = await AudiusLibsInstance.Track.uploadTrack(
+    trackFile,
+    null /* image */,
+    trackMetadata,
+    () => {} /* on progress */
+  )
+
+  // Once uploaded, remove track file
+  await fs.remove(TEMP_STORAGE_PATH)
+
+  wait(5000) // wait 5s for indexing
+
+  return { trackMetadata, trackId, error }
+}
+
+const checkUserState = async ({userId, expectedUserMetadata, trackId, expectedTrackMetadata}) => {
+  await wait(5000) // Wait 1 indexing cycle
+
+  let indexedUser
   try {
-    AudiusLibsInstance.User.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
-
-    if (AudiusLibsInstance.web3Manager.web3IsExternal()) {
-      phase = phases.CREATE_USER_RECORD
-      await AudiusLibsInstance.identityService.createUserRecord(email, AudiusLibsInstance.web3Manager.getWalletAddress())
-    } else {
-      AudiusLibsInstance.User.REQUIRES(Services.HEDGEHOG)
-      // If an owner wallet already exists, don't try to recreate it
-      if (!hasWallet) {
-        phase = phases.HEDGEHOG_SIGNUP
-        const ownerWallet = await AudiusLibsInstance.hedgehog.signUp(email, password)
-        await AudiusLibsInstance.web3Manager.setOwnerWallet(ownerWallet)
-        await AudiusLibsInstance.Account.generateRecoveryLink({ handle: metadata.handle, host })
-      }
-    }
-
-    // Add user to chain
-    phase = phases.ADD_USER
-    userId = await AudiusLibsInstance.User.addUser(metadata)
-
-    // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in AudiusLibsInstance order)
-    phase = phases.ADD_REPLICA_SET
-    metadata = await assignExplicitPrimaryAndRandomSecondaries({ userId })
-
-    // TODO: Write to URSM contract (after deploy)
-    return { userId, error: false }
+    indexedUser = (await AudiusLibsInstance.discoveryProvider.getUsers(1, 0, [userId]))[0]
   } catch (e) {
-    return { error: e.message, phase }
+    throw new Error(`userId=${userId} not indexed by Discovery Node.`)
   }
+
+  assert(CreatorNode.getPrimary(indexedUser.creator_node_endpoint) === explicitPrimary)
+  assert(expectedUserMetadata.handle === indexedUser.handle)
+  assert(expectedUserMetadata.profile_picture_sizes === indexedUser.profile_picture_sizes)
+  assert(expectedUserMetadata.cover_photo_sizes === indexedUser.cover_photo_sizes)
+  assert(indexedUser.track_count === 1)
+  
+  let indexedTrack
+  try {
+    indexedTrack = (await AudiusLibsInstance.discoveryProvider.getTracks(1, 0, [trackId]))[0]
+  } catch (e) {
+    throw new Error(`userId=${userId}'s track with trackId=${trackId} not indexed by Discovery Node.`)
+  }
+
+  assert(expectedTrackMetadata.owner_id === indexedTrack.owner_id)
+  assert(expectedTrackMetadata.title === indexedTrack.title)
 }
 
 const run = async () => {
-  await configureAndInitLibs()
+  try {
+    await configureAndInitLibs()
 
-  const signUpResp = await createUser()
-  if (signUpResp.error) {
-    console.error(`Could not create user. Failed at phase ${signUpResp.phase}\n`, signUpResp.error)
-    return
+    const signUpResp = await createUser()
+    if (signUpResp.error) {
+      throw new Error(`Could not create user. Failed at phase ${signUpResp.phase}\n`, signUpResp.error)
+    }
+  
+    const uploadResp = await uploadTrack(signUpResp.userId)
+    if (uploadResp.error) {
+      throw new Error('Could not upload track: ', uploadResp.error)
+    }
+  
+    await checkUserState({
+      userId: signUpResp.userId,
+      expectedUserMetadata: userMetadata,
+      expectedTrackMetadata: trackMetadata,
+      trackId: uploadResp.trackId
+    })
+
+    console.log(`Successfully created user=${signUpResp.userId} and uploaded trackId=${uploadResp.trackId}`)
+    process.exit()
+  } catch (e) {
+    console.error('Could not create and upload track:\n', e)
+    process.exit(1)
   }
-
-  const uploadResp = await uploadTrack(signUpResp.userId)
-  if (uploadResp.error) {
-    console.error('Could not upload track: ', uploadResp.error)
-    return
-  }
-
-  console.log(`Successfully created user=${signUpResp.userId} and uploaded trackId=${uploadResp.trackId}`)
 }
 
 run()
+
+
+/**
+ *  shortterm: env *  var to turn off rehydrate
+ * longterm: spin up CN, call rehydrate until ipfs fails, then optimize why fails
+ */
