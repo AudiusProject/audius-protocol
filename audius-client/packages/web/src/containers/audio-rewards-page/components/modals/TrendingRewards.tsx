@@ -116,50 +116,52 @@ const TrendingRewardsBody = ({
   const tweetId = useTweetId(modalType)
 
   return (
-    <div className={wm(styles.container)}>
-      <div className={styles.sliderContainer}>
-        <TabSlider
-          options={tabOptions}
-          selected={modalType}
-          onSelectOption={option =>
-            setModalType(option as TrendingRewardsModalType)
-          }
-          textClassName={styles.slider}
-          activeTextClassName={styles.activeSlider}
-        />
-      </div>
-      <div className={styles.titles}>
-        <span className={styles.title}>{textMap[modalType].title}</span>
-        <span className={styles.subtitle}>{messages.winners}</span>
-      </div>
-      <div className={styles.insetRegion}>
-        <span className={styles.lastWeek}>{messages.lastWeek}</span>
-        <div className={styles.embedWrapper}>
-          {showSpinner && <LoadingSpinner className={styles.spinner} />}
-          <TwitterTweetEmbed
-            // Refresh it when we toggle
-            key={`twitter-${modalType}`}
-            tweetId={tweetId}
-            onLoad={() => setShowSpinner(false)}
-            options={{
-              theme: shouldUseDarkTwitter() ? 'dark' : 'light',
-              cards: 'none',
-              conversation: 'none',
-              hide_thread: true,
-              width: 554,
-              height: 390
-            }}
+    <div className={styles.scrollContainer}>
+      <div className={wm(styles.container)}>
+        <div className={styles.sliderContainer}>
+          <TabSlider
+            options={tabOptions}
+            selected={modalType}
+            onSelectOption={option =>
+              setModalType(option as TrendingRewardsModalType)
+            }
+            textClassName={styles.slider}
+            activeTextClassName={styles.activeSlider}
           />
         </div>
+        <div className={styles.titles}>
+          <span className={styles.title}>{textMap[modalType].title}</span>
+          <span className={styles.subtitle}>{messages.winners}</span>
+        </div>
+        <div className={styles.insetRegion}>
+          <span className={styles.lastWeek}>{messages.lastWeek}</span>
+          <div className={styles.embedWrapper}>
+            {showSpinner && <LoadingSpinner className={styles.spinner} />}
+            <TwitterTweetEmbed
+              // Refresh it when we toggle
+              key={`twitter-${modalType}`}
+              tweetId={tweetId}
+              onLoad={() => setShowSpinner(false)}
+              options={{
+                theme: shouldUseDarkTwitter() ? 'dark' : 'light',
+                cards: 'none',
+                conversation: 'none',
+                hide_thread: true,
+                width: 554,
+                height: 390
+              }}
+            />
+          </div>
+        </div>
+        <ButtonWithArrow
+          text={textMap[modalType].button}
+          onClick={onButtonClick}
+          className={styles.button}
+        />
+        <span onClick={onClickToS} className={styles.terms}>
+          {messages.terms}
+        </span>
       </div>
-      <ButtonWithArrow
-        text={textMap[modalType].button}
-        onClick={onButtonClick}
-        className={styles.button}
-      />
-      <span onClick={onClickToS} className={styles.terms}>
-        {messages.terms}
-      </span>
     </div>
   )
 }
@@ -172,6 +174,7 @@ export const TrendingRewardsModal = () => {
       isOpen={isOpen}
       onClose={() => setOpen(false)}
       title={messages.modalTitle}
+      allowScroll
     >
       <TrendingRewardsBody dismissModal={() => setOpen(false)} />
     </ModalDrawer>
