@@ -349,7 +349,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_trending": {
                 "task": "index_trending",
-                "schedule": crontab(minute=0, hour="*")
+                "schedule": crontab(minute=15, hour="*")
             },
             "update_user_balances": {
                 "task": "update_user_balances",
