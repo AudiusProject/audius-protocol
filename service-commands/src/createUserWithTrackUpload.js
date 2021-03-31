@@ -177,6 +177,9 @@ const configureAndInitLibs = async () => {
     throw e
   }
 
+  // Clears local storage in case there is any pre-existing user state
+  audiusLibs.userStateManager.clearUser()
+
   AudiusLibsInstance = audiusLibs
 
   return audiusLibs
@@ -224,8 +227,8 @@ async function uploadTrack (userId) {
     () => {} /* on progress */
   )
 
-  // Once uploaded, remove track file
-  await fs.remove(TEMP_STORAGE_PATH)
+  // Once uploaded, remove the track file
+  await fs.remove(path.resolve(trackPath))
 
   wait(5000) // wait 5s for indexing
 
