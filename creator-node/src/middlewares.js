@@ -6,6 +6,7 @@ const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { serviceRegistry } = require('./serviceRegistry')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
+const { SyncType } = require('./snapbackSM.js')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -143,6 +144,8 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - TODO move this out of middlewares to Services layer
  */
 async function triggerSecondarySyncs (req) {
+  const { snapbackSM } = serviceRegistry
+
   if (config.get('snapbackDevModeEnabled')) {
     return
   }
@@ -153,12 +156,21 @@ async function triggerSecondarySyncs (req) {
     }
 
     const [primary, ...secondaries] = req.session.creatorNodeEndpoints
-    const { snapbackSM } = serviceRegistry
 
+    // Enqueue a manual sync for all secondaries
     await Promise.all(secondaries.map(async secondary => {
-      if (!secondary || !_isFQDN(secondary)) return
+      if (!secondary || !_isFQDN(secondary)) {
+        return
+      }
+
       const userWallet = req.session.wallet
-      await snapbackSM.enqueueManualSync({ userWallet, secondaryEndpoint: secondary, primaryEndpoint: primary })
+
+      await snapbackSM.enqueueSync({
+        userWallet,
+        secondaryEndpoint: secondary,
+        primaryEndpoint: primary,
+        syncType: SyncType.Manual
+      })
     }))
   } catch (e) {
     req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)

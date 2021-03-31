@@ -38,8 +38,9 @@ const tick = async (emitter, intervalSeconds, totalDurationSeconds) => {
  * tick events to specify interactions with the audius protocol.
  */
 class EmitterBasedTest {
-  constructor({ tickIntervalSeconds, testDurationSeconds }) {
+  constructor ({ tickIntervalSeconds, testDurationSeconds }) {
     this.emitter = new EventEmitter()
+    this.emitter.setMaxListeners(100)
     this.inFlightCount = 0
     this.isTicking = false
     this.tickIntervalSeconds = tickIntervalSeconds
@@ -56,7 +57,7 @@ class EmitterBasedTest {
     )
   }
 
-  emit(eventType, event) {
+  emit (eventType, event) {
     this.emitter.emit(eventType, event)
   }
 
@@ -64,7 +65,7 @@ class EmitterBasedTest {
    * Begin the test.
    * Returns when all inflight requests and ticks are completed.
    */
-  async start() {
+  async start () {
     logger.info('Beginning ticking.')
     this.isTicking = true
     await tick(this.emitter, this.tickIntervalSeconds, this.testDurationSeconds)
@@ -79,7 +80,7 @@ class EmitterBasedTest {
     logger.info('Test done.')
   }
 
-  registerOnRequestListener(listener) {
+  registerOnRequestListener (listener) {
     this.emitter.on(Event.REQUEST, request => {
       this.inFlightCount += 1
       logger.info(`Handling request: [${request.type}]]`)
@@ -88,7 +89,7 @@ class EmitterBasedTest {
     })
   }
 
-  registerOnResponseListener(listener) {
+  registerOnResponseListener (listener) {
     this.emitter.on(Event.RESPONSE, res => {
       this.inFlightCount -= 1
       logger.info(`Handling response: [${res.type}]`)
@@ -103,7 +104,7 @@ class EmitterBasedTest {
     })
   }
 
-  registerOnTickListener(listener) {
+  registerOnTickListener (listener) {
     this.emitter.on(Event.TICK, () => {
       listener(this.emit)
     })

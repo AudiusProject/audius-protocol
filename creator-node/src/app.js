@@ -37,6 +37,7 @@ app.use('/metadata', metadataReqLimiter)
 app.use('/image_upload', imageReqLimiter)
 app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
 app.use('/batch_cids_exist', batchCidsExistReqLimiter)
+app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
 app.use(getRateLimiterMiddleware())
 
 // import routes

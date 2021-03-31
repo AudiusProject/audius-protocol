@@ -145,7 +145,7 @@
   },
   "user-metadata-node": {
     "protocol": "http",
-    "host": "localhost",
+    "host": "cn-um_creator-node_1",
     "port": 4099,
     "up-um": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",
@@ -161,7 +161,7 @@
   },
   "identity-service": {
     "protocol": "http",
-    "host": "localhost",
+    "host": "audius-identity-service_identity-service_1",
     "port": 7000,
     "up": [
       "cd identity-service/; docker-compose -f compose/docker-compose.full.yml up --build -d",
@@ -179,7 +179,7 @@
   },
   "init-repos": {
     "up": [
-      ". scripts/init-repos.sh"
+      ". $PROTOCOL_DIR/service-commands/scripts/init-repos.sh"
     ]
   },
   "user-replica-set-manager": {
