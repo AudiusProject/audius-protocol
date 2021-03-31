@@ -25,13 +25,17 @@ def _get_aggregate_route_metrics_trailing_month(session):
     today = date.today()
     thirty_days_ago = today - timedelta(days=30)
 
-    unique_count = (
-        session.query(func.sum(AggregateDailyUniqueUsersMetrics.count))
+    counts = (
+        session.query(
+            func.sum(AggregateDailyUniqueUsersMetrics.count),
+            func.sum(AggregateDailyUniqueUsersMetrics.summed_count)
+        )
         .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
         .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
         .first()
     )
-    logger.info(f"trailing month unique count: {unique_count}")
+    logger.info(f"trailing month unique count: {counts[0]}")
+    logger.info(f"trailing month summed unique count: {counts[1]}")
 
     total_count = (
         session.query(func.sum(AggregateDailyTotalUsersMetrics.count))
@@ -42,7 +46,8 @@ def _get_aggregate_route_metrics_trailing_month(session):
     logger.info(f"trailing month total count: {total_count}")
 
     return {
-        'unique_count': unique_count[0],
+        'unique_count': counts[0],
+        'summed_unique_count': counts[1],
         'total_count': total_count[0]
     }
 

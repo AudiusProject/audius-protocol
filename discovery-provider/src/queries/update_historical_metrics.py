@@ -15,10 +15,12 @@ def update_historical_daily_route_metrics(db, metrics):
             )
             if day_unique_record:
                 day_unique_record.count = values['unique_count']
+                day_unique_record.summed_count = values['summed_unique_count']
             else:
                 day_unique_record = AggregateDailyUniqueUsersMetrics(
                     timestamp=day,
-                    count=values['unique_count']
+                    count=values['unique_count'],
+                    summed_count=values['summed_unique_count']
                 )
             session.add(day_unique_record)
 
@@ -46,10 +48,12 @@ def update_historical_monthly_route_metrics(db, metrics):
             )
             if month_unique_record:
                 month_unique_record.count = values['unique_count']
+                month_unique_record.summed_count = values['summed_unique_count']
             else:
                 month_unique_record = AggregateMonthlyUniqueUsersMetrics(
                     timestamp=month,
-                    count=values['unique_count']
+                    count=values['unique_count'],
+                    summed_count=values['summed_unique_count']
                 )
             session.add(month_unique_record)
 
