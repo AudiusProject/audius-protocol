@@ -453,7 +453,7 @@ const updateSingleUser = async (
     primaryId,
     secondaryIds
   )
-  console.dir(tx)
+  console.dir(tx, { depth: 5})
 }
 
 
