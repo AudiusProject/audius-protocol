@@ -292,9 +292,3 @@ const run = async () => {
 }
 
 run()
-
-
-/**
- *  shortterm: env *  var to turn off rehydrate
- * longterm: spin up CN, call rehydrate until ipfs fails, then optimize why fails
- */
