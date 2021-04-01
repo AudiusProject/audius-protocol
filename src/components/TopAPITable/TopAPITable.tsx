@@ -42,7 +42,7 @@ const TopAPITable: React.FC<TopAPITableProps> = ({
 }: TopAPITableProps) => {
   const isMobile = useIsMobile()
   const { topApps } = useTopApps(Bucket.ALL_TIME)
-  let error = true
+  let error = false
   let displayData: { name: string, totalRequests: number, rank: number }[] | null = null
   if (topApps === MetricError.ERROR) {
     error = true
