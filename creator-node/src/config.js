@@ -445,10 +445,10 @@ const config = convict({
     env: 'pinAddCIDs',
     default: ''
   },
-  disableRehydrate: {
+  enableRehydrate: {
     doc: 'Flag to enable or disable rehydrate',
     format: Boolean,
-    env: 'disableRehydrate',
+    env: 'enableRehydrate',
     default: true
   }
 

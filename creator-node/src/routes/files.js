@@ -38,7 +38,7 @@ const { promisify } = require('util')
 
 const fsStat = promisify(fs.stat)
 
-const disableRehydrate = config.get('disableRehydrate')
+const enableRehydrate = config.get('enableRehydrate')
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
@@ -158,7 +158,7 @@ const getCID = async (req, res) => {
 
   try {
     // Add a rehydration task to the queue to be processed in the background
-    if (!disableRehydrate) {
+    if (enableRehydrate) {
       RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(CID, storagePath, { logContext: req.logContext })
     }
     // Attempt to stream file to client.
@@ -280,7 +280,7 @@ const getDirCID = async (req, res) => {
 
   try {
     // Add rehydrate task to queue to be processed in background
-    if (!disableRehydrate) {
+    if (enableRehydrate) {
       RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(dirCID, parentStoragePath, { logContext: req.logContext }, filename)
     }
     // Attempt to stream file to client.
