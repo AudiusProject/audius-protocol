@@ -57,8 +57,13 @@ const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 // recording metrics, setting user data
 function* onFetchAccount(account) {
   if (account && account.handle) {
-    yield put(identify(account.handle))
-    setSentryUser(account)
+    // Set analytics user context
+    const traits = {
+      isVerified: account.is_verified,
+      trackCount: account.track_count
+    }
+    yield put(identify(account.handle, traits))
+    setSentryUser(account, traits)
   }
 
   if (shouldRequestBrowserPermission()) {

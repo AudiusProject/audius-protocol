@@ -3,6 +3,8 @@ import {
   SetAnalyticsUser,
   TrackAnalyticsEvent
 } from 'services/native-mobile-interface/analytics'
+import { version } from '../../../../package.json'
+
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 /**
@@ -41,14 +43,25 @@ export const track = (
   options?: Record<string, any>,
   callback?: () => void
 ) => {
+  // Add generic track event context for every event
+  const propertiesWithContext = {
+    ...properties,
+    clientVersion: version
+  }
+
   if (NATIVE_MOBILE) {
-    const message = new TrackAnalyticsEvent(event, properties)
+    const message = new TrackAnalyticsEvent(event, propertiesWithContext)
     message.send()
   } else {
     if (!(window as any).analytics) {
       if (callback) callback()
       return
     }
-    ;(window as any).analytics.track(event, properties, options, callback)
+    ;(window as any).analytics.track(
+      event,
+      propertiesWithContext,
+      options,
+      callback
+    )
   }
 }
