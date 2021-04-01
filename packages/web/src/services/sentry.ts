@@ -50,13 +50,17 @@ export const initializeSentry = () => {
   })
 }
 
-export const setSentryUser = (user: User) => {
+/**
+ * Sets the sentry user so that alerts are tied to a user
+ * @param user
+ * @param traits an object of any key-value traits to associate with the user
+ */
+export const setSentryUser = (user: User, traits: object) => {
   Sentry.configureScope(currentScope => {
     currentScope.setUser({
       id: `${user.user_id}`,
       username: user.handle,
-      isVerified: user.is_verified,
-      trackCount: user.track_count
+      ...traits
     })
   })
 }
