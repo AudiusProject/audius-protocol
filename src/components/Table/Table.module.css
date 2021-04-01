@@ -91,3 +91,8 @@
 .tableLoading {
   margin: 16px 0px;
 }
+
+.container .error {
+  height: 86px;
+  margin: 32px auto 24px;
+}

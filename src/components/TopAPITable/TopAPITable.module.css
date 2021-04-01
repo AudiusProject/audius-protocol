@@ -1,0 +1,90 @@
+.rowContainer {
+  display: inline-flex;
+  height: 48px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile .rowContainer {
+  overflow: hidden;
+}
+
+.colEndpoint {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+
+.colRank {
+  flex: 1;
+}
+
+.rowCol {
+  font-family: var(--font-family);
+  font-weight: var(--font-regular);
+  font-size: var(--font-m);
+  color: var(--neutral);
+}
+
+.rankName {
+  flex: 1;
+  display: inline-flex;
+}
+
+.mobile .rankName {
+  overflow: hidden;
+}
+
+.colNum {
+  width: 74px;
+  font-size: 16px;
+  color: var(--neutral-light-4);
+}
+
+.mobile .colNum {
+  min-width: 42px;
+  width: 42px;
+}
+
+.colName {
+  font-size: 16px;
+  color: var(--neutral);
+}
+
+.mobile .colName {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+.colTotalReq {
+  font-size: 16px;
+  text-align: right;
+  color: var(--neutral);
+}
+
+.mobile .colTotalReq {
+  min-width: 100px;
+}
+
+.error {
+  height: 20px;
+  width: 20px;
+}
+
+.error > * {
+  padding: 0;
+}
+
+.crown {
+  margin-right: 5px;
+}
+
+.crown path {
+  fill: var(--neutral-light-2);
+}
