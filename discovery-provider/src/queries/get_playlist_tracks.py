@@ -43,16 +43,11 @@ def get_playlist_tracks(session, args):
 
         # track_id -> [playlist_id]
         track_ids_set = set()
-        track_id_map = {}
         for playlist in playlists:
             playlist_id = playlist['playlist_id']
             for track_id_dict in playlist['playlist_contents']['track_ids']:
                 track_id = track_id_dict['track']
                 track_ids_set.add(track_id)
-                if track_id not in track_id_map:
-                    track_id_map[track_id] = [playlist_id]
-                else:
-                    track_id_map[track_id].append(playlist_id)
 
         playlist_tracks = (
             session
@@ -73,16 +68,18 @@ def get_playlist_tracks(session, args):
 
             add_users_to_tracks(session, tracks, current_user_id)
 
+        # { track_id => track }
+        track_ids_map = {track["track_id"]: track for track in tracks}
+
         # { playlist_id => [track]}
         playlists_map = {}
-        for track in tracks:
-            track_id = track["track_id"]
-            parent_playlist_ids = track_id_map[track_id]
-            for playlist_id in parent_playlist_ids:
-                if playlist_id not in playlists_map:
-                    playlists_map[playlist_id] = [track]
-                else:
-                    playlists_map[playlist_id].append(track)
+        for playlist in playlists:
+            playlist_id = playlist["playlist_id"]
+            playlists_map[playlist_id] = []
+            for track_id_dict in playlist['playlist_contents']['track_ids']:
+                track_id = track_id_dict['track']
+                track = track_ids_map[track_id]
+                playlists_map[playlist_id].append(track)
 
         return playlists_map
 

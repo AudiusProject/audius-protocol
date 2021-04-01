@@ -1,6 +1,6 @@
 const Web3 = require('../../web3')
 const MultiProvider = require('../../utils/multiProvider')
-const EthereumTx = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx').Transaction
 const retry = require('async-retry')
 const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price

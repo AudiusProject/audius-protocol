@@ -16,7 +16,7 @@ from src.queries.get_trailing_metrics import get_monthly_trailing_route_metrics,
     get_trailing_app_metrics, get_aggregate_route_metrics_trailing_month
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import get_redis_route_metrics, get_redis_app_metrics, \
-    get_aggregate_metrics_info
+    get_aggregate_metrics_info, get_summed_unique_metrics
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +65,12 @@ class CachedRouteMetrics(Resource):
         logger.info(f"getting cached route metrics at {args.get('start_time')} before parsing")
         start_time = parse_unix_epoch_param_non_utc(args.get("start_time"))
         logger.info(f"getting cached route metrics at {start_time} UTC")
-        metrics = get_redis_route_metrics(start_time)
+        deduped_metrics = get_redis_route_metrics(start_time)
+        summed_metrics = get_summed_unique_metrics(start_time)
+        metrics = {
+            'deduped': deduped_metrics,
+            'summed': summed_metrics
+        }
         response = success_response(metrics)
         return response
 

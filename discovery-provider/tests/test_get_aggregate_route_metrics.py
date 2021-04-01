@@ -16,18 +16,22 @@ def test_get_aggregate_route_metrics_week(app):
         session.bulk_save_objects([
             AggregateDailyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=8)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=yesterday - timedelta(days=1)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=yesterday
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=4,
+                summed_count=5,
                 timestamp=today
             ),
             AggregateDailyTotalUsersMetrics(
@@ -52,8 +56,10 @@ def test_get_aggregate_route_metrics_week(app):
 
         assert len(aggregate_metrics) == 2
         assert aggregate_metrics[0]['unique_count'] == 2
+        assert aggregate_metrics[0]['summed_unique_count'] == 3
         assert aggregate_metrics[0]['total_count'] == 4
         assert aggregate_metrics[1]['unique_count'] == 3
+        assert aggregate_metrics[1]['summed_unique_count'] == 4
         assert aggregate_metrics[1]['total_count'] == 6
 
 def test_get_aggregate_route_metrics_month_daily_bucket(app):
@@ -64,18 +70,22 @@ def test_get_aggregate_route_metrics_month_daily_bucket(app):
         session.bulk_save_objects([
             AggregateDailyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=31)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=today - timedelta(days=8)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=yesterday
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=4,
+                summed_count=5,
                 timestamp=today
             ),
             AggregateDailyTotalUsersMetrics(
@@ -100,8 +110,10 @@ def test_get_aggregate_route_metrics_month_daily_bucket(app):
 
         assert len(aggregate_metrics) == 2
         assert aggregate_metrics[0]['unique_count'] == 2
+        assert aggregate_metrics[0]['summed_unique_count'] == 3
         assert aggregate_metrics[0]['total_count'] == 4
         assert aggregate_metrics[1]['unique_count'] == 3
+        assert aggregate_metrics[1]['summed_unique_count'] == 4
         assert aggregate_metrics[1]['total_count'] == 6
 
 def test_get_aggregate_route_metrics_month_weekly_bucket(app):
@@ -112,18 +124,22 @@ def test_get_aggregate_route_metrics_month_weekly_bucket(app):
         session.bulk_save_objects([
             AggregateDailyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=31)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=today - timedelta(days=8)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=yesterday
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=4,
+                summed_count=5,
                 timestamp=today
             ),
             AggregateDailyTotalUsersMetrics(
@@ -148,8 +164,10 @@ def test_get_aggregate_route_metrics_month_weekly_bucket(app):
 
         assert len(aggregate_metrics) == 2
         assert aggregate_metrics[0]['unique_count'] == 2
+        assert aggregate_metrics[0]['summed_unique_count'] == 3
         assert aggregate_metrics[0]['total_count'] == 4
         assert aggregate_metrics[1]['unique_count'] == 3
+        assert aggregate_metrics[1]['summed_unique_count'] == 4
         assert aggregate_metrics[1]['total_count'] == 6
 
 def test_get_aggregate_route_metrics_all_time_monthly_bucket(app):
@@ -160,14 +178,17 @@ def test_get_aggregate_route_metrics_all_time_monthly_bucket(app):
         session.bulk_save_objects([
             AggregateMonthlyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=367)
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=today
             ),
             AggregateMonthlyTotalUsersMetrics(
@@ -188,8 +209,10 @@ def test_get_aggregate_route_metrics_all_time_monthly_bucket(app):
 
         assert len(aggregate_metrics) == 2
         assert aggregate_metrics[0]['unique_count'] == 1
+        assert aggregate_metrics[0]['summed_unique_count'] == 2
         assert aggregate_metrics[0]['total_count'] == 2
         assert aggregate_metrics[1]['unique_count'] == 2
+        assert aggregate_metrics[1]['summed_unique_count'] == 3
         assert aggregate_metrics[1]['total_count'] == 4
 
 def test_get_aggregate_route_metrics_all_time_weekly_bucket(app):
@@ -200,14 +223,17 @@ def test_get_aggregate_route_metrics_all_time_weekly_bucket(app):
         session.bulk_save_objects([
             AggregateDailyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=367)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=yesterday
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=today
             ),
             AggregateDailyTotalUsersMetrics(
@@ -228,6 +254,8 @@ def test_get_aggregate_route_metrics_all_time_weekly_bucket(app):
 
         assert len(aggregate_metrics) == 2
         assert aggregate_metrics[0]['unique_count'] == 1
+        assert aggregate_metrics[0]['summed_unique_count'] == 2
         assert aggregate_metrics[0]['total_count'] == 2
         assert aggregate_metrics[1]['unique_count'] == 2
+        assert aggregate_metrics[1]['summed_unique_count'] == 3
         assert aggregate_metrics[1]['total_count'] == 4
