@@ -15,10 +15,7 @@ type UserProps = {
   onGoToRoute: (route: string) => void
 }
 
-const User = ({
-  user,
-  onGoToRoute
-}: UserProps) => {
+const User = ({ user, onGoToRoute }: UserProps) => {
   const onPress = useCallback(() => {
     onGoToRoute(getUserRoute(user))
   }, [user, onGoToRoute])

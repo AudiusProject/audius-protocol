@@ -1,13 +1,18 @@
-import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { Dispatch } from 'redux'
-import { connect, useSelector } from 'react-redux'
+import { connect } from 'react-redux'
 import {
   StyleSheet,
   Animated,
   Dimensions,
   PanResponder,
-  View,
-  Text
+  View
 } from 'react-native'
 
 import { AppState } from '../../store'
@@ -47,7 +52,7 @@ const styles = StyleSheet.create({
     left: -1 * INITIAL_OFFSET,
     top: 0,
     width: '100%',
-    height: '100%',
+    height: '100%'
   },
   background: {
     position: 'absolute',
@@ -64,8 +69,7 @@ type OwnProps = {
   webRef: RefObject<MessagePostingWebView>
 }
 
-type NotificationsProps =
-  OwnProps &
+type NotificationsProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
@@ -102,12 +106,8 @@ const Notifications = ({
   const { width } = Dimensions.get('window')
   const initialPosition = -1 * width + INITIAL_OFFSET
 
-  const translationAnim = useRef(
-    new Animated.Value(initialPosition)
-  ).current
-  const backgroundAnim = useRef(
-    new Animated.Value(0)
-  ).current
+  const translationAnim = useRef(new Animated.Value(initialPosition)).current
+  const backgroundAnim = useRef(new Animated.Value(0)).current
 
   const slideIn = useCallback(() => {
     Animated.spring(translationAnim, {
@@ -115,45 +115,48 @@ const Notifications = ({
       tension: 150,
       friction: 25,
       useNativeDriver: true
-    })
-      .start()
+    }).start()
     Animated.timing(backgroundAnim, {
-      toValue: MAX_BG_OPACITY, 
+      toValue: MAX_BG_OPACITY,
       duration: 300,
       useNativeDriver: true
     }).start()
-  }, [])
+  }, [backgroundAnim, translationAnim])
 
   const slideOut = useCallback(() => {
     Animated.spring(translationAnim, {
       toValue: initialPosition,
       tension: 150,
       friction: 25,
-      useNativeDriver: true,
-    })
-      .start()
-      Animated.timing(backgroundAnim, {
-        toValue: 0, 
-        duration: 300,
-        useNativeDriver: true
-      }).start()
+      useNativeDriver: true
+    }).start()
+    Animated.timing(backgroundAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true
+    }).start()
     close()
     markAsViewed()
-  }, [initialPosition, close, markAsViewed, webRef])
+  }, [initialPosition, close, markAsViewed, backgroundAnim, translationAnim])
 
-  useAppState(null, () => {
-    if (isOpen) {
-      slideIn()
-    } else {
-      slideOut()
+  useAppState(
+    () => {},
+    () => {
+      if (isOpen) {
+        slideIn()
+      } else {
+        slideOut()
+      }
     }
-  })
+  )
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: (e, gestureState) => {
-      return Math.abs(gestureState.dx) > ON_MOVE_RESPONDER_DX &&
+      return (
+        Math.abs(gestureState.dx) > ON_MOVE_RESPONDER_DX &&
         Math.abs(gestureState.dy) < ON_MOVE_RESPONDER_DY
+      )
     },
     onPanResponderMove: (e, gestureState) => {
       if (isOpen) {
@@ -163,7 +166,7 @@ const Notifications = ({
               null,
               {
                 dx: translationAnim
-              },
+              }
             ],
             { useNativeDriver: false }
           )(e, { dx: gestureState.dx })
@@ -173,7 +176,7 @@ const Notifications = ({
               null,
               {
                 moveX: backgroundAnim
-              },
+              }
             ],
             { useNativeDriver: false }
           )(e, { moveX: Math.min(gestureState.moveX / width, MAX_BG_OPACITY) })
@@ -185,17 +188,19 @@ const Notifications = ({
               null,
               {
                 dx: translationAnim
-              },
+              }
             ],
             { useNativeDriver: false }
-          )(e, { dx: Math.min(INITIAL_OFFSET, initialPosition + gestureState.dx) })
+          )(e, {
+            dx: Math.min(INITIAL_OFFSET, initialPosition + gestureState.dx)
+          })
 
           Animated.event(
             [
               null,
               {
                 moveX: backgroundAnim
-              },
+              }
             ],
             { useNativeDriver: false }
           )(e, { moveX: Math.min(gestureState.moveX / width, MAX_BG_OPACITY) })
@@ -205,33 +210,42 @@ const Notifications = ({
     onPanResponderRelease: (e, gestureState) => {
       if (isOpen) {
         // Close if open & drag is past cutoff
-        if (gestureState.vx < 0 && gestureState.moveX < MOVE_CUTOFF_CLOSE * width) {
+        if (
+          gestureState.vx < 0 &&
+          gestureState.moveX < MOVE_CUTOFF_CLOSE * width
+        ) {
           slideOut()
         } else {
           slideIn()
         }
       } else {
         // Open if closed & drag is past cutoff
-        if (gestureState.vx > 0 && gestureState.moveX > MOVE_CUTOFF_OPEN * width) {
+        if (
+          gestureState.vx > 0 &&
+          gestureState.moveX > MOVE_CUTOFF_OPEN * width
+        ) {
           slideIn()
           open()
         } else {
           slideOut()
         }
       }
-    },
+    }
   })
 
-  const onGoToRoute = useCallback((route: string) => {
-    if (webRef.current) {
-      postMessage(webRef.current, {
-        type: MessageType.PUSH_ROUTE,
-        route,
-        isAction: true
-      })
-    }
-    slideOut()
-  }, [webRef, slideOut])
+  const onGoToRoute = useCallback(
+    (route: string) => {
+      if (webRef.current) {
+        postMessage(webRef.current, {
+          type: MessageType.PUSH_ROUTE,
+          route,
+          isAction: true
+        })
+      }
+      slideOut()
+    },
+    [webRef, slideOut]
+  )
 
   const [anchorRoute, setAnchorRoute] = useState<string | null>(null)
   const onClickTopBarClose = useCallback(() => {
@@ -247,15 +261,16 @@ const Notifications = ({
   }, [webRef, slideOut, anchorRoute])
 
   const { pathname, state } = useLocation() || {}
-  const isMainRoute = pathname && (
-    pathname === '/feed' ||
-    pathname === '/trending' ||
-    pathname === '/explore' ||
-    pathname === '/favorites' ||
-    pathname.startsWith('/search')
-  )
+  const isMainRoute =
+    pathname &&
+    (pathname === '/feed' ||
+      pathname === '/trending' ||
+      pathname === '/explore' ||
+      pathname === '/favorites' ||
+      pathname.startsWith('/search'))
   const isFromNativeNotifications = state?.fromNativeNotifications ?? false
-  const canShowNotifications = (isMainRoute || isFromNativeNotifications) && isSignedIn
+  const canShowNotifications =
+    (isMainRoute || isFromNativeNotifications) && isSignedIn
 
   useEffect(() => {
     if (isOpen) {
@@ -264,7 +279,7 @@ const Notifications = ({
         setAnchorRoute(pathname)
       }
     }
-  }, [isOpen, slideIn, setAnchorRoute])
+  }, [isOpen, slideIn, anchorRoute, pathname, setAnchorRoute])
 
   const containerStyle = useTheme(styles.container, {
     backgroundColor: 'background'

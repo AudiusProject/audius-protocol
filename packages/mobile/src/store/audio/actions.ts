@@ -28,22 +28,22 @@ type PreviousAction = {
 }
 
 type SeekAction = {
-  type: typeof SEEK,
+  type: typeof SEEK
   message: Message
 }
 
 type SetInfoAction = {
-  type: typeof SET_INFO,
+  type: typeof SET_INFO
   message: Message
 }
 
 type PersistQueueAction = {
-  type: typeof PERSIST_QUEUE,
+  type: typeof PERSIST_QUEUE
   message: Message
 }
 
 type RepeatAction = {
-  type: typeof REPEAT,
+  type: typeof REPEAT
   message: Message
 }
 
@@ -52,15 +52,15 @@ type ResetAction = {
 }
 
 export type AudioActions =
-  PlayAction |
-  PauseAction |
-  NextAction |
-  PreviousAction |
-  SeekAction | 
-  SetInfoAction |
-  PersistQueueAction |
-  RepeatAction |
-  ResetAction
+  | PlayAction
+  | PauseAction
+  | NextAction
+  | PreviousAction
+  | SeekAction
+  | SetInfoAction
+  | PersistQueueAction
+  | RepeatAction
+  | ResetAction
 
 export const play = (): PlayAction => ({
   type: PLAY

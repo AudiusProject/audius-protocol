@@ -12,7 +12,7 @@ export const logListen = async (
   const method = 'POST'
   const headers = {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   }
   const body = JSON.stringify({
     userId
@@ -20,7 +20,9 @@ export const logListen = async (
 
   fetch(url, { method, headers, body })
     .then(resp => {
-      console.info(`Logged a listen for ${trackId} for user ${userId}: ${resp.status}`)
+      console.info(
+        `Logged a listen for ${trackId} for user ${userId}: ${resp.status}`
+      )
       track(make({ eventName: EventNames.LISTEN, trackId: `${trackId}` }))
     })
     .catch(e => {

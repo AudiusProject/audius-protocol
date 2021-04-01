@@ -1,13 +1,18 @@
 import {
   Platform,
   NativeSyntheticEvent,
-  AppState as RNState,
   Linking,
   BackHandler,
-  StatusBar,
+  StatusBar
 } from 'react-native'
-import React, { useRef, useState, useEffect, RefObject, useCallback } from 'react'
-import Config from "react-native-config"
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  RefObject,
+  useCallback
+} from 'react'
+import Config from 'react-native-config'
 import AsyncStorage from '@react-native-community/async-storage'
 import VersionNumber from 'react-native-version-number'
 import { Dispatch } from 'redux'
@@ -18,17 +23,25 @@ import RNFS from 'react-native-fs'
 
 import PullToRefresh from './PullToRefresh'
 import { Message, handleMessage, MessageType } from '../../message'
-import { WebViewMessage, WebViewNavigation } from 'react-native-webview/lib/WebViewTypes'
+import {
+  WebViewMessage,
+  WebViewNavigation
+} from 'react-native-webview/lib/WebViewTypes'
 import { AppState } from '../../store'
 import { getTrack, getIndex } from '../../store/audio/selectors'
-import { getIsOnFirstPage, getIsSignedIn } from '../../store/lifecycle/selectors'
+import {
+  getIsOnFirstPage,
+  getIsSignedIn
+} from '../../store/lifecycle/selectors'
 import SplashScreen from '../splash-screen/SplashScreen'
-import { postMessage } from '../../utils/postMessage'
+import {
+  postMessage,
+  postMessage as postMessageUtil
+} from '../../utils/postMessage'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import useAppState from '../../utils/useAppState'
 import useKeyboardListeners from '../../utils/useKeyboardListeners'
 import NotificationReminder from '../notification-reminder/NotificationReminder'
-import {postMessage as postMessageUtil} from '../../utils/postMessage'
 
 const URL_OVERRIDE = Config.URL_OVERRIDE
 const STATIC_PORT = Config.STATIC_SERVER_PORT || 3100
@@ -62,10 +75,13 @@ const getPath = async () => {
 
 // Recursively get all file paths in the folder
 // Make the corresponding directory in the files directory
-const getAllFiles = async (folderPath: string, path: string): Promise<Array<string>> => {
+const getAllFiles = async (
+  folderPath: string,
+  path: string
+): Promise<Array<string>> => {
   const filePaths = []
   const assetDirItems = await RNFS.readDirAssets(path)
-  for (let dirItem of assetDirItems) {
+  for (const dirItem of assetDirItems) {
     if (dirItem.isFile()) {
       filePaths.push(dirItem.path)
     } else {
@@ -81,8 +97,10 @@ const getAllFiles = async (folderPath: string, path: string): Promise<Array<stri
 // & Android does not have a MainBundle directory (ios does), so the static files are
 // moved from the assets folder into the files directory
 const copyAndroidAssets = async () => {
-  const hasCopiedAssets =  await RNFS.exists(`${ANDROID_BUNDLE_PATH}/index.html`)
-  const lastAppCopyVersion = await AsyncStorage.getItem('@last-app-copy-version')
+  const hasCopiedAssets = await RNFS.exists(`${ANDROID_BUNDLE_PATH}/index.html`)
+  const lastAppCopyVersion = await AsyncStorage.getItem(
+    '@last-app-copy-version'
+  )
   if (hasCopiedAssets && VersionNumber.appVersion === lastAppCopyVersion) {
     return ANDROID_BUNDLE_PATH
   }
@@ -95,9 +113,14 @@ const copyAndroidAssets = async () => {
   }
   await RNFS.mkdir(ANDROID_BUNDLE_PATH)
   const files = await getAllFiles(DOCUMENT_DIRECTORY_PATH, BUNDLE_PATH)
-  await Promise.all(files.map(async filePath => {
-    await RNFS.copyFileAssets(filePath, `${DOCUMENT_DIRECTORY_PATH}/${filePath}`)
-  }))
+  await Promise.all(
+    files.map(async filePath => {
+      await RNFS.copyFileAssets(
+        filePath,
+        `${DOCUMENT_DIRECTORY_PATH}/${filePath}`
+      )
+    })
+  )
   await AsyncStorage.setItem('@last-app-copy-version', VersionNumber.appVersion)
   return ANDROID_BUNDLE_PATH
 }
@@ -118,21 +141,22 @@ const WebApp = ({
   trackIndex,
   isOnFirstPage,
   isSignedIn,
-  state: { lifecycle: { dappLoaded } }
+  state: {
+    lifecycle: { dappLoaded }
+  }
 }: Props) => {
   // Start the local static asset server
   const [url, setUrl] = useState<string>('')
   const [hasLoaded, setHasLoaded] = useState(false)
-  const [shouldRefresh, setShouldRefresh] = useState(false)
   const serverContainer = useRef<any | null>(null)
   const path = useRef<string | null>(null)
   const serverRestarting = useRef(false)
   const checkServerInterval = useRef<NodeJS.Timeout | null>(null)
 
   const [key, setKey] = useState(0)
-  const reload = () => {
+  const reload = useCallback(() => {
     setKey(key => key + 1)
-  }
+  }, [setKey])
 
   const isRunning = useCallback(async () => {
     try {
@@ -150,20 +174,16 @@ const WebApp = ({
   useEffect(() => {
     const asyncEffect = async () => {
       path.current = await getPath()
-      const server = new StaticServer(
-        STATIC_PORT,
-        path.current,
-        {
-          localOnly: true,
-          keepAlive: true
-        }
-      )
+      const server = new StaticServer(STATIC_PORT, path.current, {
+        localOnly: true,
+        keepAlive: true
+      })
 
       serverContainer.current = server
 
-      server.start().then((url: string) => {
-        setUrl(url)
-        console.info('Serving static assets: ', url);
+      server.start().then((servingUrl: string) => {
+        setUrl(servingUrl)
+        console.info('Serving static assets: ', servingUrl)
       })
     }
     asyncEffect()
@@ -186,19 +206,15 @@ const WebApp = ({
         if (serverRestarting.current) return
         serverRestarting.current = true
 
-        const server = new StaticServer(
-          STATIC_PORT,
-          path.current,
-          {
-            localOnly: true,
-            keepAlive: true
-          }
-        )
+        const server = new StaticServer(STATIC_PORT, path.current, {
+          localOnly: true,
+          keepAlive: true
+        })
         serverContainer.current = server
-        server.start().then((url: string) => {
-          setUrl(url) // should not change url
+        server.start().then((servingUrl: string) => {
+          setUrl(servingUrl) // should not change url
           serverRestarting.current = false
-          console.info('Restarted serving static assets: ', url);
+          console.info('Restarted serving static assets: ', servingUrl)
         })
       }
     })
@@ -221,7 +237,7 @@ const WebApp = ({
       }
     }
     reloadViewOnServerRunning()
-  }, [checkAndRestartServer, reload])
+  }, [checkAndRestartServer, reload, isRunning])
 
   const resetServerInterval = useCallback(() => {
     if (checkServerInterval.current) {
@@ -267,44 +283,59 @@ const WebApp = ({
     }
   }, [backHandler])
 
-  const pushRoute = (url:string) => {
-    const trimmedRoute = `/${
-      url.toLowerCase()
-      .replace(URL_SCHEME, '')
-      .replace(AUDIUS_SITE_PREFIX, '')
-      .replace(AUDIUS_REDIRECT_SITE_PREFIX, '')
-    }`
-    if (!webRef.current) return
-    postMessage(webRef.current, {
-      type: MessageType.PUSH_ROUTE,
-      route: trimmedRoute,
-      isAction: true
-    })
-  }
+  const pushRoute = useCallback(
+    (routeUrl: string) => {
+      const trimmedRoute = `/${routeUrl
+        .toLowerCase()
+        .replace(URL_SCHEME, '')
+        .replace(AUDIUS_SITE_PREFIX, '')
+        .replace(AUDIUS_REDIRECT_SITE_PREFIX, '')}`
+      if (!webRef.current) return
+      postMessage(webRef.current, {
+        type: MessageType.PUSH_ROUTE,
+        route: trimmedRoute,
+        isAction: true
+      })
+    },
+    [webRef]
+  )
 
-  const postRecoveryAccount = ({ login, warning, email }: { login: string | null, warning: string | null, email: string | null }) => {
-    if (!webRef.current) return
-    postMessage(webRef.current, {
-      type: MessageType.ACCOUNT_RECOVERY,
+  const postRecoveryAccount = useCallback(
+    ({
       login,
       warning,
-      email,
-      isAction: true
-    })
-  }
+      email
+    }: {
+      login: string | null
+      warning: string | null
+      email: string | null
+    }) => {
+      if (!webRef.current) return
+      postMessage(webRef.current, {
+        type: MessageType.ACCOUNT_RECOVERY,
+        login,
+        warning,
+        email,
+        isAction: true
+      })
+    },
+    [webRef]
+  )
 
-  const getRecoveryParams = (url: string) => {
-    const urlQueryParams = url.includes('?') ? url.split('?').pop() : ''
+  const getRecoveryParams = useCallback((recoveryUrl: string) => {
+    const urlQueryParams = recoveryUrl.includes('?')
+      ? recoveryUrl.split('?').pop()
+      : ''
     if (!urlQueryParams) return null
     const urlParams: any = getSearchParams(urlQueryParams)
-    const login = urlParams['login']
-    const warning = urlParams['warning']
-    const email = urlParams['email']
+    const login = urlParams.login
+    const warning = urlParams.warning
+    const email = urlParams.email
     return { login, warning, email }
-  }
+  }, [])
 
   const getSearchParams = (searchString: string) => {
-    const queryVars = searchString.split('&');
+    const queryVars = searchString.split('&')
     return queryVars.reduce((acc: { [key: string]: string }, queryVar) => {
       const pair = queryVar.split('=')
       if (pair.length === 2) {
@@ -330,23 +361,25 @@ const WebApp = ({
     return () => {
       Linking.removeEventListener('url', onOpenURL)
     }
-  }, [webRef])
+  }, [webRef, getRecoveryParams, postRecoveryAccount, pushRoute])
 
   // Handle deep linking when the app is not running
   useEffect(() => {
     if (hasLoaded && webRef.current) {
-      Linking.getInitialURL().then((url) => {
-        if (url) {
-          const recoveryParams = getRecoveryParams(url)
-          if (recoveryParams) {
-            postRecoveryAccount(recoveryParams)
-          } else {
-            pushRoute(url)
+      Linking.getInitialURL()
+        .then(initialUrl => {
+          if (initialUrl) {
+            const recoveryParams = getRecoveryParams(initialUrl)
+            if (recoveryParams) {
+              postRecoveryAccount(recoveryParams)
+            } else {
+              pushRoute(initialUrl)
+            }
           }
-        }
-      }).catch(err => console.error('An error occurred', err))
+        })
+        .catch(err => console.error('An error occurred', err))
     }
-  }, [webRef, hasLoaded])
+  }, [webRef, hasLoaded, getRecoveryParams, postRecoveryAccount, pushRoute])
 
   // Handle app state changes from background to foreground and post a message
   const onEnterAppForeground = useCallback(() => {
@@ -365,8 +398,14 @@ const WebApp = ({
     resetServerInterval()
     // Set immediate to give JS context time to be ready
     setImmediate(checkAndRestartServer)
-  }, [webRef, trackInfo, trackIndex, checkAndRestartServer, resetServerInterval])
-  useAppState(onEnterAppForeground)
+  }, [
+    webRef,
+    trackInfo,
+    trackIndex,
+    checkAndRestartServer,
+    resetServerInterval
+  ])
+  useAppState(onEnterAppForeground, () => {})
 
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
@@ -378,7 +417,7 @@ const WebApp = ({
       onMessage(
         message,
         // @ts-ignore
-        (message: Message) => postMessageUtil(webRef.current, message),
+        (newMessage: Message) => postMessageUtil(webRef.current, newMessage),
         // @ts-ignore
         reload,
         // @ts-ignore
@@ -394,10 +433,12 @@ const WebApp = ({
     // First see if it's a link to an Audius page, and redirect
     // within the app if so.
     const audiusPrefixMatches = eventUrl.match(AUDIUS_SITE_PREFIX)
-    const audiusPortIncludes  = eventUrl.match(AUDIUS_PORT_INCLUDE_PATTERN)
+    const audiusPortIncludes = eventUrl.match(AUDIUS_PORT_INCLUDE_PATTERN)
     // For android, empty route redirects here
     if (eventUrl.includes('about:blank')) return false
-    if (audiusPrefixMatches && audiusPrefixMatches.length &&
+    if (
+      audiusPrefixMatches &&
+      audiusPrefixMatches.length &&
       !AUDIUS_WEBLINK_WHITELIST.has(eventUrl)
     ) {
       eventUrl = `/${eventUrl.replace(AUDIUS_SITE_PREFIX, '')}`
@@ -413,13 +454,13 @@ const WebApp = ({
       return true
     }
 
-
     // Otherwise, if it's not a eventUrl we control, open it
     // in the native browser.
     const matches = eventUrl.match(URL_INTERCEPT_PATTERN)
     if (!matches || !matches.length) {
       // Prevent double encoding of url, this is a problem w/ twitter b/c of the '#' character
-      if (!eventUrl.includes('twitter.com/share')) eventUrl = encodeURI(eventUrl)
+      if (!eventUrl.includes('twitter.com/share'))
+        eventUrl = encodeURI(eventUrl)
       // @ts-ignore
       webRef.current.stopLoading()
       Linking.openURL(eventUrl)
@@ -444,11 +485,7 @@ const WebApp = ({
   if (!uri) return null
   return (
     <>
-      <PullToRefresh
-        webRef={webRef}
-        isAtScrollTop={atTop}
-        onRefresh={() => setAtTop(false)}
-      >
+      <PullToRefresh webRef={webRef} isAtScrollTop={atTop}>
         <WebView
           // WebView tries to manage the status bar,
           // randomly setting to the wrong color at times.
@@ -479,18 +516,15 @@ const WebApp = ({
           }}
           onLoadEnd={(syntheticEvent: any) => {
             const { nativeEvent } = syntheticEvent
-            const { title, url } = nativeEvent
-            if (url === '' || title === '') reloadViewOnServerError()
+            const { title, url: eventUrl } = nativeEvent
+            if (eventUrl === '' || title === '') reloadViewOnServerError()
           }}
         />
       </PullToRefresh>
-      <SplashScreen
-        dappLoaded={dappLoaded}
-        key={`splash-${splashKey}`}
-      />
-      {
-        hasLoaded && <NotificationReminder isSignedIn={isSignedIn} webRef={webRef} />
-      }
+      <SplashScreen dappLoaded={dappLoaded} key={`splash-${splashKey}`} />
+      {hasLoaded && (
+        <NotificationReminder isSignedIn={isSignedIn} webRef={webRef} />
+      )}
     </>
   )
 }
@@ -506,7 +540,6 @@ const useSplashScreenKey = (dappLoaded: boolean) => {
   return splashKey
 }
 
-
 const mapStateToProps = (state: AppState) => ({
   state,
   trackInfo: getTrack(state),
@@ -517,11 +550,11 @@ const mapStateToProps = (state: AppState) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onMessage: (
     message: Message,
-    postMessage: (message: Message) => void,
+    onPostMessage: (message: Message) => void,
     reload: () => void,
     state: AppState
   ) => {
-    handleMessage(message, dispatch, postMessage, reload, state)
+    handleMessage(message, dispatch, onPostMessage, reload, state)
   }
 })
 

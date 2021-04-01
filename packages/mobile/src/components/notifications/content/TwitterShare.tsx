@@ -38,7 +38,11 @@ const getAchievementText = (notification: any) => {
     case Achievement.Favorites:
     case Achievement.Listens:
     case Achievement.Reposts: {
-      const link = getEntityRoute(notification.entity, notification.entityType, true)
+      const link = getEntityRoute(
+        notification.entity,
+        notification.entityType,
+        true
+      )
       const text = formatAchievementText(
         notification.entityType,
         notification.entity.title || notification.entity.playlist_name,
@@ -55,7 +59,11 @@ const getAchievementText = (notification: any) => {
 }
 
 const getTrendingTrackText = (notification: TrendingTrack) => {
-  const link = getEntityRoute(notification.entity, notification.entityType, true)
+  const link = getEntityRoute(
+    notification.entity,
+    notification.entityType,
+    true
+  )
   const text = `My track ${notification.entity.title} is trending ${
     notification.rank
   }${getRankSuffix(
@@ -133,13 +141,10 @@ export const getTwitterButtonText = (notification: any) => {
 }
 
 const getTwitterLink = (url: string, text: string) => {
-  return (
-    `http://twitter.com/share?url=${encodeURIComponent(
-      url
-    )}&text=${encodeURIComponent(text)}`
-  )
+  return `http://twitter.com/share?url=${encodeURIComponent(
+    url
+  )}&text=${encodeURIComponent(text)}`
 }
-
 
 const styles = StyleSheet.create({
   button: {
@@ -166,9 +171,7 @@ type TwitterShareProps = {
   notification: Notification
 }
 
-const TwitterShare = ({
-  notification
-}: TwitterShareProps) => {
+const TwitterShare = ({ notification }: TwitterShareProps) => {
   const buttonText = getTwitterButtonText(notification)
   const onPress = useCallback(async () => {
     const twitterText = await getNotificationTwitterText(notification)
@@ -176,21 +179,16 @@ const TwitterShare = ({
     const url = getTwitterLink(twitterText.link, twitterText.text)
     Linking.canOpenURL(url).then(supported => {
       if (supported) {
-        Linking.openURL(url);
+        Linking.openURL(url)
       } else {
-        console.error(`Can't open: ${url}`);
+        console.error(`Can't open: ${url}`)
       }
     })
   }, [notification])
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      onPress={onPress}
-    >
-      <View
-        style={styles.button}
-      >
+    <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+      <View style={styles.button}>
         <IconTwitterBird fill={'#FFFFFF'} />
         <Text style={styles.text}>{buttonText}</Text>
       </View>

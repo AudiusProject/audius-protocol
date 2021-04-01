@@ -1,33 +1,42 @@
-import React, { useState, useRef, useEffect, RefObject, useCallback } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  RefObject,
+  useCallback
+} from 'react'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import {
-  Platform,
-  StyleSheet,
-  View
-} from 'react-native'
+import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'
 import Video, { OnProgressData } from 'react-native-video'
 import { Command } from 'react-native-music-control/lib/types'
-import WebView from 'react-native-webview'
 
 import { AppState } from '../../store'
 import * as audioActions from '../../store/audio/actions'
 import { getGoogleCastStatus } from '../../store/googleCast/selectors'
 import { CastStatus, setPlayPosition } from '../../store/googleCast/actions'
-import { 
-  getTrack, 
-  getPlaying, 
-  getSeek, 
-  getIndex, 
-  getQueueLength, 
-  getIsRepeatSingle 
+import {
+  getTrack,
+  getPlaying,
+  getSeek,
+  getIndex,
+  getQueueLength,
+  getIsRepeatSingle
 } from '../../store/audio/selectors'
 
 import { MessageType } from '../../message'
 import { logListen } from './listens'
 import { postMessage } from '../../utils/postMessage'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
+
+declare global {
+  interface Global {
+    progress: {
+      currentTime: number
+    }
+  }
+}
 
 const RECORD_LISTEN_SECONDS = 1
 
@@ -78,7 +87,7 @@ const Audio = ({
   const elapsedTime = useRef(0)
   // It is important for duration to be null when it isn't set
   // to the correct value or else MusicControl gets confused.
-  const [duration, setDuration] = useState(null)
+  const [duration, setDuration] = useState<number | null>(null)
 
   const [listenLoggedForTrack, setListenLoggedForTrack] = useState(false)
 
@@ -104,7 +113,6 @@ const Audio = ({
     }
   }, [reset])
 
-
   useEffect(() => {
     if (!webRef.current) return
     postMessage(webRef.current, {
@@ -113,7 +121,7 @@ const Audio = ({
       index: index,
       isAction: true
     })
-  }, [index])
+  }, [webRef, track, index])
 
   useEffect(() => {
     isPlaying.current = playing
@@ -125,7 +133,9 @@ const Audio = ({
       MusicControl.enableControl('play', true)
       MusicControl.enableControl('pause', true)
       if (Platform.OS === 'android') {
-        MusicControl.enableControl('closeNotification', true, {when: 'paused'})
+        MusicControl.enableControl('closeNotification', true, {
+          when: 'paused'
+        })
       }
     }
   }, [playing, hasPlayedOnce, isPlaying, hasEnabledControls])
@@ -162,7 +172,7 @@ const Audio = ({
       }
       pause()
     })
-  }, [next, previous, play, pause])
+  }, [webRef, next, previous, play, pause])
 
   // Playing handler
   useEffect(() => {
@@ -210,14 +220,14 @@ const Audio = ({
         MusicControl.handleAudioInterruptions(false)
       }
     }
-  }, [track, index, duration])
+  }, [webRef, track, index, duration])
 
   // Next and Previous handler
   useEffect(() => {
     if (playing || hasPlayedOnce.current) {
       const isPreviousEnabled = index > 0
       MusicControl.enableControl('previousTrack', isPreviousEnabled)
-      const isNextEnabled = (index < queueLength - 1)
+      const isNextEnabled = index < queueLength - 1
       MusicControl.enableControl('nextTrack', isNextEnabled)
     }
   }, [playing, hasPlayedOnce, index, queueLength])
@@ -240,7 +250,7 @@ const Audio = ({
     if (listenLoggedForTrack) {
       setListenLoggedForTrack(false)
     }
-  }, [track])
+  }, [track, listenLoggedForTrack, setListenLoggedForTrack])
 
   const [isCastConnecting, setIsCastConnecting] = useState(false)
 
@@ -252,7 +262,15 @@ const Audio = ({
     } else if (googleCastStatus !== CastStatus.Connecting) {
       setIsCastConnecting(false)
     }
-  }, [googleCastStatus, elapsedTime, playing, isCastConnecting])
+  }, [
+    googleCastStatus,
+    elapsedTime,
+    playing,
+    pause,
+    setCastPlayPosition,
+    setIsCastConnecting,
+    isCastConnecting
+  ])
 
   const handleError = (e: any) => {
     console.error('err ' + JSON.stringify(e))
@@ -263,7 +281,7 @@ const Audio = ({
       const updateInterval = setInterval(() => {
         if (isPlaying.current) {
           MusicControl.updatePlayback({
-            elapsedTime: elapsedTime.current, // (Seconds)
+            elapsedTime: elapsedTime.current // (Seconds)
           })
         }
       }, 500)
@@ -271,65 +289,67 @@ const Audio = ({
     }
   }, [elapsedTime, isPlaying])
 
-  const onProgress = useCallback((progress: OnProgressData) => {
-    if (!track) return
-    if (progressInvalidator.current) {
-      progressInvalidator.current = false
-      return
-    }
-    elapsedTime.current = progress.currentTime
+  const onProgress = useCallback(
+    (progress: OnProgressData) => {
+      if (!track) return
+      if (progressInvalidator.current) {
+        progressInvalidator.current = false
+        return
+      }
+      elapsedTime.current = progress.currentTime
 
-    // Replicates logic in dapp.
-    // TODO: REMOVE THIS ONCE BACKEND SUPPORTS THIS FEATURE
-    if (progress.currentTime > RECORD_LISTEN_SECONDS &&
-        (track.ownerId !== track.currentUserId || track.currentListenCount < 10) &&
-        !listenLoggedForTrack) {
-      // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
-      setListenLoggedForTrack(true)
-      logListen(
-        track.trackId,
-        track.currentUserId,
-        () => setListenLoggedForTrack(false),
-      )
-    }
-    // @ts-ignore
-    global.progress = progress
-  }, [track, listenLoggedForTrack, setListenLoggedForTrack, progressInvalidator])
+      // Replicates logic in dapp.
+      // TODO: REMOVE THIS ONCE BACKEND SUPPORTS THIS FEATURE
+      if (
+        progress.currentTime > RECORD_LISTEN_SECONDS &&
+        (track.ownerId !== track.currentUserId ||
+          track.currentListenCount < 10) &&
+        !listenLoggedForTrack
+      ) {
+        // Debounce logging a listen, update the state variable appropriately onSuccess and onFailure
+        setListenLoggedForTrack(true)
+        logListen(track.trackId, track.currentUserId, () =>
+          setListenLoggedForTrack(false)
+        )
+      }
+      // @ts-ignore
+      global.progress = progress
+    },
+    [track, listenLoggedForTrack, setListenLoggedForTrack, progressInvalidator]
+  )
 
   return (
-    <View
-      style={styles.backgroundVideo}
-    >
-    { track && !track.isDelete && track.uri &&  
-      <Video
-        source={{
-          uri: track.uri,
-          // @ts-ignore: this is actually a valid prop override
-          type: 'm3u8'
-        }}
-        ref={videoRef}
-        playInBackground
-        playWhenInactive
-        allowsExternalPlayback={false}
-        audioOnly
-        muted={googleCastStatus === CastStatus.Connected}
-        onError={handleError}
-        onEnd={() => {
-          setDuration(0)
-          setCastPlayPosition(0)
-          pause()
-          next()
-        }}
-        progressUpdateInterval={100}
-        onLoad={(payload) => {
-          setDuration(payload.duration)
-        }}
-        onProgress={onProgress}
-        repeat={repeat}
-        paused={!playing}
-        // onBuffer={this.onBuffer}
-      />
-    }
+    <View style={styles.backgroundVideo}>
+      {track && !track.isDelete && track.uri && (
+        <Video
+          source={{
+            uri: track.uri,
+            // @ts-ignore: this is actually a valid prop override
+            type: 'm3u8'
+          }}
+          ref={videoRef}
+          playInBackground
+          playWhenInactive
+          allowsExternalPlayback={false}
+          audioOnly
+          muted={googleCastStatus === CastStatus.Connected}
+          onError={handleError}
+          onEnd={() => {
+            setDuration(0)
+            setCastPlayPosition(0)
+            pause()
+            next()
+          }}
+          progressUpdateInterval={100}
+          onLoad={payload => {
+            setDuration(payload.duration)
+          }}
+          onProgress={onProgress}
+          repeat={repeat}
+          paused={!playing}
+          // onBuffer={this.onBuffer}
+        />
+      )}
     </View>
   )
 }

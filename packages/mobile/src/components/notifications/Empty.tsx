@@ -26,13 +26,8 @@ const Empty = () => {
     color: 'neutral'
   })
   return (
-    <View
-      style={styles.container}
-    >
-      <IconAnnouncement
-        width={60}
-        height={60}
-      />
+    <View style={styles.container}>
+      <IconAnnouncement width={60} height={60} />
       <Text style={textStyle}>{messages.empty}</Text>
     </View>
   )

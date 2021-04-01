@@ -11,9 +11,7 @@ type SplashScreenProps = {
   dappLoaded: boolean
 }
 
-const SplashScreen = ({
-  dappLoaded
-}: SplashScreenProps) => {
+const SplashScreen = ({ dappLoaded }: SplashScreenProps) => {
   const [animationFinished, setAnimationFinished] = useState(false)
 
   useEffect(() => {
@@ -24,28 +22,24 @@ const SplashScreen = ({
     }
   }, [dappLoaded])
 
-  const [scaleAnim] = useState( new Animated.Value(1))
+  const [scaleAnim] = useState(new Animated.Value(1))
 
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(
-          scaleAnim, {
-            toValue: SCALE_TO,
-            duration: ANIM_DURATION_MS,
-            useNativeDriver: true
-          }
-        ),
-        Animated.timing(
-          scaleAnim, {
-            toValue: 1,
-            duration: ANIM_DURATION_MS,
-            useNativeDriver: true
-          }
-        )
+        Animated.timing(scaleAnim, {
+          toValue: SCALE_TO,
+          duration: ANIM_DURATION_MS,
+          useNativeDriver: true
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: ANIM_DURATION_MS,
+          useNativeDriver: true
+        })
       ])
     ).start()
-  }, [])
+  }, [scaleAnim])
 
   const onAnimationFinish = useCallback(() => {
     setAnimationFinished(true)
@@ -53,25 +47,26 @@ const SplashScreen = ({
 
   const animationRef = useRef<LottieView | null>(null)
 
-  return (
-    animationFinished ? null :
-      <Animated.View style={{
+  return animationFinished ? null : (
+    <Animated.View
+      style={{
         ...styles.container,
         transform: [{ scale: scaleAnim }]
-        }}>
-        <LottieView
-          source={require('../../assets/animations/splashscreen.json')}
-          ref={animation => {
-            animationRef.current = animation
-          }}
-          autoPlay={false}
-          loop={false}
-          onAnimationFinish={onAnimationFinish}
-          style={{
-            height: LOTTIE_HEIGHT,
-          }}
-        />
-      </Animated.View>
+      }}
+    >
+      <LottieView
+        source={require('../../assets/animations/splashscreen.json')}
+        ref={animation => {
+          animationRef.current = animation
+        }}
+        autoPlay={false}
+        loop={false}
+        onAnimationFinish={onAnimationFinish}
+        style={{
+          height: LOTTIE_HEIGHT
+        }}
+      />
+    </Animated.View>
   )
 }
 

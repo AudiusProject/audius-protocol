@@ -1,4 +1,4 @@
-import User from "models/User"
+import User from 'models/User'
 
 export const BACKEND_LOADED = 'LIFECYCLE/BACKEND_LOADED'
 export const BACKEND_TEAR_DOWN = 'LIFECYCLE/BACKEND_TEAR_DOWN'
@@ -22,7 +22,7 @@ type NotOnFirstPageAction = {
   type: typeof NOT_ON_FIRST_PAGE
 }
 type ChangedPageAction = {
-  type: typeof CHANGED_PAGE,
+  type: typeof CHANGED_PAGE
   location: any
 }
 
@@ -31,8 +31,9 @@ type SignedInAction = {
   account: User
 }
 
-export type LifecycleActions = BackendLoadedAction 
-  | BackendTearDownAction 
+export type LifecycleActions =
+  | BackendLoadedAction
+  | BackendTearDownAction
   | OnFirstPageAction
   | NotOnFirstPageAction
   | ChangedPageAction

@@ -1,8 +1,4 @@
-import {
-  OAuthActions,
-  OPEN_POPUP,
-  CLOSE_POPUP
-} from './actions'
+import { OAuthActions, OPEN_POPUP, CLOSE_POPUP } from './actions'
 
 export type OAuthState = {
   isOpen: boolean

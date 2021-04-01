@@ -2,7 +2,7 @@ import User from '../../models/User'
 import Track from '../../models/Track'
 import Collection from '../../models/Collection'
 
-export type ID = Number
+export type ID = number
 
 export enum NotificationType {
   Announcement = 'Announcement',
@@ -33,7 +33,7 @@ export type BaseNotification = {
   user: any
   users: any
   entity: any
-  entities: any 
+  entities: any
 }
 
 export type Announcement = BaseNotification & {

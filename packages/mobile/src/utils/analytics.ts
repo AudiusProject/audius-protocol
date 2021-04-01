@@ -1,13 +1,15 @@
 import { Platform } from 'react-native'
-import analytics, { JsonMap } from '@segment/analytics-react-native'
-import Config from "react-native-config"
+import analytics from '@segment/analytics-react-native'
+import VersionNumber from 'react-native-version-number'
+import Config from 'react-native-config'
 import { Identify, Track, Screen, AllEvents } from '../types/analytics'
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
-let SegmentWriteKey = Platform.OS === 'android'
-  ? Config.SEGMENT_ANDROID_WRITE_KEY
-  : Config.SEGMENT_IOS_WRITE_KEY
+const SegmentWriteKey =
+  Platform.OS === 'android'
+    ? Config.SEGMENT_ANDROID_WRITE_KEY
+    : Config.SEGMENT_IOS_WRITE_KEY
 
 export const setup = async () => {
   try {
@@ -69,8 +71,13 @@ export const identify = async ({ handle, traits }: Identify) => {
 export const track = async ({ eventName, properties }: Track) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  console.info('Analytics track', eventName, properties)
-  analytics.track(eventName, properties)
+  const version = VersionNumber.appVersion
+  const propertiesWithContext = {
+    ...properties,
+    mobileClientVersion: version
+  }
+  console.info('Analytics track', eventName, propertiesWithContext)
+  analytics.track(eventName, propertiesWithContext)
 }
 
 // Screen Event

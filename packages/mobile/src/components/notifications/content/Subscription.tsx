@@ -24,30 +24,29 @@ type SubscriptionProps = {
   onGoToRoute: (route: string) => void
 }
 
-const Subscription = ({
-  notification,
-  onGoToRoute
-}: SubscriptionProps) => {
+const Subscription = ({ notification, onGoToRoute }: SubscriptionProps) => {
   const user = notification.user
   const isMultipleUploads = notification.entities.length > 1
   let body: ReactNode
   if (isMultipleUploads) {
-    body = <Text>
-      {` posted ${
-        (notification as any).entities.length
-      } new ${notification.entityType.toLowerCase()}s `}
-    </Text>
-  } else {
-    body = <>
+    body = (
       <Text>
-        {` posted a new ${notification.entityType.toLowerCase()} `}
+        {` posted ${
+          (notification as any).entities.length
+        } new ${notification.entityType.toLowerCase()}s `}
       </Text>
-      <Entity
-        entity={notification.entities[0]}
-        entityType={notification.entityType}
-        onGoToRoute={onGoToRoute}
-      />
-    </>
+    )
+  } else {
+    body = (
+      <>
+        <Text>{` posted a new ${notification.entityType.toLowerCase()} `}</Text>
+        <Entity
+          entity={notification.entities[0]}
+          entityType={notification.entityType}
+          onGoToRoute={onGoToRoute}
+        />
+      </>
+    )
   }
 
   const textWrapperStyle = useTheme(styles.textWrapper, {
@@ -55,19 +54,14 @@ const Subscription = ({
   })
 
   return (
-    <View
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <UserImages
         notification={notification}
         users={[user]}
         onGoToRoute={onGoToRoute}
       />
       <Text style={textWrapperStyle}>
-        <User
-          user={user}
-          onGoToRoute={onGoToRoute}
-        />
+        <User user={user} onGoToRoute={onGoToRoute} />
         {body}
       </Text>
     </View>

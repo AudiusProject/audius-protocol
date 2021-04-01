@@ -1,8 +1,6 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo'
 
-export const checkConnectivity = (
-  netInfo: NetInfoState | null
-) => {
+export const checkConnectivity = (netInfo: NetInfoState | null) => {
   if (!netInfo) return true
 
   const { isConnected, isInternetReachable, type } = netInfo

@@ -1,6 +1,6 @@
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback'
 import { Platform } from 'react-native'
- 
+
 const options = {
   enableVibrateFallback: false,
   ignoreAndroidSystemSettings: false

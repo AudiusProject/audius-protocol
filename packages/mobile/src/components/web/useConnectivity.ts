@@ -17,14 +17,11 @@ const useConnectivity = ({ webRef }: ConnectivityProps) => {
     const { current } = webRef
     const isConnected = checkConnectivity(netInfo)
     if (current) {
-      postMessage(
-        current,
-        {
-          type: MessageType.IS_NETWORK_CONNECTED,
-          isConnected,
-          isAction: true
-        }
-      )
+      postMessage(current, {
+        type: MessageType.IS_NETWORK_CONNECTED,
+        isConnected,
+        isAction: true
+      })
     }
   }, [netInfo, webRef])
 }

@@ -22,7 +22,7 @@ export const incrementSessionCount = async () => {
 const useSessionCount = (
   callback: () => void,
   frequency: number,
-  startAt: number = 1
+  startAt = 1
 ) => {
   // Memoize each time the callback is invoked to guard against callback
   // being redefined each rernder and over triggering
@@ -42,7 +42,7 @@ const useSessionCount = (
       }
     }
     work()
-  }, [callback, calledAtCount, setCalledAtCount])
+  }, [callback, calledAtCount, setCalledAtCount, frequency, startAt])
 }
 
 export default useSessionCount

@@ -1,7 +1,8 @@
 export type LOG_LEVEL = 'LOG' | 'WARNING' | 'DEBUG' | 'ERROR'
 
 const formatMessage = (message: string | object) => {
-  const formatted = typeof message === "object" ? JSON.stringify(message) : message
+  const formatted =
+    typeof message === 'object' ? JSON.stringify(message) : message
 
   return `WebApp: ${formatted}`
 }
