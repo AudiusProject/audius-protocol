@@ -1,13 +1,13 @@
-import Config from 'react-native-config';
-import {UserCollection} from '../../models/Collection';
-import Track from '../../models/Track';
-import User from '../../models/User';
+import Config from 'react-native-config'
+import { UserCollection } from '../../models/Collection'
+import Track from '../../models/Track'
+import User from '../../models/User'
 import {
   Achievement,
   Entity,
   Notification,
-  NotificationType,
-} from '../../store/notifications/types';
+  NotificationType
+} from '../../store/notifications/types'
 
 /**
  * Formats a URL name for routing.
@@ -18,7 +18,7 @@ import {
  */
 export const formatUrlName = (name: string) => {
   if (!name) {
-    return '';
+    return ''
   }
   return (
     name
@@ -27,8 +27,8 @@ export const formatUrlName = (name: string) => {
       // Reduce repeated `-` to a single `-`
       .replace(/-+/g, '-')
       .toLowerCase()
-  );
-};
+  )
+}
 
 /**
  * Encodes a formatted URL name for routing.
@@ -38,92 +38,95 @@ export const formatUrlName = (name: string) => {
  * @param name
  */
 export const encodeUrlName = (name: string) => {
-  return encodeURIComponent(formatUrlName(name));
-};
+  return encodeURIComponent(formatUrlName(name))
+}
 
-const AUDIUS_URL = Config.AUDIUS_URL;
+const AUDIUS_URL = Config.AUDIUS_URL
 
-export const getTrackRoute = (track: Track, fullUrl: boolean = false) => {
-  const route = `/${track.route_id}-${track.track_id}`;
-  return fullUrl ? `${AUDIUS_URL}${route}` : route;
-};
+export const getTrackRoute = (track: Track, fullUrl = false) => {
+  const route = `/${track.route_id}-${track.track_id}`
+  return fullUrl ? `${AUDIUS_URL}${route}` : route
+}
 
-export const getUserRoute = (user: User, fullUrl: boolean = false) => {
-  const route = `/${user.handle}`;
-  return fullUrl ? `${AUDIUS_URL}${route}` : route;
-};
+export const getUserRoute = (user: User, fullUrl = false) => {
+  const route = `/${user.handle}`
+  return fullUrl ? `${AUDIUS_URL}${route}` : route
+}
 
 export const getCollectionRoute = (
   collection: UserCollection,
-  fullUrl = false,
+  fullUrl = false
 ) => {
-  const handle = collection.user.handle;
-  const title = collection.playlist_name;
-  const id = collection.playlist_id;
+  const handle = collection.user.handle
+  const title = collection.playlist_name
+  const id = collection.playlist_id
   const route = collection.is_album
     ? `/${encodeUrlName(handle)}/album/${encodeUrlName(title)}-${id}`
-    : `/${encodeUrlName(handle)}/playlist/${encodeUrlName(title)}-${id}`;
-  return fullUrl ? `${AUDIUS_URL}${route}` : route;
-};
+    : `/${encodeUrlName(handle)}/playlist/${encodeUrlName(title)}-${id}`
+  return fullUrl ? `${AUDIUS_URL}${route}` : route
+}
 
 export const getUserListRoute = (
   notification: Notification,
-  fullUrl = false,
+  fullUrl = false
 ) => {
-  const route = `/notification/${notification.id}/users`;
-  return fullUrl ? `${AUDIUS_URL}${route}` : route;
-};
+  const route = `/notification/${notification.id}/users`
+  return fullUrl ? `${AUDIUS_URL}${route}` : route
+}
 
 export const getEntityRoute = (
   entity: any,
   entityType: Entity,
-  fullUrl: boolean = false,
+  fullUrl = false
 ) => {
   switch (entityType) {
     case Entity.Track:
-      return getTrackRoute(entity, fullUrl);
+      return getTrackRoute(entity, fullUrl)
     case Entity.User:
-      return getUserRoute(entity, fullUrl);
+      return getUserRoute(entity, fullUrl)
     case Entity.Album:
     case Entity.Playlist:
-      return getCollectionRoute(entity, fullUrl);
+      return getCollectionRoute(entity, fullUrl)
   }
-};
+}
 
 export const getNotificationRoute = (notification: Notification) => {
   switch (notification.type) {
     case NotificationType.Announcement:
-      return null;
-    case NotificationType.Follow:
-      const users = notification.users;
-      const isMultiUser = !!users && users.length > 1;
+      return null
+    case NotificationType.Follow: {
+      const users = notification.users
+      const isMultiUser = !!users && users.length > 1
       if (isMultiUser) {
-        return getUserListRoute(notification);
+        return getUserListRoute(notification)
       }
-      const firstUser = notification.users[0];
-      return getUserRoute(firstUser);
+      const firstUser = notification.users[0]
+      return getUserRoute(firstUser)
+    }
     case NotificationType.UserSubscription:
-      return getEntityRoute(notification.entities[0], notification.entityType);
+      return getEntityRoute(notification.entities[0], notification.entityType)
     case NotificationType.Favorite:
-      return getEntityRoute(notification.entity, notification.entityType);
+      return getEntityRoute(notification.entity, notification.entityType)
     case NotificationType.Repost:
-      return getEntityRoute(notification.entity, notification.entityType);
+      return getEntityRoute(notification.entity, notification.entityType)
     case NotificationType.Milestone:
       if (notification.achievement === Achievement.Followers) {
-        return getUserRoute(notification.user);
+        return getUserRoute(notification.user)
       }
-      return getEntityRoute(notification.entity, notification.entityType);
-    case NotificationType.RemixCosign:
+      return getEntityRoute(notification.entity, notification.entityType)
+    case NotificationType.RemixCosign: {
       const original = notification.entities.find(
-        (track: Track) => track.owner_id === notification.parentTrackUserId,
-      );
-      return getEntityRoute(original, Entity.Track);
-    case NotificationType.RemixCreate:
+        (track: Track) => track.owner_id === notification.parentTrackUserId
+      )
+      return getEntityRoute(original, Entity.Track)
+    }
+    case NotificationType.RemixCreate: {
       const remix = notification.entities.find(
-        (track: Track) => track.track_id === notification.childTrackId,
-      );
-      return getEntityRoute(remix, Entity.Track);
+        (track: Track) => track.track_id === notification.childTrackId
+      )
+      return getEntityRoute(remix, Entity.Track)
+    }
     case NotificationType.TrendingTrack:
-      return getEntityRoute(notification.entity, notification.entityType);
+      return getEntityRoute(notification.entity, notification.entityType)
   }
-};
+}

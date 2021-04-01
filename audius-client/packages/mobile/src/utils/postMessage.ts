@@ -1,4 +1,4 @@
-import { MessageType, Message } from "../message"
+import { MessageType, Message } from '../message'
 
 export type MessageSender = {
   postMessage: (message: string) => void

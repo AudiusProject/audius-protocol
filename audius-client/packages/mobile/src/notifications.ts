@@ -1,16 +1,11 @@
-import { Platform } from 'react-native'
+import { Platform, PushNotificationPermissions } from 'react-native'
 // https://dev.to/edmondso006/react-native-local-ios-and-android-notifications-2c58
 import PushNotification from 'react-native-push-notification'
-import PushNotificationIOS from '@react-native-community/push-notification-ios'
 import AsyncStorage from '@react-native-community/async-storage'
-import WebView from 'react-native-webview'
 
-import { MessageType } from './message'
-import { URL_SCHEME } from 'components/web/WebApp'
-import { postMessage } from './utils/postMessage'
 import { RefObject } from 'react'
 import { MessagePostingWebView } from './types/MessagePostingWebView'
-import Config from "react-native-config"
+import Config from 'react-native-config'
 import { track, make } from './utils/analytics'
 import { EventNames } from './types/analytics'
 import { dispatch } from './App'
@@ -32,12 +27,10 @@ const getPlatformConfiguration = () => {
     return {
       senderID: Config.FCM_SENDER_ID,
       requestPermissions: true,
-      largeIcon: "ic_launcher",
-      smallIcon: "ic_notification"
+      largeIcon: 'ic_launcher',
+      smallIcon: 'ic_notification'
     }
-
-  }
-  else {
+  } else {
     return {
       // IOS ONLY (optional): default: all - Permissions to register.
       permissions: {
@@ -48,9 +41,7 @@ const getPlatformConfiguration = () => {
       // Turn the initial permissions request off
       requestPermissions: false
     }
-
   }
-
 }
 
 // Singleton class
@@ -60,26 +51,30 @@ class PushNotifications {
 
   // onNotification is a function passed in that is to be called when a
   // notification is to be emitted.
-  constructor () {
+  constructor() {
     this.configure()
     this.lastId = 0
     this.token = null
   }
 
-  setWebRef (w: RefObject<MessagePostingWebView>) {
+  setWebRef(w: RefObject<MessagePostingWebView>) {
     webRef = w
   }
 
-  onNotification (notification: any) {
+  onNotification(notification: any) {
     console.info(`Received notification ${JSON.stringify(notification)}`)
     if (notification.userInteraction || Platform.OS === 'android') {
-      track(make({
-        eventName: EventNames.NOTIFICATIONS_OPEN_PUSH_NOTIFICATION,
-        ...(notification.message ? {
-          title: notification.message.title,
-          body: notification.message.body
-        } : {})
-      }))
+      track(
+        make({
+          eventName: EventNames.NOTIFICATIONS_OPEN_PUSH_NOTIFICATION,
+          ...(notification.message
+            ? {
+                title: notification.message.title,
+                body: notification.message.body
+              }
+            : {})
+        })
+      )
 
       if (!webRef || !webRef.current) return
 
@@ -87,18 +82,18 @@ class PushNotifications {
     }
   }
 
-  async onRegister (token: Token) {
-    console.log("REGISTER DEVICE TOKEN", token)
+  async onRegister(token: Token) {
+    console.log('REGISTER DEVICE TOKEN', token)
     this.token = token
     await AsyncStorage.setItem('@device_token', JSON.stringify(token))
     isRegistering = false
   }
 
-  deregister () {
+  deregister() {
     AsyncStorage.removeItem('@device_token')
   }
 
-  async configure () {
+  async configure() {
     PushNotification.configure({
       onNotification: this.onNotification,
       onRegister: this.onRegister,
@@ -119,29 +114,33 @@ class PushNotifications {
     }
   }
 
-  requestPermission () {
+  requestPermission() {
     isRegistering = true
     PushNotification.requestPermissions()
   }
 
-  checkPermission (callback: (permissions: { alert: 0 | 1 }) => void) {
+  checkPermission(
+    callback: (permissions: PushNotificationPermissions) => void
+  ) {
     return PushNotification.checkPermissions(callback)
   }
 
-  cancelNotif () {
+  cancelNotif() {
     PushNotification.cancelLocalNotifications({ id: '' + this.lastId })
   }
 
-  cancelAll () {
+  cancelAll() {
     PushNotification.cancelAllLocalNotifications()
   }
 
-  setBadgeCount (count: number) {
+  setBadgeCount(count: number) {
     PushNotification.setApplicationIconBadgeNumber(count)
   }
 
-  async getToken () {
+  async getToken() {
     // Wait until the device token and OS are persisted to async storage
+    // isRegistering modified as global
+    // eslint-disable-next-line no-unmodified-loop-condition
     while (isRegistering) {
       await new Promise(resolve => setTimeout(resolve, 100))
     }

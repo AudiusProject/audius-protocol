@@ -19,38 +19,29 @@ type FavoriteProps = {
   onGoToRoute: (route: string) => void
 }
 
-const Favorite = ({
-  notification,
-  onGoToRoute
-}: FavoriteProps) => {
-  const firstUser = (notification).users[0]
+const Favorite = ({ notification, onGoToRoute }: FavoriteProps) => {
+  const firstUser = notification.users[0]
   let otherUsers = ''
-  if ((notification).userIds.length > 1) {
-    const usersLen = (notification).userIds.length - 1
-    otherUsers = ` and ${formatCount(usersLen)} other${
-      usersLen > 1 ? 's' : ''
-    }`
+  if (notification.userIds.length > 1) {
+    const usersLen = notification.userIds.length - 1
+    otherUsers = ` and ${formatCount(usersLen)} other${usersLen > 1 ? 's' : ''}`
   }
   const entityType = notification.entityType
-  const entity = (notification).entity
+  const entity = notification.entity
 
   const textWrapperStyle = useTheme(styles.textWrapper, {
     color: 'neutral'
   })
 
   return (
-    <View
-    >
+    <View>
       <UserImages
         notification={notification}
         users={notification.users}
         onGoToRoute={onGoToRoute}
       />
       <Text style={textWrapperStyle}>
-        <User
-          user={firstUser}
-          onGoToRoute={onGoToRoute}
-        />
+        <User user={firstUser} onGoToRoute={onGoToRoute} />
         {`${otherUsers} favorited your ${entityType.toLowerCase()} `}
         <Entity
           entity={entity}

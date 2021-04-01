@@ -1,6 +1,9 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import { RemixCreate as RemixNotification, Entity as EntityType} from '../../../store/notifications/types'
+import {
+  RemixCreate as RemixNotification,
+  Entity as EntityType
+} from '../../../store/notifications/types'
 import UserImages from './UserImages'
 import User from './User'
 import Entity from './Entity'
@@ -11,7 +14,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontFamily: 'AvenirNextLTPro-Medium',
     fontSize: 16,
-    color: '#858199',
+    color: '#858199'
   },
   body: {
     flexDirection: 'row',
@@ -33,10 +36,7 @@ type RemixProps = {
   onGoToRoute: (route: string) => void
 }
 
-const Remix = ({
-  notification,
-  onGoToRoute
-}: RemixProps) => {
+const Remix = ({ notification, onGoToRoute }: RemixProps) => {
   const user = notification.user
   const entity = notification.entities.find(
     (track: Track) => track.track_id === notification.childTrackId
@@ -46,12 +46,9 @@ const Remix = ({
   )
 
   return (
-    <View
-    >
+    <View>
       <Text style={styles.titleText}>
-        <Text>
-          {`New remix of your track `}
-        </Text>
+        <Text>{`New remix of your track `}</Text>
         <Entity
           entity={original}
           entityType={EntityType.Track}
@@ -72,10 +69,7 @@ const Remix = ({
             onGoToRoute={onGoToRoute}
           />
           <Text>{` by `}</Text>
-          <User
-            user={user}
-            onGoToRoute={onGoToRoute}
-          />
+          <User user={user} onGoToRoute={onGoToRoute} />
         </Text>
       </View>
       <TwitterShare notification={notification} />

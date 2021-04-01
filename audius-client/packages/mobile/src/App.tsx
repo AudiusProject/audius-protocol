@@ -13,18 +13,17 @@ import PushNotifications from './notifications'
 import { setup as setupAnalytics } from './utils/analytics'
 import useConnectivity from './components/web/useConnectivity'
 import { incrementSessionCount } from './utils/useSessionCount'
-import NotificationReminder from './components/notification-reminder/NotificationReminder'
 import Notifications from './components/notifications/Notifications'
 
 const store = createStore(
   createRootReducer(),
-  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 )
 export const dispatch = store.dispatch
 
 const Airplay = Platform.select({
   ios: () => require('./components/audio/Airplay').default,
-  android: () => () => null,
+  android: () => () => null
 })()
 
 // Increment the session count when the App.tsx code is first run
@@ -48,19 +47,21 @@ const App = () => {
     setupAnalytics()
   }, [])
 
-  return <Provider store={store}>
-    <GoogleCast webRef={webRef} />
-    <WebApp webRef={webRef} />
-    {/*
+  return (
+    <Provider store={store}>
+      <GoogleCast webRef={webRef} />
+      <WebApp webRef={webRef} />
+      {/*
       Note: it is very important that Notifications is rendered after WebApp.
       On Android, regardless of position: absolute, WebApp will steal all of Notifications
       touch targets and onPress will not work.
     */}
-    <Notifications webRef={webRef} />
-    <Audio webRef={webRef} />
-    <OAuth webRef={webRef} />
-    <Airplay webRef={webRef} />
-  </Provider>
+      <Notifications webRef={webRef} />
+      <Audio webRef={webRef} />
+      <OAuth webRef={webRef} />
+      <Airplay webRef={webRef} />
+    </Provider>
+  )
 }
 
 export default App

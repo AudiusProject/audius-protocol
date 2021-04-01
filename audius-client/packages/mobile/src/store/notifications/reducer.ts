@@ -52,7 +52,7 @@ const reducer = (
         status: action.status,
         notifications: action.notifications
       }
-    case MARK_AS_VIEWED:
+    case MARK_AS_VIEWED: {
       const newNotifications = state.notifications.map(notif => ({
         ...notif,
         isViewed: true
@@ -61,6 +61,7 @@ const reducer = (
         ...state,
         notifications: newNotifications
       }
+    }
     case SET_STATUS:
       return {
         ...state,
@@ -71,4 +72,4 @@ const reducer = (
   }
 }
 
-export default reducer 
+export default reducer

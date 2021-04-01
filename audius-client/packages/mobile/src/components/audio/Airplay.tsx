@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, Ref } from 'react'
-import { requireNativeComponent, NativeEventEmitter, NativeModules } from 'react-native'
+import {
+  requireNativeComponent,
+  NativeEventEmitter,
+  NativeModules
+} from 'react-native'
 import WebView from 'react-native-webview'
 import { MessageType } from '../../message'
 import { postMessage } from '../../utils/postMessage'
@@ -9,7 +13,6 @@ const AIRPLAY_PORT_TYPE = 'AirPlay'
 const AirplayViewManager = requireNativeComponent('AirplayView')
 const { AirplayEvent } = NativeModules
 const airplayEventListener = new NativeEventEmitter(AirplayEvent)
-
 
 type OwnProps = {
   webRef: Ref<WebView>
@@ -27,7 +30,7 @@ const Airplay = ({ webRef }: OwnProps) => {
     AirplayEvent.start()
     listenerRef.current = airplayEventListener.addListener(
       'deviceConnected',
-      (device) => {
+      device => {
         console.info(`Connected to device ${device}`)
         if (
           device &&
@@ -52,20 +55,19 @@ const Airplay = ({ webRef }: OwnProps) => {
               isCasting: false,
               isAction: true
             })
+          }
         }
       }
-    })
+    )
 
     return () => {
       if (listenerRef.current) {
         listenerRef.current.stop()
       }
     }
-  }, [listenerRef])
+  }, [webRef, listenerRef])
 
-  return (
-    <AirplayViewManager style={{display: 'none'}} />
-  )
+  return <AirplayViewManager style={{ display: 'none' }} />
 }
 
 export default Airplay

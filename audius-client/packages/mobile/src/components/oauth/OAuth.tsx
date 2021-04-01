@@ -4,7 +4,12 @@ import { connect } from 'react-redux'
 import { WebView } from 'react-native-webview'
 import { NativeSyntheticEvent, Modal, View, Button } from 'react-native'
 
-import { getUrl, getIsOpen, getMessageId, getAuthProvider } from '../../store/oauth/selectors'
+import {
+  getUrl,
+  getIsOpen,
+  getMessageId,
+  getAuthProvider
+} from '../../store/oauth/selectors'
 import { AppState } from '../../store'
 import { closePopup } from '../../store/oauth/actions'
 import { Provider } from '../../store/oauth/reducer'
@@ -96,15 +101,7 @@ type Props = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const OAuth = ({
-  url,
-  isOpen,
-  messageId,
-  webRef,
-  provider,
-  close
-}: Props) => {
-
+const OAuth = ({ url, isOpen, messageId, webRef, provider, close }: Props) => {
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
     if (event.nativeEvent.data && webRef.current) {
@@ -155,9 +152,10 @@ const OAuth = ({
       })
     }
     close()
-  }, [close, provider])
+  }, [webRef, messageId, close, provider])
 
-  const injected = provider === Provider.INSTAGRAM ? INSTAGRAM_POLLER : TWITTER_POLLER
+  const injected =
+    provider === Provider.INSTAGRAM ? INSTAGRAM_POLLER : TWITTER_POLLER
   return (
     <Modal
       animationType='slide'
@@ -167,20 +165,18 @@ const OAuth = ({
       hardwareAccelerated
     >
       <View style={{ flex: 1, marginTop: 20 }}>
-        <View style={{
-          height: 40,
-          flexDirection: 'row',
-          justifyContent: 'flex-start',
-          paddingTop: 6,
-          paddingLeft: 6,
-          paddingBottom: 6,
-          marginTop: 10
-        }}>
-          <Button
-            onPress={onClose}
-            title='Close'
-          >
-          </Button>
+        <View
+          style={{
+            height: 40,
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            paddingTop: 6,
+            paddingLeft: 6,
+            paddingBottom: 6,
+            marginTop: 10
+          }}
+        >
+          <Button onPress={onClose} title='Close' />
         </View>
         <WebView
           injectedJavaScript={injected}

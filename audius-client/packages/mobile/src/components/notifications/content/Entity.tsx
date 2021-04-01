@@ -14,16 +14,12 @@ const styles = StyleSheet.create({
 })
 
 type EntityProps = {
-  entity: any,
-  entityType: EntityType,
+  entity: any
+  entityType: EntityType
   onGoToRoute: (route: string) => void
 }
 
-const Entity = ({
-  entity,
-  entityType,
-  onGoToRoute
-}: EntityProps) => {
+const Entity = ({ entity, entityType, onGoToRoute }: EntityProps) => {
   const onPress = useCallback(() => {
     onGoToRoute(getEntityRoute(entity, entityType))
   }, [entity, entityType, onGoToRoute])
@@ -34,7 +30,7 @@ const Entity = ({
 
   return (
     <Text style={textStyle} onPress={onPress}>
-      { getEntityName(entity) }
+      {getEntityName(entity)}
     </Text>
   )
 }

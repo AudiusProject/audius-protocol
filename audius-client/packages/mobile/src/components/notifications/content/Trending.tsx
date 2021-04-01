@@ -25,10 +25,7 @@ type TrendingProps = {
   onGoToRoute: (route: string) => void
 }
 
-const Trending = ({
-  notification,
-  onGoToRoute
-}: TrendingProps) => {
+const Trending = ({ notification, onGoToRoute }: TrendingProps) => {
   const entityType = notification.entityType
   const { rank, entity } = notification
   const rankSuffix = getRankSuffix(rank)
@@ -38,8 +35,7 @@ const Trending = ({
   })
 
   return (
-    <View
-    >
+    <View>
       <Text style={textWrapperStyle}>
         {`Your track `}
         <Entity
@@ -49,9 +45,7 @@ const Trending = ({
         />
         {` is ${rank}${rankSuffix} on Trending Right Now! `}
       </Text>
-      <TwitterShare
-        notification={notification}
-      />
+      <TwitterShare notification={notification} />
     </View>
   )
 }

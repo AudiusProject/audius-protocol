@@ -10,6 +10,8 @@ export const getTrack = (state: AppState) => {
 }
 export const getPlaying = (state: AppState) => getBaseState(state).playing
 export const getIndex = (state: AppState) => getBaseState(state).index
-export const getQueueLength = (state: AppState) => getBaseState(state).queue.length
+export const getQueueLength = (state: AppState) =>
+  getBaseState(state).queue.length
 export const getSeek = (state: AppState) => getBaseState(state).seek
-export const getIsRepeatSingle = (state: AppState) => getBaseState(state).repeatMode === RepeatMode.SINGLE
+export const getIsRepeatSingle = (state: AppState) =>
+  getBaseState(state).repeatMode === RepeatMode.SINGLE

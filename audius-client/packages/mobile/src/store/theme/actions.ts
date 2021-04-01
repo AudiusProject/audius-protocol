@@ -7,8 +7,7 @@ type SetAction = {
   theme: Theme
 }
 
-export type ThemeActions =
-  SetAction
+export type ThemeActions = SetAction
 
 export const set = (theme: Theme): SetAction => ({
   type: SET,
