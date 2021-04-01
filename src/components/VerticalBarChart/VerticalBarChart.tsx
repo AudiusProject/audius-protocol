@@ -98,7 +98,7 @@ const Labels = ({ labels }: { labels: string[] }) => {
       {labels.map((label, index) => (
         <div key={label} className={styles.labelContainer}>
           <IconCrown className={styles.crown} />
-          <div className={styles.index}>{index+1}</div>
+          <div className={styles.index}>{index + 1}</div>
           <div className={styles.label}>{label}</div>
         </div>
       ))}
@@ -125,7 +125,7 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
   labels,
   error,
   viewMore,
-  onViewMore,
+  onViewMore
 }) => {
   const isMobile = useIsMobile()
   const barData = data ? getData(data, isMobile) : null
@@ -139,9 +139,7 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
           <Error />
         ) : data && labels ? (
           <>
-            <div className={styles.yLabel}>
-              {yLabel}
-            </div>
+            <div className={styles.yLabel}>{yLabel}</div>
             <Bar
               height={100}
               data={barData}
@@ -154,10 +152,10 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
         )}
       </div>
       {!error && data && labels && viewMore && (
-          <div className={styles.viewMore} onClick={onViewMore}>
-            {viewMore}
-          </div>
-        )}
+        <div className={styles.viewMore} onClick={onViewMore}>
+          {viewMore}
+        </div>
+      )}
     </Paper>
   )
 }

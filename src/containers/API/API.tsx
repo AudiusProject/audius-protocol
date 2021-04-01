@@ -24,12 +24,13 @@ type APIProps = OwnProps
 const API: React.FC<APIProps> = () => {
   const onClickLearnMore = useOpenLink(AUDIUS_API_URL)
   return (
-    <Page
-      title={messages.title}
-      className={styles.container}
-    >
+    <Page title={messages.title} className={styles.container}>
       <div className={styles.apiBanner}>
-        <a href={AUDIUS_API_URL} className={styles.learnMore} onClick={onClickLearnMore}>
+        <a
+          href={AUDIUS_API_URL}
+          className={styles.learnMore}
+          onClick={onClickLearnMore}
+        >
           {messages.cta}
         </a>
       </div>

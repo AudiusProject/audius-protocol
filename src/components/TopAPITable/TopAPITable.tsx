@@ -21,7 +21,7 @@ export type ServiceRow = {
 
 export type APIAppRequests = {
   rank: number
-  name: string,
+  name: string
   totalRequests: number
 }
 
@@ -43,17 +43,25 @@ const TopAPITable: React.FC<TopAPITableProps> = ({
   const isMobile = useIsMobile()
   const { topApps } = useTopApps(Bucket.ALL_TIME)
   let error = false
-  let displayData: { name: string, totalRequests: number, rank: number }[] | null = null
+  let displayData:
+    | { name: string; totalRequests: number; rank: number }[]
+    | null = null
   if (topApps === MetricError.ERROR) {
     error = true
     displayData = []
   } else if (topApps) {
-    const data = Object.keys(topApps).reduce((apps: { name: string, totalRequests: number }[], name: string) => {
-      apps.push({ name, totalRequests: topApps[name] })
-      return apps
-    }, [])
+    const data = Object.keys(topApps).reduce(
+      (apps: { name: string; totalRequests: number }[], name: string) => {
+        apps.push({ name, totalRequests: topApps[name] })
+        return apps
+      },
+      []
+    )
     data.sort((a, b) => b.totalRequests - a.totalRequests)
-    displayData = data.map((nameCount, idx) => ({ ...nameCount, rank: idx + 1 }))
+    displayData = data.map((nameCount, idx) => ({
+      ...nameCount,
+      rank: idx + 1
+    }))
   }
 
   const columns = [
@@ -66,14 +74,10 @@ const TopAPITable: React.FC<TopAPITableProps> = ({
       <div className={styles.rowContainer}>
         <div className={styles.rankName}>
           <div className={clsx(styles.rowCol, styles.colNum)}>
-            {data.rank <= CROWN_RANK && (
-              <IconCrown className={styles.crown} />
-            )}
+            {data.rank <= CROWN_RANK && <IconCrown className={styles.crown} />}
             {data.rank}
           </div>
-          <div className={clsx(styles.rowCol, styles.colName)}>
-            {data.name}
-          </div>
+          <div className={clsx(styles.rowCol, styles.colName)}>{data.name}</div>
         </div>
         <div className={clsx(styles.rowCol, styles.colTotalReq)}>
           {formatNumberCommas(data.totalRequests.toString())}
@@ -83,13 +87,16 @@ const TopAPITable: React.FC<TopAPITableProps> = ({
   }
 
   const isLoading = displayData === null
-  const onRowClick = () => { }
-  const onClickMore = () => { }
+  const onRowClick = () => {}
+  const onClickMore = () => {}
   return (
     <Table
       title={messages.title}
       isLoading={isLoading}
-      className={clsx(styles.topAddressesTable, { [className!]: !!className, [styles.mobile]: isMobile })}
+      className={clsx(styles.topAddressesTable, {
+        [className!]: !!className,
+        [styles.mobile]: isMobile
+      })}
       columns={columns}
       data={displayData || []}
       renderRow={renderRow}

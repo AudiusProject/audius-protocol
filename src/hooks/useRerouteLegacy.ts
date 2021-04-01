@@ -8,7 +8,6 @@ import { useLocation } from 'react-router-dom'
  * NOTE: After switching to ipfs hosted, we can remove entirely
  */
 
-
 // -------------------------------- Hooks  --------------------------------
 export const useRerouteLegacy = () => {
   const location = useLocation()

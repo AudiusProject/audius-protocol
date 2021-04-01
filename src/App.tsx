@@ -89,7 +89,11 @@ const Root = () => (
               />
               <Route path={routes.ANALYTICS} exact component={Analytics} />
               <Route path={routes.API} exact component={API} />
-              <Route path={routes.API_LEADERBOARD} exact component={APILeaderboard} />
+              <Route
+                path={routes.API_LEADERBOARD}
+                exact
+                component={APILeaderboard}
+              />
               <Route component={NotFound} />
             </Switch>
           </div>

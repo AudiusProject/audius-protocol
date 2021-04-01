@@ -94,7 +94,7 @@ const Table: React.FC<TableProps> = ({
         </div>
       ) : error ? (
         <Error className={styles.error} />
-      ): (
+      ) : (
         <>
           <div className={styles.headers}>
             {columns.map(c => (

@@ -154,8 +154,8 @@ const BarChart: React.FC<BarChartProps> = ({
 }) => {
   const isMobile = useIsMobile()
   return (
-    <Paper 
-      className={clsx(styles.chartContainer, { [styles.onClick]: !!onClick})}
+    <Paper
+      className={clsx(styles.chartContainer, { [styles.onClick]: !!onClick })}
       onClick={onClick}
     >
       <div className={styles.header}>

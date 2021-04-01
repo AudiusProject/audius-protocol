@@ -613,15 +613,20 @@ export const useTrailingTopGenres = (bucket: Bucket) => {
 }
 
 const getTopLimit = (nameCount: { [name: string]: number }, limit: number) => {
-  const flattenedNameCounts = Object.keys(nameCount).reduce((acc: {name: string, count: number}[], name) => {
-    acc.push({ name, count: nameCount[name] })
-    return acc
-  }, [])
+  const flattenedNameCounts = Object.keys(nameCount).reduce(
+    (acc: { name: string; count: number }[], name) => {
+      acc.push({ name, count: nameCount[name] })
+      return acc
+    },
+    []
+  )
   flattenedNameCounts.sort((a, b) => b.count - a.count)
-  return flattenedNameCounts.slice(0, limit).reduce((nc: { [name: string]: number }, {name, count}) => {
-    nc[name] = count
-    return nc
-  }, {})
+  return flattenedNameCounts
+    .slice(0, limit)
+    .reduce((nc: { [name: string]: number }, { name, count }) => {
+      nc[name] = count
+      return nc
+    }, {})
 }
 
 export const useTopApps = (bucket: Bucket, limit?: number) => {
@@ -635,7 +640,9 @@ export const useTopApps = (bucket: Bucket, limit?: number) => {
     if (
       doOnce !== bucket &&
       nodes.length &&
-      (topApps === null || topApps === undefined || (limit !== undefined && Object.keys(topApps).length < limit))
+      (topApps === null ||
+        topApps === undefined ||
+        (limit !== undefined && Object.keys(topApps).length < limit))
     ) {
       setDoOnce(bucket)
       dispatch(fetchTopApps(bucket, nodes, limit))
@@ -647,7 +654,12 @@ export const useTopApps = (bucket: Bucket, limit?: number) => {
       setDoOnce(null)
     }
   }, [topApps, setDoOnce])
-  if (limit && topApps && topApps !== MetricError.ERROR && limit > Object.keys(topApps).length) {
+  if (
+    limit &&
+    topApps &&
+    topApps !== MetricError.ERROR &&
+    limit > Object.keys(topApps).length
+  ) {
     return {
       topApps: getTopLimit(topApps, limit)
     }

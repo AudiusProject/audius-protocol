@@ -24,9 +24,7 @@ const APILeaderboard: React.FC<APILeaderboardProps> = () => {
       defaultPreviousPageRoute={API}
     >
       <RewardsCTABanner className={styles.rewardsCTABanner} />
-      <TopAPITable
-        className={styles.topAPITable}
-      />
+      <TopAPITable className={styles.topAPITable} />
     </Page>
   )
 }

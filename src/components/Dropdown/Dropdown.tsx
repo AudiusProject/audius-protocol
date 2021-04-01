@@ -21,11 +21,14 @@ const Dropdown: React.FC<DropdownProps> = ({
   textFormatter = (option: string) => option
 }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const onClickDropdown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsOpen(isOpen => !isOpen)
-  }, [setIsOpen])
+  const onClickDropdown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsOpen(isOpen => !isOpen)
+    },
+    [setIsOpen]
+  )
   const insideRef = useClickOutside(() => setIsOpen(false))
   const onClickOption = useCallback(
     (e: React.MouseEvent, o: string) => {

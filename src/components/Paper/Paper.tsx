@@ -8,7 +8,11 @@ interface PaperProps {
   onClick?: () => void
 }
 
-const Paper: React.FC<PaperProps> = ({ className, children, onClick = () => {} }) => {
+const Paper: React.FC<PaperProps> = ({
+  className,
+  children,
+  onClick = () => {}
+}) => {
   return (
     <div
       onClick={onClick}

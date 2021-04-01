@@ -19,29 +19,25 @@ type OwnProps = {
 
 type RewardsCTABannerProps = OwnProps
 
-const RewardsCTABanner: React.FC<RewardsCTABannerProps> = ({
-  className,
-}) => {
+const RewardsCTABanner: React.FC<RewardsCTABannerProps> = ({ className }) => {
   const { isOpen, onClick, onClose } = useModalControls()
   const isMobile = useIsMobile()
 
   return (
     <>
-      <AudioRewardsModal
-        isOpen={isOpen}
-        onClose={onClose}
-      />
+      <AudioRewardsModal isOpen={isOpen} onClose={onClose} />
       <Paper
-        className={clsx(styles.container, { [className!]: className, [styles.mobile]: isMobile })}
+        className={clsx(styles.container, {
+          [className!]: className,
+          [styles.mobile]: isMobile
+        })}
         onClick={onClick}
       >
         <div className={styles.rewardsText}>
           <IconCrown className={styles.iconCrown} />
           {messages.rewards}
         </div>
-        <span className={styles.descriptionText}>
-          {messages.description}
-        </span>
+        <span className={styles.descriptionText}>{messages.description}</span>
 
         {!isMobile && (
           <div className={styles.learnMore}>
