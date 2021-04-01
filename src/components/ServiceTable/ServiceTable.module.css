@@ -5,7 +5,7 @@
   width: 100%;
 }
 
-.colRank {
+.colEndpoint {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -14,24 +14,20 @@
   margin-right: 8px;
 }
 
-.colTotalReq {
-  font-family: Avenir Next LT Pro;
-  font-weight: normal;
+.rowCol {
+  font-family: var(--font-family);
+
+  font-weight: var(--font-regular);
   font-size: var(--font-m);
-  text-align: right;
+
   color: var(--neutral);
 }
 
-.colNum {
-  width: 106px;
-  padding: 32px 0px 0px;
+.error {
+  height: 20px;
+  width: 20px;
 }
 
-.colName {
-  flex: 1;
-}
-
-.rowCol.colTotalReq {
-  width: 166px;
-  padding-right: 32px;
+.error > * {
+  padding: 0;
 }
