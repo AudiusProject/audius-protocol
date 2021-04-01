@@ -2,17 +2,17 @@ import { JsonMap } from '@segment/analytics-react-native'
 import { Message } from '../message'
 
 export type Identify = {
-  handle: string,
+  handle: string
   traits?: JsonMap
 }
 
 export type Track = {
-  eventName: string,
+  eventName: string
   properties?: JsonMap
 }
 
 export type Screen = {
-  route: string,
+  route: string
   properties?: JsonMap
 }
 
@@ -22,37 +22,37 @@ export enum EventNames {
   LISTEN = 'Listen',
   PLAYBACK_PLAY = 'Playback: Play',
   PLAYBACK_PAUSE = 'Playback: Pause',
-  NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
+  NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification'
 }
 
 export type Listen = {
-  eventName: EventNames.LISTEN,
+  eventName: EventNames.LISTEN
   trackId: string
 }
 
 export enum PlaybackSource {
-  PASSIVE = 'passive',
+  PASSIVE = 'passive'
 }
 
 type PlaybackPlay = {
   eventName: EventNames.PLAYBACK_PLAY
-  id?: string,
+  id?: string
   source: PlaybackSource
 }
 type PlaybackPause = {
-  eventName: EventNames.PLAYBACK_PAUSE,
-  id?: string,
+  eventName: EventNames.PLAYBACK_PAUSE
+  id?: string
   source: PlaybackSource
 }
 
 type NotificationsOpenPushNotification = {
-  eventName: EventNames.NOTIFICATIONS_OPEN_PUSH_NOTIFICATION,
-  title?: string,
+  eventName: EventNames.NOTIFICATIONS_OPEN_PUSH_NOTIFICATION
+  title?: string
   body?: string
 }
 
 export type AllEvents =
-  Listen |
-  PlaybackPlay |
-  PlaybackPause |
-  NotificationsOpenPushNotification
+  | Listen
+  | PlaybackPlay
+  | PlaybackPause
+  | NotificationsOpenPushNotification

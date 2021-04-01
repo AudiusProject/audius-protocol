@@ -1,5 +1,12 @@
 import React, { useCallback } from 'react'
-import { StyleSheet, View, Text, TouchableOpacity, Animated, Platform } from 'react-native'
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Platform
+} from 'react-native'
 import { Notification, NotificationType } from '../../store/notifications/types'
 import NotificationContent from './content/NotificationContent'
 import IconHeart from '../../assets/images/iconHeart.svg'
@@ -29,20 +36,20 @@ const typeIconMap = {
 
 const typeTitleMap = {
   [NotificationType.Announcement]: "WHAT'S NEW",
-  [NotificationType.Follow]: "NEW FOLLOWER",
-  [NotificationType.UserSubscription]: "ARTIST UPDATE",
-  [NotificationType.Favorite]: "NEW FAVORITES",
-  [NotificationType.Repost]: "NEW REPOSTS",
-  [NotificationType.Milestone]: "NEW MILESTONE",
-  [NotificationType.RemixCosign]: "NEW COSIGN",
-  [NotificationType.RemixCreate]: "NEW REMIX",
-  [NotificationType.TrendingTrack]: "TRENDING"
+  [NotificationType.Follow]: 'NEW FOLLOWER',
+  [NotificationType.UserSubscription]: 'ARTIST UPDATE',
+  [NotificationType.Favorite]: 'NEW FAVORITES',
+  [NotificationType.Repost]: 'NEW REPOSTS',
+  [NotificationType.Milestone]: 'NEW MILESTONE',
+  [NotificationType.RemixCosign]: 'NEW COSIGN',
+  [NotificationType.RemixCreate]: 'NEW REMIX',
+  [NotificationType.TrendingTrack]: 'TRENDING'
 }
 
 const styles = StyleSheet.create({
   item: {
     borderRadius: 8,
-    shadowOffset:{  width: 2,  height: 2,  },
+    shadowOffset: { width: 2, height: 2 },
     shadowOpacity: 1.0,
     elevation: 1,
     padding: 12,
@@ -66,7 +73,7 @@ const styles = StyleSheet.create({
     marginLeft: 12
   },
   body: {
-    marginLeft: 46,
+    marginLeft: 46
   },
   timestamp: {
     fontFamily: 'AvenirNextLTPro-Regular',
@@ -91,10 +98,10 @@ const NotificationBlock = ({
   const onPress = useCallback(() => {
     onGoToRoute(notificationRoute)
   }, [onGoToRoute, notificationRoute])
-  
+
   const itemStyles = useTheme(styles.item, {
     backgroundColor: 'white',
-    shadowColor: 'shadow',
+    shadowColor: 'shadow'
   })
   const timestampStyles = useTheme(styles.timestamp, {
     color: 'neutralLight5'
@@ -105,14 +112,14 @@ const NotificationBlock = ({
   const animation = new Animated.Value(0)
   const inputRange = [0, 1]
   const outputRange = [1, 0.97]
-  const scale = animation.interpolate({inputRange, outputRange})
+  const scale = animation.interpolate({ inputRange, outputRange })
 
   const onPressIn = () => {
     Animated.spring(animation, {
       toValue: 1,
       tension: 150,
       friction: 25,
-      useNativeDriver: true,
+      useNativeDriver: true
     }).start()
   }
   const onPressOut = () => {
@@ -120,57 +127,52 @@ const NotificationBlock = ({
       toValue: 0,
       tension: 150,
       friction: 25,
-      useNativeDriver: true,
+      useNativeDriver: true
     }).start()
   }
 
   return (
-    <Animated.View
-      style={[{transform: [{scale}]}]}
-    >
-    <TouchableOpacity
-      onPress={notificationRoute ? onPress : undefined}
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      delayPressIn={50}
-      activeOpacity={notificationRoute && IS_IOS ? 0.8 : 1}
-    >
-      <View
-        style={[
-          itemStyles,
-          {
-            borderColor: notification.isViewed ? 'none' : highlight,
-            borderWidth: notification.isViewed ? 0 : 2
-          }
-        ]}
+    <Animated.View style={[{ transform: [{ scale }] }]}>
+      <TouchableOpacity
+        onPress={notificationRoute ? onPress : undefined}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        delayPressIn={50}
+        activeOpacity={notificationRoute && IS_IOS ? 0.8 : 1}
       >
-        <View 
-          style={styles.top}
-        >
-          <Icon fill={notification.isViewed ? lowlight : highlight} />
-          <Text
-            style={[styles.title, {
-              color: notification.isViewed ? lowlight : highlight,
-            }]}
-          >{title}</Text>
-        </View>
         <View
-          style={styles.body}
+          style={[
+            itemStyles,
+            {
+              borderColor: notification.isViewed ? 'none' : highlight,
+              borderWidth: notification.isViewed ? 0 : 2
+            }
+          ]}
         >
-          <View
-            style={styles.content}
-          >
-            <NotificationContent
-              notification={notification}
-              onGoToRoute={onGoToRoute}
-            />
+          <View style={styles.top}>
+            <Icon fill={notification.isViewed ? lowlight : highlight} />
+            <Text
+              style={[
+                styles.title,
+                {
+                  color: notification.isViewed ? lowlight : highlight
+                }
+              ]}
+            >
+              {title}
+            </Text>
           </View>
-          <Text style={timestampStyles}>
-            {notification.timeLabel}
-          </Text>
+          <View style={styles.body}>
+            <View style={styles.content}>
+              <NotificationContent
+                notification={notification}
+                onGoToRoute={onGoToRoute}
+              />
+            </View>
+            <Text style={timestampStyles}>{notification.timeLabel}</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
     </Animated.View>
   )
 }

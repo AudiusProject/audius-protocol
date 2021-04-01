@@ -38,12 +38,12 @@ type SetStatusAction = {
 }
 
 export type NotificationsActions =
-  OpenAction |
-  CloseAction |
-  AppendAction |
-  ReplaceAction |
-  MarkAsViewedAction |
-  SetStatusAction
+  | OpenAction
+  | CloseAction
+  | AppendAction
+  | ReplaceAction
+  | MarkAsViewedAction
+  | SetStatusAction
 
 export const open = (): OpenAction => ({
   type: OPEN

@@ -1,17 +1,11 @@
 import { Dispatch } from 'redux'
-import {
-  NativeModules,
-  Linking,
-  Platform,
-  BackHandler
-} from 'react-native'
-import NetInfo, { NetInfoState } from '@react-native-community/netinfo'
+import { NativeModules, Linking, Platform } from 'react-native'
 import * as audioActions from './store/audio/actions'
 import * as oauthActions from './store/oauth/actions'
-import * as lifecycleActions  from './store/lifecycle/actions'
+import * as lifecycleActions from './store/lifecycle/actions'
 import * as notificationsActions from './store/notifications/actions'
 import * as themeActions from './store/theme/actions'
-import { showCastPicker }  from './store/googleCast/controller'
+import { showCastPicker } from './store/googleCast/controller'
 import * as webActions from './store/web/actions'
 import { AppState } from './store'
 import * as haptics from './haptics'
@@ -25,7 +19,7 @@ import { checkConnectivity, Connectivity } from './utils/connectivity'
 import { Provider } from './store/oauth/reducer'
 import { handleWebAppLog } from './utils/logging'
 import { remindUserToTurnOnNotifications } from './components/notification-reminder/NotificationReminder'
-import { handleThemeChange, Theme } from './utils/theme'
+import { handleThemeChange } from './utils/theme'
 import { Status } from './types/status'
 
 let sentInitialTheme = false
@@ -162,10 +156,11 @@ export const handleMessage = async (
     case MessageType.GOOGLE_CAST:
       showCastPicker()
       break
-    case MessageType.AIRPLAY:
+    case MessageType.AIRPLAY: {
       const airplay = NativeModules.AirplayViewManager
       airplay.click()
       break
+    }
 
     // Haptics
     case MessageType.HAPTIC_FEEDBACK:
@@ -173,38 +168,34 @@ export const handleMessage = async (
       break
 
     // Notifications
-    case MessageType.ENABLE_PUSH_NOTIFICATIONS:
-      {
-        PushNotifications.requestPermission()
-        const info = await PushNotifications.getToken()
-        postMessage({
-          type: message.type,
-          id: message.id,
-          ...info
-        })
-        break
-      }
-    case MessageType.DISABLE_PUSH_NOTIFICATIONS:
-      {
-        const info = await PushNotifications.getToken()
-        PushNotifications.deregister()
-        postMessage({
-          type: message.type,
-          id: message.id,
-          ...info
-        })
-        break
-      }
-    case MessageType.RESET_NOTIFICATIONS_BADGE_COUNT:
-      {
-        PushNotifications.setBadgeCount(0)
-        break
-      }
-    case MessageType.PROMPT_PUSH_NOTIFICATION_REMINDER:
-      {
-        remindUserToTurnOnNotifications(postMessage)
-        break
-      }
+    case MessageType.ENABLE_PUSH_NOTIFICATIONS: {
+      PushNotifications.requestPermission()
+      const info = await PushNotifications.getToken()
+      postMessage({
+        type: message.type,
+        id: message.id,
+        ...info
+      })
+      break
+    }
+    case MessageType.DISABLE_PUSH_NOTIFICATIONS: {
+      const info = await PushNotifications.getToken()
+      PushNotifications.deregister()
+      postMessage({
+        type: message.type,
+        id: message.id,
+        ...info
+      })
+      break
+    }
+    case MessageType.RESET_NOTIFICATIONS_BADGE_COUNT: {
+      PushNotifications.setBadgeCount(0)
+      break
+    }
+    case MessageType.PROMPT_PUSH_NOTIFICATION_REMINDER: {
+      remindUserToTurnOnNotifications(postMessage)
+      break
+    }
     case MessageType.OPEN_NOTIFICATIONS:
       dispatch(notificationsActions.open())
       postMessage({
@@ -213,10 +204,14 @@ export const handleMessage = async (
       })
       return
     case MessageType.FETCH_NOTIFICATIONS_SUCCESS:
-      dispatch(notificationsActions.append(Status.SUCCESS, message.notifications))
+      dispatch(
+        notificationsActions.append(Status.SUCCESS, message.notifications)
+      )
       return
     case MessageType.FETCH_NOTIFICATIONS_REPLACE:
-      dispatch(notificationsActions.replace(Status.SUCCESS, message.notifications))
+      dispatch(
+        notificationsActions.replace(Status.SUCCESS, message.notifications)
+      )
       return
     case MessageType.FETCH_NOTIFICATIONS_FAILURE:
       return dispatch(notificationsActions.append(Status.FAILURE, []))
@@ -232,7 +227,7 @@ export const handleMessage = async (
       return dispatch(lifecycleActions.backendLoaded())
     case MessageType.SIGNED_IN:
       return dispatch(lifecycleActions.signedIn(message.account))
-    case MessageType.REQUEST_NETWORK_CONNECTED:
+    case MessageType.REQUEST_NETWORK_CONNECTED: {
       const isConnected = checkConnectivity(Connectivity.netInfo)
       postMessage({
         type: MessageType.IS_NETWORK_CONNECTED,
@@ -240,9 +235,10 @@ export const handleMessage = async (
         isAction: true
       })
       break
+    }
 
     // Version
-    case MessageType.GET_VERSION:
+    case MessageType.GET_VERSION: {
       const version = VersionNumber.appVersion
       postMessage({
         type: message.type,
@@ -250,6 +246,7 @@ export const handleMessage = async (
         version
       })
       break
+    }
 
     // Android specific
     case MessageType.ENABLE_PULL_TO_REFRESH:
@@ -259,7 +256,7 @@ export const handleMessage = async (
       if (isIos) return
       return dispatch(webActions.disablePullToRefresh(message))
 
-    case MessageType.PREFERS_COLOR_SCHEME:
+    case MessageType.PREFERS_COLOR_SCHEME: {
       let prefers
       if (!sentInitialTheme) {
         prefers = getInitialDarkModePreference()
@@ -273,6 +270,7 @@ export const handleMessage = async (
         prefersDarkMode: prefers
       })
       break
+    }
 
     case MessageType.SHARE:
       if (isIos) return

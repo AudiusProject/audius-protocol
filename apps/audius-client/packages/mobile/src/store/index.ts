@@ -9,23 +9,24 @@ import notifications, { NotificationsState } from './notifications/reducer'
 import theme, { ThemeState } from './theme/reducer'
 
 export type AppState = {
-  audio: AudioState,
-  web: WebState,
-  oauth: OAuthState,
-  lifecycle: LifecycleState,
-  googleCast: GoogleCastState,
-  notifications: NotificationsState,
+  audio: AudioState
+  web: WebState
+  oauth: OAuthState
+  lifecycle: LifecycleState
+  googleCast: GoogleCastState
+  notifications: NotificationsState
   theme: ThemeState
 }
 
-const createRootReducer = () => combineReducers({
-  audio,
-  web,
-  oauth,
-  lifecycle,
-  googleCast,
-  notifications,
-  theme
-})
+const createRootReducer = () =>
+  combineReducers({
+    audio,
+    web,
+    oauth,
+    lifecycle,
+    googleCast,
+    notifications,
+    theme
+  })
 
 export default createRootReducer

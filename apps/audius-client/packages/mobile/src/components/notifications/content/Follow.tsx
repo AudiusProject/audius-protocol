@@ -9,7 +9,7 @@ import { useTheme } from '../../../utils/theme'
 const styles = StyleSheet.create({
   textWrapper: {
     fontFamily: 'AvenirNextLTPro-Medium',
-    fontSize: 16,
+    fontSize: 16
   }
 })
 
@@ -18,17 +18,12 @@ type FollowProps = {
   onGoToRoute: (route: string) => void
 }
 
-const Follow = ({
-  notification,
-  onGoToRoute
-}: FollowProps) => {
-  const firstUser = (notification).users[0]
+const Follow = ({ notification, onGoToRoute }: FollowProps) => {
+  const firstUser = notification.users[0]
   let otherUsers = ''
-  if ((notification).userIds.length > 1) {
-    const usersLen = (notification).userIds.length - 1
-    otherUsers = ` and ${formatCount(usersLen)} other${
-      usersLen > 1 ? 's' : ''
-    }`
+  if (notification.userIds.length > 1) {
+    const usersLen = notification.userIds.length - 1
+    otherUsers = ` and ${formatCount(usersLen)} other${usersLen > 1 ? 's' : ''}`
   }
 
   const textWrapperStyle = useTheme(styles.textWrapper, {
@@ -36,18 +31,14 @@ const Follow = ({
   })
 
   return (
-    <View
-    >
+    <View>
       <UserImages
         notification={notification}
         users={notification.users}
         onGoToRoute={onGoToRoute}
       />
       <Text style={textWrapperStyle}>
-        <User
-          user={firstUser}
-          onGoToRoute={onGoToRoute}
-        />
+        <User user={firstUser} onGoToRoute={onGoToRoute} />
         {`${otherUsers} Followed you`}
       </Text>
     </View>

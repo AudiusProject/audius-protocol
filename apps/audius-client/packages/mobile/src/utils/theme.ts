@@ -1,8 +1,7 @@
-import { StatusBar } from "react-native"
-import { useSelector } from "react-redux"
+import { StatusBar } from 'react-native'
+import { useSelector } from 'react-redux'
 import { useDarkMode } from 'react-native-dark-mode'
-import { getTheme } from "../store/theme/selectors"
-
+import { getTheme } from '../store/theme/selectors'
 
 export enum Theme {
   DEFAULT = 'default',
@@ -10,7 +9,6 @@ export enum Theme {
   AUTO = 'auto',
   MATRIX = 'matrix'
 }
-
 
 export const handleThemeChange = (theme: Theme) => {
   switch (theme) {
@@ -33,7 +31,7 @@ export const handleThemeChange = (theme: Theme) => {
   // slight delay to allow Splash Screen
   // to animate out.
   setTimeout(() => {
-    StatusBar.setHidden(false, "fade")
+    StatusBar.setHidden(false, 'fade')
   }, 500)
 }
 
@@ -195,5 +193,5 @@ export const useTheme = (baseStyles: object, toTheme: object) => {
       newStyles[key] = themeStyles[toTheme[key]]
     }
   })
-  return {...baseStyles, ...newStyles}
+  return { ...baseStyles, ...newStyles }
 }

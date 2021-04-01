@@ -1,28 +1,7 @@
-import GoogleCast, { CastButton } from 'react-native-google-cast'
-import {
-  AudioActions,
-  PLAY,
-  PAUSE,
-  NEXT,
-  PREVIOUS,
-  SEEK,
-  PERSIST_QUEUE,
-  REPEAT
-} from '../audio/actions'
-
-import {
-  GoogleCastActions,
-  CastStatus,
-  UPDATE_STATUS,
-  SET_PLAY_POSITION
-} from './actions'
-
-type Uri = string
-
-type GoogleCastStatus = CastStatus
+import { CastStatus, UPDATE_STATUS, SET_PLAY_POSITION } from './actions'
 
 export type GoogleCastState = {
-  status: CastStatus,
+  status: CastStatus
   startPosition: number
 }
 

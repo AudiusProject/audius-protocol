@@ -5,7 +5,7 @@ import {
 } from './actions'
 
 export type WebState = {
-  isEnabled: boolean,
+  isEnabled: boolean
   messageId: string | null
 }
 
@@ -19,7 +19,7 @@ const reducer = (
   action: WebActions
 ): WebState => {
   switch (action.type) {
-    case ENABLE_PULL_TO_REFRESH:
+    case ENABLE_PULL_TO_REFRESH: {
       const newState = {
         ...state,
         isEnabled: true
@@ -28,6 +28,7 @@ const reducer = (
         newState.messageId = action.message.id
       }
       return newState
+    }
     case DISABLE_PULL_TO_REFRESH:
       // If the disabled pull to refresh is not the currently enabled one,
       // do nothing.

@@ -5,6 +5,7 @@
 # Env
 .env.prod
 .env.stage
+.eslintcache
 
 # Xcode
 #
