@@ -539,6 +539,53 @@ module.exports = function (app) {
   }))
 
   /**
+   * Serves information on existence of given image cids
+   * @param req
+   * @param req.body
+   * @param {string[]} req.body.cids the cids to check existence for, these cids should be directories containing original.jpg
+   * @dev This route can have a large number of CIDs as input, therefore we use a POST request.
+   */
+  app.post('/batch_image_cids_exist', handleResponse(async (req, res) => {
+    const { cids } = req.body
+
+    if (cids && cids.length > BATCH_CID_ROUTE_LIMIT) {
+      return errorResponseBadRequest(`Too many CIDs passed in, limit is ${BATCH_CID_ROUTE_LIMIT}`)
+    }
+
+    const queryResults = (await models.File.findAll({
+      attributes: ['dirMultihash', 'storagePath'],
+      raw: true,
+      where: {
+        dirMultihash: {
+          [models.Sequelize.Op.in]: cids
+        },
+        fileName: 'original.jpg'
+      }
+    }))
+
+    let cidExists = {}
+
+    // Check if hash exists in disk in batches (to limit concurrent load)
+    for (let i = 0; i < queryResults.length; i += BATCH_CID_EXISTS_CONCURRENCY_LIMIT) {
+      const batch = queryResults.slice(i, i + BATCH_CID_EXISTS_CONCURRENCY_LIMIT)
+      const exists = await Promise.all(batch.map(
+        ({ storagePath }) => fs.pathExists(storagePath)
+      ))
+      batch.map(({ dirMultihash }, idx) => {
+        cidExists[dirMultihash] = exists[idx]
+      })
+
+      await timeout(250)
+    }
+
+    const cidExistanceMap = {
+      cids: cids.map(cid => ({ cid, exists: cidExists[cid] || false }))
+    }
+
+    return successResponse(cidExistanceMap)
+  }))
+
+  /**
    * Serve file from FS given a storage path
    * This is a cnode-cnode only route, not to be consumed by clients. It has auth restrictions to only
    * allow calls from cnodes with delegateWallets registered on chain

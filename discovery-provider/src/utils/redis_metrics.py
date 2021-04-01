@@ -29,7 +29,9 @@ metrics_applications = "applications"
 metrics_visited_nodes = "visited_nodes"
 personal_route_metrics = "personal_route_metrics"
 daily_route_metrics = "daily_route_metrics"
+summed_unique_daily_metrics = "summed_unique_daily_metrics"
 monthly_route_metrics = "monthly_route_metrics"
+summed_unique_monthly_metrics = "summed_unique_monthly_metrics"
 personal_app_metrics = "personal_app_metrics"
 daily_app_metrics = "daily_app_metrics"
 monthly_app_metrics = "monthly_app_metrics"
@@ -44,6 +46,8 @@ def get_rounded_date_time():
 '''
 datetime_format = "%Y/%m/%d:%H"
 datetime_format_secondary = "%Y/%m/%d:%H:%M"
+day_format = datetime_format_secondary.split(':')[0]
+
 def get_rounded_date_time():
     return datetime.utcnow().replace(minute=0, second=0, microsecond=0)
 
@@ -77,6 +81,36 @@ def parse_metrics_key(key):
     date_time = datetime.strptime(f"{date}:{time}", datetime_format)
 
     return source, ip, date_time
+
+def persist_summed_unique_counts(db, timestamp, summed_unique_daily_count, summed_unique_monthly_count):
+    day_str = timestamp.split(':')[0]
+    month_str = f"{day_str[:7]}/01"
+    day = datetime.strptime(day_str, day_format).date()
+    month = datetime.strptime(month_str, day_format).date()
+    with db.scoped_session() as session:
+        day_unique_record = (
+            session.query(AggregateDailyUniqueUsersMetrics)
+            .filter(AggregateDailyUniqueUsersMetrics.timestamp == day)
+            .first()
+        )
+        if day_unique_record:
+            logger.info(f"summed unique count record for day {day} before update: {day_unique_record.summed_count}")
+            day_unique_record.summed_count = max(day_unique_record.summed_count or 0, summed_unique_daily_count)
+            logger.info(f"summed unique count record for day {day} after update: {day_unique_record.summed_count}")
+            session.add(day_unique_record)
+
+        month_unique_record = (
+            session.query(AggregateMonthlyUniqueUsersMetrics)
+            .filter(AggregateMonthlyUniqueUsersMetrics.timestamp == month)
+            .first()
+        )
+        if month_unique_record:
+            logger.info(f"summed unique count record for month {month} before update: \
+                {month_unique_record.summed_count}")
+            month_unique_record.summed_count = max(month_unique_record.summed_count or 0, summed_unique_monthly_count)
+            logger.info(f"summed unique count record for month {month} after update: \
+                {month_unique_record.summed_count}")
+            session.add(month_unique_record)
 
 def persist_route_metrics(db, day, month, count, unique_daily_count, unique_monthly_count):
     with db.scoped_session() as session:
@@ -217,7 +251,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
 
         Persist metrics in the database
     """
-    logger.info(f"about to merge {metric_type} metrics: {metrics}")
+    logger.info(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
     day = end_time.split(':')[0]
     month = f"{day[:7]}/01"
 
@@ -234,7 +268,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
     if month not in monthly_metrics:
         monthly_metrics[month] = {}
 
-    # only relevant for unique users and total api calls
+    # only relevant for unique users metrics
     unique_daily_count = 0
     unique_monthly_count = 0
 
@@ -262,7 +296,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         if timestamp > yesterday_str}
     if daily_metrics:
         redis_set_and_dump(REDIS, daily_key, json.dumps(daily_metrics))
-    logger.info(f"updated cached daily {metric_type} metrics: {daily_metrics}")
+    logger.info(f"updated cached daily {metric_type} metrics")
 
     # clean up metrics METRICS_INTERVAL after the end of the month from monthly_metrics
     thirty_one_days_ago = (datetime.utcnow() - timedelta(days=31)).strftime(datetime_format_secondary)
@@ -270,10 +304,9 @@ def merge_metrics(metrics, end_time, metric_type, db):
         if timestamp > thirty_one_days_ago}
     if monthly_metrics:
         redis_set_and_dump(REDIS, monthly_key, json.dumps(monthly_metrics))
-    logger.info(f"updated cached monthly {metric_type} metrics: {monthly_metrics}")
+    logger.info(f"updated cached monthly {metric_type} metrics")
 
     # persist aggregated metrics from other nodes
-    day_format = datetime_format_secondary.split(':')[0]
     day_obj = datetime.strptime(day, day_format).date()
     month_obj = datetime.strptime(month, day_format).date()
     if metric_type == 'route':
@@ -293,6 +326,8 @@ def get_redis_metrics(redis_handle, start_time, metric_type):
     if not metrics:
         return {}
 
+    # if route metrics, value and count would be an IP and the number of requests from it
+    # otherwise, value and count would be an app and the number of requests from it
     result = {}
     for datetime_str, value_counts in metrics.items():
         datetime_obj = datetime.strptime(datetime_str, datetime_format_secondary)
@@ -307,6 +342,27 @@ def get_redis_route_metrics(start_time):
 
 def get_redis_app_metrics(start_time):
     return get_redis_metrics(REDIS, start_time, personal_app_metrics)
+
+def get_summed_unique_metrics(start_time):
+    day = start_time.strftime(day_format)
+    month = f"{day[:7]}/01"
+
+    summed_unique_daily_metrics_str = redis_get_or_restore(REDIS, summed_unique_daily_metrics)
+    summed_unique_daily_metrics_obj = json.loads(summed_unique_daily_metrics_str) \
+        if summed_unique_daily_metrics_str else {}
+    summed_unique_daily_count = len(summed_unique_daily_metrics_obj[day]) \
+        if day in summed_unique_daily_metrics_obj else 0
+
+    summed_unique_monthly_metrics_str = redis_get_or_restore(REDIS, summed_unique_monthly_metrics)
+    summed_unique_monthly_metrics_obj = json.loads(summed_unique_monthly_metrics_str) \
+        if summed_unique_monthly_metrics_str else {}
+    summed_unique_monthly_count = len(summed_unique_monthly_metrics_obj[month]) \
+        if month in summed_unique_monthly_metrics_obj else 0
+
+    return {
+        'daily': summed_unique_daily_count,
+        'monthly': summed_unique_monthly_count
+    }
 
 def get_aggregate_metrics_info():
     info_str = redis_get_or_restore(REDIS, metrics_visited_nodes)
@@ -361,15 +417,48 @@ def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
     updated_metrics = {timestamp: metrics for timestamp, metrics in values.items() if timestamp > old_timestamp}
     if updated_metrics:
         redis_set_and_dump(REDIS, key, json.dumps(updated_metrics))
-    logger.info(f"updated cached {metric_type} metrics: {updated_metrics}")
+    logger.info(f"updated cached personal {metric_type} metrics")
+
+def update_summed_unique_metrics(now, ip):
+    thirty_one_days_ago = now - timedelta(days=31)
+    thirty_one_days_ago_str = thirty_one_days_ago.strftime(day_format)
+    yesterday = now - timedelta(days=1)
+    yesterday_str = yesterday.strftime(day_format)
+    today_str = now.strftime(day_format)
+    this_month_str = f"{today_str[:7]}/01"
+
+    summed_unique_daily_metrics_str = redis_get_or_restore(REDIS, summed_unique_daily_metrics)
+    summed_unique_daily_metrics_obj = json.loads(summed_unique_daily_metrics_str) \
+        if summed_unique_daily_metrics_str else {}
+    if today_str not in summed_unique_daily_metrics_obj:
+        summed_unique_daily_metrics_obj[today_str] = [ip]
+    elif ip not in summed_unique_daily_metrics_obj[today_str]:
+        summed_unique_daily_metrics_obj[today_str] = summed_unique_daily_metrics_obj[today_str] + [ip]
+    summed_unique_daily_metrics_obj = {timestamp: ips for timestamp, ips in summed_unique_daily_metrics_obj.items() \
+        if timestamp >= yesterday_str}
+    redis_set_and_dump(REDIS, summed_unique_daily_metrics, json.dumps(summed_unique_daily_metrics_obj))
+
+    summed_unique_monthly_metrics_str = redis_get_or_restore(REDIS, summed_unique_monthly_metrics)
+    summed_unique_monthly_metrics_obj = json.loads(summed_unique_monthly_metrics_str) \
+        if summed_unique_monthly_metrics_str else {}
+    if this_month_str not in summed_unique_monthly_metrics_obj:
+        summed_unique_monthly_metrics_obj[this_month_str] = [ip]
+    elif ip not in summed_unique_monthly_metrics_obj[this_month_str]:
+        summed_unique_monthly_metrics_obj[this_month_str] = summed_unique_monthly_metrics_obj[this_month_str] + [ip]
+    summed_unique_monthly_metrics_obj = {timestamp: ips for timestamp, ips \
+        in summed_unique_monthly_metrics_obj.items() if timestamp >= thirty_one_days_ago_str}
+    redis_set_and_dump(REDIS, summed_unique_monthly_metrics, json.dumps(summed_unique_monthly_metrics_obj))
 
 def record_aggregate_metrics():
     now = datetime.utcnow()
     timestamp = now.strftime(datetime_format_secondary)
     old_timestamp = (now - timedelta(minutes=METRICS_INTERVAL * 2)).strftime(datetime_format_secondary)
+    ip = get_request_ip(request)
+
+    update_summed_unique_metrics(now, ip)
 
     update_personal_metrics(
-        personal_route_metrics, old_timestamp, timestamp, get_request_ip(request), 'route'
+        personal_route_metrics, old_timestamp, timestamp, ip, 'route'
     )
 
     application_name = request.args.get(app_name_param, type=str, default=None)

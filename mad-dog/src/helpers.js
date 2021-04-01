@@ -1,3 +1,4 @@
+const moment = require('moment')
 const { _ } = require('lodash')
 const fs = require('fs-extra')
 const path = require('path')
@@ -15,6 +16,7 @@ const {
   getLibsUserInfo,
   getClockValuesFromReplicaSet
 } = ServiceCommands
+const ContainerLogs = require('@audius/service-commands/src/ContainerLogs')
 
 const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Gipsy.mp3',
@@ -27,7 +29,7 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
-const MAX_SYNC_TIMEOUT = 60000
+const MAX_SYNC_TIMEOUT = 120000
 
 /**
  * Adds and upgrades `userCount` users.
@@ -186,9 +188,10 @@ const logOps = async (name, work) => {
 }
 
 /**
- * Checks to see if user exists at wallet index. Returns the user
+ * Checks to see if user exists with the wallet address as the walletIndex. Returns the user
  * @param {*} executeOne
- * @param {*} walletIndex
+ * @param {number} walletIndex index of wallet in config.json
+ * @returns the found user
  */
 const getUser = async ({ executeOne, walletIndex }) => {
   let user
@@ -337,7 +340,7 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
 
       logger.info(`Monitoring sync for user=${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
 
-      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue && primaryClockValue) {
+      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue === primaryClockValue) {
         synced = true
         logger.info(`Sync completed for user=${userId}!`)
       }
@@ -349,6 +352,12 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
     }
     if (!synced) { await delay(1000) }
   }
+
+  if (!synced) {
+    const errorMsg = `Max sync monitoring timeout reached for user=${userId}`
+    logger.error(errorMsg)
+    throw new Error(`${errorMsg}`)
+  }
 }
 
 /**
@@ -356,12 +365,47 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
  * an array of libs wrappers in parallel.
  */
 const makeExecuteAll = libsArray => async operation => {
-  return Promise.all(libsArray.map(operation))
+  let responses
+  let timeOfCall
+  try {
+    timeOfCall = moment()
+    responses = await Promise.all(libsArray.map(operation))
+  } catch (e) {
+    const endTimeOfCall = moment()
+    const errorInfo = {
+      error: e,
+      start: timeOfCall,
+      end: endTimeOfCall
+    }
+
+    ContainerLogs.append(errorInfo)
+    throw e
+  }
+
+  return responses
 }
 
 const makeExecuteOne = libsArray => async (index, operation) => {
   if (index > libsArray.length) throw new Error(`Cannot execute operation - index ${index} out of bounds`)
-  return operation(libsArray[index])
+
+  let response
+  let timeOfCall
+  try {
+    timeOfCall = moment()
+    response = await operation(libsArray[index])
+  } catch (e) {
+    const endTimeOfCall = moment()
+    const errorInfo = {
+      error: e,
+      start: timeOfCall,
+      end: endTimeOfCall
+    }
+
+    ContainerLogs.append(errorInfo)
+    throw e
+  }
+
+  return response
 }
 
 module.exports = {

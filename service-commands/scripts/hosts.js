@@ -32,7 +32,8 @@ const SERVICES = [
   'audius-disc-prov_web-server_1',
   'cn-um_creator-node_1',
   'audius_ganache_cli',
-  'audius_client'
+  'audius_client',
+  'audius-identity-service_identity-service_1'
 ]
 
 const exitWithError = () => {
@@ -93,7 +94,6 @@ if (cmd === 'add') {
   const hostMappings = SERVICES.map(s => `${REMOTE_DEV_HOST} ${s}`)
   lines = [...lines, START_SENTINEL, ...hostMappings, END_SENTINEL, '\n']
   writeArrayIntoFile(lines)
-}
- else {
+} else {
   exitWithError()
 }

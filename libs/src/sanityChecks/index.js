@@ -7,8 +7,9 @@ const recoveryEmail = require('./needsRecoveryEmail')
 
 // Checks to run at startup to ensure a user is in a good state.
 class SanityChecks {
-  constructor (libsInstance) {
+  constructor (libsInstance, options = { skipRollover: false }) {
     this.libs = libsInstance
+    this.options = options
   }
 
   /**
@@ -20,7 +21,7 @@ class SanityChecks {
     await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
     await syncNodes(this.libs)
-    await rolloverNodes(this.libs, creatorNodeWhitelist)
+    if (!this.options.skipRollover) await rolloverNodes(this.libs, creatorNodeWhitelist)
     await recoveryEmail(this.libs)
   }
 }

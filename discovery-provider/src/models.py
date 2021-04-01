@@ -486,6 +486,7 @@ class AggregateDailyUniqueUsersMetrics(Base):
 
     id = Column(Integer, primary_key=True)
     count = Column(Integer, nullable=False)
+    summed_count = Column(Integer, nullable=True)
     timestamp = Column(Date, nullable=False) # zeroed out to the day
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
@@ -518,6 +519,7 @@ class AggregateMonthlyUniqueUsersMetrics(Base):
 
     id = Column(Integer, primary_key=True)
     count = Column(Integer, nullable=False)
+    summed_count = Column(Integer, nullable=True)
     timestamp = Column(Date, nullable=False) # first day of month
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())

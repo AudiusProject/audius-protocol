@@ -26,6 +26,11 @@ def test_get_historical_app_metrics(app):
             ),
             AggregateDailyAppNameMetrics(
                 application_name='best-app',
+                count=1,
+                timestamp=thirty_days_ago
+            ),
+            AggregateDailyAppNameMetrics(
+                application_name='best-app',
                 count=3,
                 timestamp=yesterday
             ),
@@ -45,6 +50,11 @@ def test_get_historical_app_metrics(app):
                 timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyAppNameMetrics(
+                application_name='other-app',
+                count=5,
+                timestamp=today - timedelta(days=100)
+            ),
+            AggregateMonthlyAppNameMetrics(
                 application_name='top-app',
                 count=6,
                 timestamp=today
@@ -57,8 +67,10 @@ def test_get_historical_app_metrics(app):
 
         assert len(daily_aggregate_metrics.items()) == 2
         assert daily_aggregate_metrics[str(thirty_days_ago)]['top-app'] == 2
+        assert daily_aggregate_metrics[str(thirty_days_ago)]['best-app'] == 1
         assert daily_aggregate_metrics[str(yesterday)]['best-app'] == 3
 
         assert len(daily_aggregate_metrics.items()) == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['top-app'] == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['best-app'] == 4
+        assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['other-app'] == 5

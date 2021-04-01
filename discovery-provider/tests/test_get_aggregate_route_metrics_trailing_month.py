@@ -15,18 +15,22 @@ def test_get_aggregate_route_metrics_trailing_month(app):
         session.bulk_save_objects([
             AggregateDailyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=31)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=today - timedelta(days=30)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=yesterday
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=4,
+                summed_count=5,
                 timestamp=today
             ),
             AggregateDailyTotalUsersMetrics(
@@ -50,4 +54,5 @@ def test_get_aggregate_route_metrics_trailing_month(app):
         aggregate_metrics = _get_aggregate_route_metrics_trailing_month(session)
 
         assert aggregate_metrics['unique_count'] == 5
+        assert aggregate_metrics['summed_unique_count'] == 7
         assert aggregate_metrics['total_count'] == 10
