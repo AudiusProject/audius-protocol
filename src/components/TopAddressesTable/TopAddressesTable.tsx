@@ -9,7 +9,7 @@ import Table from 'components/Table'
 import { formatWeight } from 'utils/format'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { Address, Status } from 'types'
+import { Address, SortUser, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake from 'utils/activeStake'
@@ -58,7 +58,7 @@ const TopAddressesTable: React.FC<TopAddressesTableProps> = ({
     [pushRoute]
   )
 
-  const { status, users } = useUsers()
+  const { status, users } = useUsers({ sortBy: SortUser.activeStake })
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
     columns = columns.concat([

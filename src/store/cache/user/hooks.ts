@@ -28,7 +28,7 @@ import {
 } from '../contentNode/hooks'
 import { useAccountUser } from 'store/account/hooks'
 import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
-import getActiveStake from 'utils/activeStake'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
@@ -46,6 +46,18 @@ export const getStatus = (state: AppState) => state.cache.user.status
 export const getUser = (wallet: Address) => (state: AppState) =>
   state.cache.user.accounts[wallet]
 
+const sortActiveStakeFunc = (u1: User | Operator, u2: User | Operator) => {
+  let u1Total = getActiveStake(u1)
+  let u2Total = getActiveStake(u2)
+  return u2Total.cmp(u1Total)
+}
+
+const sortStakePlusDelegatedFunc = (u1: User | Operator, u2: User | Operator) => {
+  const u1Total = getActiveStake(u1).add(getTotalActiveDelegatedStake(u1))
+  const u2Total = getActiveStake(u2).add(getTotalActiveDelegatedStake(u2))
+  return u2Total.cmp(u1Total)
+}
+
 export const getUsers = ({ sortBy, limit, filter }: UseUsersProp) => (
   state: AppState
 ) => {
@@ -57,14 +69,13 @@ export const getUsers = ({ sortBy, limit, filter }: UseUsersProp) => (
     return true
   }
 
-  const sortFunc = (u1: User | Operator, u2: User | Operator) => {
-    let u1Total = getActiveStake(u1)
-    let u2Total = getActiveStake(u2)
-    return u2Total.cmp(u1Total)
-  }
 
   let serviceProviders: (User | Operator)[] = accounts.filter(filterFunc) as any
-  serviceProviders = serviceProviders.sort(sortFunc)
+  if (sortBy === SortUser.activeStake) {
+    serviceProviders = serviceProviders.sort(sortActiveStakeFunc)
+  } else if (sortBy === SortUser.stakePlusDelegates) {
+    serviceProviders = serviceProviders.sort(sortStakePlusDelegatedFunc)
+  }
   if (limit) serviceProviders = serviceProviders.slice(0, limit)
 
   return serviceProviders
