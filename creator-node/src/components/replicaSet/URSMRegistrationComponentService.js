@@ -104,7 +104,7 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
    *  - passes `randomBytesToSign` string in request to check that response was signed for provided data
    */
   const randomBytesToSign = (await randomBytes(18)).toString()
-  let nodeHealthCheckResp = await axios({
+  const nodeHealthCheckResp = await axios({
     baseURL: nodeEndpointFromSPFactory,
     url: '/health_check',
     method: 'get',
@@ -113,7 +113,7 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
       randomBytesToSign
     }
   })
-  nodeHealthCheckResp = parseCNodeResponse(
+  const { responseData, signatureData } = parseCNodeResponse(
     nodeHealthCheckResp,
     ['healthy', 'creatorNodeEndpoint', 'spID', 'spOwnerWallet', 'randomBytesToSign']
   )
@@ -122,10 +122,10 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
    * Confirm health check returns healthy and response data matches on-chain data
    */
   if (
-    !(nodeHealthCheckResp.healthy) ||
-    (nodeHealthCheckResp.creatorNodeEndpoint !== nodeEndpointFromSPFactory) ||
-    (nodeHealthCheckResp.spID !== spID) ||
-    ((nodeHealthCheckResp.spOwnerWallet).toLowerCase() !== ownerWalletFromSPFactory.toLowerCase())
+    !(responseData.healthy) ||
+    (responseData.creatorNodeEndpoint !== nodeEndpointFromSPFactory) ||
+    (responseData.spID !== spID) ||
+    ((responseData.spOwnerWallet).toLowerCase() !== ownerWalletFromSPFactory.toLowerCase())
   ) {
     throw new ErrorServerError(
       `Content node health check response from endpoint ${nodeEndpointFromSPFactory} indicates unhealthy or misconfigured`
@@ -136,16 +136,20 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
    * Confirm health check response was signed by delegate owner wallet registered on L1
    *    for spID and includes `randomBytesToSign`
    */
-  let {
-    timestamp: respTimestamp,
-    signature: respSignature,
-    ...responseData
-  } = nodeHealthCheckResp.rawResponse
-  if (signatureHasExpired(respTimestamp)) {
+  const {
+    timestamp,
+    signature,
+    signer
+  } = signatureData
+  if (signatureHasExpired(timestamp)) {
     throw new ErrorBadRequest('Health check response signature has expired')
   }
-  const responderWalletRecoveryObj = { ...responseData, randomBytesToSign, timestamp: respTimestamp }
-  const recoveredDelegateOwnerWallet2 = (recoverWallet(responderWalletRecoveryObj, respSignature)).toLowerCase()
+  const responderWalletRecoveryObj = {
+    data: responseData,
+    signer,
+    timestamp
+  }
+  const recoveredDelegateOwnerWallet2 = (recoverWallet(responderWalletRecoveryObj, signature)).toLowerCase()
   if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet2) {
     throw new ErrorBadRequest(
       'Health check response must be signed by delegate owner wallet registered on L1 for spID'
