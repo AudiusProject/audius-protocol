@@ -19,6 +19,8 @@ const redirectPaths = [
   'services/content-node',
   'services/service-providers',
   'services/users',
+  'api',
+  'api/leaderboard'
 ] 
 
 const getBaseUrl = () => {

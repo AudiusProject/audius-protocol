@@ -5,7 +5,7 @@
   width: 100%;
 }
 
-.colEndpoint {
+.colRank {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -14,20 +14,24 @@
   margin-right: 8px;
 }
 
-.rowCol {
-  font-family: var(--font-family);
-  
-  font-weight: var(--font-regular);
+.colTotalReq {
+  font-family: Avenir Next LT Pro;
+  font-weight: normal;
   font-size: var(--font-m);
-  
-  color: #BEC5E0;
+  text-align: right;
+  color: var(--neutral);
 }
 
-.error {
-  height: 20px;
-  width: 20px;
+.colNum {
+  width: 106px;
+  padding: 32px 0px 0px;
 }
 
-.error > * {
-  padding: 0;
+.colName {
+  flex: 1;
+}
+
+.rowCol.colTotalReq {
+  width: 166px;
+  padding-right: 32px;
 }

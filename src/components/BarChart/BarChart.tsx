@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import Dropdown from 'components/Dropdown'
 import Loading from 'components/Loading'
 import Paper from 'components/Paper'
@@ -134,6 +135,7 @@ type OwnProps = {
   options?: string[]
   selection?: string
   onSelectOption?: (option: string) => void
+  onClick?: () => void
 }
 
 type BarChartProps = OwnProps
@@ -147,11 +149,15 @@ const BarChart: React.FC<BarChartProps> = ({
   error,
   options,
   selection,
-  onSelectOption
+  onSelectOption,
+  onClick
 }) => {
   const isMobile = useIsMobile()
   return (
-    <Paper className={styles.chartContainer}>
+    <Paper 
+      className={clsx(styles.chartContainer, { [styles.onClick]: !!onClick})}
+      onClick={onClick}
+    >
       <div className={styles.header}>
         <div className={styles.title}>{title}</div>
         {options && selection && onSelectOption && (

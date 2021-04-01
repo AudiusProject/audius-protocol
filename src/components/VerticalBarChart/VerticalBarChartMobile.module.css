@@ -1,0 +1,8 @@
+.labelsContainer {
+  width: 100%;
+  display: inline-flex;
+  justify-content: space-between;
+  padding: 0px 23px 0px 14px;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+}

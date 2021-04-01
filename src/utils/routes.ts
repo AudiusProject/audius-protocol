@@ -7,6 +7,12 @@ import { matchPath } from 'react-router-dom'
 export const HOME = '/'
 export const HOME_TITLE = 'Overview'
 
+export const API = '/api'
+export const API_TITLE = 'API Leaderboard'
+
+export const API_LEADERBOARD = '/api/leaderboard'
+export const API_LEADERBOARD_TITLE = 'API Leaderboard'
+
 export const ANALYTICS = '/analytics'
 export const ANALYTICS_TITLE = 'Analytics'
 
@@ -46,6 +52,10 @@ export const GOVERNANCE_PROPOSAL = '/governance/proposal/:proposalId'
 export const GOVERNANCE_PROPOSAL_TITLE = 'Proposal'
 
 export const NOT_FOUND = '/404'
+
+// External Routes
+export const AUDIUS_API_URL = 'https://audius.org/api'
+export const AUDIUS_DAPP_URL = process.env.REACT_APP_AUDIUS_URL || 'https://audius.co'
 
 // Get Routes
 export const accountPage = (address: string) => {
@@ -109,7 +119,15 @@ const routes = [
     matchParams: { path: SERVICES_DISCOVERY_PROVIDER_NODE, exact: true },
     title: SERVICES_DISCOVERY_PROVIDER_NODE_TITLE
   },
-  { matchParams: { path: SERVICES, exact: true }, title: SERVICES_TITLE }
+  { matchParams: { path: SERVICES, exact: true }, title: SERVICES_TITLE },
+  {
+    matchParams: { path: API, exact: true },
+    title: API_TITLE
+  },
+  {
+    matchParams: { path: API_LEADERBOARD, exact: true },
+    title: API_LEADERBOARD_TITLE
+  }
 ]
 
 export const getPageTitleFromRoute = (route: string) => {

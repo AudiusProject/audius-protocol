@@ -5,6 +5,10 @@
   user-select: none;
 }
 
+.onClick {
+  cursor: pointer;
+}
+
 .chart {
   flex-grow: 1;
   display: flex;

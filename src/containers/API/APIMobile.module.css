@@ -1,0 +1,40 @@
+.apiBanner {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  opacity: 1;
+  height: 210px;
+  z-index: -1;
+  background: url(../../assets/img/apiBanner@2x.png);
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: hard-light, multiply, overlay, normal;
+  box-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+  border-radius: 8px;
+}
+
+.apiBanner .learnMore {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  margin: 0px 16px;
+  background: var(--static-white);
+  box-shadow: 0px 5px 10px rgb(0 0 0 / 25%);
+  border-radius: 39px;
+  margin-bottom: 12px;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: Proxima Nova;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  text-transform: capitalize;
+  color: var(--secondary);
+  cursor: pointer;
+  transform: scale3d(1, 1, 1);
+  transition: all 0.07s ease-in-out;
+}
