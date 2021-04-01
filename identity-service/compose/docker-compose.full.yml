@@ -9,7 +9,6 @@ services:
       - /usr/src/app/src/audius-poc-contract/create_and_verify/target
       - /usr/src/app/src/audius-poc-contract/program/target
     ports:
-      - '8899:8899'
       - '8080:8080'
     networks:
       - audius_dev

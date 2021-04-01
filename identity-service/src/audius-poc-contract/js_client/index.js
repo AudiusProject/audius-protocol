@@ -46,7 +46,7 @@ class InstructionArgs extends Assignable {}
 class InstructionEnum extends Assignable {}
 
 // let url = solanaWeb3.clusterApiUrl("devnet", false);
-let url = "http://identity-solana:8899"
+let url = "https://devnet.solana.com"
 
 let devnetConnection = new solanaWeb3.Connection(url);
 

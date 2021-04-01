@@ -16,13 +16,11 @@ export PATH="$HOME/.cargo/bin:/root/.local/share/solana/install/active_release/b
 
 solana-keygen new -s --no-bip39-passphrase
 
-solana-test-validator &
-sleep 10
-solana config set -u localhost
+solana config set -u devnet
 
-solana airdrop --faucet-host 127.0.0.1 1000
-solana airdrop --faucet-host 127.0.0.1 1000 "$curr_dir/feepayer.json"
-solana airdrop --faucet-host 127.0.0.1 1000 "$curr_dir/owner.json"
+solana airdrop 5
+solana airdrop 5 "$curr_dir/feepayer.json"
+solana airdrop 5 "$curr_dir/owner.json"
 
 cd "$curr_dir/../src/audius-poc-contract/create_and_verify"
 cargo build-bpf
