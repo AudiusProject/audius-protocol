@@ -10,7 +10,7 @@
   width: 100%;
   font-weight: var(--font-bold);
   padding-left: 24px;
-  font-size: var(--fontxl);
+  font-size: var(--font-xl);
   color: var(--neutral);
   margin-bottom: 24px;
 }
@@ -50,7 +50,7 @@
 
 .title {
   font-weight: bold;
-  font-size: var(--fontxl);
+  font-size: var(--font-xl);
   line-height: 25px;
   color: var(--neutral);
 }
