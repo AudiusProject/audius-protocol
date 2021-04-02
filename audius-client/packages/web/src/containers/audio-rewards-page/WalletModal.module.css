@@ -11,8 +11,16 @@
   align-items: center;
 }
 
+.sendModalContainer {
+  padding: 0px 48px;
+}
+
 .mobile .modalContainer {
   width: 100%;
+}
+
+.mobile .sendModalContainer {
+  padding: 0px;
 }
 
 .title {
