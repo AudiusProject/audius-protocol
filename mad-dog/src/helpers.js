@@ -340,7 +340,7 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
 
       logger.info(`Monitoring sync for user=${userId} | (Primary) ${primary}:${primaryClockValue} - (Secondaries) ${secondary1}:${secondary1ClockValue} - ${secondary2}:${secondary2ClockValue}`)
 
-      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue && primaryClockValue) {
+      if (secondary1ClockValue === primaryClockValue && secondary2ClockValue === primaryClockValue) {
         synced = true
         logger.info(`Sync completed for user=${userId}!`)
       }
@@ -351,6 +351,12 @@ const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
       throw new Error(`${errorMsg}: ${e.message}`)
     }
     if (!synced) { await delay(1000) }
+  }
+
+  if (!synced) {
+    const errorMsg = `Max sync monitoring timeout reached for user=${userId}`
+    logger.error(errorMsg)
+    throw new Error(`${errorMsg}`)
   }
 }
 

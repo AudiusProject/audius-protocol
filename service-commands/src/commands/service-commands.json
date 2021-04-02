@@ -188,7 +188,7 @@
   },
   "init-repos": {
     "up": [
-      ". scripts/init-repos.sh"
+      ". $PROTOCOL_DIR/service-commands/scripts/init-repos.sh"
     ]
   },
   "user-replica-set-manager": {
