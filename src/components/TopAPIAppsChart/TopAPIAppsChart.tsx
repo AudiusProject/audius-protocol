@@ -26,7 +26,7 @@ const TopAPIAppsChart: React.FC<TopAPIAppsChartProps> = () => {
   const pushRoute = usePushRoute()
   const isMobile = useIsMobile()
   const limit = isMobile ? MOBILE_LIMIT : DESKTOP_LIMIT
-  const { topApps } = useTopApps(Bucket.WEEK, limit)
+  const { topApps } = useTopApps(Bucket.MONTH, limit)
   let error, labels, data
   if (topApps === MetricError.ERROR) {
     error = true

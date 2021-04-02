@@ -9,7 +9,7 @@ import { IconArrow, IconCrown } from '@audius/stems'
 
 const messages = {
   rewards: '$AUDIO REWARDS',
-  description: 'TOP 10 API APPS EACH WEEK WIN $AUDIO',
+  description: 'TOP 10 API APPS EACH MONTH WIN $AUDIO',
   learnMore: 'LEARN MORE'
 }
 

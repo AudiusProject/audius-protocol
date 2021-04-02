@@ -629,11 +629,26 @@ const getTopLimit = (nameCount: { [name: string]: number }, limit: number) => {
     }, {})
 }
 
-export const useTopApps = (bucket: Bucket, limit?: number) => {
-  const [doOnce, setDoOnce] = useState<Bucket | null>(null)
-  const topApps = useSelector(state =>
-    getTopApps(state as AppState, { bucket })
+const filterTopApps = (
+  topApps: { [name: string]: number },
+  filter: (name: string, count: number) => boolean
+) => {
+  return Object.keys(topApps).reduce(
+    (acc: { [name: string]: number }, name) => {
+      if (filter(name, topApps[name])) acc[name] = topApps[name]
+      return acc
+    },
+    {}
   )
+}
+
+export const useTopApps = (
+  bucket: Bucket,
+  limit?: number,
+  filter?: (name: string, count: number) => boolean
+) => {
+  const [doOnce, setDoOnce] = useState<Bucket | null>(null)
+  let topApps = useSelector(state => getTopApps(state as AppState, { bucket }))
   const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
@@ -642,7 +657,7 @@ export const useTopApps = (bucket: Bucket, limit?: number) => {
       nodes.length &&
       (topApps === null ||
         topApps === undefined ||
-        (limit !== undefined && Object.keys(topApps).length < limit))
+        limit === undefined || Object.keys(topApps).length < limit)
     ) {
       setDoOnce(bucket)
       dispatch(fetchTopApps(bucket, nodes, limit))
@@ -654,11 +669,15 @@ export const useTopApps = (bucket: Bucket, limit?: number) => {
       setDoOnce(null)
     }
   }, [topApps, setDoOnce])
+
+  if (filter && topApps && topApps !== MetricError.ERROR) {
+    topApps = filterTopApps(topApps, filter)
+  }
   if (
     limit &&
     topApps &&
     topApps !== MetricError.ERROR &&
-    limit > Object.keys(topApps).length
+    limit < Object.keys(topApps).length
   ) {
     return {
       topApps: getTopLimit(topApps, limit)

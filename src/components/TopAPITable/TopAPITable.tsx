@@ -35,13 +35,17 @@ const CROWN_RANK = 10
 
 type TopAPITableProps = OwnProps
 
+const MIN_API_REQUEST_COUNT = 500
+const filterCount = (name: string, count: number): boolean =>
+  count >= MIN_API_REQUEST_COUNT
+
 const TopAPITable: React.FC<TopAPITableProps> = ({
   className,
   limit,
   alwaysShowMore
 }: TopAPITableProps) => {
   const isMobile = useIsMobile()
-  const { topApps } = useTopApps(Bucket.ALL_TIME)
+  const { topApps } = useTopApps(Bucket.MONTH, undefined, filterCount)
   let error = false
   let displayData:
     | { name: string; totalRequests: number; rank: number }[]
