@@ -189,18 +189,19 @@ def parse_track_event(
             return None
 
         owner_id = event_args._trackOwnerId
-        handle = (
-            session.query(User.handle)
+        track_record.owner_id = owner_id
+        track_record.is_delete = False
+
+        handle, creator_node_endpoint = (
+            session.query(User.handle, User.creator_node_endpoint)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )[0]
-        track_record.owner_id = owner_id
-
-        track_record.is_delete = False
+        )
 
         track_metadata = update_task.ipfs_client.get_metadata(
             track_metadata_multihash,
-            track_metadata_format
+            track_metadata_format,
+            creator_node_endpoint
         )
 
         track_record = populate_track_record_metadata(
@@ -240,17 +241,19 @@ def parse_track_event(
             return None
 
         owner_id = event_args._trackOwnerId
-        handle = (
-            session.query(User.handle)
-            .filter(User.user_id == owner_id, User.is_current == True)
-            .first()
-        )[0]
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
+        handle, creator_node_endpoint = (
+            session.query(User.handle, User.creator_node_endpoint)
+            .filter(User.user_id == owner_id, User.is_current == True)
+            .first()
+        )
+
         track_metadata = update_task.ipfs_client.get_metadata(
             upd_track_metadata_multihash,
-            track_metadata_format
+            track_metadata_format,
+            creator_node_endpoint
         )
 
         track_record = populate_track_record_metadata(
