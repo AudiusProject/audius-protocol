@@ -334,9 +334,11 @@ def recover_user_id_hash(web3, user_id, signature):
 def get_ipfs_metadata(update_task, user_record):
     user_metadata = user_metadata_format
     if user_record.metadata_multihash:
+
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
-            user_metadata_format
+            user_metadata_format,
+            user_record.creator_node_endpoint
         )
         logger.info(f'users.py | {user_metadata}')
     return user_metadata
