@@ -170,10 +170,10 @@ class IPFSClient:
 
     def cat(self, multihash):
         try:
-            res = self._api.cat(multihash, timeout=3)
+            res = self._api.cat(multihash, timeout=1)
             return res
         except:
-            logger.error(f"IPFSCLIENT | IPFS cat timed out for CID {multihash}")
+            logger.error(f"IPFSCLIENT | IPFS cat timed out after 1s for CID {multihash}")
             raise  # error is of type ipfshttpclient.exceptions.TimeoutError
 
     def connect_peer(self, peer):
