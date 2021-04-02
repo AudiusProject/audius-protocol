@@ -484,7 +484,7 @@ const config = convict({
     doc: 'One of averageGweiHex/fastGweiHex/fastestGweiHex',
     format: String,
     env: 'ethRelayerProdGasTier',
-    default: 'fastGweiHex'
+    default: 'fastestGweiHex'
   },
   captchaScoreSecret: {
     doc: 'The secret necessary to view user captcha scores',

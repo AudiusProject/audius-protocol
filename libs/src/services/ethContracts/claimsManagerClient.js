@@ -1,6 +1,5 @@
 const Utils = require('../../utils')
 const ContractClient = require('../contracts/ContractClient')
-const DEFAULT_GAS_AMOUNT = 1000000
 
 class ClaimsManagerClient extends ContractClient {
   /* ------- GETTERS ------- */
@@ -88,13 +87,12 @@ class ClaimsManagerClient extends ContractClient {
   }
 
   // Returns boolean indicating whether a claim is considered pending
-  async initiateRound (txRetries = 5, gas = DEFAULT_GAS_AMOUNT) {
+  async initiateRound (txRetries = 5) {
     const method = await this.getMethod(
       'initiateRound'
     )
     return this.web3Manager.sendTransaction(
       method,
-      gas,
       null,
       null,
       txRetries

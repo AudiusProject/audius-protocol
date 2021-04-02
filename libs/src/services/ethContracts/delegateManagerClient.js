@@ -1,6 +1,5 @@
 const Utils = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
-const DEFAULT_GAS_AMOUNT = 1000000
 
 class DelegateManagerClient extends GovernedContractClient {
   constructor (
@@ -29,8 +28,7 @@ class DelegateManagerClient extends GovernedContractClient {
       amount
     )
     const tx = await this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
     return {
       txReceipt: tx,
@@ -212,8 +210,7 @@ class DelegateManagerClient extends GovernedContractClient {
       amount
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -222,8 +219,7 @@ class DelegateManagerClient extends GovernedContractClient {
       'cancelUndelegateStakeRequest'
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -233,8 +229,7 @@ class DelegateManagerClient extends GovernedContractClient {
     )
 
     const tx = await this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
 
     return {
@@ -245,14 +240,13 @@ class DelegateManagerClient extends GovernedContractClient {
     }
   }
 
-  async claimRewards (serviceProvider, txRetries = 5, gas = DEFAULT_GAS_AMOUNT) {
+  async claimRewards (serviceProvider, txRetries = 5) {
     const method = await this.getMethod(
       'claimRewards',
       serviceProvider
     )
     return this.web3Manager.sendTransaction(
       method,
-      gas,
       null,
       null,
       txRetries
@@ -266,8 +260,7 @@ class DelegateManagerClient extends GovernedContractClient {
       delegator
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -278,8 +271,7 @@ class DelegateManagerClient extends GovernedContractClient {
       delegator
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -290,8 +282,7 @@ class DelegateManagerClient extends GovernedContractClient {
       delegator
     )
     const tx = await this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
     return {
       txReceipt: tx,
@@ -450,8 +441,7 @@ class DelegateManagerClient extends GovernedContractClient {
       duration
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -461,8 +451,7 @@ class DelegateManagerClient extends GovernedContractClient {
       duration
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 }
