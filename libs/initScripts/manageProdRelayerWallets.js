@@ -1,7 +1,7 @@
 const Web3 = require('web3')
 const crypto = require('crypto')
 const EthereumWallet = require('ethereumjs-wallet')
-const EthereumTx = require('ethereumjs-tx')
+const EthereumTx = require('ethereumjs-tx').Transaction
 const axios = require('axios')
 
 // Switch to mainnet eth - ropsten is enabled by default to prevent accidental prod manipulation

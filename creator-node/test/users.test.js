@@ -108,11 +108,11 @@ describe('test Users', async function () {
         challengeResp = response.body
       })
 
-    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.data.challenge })
 
     await request(app)
       .post('/users/login/challenge')
-      .send({ data: challengeResp.challenge, signature })
+      .send({ data: challengeResp.data.challenge, signature })
       .expect(400)
   })
 
@@ -127,16 +127,16 @@ describe('test Users', async function () {
         challengeResp = response.body
       })
 
-    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.data.challenge })
 
     await request(app)
       .post('/users/login/challenge')
-      .send({ data: challengeResp.challenge, signature })
+      .send({ data: challengeResp.data.challenge, signature })
       .expect(200)
 
     await request(app)
       .post('/users/login/challenge')
-      .send({ data: challengeResp.challenge, signature })
+      .send({ data: challengeResp.data.challenge, signature })
       .expect(400)
   })
 
@@ -151,11 +151,11 @@ describe('test Users', async function () {
         challengeResp = response.body
       })
 
-    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.challenge })
+    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data: challengeResp.data.challenge })
 
     await request(app)
       .post('/users/login/challenge')
-      .send({ data: challengeResp.challenge, signature })
+      .send({ data: challengeResp.data.challenge, signature })
       .expect(200)
   })
 
@@ -181,7 +181,7 @@ describe('test Users', async function () {
       .expect(200)
     await request(app)
       .post('/users/logout')
-      .set('X-Session-ID', resp.body.sessionToken)
+      .set('X-Session-ID', resp.body.data.sessionToken)
       .send({})
       .expect(200)
   })

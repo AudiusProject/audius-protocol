@@ -17,18 +17,22 @@ def test_get_historical_route_metrics(app):
         session.bulk_save_objects([
             AggregateDailyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=thirty_days_ago - timedelta(days=1)
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=thirty_days_ago
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=yesterday
             ),
             AggregateDailyUniqueUsersMetrics(
                 count=4,
+                summed_count=5,
                 timestamp=today
             ),
             AggregateDailyTotalUsersMetrics(
@@ -49,14 +53,17 @@ def test_get_historical_route_metrics(app):
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=1,
+                summed_count=2,
                 timestamp=today - timedelta(days=367)
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=2,
+                summed_count=3,
                 timestamp=today - timedelta(days=100)
             ),
             AggregateMonthlyUniqueUsersMetrics(
                 count=3,
+                summed_count=4,
                 timestamp=today
             ),
             AggregateMonthlyTotalUsersMetrics(
@@ -79,12 +86,16 @@ def test_get_historical_route_metrics(app):
 
         assert len(daily_aggregate_metrics.items()) == 2
         assert daily_aggregate_metrics[str(thirty_days_ago)]['unique_count'] == 2
+        assert daily_aggregate_metrics[str(thirty_days_ago)]['summed_unique_count'] == 3
         assert daily_aggregate_metrics[str(thirty_days_ago)]['total_count'] == 4
         assert daily_aggregate_metrics[str(yesterday)]['unique_count'] == 3
+        assert daily_aggregate_metrics[str(yesterday)]['summed_unique_count'] == 4
         assert daily_aggregate_metrics[str(yesterday)]['total_count'] == 6
 
         assert len(monthly_aggregate_metrics.items()) == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['unique_count'] == 1
+        assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['summed_unique_count'] == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=367))]['total_count'] == 2
         assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['unique_count'] == 2
+        assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['summed_unique_count'] == 3
         assert monthly_aggregate_metrics[str(today - timedelta(days=100))]['total_count'] == 4
