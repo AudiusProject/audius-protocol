@@ -109,6 +109,10 @@ class IPFSClient:
         return formatted_json
 
     def get_metadata_from_gateway(self, multihash, metadata_format, user_replica_set=None):
+        """ Args:
+                args.user_replica_set - comma-separated string of user's replica urls
+        """
+
         # Default return initial metadata format
         gateway_metadata_json = metadata_format
         logger.warning(f"IPFSCLIENT | get_metadata_from_gateway, {multihash} replica set: {user_replica_set}")
