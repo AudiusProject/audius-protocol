@@ -99,7 +99,8 @@ class AudiusTokenClient {
       tx = await this.ethWeb3Manager.sendTransaction(
         contractMethod,
         this.contractAddress,
-        privateKey)
+        privateKey
+      )
     }
     return { txReceipt: tx }
   }

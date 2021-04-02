@@ -34,7 +34,10 @@ class EthWeb3Manager {
     txRetries = 5,
     txGasLimit = null
   ) {
-    const gasLimit = txGasLimit || await estimateGas({ method: contractMethod })
+    const gasLimit = txGasLimit || await estimateGas({
+      method: contractMethod,
+      from: this.ownerWallet
+    })
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
       if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {

@@ -165,10 +165,13 @@ class Web3Manager {
     txRetries = 5,
     txGasLimit = null
   ) {
-    const gasLimit = txGasLimit || await estimateGas({ method: contractMethod, gasLimitMaximum: DEFAULT_GAS_AMOUNT })
+    const gasLimit = txGasLimit || await estimateGas({
+      method: contractMethod,
+      gasLimitMaximum: DEFAULT_GAS_AMOUNT
+    })
     if (this.useExternalWeb3) {
       return contractMethod.send(
-        { from: this.ownerWallet, gas: txGasLimit }
+        { from: this.ownerWallet, gas: gasLimit }
       )
     } else {
       const encodedABI = contractMethod.encodeABI()
