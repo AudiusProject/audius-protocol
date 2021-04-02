@@ -439,12 +439,17 @@ const config = convict({
     env: 'maxStorageUsedPercent',
     default: 95
   },
-
   pinAddCIDs: {
     doc: 'Array of comma separated CIDs to pin',
     format: String,
     env: 'pinAddCIDs',
     default: ''
+  },
+  enableRehydrate: {
+    doc: 'Flag to enable or disable rehydrate',
+    format: Boolean,
+    env: 'enableRehydrate',
+    default: true
   }
 
   // unsupported options at the moment
