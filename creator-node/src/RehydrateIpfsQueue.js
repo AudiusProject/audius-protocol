@@ -1,7 +1,8 @@
 const Bull = require('bull')
-const config = require('./config')
 const { rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = require('./utils')
 const { logger: genericLogger } = require('./logging')
+const config = require('./config')
+const enableRehydrate = config.get('enableRehydrate')
 
 const PROCESS_NAMES = Object.freeze({
   rehydrate_dir: 'rehydrate_dir',
@@ -53,7 +54,7 @@ class RehydrateIpfsQueue {
       }
     })
 
-    this.addRehydrateIpfsFromFsTask = this.addRehydrateIpfsFromFsIfNecessaryTask.bind(this)
+    this.addRehydrateIpfsFromFsIfNecessaryTask = this.addRehydrateIpfsFromFsIfNecessaryTask.bind(this)
     this.addRehydrateIpfsDirFromFsIfNecessaryTask = this.addRehydrateIpfsDirFromFsIfNecessaryTask.bind(this)
   }
 
@@ -75,16 +76,18 @@ class RehydrateIpfsQueue {
    * @param {object} logContext
    */
   async addRehydrateIpfsFromFsIfNecessaryTask (multihash, storagePath, { logContext }, filename = null) {
-    this.logStatus(logContext, 'Adding a rehydrateIpfsFromFsIfNecessary task to the queue!')
-    const count = await this.queue.count()
-    if (count > MAX_COUNT) return
-    const job = await this.queue.add(
-      PROCESS_NAMES.rehydrate_file,
-      { multihash, storagePath, filename, logContext }
-    )
-    this.logStatus(logContext, 'Successfully added a rehydrateIpfsFromFsIfNecessary task!')
+    if (enableRehydrate) {
+      this.logStatus(logContext, 'Adding a rehydrateIpfsFromFsIfNecessary task to the queue!')
+      const count = await this.queue.count()
+      if (count > MAX_COUNT) return
+      const job = await this.queue.add(
+        PROCESS_NAMES.rehydrate_file,
+        { multihash, storagePath, filename, logContext }
+      )
+      this.logStatus(logContext, 'Successfully added a rehydrateIpfsFromFsIfNecessary task!')
 
-    return job
+      return job
+    }
   }
 
   /**
@@ -93,16 +96,18 @@ class RehydrateIpfsQueue {
    * @param {object} logContext
    */
   async addRehydrateIpfsDirFromFsIfNecessaryTask (multihash, { logContext }) {
-    this.logStatus(logContext, 'Adding a rehydrateIpfsDirFromFsIfNecessary task to the queue!')
-    const count = await this.queue.count()
-    if (count > MAX_COUNT) return
-    const job = await this.queue.add(
-      PROCESS_NAMES.rehydrate_dir,
-      { multihash, logContext }
-    )
-    this.logStatus(logContext, 'Successfully added a rehydrateIpfsDirFromFsIfNecessary task!')
+    if (enableRehydrate) {
+      this.logStatus(logContext, 'Adding a rehydrateIpfsDirFromFsIfNecessary task to the queue!')
+      const count = await this.queue.count()
+      if (count > MAX_COUNT) return
+      const job = await this.queue.add(
+        PROCESS_NAMES.rehydrate_dir,
+        { multihash, logContext }
+      )
+      this.logStatus(logContext, 'Successfully added a rehydrateIpfsDirFromFsIfNecessary task!')
 
-    return job
+      return job
+    }
   }
 }
 
