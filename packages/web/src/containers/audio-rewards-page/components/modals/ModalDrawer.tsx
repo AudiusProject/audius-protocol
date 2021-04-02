@@ -40,13 +40,16 @@ const ModalDrawer = (props: ModalDrawerProps) => {
     <Modal
       isOpen={props.isOpen}
       onClose={props.onClose}
-      showTitleHeader
-      showDismissButton
+      showTitleHeader={props.showTitleHeader}
+      showDismissButton={props.showDismissButton}
+      dismissOnClickOutside={props.dismissOnClickOutside}
       title={props.title}
+      contentHorizontalPadding={props.contentHorizontalPadding}
       titleClassName={gradientTitle ? styles.modalTitle : undefined}
       headerContainerClassName={gradientTitle ? styles.modalHeader : undefined}
       bodyClassName={cn(styles.modalBody, {
-        [styles.gradientHeader]: gradientTitle
+        [styles.gradientHeader]: gradientTitle,
+        [props.bodyClassName!]: !!props.bodyClassName
       })}
     >
       {props.children}
