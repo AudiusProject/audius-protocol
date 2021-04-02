@@ -48,7 +48,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
-    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
+    this.snapbackDevModeEnabled = true
 
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
@@ -65,7 +65,7 @@ class SnapbackSM {
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
-    this.log(`SIDTEST MAXEXPORTRANGE: ${this.nodeConfig.get('maxExportClockValueRange')}`)
+    this.log(`SIDTEST MAXEXPORTRANGE: ${this.nodeConfig.get('maxExportClockValueRange')} // snapbackdevmode ${this.snapbackDevModeEnabled}`)
   }
 
   /**
@@ -102,7 +102,7 @@ class SnapbackSM {
         } catch (e) {
           this.log(`StateMachineQueue error processing ${e}`)
         } finally {
-          const stateMachineJobInterval = (this.nodeConfig.get('snapbackDevModeEnabled')) ? DevDelayInMS : ProductionJobDelayInMs
+          const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
 
           this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
           await utils.timeout(stateMachineJobInterval)

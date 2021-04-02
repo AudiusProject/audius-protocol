@@ -147,6 +147,7 @@ async function triggerSecondarySyncs (req) {
   if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
     return
   }
+  
 
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) {
@@ -163,6 +164,7 @@ async function triggerSecondarySyncs (req) {
 
       const userWallet = req.session.wallet
 
+      this.log(`SIDTEST ENQUEUING MANUAL SYNC (????)`)
       await snapbackSM.enqueueSync({
         userWallet,
         secondaryEndpoint: secondary,

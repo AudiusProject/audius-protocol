@@ -29,7 +29,7 @@ const TRACK_URLS = [
 ]
 
 const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
-const MAX_SYNC_TIMEOUT = 120000
+const MAX_SYNC_TIMEOUT = 1000000
 
 /**
  * Adds and upgrades `userCount` users.
