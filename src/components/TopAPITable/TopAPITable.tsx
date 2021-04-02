@@ -35,7 +35,7 @@ const CROWN_RANK = 10
 
 type TopAPITableProps = OwnProps
 
-const MIN_API_REQUEST_COUNT = 500
+const MIN_API_REQUEST_COUNT = 100
 const filterCount = (name: string, count: number): boolean =>
   count >= MIN_API_REQUEST_COUNT
 
