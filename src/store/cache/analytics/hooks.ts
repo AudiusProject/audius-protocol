@@ -657,7 +657,8 @@ export const useTopApps = (
       nodes.length &&
       (topApps === null ||
         topApps === undefined ||
-        limit === undefined || Object.keys(topApps).length < limit)
+        limit === undefined ||
+        Object.keys(topApps).length < limit)
     ) {
       setDoOnce(bucket)
       dispatch(fetchTopApps(bucket, nodes, limit))

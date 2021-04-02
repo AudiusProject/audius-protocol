@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { ButtonType } from '@audius/stems'
 
 import Modal from 'components/Modal'
 import Button from 'components/Button'
 import styles from './AudioRewardsModal.module.css'
 import apiLogo from 'assets/img/apiLogo.png'
+import useOpenLink from 'hooks/useOpenLink'
+import { AUDIUS_API_URL } from 'utils/routes'
 
 const messages = {
   title: '$AUDIO REWARDS',
@@ -26,6 +28,14 @@ const AudioRewardsModal: React.FC<AudioRewardsModalProps> = ({
   isOpen,
   onClose
 }: AudioRewardsModalProps) => {
+  const openLink = useOpenLink(AUDIUS_API_URL)
+  const onClickBtn = useCallback(
+    (e: React.MouseEvent) => {
+      openLink(e)
+      onClose()
+    },
+    [openLink, onClose]
+  )
   return (
     <Modal
       title={messages.title}
@@ -42,7 +52,7 @@ const AudioRewardsModal: React.FC<AudioRewardsModalProps> = ({
         text={messages.btn}
         className={styles.btn}
         type={ButtonType.PRIMARY}
-        onClick={onClose}
+        onClick={onClickBtn}
       />
     </Modal>
   )
