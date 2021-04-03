@@ -5,6 +5,7 @@ from src.tasks.celery_app import celery
 from src.queries.get_trending_tracks import make_trending_cache_key, generate_unpopulated_trending
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
+from src.queries.get_underground_trending import UNDERGROUND_TRENDING_CACHE_KEY, make_get_unpopulated_tracks
 
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
@@ -39,6 +40,14 @@ def index_trending(self, db, redis):
                 cache_end_time = time.time()
                 total_time = cache_end_time - cache_start_time
                 logger.info(f"index_trending.py | Cached trending for {genre}-{time_range} in {total_time} seconds")
+
+        # Cache underground trending
+        cache_start_time = time.time()
+        res = make_get_unpopulated_tracks(session, redis)()
+        pickle_and_set(redis, UNDERGROUND_TRENDING_CACHE_KEY, res)
+        cache_end_time = time.time()
+        logger.info(f"index_trending.py | Cached underground trending in {total_time} seconds")
+
     update_end = time.time()
     update_total = update_end - update_start
     logger.info(f"index_trending.py | Finished indexing trending in {update_total} seconds")
