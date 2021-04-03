@@ -26,6 +26,7 @@ from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending import get_trending
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_random_tracks import get_random_tracks, DEFAULT_RANDOM_LIMIT
+from src.queries.get_underground_trending import get_underground_trending
 
 logger = logging.getLogger(__name__)
 
@@ -274,6 +275,49 @@ class FullTrending(Resource):
             full_trending = use_redis_cache(
                 key, TRENDING_TTL_SEC, lambda: get_trending(args))
         trending = full_trending[offset: limit + offset]
+        return success_response(trending)
+
+underground_trending_parser = reqparse.RequestParser()
+underground_trending_parser.add_argument('limit', required=False)
+underground_trending_parser.add_argument('offset', required=False)
+underground_trending_parser.add_argument('user_id', required=False)
+
+@full_ns.route("/trending/underground")
+class FullUndergroundTrending(Resource):
+    def get_cache_key(self):
+        """Construct a cache key from user"""
+        request_items = to_dict(request.args)
+        request_items.pop('limit', None)
+        request_items.pop('offset', None)
+        key = extract_key(request.path, request_items.items())
+        return key
+
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self):
+        args = underground_trending_parser.parse_args()
+        offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
+        current_user_id = args.get("user_id")
+        args = {
+            'limit': limit,
+            'offset': offset
+        }
+
+        # If user ID, let get_underground_trending
+        # handle caching + limit + offset
+        if current_user_id:
+            decoded = decode_string_id(current_user_id)
+            args["current_user_id"] = decoded
+            trending = get_underground_trending(args)
+        else:
+            # If no user ID, fetch all cached tracks
+            # and perform pagination here, passing
+            # no args so we get the full list of tracks.
+            key = self.get_cache_key()
+            trending = get_underground_trending(args)
+            trending = use_redis_cache(
+                key, TRENDING_TTL_SEC, lambda: get_underground_trending({}))
+            trending = trending[offset: limit + offset]
         return success_response(trending)
 
 
