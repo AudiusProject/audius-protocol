@@ -50,12 +50,20 @@ export const initializeSentry = () => {
   })
 }
 
+type Traits = {
+  isVerified: boolean
+  trackCount: number
+}
+
 /**
  * Sets the sentry user so that alerts are tied to a user
  * @param user
  * @param traits an object of any key-value traits to associate with the user
  */
-export const setSentryUser = (user: User, traits: object) => {
+export const setSentryUser = (user: User, traits: Traits) => {
+  if (traits.isVerified) {
+    Sentry.setTag('isVerified', `${traits.isVerified}`)
+  }
   Sentry.configureScope(currentScope => {
     currentScope.setUser({
       id: `${user.user_id}`,

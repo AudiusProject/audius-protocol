@@ -289,12 +289,13 @@ const interpolateBorderRadius = (r: number) => {
   return `${r2}px ${r2}px 0px 0px`
 }
 
-const rootElement = document.querySelector('#root')
-
 const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
+  const drawerRef = useRef<HTMLDivElement | null>(null)
   // Lock to prevent double scrollbars
   useEffect(() => {
-    rootElement && isOpen && disableBodyScroll(rootElement)
+    if (drawerRef.current && isOpen) {
+      disableBodyScroll(drawerRef.current)
+    }
     return () => {
       clearAllBodyScrollLocks()
     }
@@ -325,6 +326,7 @@ const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
           // @ts-ignore
           item && (
             <animated.div
+              ref={drawerRef}
               className={cn(styles.drawer, styles.fullDrawer)}
               key={key}
               style={{

@@ -48,6 +48,7 @@ import { parseUserRoute } from 'utils/route/userRouteParser'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { makeKindId } from 'utils/uid'
 import { getIsDone } from 'store/confirmer/selectors'
+import { BadgeTier } from 'containers/user-badges/utils'
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -88,6 +89,8 @@ type ProfilePageState = {
   updatedDonation: string | null
   tracksLineupOrder: TracksSortMode
 }
+
+export const MIN_COLLECTIBLES_TIER: BadgeTier = 'silver'
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   static defaultProps = {}
@@ -133,7 +136,12 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   componentWillUnmount() {
-    if (this.unlisten) this.unlisten()
+    if (this.unlisten) {
+      // Push unlisten to end of event loop. On some browsers, the back button
+      // will cause the component to unmount and remove the unlisten faster than
+      // the history listener will run. See [AUD-403].
+      setImmediate(this.unlisten)
+    }
   }
 
   componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
@@ -754,7 +762,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       ? profile.followeeFollows.status === Status.LOADING
       : false
 
-    const dropdownDisabled = activeTab === Tabs.REPOSTS
+    const dropdownDisabled =
+      activeTab === Tabs.REPOSTS || activeTab === Tabs.COLLECTIBLES
     const following = !!profile && profile.does_current_user_follow
 
     const childProps = {
@@ -863,7 +872,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedCoverPhoto,
       updatedProfilePicture,
 
-      openCreatePlaylistModal
+      openCreatePlaylistModal,
+
+      updateProfile: this.props.updateProfile
     }
 
     return (

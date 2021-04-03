@@ -8,10 +8,9 @@ import {
 } from 'store/wallet/slice'
 import { Nullable } from 'utils/typeUtils'
 
-export type ClaimState =
-  | { stage: 'CLAIMING' }
-  | { stage: 'SUCCESS' }
-  | { stage: 'ERROR'; error: string }
+export type ConnectWalletsState =
+  | { stage: 'ADD_WALLET' }
+  | { stage: 'REMOVE_WALLET' }
 
 type ReceiveState = { stage: 'KEY_DISPLAY' }
 type SendingState =
@@ -34,22 +33,48 @@ type SendingState =
   | { stage: 'ERROR'; error: string }
 
 export type ModalState = Nullable<
-  | { stage: 'CLAIM'; flowState: ClaimState }
+  | { stage: 'CONNECT_WALLETS'; flowState: ConnectWalletsState }
   | { stage: 'RECEIVE'; flowState: ReceiveState }
   | { stage: 'SEND'; flowState: SendingState }
   | { stage: 'DISCORD_CODE' }
 >
 
+export type AssociatedWallets = string[]
+
+export type ConfirmRemoveWalletAction = PayloadAction<{ wallet: WalletAddress }>
+
+export type AssociatedWalletsState = {
+  status: Nullable<'Connecting' | 'Confirming'>
+  connectedWallets: Nullable<AssociatedWallets>
+  confirmingWallet: Nullable<WalletAddress>
+  errorMessage: Nullable<string>
+  removeWallet: {
+    wallet: Nullable<string>
+    status: Nullable<'Confirming'>
+  }
+}
+
 type TokenDashboardState = {
   modalState: Nullable<ModalState>
   modalVisible: boolean
   discordCode: Nullable<string>
+  associatedWallets: AssociatedWalletsState
 }
 
 const initialState: TokenDashboardState = {
   modalState: null,
   modalVisible: false,
-  discordCode: null
+  discordCode: null,
+  associatedWallets: {
+    status: null,
+    confirmingWallet: null,
+    connectedWallets: null,
+    errorMessage: null,
+    removeWallet: {
+      wallet: null,
+      status: null
+    }
+  }
 }
 
 const slice = createSlice({
@@ -119,8 +144,89 @@ const slice = createSlice({
 
     // Saga Actions
 
-    pressClaim: () => {},
-    pressSend: () => {}
+    pressSend: () => {},
+    fetchAssociatedWallets: () => {},
+    setAssociatedWallets: (
+      state,
+      {
+        payload: { associatedWallets }
+      }: PayloadAction<{ associatedWallets: AssociatedWallets }>
+    ) => {
+      state.associatedWallets.connectedWallets = associatedWallets
+      state.associatedWallets.confirmingWallet = null
+      state.associatedWallets.status = null
+    },
+    pressConnectWallets: state => {
+      state.modalState = {
+        stage: 'CONNECT_WALLETS',
+        flowState: { stage: 'ADD_WALLET' }
+      }
+      state.modalVisible = true
+      state.associatedWallets.removeWallet.wallet = null
+      state.associatedWallets.errorMessage = null
+    },
+    connectNewWallet: state => {
+      state.associatedWallets.status = 'Connecting'
+      state.associatedWallets.errorMessage = null
+    },
+    setIsConnectingWallet: (
+      state,
+      { payload: { wallet } }: PayloadAction<{ wallet: string }>
+    ) => {
+      // is connecting
+      state.associatedWallets.confirmingWallet = wallet
+    },
+    setWalletAddedConfirmed: (
+      state,
+      { payload: { wallet } }: PayloadAction<{ wallet: string }>
+    ) => {
+      state.associatedWallets.connectedWallets = (
+        state.associatedWallets.connectedWallets || []
+      ).concat(wallet)
+    },
+    requestRemoveWallet: (
+      state,
+      { payload: { wallet } }: PayloadAction<{ wallet: WalletAddress }>
+    ) => {
+      state.associatedWallets.removeWallet.wallet = wallet
+      state.modalState = {
+        stage: 'CONNECT_WALLETS',
+        flowState: { stage: 'REMOVE_WALLET' }
+      }
+      state.associatedWallets.errorMessage = null
+    },
+    confirmRemoveWallet: (
+      state,
+      { payload: { wallet } }: ConfirmRemoveWalletAction
+    ) => {
+      state.associatedWallets.removeWallet.status = 'Confirming'
+      state.modalState = {
+        stage: 'CONNECT_WALLETS',
+        flowState: { stage: 'ADD_WALLET' }
+      }
+    },
+    removeWallet: (
+      state,
+      { payload: { wallet } }: PayloadAction<{ wallet: WalletAddress }>
+    ) => {
+      state.associatedWallets.removeWallet.status = null
+      state.associatedWallets.removeWallet.wallet = null
+      state.associatedWallets.connectedWallets =
+        state.associatedWallets.connectedWallets?.filter(
+          addr => addr !== wallet
+        ) ?? null
+    },
+    updateWalletError: (
+      state,
+      { payload: { errorMessage } }: PayloadAction<{ errorMessage: string }>
+    ) => {
+      state.associatedWallets.errorMessage = errorMessage
+      state.associatedWallets.removeWallet.status = null
+      state.associatedWallets.removeWallet.wallet = null
+      state.associatedWallets.confirmingWallet = null
+      state.associatedWallets.status = null
+    },
+    preloadWalletProviders: state => {}
   }
 })
 
@@ -149,17 +255,30 @@ export const getModalVisible = (state: AppState) =>
   state.application.pages.tokenDashboard.modalVisible
 export const getDiscordCode = (state: AppState) =>
   state.application.pages.tokenDashboard.discordCode ?? ''
+export const getAssociatedWallets = (state: AppState) =>
+  state.application.pages.tokenDashboard.associatedWallets
+export const getRemoveWallet = (state: AppState) =>
+  state.application.pages.tokenDashboard.associatedWallets.removeWallet
 
 export const {
   setModalState,
   setModalVisibility,
-  pressClaim,
   pressReceive,
   pressSend,
   inputSendData,
   confirmSend,
   pressDiscord,
-  setDiscordCode
+  setDiscordCode,
+  fetchAssociatedWallets,
+  setAssociatedWallets,
+  connectNewWallet,
+  pressConnectWallets,
+  setIsConnectingWallet,
+  requestRemoveWallet,
+  confirmRemoveWallet,
+  removeWallet,
+  updateWalletError,
+  preloadWalletProviders
 } = slice.actions
 
 export default slice.reducer

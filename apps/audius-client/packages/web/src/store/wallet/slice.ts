@@ -19,13 +19,13 @@ export type WalletAddress = string
 
 type WalletState = {
   balance: Nullable<StringWei>
-  pendingClaimBalance: Nullable<StringWei>
+  totalBalance: Nullable<StringWei>
   localBalanceDidChange: boolean
 }
 
 const initialState: WalletState = {
   balance: null,
-  pendingClaimBalance: null,
+  totalBalance: null,
   localBalanceDidChange: false
 }
 
@@ -35,9 +35,12 @@ const slice = createSlice({
   reducers: {
     setBalance: (
       state,
-      { payload: { balance } }: PayloadAction<{ balance: StringWei }>
+      {
+        payload: { balance, totalBalance }
+      }: PayloadAction<{ balance: StringWei; totalBalance?: StringWei }>
     ) => {
       state.balance = balance
+      if (totalBalance) state.totalBalance = totalBalance
       state.localBalanceDidChange = false
     },
     increaseBalance: (
@@ -62,16 +65,7 @@ const slice = createSlice({
         .toString() as StringWei
       state.localBalanceDidChange = true
     },
-    setClaim: (
-      state,
-      { payload: { balance } }: PayloadAction<{ balance: StringWei }>
-    ) => {
-      state.pendingClaimBalance = balance
-    },
-
     // Saga Actions
-
-    getClaim: () => {},
     getBalance: () => {},
     claim: () => {},
     claimSucceeded: () => {},
@@ -154,19 +148,17 @@ export const formatWei = (
 }
 
 // Selectors
-
-export const getClaimableBalance = (state: AppState): Nullable<BNWei> => {
-  const claimable = state.wallet.pendingClaimBalance
-  if (!claimable) return null
-  return stringWeiToBN(claimable)
-}
-
 export const getAccountBalance = (state: AppState): Nullable<BNWei> => {
   const balance = state.wallet.balance
   if (!balance) return null
   return stringWeiToBN(balance)
 }
 
+export const getAccountTotalBalance = (state: AppState): Nullable<BNWei> => {
+  const totalBalance = state.wallet.totalBalance
+  if (!totalBalance) return null
+  return stringWeiToBN(totalBalance)
+}
 export const getLocalBalanceDidChange = (state: AppState): boolean => {
   return state.wallet.localBalanceDidChange
 }
@@ -175,8 +167,6 @@ export const {
   setBalance,
   increaseBalance,
   decreaseBalance,
-  setClaim,
-  getClaim,
   getBalance,
   claim,
   claimSucceeded,
