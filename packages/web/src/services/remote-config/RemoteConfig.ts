@@ -46,6 +46,14 @@ export enum IntKeys {
 
 export enum BooleanKeys {
   /*
+   * Boolean to show wallet connect as an option for associating wallets
+   */
+  DISPLAY_WEB3_PROVIDER_WALLET_CONNECT = 'DISPLAY_WEB3_PROVIDER_WALLET_CONNECT',
+  /*
+   * Boolean to show bitski as an option for associating wallets
+   */
+  DISPLAY_WEB3_PROVIDER_BITSKI = 'DISPLAY_WEB3_PROVIDER_BITSKI',
+  /*
    * Boolean to show instagram verification on mobile.
    */
   DISPLAY_INSTAGRAM_VERIFICATION = 'DISPLAY_INSTAGRAM_VERIFICATION',

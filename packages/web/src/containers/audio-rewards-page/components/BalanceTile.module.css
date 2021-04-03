@@ -1,0 +1,59 @@
+.tileContainer {
+  flex: 1 1 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  box-shadow: 0px 16px 20px var(--table-shadow);
+  align-self: stretch;
+  width: 700px;
+}
+
+.container {
+  background: var(--page-header-gradient);
+  display: inline-flex;
+  flex-direction: column;
+  padding: 36px 16px 16px;
+  transition: flex-grow 0.7s ease-in-out;
+}
+
+.balanceAmount {
+  font-weight: var(--font-bold);
+  font-size: 96px;
+  color: var(--static-white);
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 17px;
+  opacity: 1;
+  transition: all 0.07s ease-in-out;
+}
+
+.multipleWalletsContainer {}
+
+.balanceLabel {
+  margin-bottom: 16px;
+  opacity: 1;
+  transition: all 0.07s ease-in-out;
+}
+
+.balanceAmount.hidden,
+.balanceLabel.hidden {
+  opacity: 0;
+}
+
+.multipleWalletsMessage {}
+
+.balanceLabel, .multipleWalletsMessage {
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  text-transform: uppercase;
+  color: var(--stat-tile-text);
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.totalBalance {
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  text-transform: uppercase;
+  color: var(--static-white);
+}

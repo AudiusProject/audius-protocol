@@ -1,5 +1,6 @@
 .moveContainer {
   display: inline-flex;
+  transform: translateX(0px);
 }
 
 .perspective {

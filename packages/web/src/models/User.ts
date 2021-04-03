@@ -4,6 +4,10 @@ import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
 import { StringWei } from 'store/wallet/slice'
 import { Nullable } from 'utils/typeUtils'
 import Timestamped from './common/Timestamped'
+import {
+  Collectible,
+  CollectiblesMetadata
+} from 'containers/collectibles/components/types'
 
 export type UserMetadata = {
   album_count: number
@@ -26,6 +30,10 @@ export type UserMetadata = {
   track_count: number
   cover_photo_sizes: Nullable<CID>
   profile_picture_sizes: Nullable<CID>
+  metadata_multihash: Nullable<CID>
+  has_collectibles: boolean
+  collectibles?: CollectiblesMetadata
+  collectibleList?: Collectible[]
 
   // Only present on the "current" account
   track_save_count?: number
@@ -37,6 +45,7 @@ export type UserMetadata = {
   twitterVerified?: boolean
   instagramVerified?: boolean
   balance?: Nullable<StringWei>
+  associated_wallets_balance?: Nullable<StringWei>
 } & Timestamped
 
 export type ComputedUserProperties = {

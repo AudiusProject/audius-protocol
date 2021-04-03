@@ -5,6 +5,8 @@ import {
   WalletAddress
 } from 'store/wallet/slice'
 import AudiusBackend from 'services/AudiusBackend'
+import { ID } from 'models/common/Identifiers'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import BN from 'bn.js'
 
 // 0.001 Audio
@@ -27,13 +29,27 @@ class WalletClient {
     }
   }
 
-  async getClaimableBalance(): Promise<BNWei> {
+  async getAssociatedWalletBalance(
+    userID: ID,
+    bustCache = false
+  ): Promise<BNWei> {
     try {
-      const hasClaimed = await AudiusBackend.getHasClaimed()
-      if (hasClaimed) return BN_ZERO
-      const claimAmount = await AudiusBackend.getClaimDistributionAmount()
-      if (claimAmount) return claimAmount as BNWei
-      return BN_ZERO
+      const associatedWallets = await apiClient.getAssociatedWallets({
+        userID
+      })
+      if (associatedWallets === null) throw new Error('Unable to fetch wallets')
+      const balances = await Promise.all(
+        associatedWallets.wallets.map(wallet =>
+          AudiusBackend.getAddressTotalStakedBalance(wallet, bustCache)
+        )
+      )
+      console.log({ balances, ws: associatedWallets.wallets })
+
+      const totalBalance = balances.reduce(
+        (sum, walletBalance) => sum.add(walletBalance),
+        new BN('0')
+      )
+      return totalBalance as BNWei
     } catch (err) {
       console.log(err)
       return BN_ZERO

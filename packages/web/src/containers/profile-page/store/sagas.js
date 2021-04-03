@@ -15,7 +15,7 @@ import { waitForBackendSetup } from 'store/backend/sagas'
 import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
 import * as confirmerActions from 'store/confirmer/actions'
-import AudiusBackend from 'services/AudiusBackend'
+import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { pollUser } from 'store/confirmer/sagas'
 import { getUserId } from 'store/account/selectors'
 import {
@@ -43,9 +43,63 @@ import { processAndCacheUsers } from 'store/cache/users/utils'
 import { getUser } from 'store/cache/users/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 import { setAudiusAccountUser } from 'services/LocalStorage'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 
 function* watchFetchProfile() {
   yield takeLatest(profileActions.FETCH_PROFILE, fetchProfileAsync)
+}
+
+function* fetchProfileCustomizedCollectibles(user) {
+  const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+  const cid = user?.metadata_multihash ?? null
+  if (cid) {
+    const metadata = yield call(
+      fetchCID,
+      cid,
+      gateways,
+      /* cache */ false,
+      /* asUrl */ false
+    )
+    if (metadata?.collectibles) {
+      yield put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: user.user_id,
+            metadata
+          }
+        ])
+      )
+    } else {
+      console.log('something went wrong, could not get user collectibles order')
+    }
+  }
+}
+
+function* fetchOpenSeaAssets(user) {
+  const associatedWallets = yield apiClient.getAssociatedWallets({
+    userID: user.user_id
+  })
+  const collectibleList = yield call(OpenSeaClient.getAllCollectibles, [
+    user.wallet,
+    ...associatedWallets.wallets
+  ])
+  if (collectibleList) {
+    if (collectibleList.length) {
+      yield put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: user.user_id,
+            metadata: { collectibleList }
+          }
+        ])
+      )
+    } else {
+      console.log('profile has no assets in OpenSea')
+    }
+  } else {
+    console.log('could not fetch OpenSea assets')
+  }
 }
 
 function* fetchProfileAsync(action) {
@@ -82,6 +136,8 @@ function* fetchProfileAsync(action) {
     // Fetch user socials and collections after fetching the user itself
     yield fork(fetchUserSocials, action.handle)
     yield fork(fetchUserCollections, user.user_id)
+    yield fork(fetchProfileCustomizedCollectibles, user)
+    yield fork(fetchOpenSeaAssets, user)
 
     // Get current user notification & subscription status
     const isSubscribed = yield call(

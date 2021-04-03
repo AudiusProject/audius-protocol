@@ -143,7 +143,7 @@ export const getNotificationEntities = (
       notification.entityType === Entity.Track ? getTracks : getCollections
     const entityMap = getEntities(state, { ids: notification.entityIds })
     const entities = notification.entityIds
-      .map((id: number) => entityMap[id])
+      .map((id: number) => (entityMap as any)[id])
       .map((entity: Track | Collection | null) => {
         if (entity) {
           const userId =

@@ -21,7 +21,6 @@ import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import { useDispatch } from 'react-redux'
 import { pressDiscord } from 'store/token-dashboard/slice'
 import { show } from 'containers/music-confetti/store/slice'
-import { Tile } from './Tiles'
 import { isMobile } from 'utils/clientUtil'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
@@ -218,7 +217,7 @@ const Tiers = () => {
   const mobile = isMobile()
 
   return (
-    <Tile className={styles.container}>
+    <div className={styles.container}>
       <div className={wm(styles.tileContainerWrapper)}></div>
       <div className={wm(styles.titleContainer)}>
         <div className={wm(styles.title)}>{messages.title}</div>
@@ -253,7 +252,7 @@ const Tiers = () => {
           onClick={onClickDiscord}
         />
       </div>
-    </Tile>
+    </div>
   )
 }
 

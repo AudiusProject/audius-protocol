@@ -37,11 +37,16 @@ import styles from './ProfilePage.module.css'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
-import { ReactComponent as IconFeed } from 'assets/img/iconFeed.svg'
+import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
+import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'
 
 import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
 import { feedActions } from 'containers/profile-page/store/lineups/feed/actions'
 import { tracksActions } from 'containers/profile-page/store/lineups/tracks/actions'
+import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
+import { badgeTiers } from 'containers/user-badges/utils'
+import { useSelectTierInfo } from 'containers/user-badges/hooks'
+import CollectiblesPage from 'containers/collectibles/components/CollectiblesPage'
 
 export type ProfilePageProps = {
   // State
@@ -127,6 +132,7 @@ export type ProfilePageProps = {
   fetchFollowees: () => void
   fetchFolloweeFollows: () => void
   openCreatePlaylistModal: () => void
+  updateProfile: (metadata: any) => void
   updateProfilePicture: (
     selectedFiles: any,
     source: 'original' | 'unsplash'
@@ -159,6 +165,7 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   openCreatePlaylistModal,
+  updateProfile,
 
   mostUsedTags,
   onFollow,
@@ -238,6 +245,20 @@ const ProfilePage = ({
     goToRoute(UPLOAD_PAGE)
     record(make(Name.TRACK_UPLOAD_OPEN, { source: 'profile' }))
   }, [goToRoute, record])
+
+  const { tierNumber } = useSelectTierInfo(userId ?? 0)
+  const profileHasCollectiblesTierRequirement =
+    tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
+
+  const profileHasCollectibles = profile?.collectibleList?.length
+  const profileNeverSetCollectiblesOrder = !profile?.collectibles
+  const profileHasNonEmptyCollectiblesOrder =
+    profile?.collectibles?.order.length
+  const profileHasVisibleImageOrVideoCollectibles =
+    profileHasCollectibles &&
+    (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
+
+  const isUserOnTheirProfile = accountUserId === userId
 
   const getArtistProfileContent = () => {
     if (!profile || !albums || !playlists) return { headers: [], elements: [] }
@@ -336,91 +357,116 @@ const ProfilePage = ({
       />
     ) : null
 
-    return {
-      headers: [
-        { icon: <IconNote />, text: Tabs.TRACKS, label: Tabs.TRACKS },
-        { icon: <IconAlbum />, text: Tabs.ALBUMS, label: Tabs.ALBUMS },
-        {
-          icon: <IconPlaylists />,
-          text: Tabs.PLAYLISTS,
-          label: Tabs.PLAYLISTS
-        },
-        { icon: <IconFeed />, text: Tabs.REPOSTS, label: Tabs.REPOSTS }
-      ],
-      elements: [
-        <div key={Tabs.TRACKS} className={styles.tiles}>
-          {renderProfileCompletionCard()}
-          {status !== Status.LOADING ? (
-            artistTracks.status !== Status.LOADING &&
-            artistTracks.entries.length === 0 ? (
-              <EmptyTab
-                isOwner={isOwner}
-                name={profile.name}
-                text={'uploaded any tracks'}
-              />
-            ) : (
-              <Lineup
-                {...getLineupProps(artistTracks)}
-                count={profile.track_count}
-                extraPrecedingElement={trackUploadChip}
-                animateLeadingElement
-                leadingElementId={profile._artist_pick}
-                loadMore={loadMoreArtistTracks}
-                playTrack={playArtistTrack}
-                pauseTrack={pauseArtistTrack}
-                actions={tracksActions}
-              />
-            )
-          ) : null}
-        </div>,
-        <div key={Tabs.ALBUMS} className={styles.cards}>
-          {albums.length === 0 && !isOwner ? (
+    const headers = [
+      { icon: <IconNote />, text: Tabs.TRACKS, label: Tabs.TRACKS },
+      { icon: <IconAlbum />, text: Tabs.ALBUMS, label: Tabs.ALBUMS },
+      {
+        icon: <IconPlaylists />,
+        text: Tabs.PLAYLISTS,
+        label: Tabs.PLAYLISTS
+      },
+      { icon: <IconReposts />, text: Tabs.REPOSTS, label: Tabs.REPOSTS }
+    ]
+    const elements = [
+      <div key={Tabs.TRACKS} className={styles.tiles}>
+        {renderProfileCompletionCard()}
+        {status !== Status.LOADING ? (
+          artistTracks.status !== Status.LOADING &&
+          artistTracks.entries.length === 0 ? (
             <EmptyTab
               isOwner={isOwner}
               name={profile.name}
-              text={'created any albums'}
+              text={'uploaded any tracks'}
             />
           ) : (
-            <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
-          )}
-        </div>,
-        <div key={Tabs.PLAYLISTS} className={styles.cards}>
-          {playlists.length === 0 && !isOwner ? (
+            <Lineup
+              {...getLineupProps(artistTracks)}
+              count={profile.track_count}
+              extraPrecedingElement={trackUploadChip}
+              animateLeadingElement
+              leadingElementId={profile._artist_pick}
+              loadMore={loadMoreArtistTracks}
+              playTrack={playArtistTrack}
+              pauseTrack={pauseArtistTrack}
+              actions={tracksActions}
+            />
+          )
+        ) : null}
+      </div>,
+      <div key={Tabs.ALBUMS} className={styles.cards}>
+        {albums.length === 0 && !isOwner ? (
+          <EmptyTab
+            isOwner={isOwner}
+            name={profile.name}
+            text={'created any albums'}
+          />
+        ) : (
+          <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
+        )}
+      </div>,
+      <div key={Tabs.PLAYLISTS} className={styles.cards}>
+        {playlists.length === 0 && !isOwner ? (
+          <EmptyTab
+            isOwner={isOwner}
+            name={profile.name}
+            text={'created any playlists'}
+          />
+        ) : (
+          <CardLineup
+            cardsClassName={styles.cardLineup}
+            cards={playlistCards}
+          />
+        )}
+      </div>,
+      <div key={Tabs.REPOSTS} className={styles.tiles}>
+        {status !== Status.LOADING ? (
+          (userFeed.status !== Status.LOADING &&
+            userFeed.entries.length === 0) ||
+          profile.repost_count === 0 ? (
             <EmptyTab
               isOwner={isOwner}
               name={profile.name}
-              text={'created any playlists'}
+              text={'reposted anything'}
             />
           ) : (
-            <CardLineup
-              cardsClassName={styles.cardLineup}
-              cards={playlistCards}
+            <Lineup
+              {...getLineupProps(userFeed)}
+              loadMore={loadMoreUserFeed}
+              playTrack={playUserFeedTrack}
+              pauseTrack={pauseUserFeedTrack}
+              actions={feedActions}
             />
-          )}
-        </div>,
-        <div key={Tabs.REPOSTS} className={styles.tiles}>
-          {status !== Status.LOADING ? (
-            (userFeed.status !== Status.LOADING &&
-              userFeed.entries.length === 0) ||
-            profile.repost_count === 0 ? (
-              <EmptyTab
-                isOwner={isOwner}
-                name={profile.name}
-                text={'reposted anything'}
-              />
-            ) : (
-              <Lineup
-                {...getLineupProps(userFeed)}
-                loadMore={loadMoreUserFeed}
-                playTrack={playUserFeedTrack}
-                pauseTrack={pauseUserFeedTrack}
-                actions={feedActions}
-              />
-            )
-          ) : null}
+          )
+        ) : null}
+      </div>
+    ]
+
+    if (
+      profileHasCollectiblesTierRequirement &&
+      (profileHasVisibleImageOrVideoCollectibles ||
+        (profileHasCollectibles && isUserOnTheirProfile))
+    ) {
+      headers.push({
+        icon: <IconCollectibles />,
+        text: Tabs.COLLECTIBLES,
+        label: Tabs.COLLECTIBLES
+      })
+
+      elements.push(
+        <div key={Tabs.COLLECTIBLES} className={styles.tiles}>
+          <CollectiblesPage
+            userId={userId}
+            name={name}
+            isMobile={false}
+            isUserOnTheirProfile={isUserOnTheirProfile}
+            profile={profile}
+            updateProfile={updateProfile}
+          />
         </div>
-      ]
+      )
     }
+
+    return { headers, elements }
   }
 
   const toggleNotificationSubscription = () => {
@@ -472,49 +518,74 @@ const ProfilePage = ({
       />
     )
 
-    return {
-      headers: [
-        { icon: <IconFeed />, text: Tabs.REPOSTS, label: Tabs.REPOSTS },
-        { icon: <IconPlaylists />, text: Tabs.PLAYLISTS, label: Tabs.PLAYLISTS }
-      ],
-      elements: [
-        <div key={Tabs.REPOSTS} className={styles.tiles}>
-          {renderProfileCompletionCard()}
-          {(userFeed.status !== Status.LOADING &&
-            userFeed.entries.length === 0) ||
-          profile.repost_count === 0 ? (
-            <EmptyTab
-              isOwner={isOwner}
-              name={profile.name}
-              text={'reposted anything'}
-            />
-          ) : (
-            <Lineup
-              {...getLineupProps(userFeed)}
-              count={profile.repost_count}
-              loadMore={loadMoreUserFeed}
-              playTrack={playUserFeedTrack}
-              pauseTrack={pauseUserFeedTrack}
-              actions={feedActions}
-            />
-          )}
-        </div>,
-        <div key={Tabs.PLAYLISTS} className={styles.cards}>
-          {playlists.length === 0 && !isOwner ? (
-            <EmptyTab
-              isOwner={isOwner}
-              name={profile.name}
-              text={'created any playlists'}
-            />
-          ) : (
-            <CardLineup
-              cardsClassName={styles.cardLineup}
-              cards={playlistCards}
-            />
-          )}
+    const headers = [
+      { icon: <IconReposts />, text: Tabs.REPOSTS, label: Tabs.REPOSTS },
+      { icon: <IconPlaylists />, text: Tabs.PLAYLISTS, label: Tabs.PLAYLISTS }
+    ]
+    const elements = [
+      <div key={Tabs.REPOSTS} className={styles.tiles}>
+        {renderProfileCompletionCard()}
+        {(userFeed.status !== Status.LOADING &&
+          userFeed.entries.length === 0) ||
+        profile.repost_count === 0 ? (
+          <EmptyTab
+            isOwner={isOwner}
+            name={profile.name}
+            text={'reposted anything'}
+          />
+        ) : (
+          <Lineup
+            {...getLineupProps(userFeed)}
+            count={profile.repost_count}
+            loadMore={loadMoreUserFeed}
+            playTrack={playUserFeedTrack}
+            pauseTrack={pauseUserFeedTrack}
+            actions={feedActions}
+          />
+        )}
+      </div>,
+      <div key={Tabs.PLAYLISTS} className={styles.cards}>
+        {playlists.length === 0 && !isOwner ? (
+          <EmptyTab
+            isOwner={isOwner}
+            name={profile.name}
+            text={'created any playlists'}
+          />
+        ) : (
+          <CardLineup
+            cardsClassName={styles.cardLineup}
+            cards={playlistCards}
+          />
+        )}
+      </div>
+    ]
+
+    if (
+      profileHasCollectiblesTierRequirement &&
+      (profileHasVisibleImageOrVideoCollectibles ||
+        (profileHasCollectibles && isUserOnTheirProfile))
+    ) {
+      headers.push({
+        icon: <IconCollectibles />,
+        text: Tabs.COLLECTIBLES,
+        label: Tabs.COLLECTIBLES
+      })
+
+      elements.push(
+        <div key={Tabs.COLLECTIBLES} className={styles.tiles}>
+          <CollectiblesPage
+            userId={userId}
+            name={name}
+            isMobile={false}
+            isUserOnTheirProfile={isUserOnTheirProfile}
+            profile={profile}
+            updateProfile={updateProfile}
+          />
         </div>
-      ]
+      )
     }
+
+    return { headers, elements }
   }
 
   const { headers, elements } = profile
