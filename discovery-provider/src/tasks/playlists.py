@@ -28,6 +28,7 @@ def playlist_state_update(
 
     playlist_events_lookup = {}
     for tx_receipt in playlist_factory_txs:
+        txhash = tx_receipt.transactionHash
         for event_type in playlist_event_types_arr:
             playlist_events_tx = getattr(
                 playlist_contract.events, event_type
@@ -39,7 +40,7 @@ def playlist_state_update(
 
                 if playlist_id not in playlist_events_lookup:
                     existing_playlist_entry = lookup_playlist_record(
-                        update_task, session, entry, block_number
+                        update_task, session, entry, block_number, txhash
                     )
                     playlist_events_lookup[playlist_id] = {
                         "playlist": existing_playlist_entry,
@@ -74,7 +75,7 @@ def playlist_state_update(
     return num_total_changes, playlist_ids
 
 
-def lookup_playlist_record(update_task, session, entry, block_number):
+def lookup_playlist_record(update_task, session, entry, block_number, txhash):
     event_blockhash = update_task.web3.toHex(entry.blockHash)
     event_args = entry["args"]
     playlist_id = event_args._playlistId
@@ -107,6 +108,7 @@ def lookup_playlist_record(update_task, session, entry, block_number):
     # update these fields regardless of type
     playlist_record.blocknumber = block_number
     playlist_record.blockhash = event_blockhash
+    playlist_record.txhash = txhash
 
     return playlist_record
 

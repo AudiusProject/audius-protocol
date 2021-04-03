@@ -38,6 +38,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     )
     track_events = {}
     for tx_receipt in track_factory_txs:
+        txhash = tx_receipt.transactionHash
         for event_type in track_event_types_arr:
             track_events_tx = getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
@@ -49,7 +50,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
 
                 if track_id not in track_events:
                     track_entry = lookup_track_record(
-                        update_task, session, entry, track_id, block_number, blockhash
+                        update_task, session, entry, track_id, block_number, blockhash, txhash
                     )
 
                     track_events[track_id] = {
@@ -85,7 +86,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     return num_total_changes, track_ids
 
 
-def lookup_track_record(update_task, session, entry, event_track_id, block_number, block_hash):
+def lookup_track_record(update_task, session, entry, event_track_id, block_number, block_hash, txhash):
     # Check if track record exists
     track_exists = (
         session.query(Track).filter_by(track_id=event_track_id).count() > 0
@@ -113,6 +114,7 @@ def lookup_track_record(update_task, session, entry, event_track_id, block_numbe
     # update block related fields regardless of type
     track_record.blocknumber = block_number
     track_record.blockhash = block_hash
+    track_record.txhash = txhash
     return track_record
 
 
