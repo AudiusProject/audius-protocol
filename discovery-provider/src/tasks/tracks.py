@@ -38,7 +38,7 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     )
     track_events = {}
     for tx_receipt in track_factory_txs:
-        txhash = tx_receipt.transactionHash
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in track_event_types_arr:
             track_events_tx = getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes

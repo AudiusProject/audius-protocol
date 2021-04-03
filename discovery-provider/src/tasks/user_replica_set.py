@@ -45,7 +45,7 @@ def user_replica_set_state_update(
     cnode_events_lookup = {}
 
     for tx_receipt in user_replica_set_mgr_txs:
-        txhash = tx_receipt.transactionHash
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_replica_set_manager_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
             for entry in user_events_tx:

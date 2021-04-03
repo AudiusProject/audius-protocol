@@ -28,7 +28,7 @@ def playlist_state_update(
 
     playlist_events_lookup = {}
     for tx_receipt in playlist_factory_txs:
-        txhash = tx_receipt.transactionHash
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in playlist_event_types_arr:
             playlist_events_tx = getattr(
                 playlist_contract.events, event_type

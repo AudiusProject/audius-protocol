@@ -164,7 +164,7 @@ def add_track_repost(
         block_datetime,
         track_repost_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_track_repost_events = social_feature_factory_contract.events.TrackRepostAdded().processReceipt(
         tx_receipt
     )
@@ -204,7 +204,7 @@ def delete_track_repost(
         block_datetime,
         track_repost_state_changes
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_repost_events = social_feature_factory_contract.events.TrackRepostDeleted().processReceipt(
         tx_receipt
     )
@@ -244,7 +244,7 @@ def add_playlist_repost(
         block_datetime,
         playlist_repost_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_playlist_repost_events = social_feature_factory_contract.events.PlaylistRepostAdded().processReceipt(
         tx_receipt
     )
@@ -293,7 +293,7 @@ def delete_playlist_repost(
         block_datetime,
         playlist_repost_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_playlist_repost_events = social_feature_factory_contract.events.PlaylistRepostDeleted().processReceipt(
         tx_receipt
     )
@@ -342,7 +342,7 @@ def add_follow(
         block_datetime,
         follow_state_changes
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_follow_events = social_feature_factory_contract.events.UserFollowAdded().processReceipt(tx_receipt)
 
     for entry in new_follow_events:
@@ -379,7 +379,7 @@ def delete_follow(
         block_datetime,
         follow_state_changes
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_follow_events = social_feature_factory_contract.events.UserFollowDeleted().processReceipt(tx_receipt)
 
     for entry in new_follow_events:

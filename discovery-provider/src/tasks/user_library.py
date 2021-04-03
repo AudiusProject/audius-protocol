@@ -111,7 +111,7 @@ def add_track_save(
         block_datetime,
         track_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_track_events = user_library_contract.events.TrackSaveAdded().processReceipt(
         tx_receipt
     )
@@ -151,7 +151,7 @@ def add_playlist_save(
         block_datetime,
         playlist_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = user_library_contract.events.PlaylistSaveAdded().processReceipt(
         tx_receipt
     )
@@ -200,7 +200,7 @@ def delete_track_save(
         block_datetime,
         track_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_delete_track_events = user_library_contract.events.TrackSaveDeleted().processReceipt(
         tx_receipt
     )
@@ -239,7 +239,7 @@ def delete_playlist_save(
         block_datetime,
         playlist_state_changes,
 ):
-    txhash = tx_receipt.transactionHash
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = user_library_contract.events.PlaylistSaveDeleted().processReceipt(
         tx_receipt
     )
