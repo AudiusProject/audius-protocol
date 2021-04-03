@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
-import podcastImage from 'assets/img/publicSite/podcast.jpg'
-import cyptherImage from 'assets/img/publicSite/cypher.jpg'
+import podcastImage2x from 'assets/img/publicSite/podcast@2x.jpg'
+import cypherImage2x from 'assets/img/publicSite/cypher@2x.jpg'
 
 import useHasViewed from 'hooks/useHasViewed'
 import useCardWeight from 'hooks/useCardWeight'
@@ -26,7 +26,7 @@ const cards = [
     title: 'Audius Podcast',
     description:
       'Artist interviews from the up-and-coming all the way to the established OGs. We talk about their craft and discuss the issues affecting all of us in the artist community.',
-    image: podcastImage,
+    image: podcastImage2x,
     backgroundGradient:
       'radial-gradient(circle at top left, rgba(27,71,204,0) 0%, rgba(27,158,204,0.75) 100%)',
     containerClass: styles.podcastContainer,
@@ -37,7 +37,7 @@ const cards = [
     title: 'Cypher Contests',
     description:
       'Join our bi-weekly production challenges! Use guest-curated sample packs, creative constraints, and compete for cash prizes decided by community vote.',
-    image: cyptherImage,
+    image: cypherImage2x,
     backgroundGradient:
       'radial-gradient(circle at top left, rgba(227,0,239,0) 0%, rgba(234,0,187,0.5) 100%)',
     containerClass: styles.cypherContainer,

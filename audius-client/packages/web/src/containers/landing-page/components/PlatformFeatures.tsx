@@ -5,12 +5,12 @@ import { useSpring, animated } from 'react-spring'
 import useHasViewed from 'hooks/useHasViewed'
 import styles from './PlatformFeatures.module.css'
 
-import womanPlayingGuitarImg from 'assets/img/publicSite/woman-playing-guitar.jpg'
+import womanPlayingGuitarImg1x from 'assets/img/publicSite/woman-playing-guitar@1x.jpg'
+import womanPlayingGuitarImg2x from 'assets/img/publicSite/woman-playing-guitar@2x.jpg'
 import { ReactComponent as IconCensorship } from 'assets/img/publicSite/iconCensorship.svg'
 import { ReactComponent as IconAudio } from 'assets/img/publicSite/iconAudio.svg'
 import { ReactComponent as IconFree } from 'assets/img/publicSite/iconFree.svg'
 
-// woman-playing-guitar.jpg
 const messages = {
   title: (isMobile: boolean) =>
     isMobile ? 'Designed for Artists' : 'Audius Listens to Artists',
@@ -107,7 +107,8 @@ const PlatformFeatures = (props: PlatformFeatures) => {
         </div>
         <div className={styles.body}>
           <img
-            src={womanPlayingGuitarImg}
+            src={womanPlayingGuitarImg1x}
+            srcSet={`${womanPlayingGuitarImg1x} 1x, ${womanPlayingGuitarImg2x} 2x`}
             className={styles.guitarImage}
             alt='Woman playing guitar'
           />
