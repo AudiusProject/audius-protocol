@@ -135,6 +135,7 @@ class User(Base):
 
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    txhash = Column(String, default='', nullable=False)
     user_id = Column(Integer, nullable=False)
     is_current = Column(Boolean, nullable=False)
     handle = Column(String)
@@ -158,8 +159,7 @@ class User(Base):
     replica_set_update_signer = Column(String, nullable=True)
     has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
 
-    # Primary key has to be combo of all 3 is_current/creator_id/blockhash
-    PrimaryKeyConstraint(is_current, user_id, blockhash)
+    PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 
     ModelValidator.init_model_schemas('User')
     fields = get_fields_to_validate('User')
@@ -172,6 +172,7 @@ class User(Base):
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
+txhash={self.txhash},\
 user_id={self.user_id},\
 is_current={self.is_current},\
 handle={self.handle},\
@@ -228,7 +229,6 @@ class Track(Base):
     field_visibility = Column(postgresql.JSONB, nullable=True)
     stem_of = Column(postgresql.JSONB, nullable=True)
 
-    # Primary key has to be combo of all 3 is_current/creator_id/blockhash
     PrimaryKeyConstraint(is_current, track_id, blockhash)
 
     ModelValidator.init_model_schemas('Track')
@@ -294,7 +294,6 @@ class Playlist(Base):
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
-    # Primary key has to be a combination of is_current/playlist_id/playlist_owner_id/blockhash
     PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, blockhash)
 
     def __repr__(self):
@@ -357,7 +356,6 @@ class Follow(Base):
     is_delete = Column(Boolean, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
-    # Primary key has to be composite key of is_current/follower_user_id/followee_user_id/blockhash
     PrimaryKeyConstraint(is_current, follower_user_id, followee_user_id, blockhash)
 
     def __repr__(self):
@@ -715,6 +713,7 @@ class URSMContentNode(Base):
     __tablename__ = "ursm_content_nodes"
     blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
     blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    txhash = Column(String, default='', nullable=False)
     is_current = Column(Boolean, nullable=False)
     cnode_sp_id = Column(Integer, nullable=False)
     delegate_owner_wallet = Column(String, nullable=False)
@@ -726,11 +725,12 @@ class URSMContentNode(Base):
     endpoint = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False)
 
-    PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash)
+    PrimaryKeyConstraint(is_current, cnode_sp_id, blockhash, txhash)
 
     def __repr__(self):
         return f"<URSMContentNode(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
+txhash={self.txhash},\
 is_current={self.is_current},\
 cnode_sp_id={self.cnode_sp_id},\
 delegate_owner_wallet={self.delegate_owner_wallet},\

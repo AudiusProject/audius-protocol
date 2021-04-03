@@ -36,6 +36,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     # loop through all audius event types within that tx and get all event logs
     # for each event, apply changes to the user in user_events_lookup
     for tx_receipt in user_factory_txs:
+        txhash = tx_receipt.transactionHash
         for event_type in user_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
@@ -47,7 +48,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                 # first, get the user object from the db(if exists or create a new one)
                 # then set the lookup object for user_id with the appropriate props
                 if user_id not in user_events_lookup:
-                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
+                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
                     user_events_lookup[user_id] = {"user": ret_user, "events": []}
 
                 # Add or update the value of the user record for this block in user_events_lookup,
@@ -85,7 +86,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     return num_total_changes, user_ids
 
 
-def lookup_user_record(update_task, session, entry, block_number, block_timestamp):
+def lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash):
     event_blockhash = update_task.web3.toHex(entry.blockHash)
     event_args = entry["args"]
     user_id = event_args._userId
@@ -115,6 +116,7 @@ def lookup_user_record(update_task, session, entry, block_number, block_timestam
     # update these fields regardless of type
     user_record.blocknumber = block_number
     user_record.blockhash = event_blockhash
+    user_record.txhash = txhash
 
     return user_record
 
