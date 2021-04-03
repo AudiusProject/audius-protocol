@@ -12,12 +12,13 @@ import RewardsTile from './RewardsTile'
 import { isMobile } from 'utils/clientUtil'
 import { useMobileHeader } from 'components/general/header/mobile/hooks'
 import MobilePageContainer from 'components/general/MobilePageContainer'
-import { AUDIO_PAGE, BASE_URL } from 'utils/route'
+import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import NavContext, {
   LeftPreset,
   RightPreset
 } from 'containers/nav/store/context'
+import { useRequiresAccount } from 'hooks/useRequiresAccount'
 
 export const messages = {
   title: '$AUDIO & Rewards',
@@ -26,7 +27,7 @@ export const messages = {
 
 export const RewardsContent = () => {
   const wm = useWithMobileStyle(styles.mobile)
-
+  useRequiresAccount(TRENDING_PAGE)
   return (
     <>
       <ExplainerTile className={wm(styles.explainerTile)} />
