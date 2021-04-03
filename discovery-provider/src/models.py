@@ -454,7 +454,7 @@ class AggregatePlays(Base):
 
     def __repr__(self):
         return f"<AggregatePlays(\
-play_item_id={self.play_iteme_id},\
+play_item_id={self.play_item_id},\
 count={self.count}>"
 
 class RouteMetrics(Base):
