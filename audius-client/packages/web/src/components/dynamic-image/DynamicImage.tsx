@@ -4,6 +4,8 @@ import React, { memo, ReactNode, useEffect, useRef, RefObject } from 'react'
 import styles from './DynamicImage.module.css'
 import useInstanceVar from 'hooks/useInstanceVar'
 
+import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
+
 const placeholder =
   'linear-gradient(315deg, var(--neutral-light-8) 0%, var(--neutral-light-9) 100%)'
 
@@ -51,8 +53,7 @@ const fadeIn = (
 
     if (image === placeholder) {
       ref.current.style.backgroundColor = 'unset'
-      // Apply an empty url here so we can use the background image prop to set a gradient
-      ref.current.style.backgroundImage = `${image}, url('')`
+      ref.current.style.backgroundImage = `${image}`
       ref.current.style.transition = 'unset'
       ref.current.style.opacity = '1'
       return
@@ -66,7 +67,7 @@ const fadeIn = (
     }
     // Allow gradient values for 'image' in addition to URIs
     ref.current.style.backgroundImage = image.includes('linear-gradient(')
-      ? `${image}, url('')`
+      ? `${image}`
       : isUrl
       ? `url(${image})`
       : image
@@ -102,7 +103,7 @@ const DynamicImage = ({
   if (usePlaceholder) {
     displayImage = image || placeholder
   } else {
-    displayImage = image || ''
+    displayImage = image || transparentPlaceholderImg
   }
 
   useEffect(() => {
