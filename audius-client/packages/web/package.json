@@ -140,6 +140,7 @@
     "build:storybook": "build-storybook -s public,src/assets/fonts",
     "write-sha": "./scripts/writeSHA.sh",
     "analyze": "source-map-explorer build-production/static/js/*.js",
+    "analyzeBundle": "npm run build:prod && node ./scripts/analyzeBundle.js",
     "typecheck": "tsc -w --allowJs"
   },
   "pre-commit": [
