@@ -53,14 +53,14 @@ def z2(time, track):
     bq=track['owner_follower_count']
     ty = track['owner_verified']
     kz = track['karma']
-    pn=max
+    xy=max
     uk=pow
     if bq<3:
         return{'score':0,**track}
     oj = qq if ty else 1
     zu = 1
     if bq >= nb:
-        zu = pn(uk(oi,1-((1/nb)*(bq-nb)+1)),1/oi)
+        zu = xy(uk(oi,1-((1/nb)*(bq-nb)+1)),1/oi)
     vb = ((b*mn+qw*c+hg*v+ie*x+pn*ut+zu*bq)*kz*zu*oj)
     te = 7
     fd = datetime.now()
@@ -68,7 +68,7 @@ def z2(time, track):
     ul = (fd-xn).days
     rq = 1
     if ul > te:
-        rq = pn((1.0 / u),(uk(u,(1 - ul/te))))
+        rq = xy((1.0 / u),(uk(u,(1 - ul/te))))
     return{'score':vb * rq, **track}
 
 def get_scorable_track_data(session, redis_instance):
