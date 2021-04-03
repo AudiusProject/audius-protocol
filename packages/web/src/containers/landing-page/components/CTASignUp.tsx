@@ -3,13 +3,13 @@ import styles from './CTASignUp.module.css'
 import { Parallax } from 'react-scroll-parallax'
 
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
-import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile.jpg'
-import footerBackground from 'assets/img/publicSite/Footer-Background.jpg'
-import footerForeground from 'assets/img/publicSite/Footer-Foreground.png'
+import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile@2x.jpg'
+import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
+import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 
 import { AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/links'
 
-import dots from 'assets/img/publicSite/dots.jpg'
+import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 
 const messages = {
   title: 'Experience the Freedom',
@@ -92,7 +92,7 @@ const CTASignUp = (props: CTASignUpProps) => {
       </div>
       <div
         className={styles.dotsBackground}
-        style={{ backgroundImage: `url(${dots})` }}
+        style={{ backgroundImage: `url(${dots2x})` }}
       ></div>
     </div>
   )

@@ -5,7 +5,7 @@ import { useSpring, animated } from 'react-spring'
 import useHasViewed from 'hooks/useHasViewed'
 
 import { ReactComponent as IconQuotePyramid } from 'assets/img/publicSite/quote-pyramid.svg'
-import dots from 'assets/img/publicSite/dots.jpg'
+import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 
 import styles from './PlatformTagline.module.css'
 
@@ -61,7 +61,7 @@ const PlatformTagline = (props: PlatformTaglineProps) => {
         >
           <div
             className={styles.dotsBackground}
-            style={{ backgroundImage: `url(${dots})` }}
+            style={{ backgroundImage: `url(${dots2x})` }}
           ></div>
         </Parallax>
       )}

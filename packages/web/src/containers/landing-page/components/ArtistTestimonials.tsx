@@ -10,7 +10,7 @@ import artistDeadmau5 from 'assets/img/publicSite/artist-deadmau5@2x.jpg'
 import artistMrCarmack from 'assets/img/publicSite/artist-mrcarmack@2x.jpg'
 import artistRezz from 'assets/img/publicSite/artist-rezz@2x.jpg'
 import artistStaffordsBros from 'assets/img/publicSite/artist-staffordbros@2x.jpg'
-import dots from 'assets/img/publicSite/dots.jpg'
+import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 
 const messages = {
   title: 'Built With The Best',
@@ -279,7 +279,7 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
       <div className={styles.mobileContainer}>
         <div
           className={styles.dotsBackground}
-          style={{ backgroundImage: `url(${dots})` }}
+          style={{ backgroundImage: `url(${dots2x})` }}
         ></div>
         <h3 className={styles.title}>{messages.title}</h3>
         <h3 className={styles.subTitle}>{messages.subtitle}</h3>
@@ -372,7 +372,7 @@ const ArtistTestimonials = (props: ArtistTestimonialsProps) => {
         >
           <div
             className={styles.dotsBackground}
-            style={{ backgroundImage: `url(${dots})` }}
+            style={{ backgroundImage: `url(${dots2x})` }}
           ></div>
         </Parallax>
       </div>

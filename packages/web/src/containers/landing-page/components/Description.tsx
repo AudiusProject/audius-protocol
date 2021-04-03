@@ -3,8 +3,10 @@ import { useChain, useSpring, useTrail, animated } from 'react-spring'
 import cn from 'classnames'
 import styles from './Description.module.css'
 
-import productShot from 'assets/img/publicSite/product-shot@2x.png'
-import dotsLogo from 'assets/img/publicSite/dot-logo.jpg'
+import productShot1x from 'assets/img/publicSite/product-shot@1x.png'
+import productShot2x from 'assets/img/publicSite/product-shot@2x.png'
+import dotsLogo1x from 'assets/img/publicSite/dot-logo@1x.jpg'
+import dotsLogo2x from 'assets/img/publicSite/dot-logo@2x.jpg'
 
 const messages = {
   title1: 'We Give Everyone the',
@@ -98,13 +100,15 @@ const Description = (props: DescriptionProps) => {
     return (
       <div className={styles.mobileContainer}>
         <img
-          src={dotsLogo}
+          src={dotsLogo1x}
+          srcSet={`${dotsLogo1x} 1x, ${dotsLogo2x} 2x`}
           className={styles.dotsLogo}
           alt='Background moving dot pattern'
         />
         <div className={styles.textSection}>
           <img
-            src={productShot}
+            src={productShot1x}
+            srcSet={`${productShot1x} 1x, ${productShot2x} 2x`}
             className={styles.productShot}
             alt='Audius Product Shot'
           />
@@ -180,7 +184,8 @@ const Description = (props: DescriptionProps) => {
       <div className={styles.content}>
         <div className={styles.foreground}>
           <img
-            src={productShot}
+            src={productShot1x}
+            srcSet={`${productShot1x} 1x, ${productShot2x} 2x`}
             className={styles.productShot}
             alt='Audius Product Shot'
           />
@@ -250,7 +255,8 @@ const Description = (props: DescriptionProps) => {
           </animated.div>
         </div>
         <img
-          src={dotsLogo}
+          src={dotsLogo1x}
+          srcSet={`${dotsLogo1x} 1x, ${dotsLogo2x} 2x`}
           className={styles.dotsLogo}
           alt='Background moving dot pattern'
         />
