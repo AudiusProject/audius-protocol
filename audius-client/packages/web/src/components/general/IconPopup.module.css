@@ -18,20 +18,26 @@
   background-color: var(--white);
 }
 
+.popup path {
+  fill: var(--neutral-light-4);
+}
+
 .popup:hover {
   border-radius: 4px;
 }
 
-.popup:hover svg {
+.popup:hover .icon {
   background: var(--secondary);
+  border: 1px solid var(--secondary-dark-2);
+  transform: scale(1.07);
 }
 
-.popup svg:active {
+.popup:active .icon {
   transform: scale(0.95);
 }
 
 .popup:hover path {
-  fill: var(--static-white);
+  fill: var(--white);
 }
 
 .popup svg {
@@ -41,6 +47,12 @@
 
 .popup.disabled {
   cursor: default;
+}
+
+.popup.disabled:hover .icon {
+  background: none;
+  border: 1px solid var(--neutral-light-6);
+  transform: none;
 }
 
 .popup.disabled:hover svg {

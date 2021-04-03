@@ -41,3 +41,7 @@
 .toast {
   left: 225.5px !important;
 }
+
+:global(#WEB3_CONNECT_MODAL_ID) {
+  z-index: 10000;
+}

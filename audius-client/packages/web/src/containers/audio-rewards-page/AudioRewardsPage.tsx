@@ -1,13 +1,14 @@
 import React, { useContext, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 
 import Header from 'components/general/header/desktop/Header'
 import Page from 'components/general/Page'
 
 import styles from './AudioRewardsPage.module.css'
+import ExplainerTile from './components/ExplainerTile'
+import { BalanceTile, WalletTile } from './Tiles'
 import WalletModal from './WalletModal'
 import Tiers from './Tiers'
-import { BalanceTile, WalletTile } from './Tiles'
-import ExplainerTile from './components/ExplainerTile'
 import RewardsTile from './RewardsTile'
 import { isMobile } from 'utils/clientUtil'
 import { useMobileHeader } from 'components/general/header/mobile/hooks'
@@ -19,6 +20,7 @@ import NavContext, {
   RightPreset
 } from 'containers/nav/store/context'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
+import { preloadWalletProviders } from 'store/token-dashboard/slice'
 
 export const messages = {
   title: '$AUDIO & Rewards',
@@ -43,6 +45,10 @@ export const RewardsContent = () => {
 }
 
 export const DesktopPage = ({ children }: { children: React.ReactNode }) => {
+  const dispatch = useDispatch()
+  useEffect(() => {
+    dispatch(preloadWalletProviders())
+  }, [dispatch])
   const header = <Header primary={messages.title} />
   return (
     <Page

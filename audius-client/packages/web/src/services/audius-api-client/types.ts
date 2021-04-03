@@ -19,6 +19,7 @@ export type APIUser = {
   album_count: number
   blocknumber: number
   balance: string
+  associated_wallets_balance: string
   bio: Nullable<string>
   cover_photo: CoverPhotoSizes
   followee_count: number
@@ -43,6 +44,8 @@ export type APIUser = {
   cover_photo_legacy: Nullable<CID>
   profile_picture_sizes: Nullable<CID>
   profile_picture_legacy: Nullable<CID>
+  metadata_multihash: Nullable<CID>
+  has_collectibles: boolean
 }
 
 export type APISearchUser = Omit<

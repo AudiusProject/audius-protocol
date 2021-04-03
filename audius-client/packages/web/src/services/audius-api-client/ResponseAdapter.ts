@@ -33,6 +33,7 @@ export const makeUser = (
   }
 
   const balance = user.balance as StringWei
+  const associated_wallets_balance = user.associated_wallets_balance as StringWei
   const album_count = 'album_count' in user ? user.album_count : 0
   const followee_count = 'followee_count' in user ? user.followee_count : 0
   const follower_count = 'follower_count' in user ? user.follower_count : 0
@@ -49,6 +50,7 @@ export const makeUser = (
   const newUser = {
     ...user,
     balance,
+    associated_wallets_balance,
     album_count,
     followee_count,
     follower_count,
@@ -60,6 +62,7 @@ export const makeUser = (
     user_id: decodedUserId,
     cover_photo: user.cover_photo_sizes || user.cover_photo_legacy,
     profile_picture: user.profile_picture_sizes || user.profile_picture_legacy,
+    metadata_multihash: user.metadata_multihash || null,
     id: undefined
   }
 

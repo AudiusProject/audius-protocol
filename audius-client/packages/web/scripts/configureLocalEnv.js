@@ -36,6 +36,8 @@ try {
   const REACT_APP_RECAPTCHA_SITE_KEY =
     '6LfVR-0ZAAAAADFcqNM1P1IafKwQwN0E_l-gxQ9q'
 
+  const REACT_APP_OPENSEA_API_URL = 'https://rinkeby-api.opensea.io/api/v1'
+
   const contents = `
   # DO NOT MODIFY. SEE /scripts/configureLocalEnv.js
   
@@ -55,6 +57,8 @@ try {
 
   REACT_APP_RECAPTCHA_SITE_KEY=${REACT_APP_RECAPTCHA_SITE_KEY}
   REACT_APP_B_ITEMS_URL=
+
+  REACT_APP_OPENSEA_API_URL=${REACT_APP_OPENSEA_API_URL}
   `
 
   // Note .env.dev.local takes precidence over .env.dev

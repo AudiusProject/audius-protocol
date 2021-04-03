@@ -5,7 +5,6 @@ import React, {
   useCallback,
   forwardRef,
   ReactNode,
-  RefObject,
   memo,
   useMemo
 } from 'react'
@@ -447,7 +446,7 @@ const GestureSupportingBodyContainer = memo(
     // When an animation finishes, sync up
     // the internalIndex with activeIndex and
     // reset the delta.
-    const onRest = () => {
+    const onRest = useCallback(() => {
       if (getGestureInProgress()) return
       const { from, to } = getTransitionInfo()
       onChangeComplete(from, to)
@@ -455,7 +454,14 @@ const GestureSupportingBodyContainer = memo(
       setIndexDelta(0)
       setTransitionInfo({ from: 0, to: 0 })
       setIsOngoingAnimation(false)
-    }
+    }, [
+      getGestureInProgress,
+      getIndexDelta,
+      getTransitionInfo,
+      onChangeComplete,
+      setIndexDelta,
+      setTransitionInfo
+    ])
     const [scrollContainerProps, setScrollContainerProps] = useSpring(() => ({
       to: {
         x: -1 * activeIndex * containerWidth // Account for starting out on non-zero tab index
@@ -464,6 +470,17 @@ const GestureSupportingBodyContainer = memo(
       onRest,
       onFrame
     }))
+
+    useEffect(() => {
+      setScrollContainerProps({
+        to: {
+          x: -1 * activeIndex * containerWidth // Account for starting out on non-zero tab index
+        },
+        config: animConfig,
+        onRest,
+        onFrame
+      })
+    }, [activeIndex, containerWidth, onFrame, onRest, setScrollContainerProps])
 
     const setScrollContainerX = (x: number, immediate: boolean) => {
       setScrollContainerProps({
@@ -933,6 +950,7 @@ const useTabs = ({
 }: UseTabsArguments): UseTabsResult => {
   if (tabs.length !== elements.length)
     throw new Error('Non-matching number of tabs and elements')
+
   const isControlled = !!selectedTabLabel
 
   // Set up full width transitions

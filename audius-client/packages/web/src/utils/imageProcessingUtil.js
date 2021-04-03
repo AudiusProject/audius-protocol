@@ -16,14 +16,15 @@ const ALLOWED_IMAGE_FILE_TYPES = [
 export const resizeImage = async (
   imageFile,
   maxWidth = 1000,
-  square = true
+  square = true,
+  key = ''
 ) => {
   if (!ALLOWED_IMAGE_FILE_TYPES.includes(imageFile.type)) {
     throw new Error('invalid file type')
   }
   const imageUrlBlob = URL.createObjectURL(imageFile)
   const worker = new WebWorker(resizeImageWorkerFile)
-  worker.call({ imageUrl: imageUrlBlob, maxWidth, square })
+  worker.call({ imageUrl: imageUrlBlob, maxWidth, square }, key)
   return worker.getResult()
 }
 

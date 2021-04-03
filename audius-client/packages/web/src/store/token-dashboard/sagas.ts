@@ -1,7 +1,10 @@
+import { delay } from 'redux-saga'
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import {
-  pressClaim,
+  fetchAssociatedWallets,
+  connectNewWallet,
+  removeWallet as removeWalletAction,
   pressSend,
   setModalState,
   setModalVisibility,
@@ -9,23 +12,49 @@ import {
   inputSendData,
   confirmSend,
   getSendData,
-  setDiscordCode
+  setDiscordCode,
+  setIsConnectingWallet,
+  setAssociatedWallets,
+  confirmRemoveWallet,
+  ConfirmRemoveWalletAction,
+  getAssociatedWallets,
+  updateWalletError,
+  preloadWalletProviders
 } from './slice'
 import {
-  claim as walletClaim,
   send as walletSend,
-  claimSucceeded,
   claimFailed,
-  getClaimableBalance,
   weiToString,
   sendSucceeded,
-  sendFailed
+  getBalance,
+  sendFailed,
+  WalletAddress
 } from 'store/wallet/slice'
-import { addConfirmationCall, clear } from 'store/confirmer/actions'
-import AudiusBackend from 'services/AudiusBackend'
+
+import { requestConfirmation } from 'store/confirmer/actions'
+import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
+import apiClient, {
+  AssociatedWalletsResponse
+} from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId, getAccountUser } from 'store/account/selectors'
+import { Nullable } from 'utils/typeUtils'
+import { ID } from 'models/common/Identifiers'
+import connectWeb3Wallet, {
+  loadBitski,
+  loadWalletConnect
+} from 'services/web3-modal/index'
+import { newUserMetadata } from 'schemas'
+
 import { fetchAccountSucceeded } from 'store/account/reducer'
 
-const CLAIM_UID = 'CLAIM_UID'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { upgradeToCreator } from 'store/cache/users/sagas'
+import * as cacheActions from 'store/cache/actions'
+import { Kind } from 'store/types'
+import { BooleanKeys, getRemoteVar } from 'services/remote-config'
+import { fetchServices } from 'containers/service-selection/store/slice'
+
+const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
 function* send() {
   // Set modal state to input
@@ -79,56 +108,304 @@ function* send() {
   yield put(setModalState({ modalState: sentState }))
 }
 
-function* claim() {
-  const claimableBalance: ReturnType<typeof getClaimableBalance> = yield select(
-    getClaimableBalance
+function* fetchAccountAssociatedWallets() {
+  const accountUserId: Nullable<ID> = yield select(getUserId)
+  if (!accountUserId) return
+  const associatedWallets: AssociatedWalletsResponse = yield apiClient.getAssociatedWallets(
+    {
+      userID: accountUserId
+    }
   )
-  if (!claimableBalance || claimableBalance.isZero()) return
+  yield put(
+    setAssociatedWallets({ associatedWallets: associatedWallets.wallets })
+  )
+}
 
-  const claimingState: ModalState = {
-    stage: 'CLAIM',
-    flowState: {
-      stage: 'CLAIMING'
+function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
+  const accountUserId: Nullable<ID> = yield select(getUserId)
+  if (!accountUserId) return null
+  const users: any[] = yield call(AudiusBackend.getCreators, [accountUserId])
+  if (users.length !== 1) return null
+  return users[0].metadata_multihash
+}
+
+/**
+ * Retrieves the user's associated wallets from IPFS using the user's metadata CID and creator node endpoints
+ * @param {Object} user The user metadata which contains the CID for the metadata multihash
+ * @returns Object The associated wallets mapping of address to nested signature
+ */
+function* fetchUserAssociatedWallets(user: any) {
+  const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+  const cid = user?.metadata_multihash ?? null
+  if (cid) {
+    const metadata: any = yield call(
+      fetchCID,
+      cid,
+      gateways,
+      /* cache */ false,
+      /* asUrl */ false
+    )
+    if (metadata?.associated_wallets) {
+      return metadata.associated_wallets
+    } else {
+      // TODO
+      console.log('something went wrong, could not get user associated wallets')
     }
   }
+  return {}
+}
 
-  // Set loading state
-  yield all([
-    // Set modal state
-    put(setModalVisibility({ isVisible: true })),
-    put(setModalState({ modalState: claimingState })),
-    put(addConfirmationCall(CLAIM_UID, () => {}))
-  ])
+// The confirmer's polling interval
+const POLLING_FREQUENCY_MILLIS = 2000
 
-  yield put(walletClaim())
-  const { error }: { error: ReturnType<typeof claimFailed> } = yield race({
-    success: take(claimSucceeded),
-    error: take(claimFailed)
-  })
+/**
+ * Compare the user's updated associated wallets against the wallets returned from discovery service
+ * @param {number} userID The user ID to fetch associated wallets for from discovery service
+ * @param {Object} currrentWallets A map of wallet addresses to signature
+ * @returns boolean
+ */
+function* compareIndexedWallets(
+  userID: ID,
+  currrentWallets: Record<string, any> = {}
+): Generator<any, boolean, any> {
+  const associatedWallets: AssociatedWalletsResponse = yield apiClient.getAssociatedWallets(
+    { userID }
+  )
+  const indexedWallets = associatedWallets.wallets
+  return (
+    indexedWallets.length === Object.keys(currrentWallets).length &&
+    indexedWallets.every(wallet => wallet in currrentWallets)
+  )
+}
 
-  // Finish confirmation
-  yield put(clear(CLAIM_UID))
+function* connectWallet() {
+  try {
+    const isBitkiEnabled = getRemoteVar(
+      BooleanKeys.DISPLAY_WEB3_PROVIDER_BITSKI
+    ) as boolean
+    const isWalletConnectEnabled = getRemoteVar(
+      BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_CONNECT
+    ) as boolean
 
-  if (error) {
-    const errorState: ModalState = {
-      stage: 'CLAIM',
-      flowState: {
-        stage: 'ERROR',
-        error: error.payload.error ?? ''
+    const web3Instance: any = yield connectWeb3Wallet({
+      isBitkiEnabled,
+      isWalletConnectEnabled
+    })
+
+    if (!web3Instance) {
+      yield put(
+        updateWalletError({
+          errorMessage: 'Unable to connect with web3 to connect your wallet.'
+        })
+      )
+      // The user may have exited the modal
+      return
+    }
+
+    const accounts: string[] = yield web3Instance.eth.getAccounts()
+    const accountUserId: Nullable<ID> = yield select(getUserId)
+    const connectingWallet = accounts[0]
+
+    const currentAssociatedWallets: ReturnType<typeof getAssociatedWallets> = yield select(
+      getAssociatedWallets
+    )
+
+    const associatedUserId: Nullable<ID> = yield apiClient.getAssociatedWalletUserId(
+      { address: connectingWallet }
+    )
+
+    if (
+      (currentAssociatedWallets?.connectedWallets ?? []).some(
+        wallet => wallet === connectingWallet
+      ) ||
+      associatedUserId !== null
+    ) {
+      if (web3Instance.currentProvider.disconnect)
+        yield web3Instance.currentProvider.disconnect()
+      if (web3Instance.currentProvider.close)
+        yield web3Instance.currentProvider.close()
+      // The wallet already exists in the assocaited wallets set
+      yield put(
+        updateWalletError({
+          errorMessage:
+            'This wallet has already been associated with an Audius account.'
+        })
+      )
+      return
+    }
+
+    yield put(setIsConnectingWallet({ wallet: connectingWallet }))
+    const signature: string = yield web3Instance.eth.personal.sign(
+      `AudiusUserID:${accountUserId}`,
+      accounts[0]
+    )
+    if (web3Instance.currentProvider.disconnect)
+      yield web3Instance.currentProvider.disconnect()
+    if (web3Instance.currentProvider.close)
+      yield web3Instance.currentProvider.close()
+
+    const userMetadata: ReturnType<typeof getAccountUser> = yield select(
+      getAccountUser
+    )
+    let updatedMetadata = newUserMetadata({ ...userMetadata })
+
+    if (
+      !updatedMetadata.creator_node_endpoint ||
+      !updatedMetadata.metadata_multihash
+    ) {
+      yield put(fetchServices())
+      const upgradedToCreator: boolean = yield call(upgradeToCreator)
+      if (!upgradedToCreator) {
+        yield put(
+          updateWalletError({
+            errorMessage:
+              'An error occured while connecting a wallet with your account.'
+          })
+        )
+        return
       }
+      const updatedUserMetadata: ReturnType<typeof getAccountUser> = yield select(
+        getAccountUser
+      )
+      updatedMetadata = newUserMetadata({ ...updatedUserMetadata })
     }
-    yield put(setModalState({ modalState: errorState }))
-    return
-  }
 
-  // Set modal state + new token + claim balances
-  const claimedState: ModalState = {
-    stage: 'CLAIM',
-    flowState: {
-      stage: 'SUCCESS'
+    const currentWalletSignatures: Record<string, any> = yield call(
+      fetchUserAssociatedWallets,
+      updatedMetadata
+    )
+    updatedMetadata.associated_wallets = {
+      ...currentWalletSignatures,
+      [connectingWallet]: { signature }
     }
+
+    yield call(AudiusBackend.updateCreator, updatedMetadata, accountUserId)
+    yield put(
+      requestConfirmation(
+        CONNECT_WALLET_CONFIRMATION_UID,
+        function* () {
+          const updatedWallets = updatedMetadata.associated_wallets
+          let equivalentIndexedWallets: boolean = yield call(
+            compareIndexedWallets,
+            accountUserId!,
+            updatedWallets
+          )
+          while (!equivalentIndexedWallets) {
+            yield delay(POLLING_FREQUENCY_MILLIS)
+            equivalentIndexedWallets = yield call(
+              compareIndexedWallets,
+              accountUserId!,
+              updatedWallets
+            )
+          }
+          return Object.keys(updatedWallets)
+        },
+        // @ts-ignore: remove when confirmer is typed
+        function* (updatedWallets: WalletAddress[]) {
+          // Update the user's balance w/ the new wallet
+          yield put(getBalance())
+          yield put(setAssociatedWallets({ associatedWallets: updatedWallets }))
+          const updatedCID: Nullable<string> = yield call(getAccountMetadataCID)
+          if (updatedCID) {
+            yield put(
+              cacheActions.update(Kind.USERS, [
+                {
+                  id: accountUserId,
+                  metadata: { metadata_multihash: updatedCID }
+                }
+              ])
+            )
+          }
+        },
+        function* () {
+          yield put(
+            updateWalletError({
+              errorMessage:
+                'An error occured while connecting a wallet with your account.'
+            })
+          )
+        }
+      )
+    )
+  } catch (error) {
+    yield put(
+      updateWalletError({
+        errorMessage:
+          'An error occured while connecting a wallet with your account.'
+      })
+    )
   }
-  yield put(setModalState({ modalState: claimedState }))
+}
+
+function* removeWallet(action: ConfirmRemoveWalletAction) {
+  try {
+    const removeWallet = action.payload.wallet
+    const accountUserId: Nullable<ID> = yield select(getUserId)
+    const userMetadata: ReturnType<typeof getAccountUser> = yield select(
+      getAccountUser
+    )
+    const updatedMetadata = newUserMetadata({ ...userMetadata })
+
+    const currentAssociatedWallest: Record<string, any> = yield call(
+      fetchUserAssociatedWallets,
+      updatedMetadata
+    )
+
+    if (!(removeWallet in currentAssociatedWallest)) {
+      // The wallet already exists in the assocaited wallets set
+      yield put(updateWalletError({ errorMessage: 'Unable to remove wallet' }))
+      return
+    }
+
+    updatedMetadata.associated_wallets = { ...currentAssociatedWallest }
+
+    delete updatedMetadata.associated_wallets[removeWallet]
+
+    yield call(AudiusBackend.updateCreator, updatedMetadata, accountUserId)
+    yield put(
+      requestConfirmation(
+        CONNECT_WALLET_CONFIRMATION_UID,
+        function* () {
+          const updatedWallets = updatedMetadata.associated_wallets
+          let equivalentIndexedWallets: boolean = yield call(
+            compareIndexedWallets,
+            accountUserId!,
+            updatedWallets
+          )
+          while (!equivalentIndexedWallets) {
+            yield delay(POLLING_FREQUENCY_MILLIS)
+            equivalentIndexedWallets = yield call(
+              compareIndexedWallets,
+              accountUserId!,
+              updatedWallets
+            )
+          }
+        },
+        // @ts-ignore: remove when confirmer is typed
+        function* () {
+          // Update the user's balance w/ the new wallet
+          yield put(getBalance())
+          yield put(removeWalletAction({ wallet: removeWallet }))
+          const updatedCID: Nullable<string> = yield call(getAccountMetadataCID)
+          yield put(
+            cacheActions.update(Kind.USERS, [
+              {
+                id: accountUserId,
+                metadata: { metadata_multihash: updatedCID }
+              }
+            ])
+          )
+        },
+        function* () {
+          yield put(
+            updateWalletError({ errorMessage: 'Unable to remove wallet' })
+          )
+        }
+      )
+    )
+  } catch (error) {
+    yield put(updateWalletError({ errorMessage: 'Unable to remove wallet' }))
+  }
 }
 
 const getSignableData = () => {
@@ -139,20 +416,45 @@ const getSignableData = () => {
 function* watchForDiscordCode() {
   yield take(fetchAccountSucceeded.type)
   const data = getSignableData()
-  const signature = yield call(AudiusBackend.getSignature, data)
+  const signature: string = yield call(AudiusBackend.getSignature, data)
   const appended = `${signature}:${data}`
   yield put(setDiscordCode({ code: appended }))
+}
+
+function* preloadProviders() {
+  yield loadWalletConnect()
+  yield loadBitski()
 }
 
 function* watchPressSend() {
   yield takeLatest(pressSend.type, send)
 }
 
-function* watchPressClaim() {
-  yield takeLatest(pressClaim.type, claim)
+function* watchGetAssociatedWallets() {
+  yield takeLatest(fetchAssociatedWallets.type, fetchAccountAssociatedWallets)
 }
+
+function* watchConnectNewWallet() {
+  yield takeLatest(connectNewWallet.type, connectWallet)
+}
+
+function* watchPreloadWalletProviders() {
+  yield takeLatest(preloadWalletProviders.type, preloadProviders)
+}
+
+function* watchRemoveWallet() {
+  yield takeLatest(confirmRemoveWallet.type, removeWallet)
+}
+
 const sagas = () => {
-  return [watchPressClaim, watchPressSend, watchForDiscordCode]
+  return [
+    watchPressSend,
+    watchForDiscordCode,
+    watchGetAssociatedWallets,
+    watchConnectNewWallet,
+    watchRemoveWallet,
+    watchPreloadWalletProviders
+  ]
 }
 
 export default sagas

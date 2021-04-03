@@ -9,6 +9,7 @@ import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
+import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'
 import Lineup from 'containers/lineup/Lineup'
 import Card from 'components/card/mobile/Card'
 import CardLineup from 'containers/lineup/CardLineup'
@@ -39,6 +40,10 @@ import { withNullGuard } from 'utils/withNullGuard'
 import { IconKebabHorizontal, IconShare } from '@audius/stems'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import TierExplainerDrawer from 'containers/user-badges/TierExplainerDrawer'
+import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
+import { badgeTiers } from 'containers/user-badges/utils'
+import { useSelectTierInfo } from 'containers/user-badges/hooks'
+import CollectiblesPage from 'containers/collectibles/components/CollectiblesPage'
 
 export type ProfilePageProps = {
   // Computed
@@ -167,6 +172,7 @@ const g = withNullGuard((props: ProfilePageProps) => {
 
 const ProfilePage = g(
   ({
+    accountUserId,
     userId,
     name,
     handle,
@@ -306,6 +312,20 @@ const ProfilePage = g(
       onClickOverflow,
       onShare
     ])
+
+    const { tierNumber } = useSelectTierInfo(userId ?? 0)
+    const profileHasCollectiblesTierRequirement =
+      tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
+
+    const profileHasCollectibles = profile?.collectibleList?.length
+    const profileNeverSetCollectiblesOrder = !profile?.collectibles
+    const profileHasNonEmptyCollectiblesOrder =
+      profile?.collectibles?.order.length
+    const profileHasVisibleImageOrVideoCollectibles =
+      profileHasCollectibles &&
+      (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
+
+    const isUserOnTheirProfile = accountUserId === userId
 
     if (isLoading) {
       content = null
@@ -530,6 +550,29 @@ const ProfilePage = g(
             )}
           </div>
         ]
+      }
+
+      if (
+        profileHasCollectiblesTierRequirement &&
+        (profileHasVisibleImageOrVideoCollectibles ||
+          (profileHasCollectibles && isUserOnTheirProfile))
+      ) {
+        profileTabs.push({
+          icon: <IconCollectibles />,
+          text: 'Collectibles',
+          label: Tabs.COLLECTIBLES
+        })
+        profileElements.push(
+          <div key='collectibles' className={styles.tracksLineupContainer}>
+            <CollectiblesPage
+              userId={userId}
+              name={name}
+              isMobile={true}
+              isUserOnTheirProfile={isUserOnTheirProfile}
+              profile={profile}
+            />
+          </div>
+        )
       }
     }
 

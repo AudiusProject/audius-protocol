@@ -4,6 +4,11 @@
   width: 100%;
 }
 
+.modalBody.wallets {
+  max-width: 720px;
+  min-height: 250px;
+}
+
 .modalContainer {
   display: flex;
   flex-direction: column;

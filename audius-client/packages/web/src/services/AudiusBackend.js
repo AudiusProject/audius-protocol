@@ -105,20 +105,31 @@ const combineLists = (
 
 const notDeleted = e => !e.is_delete
 
-export const fetchCID = async (cid, creatorNodeGateways = [], cache = true) => {
+export const fetchCID = async (
+  cid,
+  creatorNodeGateways = [],
+  cache = true,
+  asUrl = true
+) => {
   await waitForLibsInit()
   try {
-    const image = await audiusLibs.File.fetchCID(
+    const res = await audiusLibs.File.fetchCID(
       cid,
       creatorNodeGateways,
-      () => {}
+      () => {},
+      // If requesting a url (we mean a blob url for the file),
+      // otherwise, default to JSON
+      asUrl ? 'blob' : 'json'
     )
-    const url = URL.createObjectURL(image.data)
-    if (cache) CIDCache.add(cid, url)
-    return url
+    if (asUrl) {
+      const url = URL.createObjectURL(res.data)
+      if (cache) CIDCache.add(cid, url)
+      return url
+    }
+    return res?.data ?? null
   } catch (e) {
     console.error(e)
-    return ''
+    return asUrl ? '' : null
   }
 }
 
@@ -2150,8 +2161,9 @@ class AudiusBackend {
   }
 
   /**
-   * Make a request to check if the user has already claimed
-   * @returns {Promise<BN>} doesHaveClaim
+   * Make a request to fetch the balance of the the user
+   * @params {bool} bustCache
+   * @returns {Promise<BN>} balance
    */
   static async getBalance(bustCache = false) {
     await waitForLibsInit()
@@ -2168,6 +2180,39 @@ class AudiusBackend {
         checksumWallet
       )
       return balance
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+
+  /**
+   * Make a request to fetch the balance, staked and delegated total of the wallet address
+   * @params {string} address The wallet address to fetch the balance for
+   * @params {bool} bustCache
+   * @returns {Promise<BN>} balance
+   */
+  static async getAddressTotalStakedBalance(address, bustCache = false) {
+    await waitForLibsInit()
+    if (!address) return
+
+    try {
+      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
+      const checksumWallet = ethWeb3.utils.toChecksumAddress(address)
+      if (bustCache) {
+        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
+      }
+      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
+        checksumWallet
+      )
+      const delegatedBalance = await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(
+        checksumWallet
+      )
+      const stakedBalance = await audiusLibs.ethContracts.StakingProxyClient.totalStakedFor(
+        checksumWallet
+      )
+
+      return balance.add(delegatedBalance).add(stakedBalance)
     } catch (e) {
       console.error(e)
       return null
