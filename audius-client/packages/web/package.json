@@ -19,7 +19,7 @@
     "array-pack-2d": "^0.1.1",
     "array-range": "^1.0.1",
     "bitski": "^0.10.9",
-    "bn.js": ">= 4.0.0",
+    "bn.js": "^4.11.9",
     "body-scroll-lock": "^2.6.4",
     "canvas-loop": "^1.0.7",
     "chart.js": "^2.5.0",
