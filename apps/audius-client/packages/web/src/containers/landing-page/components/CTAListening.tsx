@@ -4,7 +4,7 @@ import { Parallax } from 'react-scroll-parallax'
 import { useChain, useTrail, animated } from 'react-spring'
 
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
-import hqAudio from 'assets/img/publicSite/HQ-Audio.jpg'
+import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
 import { AUDIUS_LISTENING_LINK, pushWindowRoute } from 'utils/links'
 
 import styles from './CTAListening.module.css'

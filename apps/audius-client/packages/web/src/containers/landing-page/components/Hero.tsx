@@ -5,10 +5,11 @@ import { Parallax, withController } from 'react-scroll-parallax'
 import styles from './Hero.module.css'
 
 import HeroForeground from 'assets/img/publicSite/Hero-Foreground.png'
-import HeroForegroundMobile from 'assets/img/publicSite/Hero-Foreground-mobile.png'
-import HeroBackground from 'assets/img/publicSite/Hero-Background.jpg'
+import HeroForegroundMobile from 'assets/img/publicSite/Hero-Foreground-mobile@2x.png'
+import HeroBackground from 'assets/img/publicSite/Hero-Background@2x.jpg'
 import HeroBackgroundMobile from 'assets/img/publicSite/Hero-Background-mobile.jpg'
-import GlyphPattern from 'assets/img/publicSite/glyph-pattern.png'
+import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
+import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
 
 import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/links'
@@ -70,7 +71,12 @@ export const Hero = (props: HeroProps) => {
             <span className={styles.ctaMessage}>{messages.learn}</span>
           </div>
         </div>
-        <img src={GlyphPattern} alt='Pattern' className={styles.glyphPattern} />
+        <img
+          src={GlyphPattern1x}
+          srcSet={`${GlyphPattern1x} 1x, ${GlyphPattern2x} 2x`}
+          alt='Pattern'
+          className={styles.glyphPattern}
+        />
       </div>
     )
   }
@@ -122,7 +128,12 @@ export const Hero = (props: HeroProps) => {
           </div>
         </Parallax>
       </div>
-      <img src={GlyphPattern} alt='Pattern' className={styles.glyphPattern} />
+      <img
+        src={GlyphPattern1x}
+        srcSet={`${GlyphPattern1x} 1x, ${GlyphPattern2x} 2x`}
+        alt='Pattern'
+        className={styles.glyphPattern}
+      />
     </div>
   )
 }
