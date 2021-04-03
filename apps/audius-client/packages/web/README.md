@@ -48,7 +48,7 @@ To run electron using a static build:
 npm run build:<environment>
 npm run electron:<environment>
 # Or to point at a local service with an optional port specifier
-npm run electron:localhost # -- <port> 
+npm run electron:localhost # -- <port>
 ```
 
 To build a desktop binary using a static build (outputs to `./dist`):
@@ -70,6 +70,14 @@ npm run dist:linux
 
 ```
 npm run test
+```
+
+### Analyze Webpack Bundle
+
+[webpack-bundle-analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer)
+
+```
+npm run analyzeBundle
 ```
 
 ### Linting
