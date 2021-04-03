@@ -36,7 +36,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     # loop through all audius event types within that tx and get all event logs
     # for each event, apply changes to the user in user_events_lookup
     for tx_receipt in user_factory_txs:
-        txhash = tx_receipt.transactionHash
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
