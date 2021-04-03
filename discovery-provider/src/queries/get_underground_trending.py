@@ -72,6 +72,22 @@ def z2(time, track):
     return{'score':vb * rq, **track}
 
 def get_scorable_track_data(session, redis_instance):
+    """
+    Returns a map: {
+        "track_id": string
+        "created_at": string
+        "owner_id": number
+        "windowed_save_count": number
+        "save_count": number
+        "repost_count": number
+        "windowed_repost_count": number
+        "owner_follower_count": number
+        "karma": number
+        "listens": number
+        "owner_verified": boolean
+    }
+    """
+
     trending_key = make_trending_cache_key("week", None)
     track_ids = []
     old_trending = get_pickled_key(redis_instance, trending_key)
@@ -231,7 +247,6 @@ def get_underground_trending(args):
         # Apply limit + offset early to reduce the amount of
         # population work we have to do
         if limit is not None and offset is not None:
-            # tracks = tracks[offset: limit + offset]
             track_ids = track_ids[offset: limit + offset]
 
         tracks = populate_track_metadata(
