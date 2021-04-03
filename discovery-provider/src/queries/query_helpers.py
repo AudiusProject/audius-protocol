@@ -852,7 +852,7 @@ def get_repost_counts_query(
         Repost.is_delete == False
     )
 
-    if filter_ids:
+    if filter_ids is not None:
         repost_counts_query = repost_counts_query.filter(
             query_col.in_(filter_ids)
         )
@@ -989,7 +989,7 @@ def get_save_counts_query(
         Save.is_delete == False
     )
 
-    if filter_ids:
+    if filter_ids is not None:
         save_counts_query = save_counts_query.filter(
             Save.save_item_id.in_(filter_ids)
         )
