@@ -679,13 +679,14 @@ class CreatorNode {
         }
       )
       if (resp.data && resp.data.error) {
-        throw new Error(resp.data.error)
+        throw new Error(JSON.stringify(resp.data.error))
       }
       onProgress(total, total)
       return resp.data
     } catch (e) {
       if (!e.response && retries > 0) {
-        console.log(`Network Error in request ${requestId} with ${retries} retries... retrying`)
+        console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
+        console.warn(e)
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
       }
       await this._handleErrorHelper(e, url, requestId)
