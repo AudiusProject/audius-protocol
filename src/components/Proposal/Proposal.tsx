@@ -28,6 +28,7 @@ type OwnProps = {
   // Whether or not to include voter information
   vote?: Vote
   onClick?: () => void
+  isDisabled?: boolean
 }
 
 type ProposalProps = OwnProps
@@ -37,6 +38,7 @@ const Proposal: React.FC<ProposalProps> = ({
   proposal,
   vote,
   className,
+  isDisabled,
   onClick
 }) => {
   const pushRoute = usePushRoute()
@@ -52,8 +54,11 @@ const Proposal: React.FC<ProposalProps> = ({
 
   return (
     <div
-      className={clsx(styles.proposal, { [className!]: !!className })}
-      onClick={onClickProposal}
+      className={clsx(styles.proposal, {
+        [className!]: !!className,
+        [styles.disabled]: isDisabled
+      })}
+      onClick={isDisabled ? () => {} : onClickProposal}
     >
       <div className={styles.left}>
         {header && <div className={styles.header}>{header}</div>}
