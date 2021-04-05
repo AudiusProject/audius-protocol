@@ -1,8 +1,6 @@
 const ContractClient = require('../contracts/ContractClient')
 const Utils = require('../../utils')
 
-const DEFAULT_GAS_AMOUNT = 200000
-
 /**
  * Transform a method name and its argument types into a string-composed
  * signature, e.g. someMethod(bytes32, int32)
@@ -94,7 +92,7 @@ class GovernanceClient extends ContractClient {
       signature,
       callData
     )
-    return this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return this.web3Manager.sendTransaction(method)
   }
 
   async getVotingQuorumPercent () {
@@ -121,7 +119,7 @@ class GovernanceClient extends ContractClient {
       signature,
       callData
     )
-    return this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    return this.web3Manager.sendTransaction(method)
   }
 
   async getProposalById (
@@ -205,8 +203,7 @@ class GovernanceClient extends ContractClient {
       name,
       description
     )
-    // Increased gas because submitting can be expensive
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
+    const tx = await this.web3Manager.sendTransaction(method)
     if (tx && tx.events && tx.events.ProposalSubmitted && tx.events.ProposalSubmitted.returnValues) {
       const id = tx.events.ProposalSubmitted.returnValues._proposalId
       return id
@@ -223,7 +220,7 @@ class GovernanceClient extends ContractClient {
       proposalId,
       vote
     )
-    await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    await this.web3Manager.sendTransaction(method)
   }
 
   async updateVote ({
@@ -235,7 +232,7 @@ class GovernanceClient extends ContractClient {
       proposalId,
       vote
     )
-    await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    await this.web3Manager.sendTransaction(method)
   }
 
   async evaluateProposalOutcome (
@@ -245,8 +242,7 @@ class GovernanceClient extends ContractClient {
       'evaluateProposalOutcome',
       proposalId
     )
-    // Increase gas because evaluating proposals can be expensive
-    const outcome = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT * 2)
+    const outcome = await this.web3Manager.sendTransaction(method)
     return outcome
   }
 

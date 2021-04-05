@@ -3,8 +3,6 @@ const GovernedContractClient = require('../contracts/GovernedContractClient')
 const axios = require('axios')
 const { range } = require('lodash')
 
-const DEFAULT_GAS_AMOUNT = 200000
-
 let urlJoin = require('proper-url-join')
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
@@ -468,8 +466,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       duration
     )
     return this.web3Manager.sendTransaction(
-      method,
-      DEFAULT_GAS_AMOUNT
+      method
     )
   }
 
@@ -497,7 +494,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       updatedDelegateOwnerWallet
     )
 
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -508,7 +505,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       oldEndpoint,
       newEndpoint
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -518,7 +515,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       ownerAddress,
       deployerCut
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -536,7 +533,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       'cancelUpdateDeployerCut',
       ownerAddress
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -545,7 +542,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       'updateDeployerCut',
       ownerAddress
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 
@@ -555,7 +552,7 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
       ownerAddress,
       newAmount
     )
-    const tx = await this.web3Manager.sendTransaction(method, DEFAULT_GAS_AMOUNT)
+    const tx = await this.web3Manager.sendTransaction(method)
     return tx
   }
 }

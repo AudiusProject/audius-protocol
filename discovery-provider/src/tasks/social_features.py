@@ -164,6 +164,7 @@ def add_track_repost(
         block_datetime,
         track_repost_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_track_repost_events = social_feature_factory_contract.events.TrackRepostAdded().processReceipt(
         tx_receipt
     )
@@ -179,6 +180,7 @@ def add_track_repost(
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_track_id,
                 repost_type=RepostType.track,
@@ -202,6 +204,7 @@ def delete_track_repost(
         block_datetime,
         track_repost_state_changes
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_repost_events = social_feature_factory_contract.events.TrackRepostDeleted().processReceipt(
         tx_receipt
     )
@@ -217,6 +220,7 @@ def delete_track_repost(
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_track_id,
                 repost_type=RepostType.track,
@@ -240,6 +244,7 @@ def add_playlist_repost(
         block_datetime,
         playlist_repost_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_playlist_repost_events = social_feature_factory_contract.events.PlaylistRepostAdded().processReceipt(
         tx_receipt
     )
@@ -264,6 +269,7 @@ def add_playlist_repost(
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_playlist_id,
                 repost_type=repost_type,
@@ -287,6 +293,7 @@ def delete_playlist_repost(
         block_datetime,
         playlist_repost_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_playlist_repost_events = social_feature_factory_contract.events.PlaylistRepostDeleted().processReceipt(
         tx_receipt
     )
@@ -311,6 +318,7 @@ def delete_playlist_repost(
             repost = Repost(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=repost_user_id,
                 repost_item_id=repost_playlist_id,
                 repost_type=repost_type,
@@ -334,6 +342,7 @@ def add_follow(
         block_datetime,
         follow_state_changes
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_follow_events = social_feature_factory_contract.events.UserFollowAdded().processReceipt(tx_receipt)
 
     for entry in new_follow_events:
@@ -347,6 +356,7 @@ def add_follow(
             follow = Follow(
                 blockhash=update_task.web3.toHex(entry.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 follower_user_id=follower_user_id,
                 followee_user_id=followee_user_id,
                 is_current=True,
@@ -369,6 +379,7 @@ def delete_follow(
         block_datetime,
         follow_state_changes
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_follow_events = social_feature_factory_contract.events.UserFollowDeleted().processReceipt(tx_receipt)
 
     for entry in new_follow_events:
@@ -382,6 +393,7 @@ def delete_follow(
             follow = Follow(
                 blockhash=update_task.web3.toHex(entry.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 follower_user_id=follower_user_id,
                 followee_user_id=followee_user_id,
                 is_current=True,

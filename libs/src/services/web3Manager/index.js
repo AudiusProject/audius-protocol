@@ -1,6 +1,7 @@
 const Web3 = require('../../web3')
 const sigUtil = require('eth-sig-util')
 const retry = require('async-retry')
+const { estimateGas } = require('../../utils/estimateGas')
 const AudiusABIDecoder = require('../ABIDecoder/index')
 const EthereumWallet = require('ethereumjs-wallet')
 let XMLHttpRequestRef
@@ -161,12 +162,16 @@ class Web3Manager {
     contractMethod,
     contractRegistryKey,
     contractAddress,
-    txGasLimit = DEFAULT_GAS_AMOUNT,
-    txRetries = 5
+    txRetries = 5,
+    txGasLimit = null
   ) {
+    const gasLimit = txGasLimit || await estimateGas({
+      method: contractMethod,
+      gasLimitMaximum: DEFAULT_GAS_AMOUNT
+    })
     if (this.useExternalWeb3) {
       return contractMethod.send(
-        { from: this.ownerWallet, gas: txGasLimit }
+        { from: this.ownerWallet, gas: gasLimit }
       )
     } else {
       const encodedABI = contractMethod.encodeABI()
@@ -177,7 +182,7 @@ class Web3Manager {
           contractAddress,
           this.ownerWallet.getAddressString(),
           encodedABI,
-          txGasLimit
+          gasLimit
         )
       }, {
         // Retry function 5x by default
