@@ -162,6 +162,7 @@
   min-height: 20px;
   align-items: center;
   position: relative;
+  width: 100%;
 }
 
 .title:active {
