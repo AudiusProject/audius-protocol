@@ -1,6 +1,4 @@
 const axios = require('axios')
-const assert = require('assert')
-const _ = require('lodash')
 
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
@@ -10,8 +8,6 @@ const {
 } = require('../helpers.js')
 
 const DEFAULT_INDEX = 0
-const BOOTSTRAP_SP_IDS = new Set([1,2,3])
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 let contentNodeEndpointToInfoMapping = {}
 let walletIndexToUserIdMap
