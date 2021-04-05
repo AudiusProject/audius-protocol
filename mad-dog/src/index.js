@@ -8,7 +8,8 @@ const {
   coreIntegration,
   snapbackSMParallelSyncTest,
   userReplicaSetManagerTest,
-  IpldBlacklistTest
+  IpldBlacklistTest,
+  userReplicaSetBlockSaturationTest
 } = require('./tests/')
 
 // Configuration.
@@ -47,7 +48,7 @@ const services = [
   [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
   [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
   [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
-  ...contentNodeHealthChecks
+  // ...contentNodeHealthChecks
 ]
 
 async function setupAllServices () {
@@ -207,6 +208,16 @@ async function main () {
         const test = makeTest(
           'userReplicaSetManager',
           userReplicaSetManagerTest,
+          {
+            numUsers: USER_REPLICA_SET_NUM_USERS
+          })
+        await testRunner([test])
+        break
+      }
+      case 'test-ursm-sat': {
+        const test = makeTest(
+          'userReplicaSetBlockSaturationTest',
+          userReplicaSetBlockSaturationTest,
           {
             numUsers: USER_REPLICA_SET_NUM_USERS
           })
