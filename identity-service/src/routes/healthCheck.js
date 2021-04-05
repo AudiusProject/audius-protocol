@@ -6,6 +6,11 @@ const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
 const Web3 = require('web3')
 const audiusLibsWrapper = require('../audiusLibsInstance')
+const {
+  NOTIFICATION_JOB_LAST_SUCCESS_KEY,
+  NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY,
+  NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY
+} = require('../notifications/index.js')
 
 const axios = require('axios')
 
@@ -264,6 +269,9 @@ module.exports = function (app) {
   }))
 
   app.get('/notification_check', handleResponse(async (req, res) => {
+    let { maxBlockDifference } = req.query
+    maxBlockDifference = maxBlockDifference || 100
+
     let highestBlockNumber = await models.NotificationAction.max('blocknumber')
     if (!highestBlockNumber) {
       highestBlockNumber = config.get('notificationStartBlock')
@@ -273,6 +281,11 @@ module.exports = function (app) {
     if (maxFromRedis) {
       highestBlockNumber = parseInt(maxFromRedis)
     }
+
+    // Get job success timestamps
+    const notificationJobLastSuccess = await redis.get(NOTIFICATION_JOB_LAST_SUCCESS_KEY)
+    const notificationEmailsJobLastSuccess = await redis.get(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY)
+    const notificationAnnouncementsJobLastSuccess = await redis.get(NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY)
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
@@ -285,9 +298,12 @@ module.exports = function (app) {
     let resp = {
       'discProv': body.data,
       'identity': highestBlockNumber,
-      'notifBlockDiff': notifBlockDiff
+      'notifBlockDiff': notifBlockDiff,
+      notificationJobLastSuccess,
+      notificationEmailsJobLastSuccess,
+      notificationAnnouncementsJobLastSuccess
     }
-    if (notifBlockDiff > 100) {
+    if (notifBlockDiff > maxBlockDifference) {
       return errorResponseServerError(resp)
     }
     return successResponse(resp)
