@@ -8,7 +8,7 @@ const {
   runSetupCommand
 } = ServiceCommands
 
-const NUM_CREATOR_NODES = 3
+const NUM_CREATOR_NODES = 4
 const SERVICE_INSTANCE_NUMBER = 1
 
 const printOptions = () => {
