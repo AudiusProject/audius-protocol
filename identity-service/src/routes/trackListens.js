@@ -221,7 +221,7 @@ module.exports = function (app) {
     await instr.validateSignature(
       null,
       'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
-      JSON.stringify({ hour: currentHour, trackId, userId }),
+      JSON.stringify({ hour: currentHour, trackId, userId })
     )
 
     await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
