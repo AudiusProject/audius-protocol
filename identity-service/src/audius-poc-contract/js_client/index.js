@@ -2,7 +2,7 @@ const solanaWeb3 = require('@solana/web3.js')
 const crypto = require('crypto')
 const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
-const eth_utils = require('ethereumjs-util')
+const { privateToAddress } = require('ethereumjs-util')
 const borsh = require('borsh')
 
 let SIGNER_GROUP_SIZE = 33
@@ -50,12 +50,6 @@ let url = 'https://devnet.solana.com'
 
 let devnetConnection = new solanaWeb3.Connection(url)
 
-async function newSystemAccountWithAirdrop (connection, lamports) {
-  const account = new solanaWeb3.Account()
-  await connection.requestAirdrop(account.publicKey, lamports)
-  return account
-}
-
 function newProgramAccount (newAccount, lamports, space) {
   let instruction = solanaWeb3.SystemProgram.createAccount({
     fromPubkey: feePayer.publicKey,
@@ -101,13 +95,13 @@ async function createSignerGroup () {
   console.log('Signature: ', signature)
 }
 
-async function createValidSigner (signer_group) {
+async function createValidSigner (signerGroup) {
   let privKey
   do {
     privKey = crypto.randomBytes(32)
   } while (!secp256k1.privateKeyVerify(privKey))
 
-  let ethAddress = eth_utils.privateToAddress(Buffer.from(privKey))
+  let ethAddress = privateToAddress(Buffer.from(privKey))
   let ethAddressArr = ethAddress.toJSON().data
 
   console.log('Created private key: ', privKey.toString('hex'))
@@ -128,9 +122,9 @@ async function createValidSigner (signer_group) {
   let transaction = new solanaWeb3.Transaction()
   transaction.add(accountCreatingInstruction)
 
-  let instruction_data = [1].concat(ethAddressArr)
+  let instructionData = [1].concat(ethAddressArr)
 
-  let signerGroupPubK = new solanaWeb3.PublicKey(signer_group)
+  let signerGroupPubK = new solanaWeb3.PublicKey(signerGroup)
 
   transaction.add({
     keys: [
@@ -139,7 +133,7 @@ async function createValidSigner (signer_group) {
       { pubkey: owner.publicKey, isSigner: true, isWritable: false }
     ],
     programId: AUDIUS_PROGRAM,
-    data: instruction_data
+    data: instructionData
   })
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
@@ -165,15 +159,15 @@ async function validateSignature (validSigner, privateKey, message) {
 
   let msg = Buffer.from(message).toJSON().data
 
-  let msg_hash = keccak256(msg)
+  let msgHash = keccak256(msg)
 
-  const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msg_hash), privKey)
+  const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msgHash), privKey)
 
   let transaction = new solanaWeb3.Transaction()
-  let instruction_data = [3]
-  instruction_data = instruction_data.concat(Array.from(sigObj.signature))
-  instruction_data = instruction_data.concat([sigObj.recid])
-  instruction_data = instruction_data.concat(msg)
+  let instructionData = [3]
+  instructionData = instructionData.concat(Array.from(sigObj.signature))
+  instructionData = instructionData.concat([sigObj.recid])
+  instructionData = instructionData.concat(msg)
 
   let secpInstruction = solanaWeb3.Secp256k1Program.createInstructionWithPublicKey(
     {
@@ -193,7 +187,7 @@ async function validateSignature (validSigner, privateKey, message) {
       { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false }
     ],
     programId: AUDIUS_PROGRAM,
-    data: Buffer.from(instruction_data)
+    data: Buffer.from(instructionData)
   })
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
@@ -241,9 +235,9 @@ async function createAndVerifyMessage (
   ])
 
   const serializedTrackData = borsh.serialize(trackDataSchema, trackData)
-  let msg_hash = keccak256(serializedTrackData.toJSON().data)
+  let msgHash = keccak256(serializedTrackData.toJSON().data)
 
-  const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msg_hash), privKey)
+  const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msgHash), privKey)
 
   let instructionSchema = new Map([
     [
