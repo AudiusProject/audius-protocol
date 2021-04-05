@@ -1,3 +1,7 @@
+.container {
+  min-width: unset;
+}
+
 .apiBanner {
   display: flex;
   justify-content: center;

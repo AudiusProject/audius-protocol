@@ -2,7 +2,7 @@ import Loading from 'components/Loading'
 import Paper from 'components/Paper'
 import React from 'react'
 import { Bar } from 'react-chartjs-2'
-import { formatShortNumber } from 'utils/format'
+import { formatShortNumber, formatShortNumberWithDecimal } from 'utils/format'
 import { IconCrown } from '@audius/stems'
 // Custom draw fn
 import 'components/BarChart/draw'
@@ -31,7 +31,7 @@ const getData = (data: number[], isMobile: boolean) => ({
   ]
 })
 
-const getOptions = (max: number) => ({
+const getOptions = (id: string, max: number) => ({
   layout: {
     padding: {
       left: 0,
@@ -88,7 +88,84 @@ const getOptions = (max: number) => ({
     display: false
   },
   tooltips: {
-    enabled: false
+    enabled: false,
+    titleFontFamily: 'Avenir Next LT Pro',
+    titleFontSize: 10,
+    titleFontStyle: 500,
+    titleFontColor: '#FFFFFF',
+    titleSpacing: 0,
+    titleMarginBottom: 7,
+    bodyFontFamily: 'Avenir Next LT Pro',
+    bodyFontSize: 16,
+    bodyFontStyle: 'bold',
+    bodyFontColor: '#FFFFFF',
+    bodySpacing: 0,
+    bodyMarginBottom: 2,
+    xPadding: 16,
+    yPadding: 11,
+    xAlign: 'left',
+    yAlign: 'bottom',
+    position: 'nearest',
+    custom: function(tooltipModel: any) {
+      console.log({ tooltipModel })
+      // Tooltip Element
+      let tooltipEl = document.getElementById(`chartjs-tooltip-${id}`)
+
+      // Create element on first render
+      if (!tooltipEl) {
+        tooltipEl = document.createElement('div')
+        tooltipEl.id = `chartjs-tooltip-${id}`
+        tooltipEl.innerHTML = '<div></div>'
+        document.body.appendChild(tooltipEl)
+      }
+
+      // Hide if no tooltip
+      if (tooltipModel.opacity === 0) {
+        ;(tooltipEl as any).style.opacity = 0
+        return
+      }
+
+      const { value } = tooltipModel.title[0] || {}
+      const innerHtml = `
+        <div class='${styles.tooltipContainer}'>
+          <div class='${styles.tooltipBody}'>
+            <div class='${styles.tooltipValue}'>${formatShortNumberWithDecimal(
+        value
+      ).toUpperCase()}</div>
+          </div>
+        </div>`
+
+      // @ts-ignore
+      tooltipEl.innerHTML = innerHtml
+
+      // @ts-ignore
+      const position = this._chart.canvas.getBoundingClientRect()
+
+      // @ts-ignore
+      tooltipEl.style.opacity = 1
+      tooltipEl.style.position = 'absolute'
+      tooltipEl.style.left =
+        position.x +
+        tooltipModel.caretX +
+        window.pageXOffset -
+        tooltipEl.offsetWidth / 2 +
+        'px'
+      tooltipEl.style.top =
+        position.y +
+        tooltipModel.caretY +
+        window.pageYOffset -
+        tooltipEl.offsetHeight -
+        10 +
+        'px'
+      tooltipEl.style.transition = 'opacity 0.18s ease-in-out'
+      tooltipEl.style.pointerEvents = 'none'
+    },
+    callbacks: {
+      title: (tooltipItem: any, data: any) => {
+        console.log({ tooltipItem })
+        return { value: parseInt(tooltipItem[0].value) }
+      }
+    }
   }
 })
 
@@ -143,7 +220,7 @@ const VerticalBarChart: React.FC<VerticalBarChartProps> = ({
             <Bar
               height={100}
               data={barData}
-              options={getOptions(Math.max(...data))}
+              options={getOptions(title, Math.max(...data))}
             />
             <Labels labels={labels} />
           </>

@@ -14,12 +14,15 @@ import { useLocation } from 'react-router-dom'
 const navRoutes = [
   {
     baseRoute: routes.HOME,
-    matchParams: [{ path: routes.HOME, exact: true }, { path: routes.API }],
+    matchParams: [{ path: routes.HOME, exact: true }],
     text: 'OVERVIEW'
   },
   {
     baseRoute: routes.ANALYTICS,
-    matchParams: [{ path: routes.ANALYTICS, exact: true }],
+    matchParams: [
+      { path: routes.ANALYTICS, exact: true },
+      { path: routes.API }
+    ],
     text: 'ANALYTICS'
   },
   {
