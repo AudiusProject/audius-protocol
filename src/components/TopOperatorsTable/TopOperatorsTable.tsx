@@ -56,7 +56,11 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
     [pushRoute]
   )
 
-  const { status, users } = useUsers({ limit, filter: 'isOperator', sortBy: SortUser.stakePlusDelegates })
+  const { status, users } = useUsers({
+    limit,
+    filter: 'isOperator',
+    sortBy: SortUser.stakePlusDelegates
+  })
 
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {

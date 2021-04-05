@@ -52,7 +52,10 @@ const sortActiveStakeFunc = (u1: User | Operator, u2: User | Operator) => {
   return u2Total.cmp(u1Total)
 }
 
-const sortStakePlusDelegatedFunc = (u1: User | Operator, u2: User | Operator) => {
+const sortStakePlusDelegatedFunc = (
+  u1: User | Operator,
+  u2: User | Operator
+) => {
   const u1Total = getActiveStake(u1).add(getTotalActiveDelegatedStake(u1))
   const u2Total = getActiveStake(u2).add(getTotalActiveDelegatedStake(u2))
   return u2Total.cmp(u1Total)
@@ -68,7 +71,6 @@ export const getUsers = ({ sortBy, limit, filter }: UseUsersProp) => (
     if (filter === 'isOperator') return 'serviceProvider' in user
     return true
   }
-
 
   let serviceProviders: (User | Operator)[] = accounts.filter(filterFunc) as any
   if (sortBy === SortUser.activeStake) {
