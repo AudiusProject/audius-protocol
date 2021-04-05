@@ -251,12 +251,19 @@ async function main () {
           userReplicaSetManagerTest,
           { numUsers: USER_REPLICA_SET_NUM_USERS }
         )
+        const ursmBlockSaturationTest = makeTest(
+          'userReplicaSetBlockSaturationTest',
+          userReplicaSetBlockSaturationTest,
+          {
+            numUsers: 1
+          })
 
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
-          ursmTest
+          ursmTest,
+          ursmBlockSaturationTest
         ]
 
         await testRunner(tests)
