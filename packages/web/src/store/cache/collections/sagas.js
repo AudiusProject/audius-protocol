@@ -182,6 +182,7 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
         const reformattedPlaylist = {
           ...reformat(confirmedPlaylist),
           ...movedCollection,
+          playlist_id: confirmedPlaylist.playlist_id,
           _temp: false
         }
 
