@@ -219,7 +219,7 @@ async function main () {
           'userReplicaSetBlockSaturationTest',
           userReplicaSetBlockSaturationTest,
           {
-            numUsers: USER_REPLICA_SET_NUM_USERS
+            numUsers: 1
           })
         await testRunner([test])
         break
