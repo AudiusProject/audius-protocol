@@ -7,6 +7,8 @@ import base58
 import binascii
 import codecs
 from solana.rpc.api import Client
+from src.models import Play
+from datetime import datetime
 
 # TODO: These are configs
 AUDIUS_PROGRAM = "BnmzQSTFwNh9S1abdAAKJo5dELbZSWhqfgH116BqkJPJ"
@@ -22,6 +24,7 @@ logger = logging.getLogger(__name__)
 # Actively connect to all peers in parallel
 def process_solana_plays():
     redis = index_solana_plays.redis
+    db = index_solana_plays.db
     logger.error("\n\n")
     logger.error("")
     logger.error("Processing plays...")
@@ -39,6 +42,59 @@ def process_solana_plays():
     transaction = http_client.get_confirmed_signature_for_address2(
         AUDIUS_PROGRAM, limit=1
     )
+    if transaction["result"][0]["slot"] > slot_from:
+        slot_from = transaction["result"][0]["slot"]
+        pickle_and_set(redis, SOL_PLAYS_REDIS_KEY, slot_from)
+        tx_info = http_client.get_confirmed_transaction(
+            transaction["result"][0]["signature"]
+        )
+        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"]["accountKeys"]:
+            audius_program_index = tx_info["result"]["transaction"]["message"][
+                "accountKeys"
+            ].index(AUDIUS_PROGRAM)
+            for instruction in tx_info["result"]["transaction"]["message"][
+                "instructions"
+            ]:
+                if instruction["programIdIndex"] == audius_program_index:
+                    hex_data = binascii.hexlify(
+                        bytearray(list(base58.b58decode(instruction["data"])))
+                    )
+
+                    l1 = int(hex_data[2:4], 16)
+                    start_data1 = 10
+                    end_data1 = l1 * 2 + start_data1
+
+                    l2 = int(hex_data[end_data1 : end_data1 + 2], 16)
+                    start_data2 = end_data1 + 8
+                    end_data2 = l2 * 2 + start_data2
+
+                    l3 = int(hex_data[end_data2 : end_data2 + 2], 16)
+                    start_data3 = end_data2 + 8
+                    end_data3 = l3 * 2 + start_data3
+
+                    user_id = codecs.decode(hex_data[start_data1:end_data1], 'hex')
+                    track_id = codecs.decode(hex_data[start_data2:end_data2], 'hex')
+                    source = codecs.decode(hex_data[start_data3:end_data3], 'hex')
+
+                    logger.error("---------")
+                    logger.error("---------")
+                    logger.error(
+                        f"Signed data:\nuser_id: {user_id}\ntrack_id: {track_id}\nsource: {source}"
+                    )
+                    logger.error(
+                        f"Get 'send message' transaction: {tx_info['result']['transaction']['signatures'][0]}"
+                    )
+                    logger.error("---------")
+                    logger.error("---------")
+                    with db.scoped_session() as session:
+                        session.add(Play(
+                            user_id=int(user_id),
+                            play_item_id=int(track_id),
+                            source=str(source, 'utf-8')
+                        ))
+                    logger.error('COMMITTED PLAY')
+                    logger.error("---------")
+
     # TODO: RECORD PLAY DATA
     logger.error(transaction)
     logger.error("")
