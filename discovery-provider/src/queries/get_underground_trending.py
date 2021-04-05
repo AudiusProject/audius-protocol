@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 UNDERGROUND_TRENDING_CACHE_KEY = "generated-trending-tracks-underground"
 UNDERGROUND_TRENDING_LENGTH = 50
 
-S = 1000
-r = 1000
+S = 1500
+r = 1500
 q = 50
 o = 21
 f = 7
@@ -38,8 +38,8 @@ pn = 0.01
 u = 30.0
 qq = 0.001
 oi = 20
-nb = 500
-om = 1000
+nb = 750
+om = 1500
 qr = 10
 
 def z2(time, track):
