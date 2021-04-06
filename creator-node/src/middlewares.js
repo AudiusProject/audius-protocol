@@ -163,7 +163,6 @@ async function triggerSecondarySyncs (req) {
 
       const userWallet = req.session.wallet
 
-      this.log(`SIDTEST ENQUEUING MANUAL SYNC (????)`)
       await snapbackSM.enqueueSync({
         userWallet,
         secondaryEndpoint: secondary,

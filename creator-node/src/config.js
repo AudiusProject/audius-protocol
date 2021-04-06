@@ -130,7 +130,7 @@ const config = convict({
     doc: 'Maximum range of clock values to export at once to prevent process OOM',
     format: Number,
     env: 'maxExportClockValueRange',
-    default: 5
+    default: 10000
   },
 
   // Rate limit configs
@@ -425,7 +425,7 @@ const config = convict({
     doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
     format: 'BooleanCustom',
     env: 'snapbackDevModeEnabled',
-    default: true
+    default: false
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
