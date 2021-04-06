@@ -66,7 +66,11 @@ class NotificationProcessor {
         },
         defaultJobOptions
       })
-    this.errorHandler = errorHandler ? errorHandler : () => null
+    if (errorHandler) {
+      this.errorHandler = errorHandler
+    } else {
+      this.errorHandler = () => null
+    }
   }
 
   /**
