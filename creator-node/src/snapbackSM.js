@@ -48,7 +48,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
-    this.snapbackDevModeEnabled = true
+    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
 
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
@@ -64,8 +64,6 @@ class SnapbackSM {
 
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
-
-    this.log(`SIDTEST MAXEXPORTRANGE: ${this.nodeConfig.get('maxExportClockValueRange')} // snapbackdevmode ${this.snapbackDevModeEnabled}`)
   }
 
   /**
