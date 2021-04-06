@@ -110,6 +110,8 @@ jobs:
       - run:
           name: identity-service repo init
           command: |
+            source ~/.bash_profile
+            nvm install v10.16
             cd identity-service/
             npm install
       - save_cache:
