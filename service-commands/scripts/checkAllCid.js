@@ -211,7 +211,9 @@ async function run() {
         metadata_multihash
       }) => {
         cids[user_id] = Array.from(trackCids[user_id] || [])
-        cids[user_id].push(metadata_multihash)
+        if (metadata_multihash) {
+          cids[user_id].push(metadata_multihash)
+        }
 
         creator_node_endpoint.forEach(endpoint => {
           creatorNodes.add(endpoint)
