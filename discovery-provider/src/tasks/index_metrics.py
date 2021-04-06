@@ -271,9 +271,10 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
         # add other nodes' summed unique daily and monthly counts to this node's
         if new_route_metrics:
-            new_route_metrics = new_route_metrics['deduped']
+            logger.info(f"summed unique metrics from {node}: {new_route_metrics['summed']}")
             summed_unique_daily_count += new_route_metrics['summed']['daily']
             summed_unique_monthly_count += new_route_metrics['summed']['monthly']
+            new_route_metrics = new_route_metrics['deduped']
 
         merge_route_metrics(new_route_metrics or {}, end_time, db)
         merge_app_metrics(new_app_metrics or {}, end_time, db)
