@@ -32,7 +32,7 @@ import {
 } from 'store/wallet/slice'
 
 import { requestConfirmation } from 'store/confirmer/actions'
-import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
+import AudiusBackend from 'services/AudiusBackend'
 import apiClient, {
   AssociatedWalletsResponse
 } from 'services/audius-api-client/AudiusAPIClient'
@@ -47,7 +47,6 @@ import { newUserMetadata } from 'schemas'
 
 import { fetchAccountSucceeded } from 'store/account/reducer'
 
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { upgradeToCreator } from 'store/cache/users/sagas'
 import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
@@ -127,32 +126,6 @@ function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
   const users: any[] = yield call(AudiusBackend.getCreators, [accountUserId])
   if (users.length !== 1) return null
   return users[0].metadata_multihash
-}
-
-/**
- * Retrieves the user's associated wallets from IPFS using the user's metadata CID and creator node endpoints
- * @param {Object} user The user metadata which contains the CID for the metadata multihash
- * @returns Object The associated wallets mapping of address to nested signature
- */
-function* fetchUserAssociatedWallets(user: any) {
-  const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
-  const cid = user?.metadata_multihash ?? null
-  if (cid) {
-    const metadata: any = yield call(
-      fetchCID,
-      cid,
-      gateways,
-      /* cache */ false,
-      /* asUrl */ false
-    )
-    if (metadata?.associated_wallets) {
-      return metadata.associated_wallets
-    } else {
-      // TODO
-      console.log('something went wrong, could not get user associated wallets')
-    }
-  }
-  return {}
 }
 
 // The confirmer's polling interval
@@ -271,11 +244,11 @@ function* connectWallet() {
     }
 
     const currentWalletSignatures: Record<string, any> = yield call(
-      fetchUserAssociatedWallets,
+      AudiusBackend.fetchUserAssociatedWallets,
       updatedMetadata
     )
     updatedMetadata.associated_wallets = {
-      ...currentWalletSignatures,
+      ...(currentWalletSignatures || {}),
       [connectingWallet]: { signature }
     }
 
@@ -346,18 +319,20 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
     )
     const updatedMetadata = newUserMetadata({ ...userMetadata })
 
-    const currentAssociatedWallest: Record<string, any> = yield call(
-      fetchUserAssociatedWallets,
+    const currentAssociatedWallets: Record<string, any> = yield call(
+      AudiusBackend.fetchUserAssociatedWallets,
       updatedMetadata
     )
-
-    if (!(removeWallet in currentAssociatedWallest)) {
+    if (
+      currentAssociatedWallets &&
+      !(removeWallet in currentAssociatedWallets)
+    ) {
       // The wallet already exists in the assocaited wallets set
       yield put(updateWalletError({ errorMessage: 'Unable to remove wallet' }))
       return
     }
 
-    updatedMetadata.associated_wallets = { ...currentAssociatedWallest }
+    updatedMetadata.associated_wallets = { ...(currentAssociatedWallets || {}) }
 
     delete updatedMetadata.associated_wallets[removeWallet]
 
