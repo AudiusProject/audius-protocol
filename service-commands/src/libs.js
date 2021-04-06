@@ -586,6 +586,14 @@ function LibsWrapper (walletIndex = 0) {
     )
   }
 
+  this.updateBio = async (userId, bioString) => {
+    return this.libsInstance.contracts.UserFactoryClient.updateBio(userId, bioString)
+  }
+
+  this.updateName = async (userId, userName) => {
+    return this.libsInstance.contracts.UserFactoryClient.updateBio(userId, userName)
+  }
+
   this.getDiscoveryNodeEndpoint = () => {
     return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
   }

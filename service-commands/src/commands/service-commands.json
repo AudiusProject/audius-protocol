@@ -18,7 +18,7 @@
   "contracts": {
     "up": [
       "cd contracts/",
-      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100 -b 5",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",

@@ -411,7 +411,7 @@ module.exports = function (app) {
     // Ensure actual and expected dirCIDs match
     const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
     if (expectedDirCID !== dirCID) {
-      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID ${dirCID}`)
+      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}`)
     }
 
     // Record image file entries in DB

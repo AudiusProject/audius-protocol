@@ -114,6 +114,11 @@ const sendResponseWithHeartbeatTerminator =
       } else {
         logger.info('Error processing request:', resp.object.error)
       }
+
+      // Converts the error object into an object that JSON.stringify can parse
+      if (resp.object.error) {
+        resp.object.error = Object.getOwnPropertyNames(resp.object.error).reduce((acc, cur) => { acc[cur] = resp.object.error[cur]; return acc }, {})
+      }
     }
 
     // Construct the remainder of the JSON response
