@@ -147,7 +147,6 @@ async function triggerSecondarySyncs (req) {
   if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
     return
   }
-  
 
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) {
