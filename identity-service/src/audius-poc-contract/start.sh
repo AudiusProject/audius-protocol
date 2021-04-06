@@ -1,43 +1,28 @@
-#!/bin/sh
-
 address=BCd61FAc303e9fc78fDf612A71AAa7a47a36b2d6
 priv_key=c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a
-
-curr_dir=$(dirname "$(readlink -f "$0")")
-
-ln -snf /usr/share/zoneinfo/UTC /etc/localtime
-echo UTC > /etc/timezone
-
-apt-get update && apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-sh -c "$(curl -sSfL https://release.solana.com/v1.6.1/install)"
-
-export PATH="$HOME/.cargo/bin:/root/.local/share/solana/install/active_release/bin:$PATH"
 
 solana-keygen new -s --no-bip39-passphrase
 
 solana config set -u devnet
 
 solana airdrop 5
-solana airdrop 5 "$curr_dir/feepayer.json"
-solana airdrop 5 "$curr_dir/owner.json"
+solana airdrop 5 feepayer.json
+solana airdrop 5 owner.json
 
-cd "$curr_dir/../src/audius-poc-contract/create_and_verify"
-cargo build-bpf
+cd create_and_verify
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
 sed -i "s/$cur_address/$new_address/g" src/lib.rs ../js_client/index.js
 
-cd "$curr_dir/../src/audius-poc-contract/program"
-cargo build-bpf
+cd ../program
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
 sed -i "s/$cur_address/$new_address/g" src/lib.rs ../js_client/index.js
 
-cd "$curr_dir/../src/audius-poc-contract/cli"
+cd ../cli
 signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
 valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
-old_valid_signer=$(grep -Po '(?<=VALID_SIGNER = ").*(?=")' ../js_client/index.js)
+old_valid_signer=$(grep -Po "(?<=VALID_SIGNER = ').*(?=')" ../js_client/index.js)
 sed -i "s/$old_valid_signer/$valid_signer/g" ../js_client/index.js
 
-python -m http.server 8080 # open up port 8080 to signal completion
+python -m http.server 8080

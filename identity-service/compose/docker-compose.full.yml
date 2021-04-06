@@ -1,13 +1,9 @@
 version: '3'
 services:
   identity-solana:
-    image: ubuntu:20.04
-    command: sh /usr/src/app/scripts/setup-solana.sh
+    build: ../src/audius-poc-contract
     volumes:
-      - ..:/usr/src/app
-      - /usr/src/app/src/audius-poc-contract/cli/target
-      - /usr/src/app/src/audius-poc-contract/create_and_verify/target
-      - /usr/src/app/src/audius-poc-contract/program/target
+      - ../src/audius-poc-contract/js_client:/usr/src/app/js_client
     ports:
       - '8080:8080'
     networks:
