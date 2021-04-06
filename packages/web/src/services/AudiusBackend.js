@@ -34,6 +34,7 @@ import {
 } from './remote-config/Provider'
 import { monitoringCallbacks } from './serviceMonitoring'
 import { isElectron } from 'utils/clientUtil'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 
 export const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 export const USER_NODE = process.env.REACT_APP_USER_NODE
@@ -936,8 +937,36 @@ class AudiusBackend {
     }
   }
 
+  /**
+   * Retrieves the user's associated wallets from IPFS using the user's metadata CID and creator node endpoints
+   * @param {Object} user The user metadata which contains the CID for the metadata multihash
+   * @returns Object The associated wallets mapping of address to nested signature
+   */
+  static async fetchUserAssociatedWallets(user) {
+    const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
+    const cid = user?.metadata_multihash ?? null
+    if (cid) {
+      const metadata = await fetchCID(
+        cid,
+        gateways,
+        /* cache */ false,
+        /* asUrl */ false
+      )
+      if (metadata?.associated_wallets) {
+        return metadata.associated_wallets
+      }
+    }
+    return null
+  }
+
   static async updateCreator(metadata, id) {
     let newMetadata = { ...metadata }
+    const associatedWallets = await AudiusBackend.fetchUserAssociatedWallets(
+      metadata
+    )
+    newMetadata.associated_wallets =
+      newMetadata.associated_wallets || associatedWallets
+
     try {
       if (newMetadata.updatedProfilePicture) {
         const resp = await audiusLibs.File.uploadImage(
