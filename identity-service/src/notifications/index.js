@@ -36,7 +36,9 @@ const defaultJobOptions = {
 }
 
 class NotificationProcessor {
-  constructor () {
+  constructor ({
+    errorHandler
+  }) {
     this.notifQueue = new Bull(
       `notification-queue-${Date.now()}`,
       {
@@ -64,6 +66,7 @@ class NotificationProcessor {
         },
         defaultJobOptions
       })
+    this.errorHandler = errorHandler ? errorHandler : () => null
   }
 
   /**
@@ -126,6 +129,7 @@ class NotificationProcessor {
       } catch (e) {
         error = e
         logger.error(`Restarting due to error indexing notifications : ${e}`)
+        this.errorHandler(e)
         // Restart job with same startBlock
         await this.notifQueue.add({
           type: notificationJobType,
@@ -149,8 +153,9 @@ class NotificationProcessor {
         await processDownloadAppEmail(expressApp, audiusLibs)
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
-        logger.error(`processEmailNotifications - Problem with processing a emails: ${e}`)
         error = e
+        logger.error(`processEmailNotifications - Problem with processing a emails: ${e}`)
+        this.errorHandler(e)
       }
       // Wait 10 minutes before re-running the job
       await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
@@ -166,8 +171,9 @@ class NotificationProcessor {
         await pushAnnouncementNotifications()
         await this.redis.set(NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
-        logger.error(`pushAnnouncementNotifications - Problem with processing announcements: ${e}`)
         error = e
+        logger.error(`pushAnnouncementNotifications - Problem with processing announcements: ${e}`)
+        this.errorHandler(e)
       }
       // Delay 30s
       await new Promise(resolve => setTimeout(resolve, NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC))

@@ -497,6 +497,12 @@ const config = convict({
     format: String,
     env: 'recaptchaServiceKey',
     default: ''
+  },
+  sentryDSN: {
+    doc: 'Sentry DSN key',
+    format: String,
+    env: 'sentryDSN',
+    default: ''
   }
 })
 
