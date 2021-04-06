@@ -9,6 +9,7 @@ const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
 const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
+const Sentry = require('@sentry/node')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
@@ -27,8 +28,13 @@ class App {
     this.port = port
     this.express = express()
     this.redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+    this.configureSentry()
     this.configureMailgun()
-    this.notificationProcessor = new NotificationProcessor()
+
+    // Async job configuration
+    this.notificationProcessor = new NotificationProcessor({
+      errorHandler: Sentry.captureException
+    })
 
     // Note: The order of the following functions is IMPORTANT, as it sets the functions
     // that process a request in the order applied
@@ -92,6 +98,15 @@ class App {
       mg = mailgun({ apiKey: config.get('mailgunApiKey'), domain: DOMAIN })
     }
     this.express.set('mailgun', mg)
+  }
+
+  configureSentry () {
+    const dsn = config.get('sentryDSN')
+    if (dsn) {
+      Sentry.init({
+        dsn
+      })
+    }
   }
 
   async configureAudiusInstance () {
@@ -220,6 +235,7 @@ class App {
     function errorHandler (err, req, res, next) {
       req.logger.error('Internal server error')
       req.logger.error(err.stack)
+      Sentry.captureException(err)
       sendResponse(req, res, errorResponseServerError('Internal server error'))
     }
     this.express.use(errorHandler)
