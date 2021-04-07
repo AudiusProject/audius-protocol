@@ -15,7 +15,7 @@ class OpenSeaClient {
 
   async getTransferredCollectiblesForWallet(
     wallet: string,
-    limit = 50
+    limit = 100
   ): Promise<{ asset_events: OpenSeaEvent[] }> {
     return fetch(
       `${client.url}/events?account_address=${wallet}&limit=${limit}&event_type=transfer&only_opensea=false`
@@ -24,7 +24,7 @@ class OpenSeaClient {
 
   async getTransferredCollectiblesForMultipleWallets(
     wallets: string[],
-    limit = 50
+    limit = 100
   ): Promise<OpenSeaEvent[]> {
     return Promise.allSettled(
       wallets.map(wallet =>
@@ -44,7 +44,7 @@ class OpenSeaClient {
 
   async getCreatedCollectiblesForWallet(
     wallet: string,
-    limit = 50
+    limit = 100
   ): Promise<{ asset_events: OpenSeaEvent[] }> {
     return fetch(
       `${client.url}/events?account_address=${wallet}&limit=${limit}&event_type=created&only_opensea=false`
@@ -53,7 +53,7 @@ class OpenSeaClient {
 
   async getCreatedCollectiblesForMultipleWallets(
     wallets: string[],
-    limit = 50
+    limit = 100
   ): Promise<OpenSeaEvent[]> {
     return Promise.allSettled(
       wallets.map(wallet =>
@@ -73,7 +73,7 @@ class OpenSeaClient {
 
   async getCollectiblesForWallet(
     wallet: string,
-    limit = 50
+    limit = 100
   ): Promise<{ assets: OpenSeaAsset[] }> {
     return fetch(
       `${client.url}/assets?owner=${wallet}&limit=${limit}`
@@ -82,7 +82,7 @@ class OpenSeaClient {
 
   async getCollectiblesForMultipleWallets(
     wallets: string[],
-    limit = 50
+    limit = 100
   ): Promise<OpenSeaAsset[]> {
     return Promise.allSettled(
       wallets.map(wallet => client.getCollectiblesForWallet(wallet, limit))
@@ -115,6 +115,42 @@ class OpenSeaClient {
         )
       const ownedCollectibleKeySet = new Set(Object.keys(collectiblesMap))
 
+      // Handle transfers from NullAddress as if they were created events
+      const firstOwnershipTransferEvents = transferEvents
+        .filter(
+          event =>
+            event && isAssetValid(event.asset) && !isNotFromNullAddress(event)
+        )
+        .reduce((acc: { [key: string]: OpenSeaEvent }, curr) => {
+          if (
+            acc[curr.asset.token_id] &&
+            acc[curr.asset.token_id].created_date.localeCompare(
+              curr.created_date
+            ) > 0
+          ) {
+            return acc
+          }
+          return {
+            ...acc,
+            [curr.asset.token_id]: curr
+          }
+        }, {})
+      Object.values(firstOwnershipTransferEvents).forEach(event => {
+        if (ownedCollectibleKeySet.has(event.asset.token_id)) {
+          collectiblesMap[event.asset.token_id] = {
+            ...collectiblesMap[event.asset.token_id],
+            dateLastTransferred: event.created_date
+          }
+        } else {
+          ownedCollectibleKeySet.add(event.asset.token_id)
+          collectiblesMap[event.asset.token_id] = transferEventToCollectible(
+            event,
+            false
+          )
+        }
+      })
+
+      // Handle created events
       creationEvents
         .filter(event => event && isAssetValid(event.asset))
         .forEach(event => {
@@ -125,6 +161,7 @@ class OpenSeaClient {
           }
         })
 
+      // Handle transfers
       const latestTransferEventsMap = transferEvents
         .filter(
           event =>
