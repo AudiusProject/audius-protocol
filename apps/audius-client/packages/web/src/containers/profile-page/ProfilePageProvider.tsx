@@ -146,7 +146,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
     const { pathname, profile, artistTracks, goToRoute } = this.props
-    const { activeTab } = this.state
+    const { editMode, activeTab } = this.state
 
     if (profile && profile.status === Status.ERROR) {
       goToRoute(NOT_FOUND_PAGE)
@@ -188,6 +188,14 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
           this.props.replaceRoute(newPath)
         }
       }
+    }
+
+    // If editing profile and route to another user profile, exit edit mode
+    if (
+      prevProps.profile?.profile?.handle !== profile?.profile?.handle &&
+      editMode
+    ) {
+      this.setState({ editMode: false })
     }
   }
 
