@@ -34,6 +34,8 @@ import {
 import { getCollectibleImage, isConsideredVideo } from '../helpers'
 import { Nullable } from 'utils/typeUtils'
 
+export const editTableContainerClass = 'editTableContainer'
+
 const VISIBLE_COLLECTIBLES_DROPPABLE_ID = 'visible-collectibles-droppable'
 
 export const collectibleMessages = {
@@ -317,26 +319,66 @@ const CollectiblesPage: React.FC<{
   )
 
   const visibleTableRef = useRef<HTMLDivElement | null>(null)
-  const [showTableTopShadow, setShowTableTopShadow] = useState<boolean>(false)
-  const [showTableBottomShadow, setShowTableBottomShadow] = useState<boolean>(
-    false
-  )
+  const [showVisibleTableTopShadow, setShowVisibleTableTopShadow] = useState<
+    boolean
+  >(false)
+  const [
+    showVisibleTableBottomShadow,
+    setShowVisibleTableBottomShadow
+  ] = useState<boolean>(false)
+
+  const hiddenTableRef = useRef<HTMLDivElement | null>(null)
+  const [showHiddenTableTopShadow, setShowHiddenTableTopShadow] = useState<
+    boolean
+  >(false)
+  const [
+    showHiddenTableBottomShadow,
+    setShowHiddenTableBottomShadow
+  ] = useState<boolean>(false)
 
   useEffect(() => {
+    let visibleTableScrollListener: EventListenerOrEventListenerObject,
+      hiddenTableScrollListener: EventListenerOrEventListenerObject
+
     const visibleTableElement = visibleTableRef?.current
     if (visibleTableElement) {
-      setShowTableBottomShadow(
+      setShowVisibleTableBottomShadow(
         visibleTableElement.scrollHeight > visibleTableElement.clientHeight
       )
-      const listener = () => {
+      visibleTableScrollListener = () => {
         const { scrollTop, scrollHeight, clientHeight } = visibleTableElement
-        setShowTableTopShadow(scrollTop > 0)
-        setShowTableBottomShadow(scrollTop < scrollHeight - clientHeight)
+        setShowVisibleTableTopShadow(scrollTop > 0)
+        setShowVisibleTableBottomShadow(scrollTop < scrollHeight - clientHeight)
       }
-      visibleTableElement.addEventListener('scroll', listener)
+      visibleTableElement.addEventListener('scroll', visibleTableScrollListener)
+    }
 
-      return () => {
-        visibleTableElement.removeEventListener('scroll', listener)
+    const hiddenTableElement = hiddenTableRef?.current
+    if (hiddenTableElement) {
+      setShowHiddenTableBottomShadow(
+        hiddenTableElement.scrollHeight > hiddenTableElement.clientHeight
+      )
+      hiddenTableScrollListener = () => {
+        const { scrollTop, scrollHeight, clientHeight } = hiddenTableElement
+        setShowHiddenTableTopShadow(scrollTop > 0)
+        setShowHiddenTableBottomShadow(scrollTop < scrollHeight - clientHeight)
+      }
+      hiddenTableElement.addEventListener('scroll', hiddenTableScrollListener)
+    }
+
+    return () => {
+      if (visibleTableElement) {
+        visibleTableElement.removeEventListener(
+          'scroll',
+          visibleTableScrollListener
+        )
+      }
+
+      if (hiddenTableElement) {
+        hiddenTableElement.removeEventListener(
+          'scroll',
+          hiddenTableScrollListener
+        )
       }
     }
   }, [isEditingPreferences])
@@ -535,9 +577,18 @@ const CollectiblesPage: React.FC<{
                   {collectibleMessages.visibleCollectibles}
                 </div>
 
-                {showTableTopShadow && <div className={styles.tableShadow} />}
                 <div
-                  className={styles.editTableContainer}
+                  className={cn(
+                    styles.editTableContainer,
+                    editTableContainerClass,
+                    {
+                      [styles.tableTopShadow]: showVisibleTableTopShadow,
+                      [styles.tableBottomShadow]: showVisibleTableBottomShadow,
+                      [styles.tableVerticalShadow]:
+                        showVisibleTableTopShadow &&
+                        showVisibleTableBottomShadow
+                    }
+                  )}
                   ref={visibleTableRef}
                 >
                   <Droppable droppableId={VISIBLE_COLLECTIBLES_DROPPABLE_ID}>
@@ -549,15 +600,13 @@ const CollectiblesPage: React.FC<{
                             draggableId={c.id}
                             index={index}
                           >
-                            {provided => (
+                            {(provided, snapshot) => (
                               <VisibleCollectibleRow
                                 {...provided.draggableProps}
                                 handleProps={provided.dragHandleProps}
                                 forwardRef={provided.innerRef}
-                                name={c.name}
-                                imageUrl={c.imageUrl}
-                                isOwned={c.isOwned}
-                                dateCreated={c.dateCreated}
+                                isDragging={snapshot.isDragging}
+                                collectible={c}
                                 onHideClick={handleHideCollectible(c.id)}
                               />
                             )}
@@ -569,9 +618,6 @@ const CollectiblesPage: React.FC<{
                     )}
                   </Droppable>
                 </div>
-                {showTableBottomShadow && (
-                  <div className={cn(styles.tableShadow, styles.bottom)} />
-                )}
               </DragDropContext>
             </div>
           )}
@@ -582,14 +628,19 @@ const CollectiblesPage: React.FC<{
                 {collectibleMessages.hiddenCollectibles}
               </div>
 
-              <div className={styles.editTableContainer}>
+              <div
+                className={cn(styles.editTableContainer, {
+                  [styles.tableTopShadow]: showHiddenTableTopShadow,
+                  [styles.tableBottomShadow]: showHiddenTableBottomShadow,
+                  [styles.tableVerticalShadow]:
+                    showHiddenTableTopShadow && showHiddenTableBottomShadow
+                })}
+                ref={hiddenTableRef}
+              >
                 {getHiddenCollectibles().map(c => (
                   <HiddenCollectibleRow
                     key={c.id}
-                    name={c.name!}
-                    imageUrl={c.imageUrl!}
-                    isOwned={c.isOwned}
-                    dateCreated={c.dateCreated}
+                    collectible={c}
                     onShowClick={handleShowCollectible(c.id)}
                   />
                 ))}

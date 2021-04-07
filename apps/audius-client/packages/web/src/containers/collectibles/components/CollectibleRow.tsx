@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import cn from 'classnames'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -7,33 +7,82 @@ import { Nullable } from 'utils/typeUtils'
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
-import { collectibleMessages } from 'containers/collectibles/components/CollectiblesPage'
+import {
+  collectibleMessages,
+  editTableContainerClass
+} from 'containers/collectibles/components/CollectiblesPage'
+import { getCollectibleImage } from 'containers/collectibles/helpers'
+import { Collectible } from 'containers/collectibles/components/types'
+import { findAncestor } from 'utils/domUtils'
 
 // @ts-ignore
 export const VisibleCollectibleRow = props => {
   const {
-    name,
-    imageUrl,
-    isOwned,
-    dateCreated,
+    collectible,
     onHideClick,
+    isDragging,
     forwardRef,
     handleProps,
     ...otherProps
   } = props
+  const { name, isOwned, dateCreated } = collectible
+
+  const [image, setImage] = useState<Nullable<string>>(null)
+
+  useEffect(() => {
+    getCollectibleImage(collectible).then(frame => setImage(frame))
+  }, [collectible])
+
+  const dragRef = useRef<HTMLDivElement>(null)
+  const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (dragRef?.current) {
+      setTableElement(
+        findAncestor(
+          dragRef.current,
+          `.${editTableContainerClass}`
+        ) as HTMLDivElement
+      )
+    }
+  }, [dragRef])
+
+  useEffect(() => {
+    const rowElement = dragRef?.current?.parentElement
+    if (tableElement && rowElement && isDragging) {
+      let topOffset = 0
+      const rowHeight = rowElement.getBoundingClientRect().height
+      const { previousElementSibling, nextElementSibling } = rowElement
+      if (previousElementSibling) {
+        topOffset =
+          previousElementSibling.getBoundingClientRect().top -
+          tableElement.getBoundingClientRect().top +
+          rowHeight * 3
+      } else if (nextElementSibling) {
+        topOffset = rowHeight * 2
+      }
+      rowElement.style.top = `${topOffset}px`
+      rowElement.style.left = '24px'
+    }
+  }, [tableElement, isDragging])
+
   return (
     <div className={styles.editRow} ref={forwardRef} {...otherProps}>
       <Tooltip text={collectibleMessages.hideCollectible}>
         <IconHide onClick={onHideClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      <div>
-        <img
-          className={styles.editMedia}
-          src={imageUrl}
-          alt={collectibleMessages.visibleThumbnail}
-        />
-      </div>
+      {image ? (
+        <div>
+          <img
+            className={styles.editMedia}
+            src={image}
+            alt={collectibleMessages.visibleThumbnail}
+          />
+        </div>
+      ) : (
+        <div className={styles.editMediaEmpty} />
+      )}
       <div className={styles.editRowTitle}>{name}</div>
       <div>
         {isOwned ? (
@@ -48,7 +97,7 @@ export const VisibleCollectibleRow = props => {
       </div>
       {dateCreated && <div>{formatDate(dateCreated)}</div>}
       <div className={styles.verticalDivider} />
-      <div className={styles.drag} {...handleProps}>
+      <div className={styles.drag} ref={dragRef} {...handleProps}>
         <IconDrag />
       </div>
     </div>
@@ -56,13 +105,18 @@ export const VisibleCollectibleRow = props => {
 }
 
 export const HiddenCollectibleRow: React.FC<{
-  name: string
-  imageUrl: string
-  isOwned: boolean
-  dateCreated: Nullable<string>
+  collectible: Collectible
   onShowClick: () => void
 }> = props => {
-  const { name, imageUrl, isOwned, dateCreated, onShowClick } = props
+  const { collectible, onShowClick } = props
+  const { name, isOwned, dateCreated } = collectible
+
+  const [image, setImage] = useState<Nullable<string>>(null)
+
+  useEffect(() => {
+    getCollectibleImage(collectible).then(frame => setImage(frame))
+  }, [collectible])
+
   return (
     <div className={cn(styles.editRow, styles.editHidden)}>
       <Tooltip
@@ -72,13 +126,17 @@ export const HiddenCollectibleRow: React.FC<{
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      <div>
-        <img
-          className={styles.editMedia}
-          src={imageUrl}
-          alt={collectibleMessages.hiddenThumbnail}
-        />
-      </div>
+      {image ? (
+        <div>
+          <img
+            className={styles.editMedia}
+            src={image}
+            alt={collectibleMessages.hiddenThumbnail}
+          />
+        </div>
+      ) : (
+        <div className={styles.editMediaEmpty} />
+      )}
       <div className={styles.editRowTitle}>{name}</div>
       <div>
         {isOwned ? (
