@@ -207,13 +207,10 @@ async function createAndVerifyMessage (
   trackId,
   source
 ) {
-  console.log(privateKey)
+  validSigner = validSigner || VALID_SIGNER
+
   let privKey = Buffer.from(privateKey, 'hex')
-  // let pubKey = secp256k1.publicKeyCreate(privKey, false)
   let pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
-  // pubKey = pubKey.slice(1)
-  // console.log(pubKey)
-  // console.log(pubKey.length)
 
   let validSignerPubK = new solanaWeb3.PublicKey(validSigner)
   let accInfo = await devnetConnection.getAccountInfo(validSignerPubK)
@@ -312,6 +309,7 @@ async function createAndVerifyMessage (
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
       { pubkey: signerGroup, isSigner: false, isWritable: false },
       { pubkey: AUDIUS_PROGRAM, isSigner: false, isWritable: false },
+      { pubkey: CREATE_AND_VERIFY_PROGRAM, isSigner: false, isWritable: false },
       { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false }
     ],
     programId: CREATE_AND_VERIFY_PROGRAM,
