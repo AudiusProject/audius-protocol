@@ -3,12 +3,14 @@ const { rehydrateIpfsFromFsIfNecessary, rehydrateIpfsDirFromFsIfNecessary } = re
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const enableRehydrate = config.get('enableRehydrate')
+const redisClient = require('./redis')
 
 const PROCESS_NAMES = Object.freeze({
   rehydrate_dir: 'rehydrate_dir',
   rehydrate_file: 'rehydrate_file'
 })
 
+const MIN_REHYDRATE_THRESHOLD = 10
 const MAX_COUNT = 10000
 
 class RehydrateIpfsQueue {
@@ -80,6 +82,9 @@ class RehydrateIpfsQueue {
       this.logStatus(logContext, 'Adding a rehydrateIpfsFromFsIfNecessary task to the queue!')
       const count = await this.queue.count()
       if (count > MAX_COUNT) return
+
+      const count = RehydrateRedisCounter.incrementCount('addRehydrateIpfsFromFsIfNecessaryTask', multihash)
+      if (count <= MIN_REHYDRATE_THRESHOLD) return
       const job = await this.queue.add(
         PROCESS_NAMES.rehydrate_file,
         { multihash, storagePath, filename, logContext }
@@ -100,6 +105,9 @@ class RehydrateIpfsQueue {
       this.logStatus(logContext, 'Adding a rehydrateIpfsDirFromFsIfNecessary task to the queue!')
       const count = await this.queue.count()
       if (count > MAX_COUNT) return
+
+      const count = RehydrateRedisCounter.incrementCount('addRehydrateIpfsDirFromFsIfNecessaryTask', multihash)
+      if (count <= MIN_REHYDRATE_THRESHOLD) return
       const job = await this.queue.add(
         PROCESS_NAMES.rehydrate_dir,
         { multihash, logContext }
@@ -112,3 +120,15 @@ class RehydrateIpfsQueue {
 }
 
 module.exports = new RehydrateIpfsQueue()
+
+class RehydrateRedisCounter {
+  static constructRedisKey (taskName) {
+    return `${taskName}:${new Date().toISOString().split('T')[0]}`
+  }
+
+  static async incrementCount (taskName, multihash) {
+    const count = await redisClient.hincrby(this.constructRedisKey(taskName), multihash)
+    await redisClient.expire(this.constructRedisKey(taskName), 60 * 60 * 24) // expire one day after final write
+    return count
+  }
+}
