@@ -24,11 +24,14 @@ import {
   getCounter,
   getPlaying
 } from 'store/player/selectors'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { Kind } from 'store/types'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import errorSagas from './errorSagas'
+import { encodeHashId } from 'utils/route/hashIds'
+import { getRemoteVar, StringKeys } from 'services/remote-config'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -50,9 +53,19 @@ function* setAudioStream() {
   }
 }
 
+// Set of track ids that should be forceably streamed as mp3 rather than hls because
+// their hls maybe corrupt.
+let FORCE_MP3_STREAM_TRACK_IDS: Set<string> | null = null
+
 export function* watchPlay() {
   yield takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, onEnd } = action.payload
+
+    if (!FORCE_MP3_STREAM_TRACK_IDS) {
+      FORCE_MP3_STREAM_TRACK_IDS = new Set(
+        (getRemoteVar(StringKeys.FORCE_MP3_STREAM_TRACK_IDS) || '').split(',')
+      )
+    }
 
     const audio = yield call(waitForValue, getAudio)
 
@@ -63,6 +76,13 @@ export function* watchPlay() {
       const gateways = owner
         ? getCreatorNodeIPFSGateways(owner.creator_node_endpoint)
         : []
+      const encodedTrackId = encodeHashId(trackId)
+      const forceStreamMp3 =
+        encodedTrackId && FORCE_MP3_STREAM_TRACK_IDS.has(encodedTrackId)
+      const forceStreamMp3Url = forceStreamMp3
+        ? apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
+        : null
+
       const endChannel = eventChannel(emitter => {
         audio.load(
           track.track_segments,
@@ -74,9 +94,11 @@ export function* watchPlay() {
           [track._first_segment],
           gateways,
           {
+            id: encodedTrackId,
             title: track.title,
             artist: owner.name
-          }
+          },
+          forceStreamMp3Url
         )
         return () => {}
       })
