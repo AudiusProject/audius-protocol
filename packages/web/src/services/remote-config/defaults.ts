@@ -30,7 +30,8 @@ export const remoteConfigStringDefaults: {
   [StringKeys.REWARDS_IDS]:
     'trending-track,trending-playlist,top-api,verified-upload',
   [StringKeys.REWARDS_TWEET_ID_TRACKS]: '1374856377651187713',
-  [StringKeys.REWARDS_TWEET_ID_PLAYLISTS]: '1374856377651187713'
+  [StringKeys.REWARDS_TWEET_ID_PLAYLISTS]: '1374856377651187713',
+  [StringKeys.FORCE_MP3_STREAM_TRACK_IDS]: null
 }
 export const remoteConfigDoubleDefaults: {
   [key in DoubleKeys]: number | null
