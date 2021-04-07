@@ -488,7 +488,7 @@ type NotificationsToggleSettings = {
 // Profile
 type ProfilePageTabClick = {
   eventName: Name.PROFILE_PAGE_TAB_CLICK
-  tab: 'tracks' | 'albums' | 'reposts' | 'playlists'
+  tab: 'tracks' | 'albums' | 'reposts' | 'playlists' | 'collectibles'
 }
 type ProfilePageSort = {
   eventName: Name.PROFILE_PAGE_SORT

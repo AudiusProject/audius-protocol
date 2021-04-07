@@ -1,6 +1,6 @@
 import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
 import {
-  isAssetImageOrVideo,
+  isAssetValid,
   assetToCollectible,
   creationEventToCollectible,
   transferEventToCollectible,
@@ -105,7 +105,7 @@ class OpenSeaClient {
       client.getTransferredCollectiblesForMultipleWallets(wallets)
     ]).then(([assets, creationEvents, transferEvents]) => {
       const collectiblesMap: { [key: string]: Collectible } = assets
-        .filter(asset => asset && isAssetImageOrVideo(asset))
+        .filter(asset => asset && isAssetValid(asset))
         .reduce(
           (acc, curr) => ({
             ...acc,
@@ -116,16 +116,10 @@ class OpenSeaClient {
       const ownedCollectibleKeySet = new Set(Object.keys(collectiblesMap))
 
       creationEvents
-        .filter(event => event && isAssetImageOrVideo(event.asset))
+        .filter(event => event && isAssetValid(event.asset))
         .forEach(event => {
           const tokenId = event.asset.token_id
-          if (ownedCollectibleKeySet.has(tokenId)) {
-            collectiblesMap[tokenId] = {
-              ...collectiblesMap[tokenId],
-              dateCreated: event.created_date,
-              isOwned: false
-            }
-          } else {
+          if (!ownedCollectibleKeySet.has(tokenId)) {
             collectiblesMap[tokenId] = creationEventToCollectible(event)
             ownedCollectibleKeySet.add(tokenId)
           }
@@ -134,9 +128,7 @@ class OpenSeaClient {
       const latestTransferEventsMap = transferEvents
         .filter(
           event =>
-            event &&
-            isAssetImageOrVideo(event.asset) &&
-            isNotFromNullAddress(event)
+            event && isAssetValid(event.asset) && isNotFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEvent }, curr) => {
           if (
@@ -159,6 +151,7 @@ class OpenSeaClient {
             dateLastTransferred: event.created_date
           }
         } else if (wallets.includes(event.to_account.address)) {
+          ownedCollectibleKeySet.add(event.asset.token_id)
           collectiblesMap[event.asset.token_id] = transferEventToCollectible(
             event
           )

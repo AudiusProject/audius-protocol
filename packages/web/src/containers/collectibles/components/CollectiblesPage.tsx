@@ -31,8 +31,9 @@ import {
   HiddenCollectibleRow,
   VisibleCollectibleRow
 } from 'containers/collectibles/components/CollectibleRow'
-import { getCollectibleImage, isConsideredVideo } from '../helpers'
+import { getCollectibleImage } from '../helpers'
 import { Nullable } from 'utils/typeUtils'
+import useInstanceVar from 'hooks/useInstanceVar'
 
 export const editTableContainerClass = 'editTableContainer'
 
@@ -67,19 +68,13 @@ const CollectibleMedia: React.FC<{
   isMuted: boolean
   toggleMute: () => void
 }> = ({ type, imageUrl, animationUrl, isMuted, toggleMute }) => {
-  return type === CollectibleType.IMAGE ? (
+  return type === CollectibleType.IMAGE || type === CollectibleType.GIF ? (
     <div className={styles.detailsMediaWrapper}>
       <img src={imageUrl!} alt='Collectible' />
     </div>
   ) : (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
-      <video muted={isMuted} autoPlay loop>
-        <source
-          src={animationUrl!}
-          type={`video/${animationUrl!.slice(
-            animationUrl!.lastIndexOf('.') + 1
-          )}`}
-        />
+      <video muted={isMuted} autoPlay loop src={animationUrl!}>
         {collectibleMessages.videoNotSupported}
       </video>
       {isMuted ? (
@@ -125,9 +120,32 @@ const CollectibleDetails: React.FC<{
         {image ? (
           <div>
             <DynamicImage image={image} wrapperClassName={styles.media} />
-            {isConsideredVideo(collectible) && (
+            {collectible.type === CollectibleType.VIDEO ||
+            collectible.type === CollectibleType.GIF ? (
               <IconPlay className={styles.playIcon} />
-            )}
+            ) : null}
+            <div className={styles.stamp}>
+              {collectible.isOwned ? (
+                <span className={styles.owned}>
+                  {collectibleMessages.owned}
+                </span>
+              ) : (
+                <span className={styles.created}>
+                  {collectibleMessages.created}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : collectible.type === CollectibleType.VIDEO ? (
+          <div className={styles.media}>
+            <IconPlay className={styles.playIcon} />
+            <video
+              muted={isMuted}
+              autoPlay={false}
+              controls={false}
+              style={{ height: '100%', width: '100%' }}
+              src={collectible.animationUrl!}
+            />
             <div className={styles.stamp}>
               {collectible.isOwned ? (
                 <span className={styles.owned}>
@@ -302,14 +320,16 @@ const CollectiblesPage: React.FC<{
   updateProfile,
   isUserOnTheirProfile
 }) => {
-  const isLoading = profile.collectibleList === undefined
-
-  const collectibleList = profile.collectibleList || []
+  const collectibleList = profile?.collectibleList ?? null
+  const hasCollectibles = profile?.has_collectibles ?? false
+  const isLoading =
+    profile.collectibleList === undefined ||
+    (hasCollectibles && !profile.collectibles)
 
   const [
     collectiblesMetadata,
     setCollectiblesMetadata
-  ] = useState<CollectiblesMetadata | null>(profile.collectibles || null)
+  ] = useState<CollectiblesMetadata | null>(null)
 
   const [isEditingPreferences, setIsEditingPreferences] = useState<boolean>(
     false
@@ -383,40 +403,53 @@ const CollectiblesPage: React.FC<{
     }
   }, [isEditingPreferences])
 
+  const [getHasSetCollectibles, setHasSetCollectibles] = useInstanceVar(false)
   useEffect(() => {
-    if (!collectiblesMetadata) {
-      /**
-       * set local collectible preferences if user never saved them before
-       */
-      setCollectiblesMetadata({
-        ...collectibleList.reduce(
-          (acc, curr) => ({ ...acc, [curr.id]: {} }),
-          {}
-        ),
-        order: collectibleList.map(c => c.id)
-      })
-    } else {
-      /**
-       * include collectibles returned by OpenSea which have not been stored in the user preferences
-       */
-      const collectiblesMetadataKeySet = new Set(
-        Object.keys(collectiblesMetadata)
-      )
-      const newCollectiblesMap = collectibleList
-        .map(c => c.id)
-        .filter(id => !collectiblesMetadataKeySet.has(id))
-        .reduce((acc, curr) => ({ ...acc, [curr]: {} }), {})
-
-      setCollectiblesMetadata({
-        ...collectiblesMetadata,
-        ...newCollectiblesMap,
-        order: collectiblesMetadata.order.concat(
-          Object.keys(newCollectiblesMap)
+    if (collectibleList && !getHasSetCollectibles()) {
+      if (!hasCollectibles) {
+        /**
+         * set local collectible preferences if user never saved them before
+         */
+        const newMetadata = {
+          ...collectibleList.reduce(
+            (acc, curr) => ({ ...acc, [curr.id]: {} }),
+            {}
+          ),
+          order: collectibleList.map(c => c.id)
+        }
+        setCollectiblesMetadata(newMetadata)
+        setHasSetCollectibles(true)
+      } else if (profile.collectibles) {
+        /**
+         * include collectibles returned by OpenSea which have not been stored in the user preferences
+         */
+        const collectiblesMetadataKeySet = new Set(
+          Object.keys(profile.collectibles)
         )
-      })
+        const newCollectiblesMap = collectibleList
+          .map(c => c.id)
+          .filter(id => !collectiblesMetadataKeySet.has(id))
+          .reduce((acc, curr) => ({ ...acc, [curr]: {} }), {})
+
+        const newMetadata = {
+          ...profile.collectibles,
+          ...newCollectiblesMap,
+          order: profile.collectibles.order.concat(
+            Object.keys(newCollectiblesMap)
+          )
+        }
+        setHasSetCollectibles(true)
+        setCollectiblesMetadata(newMetadata)
+      }
     }
-    // eslint-disable-next-line
-  }, [])
+  }, [
+    profile,
+    hasCollectibles,
+    collectibleList,
+    collectiblesMetadata,
+    getHasSetCollectibles,
+    setHasSetCollectibles
+  ])
 
   const handleEditClick = useCallback(() => {
     if (isMobile) {
@@ -431,7 +464,6 @@ const CollectiblesPage: React.FC<{
     if (updateProfile) {
       updateProfile({
         ...profile,
-        has_collectibles: true,
         collectibles: { ...collectiblesMetadata }
       })
     }
@@ -483,25 +515,35 @@ const CollectiblesPage: React.FC<{
   }
 
   const getVisibleCollectibles = useCallback(() => {
-    if (collectiblesMetadata?.order === undefined) {
-      return [...collectibleList]
+    if (collectibleList) {
+      if (!hasCollectibles && collectiblesMetadata?.order === undefined) {
+        return [...collectibleList]
+      }
+
+      const collectibleMap: {
+        [key: string]: Collectible
+      } = collectibleList.reduce(
+        (acc, curr) => ({ ...acc, [curr.id]: curr }),
+        {}
+      )
+      const collectibleKeySet = new Set(Object.keys(collectibleMap))
+
+      const visible = collectiblesMetadata?.order
+        .filter(id => collectibleKeySet.has(id))
+        .map(id => collectibleMap[id])
+      return visible || []
     }
-
-    const collectibleMap: {
-      [key: string]: Collectible
-    } = collectibleList.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {})
-    const collectibleKeySet = new Set(Object.keys(collectibleMap))
-
-    return collectiblesMetadata.order
-      .filter(id => collectibleKeySet.has(id))
-      .map(id => collectibleMap[id])
-  }, [collectiblesMetadata, collectibleList])
+    return []
+  }, [collectiblesMetadata, collectibleList, hasCollectibles])
 
   const getHiddenCollectibles = useCallback(() => {
-    const visibleCollectibleKeySet = new Set(
-      getVisibleCollectibles().map(c => c.id)
-    )
-    return collectibleList.filter(c => !visibleCollectibleKeySet.has(c.id))
+    if (collectibleList) {
+      const visibleCollectibleKeySet = new Set(
+        getVisibleCollectibles().map(c => c.id)
+      )
+      return collectibleList.filter(c => !visibleCollectibleKeySet.has(c.id))
+    }
+    return []
   }, [getVisibleCollectibles, collectibleList])
 
   return (
