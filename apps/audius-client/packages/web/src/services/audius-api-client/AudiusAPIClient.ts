@@ -915,6 +915,12 @@ class AudiusAPIClient {
     console.debug('APIClient: Initialized')
   }
 
+  makeUrl = (path: string, queryParams: QueryParams = {}, useFull = false) => {
+    let url = this._constructUrl(path, queryParams)
+    if (!useFull) url = url.replace('/full', '')
+    return url
+  }
+
   // Helpers
 
   _assertInitialized() {

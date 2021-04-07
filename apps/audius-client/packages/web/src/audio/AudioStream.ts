@@ -132,9 +132,9 @@ class AudioStream {
     this.errorRateLimiter = new Set()
   }
 
-  _initContext = () => {
+  _initContext = (shouldSkipAudioContext = false) => {
     this.audio.addEventListener('canplay', () => {
-      if (!this.audioCtx) {
+      if (!this.audioCtx && !shouldSkipAudioContext) {
         // Set up WebAudio API handles
         const AudioContext = window.AudioContext || window.webkitAudioContext
         this.audioCtx = new AudioContext()
@@ -184,79 +184,91 @@ class AudioStream {
     onEnd: () => void,
     prefetchedSegments = [],
     gateways = [],
-    info = { title: '', artist: '' }
+    info = { title: '', artist: '' },
+    forceStreamSrc: string | null = null
   ) => {
-    this._initContext()
-
-    if (Hls.isSupported()) {
-      // Clean up any existing hls.
-      if (this.hls) {
-        this.hls.destroy()
-      }
-      // Hls.js via MediaExtensions
-      const m3u8 = generateM3U8(segments, prefetchedSegments)
-      // eslint-disable-next-line
-      class creatorFLoader extends fLoader {
-        getFallbacks = () => gateways
-      }
-      const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
-      this.hls = new Hls(hlsConfig)
-
-      // On load of HLS, reset error rate limiter
-      this.errorRateLimiter = new Set()
-
-      this.hls.on(Hls.Events.ERROR, (event, data) => {
-        // Only emit on fatal because HLS is very noisy (e.g. pauses trigger errors)
-        if (data.fatal) {
-          // Buffer stall errors occur but are rarely fatal even if they claim to be.
-          // This occurs when you play a track, pause it, and then wait a few seconds.
-          // It appears as if we see this despite being able to play through the track.
-          if (data.details === 'bufferStalledError') {
-            return
-          }
-
-          // Only emit an error if we haven't errored on an error with the same "details"
-          if (!this.errorRateLimiter.has(data.details)) {
-            this.onError(AudioError.HLS, data)
-          }
-
-          // Only one "details" of error are allowed per HLS load
-          this.errorRateLimiter.add(data.details)
-
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              // Try to recover network error
-              this.hls!.startLoad()
-              break
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              // Try to recover fatal media errors
-              this.hls!.recoverMediaError()
-              break
-            default:
-              break
-          }
-        }
-      })
-      const m3u8Blob = new Blob([m3u8], {
-        type: 'application/vnd.apple.mpegURL'
-      })
-      const url = URL.createObjectURL(m3u8Blob)
-      this.url = url
-      this.hls.loadSource(this.url)
-      this.hls.attachMedia(this.audio)
+    if (forceStreamSrc) {
+      this.audio = new Audio()
+      this.gainNode = null
+      this.source = null
+      this.audioCtx = null
+      this._initContext(/* shouldSkipAudioContext */ true)
+      this.audio.setAttribute('preload', 'none')
+      this.audio.setAttribute('src', forceStreamSrc)
     } else {
-      // Native HLS (ios Safari)
-      const m3u8Gateways =
-        gateways.length > 0 ? [gateways[0]] : [PUBLIC_IPFS_GATEWAY]
-      const m3u8 = generateM3U8Variants(
-        segments,
-        prefetchedSegments,
-        m3u8Gateways
-      )
+      this._initContext()
+      if (Hls.isSupported()) {
+        // Clean up any existing hls.
+        if (this.hls) {
+          this.hls.destroy()
+        }
+        // Hls.js via MediaExtensions
+        const m3u8 = generateM3U8(segments, prefetchedSegments)
+        // eslint-disable-next-line
+        class creatorFLoader extends fLoader {
+          getFallbacks = () => gateways
+        }
+        const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
+        this.hls = new Hls(hlsConfig)
 
-      this.audio.src = m3u8
-      this.audio.title =
-        info.title && info.artist ? `${info.title} by ${info.artist}` : 'Audius'
+        // On load of HLS, reset error rate limiter
+        this.errorRateLimiter = new Set()
+
+        this.hls.on(Hls.Events.ERROR, (event, data) => {
+          // Only emit on fatal because HLS is very noisy (e.g. pauses trigger errors)
+          if (data.fatal) {
+            // Buffer stall errors occur but are rarely fatal even if they claim to be.
+            // This occurs when you play a track, pause it, and then wait a few seconds.
+            // It appears as if we see this despite being able to play through the track.
+            if (data.details === 'bufferStalledError') {
+              return
+            }
+
+            // Only emit an error if we haven't errored on an error with the same "details"
+            if (!this.errorRateLimiter.has(data.details)) {
+              this.onError(AudioError.HLS, data)
+            }
+
+            // Only one "details" of error are allowed per HLS load
+            this.errorRateLimiter.add(data.details)
+
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                // Try to recover network error
+                this.hls!.startLoad()
+                break
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                // Try to recover fatal media errors
+                this.hls!.recoverMediaError()
+                break
+              default:
+                break
+            }
+          }
+        })
+        const m3u8Blob = new Blob([m3u8], {
+          type: 'application/vnd.apple.mpegURL'
+        })
+        const url = URL.createObjectURL(m3u8Blob)
+        this.url = url
+        this.hls.loadSource(this.url)
+        this.hls.attachMedia(this.audio)
+      } else {
+        // Native HLS (ios Safari)
+        const m3u8Gateways =
+          gateways.length > 0 ? [gateways[0]] : [PUBLIC_IPFS_GATEWAY]
+        const m3u8 = generateM3U8Variants(
+          segments,
+          prefetchedSegments,
+          m3u8Gateways
+        )
+
+        this.audio.src = m3u8
+        this.audio.title =
+          info.title && info.artist
+            ? `${info.title} by ${info.artist}`
+            : 'Audius'
+      }
     }
 
     this.duration = segments.reduce(
