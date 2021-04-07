@@ -78,12 +78,14 @@ export const creationEventToCollectible = (
 }
 
 export const transferEventToCollectible = (
-  event: OpenSeaEvent
+  event: OpenSeaEvent,
+  isOwned = true
 ): Collectible => {
   const { asset, created_date } = event
 
   return {
     ...assetToCollectible(asset),
+    isOwned,
     dateLastTransferred: created_date
   }
 }
