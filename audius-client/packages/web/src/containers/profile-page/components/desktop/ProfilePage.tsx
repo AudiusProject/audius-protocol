@@ -257,6 +257,8 @@ const ProfilePage = ({
   const profileHasVisibleImageOrVideoCollectibles =
     profileHasCollectibles &&
     (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
+  const didCollectiblesLoadAndWasEmpty =
+    profileHasCollectibles && !profileHasNonEmptyCollectiblesOrder
 
   const isUserOnTheirProfile = accountUserId === userId
 
@@ -442,9 +444,13 @@ const ProfilePage = ({
     ]
 
     if (
-      profileHasCollectiblesTierRequirement &&
-      (profileHasVisibleImageOrVideoCollectibles ||
-        (profileHasCollectibles && isUserOnTheirProfile))
+      // `has_collectibles` is a shortcut that is only true iff the user has a modified collectibles state
+      (profile?.has_collectibles &&
+        profileHasCollectiblesTierRequirement &&
+        !didCollectiblesLoadAndWasEmpty) ||
+      (profileHasCollectiblesTierRequirement &&
+        (profileHasVisibleImageOrVideoCollectibles ||
+          (profileHasCollectibles && isUserOnTheirProfile)))
     ) {
       headers.push({
         icon: <IconCollectibles />,
@@ -561,9 +567,12 @@ const ProfilePage = ({
     ]
 
     if (
-      profileHasCollectiblesTierRequirement &&
-      (profileHasVisibleImageOrVideoCollectibles ||
-        (profileHasCollectibles && isUserOnTheirProfile))
+      (profile?.has_collectibles &&
+        profileHasCollectiblesTierRequirement &&
+        !didCollectiblesLoadAndWasEmpty) ||
+      (profileHasCollectiblesTierRequirement &&
+        (profileHasVisibleImageOrVideoCollectibles ||
+          (profileHasCollectibles && isUserOnTheirProfile)))
     ) {
       headers.push({
         icon: <IconCollectibles />,
@@ -599,6 +608,7 @@ const ProfilePage = ({
     isMobile: false,
     tabs: headers,
     bodyClassName: styles.tabBody,
+    initialTab: activeTab || undefined,
     elements
   })
 

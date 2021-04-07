@@ -233,6 +233,7 @@ const ProfilePage = g(
     setNotificationSubscription,
     onClickMobileOverflow,
     didChangeTabsFrom,
+    activeTab,
     onShare
   }) => {
     const { setHeader } = useContext(HeaderContext)
@@ -324,6 +325,8 @@ const ProfilePage = g(
     const profileHasVisibleImageOrVideoCollectibles =
       profileHasCollectibles &&
       (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
+    const didCollectiblesLoadAndWasEmpty =
+      profileHasCollectibles && !profileHasNonEmptyCollectiblesOrder
 
     const isUserOnTheirProfile = accountUserId === userId
 
@@ -553,9 +556,13 @@ const ProfilePage = g(
       }
 
       if (
-        profileHasCollectiblesTierRequirement &&
-        (profileHasVisibleImageOrVideoCollectibles ||
-          (profileHasCollectibles && isUserOnTheirProfile))
+        // `has_collectibles` is a shortcut that is only true iff the user has a modified collectibles state
+        (profile?.has_collectibles &&
+          profileHasCollectiblesTierRequirement &&
+          !didCollectiblesLoadAndWasEmpty) ||
+        (profileHasCollectiblesTierRequirement &&
+          (profileHasVisibleImageOrVideoCollectibles ||
+            (profileHasCollectibles && isUserOnTheirProfile)))
       ) {
         profileTabs.push({
           icon: <IconCollectibles />,
@@ -579,7 +586,8 @@ const ProfilePage = g(
     const { tabs, body } = useTabs({
       didChangeTabsFrom,
       tabs: isLoading ? [] : profileTabs || [],
-      elements: isLoading ? [] : profileElements || []
+      elements: isLoading ? [] : profileElements || [],
+      initialTab: activeTab || undefined
     })
 
     if (!isLoading && !isEditing) {

@@ -55,8 +55,8 @@ export const getWeiBalanceForUser = (
   const user = getUser(state, { id: userId })
 
   const wei: StringWei = (() => {
-    if (accountUser?.user_id === userId) {
-      return state.wallet.totalBalance ?? ('0' as StringWei)
+    if (accountUser?.user_id === userId && state.wallet.totalBalance) {
+      return state.wallet.totalBalance
     }
     const userOwnerWalletBalance = user?.balance ?? ('0' as StringWei)
     const userAssociatedWalletBalance =

@@ -7,7 +7,8 @@ export type CollectiblesMetadata = {
 
 export enum CollectibleType {
   IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO'
+  VIDEO = 'VIDEO',
+  GIF = 'GIF'
 }
 
 export type Collectible = {

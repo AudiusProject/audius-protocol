@@ -58,6 +58,11 @@ export const ALBUM_PAGE = '/:handle/album/:albumName'
 export const TRACK_PAGE = '/:handle/:trackName'
 export const TRACK_REMIXES_PAGE = '/:handle/:trackName/remixes'
 export const PROFILE_PAGE = '/:handle'
+export const PROFILE_PAGE_TRACKS = '/:handle/tracks'
+export const PROFILE_PAGE_ALBUMS = '/:handle/albums'
+export const PROFILE_PAGE_PLAYLISTS = '/:handle/playlists'
+export const PROFILE_PAGE_REPOSTS = '/:handle/reposts'
+export const PROFILE_PAGE_COLLECTIBLES = '/:handle/collectibles'
 // Opaque id routes
 export const TRACK_ID_PAGE = '/tracks/:id'
 export const USER_ID_PAGE = '/users/:id'
@@ -117,7 +122,8 @@ export const orderedRoutes = [
   FAVORITING_USERS_ROUTE,
   FOLLOWING_USERS_ROUTE,
   FOLLOWERS_USERS_ROUTE,
-  PROFILE_PAGE
+  PROFILE_PAGE,
+  PROFILE_PAGE_COLLECTIBLES
 ]
 
 export const staticRoutes = new Set([

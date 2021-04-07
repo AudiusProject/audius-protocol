@@ -6,7 +6,7 @@ import moment from 'moment'
 import { UnregisterCallback } from 'history'
 import { AppState, Kind, Status } from 'store/types'
 import { Dispatch } from 'redux'
-import { Tabs, FollowType, TracksSortMode } from './store/types'
+import { Tabs, FollowType, TracksSortMode, getTabForRoute } from './store/types'
 import { ID, UID } from 'models/common/Identifiers'
 
 import { resizeImage } from 'utils/imageProcessingUtil'
@@ -129,6 +129,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
           this.fetchProfile(location.pathname)
         }
         this.setState({
+          activeTab: null,
           ...INITIAL_UPDATE_FIELDS
         })
       }
@@ -257,6 +258,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         shouldSetLoading,
         deleteExistingEntry
       )
+      if (params.tab) {
+        this.setState({ activeTab: getTabForRoute(params.tab) })
+      }
     } else {
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
@@ -572,7 +576,30 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   didChangeTabsFrom = (prevLabel: string, currLabel: string) => {
-    this.props.didChangeTabsFrom(prevLabel, currLabel)
+    const {
+      didChangeTabsFrom,
+      profile: { profile }
+    } = this.props
+    if (profile) {
+      let tab = `/${currLabel.toLowerCase()}`
+      if (profile.track_count > 0) {
+        // An artist, default route is tracks
+        if (currLabel === Tabs.TRACKS) {
+          tab = ''
+        }
+      } else {
+        // A normal user, default route is reposts
+        if (currLabel === Tabs.REPOSTS) {
+          tab = ''
+        }
+      }
+      window.history.replaceState(
+        {},
+        '', // title -- unused, overriden by helmet
+        `/${profile.handle}${tab}`
+      )
+    }
+    didChangeTabsFrom(prevLabel, currLabel)
     this.setState({ activeTab: currLabel as Tabs })
   }
 
@@ -1004,6 +1031,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
             | 'albums'
             | 'reposts'
             | 'playlists'
+            | 'collectibles'
         })
         dispatch(trackEvent)
       }

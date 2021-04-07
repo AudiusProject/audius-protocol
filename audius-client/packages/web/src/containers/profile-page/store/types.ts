@@ -53,6 +53,29 @@ export enum Tabs {
   COLLECTIBLES = 'COLLECTIBLES'
 }
 
+export enum TabRoute {
+  TRACKS = 'tracks',
+  ALBUMS = 'albums',
+  PLAYLISTS = 'playlists',
+  REPOSTS = 'reposts',
+  COLLECTIBLES = 'collectibles'
+}
+
+export const getTabForRoute = (tabRoute: TabRoute) => {
+  switch (tabRoute) {
+    case TabRoute.TRACKS:
+      return Tabs.TRACKS
+    case TabRoute.ALBUMS:
+      return Tabs.ALBUMS
+    case TabRoute.PLAYLISTS:
+      return Tabs.PLAYLISTS
+    case TabRoute.REPOSTS:
+      return Tabs.REPOSTS
+    case TabRoute.COLLECTIBLES:
+      return Tabs.COLLECTIBLES
+  }
+}
+
 type FollowerGroup = {
   status: Status
   users: User[]

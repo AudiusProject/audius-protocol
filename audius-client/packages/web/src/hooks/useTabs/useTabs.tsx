@@ -1014,14 +1014,6 @@ const useTabs = ({
     setActiveIndex(controlledIndex)
   }
 
-  // If we get new tabs, we need to reset the active index
-  const [getPrevTabs, setPrevTab] = useInstanceVar(tabs)
-  if (tabs.length !== getPrevTabs().length) {
-    const newTab = Math.max(0, Math.min(activeIndex, tabs.length - 1))
-    setActiveIndex(newTab)
-  }
-  setPrevTab(tabs)
-
   // Store lastActive to know which direction we're
   // transitioning
   const [lastActive, setLastActive] = useState(activeIndex)
@@ -1036,6 +1028,22 @@ const useTabs = ({
   ) {
     setShouldAnimate(true)
   }
+
+  // If we get new tabs, we need to reset the active index
+  const [getPrevTabs, setPrevTab] = useInstanceVar(tabs)
+  if (tabs.length !== getPrevTabs().length) {
+    // After adding new tabs, the active index should be whatever active index
+    // is currently in state or the controlled index if provided
+    let index
+    if (controlledIndex) index = controlledIndex
+    else index = activeIndex
+    const newTab = Math.max(0, Math.min(index, tabs.length - 1))
+    // Set active index and last active index so that no animation is
+    // triggered.
+    setActiveIndex(newTab)
+    setLastActive(newTab)
+  }
+  setPrevTab(tabs)
 
   useEffect(() => {
     if (lastActive !== activeIndex) {
