@@ -44,6 +44,15 @@
       "cd eth-contracts/; npm run ganache-q"
     ]
   },
+  "solana-contracts": {
+    "path": "solana-contracts",
+    "up": [
+      "docker build --tag solana-contracts solana-contracts/",
+      "cd solana-contracts/; touch solana-contract-config.json && docker run -v \"$PWD/solana-contract-config.json:/usr/src/app/solana-contract-config.json\" solana-contracts",
+      "cd solana-contracts/; cp solana-contract-config.json ../identity-service"
+    ],
+    "down": []
+  },
   "ipfs": {
     "up": [
       "libs/scripts/ipfs.sh up local-ipfs-node"

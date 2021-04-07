@@ -1,13 +1,5 @@
 version: '3'
 services:
-  identity-solana:
-    build: ../src/audius-poc-contract
-    volumes:
-      - ../src/audius-poc-contract/js_client:/usr/src/app/js_client
-    ports:
-      - '8080:8080'
-    networks:
-      - audius_dev
   identity-db:
     image: postgres:11.1
     environment:

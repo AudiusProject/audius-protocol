@@ -12,13 +12,17 @@ RUN apt-get update && \
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
-COPY . .
+COPY create_and_verify create_and_verify
+COPY program program
+COPY cli cli
 
 RUN cd create_and_verify && \
-    cargo build-bpf && \
+    cargo build-bpf  && \
     cd ../program && \
     cargo build-bpf && \
     cd ../cli && \
     cargo build
+
+COPY start.sh feepayer.json owner.json ./
 
 CMD [ "sh", "start.sh" ]
