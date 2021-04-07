@@ -1,6 +1,8 @@
 .name h1 {
   color: #FAFAFA;
   display: inline;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .name > input,
