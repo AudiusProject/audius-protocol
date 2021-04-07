@@ -7,7 +7,7 @@ from src.models import Play
 from datetime import datetime
 
 # TODO: These are configs
-AUDIUS_PROGRAM = "BnmzQSTFwNh9S1abdAAKJo5dELbZSWhqfgH116BqkJPJ"
+AUDIUS_PROGRAM = "8vDMAyVt3mxEhsnzRQa5UEKX2STqv2JYeM2uGje5bcrJ"
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 SLEEP_TIME = 1
 SOLANA_ENDPOINT = "https://devnet.solana.com"

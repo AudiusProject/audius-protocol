@@ -207,8 +207,13 @@ async function createAndVerifyMessage (
   trackId,
   source
 ) {
+  console.log(privateKey)
   let privKey = Buffer.from(privateKey, 'hex')
-  let pubKey = secp256k1.publicKeyCreate(privKey, false)
+  // let pubKey = secp256k1.publicKeyCreate(privKey, false)
+  let pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
+  // pubKey = pubKey.slice(1)
+  // console.log(pubKey)
+  // console.log(pubKey.length)
 
   let validSignerPubK = new solanaWeb3.PublicKey(validSigner)
   let accInfo = await devnetConnection.getAccountInfo(validSignerPubK)
