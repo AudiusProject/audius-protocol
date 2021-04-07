@@ -3,8 +3,8 @@ import logging
 from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
-from src.api_helpers import success_response, success_response_backwards_compat
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
+from src.api_helpers import success_response
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ disc_prov_version = helpers.get_discovery_provider_version()
 
 @bp.route("/version", methods=["GET"])
 def version():
-    return success_response_backwards_compat(
+    return success_response(
         disc_prov_version,
         sign_response=False
     )
@@ -35,7 +35,7 @@ def health_check():
     }
 
     (health_results, error) = get_health(args)
-    return success_response_backwards_compat(
+    return success_response(
         health_results,
         500 if error else 200,
         sign_response=False
@@ -52,7 +52,7 @@ def block_check():
     }
 
     (health_results, error) = get_health(args, use_redis_cache=False)
-    return success_response_backwards_compat(
+    return success_response(
         health_results,
         500 if error else 200,
         sign_response=False

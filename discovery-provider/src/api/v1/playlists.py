@@ -344,22 +344,30 @@ class FullTrendingPlaylists(Resource):
         offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
         current_user_id, time = args.get("user_id"), args.get("time", "week")
         time = "week" if time not in ["week", "month", "year"] else time
-        args = {
-            'time': time,
-            'with_tracks': True,
-            'limit': limit,
-            'offset': offset
-        }
 
         # If we have a user_id, we call into `get_trending_playlist`
         # which fetches the cached unpopulated tracks and then
         # populates metadata. Otherwise, just
         # retrieve the last cached value.
+        #
+        # If current_user_id,
+        # apply limit + offset inside the cached calculation.
+        # Otherwise, apply it here.
         if current_user_id:
+            args = {
+                'time': time,
+                'with_tracks': True,
+                'limit': limit,
+                'offset': offset
+            }
             decoded = decode_string_id(current_user_id)
             args["current_user_id"] = decoded
             playlists = get_trending_playlists(args)
         else:
+            args = {
+                'time': time,
+                'with_tracks': True,
+            }
             key = self.get_cache_key()
             playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args))
             playlists = playlists[offset: limit + offset]

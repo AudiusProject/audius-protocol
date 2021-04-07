@@ -45,6 +45,7 @@ def user_replica_set_state_update(
     cnode_events_lookup = {}
 
     for tx_receipt in user_replica_set_mgr_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_replica_set_manager_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
             for entry in user_events_tx:
@@ -63,7 +64,7 @@ def user_replica_set_state_update(
                 # first, get the user object from the db(if exists or create a new one)
                 # then set the lookup object for user_id with the appropriate props
                 if user_id and (user_id not in user_replica_set_events_lookup):
-                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp)
+                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
                     user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
                 if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
@@ -72,7 +73,8 @@ def user_replica_set_state_update(
                         session,
                         entry,
                         block_number,
-                        block_timestamp
+                        block_timestamp,
+                        txhash
                     )
                     cnode_events_lookup[cnode_sp_id] = {"content_node": ret_cnode, "events": []}
 
@@ -243,7 +245,7 @@ def parse_ursm_cnode_record(update_task, entry, cnode_record):
     return cnode_record
 
 # Return or create instance of record pointing to this content_node
-def lookup_ursm_cnode(update_task, session, entry, block_number, block_timestamp):
+def lookup_ursm_cnode(update_task, session, entry, block_number, block_timestamp, txhash):
     event_blockhash = update_task.web3.toHex(entry.blockHash)
     event_args = entry["args"]
 
@@ -271,6 +273,7 @@ def lookup_ursm_cnode(update_task, session, entry, block_number, block_timestamp
     # update these fields regardless of type
     cnode_record.blockhash = event_blockhash
     cnode_record.blocknumber = block_number
+    cnode_record.txhash = txhash
     return cnode_record
 
 def invalidate_old_cnode_record(session, cnode_sp_id):

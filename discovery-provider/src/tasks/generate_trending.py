@@ -113,7 +113,7 @@ def generate_trending(session, time, genre, limit, offset):
     # Query repost counts
     repost_counts = get_repost_counts(session, False, True, track_ids, None)
 
-        # Generate track_id --> repost_count mapping
+    # Generate track_id --> repost_count mapping
     track_repost_counts = {
         repost_item_id: repost_count
         for (repost_item_id, repost_count, repost_type) in repost_counts

@@ -1,8 +1,8 @@
 const Web3 = require('../../web3')
 const MultiProvider = require('../../utils/multiProvider')
 const EthereumTx = require('ethereumjs-tx').Transaction
+const { estimateGas } = require('../../utils/estimateGas')
 const retry = require('async-retry')
-const DEFAULT_GAS_AMOUNT = 200000
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, POA default gas price
 const HIGH_GAS_PRICE = 5 * MIN_GAS_PRICE // 5 GWei
 const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so we hardcode a lower value (0x09184e72a0 from docs here)
@@ -29,11 +29,15 @@ class EthWeb3Manager {
 
   async sendTransaction (
     contractMethod,
-    gasAmount = DEFAULT_GAS_AMOUNT,
     contractAddress = null,
     privateKey = null,
-    txRetries = 5
+    txRetries = 5,
+    txGasLimit = null
   ) {
+    const gasLimit = txGasLimit || await estimateGas({
+      method: contractMethod,
+      from: this.ownerWallet
+    })
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
       if (isNaN(gasPrice) || gasPrice > HIGH_GAS_PRICE) {
@@ -51,7 +55,7 @@ class EthWeb3Manager {
       const txParams = {
         nonce: this.web3.utils.toHex(txCount),
         gasPrice: gasPrice,
-        gasLimit: '0xf7100',
+        gasLimit,
         data: encodedABI,
         to: contractAddress,
         value: '0x00'
@@ -81,24 +85,25 @@ class EthWeb3Manager {
     }
 
     let gasPrice = parseInt(await this.web3.eth.getGasPrice())
-    return contractMethod.send({ from: this.ownerWallet, gas: gasAmount, gasPrice: gasPrice })
+    return contractMethod.send({ from: this.ownerWallet, gas: gasLimit, gasPrice: gasPrice })
   }
 
   async relayTransaction (
     contractMethod,
     contractAddress,
     ownerWallet,
-    txGasLimit = DEFAULT_GAS_AMOUNT,
-    txRetries = 5
+    txRetries = 5,
+    txGasLimit = null
   ) {
     const encodedABI = contractMethod.encodeABI()
+    const gasLimit = txGasLimit || await estimateGas({ method: contractMethod })
     const response = await retry(async bail => {
       try {
         const attempt = await this.identityService.ethRelay(
           contractAddress,
           ownerWallet,
           encodedABI,
-          txGasLimit
+          gasLimit
         )
         return attempt
       } catch (e) {

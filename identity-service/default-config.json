@@ -57,5 +57,6 @@
   "keepAliveTimeout": 5000,
   "headersTimeout": 60000,
   "captchaScoreSecret": "captcha_score_secret",
-  "recaptchaServiceKey": ""
+  "recaptchaServiceKey": "",
+  "sentryDSN": ""
 }

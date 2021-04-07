@@ -8,7 +8,8 @@ const {
   coreIntegration,
   snapbackSMParallelSyncTest,
   userReplicaSetManagerTest,
-  IpldBlacklistTest
+  IpldBlacklistTest,
+  userReplicaSetBlockSaturationTest
 } = require('./tests/')
 
 // Configuration.
@@ -213,6 +214,16 @@ async function main () {
         await testRunner([test])
         break
       }
+      case 'test-ursm-sat': {
+        const test = makeTest(
+          'userReplicaSetBlockSaturationTest',
+          userReplicaSetBlockSaturationTest,
+          {
+            numUsers: 1
+          })
+        await testRunner([test])
+        break
+      }
       case 'test-ci': {
         const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -240,12 +251,19 @@ async function main () {
           userReplicaSetManagerTest,
           { numUsers: USER_REPLICA_SET_NUM_USERS }
         )
+        const ursmBlockSaturationTest = makeTest(
+          'userReplicaSetBlockSaturationTest',
+          userReplicaSetBlockSaturationTest,
+          {
+            numUsers: 1
+          })
 
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
-          ursmTest
+          ursmTest,
+          ursmBlockSaturationTest
         ]
 
         await testRunner(tests)

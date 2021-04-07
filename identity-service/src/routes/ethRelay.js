@@ -21,7 +21,11 @@ module.exports = function (app) {
       } catch (e) {
         req.logger.error('Error in transaction:', e.message, reqBodySHA)
 
-        return sendResponse(req, res, errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`))
+        return sendResponse(
+          req,
+          res,
+          errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}, ${e.message}`)
+        )
       }
     } else {
       return sendResponse(

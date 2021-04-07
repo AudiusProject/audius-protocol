@@ -94,7 +94,7 @@ async function getClockValues(creatorNode, walletPublicKeys) {
         baseURL: creatorNode,
         data: { walletPublicKeys }
       })
-    ).data.users
+    ).data.data.users
   } catch (e) {
     console.log(`Got ${e} when fetching clock values from ${creatorNode}`)
     return walletPublicKeys.map(walletPublicKey => ({
@@ -123,7 +123,7 @@ async function getCidsExist(creatorNode, cids, batchSize = 500) {
             baseURL: creatorNode,
             data: { cids: batch }
           })
-        ).data.cids
+        ).data.data.cids
       )
 
       await sleep(5000)
@@ -155,7 +155,7 @@ async function getImageCidsExist(creatorNode, cids, batchSize = 500) {
             baseURL: creatorNode,
             data: { cids: batch }
           })
-        ).data.cids
+        ).data.data.cids
       )
 
       await sleep(5000)
@@ -170,8 +170,8 @@ async function getImageCidsExist(creatorNode, cids, batchSize = 500) {
 
 async function run() {
   // const discoveryProvider = "https://discoveryprovider.audius.co/"
-  // const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
-  const discoveryProvider = 'http://localhost:5000'
+  const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
+  // const discoveryProvider = 'http://localhost:5000'
   const trackBatchSize = 500
   const userBatchSize = 500
 
@@ -211,7 +211,9 @@ async function run() {
         metadata_multihash
       }) => {
         cids[user_id] = Array.from(trackCids[user_id] || [])
-        cids[user_id].push(metadata_multihash)
+        if (metadata_multihash) {
+          cids[user_id].push(metadata_multihash)
+        }
 
         creator_node_endpoint.forEach(endpoint => {
           creatorNodes.add(endpoint)
