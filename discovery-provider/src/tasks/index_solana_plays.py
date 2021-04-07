@@ -1,12 +1,8 @@
 import logging
-from src.tasks.celery_app import celery
-from src.models import User
-from src.utils.redis_cache import pickle_and_set, get_sp_id_key, get_pickled_key
 
-import base58
-import binascii
-import codecs
 from solana.rpc.api import Client
+from src.tasks.celery_app import celery
+from src.utils.redis_cache import get_pickled_key, pickle_and_set
 
 # TODO: These are configs
 AUDIUS_PROGRAM = "BnmzQSTFwNh9S1abdAAKJo5dELbZSWhqfgH116BqkJPJ"
@@ -18,6 +14,7 @@ SOL_PLAYS_REDIS_KEY = "sol_plays"
 
 http_client = Client(SOLANA_ENDPOINT)
 logger = logging.getLogger(__name__)
+
 
 # Actively connect to all peers in parallel
 def process_solana_plays():
@@ -44,6 +41,7 @@ def process_solana_plays():
     logger.error("")
     logger.error("\n\n")
 
+
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
 def index_solana_plays(self):
@@ -59,7 +57,7 @@ def index_solana_plays(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-           process_solana_plays()
+            process_solana_plays()
         else:
             logger.info("index_solana_plays.py | Failed to acquire index_solana_plays")
     except Exception as e:
