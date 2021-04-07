@@ -497,6 +497,24 @@ const config = convict({
     format: String,
     env: 'recaptchaServiceKey',
     default: ''
+  },
+  solanaCreateAndVerifyAddress: {
+    doc: 'solanaCreateAndVerifyAddress',
+    format: String,
+    default: null,
+    env: 'solanaCreateAndVerifyAddress',
+  },
+  solanaProgramAddress: {
+    doc: 'solanaProgramAddress',
+    format: String,
+    default: null,
+    env: 'solanaProgramAddress',
+  },
+  solanaValidSigner: {
+    doc: 'solanaValidSigner',
+    format: String,
+    default: null,
+    env: 'solanaValidSigner',
   }
 })
 
@@ -515,6 +533,15 @@ if (fs.existsSync('eth-contract-config.json')) {
     ethRegistryAddress: ethContractConfig.registryAddress,
     ethOwnerWallet: ethContractConfig.ownerWallet,
     ethWallets: ethContractConfig.allWallets
+  })
+}
+
+if (fs.existsSync('solana-contract-config.json')) {
+  let solanaContractConfig = require('../solana-contract-config.json')
+  config.load({
+    solanaCreateAndVerifyAddress: solanaContractConfig.createAndVerifyAddress,
+    solanaProgramAddress: solanaContractConfig.programAddress,
+    solanaValidSigner: solanaContractConfig.validSigner,
   })
 }
 

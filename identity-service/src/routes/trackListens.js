@@ -5,7 +5,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
-const instr = require('../audius-poc-contract/js_client/index')
+const instr = require('../solana-client.js')
 
 async function getListenHour () {
   let listenDate = new Date()
