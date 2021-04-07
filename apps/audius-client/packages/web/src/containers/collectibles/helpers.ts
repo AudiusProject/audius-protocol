@@ -4,12 +4,18 @@ import {
   CollectibleType
 } from 'containers/collectibles/components/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
+import { preload } from 'utils/image'
 
 const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga']
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const isAssetImage = (asset: OpenSeaAsset) => {
-  return !!asset.image_url
+  return (
+    !!asset.image_url ||
+    !!asset.image_original_url ||
+    !!asset.image_preview_url ||
+    !!asset.image_thumbnail_url
+  )
 }
 
 const isAssetAudio = (asset: OpenSeaAsset) => {
@@ -22,16 +28,29 @@ const isAssetVideo = (asset: OpenSeaAsset) => {
   return !!asset.animation_url && !isAssetAudio(asset)
 }
 
-export const isAssetImageOrVideo = (asset: OpenSeaAsset) => {
-  return isAssetVideo(asset) || isAssetImage(asset)
+const isAssetGif = (asset: OpenSeaAsset) => {
+  return !!(
+    asset.image_url?.endsWith('.gif') ||
+    asset.image_original_url?.endsWith('.gif') ||
+    asset.image_preview_url?.endsWith('.gif') ||
+    asset.image_thumbnail_url?.endsWith('.gif')
+  )
+}
+
+export const isAssetValid = (asset: OpenSeaAsset) => {
+  return isAssetVideo(asset) || isAssetImage(asset) || isAssetGif(asset)
 }
 
 export const assetToCollectible = (asset: OpenSeaAsset): Collectible => {
+  let type = CollectibleType.IMAGE
+  if (isAssetVideo(asset)) type = CollectibleType.VIDEO
+  if (isAssetGif(asset)) type = CollectibleType.GIF
+
   return {
     id: asset.token_id,
     name: asset.name,
     description: asset.description,
-    type: isAssetVideo(asset) ? CollectibleType.VIDEO : CollectibleType.IMAGE,
+    type,
     imageUrl: asset.image_url,
     imagePreviewUrl: asset.image_preview_url,
     imageThumbnailUrl: asset.image_thumbnail_url,
@@ -83,16 +102,27 @@ const getFrameFromGif = async (url: string, name: string) => {
 }
 
 export const getCollectibleImage = async (collectible: Collectible) => {
-  const { imageUrl, name } = collectible
+  const {
+    imageUrl,
+    imageOriginalUrl,
+    imagePreviewUrl,
+    imageThumbnailUrl,
+    name
+  } = collectible
   if (imageUrl?.endsWith('.gif')) {
     return await getFrameFromGif(imageUrl, name || '')
   }
+  if (imageOriginalUrl?.endsWith('.gif')) {
+    return await getFrameFromGif(imageOriginalUrl, name || '')
+  }
+  if (imagePreviewUrl?.endsWith('.gif')) {
+    return await getFrameFromGif(imagePreviewUrl, name || '')
+  }
+  if (imageThumbnailUrl?.endsWith('.gif')) {
+    return await getFrameFromGif(imageThumbnailUrl, name || '')
+  }
+  if (imageUrl) {
+    await preload(imageUrl)
+  }
   return imageUrl
-}
-
-export const isConsideredVideo = (collectible: Collectible) => {
-  return (
-    collectible.type === CollectibleType.VIDEO ||
-    collectible.imageUrl?.endsWith('.gif')
-  )
 }

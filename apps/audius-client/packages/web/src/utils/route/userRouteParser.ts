@@ -2,10 +2,12 @@ import { matchPath } from 'react-router-dom'
 import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
 import { decodeHashId } from './hashIds'
 import { ID } from 'models/common/Identifiers'
+import { TabRoute } from 'containers/profile-page/store/types'
 
 type UserRouteParams =
-  | { handle: string; userId: null }
-  | { handle: null; userId: ID }
+  | { handle: string; userId: null; tab: null }
+  | { handle: string; userId: null; tab: TabRoute }
+  | { handle: null; userId: ID; tab: null }
   | null
 
 /**
@@ -22,7 +24,7 @@ export const parseUserRoute = (route: string): UserRouteParams => {
   if (userIdPageMatch) {
     const userId = decodeHashId(userIdPageMatch.params.id)
     if (userId === null) return null
-    return { userId, handle: null }
+    return { userId, handle: null, tab: null }
   }
 
   const profilePageMatch = matchPath<{ handle: string }>(route, {
@@ -31,7 +33,19 @@ export const parseUserRoute = (route: string): UserRouteParams => {
   })
   if (profilePageMatch) {
     const { handle } = profilePageMatch.params
-    return { handle, userId: null }
+    return { handle, userId: null, tab: null }
+  }
+
+  const profilePageTabMatch = matchPath<{ handle: string; tab: TabRoute }>(
+    route,
+    {
+      path: `${PROFILE_PAGE}/:tab`,
+      exact: true
+    }
+  )
+  if (profilePageTabMatch) {
+    const { handle, tab } = profilePageTabMatch.params
+    return { handle, userId: null, tab }
   }
 
   return null

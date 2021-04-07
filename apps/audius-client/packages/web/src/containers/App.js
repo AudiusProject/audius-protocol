@@ -57,7 +57,12 @@ import {
   TRACK_ID_PAGE,
   USER_ID_PAGE,
   PLAYLIST_ID_PAGE,
-  TRENDING_PLAYLISTS_PAGE
+  TRENDING_PLAYLISTS_PAGE,
+  PROFILE_PAGE_COLLECTIBLES,
+  PROFILE_PAGE_TRACKS,
+  PROFILE_PAGE_ALBUMS,
+  PROFILE_PAGE_PLAYLISTS,
+  PROFILE_PAGE_REPOSTS
 } from 'utils/route'
 import 'utils/redirect'
 import { isMobile, getClient } from 'utils/clientUtil'
@@ -767,6 +772,28 @@ class App extends Component {
               />
               <Route exact path={TRACK_ID_PAGE} component={TrackPage} />
               <Route exact path={PLAYLIST_ID_PAGE} component={CollectionPage} />
+
+              {/*
+                Define profile page sub-routes before profile page itself.
+                The rules for sub-routes would lose in a precedence fight with
+                the rule for track page if defined below.
+               */}
+              <Route
+                exact
+                path={[
+                  PROFILE_PAGE_TRACKS,
+                  PROFILE_PAGE_ALBUMS,
+                  PROFILE_PAGE_PLAYLISTS,
+                  PROFILE_PAGE_REPOSTS,
+                  PROFILE_PAGE_COLLECTIBLES
+                ]}
+                render={props => (
+                  <ProfilePage
+                    {...props}
+                    containerRef={this.state.mainContent}
+                  />
+                )}
+              />
 
               <Route exact path={TRACK_PAGE} component={TrackPage} />
 

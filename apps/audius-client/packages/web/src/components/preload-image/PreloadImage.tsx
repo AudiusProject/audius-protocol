@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import cn from 'classnames'
+import { preload } from 'utils/image'
 
 import styles from './PreloadImage.module.css'
-
-// Simple preloader that resolves on load or on error
-const preload = async (src: string) => {
-  return new Promise(resolve => {
-    const i = new Image()
-    i.onload = resolve
-    i.onerror = resolve
-    i.src = src
-  })
-}
 
 /** Super simple PreloadImage component to be used for fading in an image */
 const PreloadImage = ({
