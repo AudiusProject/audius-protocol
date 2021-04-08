@@ -16,7 +16,7 @@
   font-family: var(--font-family);
   font-weight: var(--font-bold);
   font-size: var(--font-xl);
-  color: #BEC5E0;
+  color: var(--neutral);
   margin: 0px;
 }
 
@@ -24,7 +24,7 @@
   font-family: var(--font-family);
   font-weight: var(--font-bold);
   font-size: var(--font-m);
-  color: #777C96;
+  color: var(--neutral-light-4);
   margin: 0px;
 }
 
@@ -37,8 +37,7 @@
   font-size: var(--font-s);
   letter-spacing: 1px;
   text-transform: uppercase;
-
-  color: #777C96;
+  color: var(--neutral-light-4);
 }
 
 .columnTitle {
@@ -69,7 +68,7 @@
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #777C96;
+  color: var(--neutral-light-4);
   border-top: 1px solid #3F415B;
   user-select: none;
 }
@@ -90,4 +89,9 @@
 
 .tableLoading {
   margin: 16px 0px;
+}
+
+.container .error {
+  height: 86px;
+  margin: 32px auto 24px;
 }
