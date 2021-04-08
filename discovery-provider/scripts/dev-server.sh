@@ -11,7 +11,7 @@ export FLASK_ENV=development
 
 # run db migrations
 if [ "$audius_db_run_migrations" != false ] ; then
-  echo "running alembic migrations"
+  echo "Running alembic migrations"
   export PYTHONPATH='.'
   alembic upgrade head
 fi
