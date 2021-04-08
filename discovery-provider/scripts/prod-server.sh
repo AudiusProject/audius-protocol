@@ -28,6 +28,7 @@ if [ "$audius_db_run_migrations" != false ] ; then
   echo "Running alembic migrations"
   export PYTHONPATH='.'
   alembic upgrade head
+  echo "Finished running migrations"
 fi
 
 # If a worker class is specified, use that. Otherwise, use sync workers.

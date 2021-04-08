@@ -14,6 +14,7 @@ if [ "$audius_db_run_migrations" != false ] ; then
   echo "Running alembic migrations"
   export PYTHONPATH='.'
   alembic upgrade head
+  echo "Finished running migrations"
 fi
 
 exec flask run --host=0.0.0.0
