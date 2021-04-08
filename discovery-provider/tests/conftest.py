@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import pytest
 import alembic
 import alembic.config
+import os
 from sqlalchemy_utils import database_exists, drop_database
 from web3 import HTTPProvider, Web3
 from sqlalchemy import create_engine
@@ -40,9 +41,14 @@ def app():
 
     # Create application for testing
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
-    # run db migrations
+
+    # run db migrations because the db gets dropped at the start of the tests
+    alembic_dir = os.getcwd()
+    alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
     alembic_config.set_main_option("sqlalchemy.url", str(DB_URL))
-    alembic.command.upgrade(alembic_config, "head")
+    with helpers.cd(alembic_dir):
+        alembic.command.upgrade(alembic_config, "head")
+
     yield discovery_provider_app
 
 
