@@ -38,7 +38,8 @@ const messages = {
   learnMore: 'LEARN MORE',
   launchDiscord: 'LAUNCH THE VIP DISCORD',
   tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+ $AUDIO`,
-  matrixMode: 'Matrix Mode'
+  matrixMode: 'Matrix Mode',
+  collectibles: 'NFT Collectibles'
 }
 
 type AudioTiers = Exclude<BadgeTier, 'none'>
@@ -164,6 +165,14 @@ export const Tier = ({
                 <i className='emoji large white-heavy-check-mark' />
                 {messages.badgeRole(tier)}
               </span>
+              {(tier === 'silver' ||
+                tier === 'gold' ||
+                tier === 'platinum') && (
+                <span>
+                  <i className='emoji large framed-picture' />
+                  {messages.collectibles}
+                </span>
+              )}
               {(tier === 'gold' || tier === 'platinum') && (
                 <span>
                   <i className='emoji large rabbit' />
