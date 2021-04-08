@@ -13,6 +13,7 @@ function main {
 
   # run migrations
   echo 'Running alembic migrations'
+  export audius_db_url='postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery'
   export PYTHONPATH='.'
   alembic upgrade head
 
