@@ -27,6 +27,7 @@ import { ProfileUser } from 'containers/profile-page/store/types'
 import { formatDate } from 'utils/timeUtil'
 import Drawer from 'components/drawer/Drawer'
 import Spin from 'antd/lib/spin'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   HiddenCollectibleRow,
   VisibleCollectibleRow
@@ -159,7 +160,9 @@ const CollectibleDetails: React.FC<{
             </div>
           </div>
         ) : (
-          <div className={styles.media} />
+          <div className={styles.media}>
+            <LoadingSpinner className={styles.loadingSpinner} />
+          </div>
         )}
         <div className={styles.nftTitle}>{collectible.name}</div>
       </PerspectiveCard>
