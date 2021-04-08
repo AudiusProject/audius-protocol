@@ -450,7 +450,7 @@ jobs:
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
-          POSTGRES_DB: test_audius_discovery
+          POSTGRES_DB: audius_discovery
       - image: ipfs/go-ipfs:release
         # Bring up ganache
       - image: redis:3.0-alpine
