@@ -29,7 +29,6 @@ def process_solana_plays():
     logger.error("\n\n")
     logger.error("")
     logger.error("Processing plays...")
-    print('-' * 100, flush=True)
 
     # TODO: Place slot_from in redis and process from that if not found, then set the first time
     slot_from = get_pickled_key(redis, SOL_PLAYS_REDIS_KEY)
