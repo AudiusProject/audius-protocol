@@ -4,6 +4,7 @@ import Paper from 'components/Paper'
 import Loading from 'components/Loading'
 
 import styles from './Table.module.css'
+import Error from 'components/Error'
 
 type TableProps = {
   className?: string
@@ -41,6 +42,9 @@ type TableProps = {
 
   // On click action of moreText
   onClickMore?: () => void
+
+  // If there was an error fetching data
+  error?: boolean
 }
 
 type RowProps = {
@@ -71,7 +75,8 @@ const Table: React.FC<TableProps> = ({
   alwaysShowMore,
   moreText,
   onRowClick = () => {},
-  onClickMore
+  onClickMore,
+  error
 }: TableProps) => {
   const rowLimit = limit || data.length
   const showMore = data.length > rowLimit || alwaysShowMore
@@ -87,6 +92,8 @@ const Table: React.FC<TableProps> = ({
         <div className={styles.loadingContainer}>
           <Loading className={styles.tableLoading} />
         </div>
+      ) : error ? (
+        <Error className={styles.error} />
       ) : (
         <>
           <div className={styles.headers}>

@@ -16,6 +16,8 @@ import ContentNodes from 'containers/ContentNodes'
 import ServiceOperators from 'containers/ServiceOperators'
 import ServiceUsers from 'containers/ServiceUsers'
 import Analytics from 'containers/Analytics'
+import API from 'containers/API'
+import APILeaderboard from 'containers/APILeaderboard'
 import * as routes from 'utils/routes'
 
 import { client, createStore } from './store'
@@ -86,6 +88,12 @@ const Root = () => (
                 component={Proposal}
               />
               <Route path={routes.ANALYTICS} exact component={Analytics} />
+              <Route path={routes.API} exact component={API} />
+              <Route
+                path={routes.API_LEADERBOARD}
+                exact
+                component={APILeaderboard}
+              />
               <Route component={NotFound} />
             </Switch>
           </div>
