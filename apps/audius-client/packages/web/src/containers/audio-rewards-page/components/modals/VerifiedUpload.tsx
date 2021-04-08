@@ -129,6 +129,8 @@ export const VerifiedUploadModal = () => {
       isOpen={isOpen}
       onClose={() => setOpen(false)}
       title={messages.title}
+      showTitleHeader
+      showDismissButton
     >
       <VerifiedUpload dismissModal={() => setOpen(false)} />
     </ModalDrawer>
