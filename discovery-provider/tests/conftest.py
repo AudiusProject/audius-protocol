@@ -1,13 +1,13 @@
 from __future__ import absolute_import
-import pytest
-import alembic
-import alembic.config
 import os
+import pytest
 from sqlalchemy_utils import database_exists, drop_database
 from web3 import HTTPProvider, Web3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
+import alembic
+import alembic.config
 from src import create_app, create_celery
 from src.utils import helpers
 from src.models import Base
