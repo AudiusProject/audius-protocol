@@ -14,6 +14,7 @@ import {
 import { getCollectibleImage } from 'containers/collectibles/helpers'
 import { Collectible } from 'containers/collectibles/components/types'
 import { findAncestor } from 'utils/domUtils'
+import useInstanceVar from 'hooks/useInstanceVar'
 
 // @ts-ignore
 export const VisibleCollectibleRow = props => {
@@ -29,9 +30,13 @@ export const VisibleCollectibleRow = props => {
 
   const [image, setImage] = useState<Nullable<string>>(null)
 
+  const [getHasFetchedImage, setHasFetchedImage] = useInstanceVar(false)
   useEffect(() => {
-    getCollectibleImage(collectible).then(frame => setImage(frame))
-  }, [collectible])
+    if (!getHasFetchedImage()) {
+      setHasFetchedImage(true)
+      getCollectibleImage(collectible).then(frame => setImage(frame))
+    }
+  }, [collectible, getHasFetchedImage, setHasFetchedImage])
 
   const dragRef = useRef<HTMLDivElement>(null)
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null)
@@ -113,10 +118,13 @@ export const HiddenCollectibleRow: React.FC<{
 
   const [image, setImage] = useState<Nullable<string>>(null)
 
+  const [getHasFetchedImage, setHasFetchedImage] = useInstanceVar(false)
   useEffect(() => {
-    getCollectibleImage(collectible).then(frame => setImage(frame))
-  }, [collectible])
-
+    if (!getHasFetchedImage()) {
+      setHasFetchedImage(true)
+      getCollectibleImage(collectible).then(frame => setImage(frame))
+    }
+  }, [collectible, getHasFetchedImage, setHasFetchedImage])
   return (
     <div className={cn(styles.editRow, styles.editHidden)}>
       <Tooltip

@@ -3,8 +3,7 @@ import {
   Collectible,
   CollectibleType
 } from 'containers/collectibles/components/types'
-import { resizeImage } from 'utils/imageProcessingUtil'
-import { preload } from 'utils/image'
+import { gifPreview } from 'utils/imageProcessingUtil'
 
 const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga']
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -95,12 +94,25 @@ export const isNotFromNullAddress = (event: OpenSeaEvent) => {
 }
 
 const getFrameFromGif = async (url: string, name: string) => {
-  const imageBlob = await fetch(url).then(r => r.blob())
-  const imageFile = new File([imageBlob], name, {
-    type: 'image/jpeg'
-  })
-  const resized = await resizeImage(imageFile, 200, true, name)
-  return URL.createObjectURL(resized)
+  let preview
+  try {
+    const req = await fetch(url, {
+      headers: {
+        // Extremely heuristic 200KB. This should contain the first frame
+        // and then some. Rendering this out into an <img tag won't allow
+        // animation to play. Some gifs may not load if we do this, so we
+        // can try-catch it.
+        Range: 'bytes=0-200000'
+      }
+    })
+    const ab = await req.arrayBuffer()
+    const uint8arr = new Uint8Array(ab)
+    preview = new Blob([uint8arr.slice(0, 100000)])
+  } catch (e) {
+    preview = await gifPreview(url)
+  }
+
+  return URL.createObjectURL(preview)
 }
 
 export const getCollectibleImage = async (collectible: Collectible) => {
@@ -111,20 +123,25 @@ export const getCollectibleImage = async (collectible: Collectible) => {
     imageThumbnailUrl,
     name
   } = collectible
+  if (imageThumbnailUrl?.endsWith('.gif')) {
+    return await getFrameFromGif(imageThumbnailUrl, name || '')
+  }
+  if (imagePreviewUrl?.endsWith('.gif')) {
+    return await getFrameFromGif(imagePreviewUrl, name || '')
+  }
   if (imageUrl?.endsWith('.gif')) {
     return await getFrameFromGif(imageUrl, name || '')
   }
   if (imageOriginalUrl?.endsWith('.gif')) {
     return await getFrameFromGif(imageOriginalUrl, name || '')
   }
-  if (imagePreviewUrl?.endsWith('.gif')) {
-    return await getFrameFromGif(imagePreviewUrl, name || '')
+  const foundImage =
+    imageUrl || imageThumbnailUrl || imagePreviewUrl || imageOriginalUrl
+  if (foundImage) {
+    const res = await fetch(foundImage)
+    if (res.headers.get('Content-Type')?.includes('gif')) {
+      return await getFrameFromGif(foundImage, name || '')
+    }
   }
-  if (imageThumbnailUrl?.endsWith('.gif')) {
-    return await getFrameFromGif(imageThumbnailUrl, name || '')
-  }
-  if (imageUrl) {
-    await preload(imageUrl)
-  }
-  return imageUrl
+  return foundImage
 }
