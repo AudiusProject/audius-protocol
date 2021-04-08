@@ -47,6 +47,8 @@ const TopAPIModal = () => {
       onClose={() => setOpen(false)}
       title={messages.modalTitle}
       isFullscreen={false}
+      showTitleHeader
+      showDismissButton
     >
       <TopAPIBody />
     </ModalDrawer>

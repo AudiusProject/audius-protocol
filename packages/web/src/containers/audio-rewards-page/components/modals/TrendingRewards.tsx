@@ -175,6 +175,8 @@ export const TrendingRewardsModal = () => {
       onClose={() => setOpen(false)}
       title={messages.modalTitle}
       allowScroll
+      showTitleHeader
+      showDismissButton
     >
       <TrendingRewardsBody dismissModal={() => setOpen(false)} />
     </ModalDrawer>
