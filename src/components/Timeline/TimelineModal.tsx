@@ -40,9 +40,9 @@ const TimelineModal: React.FC<TimelineModalProps> = ({
       <SimpleBar className={styles.scrollable}>
         {events.map((event, i) => (
           <TimelineEvent
-            onClick={onClose}
             className={styles.modalEvent}
             key={i}
+            isDisabled
             event={event}
           />
         ))}
