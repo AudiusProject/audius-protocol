@@ -94,8 +94,13 @@ export const isNotFromNullAddress = (event: OpenSeaEvent) => {
 }
 
 const getFrameFromGif = async (url: string, name: string) => {
+  const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
   let preview
   try {
+    // Firefox does not handle partial gif rendering well
+    if (isFirefox) {
+      throw new Error('partial gif not supported')
+    }
     const req = await fetch(url, {
       headers: {
         // Extremely heuristic 200KB. This should contain the first frame
@@ -106,8 +111,7 @@ const getFrameFromGif = async (url: string, name: string) => {
       }
     })
     const ab = await req.arrayBuffer()
-    const uint8arr = new Uint8Array(ab)
-    preview = new Blob([uint8arr.slice(0, 100000)])
+    preview = new Blob([ab])
   } catch (e) {
     preview = await gifPreview(url)
   }
