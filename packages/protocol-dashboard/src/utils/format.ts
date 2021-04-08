@@ -37,8 +37,9 @@ export const formatAudString = (num: string) => {
 }
 
 /**
- * Format a wallet into the shorted form for display
- * @param num BN
+ * Format a number with thousands abbreviations for shotened display
+ * ie. formatShortNumber(1010) => 1k
+ * @param {number} num
  */
 export const formatShortNumber = (num: number) => {
   return numeral(num).format('0a')
@@ -47,7 +48,7 @@ export const formatShortNumber = (num: number) => {
 /**
  * Format a wallet into the shorted form for display with an optional digit after
  * the decimal place
- * @param num BN
+ * @param {number} num
  */
 export const formatShortNumberWithDecimal = (num: number) => {
   return numeral(num).format('0[.]0a')
@@ -59,7 +60,7 @@ export const formatShortWallet = (wallet: Address) => {
 
 /**
  * Format a BN to the shortened $audio currency
- * @param num BN
+ * @param {BN} num
  */
 export const formatAud = (amount: BigNumber | null) => {
   if (!Utils.isBN(amount)) return ''
@@ -86,7 +87,7 @@ export const formatWei = (amount: BigNumber | null) => {
  * Format a number to have commas
  * @param num string
  */
-const formatNumberCommas = (num: string) => {
+export const formatNumberCommas = (num: string) => {
   const parts = num.toString().split('.')
   return (
     parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') +

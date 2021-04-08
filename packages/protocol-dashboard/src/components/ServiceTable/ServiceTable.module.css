@@ -16,11 +16,11 @@
 
 .rowCol {
   font-family: var(--font-family);
-  
+
   font-weight: var(--font-regular);
   font-size: var(--font-m);
-  
-  color: #BEC5E0;
+
+  color: var(--neutral);
 }
 
 .error {

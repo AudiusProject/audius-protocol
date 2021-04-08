@@ -8,8 +8,6 @@ import { useLocation } from 'react-router-dom'
  * NOTE: After switching to ipfs hosted, we can remove entirely
  */
 
-const AUDIUS_URL = process.env.REACT_APP_AUDIUS_URL || ''
-
 // -------------------------------- Hooks  --------------------------------
 export const useRerouteLegacy = () => {
   const location = useLocation()
@@ -20,13 +18,6 @@ export const useRerouteLegacy = () => {
       !window.location.pathname.includes('/ipfs')
     ) {
       window.history.replaceState({}, '', `/#${window.location.pathname}`)
-    } else if (
-      window.location.protocol === 'http:' &&
-      window.location.hostname !== 'localhost' &&
-      AUDIUS_URL.includes('https:')
-    ) {
-      const updatedHref = window.location.href.replace('http:', 'https:')
-      window.location.replace(updatedHref)
     }
   }, [location])
 }

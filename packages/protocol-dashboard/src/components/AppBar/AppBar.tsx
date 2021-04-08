@@ -8,7 +8,7 @@ import { useUser } from 'store/cache/user/hooks'
 import { Address } from 'types'
 import { formatShortWallet } from 'utils/format'
 import { usePushRoute } from 'utils/effects'
-import { accountPage, isCryptoPage } from 'utils/routes'
+import { accountPage, AUDIUS_DAPP_URL, isCryptoPage } from 'utils/routes'
 import { useEthBlockNumber } from 'store/cache/protocol/hooks'
 import clsx from 'clsx'
 import { useLocation } from 'react-router-dom'
@@ -19,6 +19,7 @@ import mobileStyles from './AppBarMobile.module.css'
 import { useIsMobile } from 'utils/hooks'
 import DisplayAudio from 'components/DisplayAudio'
 import UserImage from 'components/UserImage'
+import useOpenLink from 'hooks/useOpenLink'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -105,10 +106,7 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
 
 type LaunchTheAppButtonProps = {}
 const LaunchTheAppButton = (props: LaunchTheAppButtonProps) => {
-  const goToApp = useCallback(
-    () => window.open('https://audius.co', '_blank'),
-    []
-  )
+  const goToApp = useOpenLink(AUDIUS_DAPP_URL)
   return (
     <Button
       text={messages.launchApp}
