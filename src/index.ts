@@ -71,7 +71,14 @@ router.get('/error', (
   }
 )
 
-router.get('/:handle', (
+router.get([
+  '/:handle',
+  '/:handle/tracks',
+  '/:handle/playlists',
+  '/:handle/albums',
+  '/:handle/reposts',
+  '/:handle/collectibles',
+], (
   req: express.Request,
   res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.User, req, res)
