@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 import pytest
-from sqlalchemy_utils import database_exists, drop_database, create_database
+from sqlalchemy_utils import database_exists, drop_database
 from web3 import HTTPProvider, Web3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -38,7 +38,6 @@ def app():
     # Drop DB, ensuring migration performed at start
     if database_exists(DB_URL):
         drop_database(DB_URL)
-        create_database(DB_URL)
 
     # Create application for testing
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
