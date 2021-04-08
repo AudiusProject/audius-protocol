@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
-const config = require('../config.js')
 
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
@@ -219,16 +218,8 @@ module.exports = function (app) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
 
-    // await instr.validateSignature(
-    //   null,
-    //   'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
-    //   JSON.stringify({ hour: currentHour, trackId, userId })
-    // )
-    console.log(`ValidSigner length: ${config.get('solanaValidSigner').length}`)
-    console.log(config.get('solanaValidSigner'))
-
     await instr.createAndVerifyMessage(
-      config.get('solanaValidSigner'),
+      null,
       'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
       userId.toString(),
       trackId.toString(),

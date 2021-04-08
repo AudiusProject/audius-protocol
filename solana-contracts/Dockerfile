@@ -16,10 +16,10 @@ COPY create_and_verify create_and_verify
 COPY program program
 COPY cli cli
 
-RUN cd create_and_verify && \
-    cargo build-bpf  && \
-    cd ../program && \
+RUN cd program && \
     cargo build-bpf && \
+    cd ../create_and_verify && \
+    cargo build-bpf  && \
     cd ../cli && \
     cargo build
 

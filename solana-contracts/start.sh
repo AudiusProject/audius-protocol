@@ -9,16 +9,18 @@ solana airdrop 5
 solana airdrop 5 feepayer.json
 solana airdrop 5 owner.json
 
-cd create_and_verify
-solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
-cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
-new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
-sed -i "s/$cur_address/$new_address/g" src/lib.rs
-
-cd ../program
+cd program
+cargo build-bpf
 solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius-keypair.json --force
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
+sed -i "s/$cur_address/$new_address/g" src/lib.rs
+
+cd ../create_and_verify
+cargo build-bpf
+solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
+cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
+new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
 sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
 cd ../cli

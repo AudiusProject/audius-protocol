@@ -309,7 +309,6 @@ async function createAndVerifyMessage (
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
       { pubkey: signerGroup, isSigner: false, isWritable: false },
       { pubkey: AUDIUS_PROGRAM, isSigner: false, isWritable: false },
-      { pubkey: CREATE_AND_VERIFY_PROGRAM, isSigner: false, isWritable: false },
       { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false }
     ],
     programId: CREATE_AND_VERIFY_PROGRAM,
