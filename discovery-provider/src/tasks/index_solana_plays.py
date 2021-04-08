@@ -8,9 +8,10 @@ from solana.rpc.api import Client
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.redis_cache import get_pickled_key, pickle_and_set
+from src.utils.config import shared_config
 
 # TODO: These are configs
-AUDIUS_PROGRAM = "8vDMAyVt3mxEhsnzRQa5UEKX2STqv2JYeM2uGje5bcrJ"
+AUDIUS_PROGRAM = shared_config['solana']['program_address']
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 SLEEP_TIME = 1
 SOLANA_ENDPOINT = "https://devnet.solana.com"
@@ -28,6 +29,7 @@ def process_solana_plays():
     logger.error("\n\n")
     logger.error("")
     logger.error("Processing plays...")
+    print('-' * 100, flush=True)
 
     # TODO: Place slot_from in redis and process from that if not found, then set the first time
     slot_from = get_pickled_key(redis, SOL_PLAYS_REDIS_KEY)
