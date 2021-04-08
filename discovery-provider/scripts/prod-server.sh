@@ -23,6 +23,13 @@ else
   THREADS="${audius_gunicorn_threads}"
 fi
 
+# run db migrations
+if [ "$audius_db_run_migrations" != false ] ; then
+  echo "running alembic migrations"
+  export PYTHONPATH='.'
+  alembic upgrade head
+fi
+
 # If a worker class is specified, use that. Otherwise, use sync workers.
 if [[ -z "${audius_gunicorn_worker_class}" ]]
 then
