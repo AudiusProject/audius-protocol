@@ -17,9 +17,6 @@ from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
 
-import alembic
-import alembic.config  # pylint: disable=E0611
-
 from src import exceptions
 from src.queries import queries, search, search_queries, health_check, notifications
 from src.api.v1 import api as api_v1
@@ -247,20 +244,6 @@ def configure_flask(test_config, app, mode="app"):
                 raise e
 
         i += 1
-
-    # Conditionally perform alembic database upgrade to HEAD during
-    # flask initialization
-    if mode == "app":
-        alembic_dir = os.getcwd()
-        alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
-        alembic_config.set_main_option("sqlalchemy.url", str(database_url))
-        with helpers.cd(alembic_dir):
-            # run db migrations unless `run_migrations` overridden to false. default value is true
-            # need to call with getboolean because configparser doesn't allow you to
-            # store non string types and it coerces into bool for you
-            if shared_config.getboolean("db", "run_migrations"):
-                logger.info('running alembic db migrations')
-                alembic.command.upgrade(alembic_config, "head")
 
     if test_config is not None:
         # load the test config if passed in
