@@ -10,6 +10,13 @@ function main {
   echo 'Writing flask config'
   node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run --network test_local
   cd_discprov_repo
+
+  # run migrations
+  echo 'Running alembic migrations'
+  export PYTHONPATH='.'
+  alembic upgrade head
+  echo 'Finished running migrations'
+
   pytest -s -v --fulltrace
 }
 
