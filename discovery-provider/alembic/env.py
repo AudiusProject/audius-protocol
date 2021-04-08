@@ -61,6 +61,7 @@ def run_migrations_online():
         config.set_main_option('sqlalchemy.url', audius_db_url)
 
     print('audius_db_url', audius_db_url)
+    print('config.get_main_option("sqlalchemy.url")', config.get_main_option("sqlalchemy.url"))
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix='sqlalchemy.',
