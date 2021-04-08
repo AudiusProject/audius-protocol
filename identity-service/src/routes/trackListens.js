@@ -226,8 +226,6 @@ module.exports = function (app) {
       Date.now().toString()
     )
 
-    await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
-
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table
     const isRealUser = typeof userId === 'number'

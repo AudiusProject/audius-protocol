@@ -8,7 +8,7 @@ const solanaConfig = require('../../solana-contracts/solana-contract-config.json
 // Updates audius_eth_contracts_registry in discovery provider
 const configureLocalDiscProv = async () => {
   let ethRegistryAddress = ethContractsMigrationOutput.registryAddress
-  let solanaProgramAddress = solanaConfig.programAddress
+  let solanaProgramAddress = solanaConfig.createAndVerifyAddress
   let envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
 
   await _updateDiscoveryProviderEnvFile(
