@@ -96,9 +96,13 @@ const CollectibleDetails: React.FC<{
   const [isMuted, setIsMuted] = useState<boolean>(true)
   const [image, setImage] = useState<Nullable<string>>(null)
 
+  const [getHasFetchedImage, setHasFetchedImage] = useInstanceVar(false)
   useEffect(() => {
-    getCollectibleImage(collectible).then(frame => setImage(frame))
-  }, [collectible])
+    if (!getHasFetchedImage()) {
+      setHasFetchedImage(true)
+      getCollectibleImage(collectible).then(frame => setImage(frame))
+    }
+  }, [collectible, getHasFetchedImage, setHasFetchedImage])
 
   const handleItemClick = useCallback(() => {
     if (isMobile) {
