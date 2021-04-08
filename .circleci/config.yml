@@ -510,6 +510,7 @@ jobs:
             export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
             export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
             export audius_web3_port=8555
+            export audius_db_url="postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
             ./scripts/circle-ci.sh
 
   test-identity-service:
