@@ -1,8 +1,10 @@
 import WebWorker from 'services/WebWorker'
 import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
 import averageRgbWorkerFile from 'workers/averageRgb.worker.js'
+import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
 
 const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false)
+const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false)
 
 const ALLOWED_IMAGE_FILE_TYPES = [
   'image/jpeg',
@@ -31,4 +33,9 @@ export const resizeImage = async (
 export const averageRgb = async (imageUrl, chunkSize = 100) => {
   averageRgbWorker.call({ imageUrl, chunkSize }, imageUrl)
   return averageRgbWorker.getResult(imageUrl)
+}
+
+export const gifPreview = async imageUrl => {
+  gifPreviewWorker.call({ imageUrl }, imageUrl)
+  return gifPreviewWorker.getResult(imageUrl)
 }
