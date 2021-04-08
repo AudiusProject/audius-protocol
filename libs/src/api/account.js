@@ -355,7 +355,7 @@ class Account extends Base {
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
-    await this.sendTokens(myWalletAddress, recipientAddress, amount)
+    await this.sendTokens(myWalletAddress, recipientAddress, selectedEthWallet, amount)
   }
 
   /**
@@ -401,9 +401,9 @@ class Account extends Base {
   /**
    * Sends `amount` tokens to `address` from `owner`
    */
-  async sendTokens (owner, address, amount) {
+  async sendTokens (owner, address, relayer, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, amount)
+    return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, relayer, amount)
   }
 }
 
