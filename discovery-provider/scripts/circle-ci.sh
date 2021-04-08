@@ -12,6 +12,7 @@ function main {
   cd_discprov_repo
 
   # run migrations
+  echo 'Running alembic migrations'
   export PYTHONPATH='.'
   alembic upgrade head
 

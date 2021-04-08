@@ -40,6 +40,7 @@ def run_migrations_offline():
     if audius_db_url:
         url = audius_db_url
 
+    print('offline alembic url', url)
     context.configure(
         url=url, target_metadata=target_metadata, literal_binds=True)
 
@@ -59,6 +60,7 @@ def run_migrations_online():
     if audius_db_url:
         config.set_main_option('sqlalchemy.url', audius_db_url)
 
+    print('audius_db_url', audius_db_url)
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix='sqlalchemy.',
