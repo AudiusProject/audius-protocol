@@ -27,6 +27,7 @@ import { newCollectionMetadata } from 'schemas'
 import { ToastContext } from 'components/toast/ToastContext'
 import { CreatePlaylistSource } from 'services/analytics'
 import { withNullGuard } from 'utils/withNullGuard'
+import useHasChangedRoute from 'hooks/useHasChangedRoute'
 
 const messages = {
   title: 'Add To Playlist',
@@ -57,6 +58,8 @@ const AddToPlaylist = g(
     addTrackToPlaylist,
     createPlaylist
   }) => {
+    // Close the page if the route was changed
+    useHasChangedRoute(close)
     const setters = useCallback(
       () => ({
         left: (

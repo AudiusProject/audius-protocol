@@ -44,6 +44,7 @@ import { CreatePlaylistSource } from 'services/analytics'
 import { withNullGuard } from 'utils/withNullGuard'
 import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
 import { Nullable } from 'utils/typeUtils'
+import useHasChangedRoute from 'hooks/useHasChangedRoute'
 
 const messages = {
   createPlaylist: 'Create Playlist',
@@ -80,6 +81,8 @@ const EditPlaylistPage = g(
     orderPlaylist,
     refreshLineup
   }) => {
+    // Close the page if the route was changed
+    useHasChangedRoute(close)
     const initialMetadata = {
       ...(metadata as Collection),
       artwork: { url: '' }
