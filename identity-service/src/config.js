@@ -5,7 +5,7 @@ const fs = require('fs')
 convict.addFormat({
   name: 'string-array',
   validate: function (val) {
-    return Array.isArray(val) && val.every(el => typeof el === "string")
+    return Array.isArray(val) && val.every(el => typeof el === 'string')
   },
   coerce: function (val) {
     if (!val || val === '') return {}
@@ -16,7 +16,7 @@ convict.addFormat({
 convict.addFormat({
   name: 'integer-array',
   validate: function (val) {
-    return Array.isArray(val) && val.every(el => typeof el === "number")
+    return Array.isArray(val) && val.every(el => typeof el === 'number')
   },
   coerce: function (val) {
     if (!val || val === '') return {}
