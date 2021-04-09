@@ -23,17 +23,10 @@ logger = logging.getLogger(__name__)
 def process_solana_plays(solana_client):
     redis = index_solana_plays.redis
     db = index_solana_plays.db
-    logger.error("\n\n")
-    logger.error("")
-    logger.error(f"Processing plays..., {TRACK_LISTEN_PROGRAM}")
 
-    # TODO: Place slot_from in redis and process from that if not found, then set the first time
     slot_from = get_pickled_key(redis, SOL_PLAYS_REDIS_KEY)
-
-    logger.error(f"Found slot_from={slot_from} in REDIS")
     if not slot_from:
         slot_from = solana_client.get_slot()["result"]
-        logger.error(f"Setting slot from to {slot_from}")
         pickle_and_set(redis, SOL_PLAYS_REDIS_KEY, slot_from)
 
     # slot_from = solana_client.get_slot()["result"]
@@ -46,12 +39,9 @@ def process_solana_plays(solana_client):
         tx_info = solana_client.get_confirmed_transaction(
             transaction["result"][0]["signature"]
         )
-        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
-                "accountKeys"]:
-            audius_program_index = tx_info["result"]["transaction"]["message"][
-                "accountKeys"].index(TRACK_LISTEN_PROGRAM)
-            for instruction in tx_info["result"]["transaction"]["message"][
-                    "instructions"]:
+        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"]["accountKeys"]:
+            audius_program_index = tx_info["result"]["transaction"]["message"]["accountKeys"].index(TRACK_LISTEN_PROGRAM)
+            for instruction in tx_info["result"]["transaction"]["message"]["instructions"]:
                 if instruction["programIdIndex"] == audius_program_index:
                     hex_data = binascii.hexlify(
                         bytearray(list(base58.b58decode(instruction["data"])))
@@ -86,11 +76,6 @@ def process_solana_plays(solana_client):
                                 play_item_id=int(track_id),
                                 source=str(source, "utf-8"),
                             ))
-                    logger.error("COMMITTED PLAY")
-                    logger.error("---------")
-
-    # TODO: RECORD PLAY DATA
-    logger.error(transaction)
 
 
 ######## CELERY TASKS ########
