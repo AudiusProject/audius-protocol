@@ -16,15 +16,13 @@ export type Collectible = {
   name: Nullable<string>
   description: Nullable<string>
   type: CollectibleType
+  frameUrl: Nullable<string>
   imageUrl: Nullable<string>
-  imagePreviewUrl: Nullable<string>
-  imageThumbnailUrl: Nullable<string>
-  imageOriginalUrl: Nullable<string>
-  animationUrl: Nullable<string>
-  animationOriginalUrl: Nullable<string>
-  youtubeUrl: Nullable<string>
+  gifUrl: Nullable<string>
+  videoUrl: Nullable<string>
   isOwned: boolean
   dateCreated: Nullable<string>
   dateLastTransferred: Nullable<string>
   externalLink: Nullable<string>
+  permaLink: Nullable<string>
 }

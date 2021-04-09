@@ -10,7 +10,6 @@ import {
 import cn from 'classnames'
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'containers/user-badges/UserBadges'
 import {
   DragDropContext,
@@ -32,9 +31,8 @@ import {
   HiddenCollectibleRow,
   VisibleCollectibleRow
 } from 'containers/collectibles/components/CollectibleRow'
-import { getCollectibleImage } from '../helpers'
-import { Nullable } from 'utils/typeUtils'
 import useInstanceVar from 'hooks/useInstanceVar'
+import PreloadImage from 'components/preload-image/PreloadImage'
 
 export const editTableContainerClass = 'editTableContainer'
 
@@ -63,19 +61,19 @@ export const collectibleMessages = {
 }
 
 const CollectibleMedia: React.FC<{
-  type: CollectibleType
-  imageUrl: Nullable<string>
-  animationUrl: Nullable<string>
+  collectible: Collectible
   isMuted: boolean
   toggleMute: () => void
-}> = ({ type, imageUrl, animationUrl, isMuted, toggleMute }) => {
-  return type === CollectibleType.IMAGE || type === CollectibleType.GIF ? (
+}> = ({ collectible, isMuted, toggleMute }) => {
+  const { type, imageUrl, videoUrl, gifUrl } = collectible
+
+  return type === CollectibleType.GIF ? (
     <div className={styles.detailsMediaWrapper}>
-      <img src={imageUrl!} alt='Collectible' />
+      <img src={gifUrl!} alt='Collectible' />
     </div>
-  ) : (
+  ) : type === CollectibleType.VIDEO ? (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
-      <video muted={isMuted} autoPlay loop src={animationUrl!}>
+      <video muted={isMuted} autoPlay loop src={videoUrl!}>
         {collectibleMessages.videoNotSupported}
       </video>
       {isMuted ? (
@@ -84,6 +82,10 @@ const CollectibleMedia: React.FC<{
         <IconVolume className={styles.volumeIcon} />
       )}
     </div>
+  ) : (
+    <div className={styles.detailsMediaWrapper}>
+      <img src={imageUrl!} alt='Collectible' />
+    </div>
   )
 }
 
@@ -91,18 +93,11 @@ const CollectibleDetails: React.FC<{
   collectible: Collectible
   isMobile: boolean
 }> = ({ collectible, isMobile }) => {
+  const { type, frameUrl, videoUrl } = collectible
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false)
   const [isMuted, setIsMuted] = useState<boolean>(true)
-  const [image, setImage] = useState<Nullable<string>>(null)
-
-  const [getHasFetchedImage, setHasFetchedImage] = useInstanceVar(false)
-  useEffect(() => {
-    if (!getHasFetchedImage()) {
-      setHasFetchedImage(true)
-      getCollectibleImage(collectible).then(frame => setImage(frame))
-    }
-  }, [collectible, getHasFetchedImage, setHasFetchedImage])
 
   const handleItemClick = useCallback(() => {
     if (isMobile) {
@@ -122,13 +117,11 @@ const CollectibleDetails: React.FC<{
         className={styles.perspectiveCard}
         onClick={handleItemClick}
       >
-        {image ? (
-          <div>
-            <DynamicImage image={image} wrapperClassName={styles.media} />
-            {collectible.type === CollectibleType.VIDEO ||
-            collectible.type === CollectibleType.GIF ? (
-              <IconPlay className={styles.playIcon} />
-            ) : null}
+        {type === CollectibleType.GIF ||
+        (type === CollectibleType.VIDEO && frameUrl) ? (
+          <div className={styles.imageWrapper}>
+            <PreloadImage src={frameUrl!} className={styles.media} />
+            <IconPlay className={styles.playIcon} />
             <div className={styles.stamp}>
               {collectible.isOwned ? (
                 <span className={styles.owned}>
@@ -141,16 +134,31 @@ const CollectibleDetails: React.FC<{
               )}
             </div>
           </div>
-        ) : collectible.type === CollectibleType.VIDEO ? (
-          <div className={styles.media}>
+        ) : type === CollectibleType.VIDEO ? (
+          <div className={cn(styles.media, styles.imageWrapper)}>
             <IconPlay className={styles.playIcon} />
             <video
-              muted={isMuted}
+              muted={true}
               autoPlay={false}
               controls={false}
               style={{ height: '100%', width: '100%' }}
-              src={collectible.animationUrl!}
+              src={videoUrl!}
             />
+            <div className={styles.stamp}>
+              {collectible.isOwned ? (
+                <span className={styles.owned}>
+                  {collectibleMessages.owned}
+                </span>
+              ) : (
+                <span className={styles.created}>
+                  {collectibleMessages.created}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : type === CollectibleType.IMAGE ? (
+          <div className={styles.imageWrapper}>
+            <PreloadImage src={frameUrl!} className={styles.media} />
             <div className={styles.stamp}>
               {collectible.isOwned ? (
                 <span className={styles.owned}>
@@ -186,9 +194,7 @@ const CollectibleDetails: React.FC<{
       >
         <div className={styles.nftModal}>
           <CollectibleMedia
-            type={collectible.type}
-            imageUrl={collectible.imageUrl}
-            animationUrl={collectible.animationUrl}
+            collectible={collectible}
             isMuted={isMuted}
             toggleMute={toggleMute}
           />
@@ -237,6 +243,18 @@ const CollectibleDetails: React.FC<{
                 rel='noopener noreferrer'
               >
                 <IconLink className={styles.linkIcon} />
+                {new URL(collectible.externalLink).hostname}
+              </a>
+            )}
+
+            {collectible.permaLink && (
+              <a
+                className={styles.link}
+                href={collectible.permaLink}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                <IconLink className={styles.linkIcon} />
                 {collectibleMessages.linkToCollectible}
               </a>
             )}
@@ -251,9 +269,7 @@ const CollectibleDetails: React.FC<{
       >
         <div className={styles.nftDrawer}>
           <CollectibleMedia
-            type={collectible.type}
-            imageUrl={collectible.imageUrl}
-            animationUrl={collectible.animationUrl}
+            collectible={collectible}
             isMuted={isMuted}
             toggleMute={toggleMute}
           />
@@ -298,6 +314,17 @@ const CollectibleDetails: React.FC<{
               <a
                 className={styles.link}
                 href={collectible.externalLink}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                <IconLink className={styles.linkIcon} />
+                {collectibleMessages.linkToCollectible}
+              </a>
+            )}
+            {collectible.permaLink && (
+              <a
+                className={styles.link}
+                href={collectible.permaLink}
                 target='_blank'
                 rel='noopener noreferrer'
               >
