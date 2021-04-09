@@ -916,9 +916,10 @@ class AudiusAPIClient {
   }
 
   makeUrl = (path: string, queryParams: QueryParams = {}, useFull = false) => {
-    let url = this._constructUrl(path, queryParams)
-    if (!useFull) url = url.replace('/full', '')
-    return url
+    const formattedPath = useFull
+      ? this._formatFullPath(path)
+      : this._formatPath(path)
+    return this._constructUrl(formattedPath, queryParams)
   }
 
   // Helpers
