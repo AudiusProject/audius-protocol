@@ -36,6 +36,7 @@ export type OpenSeaAsset = {
   name: string | null
   description: string | null
   external_link: string | null
+  permalink: string | null
   image_url: string | null
   image_preview_url: string | null
   image_thumbnail_url: string | null

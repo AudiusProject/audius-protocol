@@ -109,10 +109,14 @@
   fill: #fffa;
 }
 
+.imageWrapper {
+  position: relative;
+}
+
 .stamp {
   position: absolute;
-  top: 182px;
-  left: 20px;
+  bottom: 18px;
+  left: 12px;
   z-index: 10000;
   font-size: var(--font-2xs);
   color: var(--white);
@@ -189,6 +193,7 @@
   align-items: center;
   color: var(--secondary);
   text-decoration: underline !important;
+  margin-bottom: 16px;
 }
 
 .link:hover {
@@ -244,6 +249,7 @@
   max-width: 50vw;
   max-height: 70vh;
   overflow: hidden;
+  border-radius: 8px;
 }
 
 .detailsMediaWrapper img {
@@ -254,7 +260,6 @@
 
 .detailsMediaWrapper video {
   width: 100%;
-  border-radius: 8px;
   box-sizing: border-box;
   background-size: cover;
   background-position: center;
@@ -530,10 +535,6 @@
 .mobile .media {
   width: 80vw;
   height: 80vw;
-}
-
-.mobile .stamp {
-  top: calc(80vw - 20px);
 }
 
 .mobile .detailsStamp {

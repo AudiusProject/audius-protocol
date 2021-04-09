@@ -3,7 +3,6 @@ import styles from 'containers/collectibles/components/CollectiblesPage.module.c
 import cn from 'classnames'
 import Tooltip from 'components/tooltip/Tooltip'
 import { formatDate } from 'utils/timeUtil'
-import { Nullable } from 'utils/typeUtils'
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
@@ -11,10 +10,11 @@ import {
   collectibleMessages,
   editTableContainerClass
 } from 'containers/collectibles/components/CollectiblesPage'
-import { getCollectibleImage } from 'containers/collectibles/helpers'
-import { Collectible } from 'containers/collectibles/components/types'
+import {
+  Collectible,
+  CollectibleType
+} from 'containers/collectibles/components/types'
 import { findAncestor } from 'utils/domUtils'
-import useInstanceVar from 'hooks/useInstanceVar'
 
 // @ts-ignore
 export const VisibleCollectibleRow = props => {
@@ -26,17 +26,7 @@ export const VisibleCollectibleRow = props => {
     handleProps,
     ...otherProps
   } = props
-  const { name, isOwned, dateCreated } = collectible
-
-  const [image, setImage] = useState<Nullable<string>>(null)
-
-  const [getHasFetchedImage, setHasFetchedImage] = useInstanceVar(false)
-  useEffect(() => {
-    if (!getHasFetchedImage()) {
-      setHasFetchedImage(true)
-      getCollectibleImage(collectible).then(frame => setImage(frame))
-    }
-  }, [collectible, getHasFetchedImage, setHasFetchedImage])
+  const { name, isOwned, dateCreated, type, frameUrl, videoUrl } = collectible
 
   const dragRef = useRef<HTMLDivElement>(null)
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null)
@@ -77,12 +67,22 @@ export const VisibleCollectibleRow = props => {
         <IconHide onClick={onHideClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {image ? (
+      {frameUrl ? (
         <div>
           <img
             className={styles.editMedia}
-            src={image}
+            src={frameUrl}
             alt={collectibleMessages.visibleThumbnail}
+          />
+        </div>
+      ) : type === CollectibleType.VIDEO ? (
+        <div>
+          <video
+            muted={true}
+            autoPlay={false}
+            controls={false}
+            style={{ height: '40px', width: '40px' }}
+            src={videoUrl!}
           />
         </div>
       ) : (
@@ -114,17 +114,8 @@ export const HiddenCollectibleRow: React.FC<{
   onShowClick: () => void
 }> = props => {
   const { collectible, onShowClick } = props
-  const { name, isOwned, dateCreated } = collectible
+  const { name, isOwned, dateCreated, type, frameUrl, videoUrl } = collectible
 
-  const [image, setImage] = useState<Nullable<string>>(null)
-
-  const [getHasFetchedImage, setHasFetchedImage] = useInstanceVar(false)
-  useEffect(() => {
-    if (!getHasFetchedImage()) {
-      setHasFetchedImage(true)
-      getCollectibleImage(collectible).then(frame => setImage(frame))
-    }
-  }, [collectible, getHasFetchedImage, setHasFetchedImage])
   return (
     <div className={cn(styles.editRow, styles.editHidden)}>
       <Tooltip
@@ -134,12 +125,22 @@ export const HiddenCollectibleRow: React.FC<{
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {image ? (
+      {frameUrl ? (
         <div>
           <img
             className={styles.editMedia}
-            src={image}
+            src={frameUrl}
             alt={collectibleMessages.hiddenThumbnail}
+          />
+        </div>
+      ) : type === CollectibleType.VIDEO ? (
+        <div>
+          <video
+            muted={true}
+            autoPlay={false}
+            controls={false}
+            style={{ height: '40px', width: '40px' }}
+            src={videoUrl!}
           />
         </div>
       ) : (

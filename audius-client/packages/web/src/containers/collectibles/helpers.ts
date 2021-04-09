@@ -5,26 +5,64 @@ import {
 } from 'containers/collectibles/components/types'
 import { gifPreview } from 'utils/imageProcessingUtil'
 
+/**
+ * extensions based on OpenSea metadata standards
+ * https://docs.opensea.io/docs/metadata-standards
+ */
+const OPENSEA_VIDEO_EXTENSIONS = [
+  'gltf',
+  'glb',
+  'webm',
+  'mp4',
+  'm4v',
+  'ogv',
+  'ogg'
+]
 const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga']
+
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const isAssetImage = (asset: OpenSeaAsset) => {
-  return (
-    !!asset.image_url ||
-    !!asset.image_original_url ||
-    !!asset.image_preview_url ||
-    !!asset.image_thumbnail_url
-  )
+  const nonImageExtensions = [
+    ...OPENSEA_VIDEO_EXTENSIONS,
+    ...OPENSEA_AUDIO_EXTENSIONS
+  ]
+  return [
+    asset.image_url,
+    asset.image_original_url,
+    asset.image_preview_url,
+    asset.image_thumbnail_url
+  ].some(url => url && nonImageExtensions.every(ext => !url.endsWith(ext)))
 }
 
-const isAssetAudio = (asset: OpenSeaAsset) => {
-  return OPENSEA_AUDIO_EXTENSIONS.some(extension =>
-    asset.animation_url?.endsWith(extension)
-  )
+const isAudio = (url: string) => {
+  return OPENSEA_AUDIO_EXTENSIONS.some(extension => url.endsWith(extension))
 }
 
 const isAssetVideo = (asset: OpenSeaAsset) => {
-  return !!asset.animation_url && !isAssetAudio(asset)
+  const {
+    animation_url,
+    animation_original_url,
+    image_url,
+    image_original_url,
+    image_preview_url,
+    image_thumbnail_url
+  } = asset
+  if (isAudio(animation_url || '') || isAudio(animation_original_url || '')) {
+    return false
+  }
+  return (
+    !!animation_url ||
+    !!animation_original_url ||
+    [
+      image_url,
+      image_original_url,
+      image_preview_url,
+      image_thumbnail_url
+    ].some(
+      url => url && OPENSEA_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
+    )
+  )
 }
 
 const isAssetGif = (asset: OpenSeaAsset) => {
@@ -40,50 +78,133 @@ export const isAssetValid = (asset: OpenSeaAsset) => {
   return isAssetVideo(asset) || isAssetImage(asset) || isAssetGif(asset)
 }
 
-export const assetToCollectible = (asset: OpenSeaAsset): Collectible => {
-  let type = CollectibleType.IMAGE
-  if (isAssetVideo(asset)) type = CollectibleType.VIDEO
-  if (isAssetGif(asset)) type = CollectibleType.GIF
+export const assetToCollectible = async (
+  asset: OpenSeaAsset
+): Promise<Collectible> => {
+  let type: CollectibleType
+  let frameUrl = null
+  let imageUrl = null
+  let videoUrl = null
+  let gifUrl = null
+
+  const { animation_url, animation_original_url, name } = asset
+  const imageUrlsHighToLowRes = [
+    asset.image_url,
+    asset.image_original_url,
+    asset.image_preview_url,
+    asset.image_thumbnail_url
+  ]
+  const imageUrlsLowToHighRes = [
+    asset.image_url,
+    asset.image_original_url,
+    asset.image_preview_url,
+    asset.image_thumbnail_url
+  ]
+
+  try {
+    if (isAssetGif(asset)) {
+      type = CollectibleType.GIF
+      const urlForFrame = imageUrlsLowToHighRes.find(url =>
+        url?.endsWith('.gif')
+      )!
+      frameUrl = await getFrameFromGif(urlForFrame, name || '')
+      gifUrl = imageUrlsHighToLowRes.find(url => url?.endsWith('.gif'))!
+    } else if (isAssetVideo(asset)) {
+      type = CollectibleType.VIDEO
+      frameUrl =
+        imageUrlsLowToHighRes.find(
+          url =>
+            url && OPENSEA_VIDEO_EXTENSIONS.every(ext => !url.endsWith(ext))
+        ) ?? null
+
+      /**
+       * make sure frame url is not a video
+       * if it is avideo, unset frame url so that component will use a video url instead
+       */
+      if (frameUrl) {
+        const res = await fetch(frameUrl, { method: 'HEAD' })
+        const isVideo = OPENSEA_VIDEO_EXTENSIONS.some(ext =>
+          res.headers.get('Content-Type')?.includes(ext)
+        )
+        if (isVideo) {
+          frameUrl = null
+        }
+      }
+
+      videoUrl =
+        [animation_url, animation_original_url].find(
+          url => url && !isAudio(url)
+        ) ?? null
+      if (!videoUrl) {
+        videoUrl = imageUrlsHighToLowRes.find(
+          url => url && OPENSEA_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
+        )!
+      }
+    } else {
+      type = CollectibleType.IMAGE
+      frameUrl = imageUrlsLowToHighRes.find(url => !!url)!
+      const res = await fetch(frameUrl, { method: 'HEAD' })
+      const isGif = res.headers.get('Content-Type')?.includes('gif')
+      const isVideo = res.headers.get('Content-Type')?.includes('video')
+      if (isGif) {
+        type = CollectibleType.GIF
+        frameUrl = await getFrameFromGif(frameUrl, name || '')
+        gifUrl = imageUrlsHighToLowRes.find(url => !!url)!
+      } else if (isVideo) {
+        type = CollectibleType.VIDEO
+        frameUrl = null
+        videoUrl = imageUrlsHighToLowRes.find(url => !!url)!
+      } else {
+        imageUrl = imageUrlsHighToLowRes.find(url => !!url)!
+      }
+    }
+  } catch (e) {
+    console.error('Error fetching collectible', e)
+    type = CollectibleType.IMAGE
+    frameUrl = imageUrlsLowToHighRes.find(url => !!url)!
+  }
 
   return {
     id: asset.token_id,
     name: asset.name,
     description: asset.description,
     type,
-    imageUrl: asset.image_url,
-    imagePreviewUrl: asset.image_preview_url,
-    imageThumbnailUrl: asset.image_thumbnail_url,
-    imageOriginalUrl: asset.image_original_url,
-    animationUrl: asset.animation_url,
-    animationOriginalUrl: asset.animation_original_url,
-    youtubeUrl: asset.youtube_url,
+    frameUrl,
+    imageUrl,
+    videoUrl,
+    gifUrl,
     isOwned: true,
     dateCreated: null,
     dateLastTransferred: null,
-    externalLink: asset.external_link
+    externalLink: asset.external_link,
+    permaLink: asset.permalink
   }
 }
 
-export const creationEventToCollectible = (
+export const creationEventToCollectible = async (
   event: OpenSeaEvent
-): Collectible => {
+): Promise<Collectible> => {
   const { asset, created_date } = event
 
+  const collectible = await assetToCollectible(asset)
+
   return {
-    ...assetToCollectible(asset),
+    ...collectible,
     dateCreated: created_date,
     isOwned: false
   }
 }
 
-export const transferEventToCollectible = (
+export const transferEventToCollectible = async (
   event: OpenSeaEvent,
   isOwned = true
-): Collectible => {
+): Promise<Collectible> => {
   const { asset, created_date } = event
 
+  const collectible = await assetToCollectible(asset)
+
   return {
-    ...assetToCollectible(asset),
+    ...collectible,
     isOwned,
     dateLastTransferred: created_date
   }
@@ -95,10 +216,12 @@ export const isNotFromNullAddress = (event: OpenSeaEvent) => {
 
 const getFrameFromGif = async (url: string, name: string) => {
   const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
+  const isSafariMobile =
+    navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i)
   let preview
   try {
     // Firefox does not handle partial gif rendering well
-    if (isFirefox) {
+    if (isFirefox || isSafariMobile) {
       throw new Error('partial gif not supported')
     }
     const req = await fetch(url, {
@@ -117,35 +240,4 @@ const getFrameFromGif = async (url: string, name: string) => {
   }
 
   return URL.createObjectURL(preview)
-}
-
-export const getCollectibleImage = async (collectible: Collectible) => {
-  const {
-    imageUrl,
-    imageOriginalUrl,
-    imagePreviewUrl,
-    imageThumbnailUrl,
-    name
-  } = collectible
-  if (imageThumbnailUrl?.endsWith('.gif')) {
-    return await getFrameFromGif(imageThumbnailUrl, name || '')
-  }
-  if (imagePreviewUrl?.endsWith('.gif')) {
-    return await getFrameFromGif(imagePreviewUrl, name || '')
-  }
-  if (imageUrl?.endsWith('.gif')) {
-    return await getFrameFromGif(imageUrl, name || '')
-  }
-  if (imageOriginalUrl?.endsWith('.gif')) {
-    return await getFrameFromGif(imageOriginalUrl, name || '')
-  }
-  const foundImage =
-    imageUrl || imageThumbnailUrl || imagePreviewUrl || imageOriginalUrl
-  if (foundImage) {
-    const res = await fetch(foundImage)
-    if (res.headers.get('Content-Type')?.includes('gif')) {
-      return await getFrameFromGif(foundImage, name || '')
-    }
-  }
-  return foundImage
 }
