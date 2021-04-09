@@ -326,7 +326,7 @@ const CollectibleDetails: React.FC<{
                 rel='noopener noreferrer'
               >
                 <IconLink className={styles.linkIcon} />
-                {collectibleMessages.linkToCollectible}
+                {new URL(collectible.externalLink).hostname}
               </a>
             )}
             {collectible.permaLink && (
