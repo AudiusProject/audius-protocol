@@ -148,11 +148,12 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  await solanaWeb3.sendAndConfirmTransaction(
+  let txInfo = await solanaWeb3.sendAndConfirmTransaction(
     devnetConnection,
     transaction,
     [feePayer]
   )
+  console.log(txInfo)
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
