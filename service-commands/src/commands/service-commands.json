@@ -44,12 +44,12 @@
       "cd eth-contracts/; npm run ganache-q"
     ]
   },
-  "solana-contracts": {
-    "path": "solana-contracts",
+  "solana-programs": {
+    "path": "solana-programs",
     "up": [
-      "docker build --tag solana-contracts solana-contracts/",
-      "cd solana-contracts/; touch solana-contract-config.json && docker run -v \"$PWD/solana-contract-config.json:/usr/src/app/solana-contract-config.json\" solana-contracts",
-      "cd solana-contracts/; cp solana-contract-config.json ../identity-service"
+      "docker build --tag solana-programs solana-programs/",
+      "cd solana-programs/; touch solana-program-config.json && docker run -v \"$PWD/solana-program-config.json:/usr/src/app/solana-program-config.json\" solana-programs",
+      "cd solana-programs/; cp solana-program-config.json ../identity-service"
     ],
     "down": []
   },

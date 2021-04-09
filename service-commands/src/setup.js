@@ -124,7 +124,7 @@ const Service = Object.freeze({
   NETWORK: 'network',
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
-  SOLANA_CONTRACTS: 'solana-contracts',
+  SOLANA_PROGRAMS: 'solana-programs',
   IPFS: 'ipfs',
   IPFS_2: 'ipfs-2',
   IPFS_3: 'ipfs-3',
@@ -336,7 +336,7 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     [Service.IPFS_2, SetupCommand.UP, options],
     [Service.CONTRACTS, SetupCommand.UP, options],
     [Service.ETH_CONTRACTS, SetupCommand.UP, options],
-    [Service.SOLANA_CONTRACTS, SetupCommand.UP, options]
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
   ]
 
   const creatorNodeCommands = _.range(1, numCreatorNodes + 1).reduce(

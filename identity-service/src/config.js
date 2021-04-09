@@ -548,8 +548,8 @@ if (fs.existsSync('eth-contract-config.json')) {
   })
 }
 
-if (fs.existsSync('solana-contract-config.json')) {
-  let solanaContractConfig = require('../solana-contract-config.json')
+if (fs.existsSync('solana-program-config.json')) {
+  let solanaContractConfig = require('../solana-program-config.json')
   config.load({
     solanaCreateAndVerifyAddress: solanaContractConfig.createAndVerifyAddress,
     solanaProgramAddress: solanaContractConfig.programAddress,

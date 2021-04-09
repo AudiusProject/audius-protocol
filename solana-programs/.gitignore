@@ -5,4 +5,4 @@ Cargo.lock
 .DS_Store
 .python-version
 test-ledger
-solana-contract-config.json
+solana-program-config.json

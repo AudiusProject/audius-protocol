@@ -30,7 +30,7 @@ signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
 valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
 
 cd ..
-cat > solana-contract-config.json <<EOF
+cat > solana-program-config.json <<EOF
 {
     "createAndVerifyAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
     "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",

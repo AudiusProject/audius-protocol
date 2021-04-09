@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const readline = require('readline')
 const ethContractsMigrationOutput = require('../../eth-contracts/migrations/migration-output.json')
-const solanaConfig = require('../../solana-contracts/solana-contract-config.json')
+const solanaConfig = require('../../solana-programs/solana-program-config.json')
 
 // LOCAL DEVELOPMENT ONLY
 // Updates audius_eth_contracts_registry in discovery provider
