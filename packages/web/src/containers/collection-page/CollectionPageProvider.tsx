@@ -176,11 +176,12 @@ class CollectionPage extends Component<
     // update (initialOrder should contain ALL of the uids, so it suffices to check the first one).
     const newInitialOrder = tracks.entries.map(track => track.uid)
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
+    const entryIds = new Set(newInitialOrder)
     const newUids =
       Array.isArray(initialOrder) &&
       initialOrder.length > 0 &&
       newInitialOrder.length > 0 &&
-      !newInitialOrder.includes(initialOrder[0])
+      !initialOrder.every(id => entryIds.has(id))
 
     if (noInitialOrder || newUids) {
       this.setState({
