@@ -23,7 +23,7 @@ import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradientCollectibles.svg'
 import { Collectible, CollectiblesMetadata, CollectibleType } from './types'
 import { ProfileUser } from 'containers/profile-page/store/types'
-import { formatDate } from 'utils/timeUtil'
+import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 import Drawer from 'components/drawer/Drawer'
 import Spin from 'antd/lib/spin'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -225,7 +225,7 @@ const CollectibleDetails: React.FC<{
               <div>
                 <div>Date Created:</div>
                 <div className={styles.date}>
-                  {formatDate(collectible.dateCreated)}
+                  {formatDateWithTimezoneOffset(collectible.dateCreated)}
                 </div>
               </div>
             )}
@@ -234,7 +234,9 @@ const CollectibleDetails: React.FC<{
               <div>
                 <div>Last Transferred:</div>
                 <div className={styles.date}>
-                  {formatDate(collectible.dateLastTransferred)}
+                  {formatDateWithTimezoneOffset(
+                    collectible.dateLastTransferred
+                  )}
                 </div>
               </div>
             )}
@@ -300,7 +302,7 @@ const CollectibleDetails: React.FC<{
               <div className={styles.dateWrapper}>
                 <div>Date Created:</div>
                 <div className={styles.date}>
-                  {formatDate(collectible.dateCreated)}
+                  {formatDateWithTimezoneOffset(collectible.dateCreated)}
                 </div>
               </div>
             )}
@@ -309,7 +311,9 @@ const CollectibleDetails: React.FC<{
               <div className={styles.dateWrapper}>
                 <div>Last Transferred:</div>
                 <div className={styles.date}>
-                  {formatDate(collectible.dateLastTransferred)}
+                  {formatDateWithTimezoneOffset(
+                    collectible.dateLastTransferred
+                  )}
                 </div>
               </div>
             )}

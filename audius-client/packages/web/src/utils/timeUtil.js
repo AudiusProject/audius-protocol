@@ -23,3 +23,7 @@ export const formatSecondsAsText = duration => {
 export const formatDate = date => {
   return moment(date).format('MM/DD/YY')
 }
+
+export const formatDateWithTimezoneOffset = date => {
+  return moment(date).add(moment().utcOffset(), 'm').format('MM/DD/YY')
+}
