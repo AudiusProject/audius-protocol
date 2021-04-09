@@ -17,13 +17,31 @@ type TrackInfo = {
 export type Tracks = TrackInfo[]
 
 export class PersistQueueMessage extends NativeMobileMessage {
-  constructor(tracks: Tracks, index: number) {
-    super(MessageType.PERSIST_QUEUE, { tracks, index })
+  constructor(
+    tracks: Tracks,
+    index: number,
+    shuffle: boolean,
+    shuffleIndex: number,
+    shuffleOrder: number[]
+  ) {
+    super(MessageType.PERSIST_QUEUE, {
+      tracks,
+      index,
+      shuffle,
+      shuffleIndex,
+      shuffleOrder
+    })
   }
 }
 
 export class RepeatModeMessage extends NativeMobileMessage {
   constructor(repeatMode: RepeatMode) {
     super(MessageType.SET_REPEAT_MODE, { repeatMode })
+  }
+}
+
+export class ShuffleMessage extends NativeMobileMessage {
+  constructor(shuffle: boolean, shuffleIndex: number, shuffleOrder: number[]) {
+    super(MessageType.SHUFFLE, { shuffle, shuffleIndex, shuffleOrder })
   }
 }
