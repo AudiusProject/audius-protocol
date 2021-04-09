@@ -7,6 +7,7 @@ export enum MessageType {
   SET_INFO = 'set-info',
   PERSIST_QUEUE = 'persist-queue',
   SET_REPEAT_MODE = 'set-repeat-mode',
+  SHUFFLE = 'shuffle',
 
   // Linking
   OPEN_LINK = 'open-link',

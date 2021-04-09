@@ -3,14 +3,22 @@ import { all, put, select, takeEvery, call } from 'redux-saga/effects'
 import { ID, UID } from 'models/common/Identifiers'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
-import { play, repeat, updateIndex } from 'store/queue/slice'
+import { play, repeat, shuffle, updateIndex } from 'store/queue/slice'
 import * as playerActions from 'store/player/slice'
-import { getOrder, getIndex, getId as getQueueTrackId } from './selectors'
+import {
+  getOrder,
+  getIndex,
+  getId as getQueueTrackId,
+  getShuffle,
+  getShuffleIndex,
+  getShuffleOrder
+} from './selectors'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { generateM3U8Variants } from 'utils/hlsUtil'
 import {
   PersistQueueMessage,
-  RepeatModeMessage
+  RepeatModeMessage,
+  ShuffleMessage
 } from 'services/native-mobile-interface/queue'
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import { getUserId } from 'store/account/selectors'
@@ -59,14 +67,27 @@ function* getTrackInfo(id: ID, uid: UID) {
 }
 
 function* persistQueue() {
-  const queueOrder = yield select(getOrder)
-  const queueIndex = yield select(getIndex)
+  const queueOrder: ReturnType<typeof getOrder> = yield select(getOrder)
+  const queueIndex: ReturnType<typeof getIndex> = yield select(getIndex)
+  const shuffle: ReturnType<typeof getShuffle> = yield select(getShuffle)
+  const shuffleIndex: ReturnType<typeof getShuffleIndex> = yield select(
+    getShuffleIndex
+  )
+  const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield select(
+    getShuffleOrder
+  )
   const tracks = yield all(
     queueOrder.map((queueItem: any) => {
       return call(getTrackInfo, queueItem.id, queueItem.uid)
     })
   )
-  const message = new PersistQueueMessage(tracks, queueIndex)
+  const message = new PersistQueueMessage(
+    tracks,
+    queueIndex,
+    shuffle,
+    shuffleIndex,
+    shuffleOrder
+  )
   message.send()
 }
 
@@ -78,7 +99,21 @@ function* watchPlay() {
 
 function* watchRepeat() {
   yield takeEvery(repeat.type, (action: any) => {
-    const message = new RepeatModeMessage(action.mode)
+    const message = new RepeatModeMessage(action.payload.mode)
+    message.send()
+  })
+}
+
+function* watchShuffle() {
+  yield takeEvery(shuffle.type, function* (action: any) {
+    const shuffle: ReturnType<typeof getShuffle> = yield select(getShuffle)
+    const shuffleIndex: ReturnType<typeof getShuffleIndex> = yield select(
+      getShuffleIndex
+    )
+    const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield select(
+      getShuffleOrder
+    )
+    const message = new ShuffleMessage(shuffle, shuffleIndex, shuffleOrder)
     message.send()
   })
 }
@@ -126,7 +161,7 @@ function* watchSyncPlayer() {
 }
 
 const sagas = () => {
-  return [watchPlay, watchRepeat, watchSyncQueue, watchSyncPlayer]
+  return [watchPlay, watchRepeat, watchSyncQueue, watchSyncPlayer, watchShuffle]
 }
 
 export default sagas
