@@ -1,17 +1,8 @@
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
-const { promisify } = require('util')
-
-const lstat = promisify(fs.lstat)
-const readdir = promisify(fs.readdir)
-const unlink = promisify(fs.unlink)
-const rmdir = promisify(fs.rmdir)
-const writeFile = promisify(fs.writeFile)
-const mkdir = promisify(fs.mkdir)
-const copyFile = promisify(fs.copyFile)
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -39,7 +30,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
-  await writeFile(dstPath, buffer)
+  await fs.writeFile(dstPath, buffer)
 
   return { multihash, dstPath }
 }
@@ -64,7 +55,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const dstPath = DiskManager.computeFilePath(multihash)
 
   try {
-    await copyFile(srcPath, dstPath)
+    await fs.copy(srcPath, dstPath)
   } catch (e) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
     if (e.message.includes('ENOSPC')) {
@@ -103,6 +94,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
   try {
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
+    // ..replace(/\/$/, "") removes trailing slashes
     let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
@@ -120,7 +112,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
-      await mkdir(parsedStoragePath, { recursive: true })
+      await fs.mkdir(parsedStoragePath, { recursive: true })
       decisionTree.push({ stage: 'Successfully called mkdir on local file system', vals: parsedStoragePath, time: Date.now() })
     } catch (e) {
       decisionTree.push({ stage: 'Error calling mkdir on local file system', vals: parsedStoragePath, time: Date.now() })
@@ -138,20 +130,22 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       // eg. before running the line below gatewayUrlsMapped looks like [https://endpoint.co/ipfs/Qm111, https://endpoint.co/ipfs/Qm222 ...]
       // in the case of a directory, override the gatewayUrlsMapped array to look like
       // [https://endpoint.co/ipfs/Qm111/150x150.jpg, https://endpoint.co/ipfs/Qm222/150x150.jpg ...]
+      // ..replace(/\/$/, "") removes trailing slashes
       gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${matchObj.outer}/${fileNameForImage}`)
       decisionTree.push({ stage: 'Updated gatewayUrlsMapped', vals: gatewayUrlsMapped, time: Date.now() })
     }
 
     /**
      * Attempts to fetch CID:
-     *  - If file already stored on disk, return immediately and store to disk.
-     *  - If file not already stored, fetch from IPFS and store to disk. First calls
-     *    IPFS cat, then calls IPFS get
-     *  - If file is not available via IPFS try other cnode gateways for user's replica set.
+     *  - If file already stored on disk, return immediately.
+     *  - If file not already stored, request from user's replica set gateways.
+     *  - If not found, call ipfs.cat(timeout=1000ms)
+     *  - If not found, call ipfs.get(timeout=1000ms)
+     * Each step, if successful, stores retrieved file to disk.
      */
 
     // If file already stored on disk, return immediately.
-    if (fs.existsSync(expectedStoragePath)) {
+    if (fs.pathExists(expectedStoragePath)) {
       req.logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
       decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash], time: Date.now() })
       // since this is early exit, print the decision tree here
@@ -162,76 +156,72 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     // If file not already stored, fetch and store at storagePath.
     let fileFound = false
 
-    // If multihash already available on local ipfs node, cat file from local ipfs node
-    req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
-    try {
-      // ipfsCat returns a Buffer
-      decisionTree.push({ stage: 'About to retrieve file from local ipfs node with cat', vals: multihash, time: Date.now() })
-      let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
-      fileFound = true
-      req.logger.debug(`Retrieved file for ${multihash} from  with cat`)
-      decisionTree.push({ stage: 'Retrieved file from local ipfs node with cat', vals: multihash, time: Date.now() })
-      // Write file to disk.
-      await writeFile(expectedStoragePath, fileBuffer)
-      req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
-      decisionTree.push({ stage: 'Wrote file to disk', vals: expectedStoragePath, time: Date.now() })
-    } catch (e) {
-      req.logger.warn(`Multihash ${multihash} is not available on local ipfs node ${e.message}`)
-      decisionTree.push({ stage: 'File not available on local ipfs node with cat', vals: multihash, time: Date.now() })
-    }
-
-    // If file not already available on local ipfs node, fetch from IPFS.
-    if (!fileFound) {
-      req.logger.debug(`Attempting to get ${multihash} from IPFS`)
-      try {
-        decisionTree.push({ stage: 'About to retrieve file from local ipfs node with get', vals: multihash, time: Date.now() })
-        // ipfsGet returns a BufferListStream object which is not a buffer
-        // not compatible into writeFile directly, but it can be streamed to a file
-        let fileBL = await Utils.ipfsGet(multihash, req, 1000)
-        req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
-        decisionTree.push({ stage: 'Retrieved file from local ipfs node with get', vals: multihash, time: Date.now() })
-
-        // Write file to disk.
-        await Utils.writeStreamToFileSystem(fileBL, expectedStoragePath)
-        fileFound = true
-        req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
-        decisionTree.push({ stage: 'Wrote file to disk', vals: expectedStoragePath, time: Date.now() })
-      } catch (e) {
-        req.logger.warn(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
-        decisionTree.push({ stage: 'File not available on local ipfs node with ipfs get', vals: multihash, time: Date.now() })
-      }
-    }
-
-    // if file is still null, try to fetch from other cnode gateways if user has nodes in replica set
-    if (!fileFound && gatewayUrlsMapped.length > 0) {
+    // First try to fetch from other cnode gateways if user has non-empty replica set.
+    if (gatewayUrlsMapped.length > 0) {
       try {
         let response
-        // ..replace(/\/$/, "") removes trailing slashes
         req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
-
         decisionTree.push({ stage: 'About to race requests via gateways', vals: gatewayUrlsMapped, time: Date.now() })
-        // Note - Requests are intentionally not parallel to minimize additional load on gateways
-        for (let index = 0; index < gatewayUrlsMapped.length; index++) {
-          const url = gatewayUrlsMapped[index]
-          decisionTree.push({ stage: 'Fetching from gateway', vals: url, time: Date.now() })
+
+        const GatewayRetrievalConcurrencyLimit = 5
+
+        for (let i = 0; i < gatewayUrlsMapped.length; i += GatewayRetrievalConcurrencyLimit) {
+          const gatewayUrlsSlice = gatewayUrlsMapped.slice(i, i + GatewayRetrievalConcurrencyLimit)
+          decisionTree.push({ stage: 'Fetching from gateways', vals: gatewayUrlsSlice, time: Date.now() })
+
+          // Promise.any(promises) resolves to the first promise that resolves, or rejects if all reject
+          // Each internal request must reject after a timeout to ensure this does not wait forever
           try {
-            const resp = await axios({
-              method: 'get',
-              url,
-              responseType: 'stream',
-              timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-            })
+            const resp = await Promise.any(gatewayUrlsSlice.map(
+              async url => {
+                const gatewayResp = await axios({
+                  method: 'get',
+                  url,
+                  responseType: 'stream',
+                  timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+                })
+
+                if (gatewayResp.data) {
+                  decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
+                  return gatewayResp
+                }
+              }
+            ))
+
             if (resp.data) {
               response = resp
-              decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
               break
             }
+
+            // If Promise.any rejects then file retrieval failed from gatewayUrlsSlice -> progress to next slice
           } catch (e) {
-            req.logger.error(`Error fetching file from other cnode ${url} ${e.message}`)
-            decisionTree.push({ stage: 'Could not retrieve file from gateway', vals: url, time: Date.now() })
+            req.logger.error(`Error fetching file from gateways ${gatewayUrlsSlice}`)
+            decisionTree.push({ stage: 'Could not retrieve file from gateways', vals: gatewayUrlsSlice, time: Date.now() })
             continue
           }
         }
+
+        // for (let index = 0; index < gatewayUrlsMapped.length; index++) {
+        //   const url = gatewayUrlsMapped[index]
+        //   decisionTree.push({ stage: 'Fetching from gateway', vals: url, time: Date.now() })
+        //   try {
+        //     const resp = await axios({
+        //       method: 'get',
+        //       url,
+        //       responseType: 'stream',
+        //       timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+        //     })
+        //     if (resp.data) {
+        //       response = resp
+        //       decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
+        //       break
+        //     }
+        //   } catch (e) {
+        //     req.logger.error(`Error fetching file from other cnode ${url} ${e.message}`)
+        //     decisionTree.push({ stage: 'Could not retrieve file from gateway', vals: url, time: Date.now() })
+        //     continue
+        //   }
+        // }
 
         if (!response || !response.data) {
           decisionTree.push({ stage: `Couldn't find files on other creator nodes, after trying URLs`, vals: null, time: Date.now() })
@@ -250,7 +240,56 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       }
     }
 
-    // file was not found on ipfs or any gateway
+    // If file not found through gateways, check local ipfs node.
+    if (!fileFound) {
+      req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
+      try {
+        decisionTree.push({ stage: 'About to retrieve file from local ipfs node with cat', vals: multihash, time: Date.now() })
+
+        // ipfsCat returns a Buffer
+        let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
+
+        fileFound = true
+        req.logger.debug(`Retrieved file for ${multihash} from  with cat`)
+        decisionTree.push({ stage: 'Retrieved file from local ipfs node with cat', vals: multihash, time: Date.now() })
+
+        // Write file to disk.
+        await fs.writeFile(expectedStoragePath, fileBuffer)
+
+        req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
+        decisionTree.push({ stage: 'Wrote file to disk', vals: expectedStoragePath, time: Date.now() })
+      } catch (e) {
+        req.logger.warn(`Multihash ${multihash} is not available on local ipfs node ${e.message}`)
+        decisionTree.push({ stage: 'File not available on local ipfs node with cat', vals: multihash, time: Date.now() })
+      }
+    }
+
+    // If file not already available on local ipfs node or via gateways, fetch from IPFS.
+    if (!fileFound) {
+      req.logger.debug(`Attempting to get ${multihash} from IPFS`)
+      try {
+        decisionTree.push({ stage: 'About to retrieve file from local ipfs node with get', vals: multihash, time: Date.now() })
+
+        // ipfsGet returns a BufferListStream object which is not a buffer
+        // not compatible into writeFile directly, but it can be streamed to a file
+        let fileBL = await Utils.ipfsGet(multihash, req, 1000)
+
+        req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
+        decisionTree.push({ stage: 'Retrieved file from local ipfs node with get', vals: multihash, time: Date.now() })
+
+        // Write file to disk.
+        await Utils.writeStreamToFileSystem(fileBL, expectedStoragePath)
+
+        fileFound = true
+        req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
+        decisionTree.push({ stage: 'Wrote file to disk', vals: expectedStoragePath, time: Date.now() })
+      } catch (e) {
+        req.logger.warn(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
+        decisionTree.push({ stage: 'File not available on local ipfs node with ipfs get', vals: multihash, time: Date.now() })
+      }
+    }
+
+    // error if file was not found on any gateway or ipfs
     if (!fileFound) {
       decisionTree.push({ stage: 'Failed to retrieve file for multihash after trying ipfs & other creator node gateways', vals: multihash, time: Date.now() })
       throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
@@ -265,7 +304,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
           // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
-          await unlink(expectedStoragePath)
+          await fs.unlink(expectedStoragePath)
           throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
         }
       }
@@ -308,47 +347,47 @@ async function removeTrackFolder (req, fileDir) {
       throw new Error('Cannot remove null fileDir')
     }
 
-    let fileDirInfo = await lstat(fileDir)
+    let fileDirInfo = await fs.lstat(fileDir)
     if (!fileDirInfo.isDirectory()) {
       throw new Error('Expected directory input')
     }
 
     // Remove all contents of track dir (process sequentially to limit cpu load)
-    const files = await readdir(fileDir)
+    const files = await fs.readdir(fileDir)
     for (const file of files) {
       let curPath = path.join(fileDir, file)
 
-      if ((await lstat(curPath)).isDirectory()) {
+      if ((await fs.lstat(curPath)).isDirectory()) {
         // Only the 'segments' subdirectory is expected
         if (file !== 'segments') {
           throw new Error(`Unexpected subdirectory in ${fileDir} - ${curPath}`)
         }
 
         // Delete each segment file inside /fileDir/segments/ (process sequentially to limit cpu load)
-        const segmentFiles = await readdir(curPath)
+        const segmentFiles = await fs.readdir(curPath)
         for (const segmentFile of segmentFiles) {
           let curSegmentPath = path.join(curPath, segmentFile)
 
           // Throw if a subdirectory found in /fileDir/segments/
-          if ((await lstat(curSegmentPath)).isDirectory()) {
+          if ((await fs.lstat(curSegmentPath)).isDirectory()) {
             throw new Error(`Unexpected subdirectory in segments ${fileDir} - ${curPath}`)
           }
 
           // Delete segment file
-          await unlink(curSegmentPath)
+          await fs.unlink(curSegmentPath)
         }
 
         // Delete /fileDir/segments/ directory after all its contents have been deleted
-        await rmdir(curPath)
+        await fs.rmdir(curPath)
       } else {
         // Delete file inside /fileDir/
         req.logger.info(`Removing ${curPath}`)
-        await unlink(curPath)
+        await fs.unlink(curPath)
       }
     }
 
     // Delete fileDir after all its contents have been deleted
-    await rmdir(fileDir)
+    await fs.rmdir(fileDir)
     req.logger.info(`Removed track folder at fileDir ${fileDir}`)
     return null
   } catch (err) {

@@ -273,6 +273,14 @@ const config = convict({
     default: -1
   },
 
+  // NodeSync filesave concurrency limit
+  nodeSyncFileSaveMaxConcurrency: {
+    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
+    format: 'nat',
+    env: 'nodeSyncFileSaveMaxConcurrency',
+    default: 10
+  },
+
   // wallet information
   delegateOwnerWallet: {
     doc: 'wallet address',
