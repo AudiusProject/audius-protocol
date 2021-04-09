@@ -125,7 +125,10 @@ class OpenSeaClient {
       const firstOwnershipTransferEvents = transferEvents
         .filter(
           event =>
-            event && isAssetValid(event.asset) && !isNotFromNullAddress(event)
+            event &&
+            event.asset &&
+            isAssetValid(event.asset) &&
+            !isNotFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEvent }, curr) => {
           if (
@@ -161,7 +164,7 @@ class OpenSeaClient {
       // Handle created events
       await Promise.all(
         creationEvents
-          .filter(async event => event && isAssetValid(event.asset))
+          .filter(event => event && event.asset && isAssetValid(event.asset))
           .map(async event => {
             const tokenId = event.asset.token_id
             if (!ownedCollectibleKeySet.has(tokenId)) {
@@ -176,7 +179,10 @@ class OpenSeaClient {
       const latestTransferEventsMap = transferEvents
         .filter(
           event =>
-            event && isAssetValid(event.asset) && isNotFromNullAddress(event)
+            event &&
+            event.asset &&
+            isAssetValid(event.asset) &&
+            isNotFromNullAddress(event)
         )
         .reduce((acc: { [key: string]: OpenSeaEvent }, curr) => {
           if (
