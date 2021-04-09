@@ -3,7 +3,6 @@ import codecs
 import logging
 
 import base58
-from solana.rpc.api import Client
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
@@ -40,7 +39,9 @@ def process_solana_plays(solana_client):
             transaction["result"][0]["signature"]
         )
         if SECP_PROGRAM in tx_info["result"]["transaction"]["message"]["accountKeys"]:
-            audius_program_index = tx_info["result"]["transaction"]["message"]["accountKeys"].index(TRACK_LISTEN_PROGRAM)
+            audius_program_index = tx_info["result"]["transaction"]["message"]["accountKeys"].index(
+                TRACK_LISTEN_PROGRAM
+            )
             for instruction in tx_info["result"]["transaction"]["message"]["instructions"]:
                 if instruction["programIdIndex"] == audius_program_index:
                     hex_data = binascii.hexlify(
@@ -64,10 +65,10 @@ def process_solana_plays(solana_client):
                     source = codecs.decode(hex_data[start_data3:end_data3], "hex")
 
                     logger.error(
-                        f"index_solana_plays.py | Signed data:\nuser_id: {user_id}\ntrack_id: {track_id}\nsource: {source}"
+                        f"index_solana_plays.py | user_id: {user_id} track_id: {track_id} source: {source}"
                     )
                     logger.error(
-                        f"index_solana_plays.py | Get 'send message' transaction: {tx_info['result']['transaction']['signatures'][0]}"
+                        f"index_solana_plays.py | Got transaction: {tx_info}"
                     )
                     with db.scoped_session() as session:
                         session.add(
