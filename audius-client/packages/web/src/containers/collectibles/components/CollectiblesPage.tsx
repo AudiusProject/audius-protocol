@@ -73,7 +73,7 @@ const CollectibleMedia: React.FC<{
     </div>
   ) : type === CollectibleType.VIDEO ? (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
-      <video muted={isMuted} autoPlay loop src={videoUrl!}>
+      <video muted={isMuted} autoPlay loop playsInline src={videoUrl!}>
         {collectibleMessages.videoNotSupported}
       </video>
       {isMuted ? (
