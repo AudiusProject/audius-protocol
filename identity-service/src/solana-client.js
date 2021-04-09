@@ -19,22 +19,8 @@ let INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
   'Sysvar1nstructions1111111111111111111111111'
 )
 
-/*
-let AUDIUS_PROGRAM = new solanaWeb3.PublicKey(
-  "Fm4g3bGuezevgqSHopjEDGRGCtVU6CDpFXZE3832EzGs"
-);
-let CREATE_AND_VERIFY_PROGRAM = new solanaWeb3.PublicKey(
-  "C2HjteAb3yAZU65nGx5grjXeEvEZj4EozAZjThzSBYYc"
-);
-let INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
-  "Sysvar1nstructions1111111111111111111111111"
-);
-*/
-
-let feePayer = new solanaWeb3.Account([252, 1, 35, 131, 28, 114, 106, 11, 143, 29, 15, 86, 81, 148, 58, 2, 176, 19, 127, 110, 76, 255, 249, 56, 140, 236, 31, 209, 51, 176, 103, 166, 231, 243, 24, 228, 226, 124, 136, 74, 78, 251, 163, 47, 230, 6, 142, 27, 156, 140, 246, 92, 108, 114, 163, 237, 226, 243, 170, 124, 76, 24, 62, 125
-])
-let owner = new solanaWeb3.Account([63, 181, 8, 61, 246, 121, 106, 102, 159, 113, 145, 62, 38, 196, 23, 242, 102, 18, 191, 255, 46, 250, 34, 47, 102, 160, 157, 129, 21, 233, 209, 194, 32, 76, 67, 148, 133, 69, 126, 66, 181, 10, 4, 130, 39, 21, 204, 15, 97, 166, 77, 87, 142, 255, 146, 170, 86, 42, 173, 154, 120, 29, 56, 211
-])
+let feePayer = new solanaWeb3.Account(config.get('solanaFeePayerWallet'))
+let owner = new solanaWeb3.Account(config.get('solanaOwnerWallet'))
 
 class Assignable {
   constructor (data) {

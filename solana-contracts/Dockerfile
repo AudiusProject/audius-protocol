@@ -23,6 +23,6 @@ RUN cd program && \
     cd ../cli && \
     cargo build
 
-COPY start.sh feepayer.json owner.json ./
+COPY start.sh ./
 
 CMD [ "sh", "start.sh" ]

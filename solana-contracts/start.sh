@@ -1,9 +1,11 @@
 address=BCd61FAc303e9fc78fDf612A71AAa7a47a36b2d6
 priv_key=c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a
 
-solana-keygen new -s --no-bip39-passphrase
-
 solana config set -u devnet
+
+solana-keygen new -s --no-bip39-passphrase
+solana-keygen new -s --no-bip39-passphrase -o feepayer.json
+solana-keygen new -s --no-bip39-passphrase -o owner.json
 
 solana airdrop 5
 solana airdrop 5 feepayer.json
@@ -32,6 +34,8 @@ cat > solana-contract-config.json <<EOF
 {
     "createAndVerifyAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
     "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
-    "validSigner": "$valid_signer"
+    "validSigner": "$valid_signer",
+    "feePayerWallet": $(cat feepayer.json),
+    "ownerWallet": $(cat owner.json)
 }
 EOF
