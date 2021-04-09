@@ -30,14 +30,14 @@ impl Processor {
         // sysvar instruction
         let sysvar_instruction = next_account_info(account_info_iter)?;
 
-        let signature_data = SignatureData {
+        let signature_data = Box::new(SignatureData {
             signature: instruction_data.signature,
             recovery_id: instruction_data.recovery_id,
             message: instruction_data
                 .track_data
                 .try_to_vec()
                 .or(Err(ProgramTemplateError::InvalidTrackData))?,
-        };
+        });
 
         invoke(
             &audius::instruction::validate_signature_with_sysvar(
@@ -45,7 +45,7 @@ impl Processor {
                 valid_signer_info.key,
                 signer_group_info.key,
                 sysvar_instruction.key,
-                signature_data,
+                *signature_data,
             )
             .unwrap(),
             &[

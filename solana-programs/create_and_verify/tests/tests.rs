@@ -1,5 +1,6 @@
 #![cfg(feature = "test-bpf")]
 
+use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 use rand::{thread_rng, Rng};
 use secp256k1::{PublicKey, SecretKey};
@@ -157,9 +158,10 @@ async fn test_call_example_instruction() {
     let start = 1;
     let end = start + audius::state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
 
-    let offsets = audius::state::SecpSignatureOffsets::unpack(
-        secp256_program_instruction.data[start..end].to_vec(),
-    );
+    let offsets = audius::state::SecpSignatureOffsets::try_from_slice(
+        &secp256_program_instruction.data[start..end],
+    )
+    .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + audius::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;

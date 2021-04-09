@@ -3,6 +3,7 @@
 use crate::error::AudiusError;
 use crate::instruction::{AudiusInstruction, SignatureData};
 use crate::state::{SecpSignatureOffsets, SignerGroup, ValidSigner};
+use borsh::{BorshDeserialize, BorshSerialize};
 use num_traits::FromPrimitive;
 use solana_program::decode_error::DecodeError;
 use solana_program::program_error::PrintProgramError;
@@ -34,7 +35,9 @@ impl Processor {
         // signer group owner account
         let group_owner_info = next_account_info(account_info_iter)?;
 
-        let mut signer_group = SignerGroup::deserialize(&signer_group_info.data.borrow())?;
+        let mut signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
 
         if signer_group.is_initialized() {
             return Err(AudiusError::SignerGroupAlreadyInitialized.into());
@@ -43,8 +46,9 @@ impl Processor {
         signer_group.version = Self::SIGNER_GROUP_VERSION;
         signer_group.owner = *group_owner_info.key;
 
-        signer_group.serialize(&mut signer_group_info.data.borrow_mut())?;
-        Ok(())
+        signer_group
+            .serialize(&mut *signer_group_info.data.borrow_mut())
+            .map_err(|e| e.into())
     }
 
     /// Process [InitValidSigner]().
@@ -60,13 +64,17 @@ impl Processor {
         // signer group's owner
         let signer_groups_owner_info = next_account_info(account_info_iter)?;
 
-        let signer_group = SignerGroup::deserialize(&signer_group_info.data.borrow())?;
+        let signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
 
         if !signer_group.is_initialized() {
             return Err(AudiusError::UninitializedSignerGroup.into());
         }
 
-        let mut valid_signer = ValidSigner::deserialize(&valid_signer_info.data.borrow())?;
+        let mut valid_signer = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_info.data.borrow(),
+        )?);
 
         if valid_signer.is_initialized() {
             return Err(AudiusError::SignerAlreadyInitialized.into());
@@ -80,8 +88,9 @@ impl Processor {
         valid_signer.signer_group = *signer_group_info.key;
         valid_signer.eth_address = eth_address;
 
-        valid_signer.serialize(&mut valid_signer_info.data.borrow_mut())?;
-        Ok(())
+        valid_signer
+            .serialize(&mut *valid_signer_info.data.borrow_mut())
+            .map_err(|e| e.into())
     }
 
     /// Process [ClearValidSigner]().
@@ -94,13 +103,17 @@ impl Processor {
         // signer group's owner
         let signer_groups_owner_info = next_account_info(account_info_iter)?;
 
-        let signer_group = SignerGroup::deserialize(&signer_group_info.data.borrow())?;
+        let signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
 
         if !signer_group.is_initialized() {
             return Err(AudiusError::UninitializedSignerGroup.into());
         }
 
-        let mut valid_signer = ValidSigner::deserialize(&valid_signer_info.data.borrow())?;
+        let mut valid_signer = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_info.data.borrow(),
+        )?);
 
         if !valid_signer.is_initialized() {
             return Err(AudiusError::ValidSignerNotInitialized.into());
@@ -114,8 +127,9 @@ impl Processor {
 
         valid_signer.version = Self::VALID_SIGNER_UNINITIALIZED_VERSION;
 
-        valid_signer.serialize(&mut valid_signer_info.data.borrow_mut())?;
-        Ok(())
+        valid_signer
+            .serialize(&mut *valid_signer_info.data.borrow_mut())
+            .map_err(|e| e.into())
     }
 
     /// Process [ValidateSignature]().
@@ -144,13 +158,17 @@ impl Processor {
         )
         .unwrap();
 
-        let signer_group = SignerGroup::deserialize(&signer_group_info.data.borrow())?;
+        let signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
 
         if !signer_group.is_initialized() {
             return Err(AudiusError::UninitializedSignerGroup.into());
         }
 
-        let valid_signer = ValidSigner::deserialize(&valid_signer_info.data.borrow())?;
+        let valid_signer = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_info.data.borrow(),
+        )?);
 
         if !valid_signer.is_initialized() {
             return Err(AudiusError::ValidSignerNotInitialized.into());
@@ -197,7 +215,7 @@ impl Processor {
             message_data_size: signature_data.message.len() as u16,
             message_instruction_index: 0,
         };
-        let packed_offsets = offsets.pack();
+        let packed_offsets = offsets.try_to_vec()?;
         instruction_data[1..data_start].copy_from_slice(packed_offsets.as_slice());
 
         if instruction_data != secp_instruction.data {
@@ -209,7 +227,7 @@ impl Processor {
 
     /// Process an [Instruction]().
     pub fn process(_program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> ProgramResult {
-        let instruction = AudiusInstruction::unpack(input)?;
+        let instruction = AudiusInstruction::try_from_slice(input)?;
 
         match instruction {
             AudiusInstruction::InitSignerGroup => {

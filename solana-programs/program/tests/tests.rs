@@ -1,6 +1,7 @@
 #![cfg(feature = "test-bpf")]
 
 use audius::*;
+use borsh::BorshDeserialize;
 use rand::{thread_rng, Rng};
 use secp256k1::{PublicKey, SecretKey};
 use sha3::Digest;
@@ -146,7 +147,7 @@ async fn init_signer_group() {
     assert_eq!(signer_group_account.owner, id());
 
     let signer_group_data =
-        state::SignerGroup::deserialize(&signer_group_account.data.as_slice()).unwrap();
+        state::SignerGroup::try_from_slice(&signer_group_account.data.as_slice()).unwrap();
 
     assert!(signer_group_data.is_initialized());
     assert_eq!(signer_group_data.owner, group_owner.pubkey());
@@ -197,7 +198,7 @@ async fn init_valid_signer() {
     assert_eq!(valid_signer_account.owner, id());
 
     let valid_signer_data =
-        state::ValidSigner::deserialize(&valid_signer_account.data.as_slice()).unwrap();
+        state::ValidSigner::try_from_slice(&valid_signer_account.data.as_slice()).unwrap();
 
     assert!(valid_signer_data.is_initialized());
     assert_eq!(valid_signer_data.eth_address, eth_address);
@@ -259,7 +260,7 @@ async fn clear_valid_signer() {
     let valid_signer_account = get_account(&mut banks_client, &valid_signer.pubkey()).await;
 
     let valid_signer_data =
-        state::ValidSigner::deserialize(&valid_signer_account.data.as_slice()).unwrap();
+        state::ValidSigner::try_from_slice(&valid_signer_account.data.as_slice()).unwrap();
 
     assert_eq!(valid_signer_data.is_initialized(), false);
 }
@@ -281,7 +282,8 @@ async fn validate_signature() {
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
 
     let offsets =
-        state::SecpSignatureOffsets::unpack(secp256_program_instruction.data[start..end].to_vec());
+        state::SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
+            .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
@@ -368,7 +370,8 @@ async fn validate_signature_with_wrong_data() {
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
 
     let offsets =
-        state::SecpSignatureOffsets::unpack(secp256_program_instruction.data[start..end].to_vec());
+        state::SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
+            .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
