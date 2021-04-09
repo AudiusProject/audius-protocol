@@ -17,6 +17,9 @@ export redisHost='localhost'
 export redisPort='6379'
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_identity_service_test"
 export logLevel='debug' #should be error
+export solanaCreateAndVerifyAddress=''
+export solanaProgramAddress=''
+export solanaValidSigner=''
 
 # Locally, the docker-compose files set up a database named audius_identity_service. For
 # tests, we use audius_identity_service_test. The below block checks if
@@ -27,7 +30,7 @@ export logLevel='debug' #should be error
 # audius_identity_service.
 
 # CircleCI job and docker run in separate environments and cannot directly communicate with each other.
-# Therefore the 'docker exec' command will not work when running the CI build. 
+# Therefore the 'docker exec' command will not work when running the CI build.
 # https://circleci.com/docs/2.0/building-docker-images/#separation-of-environments
 # So, if tests are run locally, run docker exec command. Else, run the psql command in the job.
 if [ -z "${isCIBuild}" ]; then
@@ -37,9 +40,9 @@ elif [ -x "$(command -v psql)" ]; then
   psql -U postgres -h localhost -p $PG_PORT -tc "SELECT 1 FROM pg_database WHERE datname = 'audius_identity_service_test'" | grep -q 1 || psql -U postgres -h localhost -p $PG_PORT -c "CREATE DATABASE audius_identity_service_test"
 fi
 
- # tests
+# tests
 ./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
 
- # linter
+# linter
 
 npm run lint

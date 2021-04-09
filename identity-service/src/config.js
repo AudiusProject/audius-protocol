@@ -5,18 +5,7 @@ const fs = require('fs')
 convict.addFormat({
   name: 'string-array',
   validate: function (val) {
-    return Array.isArray(val) && val.every(el => typeof el === 'string')
-  },
-  coerce: function (val) {
-    if (!val || val === '') return {}
-    return JSON.parse(val)
-  }
-})
-
-convict.addFormat({
-  name: 'integer-array',
-  validate: function (val) {
-    return Array.isArray(val) && val.every(el => typeof el === 'number')
+    return Array.isArray(val)
   },
   coerce: function (val) {
     if (!val || val === '') return {}
@@ -527,15 +516,9 @@ const config = convict({
     default: null,
     env: 'solanaValidSigner'
   },
-  solanaOwnerWallet: {
-    doc: 'solanaOwnerWallet',
-    format: 'integer-array',
-    default: null,
-    env: 'solanaOwnerWallet'
-  },
   solanaFeePayerWallet: {
     doc: 'solanaFeePayerWallet',
-    format: 'integer-array',
+    format: 'string-array',
     default: null,
     env: 'solanaFeePayerWallet'
   },
@@ -571,8 +554,7 @@ if (fs.existsSync('solana-contract-config.json')) {
     solanaCreateAndVerifyAddress: solanaContractConfig.createAndVerifyAddress,
     solanaProgramAddress: solanaContractConfig.programAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
-    solanaOwnerWallet: solanaContractConfig.ownerWallet
+    solanaFeePayerWallet: solanaContractConfig.feePayerWallet
   })
 }
 
