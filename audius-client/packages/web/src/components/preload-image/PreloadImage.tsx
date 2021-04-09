@@ -8,10 +8,12 @@ import styles from './PreloadImage.module.css'
 const PreloadImage = ({
   src,
   alt = '',
+  asBackground = false,
   className
 }: {
   src: string
   alt?: string
+  asBackground?: boolean
   className: string
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -22,7 +24,12 @@ const PreloadImage = ({
     }
     load()
   }, [setIsLoaded, src])
-  return (
+  return asBackground ? (
+    <div
+      className={cn(styles.img, className, { [styles.isLoaded]: isLoaded })}
+      style={{ backgroundImage: `url(${src})` }}
+    />
+  ) : (
     <img
       src={src}
       className={cn(styles.img, className, { [styles.isLoaded]: isLoaded })}

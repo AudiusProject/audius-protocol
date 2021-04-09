@@ -120,7 +120,11 @@ const CollectibleDetails: React.FC<{
         {type === CollectibleType.GIF ||
         (type === CollectibleType.VIDEO && frameUrl) ? (
           <div className={styles.imageWrapper}>
-            <PreloadImage src={frameUrl!} className={styles.media} />
+            <PreloadImage
+              asBackground
+              src={frameUrl!}
+              className={styles.media}
+            />
             <IconPlay className={styles.playIcon} />
             <div className={styles.stamp}>
               {collectible.isOwned ? (
@@ -158,7 +162,11 @@ const CollectibleDetails: React.FC<{
           </div>
         ) : type === CollectibleType.IMAGE ? (
           <div className={styles.imageWrapper}>
-            <PreloadImage src={frameUrl!} className={styles.media} />
+            <PreloadImage
+              asBackground
+              src={frameUrl!}
+              className={styles.media}
+            />
             <div className={styles.stamp}>
               {collectible.isOwned ? (
                 <span className={styles.owned}>
