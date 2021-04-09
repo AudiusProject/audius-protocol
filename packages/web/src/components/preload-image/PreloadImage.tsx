@@ -7,11 +7,11 @@ import styles from './PreloadImage.module.css'
 /** Super simple PreloadImage component to be used for fading in an image */
 const PreloadImage = ({
   src,
-  alt,
+  alt = '',
   className
 }: {
   src: string
-  alt: string
+  alt?: string
   className: string
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
