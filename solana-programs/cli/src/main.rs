@@ -4,11 +4,11 @@ use audius::{
     },
     state::{SecpSignatureOffsets, SignerGroup, ValidSigner},
 };
+use borsh::BorshDeserialize;
 use clap::{
     crate_description, crate_name, crate_version, value_t, value_t_or_exit, App, AppSettings, Arg,
     SubCommand,
 };
-use hex;
 use hex::FromHex;
 use secp256k1::SecretKey;
 use solana_clap_utils::{
@@ -42,9 +42,9 @@ type CommandResult = Result<Option<Transaction>, Error>;
 
 fn is_hex(s: String) -> Result<(), String> {
     if hex::decode(s).is_err() {
-        return Err(String::from("Wrong address format"));
+        Err(String::from("Wrong address format"))
     } else {
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -69,7 +69,6 @@ fn command_create_signer_group(config: &Config) -> CommandResult {
         "Creating new signer group account {}",
         signer_group.pubkey()
     );
-    println!("Audius ID {}", &audius::id());
 
     let signer_group_account_balance = config
         .rpc_client
@@ -164,7 +163,7 @@ fn command_create_valid_signer(
 fn command_clear_valid_signer(config: &Config, valid_signer: &Pubkey) -> CommandResult {
     // Get valid signer data
     let valid_signer_data = config.rpc_client.get_account_data(valid_signer)?;
-    let valid_signer_data = ValidSigner::deserialize(valid_signer_data.as_slice()).unwrap();
+    let valid_signer_data = ValidSigner::try_from_slice(valid_signer_data.as_slice()).unwrap();
 
     let mut transaction = Transaction::new_with_payer(
         &[clear_valid_signer(
@@ -195,7 +194,7 @@ fn command_send_message(
 ) -> CommandResult {
     // Get valid signer data
     let valid_signer_data = config.rpc_client.get_account_data(valid_signer)?;
-    let valid_signer_data = ValidSigner::deserialize(valid_signer_data.as_slice()).unwrap();
+    let valid_signer_data = ValidSigner::try_from_slice(valid_signer_data.as_slice()).unwrap();
 
     let decoded_secret =
         <[u8; 32]>::from_hex(secret_key).expect("Secp256k1 secret key decoding failed");
@@ -209,7 +208,8 @@ fn command_send_message(
     let end = start + SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
 
     let offsets =
-        SecpSignatureOffsets::unpack(secp256_program_instruction.data[start..end].to_vec());
+        SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
+            .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
@@ -225,7 +225,6 @@ fn command_send_message(
         recovery_id,
         message: message.to_vec(),
     };
-    // msg!("{}", &audius::id());
 
     let mut transaction = Transaction::new_with_payer(
         &[
@@ -384,7 +383,6 @@ fn main() {
         let json_rpc_url = value_t!(matches, "json_rpc_url", String)
             .unwrap_or_else(|_| cli_config.json_rpc_url.clone());
 
-        println!("{}", json_rpc_url);
         let owner = signer_from_path(
             &matches,
             &cli_config.keypair_path,
