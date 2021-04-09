@@ -1,3 +1,7 @@
+.collectiblesWrapper {
+  min-width: 738px;
+}
+
 .wrapper {
   padding: 24px 0;
   margin-top: 4px;
@@ -505,6 +509,10 @@
   width: 36px;
   height: 36px;
   background-color: var(--secondary) !important;
+}
+
+.mobile.collectiblesWrapper {
+  min-width: unset;
 }
 
 .mobile .header {

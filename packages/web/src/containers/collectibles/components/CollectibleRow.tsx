@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import cn from 'classnames'
 import Tooltip from 'components/tooltip/Tooltip'
-import { formatDate } from 'utils/timeUtil'
+import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
@@ -100,7 +100,7 @@ export const VisibleCollectibleRow = props => {
           </span>
         )}
       </div>
-      {dateCreated && <div>{formatDate(dateCreated)}</div>}
+      {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
       <div className={styles.verticalDivider} />
       <div className={styles.drag} ref={dragRef} {...handleProps}>
         <IconDrag />
@@ -158,7 +158,7 @@ export const HiddenCollectibleRow: React.FC<{
           </span>
         )}
       </div>
-      {dateCreated && <div>{formatDate(dateCreated)}</div>}
+      {dateCreated && <div>{formatDateWithTimezoneOffset(dateCreated)}</div>}
     </div>
   )
 }
