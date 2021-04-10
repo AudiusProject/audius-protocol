@@ -22,13 +22,16 @@ import {
   getSeek,
   getIndex,
   getQueueLength,
-  getIsRepeatSingle
+  getRepeatMode,
+  getIsShuffleOn,
+  getShuffleIndex
 } from '../../store/audio/selectors'
 
 import { MessageType } from '../../message'
 import { logListen } from './listens'
 import { postMessage } from '../../utils/postMessage'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
+import { RepeatMode } from '../../store/audio/reducer'
 
 declare global {
   interface Global {
@@ -70,8 +73,10 @@ const Audio = ({
   pause,
   next,
   previous,
-  repeat,
   reset,
+  repeatMode,
+  isShuffleOn,
+  shuffleIndex,
   googleCastStatus,
   setCastPlayPosition
 }: Props) => {
@@ -225,12 +230,30 @@ const Audio = ({
   // Next and Previous handler
   useEffect(() => {
     if (playing || hasPlayedOnce.current) {
-      const isPreviousEnabled = index > 0
+      let isPreviousEnabled
+      let isNextEnabled
+      if (repeatMode === RepeatMode.ALL) {
+        isPreviousEnabled = true
+        isNextEnabled = true
+      } else if (isShuffleOn) {
+        isPreviousEnabled = shuffleIndex > 0
+        isNextEnabled = shuffleIndex < queueLength - 1
+      } else {
+        isPreviousEnabled = index > 0
+        isNextEnabled = index < queueLength - 1
+      }
       MusicControl.enableControl('previousTrack', isPreviousEnabled)
-      const isNextEnabled = index < queueLength - 1
       MusicControl.enableControl('nextTrack', isNextEnabled)
     }
-  }, [playing, hasPlayedOnce, index, queueLength])
+  }, [
+    playing,
+    hasPlayedOnce,
+    index,
+    queueLength,
+    repeatMode,
+    isShuffleOn,
+    shuffleIndex
+  ])
 
   // Seek handler
   useEffect(() => {
@@ -345,7 +368,7 @@ const Audio = ({
             setDuration(payload.duration)
           }}
           onProgress={onProgress}
-          repeat={repeat}
+          repeat={repeatMode === RepeatMode.SINGLE}
           paused={!playing}
           // onBuffer={this.onBuffer}
         />
@@ -360,8 +383,10 @@ const mapStateToProps = (state: AppState) => ({
   queueLength: getQueueLength(state),
   playing: getPlaying(state),
   seek: getSeek(state),
-  repeat: getIsRepeatSingle(state),
-  googleCastStatus: getGoogleCastStatus(state)
+  repeatMode: getRepeatMode(state),
+  googleCastStatus: getGoogleCastStatus(state),
+  isShuffleOn: getIsShuffleOn(state),
+  shuffleIndex: getShuffleIndex(state)
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

@@ -7,6 +7,7 @@ import {
   SEEK,
   PERSIST_QUEUE,
   REPEAT,
+  SHUFFLE,
   RESET
 } from './actions'
 import { track, make } from '../../utils/analytics'
@@ -39,6 +40,9 @@ export type AudioState = {
   playing: boolean
   seek: number | null
   repeatMode: RepeatMode
+  shuffle: boolean
+  shuffleIndex: number
+  shuffleOrder: number[]
 }
 
 const initialState: AudioState = {
@@ -46,7 +50,10 @@ const initialState: AudioState = {
   queue: [],
   playing: false,
   seek: null,
-  repeatMode: RepeatMode.OFF
+  repeatMode: RepeatMode.OFF,
+  shuffle: false,
+  shuffleIndex: -1,
+  shuffleOrder: []
 }
 
 const reducer = (
@@ -66,8 +73,21 @@ const reducer = (
       }
     case NEXT: {
       let newIndex
+      let newShuffleIndex = state.shuffleIndex
+      let playing = true
       if (state.repeatMode === RepeatMode.SINGLE) {
         newIndex = state.index
+      } else if (state.shuffle) {
+        newShuffleIndex =
+          state.shuffleIndex < state.queue.length - 1
+            ? state.shuffleIndex + 1
+            : state.repeatMode === RepeatMode.ALL
+            ? 0
+            : -1
+        newIndex =
+          newShuffleIndex === -1
+            ? newShuffleIndex
+            : state.shuffleOrder[newShuffleIndex]
       } else {
         newIndex =
           state.index < state.queue.length - 1
@@ -76,7 +96,7 @@ const reducer = (
             ? 0
             : -1
       }
-      const playing = newIndex !== -1
+      playing = newIndex !== -1
 
       // Side-Effect (yes, this shouldn't be in a reducer, but
       // maybe not worth including sagas/thunks)
@@ -89,16 +109,16 @@ const reducer = (
           })
         )
       }
-
       return {
         ...state,
         index: newIndex,
+        shuffleIndex: newShuffleIndex,
         playing
       }
     }
     case PREVIOUS: {
-      const newIndex = state.index > 0 ? state.index - 1 : -1
-
+      let newIndex = state.index > 0 ? state.index - 1 : -1
+      let newShuffleIndex = state.shuffleIndex
       // Side-Effect (yes, this shouldn't be in a reducer, but
       // maybe not worth including sagas/thunks)
       if (state.playing) {
@@ -110,10 +130,20 @@ const reducer = (
           })
         )
       }
+      if (state.shuffle) {
+        newShuffleIndex =
+          state.shuffleIndex - 1 > 0
+            ? state.shuffleIndex - 1
+            : state.repeatMode === RepeatMode.ALL
+            ? state.shuffleOrder.length - 1
+            : -1
+        newIndex = state.shuffleOrder[newShuffleIndex]
+      }
 
       return {
         ...state,
-        index: newIndex
+        index: newIndex,
+        shuffleIndex: newShuffleIndex
       }
     }
     case SEEK:
@@ -121,16 +151,26 @@ const reducer = (
         ...state,
         seek: action.message.seconds
       }
-    case PERSIST_QUEUE:
-      return {
-        ...state,
-        queue: action.message.tracks,
-        index: action.message.index
-      }
     case REPEAT:
       return {
         ...state,
         repeatMode: action.message.repeatMode
+      }
+    case PERSIST_QUEUE:
+      return {
+        ...state,
+        queue: action.message.tracks,
+        index: action.message.index,
+        shuffle: action.message.shuffle,
+        shuffleIndex: action.message.shuffleIndex,
+        shuffleOrder: action.message.shuffleOrder
+      }
+    case SHUFFLE:
+      return {
+        ...state,
+        shuffle: action.message.shuffle,
+        shuffleIndex: action.message.shuffleIndex,
+        shuffleOrder: action.message.shuffleOrder
       }
     case RESET:
       return {
@@ -138,7 +178,10 @@ const reducer = (
         queue: [],
         playing: false,
         seek: null,
-        repeatMode: RepeatMode.OFF
+        repeatMode: RepeatMode.OFF,
+        shuffle: false,
+        shuffleIndex: -1,
+        shuffleOrder: []
       }
     default:
       return state

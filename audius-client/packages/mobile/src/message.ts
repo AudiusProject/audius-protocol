@@ -33,6 +33,7 @@ export enum MessageType {
   SET_INFO = 'set-info',
   PERSIST_QUEUE = 'persist-queue',
   SET_REPEAT_MODE = 'set-repeat-mode',
+  SHUFFLE = 'shuffle',
 
   // Links
   OPEN_LINK = 'open-link',
@@ -144,6 +145,8 @@ export const handleMessage = async (
       return dispatch(audioActions.persistQueue(message))
     case MessageType.SET_REPEAT_MODE:
       return dispatch(audioActions.repeat(message))
+    case MessageType.SHUFFLE:
+      return dispatch(audioActions.shuffle(message))
     case MessageType.OPEN_LINK:
       Linking.openURL(message.url)
       break
