@@ -88,6 +88,7 @@
     "simplebar-react": "^2.0.5",
     "simplebar-react-legacy": "npm:simplebar-react@^1.0.0",
     "typesafe-actions": "^5.1.0",
+    "walletlink": "^2.0.3",
     "web-vitals": "^0.2.0",
     "web3modal": "^1.9.3",
     "webgl-context": "^2.2.0"

@@ -1,5 +1,6 @@
 import Web3Modal, { IProviderOptions } from 'web3modal'
-
+import walletLinkSvg from 'assets/img/wallet-link.svg'
+const CHAIN_ID = process.env.REACT_APP_ETH_NETWORK_ID
 const BITSKI_CLIENT_ID = process.env.REACT_APP_BITSKI_CLIENT_ID
 const BITSKI_CALLBACK_URL = process.env.REACT_APP_BITSKI_CALLBACK_URL
 const WEB3_NETWORK_ID = parseInt(process.env.REACT_APP_ETH_NETWORK_ID || '')
@@ -8,8 +9,9 @@ const ETH_PROVIDER_URLS = (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(
 )
 
 type Config = {
-  isBitkiEnabled: boolean
+  isBitSkiEnabled: boolean
   isWalletConnectEnabled: boolean
+  isWalletLinkEnabled: boolean
 }
 
 export const loadWalletConnect = async () => {
@@ -24,15 +26,21 @@ export const loadBitski = async () => {
   return Bitski
 }
 
+export const loadWalletLink = async () => {
+  const { WalletLink } = await import('walletlink')
+  return WalletLink
+}
+
 export const createSession = async (config: Config): Promise<any> => {
   try {
     const Web3 = window.Web3
 
     const WalletConnectProvider = await loadWalletConnect()
     const Bitski = await loadBitski()
+    const WalletLink = await loadWalletLink()
 
     const providerOptions: IProviderOptions = {}
-    if (config.isBitkiEnabled && BITSKI_CLIENT_ID && BITSKI_CALLBACK_URL) {
+    if (config.isBitSkiEnabled && BITSKI_CLIENT_ID && BITSKI_CALLBACK_URL) {
       providerOptions.bitski = {
         package: Bitski, // required
         options: {
@@ -51,15 +59,30 @@ export const createSession = async (config: Config): Promise<any> => {
         }
       }
     }
-
-    // Other provider options
-    // torus: {
-    //   package: Torus, // required
-    //   options: {}
-    // },
-    // frame: {
-    //   package: ethProvider // required
-    // },
+    if (config.isWalletLinkEnabled) {
+      providerOptions['custom-walletlink'] = {
+        display: {
+          logo: walletLinkSvg,
+          name: 'WalletLink',
+          description: 'Scan with WalletLink to connect'
+        },
+        options: {
+          appName: 'Audius',
+          networkUrl: ETH_PROVIDER_URLS[0],
+          chainId: CHAIN_ID
+        },
+        package: WalletLink,
+        connector: async (_, options) => {
+          const { appName, networkUrl, chainId } = options
+          const walletLink = new WalletLink({
+            appName
+          })
+          const provider = walletLink.makeWeb3Provider(networkUrl, chainId)
+          await provider.enable()
+          return provider
+        }
+      }
+    }
 
     const web3Modal = new Web3Modal({ providerOptions })
 
