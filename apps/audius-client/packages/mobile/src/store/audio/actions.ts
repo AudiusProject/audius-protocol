@@ -47,6 +47,11 @@ type RepeatAction = {
   message: Message
 }
 
+type ShuffleAction = {
+  type: typeof SHUFFLE
+  message: Message
+}
+
 type ResetAction = {
   type: typeof RESET
 }
@@ -60,6 +65,7 @@ export type AudioActions =
   | SetInfoAction
   | PersistQueueAction
   | RepeatAction
+  | ShuffleAction
   | ResetAction
 
 export const play = (): PlayAction => ({
@@ -95,6 +101,11 @@ export const persistQueue = (message: Message): PersistQueueAction => ({
 
 export const repeat = (message: Message): RepeatAction => ({
   type: REPEAT,
+  message
+})
+
+export const shuffle = (message: Message): ShuffleAction => ({
+  type: SHUFFLE,
   message
 })
 

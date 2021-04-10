@@ -15,3 +15,7 @@ export const getQueueLength = (state: AppState) =>
 export const getSeek = (state: AppState) => getBaseState(state).seek
 export const getIsRepeatSingle = (state: AppState) =>
   getBaseState(state).repeatMode === RepeatMode.SINGLE
+export const getRepeatMode = (state: AppState) => getBaseState(state).repeatMode
+export const getIsShuffleOn = (state: AppState) => getBaseState(state).shuffle
+export const getShuffleIndex = (state: AppState) =>
+  getBaseState(state).shuffleIndex
