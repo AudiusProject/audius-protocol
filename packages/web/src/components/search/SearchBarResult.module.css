@@ -72,8 +72,3 @@
 .secondaryContainer .verified {
   margin-left: 4px;
 }
-
-.searchBarResultContainer:hover .verified path,
-.searchBarResultContainer:active .verified path {
-  fill: var(--white);
-}
