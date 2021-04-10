@@ -170,16 +170,11 @@
 
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > .resultText,
 .searchBox :global(.ant-select-dropdown-menu-item:hover) > div > div > .resultText {
-  color: var(--white);
+  color: var(--static-white);
 }
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > div > .resultText,
 .searchBox :global(.ant-select-dropdown-menu-item:hover) > div > div > div > .resultText {
-    color: var(--white);
-}
-
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) svg path,
-.searchBox :global(.ant-select-dropdown-menu-item:hover) svg path {
-  fill: var(--white);
+    color: var(--static-white);
 }
 
 .allResultsOptionWrapper {
