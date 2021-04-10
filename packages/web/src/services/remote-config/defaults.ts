@@ -43,5 +43,6 @@ export const remoteConfigBooleanDefaults: {
   [BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP]: true,
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_CONNECT]: true,
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_BITSKI]: true,
+  [BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_LINK]: true,
   [BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK]: false
 }
