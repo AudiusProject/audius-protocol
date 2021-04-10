@@ -14,6 +14,7 @@
 .topSection {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   position: relative;
   background-color: var(--neutral-light-10);
 
@@ -22,6 +23,7 @@
 }
 
 .infoSection {
+  flex: 1 0 338px;
   padding-left: 22px;
   flex-direction: column;
   width: 100%;
