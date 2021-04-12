@@ -673,4 +673,8 @@ workflows:
           requires:
             - test-identity-service
 
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
+
       - test-mad-dog-e2e
