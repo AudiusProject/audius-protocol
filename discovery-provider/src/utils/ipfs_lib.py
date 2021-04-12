@@ -5,7 +5,6 @@ import concurrent.futures
 from urllib.parse import urlparse, urljoin
 import requests
 import ipfshttpclient
-from cid import make_cid
 
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
@@ -195,17 +194,6 @@ class IPFSClient:
 
     def ipfs_id_multiaddr(self):
         return self._multiaddr
-
-    def cid_is_valid(self, cid):
-        if not cid:
-            return False
-
-        try:
-            make_cid(cid)
-            return True
-        except Exception as e:
-            logger.error(f'IPFSCLIENT | Error in cid_is_valid {str(e)}')
-            return False
 
 def construct_image_dir_gateway_url(address, CID):
     """Construct the gateway url for an image directory.
