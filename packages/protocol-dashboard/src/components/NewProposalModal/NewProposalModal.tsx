@@ -110,6 +110,7 @@ const NewProposalModal: React.FC<NewProposalModalProps> = ({
       onClose={onClose}
       isCloseable={status !== Status.Loading}
       dismissOnClickOutside={false}
+      allowScroll
     >
       <TextField
         value={name}
