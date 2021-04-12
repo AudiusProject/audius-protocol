@@ -6,7 +6,7 @@ import styles from './TopOperatorsTable.module.css'
 import Table from 'components/Table'
 
 import { useUsers } from 'store/cache/user/hooks'
-import { Address, Operator, Status } from 'types'
+import { Address, Operator, SortUser, Status } from 'types'
 import { usePushRoute } from 'utils/effects'
 import { useIsMobile } from 'utils/hooks'
 import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
@@ -56,7 +56,11 @@ const TopOperatorsTable: React.FC<TopOperatorsTableProps> = ({
     [pushRoute]
   )
 
-  const { status, users } = useUsers({ limit, filter: 'isOperator' })
+  const { status, users } = useUsers({
+    limit,
+    filter: 'isOperator',
+    sortBy: SortUser.stakePlusDelegates
+  })
 
   let columns = [{ title: 'Rank', className: styles.rankColumn }]
   if (!isMobile) {
