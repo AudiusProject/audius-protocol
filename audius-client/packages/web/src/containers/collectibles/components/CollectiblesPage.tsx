@@ -111,6 +111,26 @@ const CollectibleDetails: React.FC<{
     setIsMuted(!isMuted)
   }, [isMuted, setIsMuted])
 
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (videoRef?.current) {
+      const videoElement = videoRef.current
+      const listener = () => {
+        videoElement.pause()
+      }
+      ;['loadeddata', 'timeupdate'].forEach(event => {
+        videoElement.addEventListener(event, listener)
+      })
+
+      return () => {
+        ;['loadeddata', 'timeupdate'].forEach(event => {
+          videoElement.removeEventListener(event, listener)
+        })
+      }
+    }
+  }, [videoRef])
+
   return (
     <div className={styles.detailsContainer}>
       <PerspectiveCard
@@ -142,9 +162,10 @@ const CollectibleDetails: React.FC<{
           <div className={cn(styles.media, styles.imageWrapper)}>
             <IconPlay className={styles.playIcon} />
             <video
-              muted={true}
-              autoPlay={false}
-              controls={false}
+              ref={videoRef}
+              muted
+              autoPlay
+              playsInline
               style={{ height: '100%', width: '100%' }}
               src={videoUrl!}
             />
