@@ -450,6 +450,12 @@ const config = convict({
     format: Boolean,
     env: 'enableRehydrate',
     default: true
+  },
+  minRehydrateThreshold: {
+    doc: 'Minimum number of times a CID has to be attempted to rehydrated in a calendar day before it adds a job onto the rehydrate queue',
+    format: 'nat',
+    env: 'minRehydrateThreshold',
+    default: 10
   }
 
   // unsupported options at the moment
