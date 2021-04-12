@@ -9,6 +9,7 @@ import { gifPreview } from 'utils/imageProcessingUtil'
  * extensions based on OpenSea metadata standards
  * https://docs.opensea.io/docs/metadata-standards
  */
+const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga']
 const OPENSEA_VIDEO_EXTENSIONS = [
   'gltf',
   'glb',
@@ -16,9 +17,11 @@ const OPENSEA_VIDEO_EXTENSIONS = [
   'mp4',
   'm4v',
   'ogv',
-  'ogg'
+  'ogg',
+  'mov'
 ]
-const OPENSEA_AUDIO_EXTENSIONS = ['mp3', 'wav', 'oga']
+
+const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov']
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -35,10 +38,6 @@ const isAssetImage = (asset: OpenSeaAsset) => {
   ].some(url => url && nonImageExtensions.every(ext => !url.endsWith(ext)))
 }
 
-const isAudio = (url: string) => {
-  return OPENSEA_AUDIO_EXTENSIONS.some(extension => url.endsWith(extension))
-}
-
 const isAssetVideo = (asset: OpenSeaAsset) => {
   const {
     animation_url,
@@ -48,20 +47,15 @@ const isAssetVideo = (asset: OpenSeaAsset) => {
     image_preview_url,
     image_thumbnail_url
   } = asset
-  if (isAudio(animation_url || '') || isAudio(animation_original_url || '')) {
-    return false
-  }
-  return (
-    !!animation_url ||
-    !!animation_original_url ||
-    [
-      image_url,
-      image_original_url,
-      image_preview_url,
-      image_thumbnail_url
-    ].some(
-      url => url && OPENSEA_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
-    )
+  return [
+    animation_url || '',
+    animation_original_url || '',
+    image_url,
+    image_original_url,
+    image_preview_url,
+    image_thumbnail_url
+  ].some(
+    url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
   )
 }
 
@@ -78,6 +72,30 @@ export const isAssetValid = (asset: OpenSeaAsset) => {
   return isAssetVideo(asset) || isAssetImage(asset) || isAssetGif(asset)
 }
 
+/**
+ * Returns a collectible given an asset object from the OpenSea API
+ *
+ * A lot of the work here is to determine whether a collectible is a gif, a video, or an image
+ *
+ * If the collectible is a gif, we set the gifUrl, and we process a frame from the gifUrl which we set as its frameUrl
+ *
+ * If the collectible is a video, we set the videoUrl, and we check whether the asset has an image
+ * - if it has an image, we check whether the image url is an actual image or a video (sometimes OpenSea returns
+ *   videos in the image url properties of the asset)
+ *   - if it's an image, we set it as the frameUrl
+ *   - otherwise, we unset the frameUrl
+ * - if not, we do not set the frameUrl
+ * Video collectibles that do not have a frameUrl will use the video paused at the first frame as the thumbnail
+ * in the collectibles tab
+ *
+ * Otherwise, we consider the collectible to be an image, we get the image url and make sure that it is not
+ * a gif or a video
+ * - if it's a gif, we follow the above gif logic
+ * - if it's a video, we unset the frameUrl and follow the above video logic
+ * - otherwise, we set the frameUrl and the imageUrl
+ *
+ * @param asset
+ */
 export const assetToCollectible = async (
   asset: OpenSeaAsset
 ): Promise<Collectible> => {
@@ -88,13 +106,7 @@ export const assetToCollectible = async (
   let gifUrl = null
 
   const { animation_url, animation_original_url, name } = asset
-  const imageUrlsHighToLowRes = [
-    asset.image_url,
-    asset.image_original_url,
-    asset.image_preview_url,
-    asset.image_thumbnail_url
-  ]
-  const imageUrlsLowToHighRes = [
+  const imageUrls = [
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
@@ -104,64 +116,55 @@ export const assetToCollectible = async (
   try {
     if (isAssetGif(asset)) {
       type = CollectibleType.GIF
-      const urlForFrame = imageUrlsLowToHighRes.find(url =>
-        url?.endsWith('.gif')
-      )!
+      const urlForFrame = imageUrls.find(url => url?.endsWith('.gif'))!
       frameUrl = await getFrameFromGif(urlForFrame, name || '')
-      gifUrl = imageUrlsHighToLowRes.find(url => url?.endsWith('.gif'))!
+      gifUrl = imageUrls.find(url => url?.endsWith('.gif'))!
     } else if (isAssetVideo(asset)) {
       type = CollectibleType.VIDEO
       frameUrl =
-        imageUrlsLowToHighRes.find(
+        imageUrls.find(
           url =>
-            url && OPENSEA_VIDEO_EXTENSIONS.every(ext => !url.endsWith(ext))
+            url && SUPPORTED_VIDEO_EXTENSIONS.every(ext => !url.endsWith(ext))
         ) ?? null
 
       /**
        * make sure frame url is not a video
-       * if it is avideo, unset frame url so that component will use a video url instead
+       * if it is a video, unset frame url so that component will use a video url instead
        */
       if (frameUrl) {
         const res = await fetch(frameUrl, { method: 'HEAD' })
-        const isVideo = OPENSEA_VIDEO_EXTENSIONS.some(ext =>
-          res.headers.get('Content-Type')?.includes(ext)
-        )
+        const isVideo = res.headers.get('Content-Type')?.includes('video')
         if (isVideo) {
           frameUrl = null
         }
       }
 
-      videoUrl =
-        [animation_url, animation_original_url].find(
-          url => url && !isAudio(url)
-        ) ?? null
-      if (!videoUrl) {
-        videoUrl = imageUrlsHighToLowRes.find(
-          url => url && OPENSEA_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
-        )!
-      }
+      videoUrl = [animation_url, animation_original_url, ...imageUrls].find(
+        url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
+      )!
     } else {
       type = CollectibleType.IMAGE
-      frameUrl = imageUrlsLowToHighRes.find(url => !!url)!
+      frameUrl = imageUrls.find(url => !!url)!
       const res = await fetch(frameUrl, { method: 'HEAD' })
       const isGif = res.headers.get('Content-Type')?.includes('gif')
       const isVideo = res.headers.get('Content-Type')?.includes('video')
       if (isGif) {
         type = CollectibleType.GIF
+        gifUrl = frameUrl
         frameUrl = await getFrameFromGif(frameUrl, name || '')
-        gifUrl = imageUrlsHighToLowRes.find(url => !!url)!
       } else if (isVideo) {
         type = CollectibleType.VIDEO
         frameUrl = null
-        videoUrl = imageUrlsHighToLowRes.find(url => !!url)!
+        videoUrl = imageUrls.find(url => !!url)!
       } else {
-        imageUrl = imageUrlsHighToLowRes.find(url => !!url)!
+        imageUrl = imageUrls.find(url => !!url)!
       }
     }
   } catch (e) {
-    console.error('Error fetching collectible', e)
+    console.error('Error processing collectible', e)
     type = CollectibleType.IMAGE
-    frameUrl = imageUrlsLowToHighRes.find(url => !!url)!
+    frameUrl = imageUrls.find(url => !!url)!
+    imageUrl = frameUrl
   }
 
   return {
