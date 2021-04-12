@@ -80,28 +80,30 @@ class RehydrateIpfsQueue {
     // Most errors in the rehydrate calls will be caught; this try/catch is to catch unexpected errors
 
     this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateMaxConcurrency'), async (job, done) => {
+      const taskType = `rehydrateIpfsFromFsIfNecessary`
       const { multihash, storagePath, filename, logContext } = job.data
 
-      this.logStatus(logContext, `Processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}`)
+      this.logStatus(logContext, `Processing a ${taskType} task for ${multihash}`)
       try {
         await rehydrateIpfsFromFsIfNecessary(multihash, storagePath, logContext, filename)
-        await this.RehydrateRedisCounter.addToRehydratedSet('rehydrateIpfsFromFsIfNecessary', multihash)
+        await this.RehydrateRedisCounter.addToRehydratedSet(taskType, multihash)
         done()
       } catch (e) {
-        this.logError(logContext, `Problem with processing a rehydrateIpfsFromFsIfNecessary task for ${multihash}: ${e}`)
+        this.logError(logContext, `Problem with processing a ${taskType} task for ${multihash}: ${e}`)
         done(e)
       }
     })
 
     this.queue.process(PROCESS_NAMES.rehydrate_dir, config.get('rehydrateMaxConcurrency'), async (job, done) => {
+      const taskType = 'rehydrateIpfsDirFromFsIfNecessary'
       const { multihash, logContext } = job.data
-      this.logStatus(logContext, `Processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}`)
+      this.logStatus(logContext, `Processing a ${taskType} task for ${multihash}`)
       try {
         await rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
-        this.RehydrateRedisCounter.addToRehydratedSet('rehydrateIpfsDirFromFsIfNecessary', multihash)
+        this.RehydrateRedisCounter.addToRehydratedSet(taskType, multihash)
         done()
       } catch (e) {
-        this.logError(logContext, `Problem with processing a rehydrateIpfsDirFromFsIfNecessary task for ${multihash}: ${e}`)
+        this.logError(logContext, `Problem with processing a ${taskType} task for ${multihash}: ${e}`)
         done(e)
       }
     })
