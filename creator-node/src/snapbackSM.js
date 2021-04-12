@@ -16,7 +16,7 @@ const MaxParallelSyncJobs = 7
 const MaxSyncMonitoringDurationInMs = 360000
 
 // Retry delay between requests during monitoring
-const SyncMonitoringRetryDelay = 15000
+const SyncMonitoringRetryDelayMs = 15000
 
 // Base value used to filter users over a 24 hour period
 const ModuloBase = 24
@@ -100,7 +100,7 @@ class SnapbackSM {
         } catch (e) {
           this.log(`StateMachineQueue error processing ${e}`)
         } finally {
-          const stateMachineJobInterval = (this.nodeConfig.get('snapbackDevModeEnabled')) ? DevDelayInMS : ProductionJobDelayInMs
+          const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
 
           this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
           await utils.timeout(stateMachineJobInterval)
@@ -449,71 +449,67 @@ class SnapbackSM {
   }
 
   /**
-   * Track an ongoing sync operation for a given secondaryUrl and user wallet
-   *  - Will re-enqueue sync if it fails or is still behind after retries or max duration
+   * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
+   * Return boolean indicating if an additional sync is required
+   *
+   * Polls secondary for MaxSyncMonitoringDurationInMs
    */
-  async monitorSecondarySync (userWallet, primaryClockValue, secondaryUrl, syncType) {
-    const startTime = Date.now()
+  async additionalSyncIsRequired (userWallet, primaryClockValue, secondaryUrl, syncType) {
+    const MaxExportClockValueRange = this.nodeConfig.get('maxExportClockValueRange')
+    const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
-    // Define axios request object for secondary sync status request
-    const syncMonitoringRequestParameters = {
+    // Define axios request object for secondary clock status request
+    const clockStatusRequestParams = {
       method: 'get',
       baseURL: secondaryUrl,
-      url: `/sync_status/${userWallet}`,
+      url: `/users/clock_status/${userWallet}`,
       responseType: 'json'
     }
 
-    // TODO syncAttemptCompleted does nothing - refactor this
-    let syncAttemptCompleted = false
-    let secondaryClockValAfterSync = null
-    while (!syncAttemptCompleted) {
+    const startTimeMs = Date.now()
+    const endTimeMs = startTimeMs + MaxSyncMonitoringDurationInMs
+
+    let additionalSyncRequired = true
+    while (Date.now() < endTimeMs) {
       try {
-        const syncMonitoringResp = await axios(syncMonitoringRequestParameters)
+        const clockStatusResp = await axios(clockStatusRequestParams)
+        const { clockValue: secondaryClockValue } = clockStatusResp.data.data
 
-        const respData = syncMonitoringResp.data.data
-        this.log(`processSync ${userWallet} secondary response: ${JSON.stringify(respData)}`)
+        this.log(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
-        // A success response does not necessarily guarantee completion, validate response data to confirm
-        // Returned secondaryClockValue can be greater than the cached primaryClockValue if a client write was initiated
-        //    after primaryClockValue cached and resulting sync is monitored
-        if (respData.clockValue >= primaryClockValue) {
-          secondaryClockValAfterSync = respData.clockValue
+        /**
+         * One sync op can process at most MaxExportClockValueRange range
+         * A larger clock diff will require multiple syncs; short-circuit monitoring
+         */
+        if (secondaryClockValue + MaxExportClockValueRange < primaryClockValue) {
+          this.log(`${logMsgString} secondaryClock ${secondaryClockValue} || MaxExportClockValueRange exceeded -> re-enqueuing sync`)
+          break
 
-          this.log(`Sync for ${userWallet} at ${secondaryUrl} to clock value ${secondaryClockValAfterSync} for primaryClockVal ${primaryClockValue} completed in ${Date.now() - startTime}ms`)
-          syncAttemptCompleted = true
+          /**
+           * Stop monitoring once secondary has caught up
+           * Note - secondaryClockValue can be greater than primaryClockValue if additional
+           *    data was written to primary after primaryClockValue was computed
+           */
+        } else if (secondaryClockValue >= primaryClockValue) {
+          this.log(`${logMsgString} secondaryClock ${secondaryClockValue} || Sync completed in ${Date.now() - startTimeMs}ms`)
+          additionalSyncRequired = false
           break
         }
       } catch (e) {
-        this.log(`processSync ${userWallet} error querying sync_status: ${e}`)
-      }
-
-      // Stop retrying if max sync monitoring duration exceeded
-      if (Date.now() - startTime > MaxSyncMonitoringDurationInMs) {
-        this.log(`ERROR: processSync ${userWallet} timed out`)
-        syncAttemptCompleted = true
-        break
+        this.log(`${logMsgString} || Error: ${e.message}`)
       }
 
       // Delay between retries
-      await utils.timeout(SyncMonitoringRetryDelay)
+      await utils.timeout(SyncMonitoringRetryDelayMs, false)
     }
 
-    // enqueue another sync if secondary is still behind
-    // TODO max retry limit
-    if (!secondaryClockValAfterSync || secondaryClockValAfterSync < primaryClockValue) {
-      await this.enqueueSync({
-        userWallet,
-        primaryEndpoint: this.endpoint,
-        secondaryEndpoint: secondaryUrl,
-        syncType
-      })
-    }
+    return additionalSyncRequired
   }
 
   /**
    * Processes job as it is picked off the queue
    *  - Handles sync jobs for manualSyncQueue and recurringSyncQueue
-   *  - Given job data, triggers sync request to secondary and polls until sync completion
+   *  - Given job data, triggers sync request to secondary
    *
    * @param job instance of Bull queue job
    */
@@ -541,7 +537,7 @@ class SnapbackSM {
      */
     this.syncDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
 
-    // primaryClockValue is used in monitorSecondarySync call below
+    // primaryClockValue is used in additionalSyncIsRequired() call below
     const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
 
     this.log(`------------------Process SYNC | User ${userWallet} | Secondary: ${secondaryEndpoint} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
@@ -549,8 +545,28 @@ class SnapbackSM {
     // Issue sync request to secondary
     await axios(syncRequestParameters)
 
-    // Wait until has sync has completed (up to a timeout) before moving on
-    await this.monitorSecondarySync(userWallet, primaryClockValue, secondaryEndpoint, syncType)
+    // Wait until has sync has completed (within time threshold)
+    const additionalSyncRequired = await this.additionalSyncIsRequired(
+      userWallet,
+      primaryClockValue,
+      secondaryEndpoint,
+      syncType
+    )
+
+    /**
+     * Re-enqueue sync if required
+     *
+     * TODO can infinite loop on failing sync ops, but should not block any users as
+     *    it enqueues job to the end of the queue
+     */
+    if (additionalSyncRequired) {
+      await this.enqueueSync({
+        userWallet,
+        primaryEndpoint: this.endpoint,
+        secondaryEndpoint,
+        syncType
+      })
+    }
 
     // Exit when sync status is computed
     this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
@@ -559,8 +575,8 @@ class SnapbackSM {
   /**
    * Returns all jobs from manualSyncQueue and recurringSyncQueue, keyed by status
    *
-   * @dev TODO for some reason completed jobs list is empty, but would be good to
-   *    return the list in a verbose mode for debugging + completedCount
+   * @dev TODO may be worth manually recording + exposing completed jobs count
+   *    completed and failed job records are disabled in createBullQueue()
    */
   async getSyncQueueJobs () {
     const [

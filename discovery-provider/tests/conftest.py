@@ -1,10 +1,13 @@
 from __future__ import absolute_import
+import os
 import pytest
 from sqlalchemy_utils import database_exists, drop_database
 from web3 import HTTPProvider, Web3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
+import alembic
+import alembic.config
 from src import create_app, create_celery
 from src.utils import helpers
 from src.models import Base
@@ -38,6 +41,14 @@ def app():
 
     # Create application for testing
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
+
+    # run db migrations because the db gets dropped at the start of the tests
+    alembic_dir = os.getcwd()
+    alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
+    alembic_config.set_main_option("sqlalchemy.url", str(DB_URL))
+    with helpers.cd(alembic_dir):
+        alembic.command.upgrade(alembic_config, "head")
+
     yield discovery_provider_app
 
 
