@@ -36,6 +36,7 @@ cat > solana-program-config.json <<EOF
     "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
     "validSigner": "$valid_signer",
     "feePayerWallet": $(cat feepayer.json),
-    "ownerWallet": $(cat owner.json)
+    "ownerWallet": $(cat owner.json),
+    "endpoint": "https://devnet.solana.com"
 }
 EOF

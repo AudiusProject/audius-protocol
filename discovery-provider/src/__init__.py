@@ -32,7 +32,7 @@ from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 from src.utils.redis_metrics import METRICS_INTERVAL
 
-SOLANA_ENDPOINT = "https://devnet.solana.com"
+SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
 # these global vars will be set in create_celery function
 web3endpoint = None

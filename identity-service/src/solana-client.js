@@ -74,10 +74,7 @@ const instructionSchema = new Map([
   ]
 ])
 
-// let url = solanaWeb3.clusterApiUrl("devnet", false);
-let url = 'https://devnet.solana.com'
-
-let devnetConnection = new solanaWeb3.Connection(url)
+let devnetConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
 
 async function createAndVerifyMessage (
   validSigner,

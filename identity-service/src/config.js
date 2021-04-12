@@ -498,6 +498,12 @@ const config = convict({
     env: 'recaptchaServiceKey',
     default: ''
   },
+  solanaEndpoint: {
+    doc: 'solanaEndpoint',
+    format: String,
+    default: null,
+    env: 'solanaEndpoint'
+  },
   solanaCreateAndVerifyAddress: {
     doc: 'solanaCreateAndVerifyAddress',
     format: String,
@@ -554,7 +560,8 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaCreateAndVerifyAddress: solanaContractConfig.createAndVerifyAddress,
     solanaProgramAddress: solanaContractConfig.programAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallet: solanaContractConfig.feePayerWallet
+    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
+    solanaEndpoint: solanaContractConfig.endpoint
   })
 }
 
