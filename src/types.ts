@@ -174,7 +174,8 @@ export enum SortNode {
 }
 
 export enum SortUser {
-  Token = 'Token'
+  activeStake = 'active-stake',
+  stakePlusDelegates = 'stake-plus-delegated'
 }
 
 export enum PendingTransactionName {
