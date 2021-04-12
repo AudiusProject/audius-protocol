@@ -270,10 +270,8 @@ const Audio = ({
   }, [seek, webRef, progressInvalidator, elapsedTime])
 
   useEffect(() => {
-    if (listenLoggedForTrack) {
-      setListenLoggedForTrack(false)
-    }
-  }, [track, listenLoggedForTrack, setListenLoggedForTrack])
+    setListenLoggedForTrack(false)
+  }, [track, setListenLoggedForTrack])
 
   const [isCastConnecting, setIsCastConnecting] = useState(false)
 
