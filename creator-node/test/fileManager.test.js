@@ -102,11 +102,12 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw an error if file copy fails', async () => {
-      const copyFileStub = sinon.stub().throws((new Error('Failed to copy files!!')))
-      const utilStub = { promisify: sinon.stub().callsFake(() => copyFileStub) }
-      const { saveFileToIPFSFromFS } = proxyquire('../src/fileManager', {
-        util: utilStub
-      })
+      const fsExtraStub = { copyFile: (sinon.stub().callsFake(() => {
+        return new Promise((resolve, reject) => reject(new Error('Failed to copy files!!')))
+      })) }
+      const { saveFileToIPFSFromFS } = proxyquire('../src/fileManager',
+        { 'fs-extra': fsExtraStub }
+      )
 
       try {
         await saveFileToIPFSFromFS(req, srcPath)

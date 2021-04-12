@@ -55,7 +55,7 @@ async function saveFileToIPFSFromFS (req, srcPath) {
   const dstPath = DiskManager.computeFilePath(multihash)
 
   try {
-    await fs.copy(srcPath, dstPath)
+    await fs.copyFile(srcPath, dstPath)
   } catch (e) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
     if (e.message.includes('ENOSPC')) {
@@ -109,6 +109,8 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       },
       time: Date.now()
     })
+
+    // Create dir at expected storage path in which to store retrieved data
     try {
       // calling this on an existing directory doesn't overwrite the existing data or throw an error
       // the mkdir recursive is equivalent to `mkdir -p`
@@ -138,18 +140,19 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     /**
      * Attempts to fetch CID:
      *  - If file already stored on disk, return immediately.
-     *  - If file not already stored, request from user's replica set gateways.
+     *  - If file not already stored, request from user's replica set gateways in parallel.
      *  - If not found, call ipfs.cat(timeout=1000ms)
      *  - If not found, call ipfs.get(timeout=1000ms)
      * Each step, if successful, stores retrieved file to disk.
      */
 
     // If file already stored on disk, return immediately.
-    if (fs.pathExists(expectedStoragePath)) {
+    if (await fs.pathExists(expectedStoragePath)) {
       req.logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
       decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash], time: Date.now() })
       // since this is early exit, print the decision tree here
       _printDecisionTreeObj(req, decisionTree)
+
       return expectedStoragePath
     }
 
@@ -169,8 +172,10 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
           const gatewayUrlsSlice = gatewayUrlsMapped.slice(i, i + GatewayRetrievalConcurrencyLimit)
           decisionTree.push({ stage: 'Fetching from gateways', vals: gatewayUrlsSlice, time: Date.now() })
 
-          // Promise.any(promises) resolves to the first promise that resolves, or rejects if all reject
-          // Each internal request must reject after a timeout to ensure this does not wait forever
+          /**
+           * Promise.any(promises) resolves to the first promise that resolves, or rejects if all reject
+           * Each internal request must reject after a timeout to ensure this does not wait forever
+           */
           try {
             const resp = await Promise.any(gatewayUrlsSlice.map(
               async url => {
@@ -188,40 +193,23 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
               }
             ))
 
+            // Promise.any resolution means file was successfully retrieved -> short-circuit loop
             if (resp.data) {
               response = resp
               break
             }
 
-            // If Promise.any rejects then file retrieval failed from gatewayUrlsSlice -> progress to next slice
+            /**
+             * Log Promise.any rejection and continue to next loop iteration
+             * This just means that file retrieval failed from current gatewayUrlsSlice
+             */
           } catch (e) {
             req.logger.error(`Error fetching file from gateways ${gatewayUrlsSlice}`)
             decisionTree.push({ stage: 'Could not retrieve file from gateways', vals: gatewayUrlsSlice, time: Date.now() })
+
             continue
           }
         }
-
-        // for (let index = 0; index < gatewayUrlsMapped.length; index++) {
-        //   const url = gatewayUrlsMapped[index]
-        //   decisionTree.push({ stage: 'Fetching from gateway', vals: url, time: Date.now() })
-        //   try {
-        //     const resp = await axios({
-        //       method: 'get',
-        //       url,
-        //       responseType: 'stream',
-        //       timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-        //     })
-        //     if (resp.data) {
-        //       response = resp
-        //       decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
-        //       break
-        //     }
-        //   } catch (e) {
-        //     req.logger.error(`Error fetching file from other cnode ${url} ${e.message}`)
-        //     decisionTree.push({ stage: 'Could not retrieve file from gateway', vals: url, time: Date.now() })
-        //     continue
-        //   }
-        // }
 
         if (!response || !response.data) {
           decisionTree.push({ stage: `Couldn't find files on other creator nodes, after trying URLs`, vals: null, time: Date.now() })
@@ -235,8 +223,9 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         decisionTree.push({ stage: 'Wrote file to file system after fetching from gateway', vals: expectedStoragePath, time: Date.now() })
         req.logger.info(`wrote file to ${expectedStoragePath}`)
       } catch (e) {
-        decisionTree.push({ stage: `Failed to retrieve file for multihash from other creator node gateways`, vals: e.message, time: Date.now() })
-        throw new Error(`Failed to retrieve file for multihash ${multihash} from other creator node gateways: ${e.message}`)
+        const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
+        decisionTree.push({ stage: errorMsg, vals: e.message, time: Date.now() })
+        req.logger.warn(`${errorMsg} || ${e.message}`)
       }
     }
 
