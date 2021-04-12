@@ -74,12 +74,38 @@ def process_solana_plays(solana_client):
         slot_from = solana_client.get_slot()["result"]
         pickle_and_set(redis, SOL_PLAYS_REDIS_KEY, slot_from)
 
-    transactions_list = solana_client.get_confirmed_signature_for_address2(
+    offset_tx = None
+    transactions_history = solana_client.get_confirmed_signature_for_address2(
         TRACK_LISTEN_PROGRAM,
+        before=offset_tx,
         limit=15)
-    logger.error(transactions_list)
+
+    transactions_array = transactions_history['result']
+    logger.error(transactions_array)
+    last_tx = transactions_array[-1]
+    last_tx_signature = last_tx["signature"]
+    logger.error(last_tx)
+    intersection_found = False
+
+    # Traversal now functioning as expected
+    while not intersection_found:
+        offset_tx = last_tx_signature
+        logger.error(f"index_solana_plays.py | offset tx sig: {offset_tx}")
+        transactions_history = solana_client.get_confirmed_signature_for_address2(
+            TRACK_LISTEN_PROGRAM,
+            before=offset_tx,
+            limit=15)
+        transactions_array = transactions_history['result']
+        logger.error(transactions_array)
+        if len(transactions_array) == 0:
+            intersection_found = True
+            logger.error(f"index_solana_plays.py | No transactions found before {offset_tx}")
+        else:
+            last_tx = transactions_array[-1]
+            last_tx_signature = last_tx["signature"]
 
     # slot_from = solana_client.get_slot()["result"]
+    '''
     transaction = solana_client.get_confirmed_signature_for_address2(
         TRACK_LISTEN_PROGRAM,
         limit=1)
@@ -129,6 +155,7 @@ def process_solana_plays(solana_client):
                                 play_item_id=int(track_id),
                                 source=str(source, "utf-8"),
                             ))
+    '''
 
 
 ######## CELERY TASKS ########
