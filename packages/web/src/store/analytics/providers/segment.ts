@@ -7,6 +7,8 @@ import { version } from '../../../../package.json'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
+const TRACK_LIMIT = 10000
+
 /**
  * ========================= Segment Analytics =========================
  * Description:
@@ -35,6 +37,8 @@ export const identify = (
   }
 }
 
+let trackCounter = 0
+
 // Track Event
 // Docs: https://segment.com/docs/connections/spec/track/
 export const track = (
@@ -43,6 +47,9 @@ export const track = (
   options?: Record<string, any>,
   callback?: () => void
 ) => {
+  // stop tracking analytics after we reach session limit
+  if (trackCounter++ >= TRACK_LIMIT) return
+
   // Add generic track event context for every event
   const propertiesWithContext = {
     ...properties,
