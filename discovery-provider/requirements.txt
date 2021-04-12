@@ -20,7 +20,6 @@ flask-restx==0.2.0
 hashids==1.2.0
 fakeredis==1.4.2
 jsonformatter==0.3.0
-py-cid==0.3.0
 pytest-postgresql==2.4.1
 eventlet==0.28.0
 psutil==5.8.0
