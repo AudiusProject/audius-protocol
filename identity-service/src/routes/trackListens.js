@@ -210,6 +210,8 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
     let currentHour = await getListenHour()
+    // TODO: Make all of this conditional based on request parameters
+    /*
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
         where: { hour: currentHour, trackId }
@@ -217,6 +219,7 @@ module.exports = function (app) {
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
+    */
 
     await instr.createAndVerifyMessage(
       null,
@@ -228,6 +231,7 @@ module.exports = function (app) {
 
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table
+    /*
     const isRealUser = typeof userId === 'number'
     if (isRealUser) {
       // Find / Create the record of the user listening to the track
@@ -240,6 +244,7 @@ module.exports = function (app) {
         await userTrackListenRecord.save()
       }
     }
+    */
 
     return successResponse({})
   }))
