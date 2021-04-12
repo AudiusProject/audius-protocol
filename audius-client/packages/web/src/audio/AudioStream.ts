@@ -137,11 +137,16 @@ class AudioStream {
       if (!this.audioCtx && !shouldSkipAudioContext) {
         // Set up WebAudio API handles
         const AudioContext = window.AudioContext || window.webkitAudioContext
-        this.audioCtx = new AudioContext()
-        this.gainNode = this.audioCtx.createGain()
-        this.gainNode.connect(this.audioCtx.destination)
-        this.source = this.audioCtx.createMediaElementSource(this.audio)
-        this.source.connect(this.gainNode)
+        try {
+          this.audioCtx = new AudioContext()
+          this.gainNode = this.audioCtx.createGain()
+          this.gainNode.connect(this.audioCtx.destination)
+          this.source = this.audioCtx.createMediaElementSource(this.audio)
+          this.source.connect(this.gainNode)
+        } catch (e) {
+          console.log('error setting up audio context')
+          console.log(e)
+        }
       }
 
       clearTimeout(this.bufferingTimeout!)
