@@ -45,7 +45,7 @@ const DisplayUser = ({ wallet }: { wallet: Address }) => {
     [pushRoute, wallet]
   )
 
-  if (!user || !user.name) {
+  if (!user || !user.name || wallet === user.name) {
     return (
       <Tooltip
         position={Position.TOP}

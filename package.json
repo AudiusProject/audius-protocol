@@ -7,7 +7,7 @@
     "3box": "^1.22.2",
     "@apollo/client": "^3.3.7",
     "@audius/libs": "1.1.24",
-    "@audius/stems": "0.3.7",
+    "@audius/stems": "0.3.8",
     "@reduxjs/toolkit": "^1.4.0",
     "chart.js": "^2.9.3",
     "clsx": "^1.1.1",
