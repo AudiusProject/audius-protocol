@@ -70,7 +70,8 @@ def get_database_connection_info(**kwargs):
     db = kwargs['db']
     with db.scoped_session() as session:
         q = sqlalchemy.text(
-            'select wait_event_type, wait_event, state, query from pg_stat_activity where datname = current_database()'
+            f"select wait_event_type, wait_event, state, query, to_char(query_start, 'DD Mon YYYY HH:MI:SSPM')" +
+            f"as \"query_start\" from pg_stat_activity where datname = current_database()"
         )
         result = session.execute(q).fetchall()
         connection_info = [dict(row) for row in result]

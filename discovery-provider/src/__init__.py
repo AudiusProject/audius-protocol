@@ -324,7 +324,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",
-                "schedule": timedelta(seconds=60)
+                "schedule": timedelta(seconds=300)
             },
             "update_network_peers": {
                 "task": "update_network_peers",
