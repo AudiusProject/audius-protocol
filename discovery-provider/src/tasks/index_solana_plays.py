@@ -19,7 +19,7 @@ SOL_PLAYS_REDIS_KEY = "sol_plays"
 logger = logging.getLogger(__name__)
 
 
-def parse_sol_play_transaction(solana_client, tx_sig):
+def parse_sol_play_transaction(session, solana_client, tx_sig):
     tx_info = solana_client.get_confirmed_transaction(
         tx_sig
     )
@@ -49,21 +49,25 @@ def parse_sol_play_transaction(solana_client, tx_sig):
                 track_id = codecs.decode(hex_data[start_data2:end_data2], "hex")
                 source = codecs.decode(hex_data[start_data3:end_data3], "hex")
 
-                tx_slot = tx_info['slot']
+                tx_slot = tx_info['result']['slot']
 
+                '''
                 logger.error(
                     f"index_solana_plays.py | Got transaction: {tx_info}"
                 )
+                '''
                 logger.error(
                     f"index_solana_plays.py | user_id: {user_id} track_id: {track_id} source: {source}, slot: {tx_slot}, sig: {tx_sig}"
                 )
-                # with db.scoped_session() as session:
-                #     session.add(
-                #         Play(
-                #             user_id=int(user_id),
-                #             play_item_id=int(track_id),
-                #             source=str(source, "utf-8"),
-                #         ))
+
+                session.add(
+                    Play(
+                        user_id=int(user_id),
+                        play_item_id=int(track_id),
+                        source=str(source, "utf-8"),
+                        slot=tx_slot,
+                        signature=tx_sig
+                    ))
 
 # Query the highest traversed solana slot
 def get_latest_slot(db):
@@ -71,13 +75,18 @@ def get_latest_slot(db):
     with db.scoped_session() as session:
         highest_slot_query = (
             session.query(Play)
-                .order_by(Play.slot)
+                .filter(Play.slot != None)
+                .order_by(desc(Play.slot))
         ).first()
-        latest_slot = highest_slot_query.slot
-    logger.error(f"index_solana_plays.py | returning {latest_slot} for highest slot")
+        # Can be None prior to first write operations
+        if highest_slot_query is not None:
+            latest_slot = highest_slot_query.slot
+
     # If no slots have yet been recorded, assume all are valid
     if latest_slot is None:
         latest_slot = 0
+
+    logger.error(f"index_solana_plays.py | returning {latest_slot} for highest slot")
     return latest_slot
 
 def process_solana_plays(solana_client):
@@ -97,7 +106,6 @@ def process_solana_plays(solana_client):
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
-        logger.error(f"index_solana_plays.py | offset tx sig: {last_tx_signature}")
         transactions_history = solana_client.get_confirmed_signature_for_address2(
             TRACK_LISTEN_PROGRAM,
             before=last_tx_signature,
@@ -118,69 +126,21 @@ def process_solana_plays(solana_client):
                     transaction_signatures.append(tx['signature'])
                 else:
                     logger.error(f"index_solana_plays.py | Traversing slot={tx_slot}, sig={tx_sig}, latest_processed_slot(db)={latest_processed_slot}")
+                    # Exit loop and set terminal condition since this slot is >
                     intersection_found = True
+                    break
             last_tx = transactions_array[-1]
             last_tx_signature = last_tx["signature"]
         logger.error(f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}")
 
     logger.error(f"index_solana_plays.py | {transaction_signatures}")
 
-    # TODO: DO NOT LET transaction_signatures grow unbounded
-    for sig in transaction_signatures:
-        parse_sol_play_transaction(solana_client, sig)
+    # TODO: DO NOT LET transaction_signatures grow unbounded, cut off x last entries
 
-    # slot_from = solana_client.get_slot()["result"]
-    '''
-    transaction = solana_client.get_confirmed_signature_for_address2(
-        TRACK_LISTEN_PROGRAM,
-        limit=1)
-    if transaction["result"][0]["slot"] > slot_from:
-        slot_from = transaction["result"][0]["slot"]
-        pickle_and_set(redis, SOL_PLAYS_REDIS_KEY, slot_from)
-        # TODO: What happens if there is >1 tx since the last iteration here?
-        tx_info = solana_client.get_confirmed_transaction(
-            transaction["result"][0]["signature"]
-        )
-        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"]["accountKeys"]:
-            audius_program_index = tx_info["result"]["transaction"]["message"]["accountKeys"].index(
-                TRACK_LISTEN_PROGRAM
-            )
-            for instruction in tx_info["result"]["transaction"]["message"]["instructions"]:
-                if instruction["programIdIndex"] == audius_program_index:
-                    hex_data = binascii.hexlify(
-                        bytearray(list(base58.b58decode(instruction["data"])))
-                    )
-
-                    l1 = int(hex_data[2:4], 16)
-                    start_data1 = 10
-                    end_data1 = l1 * 2 + start_data1
-
-                    l2 = int(hex_data[end_data1:end_data1 + 2], 16)
-                    start_data2 = end_data1 + 8
-                    end_data2 = l2 * 2 + start_data2
-
-                    l3 = int(hex_data[end_data2:end_data2 + 2], 16)
-                    start_data3 = end_data2 + 8
-                    end_data3 = l3 * 2 + start_data3
-
-                    user_id = codecs.decode(hex_data[start_data1:end_data1], "hex")
-                    track_id = codecs.decode(hex_data[start_data2:end_data2], "hex")
-                    source = codecs.decode(hex_data[start_data3:end_data3], "hex")
-
-                    logger.error(
-                        f"index_solana_plays.py | user_id: {user_id} track_id: {track_id} source: {source}"
-                    )
-                    logger.error(
-                        f"index_solana_plays.py | Got transaction: {tx_info}"
-                    )
-                    with db.scoped_session() as session:
-                        session.add(
-                            Play(
-                                user_id=int(user_id),
-                                play_item_id=int(track_id),
-                                source=str(source, "utf-8"),
-                            ))
-    '''
+    with db.scoped_session() as session:
+        for sig in transaction_signatures:
+            logger.error(f"index_solana_plays.py | processing {sig}")
+            parse_sol_play_transaction(session, solana_client, sig)
 
 
 ######## CELERY TASKS ########
