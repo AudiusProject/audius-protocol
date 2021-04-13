@@ -6,7 +6,8 @@ RUN ln -snf /usr/share/zoneinfo/UTC /etc/localtime && \
     echo UTC > /etc/timezone
 
 RUN apt-get update && \
-    apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3 && \
+    apt-get install -y jq curl build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git python-is-python3 python3-pip && \
+    pip3 install --no-cache-dir web3 && \
     curl -s --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     sh -c "$(curl -sSfL https://release.solana.com/v1.6.1/install)"
 
