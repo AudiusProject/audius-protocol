@@ -16,8 +16,8 @@ type FeatureFlagProps = {
  * otherwise returning null.
  */
 const FeatureFlag = ({ flag, inverted, children }: FeatureFlagProps) => {
-  const flagIsEnabled = useFlag(flag)
-  const shouldRender = inverted ? !flagIsEnabled : flagIsEnabled
+  const { isEnabled } = useFlag(flag)
+  const shouldRender = inverted ? !isEnabled : isEnabled
   return <> {shouldRender ? children : null}</>
 }
 

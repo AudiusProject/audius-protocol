@@ -5,12 +5,14 @@ import {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
   exploreMoodPlaylistsPage,
-  TRENDING_PLAYLISTS_PAGE
+  TRENDING_PLAYLISTS_PAGE,
+  TRENDING_UNDERGROUND_PAGE
 } from 'utils/route'
 
 import { ReactComponent as IconExploreDJ } from 'assets/img/iconExploreDJ.svg'
 import { ReactComponent as IconExploreTopAlbums } from 'assets/img/iconExploreTopAlbums.svg'
 import { ReactComponent as IconExploreTopPlaylists } from 'assets/img/iconExploreTopPlaylists.svg'
+import { ReactComponent as IconCassette } from 'assets/img/iconCassette.svg'
 
 export type ExploreCollection = {
   variant: ExploreCollectionsVariant
@@ -19,6 +21,7 @@ export type ExploreCollection = {
   gradient: string
   shadow: string
   icon?: ReactNode
+  incentivized?: boolean // Whether we reward winners with Audio
   link: string
 }
 
@@ -48,13 +51,25 @@ export const TOP_ALBUMS: ExploreCollection = {
 }
 
 export const TRENDING_PLAYLISTS: ExploreCollection = {
-  variant: ExploreCollectionsVariant.TRENDING_PLAYLISTS,
+  variant: ExploreCollectionsVariant.DIRECT_LINK,
   title: 'Trending Playlists',
   subtitle: 'The top playlists on Audius right now',
   gradient: 'linear-gradient(315deg, #57ABFF 0%, #CD98FF 100%)',
   shadow: 'rgba(87,170,255,0.35)',
   icon: IconExploreTopPlaylists,
-  link: TRENDING_PLAYLISTS_PAGE
+  link: TRENDING_PLAYLISTS_PAGE,
+  incentivized: true
+}
+
+export const TRENDING_UNDERGROUND: ExploreCollection = {
+  variant: ExploreCollectionsVariant.DIRECT_LINK,
+  title: 'Underground Trending',
+  subtitle: 'Some of the best up-and-coming music on Audius all in one place',
+  gradient: 'linear-gradient(315deg, #BA27FF 0%, #EF8CD9 100%)',
+  shadow: 'rgba(242, 87, 255, 0.35)',
+  icon: IconCassette,
+  link: TRENDING_UNDERGROUND_PAGE,
+  incentivized: true
 }
 
 export const CHILL_PLAYLISTS: ExploreMoodCollection = {
@@ -109,8 +124,7 @@ export const INTENSE_PLAYLISTS: ExploreMoodCollection = {
 
 export const EXPLORE_COLLECTIONS_MAP = {
   [ExploreCollectionsVariant.LET_THEM_DJ]: LET_THEM_DJ,
-  [ExploreCollectionsVariant.TOP_ALBUMS]: TOP_ALBUMS,
-  [ExploreCollectionsVariant.TRENDING_PLAYLISTS]: TRENDING_PLAYLISTS
+  [ExploreCollectionsVariant.TOP_ALBUMS]: TOP_ALBUMS
 }
 
 type ExploreMoodMap = { [key in string]: ExploreMoodCollection }

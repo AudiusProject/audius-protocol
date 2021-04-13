@@ -20,11 +20,6 @@ function* fetchTopAlbums() {
   return collections
 }
 
-function* fetchTopPlaylists() {
-  const collections = yield call(Explore.getTopCollections, 'playlist', false)
-  return collections
-}
-
 function* fetchMoodPlaylists(moods: string[]) {
   const collections = yield call(Explore.getTopPlaylistsForMood, moods)
   return collections
@@ -36,7 +31,6 @@ const fetchMap = {
     EXPLORE_PAGE
   ),
   [ExploreCollectionsVariant.TOP_ALBUMS]: fetchTopAlbums,
-  [ExploreCollectionsVariant.TRENDING_PLAYLISTS]: fetchTopPlaylists,
   [ExploreCollectionsVariant.MOOD]: fetchMoodPlaylists
 }
 

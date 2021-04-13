@@ -62,7 +62,8 @@ import {
   PROFILE_PAGE_TRACKS,
   PROFILE_PAGE_ALBUMS,
   PROFILE_PAGE_PLAYLISTS,
-  PROFILE_PAGE_REPOSTS
+  PROFILE_PAGE_REPOSTS,
+  TRENDING_UNDERGROUND_PAGE
 } from 'utils/route'
 import 'utils/redirect'
 import { isMobile, getClient } from 'utils/clientUtil'
@@ -155,6 +156,7 @@ import SignOn from 'containers/sign-on/SignOn'
 import EnablePushNotificationsDrawer from './enable-push-notifications-drawer/EnablePushNotificationsDrawer'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 import TrendingPlaylistsPage from 'containers/trending-playlists/TrendingPlaylistPage'
+import TrendingUndergroundPage from 'containers/trending-underground/TrendingUndergroundPage'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -586,7 +588,15 @@ class App extends Component {
                   />
                 )}
               />
-
+              <Route
+                exact
+                path={TRENDING_UNDERGROUND_PAGE}
+                render={() => (
+                  <TrendingUndergroundPage
+                    containerRef={this.state.mainContent}
+                  />
+                )}
+              />
               <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
               <Route
                 exact

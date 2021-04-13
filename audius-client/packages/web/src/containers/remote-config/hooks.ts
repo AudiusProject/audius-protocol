@@ -1,4 +1,3 @@
-import { useSelector } from 'react-redux'
 import { AppState } from 'store/types'
 import { useMemo } from 'react'
 import {
@@ -11,7 +10,13 @@ import {
   DoubleKeys,
   StringKeys
 } from 'services/remote-config'
+import { useSelector } from 'utils/reducer'
 
+/**
+ * Hooks into updates for a given feature flag.
+ * Returns both `isLoaded` and `isEnabled` for more granular control
+ * @param flag
+ */
 export const useFlag = (flag: FeatureFlags) => {
   const configLoaded = useSelector(
     (state: AppState) => state.remoteConfig.remoteConfigLoaded
@@ -19,7 +24,7 @@ export const useFlag = (flag: FeatureFlags) => {
   // eslint complains about configLoaded as part of the deps array
   // eslint-disable-next-line
   const isEnabled = useMemo(() => getFeatureEnabled(flag), [flag, configLoaded])
-  return isEnabled
+  return { isLoaded: configLoaded, isEnabled }
 }
 
 export function useRemoteVar(key: IntKeys): number

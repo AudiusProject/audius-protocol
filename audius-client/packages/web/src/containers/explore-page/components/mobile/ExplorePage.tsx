@@ -42,16 +42,6 @@ import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
 import styles from './ExplorePage.module.css'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import {
-  HEAVY_ROTATION,
-  BEST_NEW_RELEASES,
-  UNDER_THE_RADAR,
-  MOST_LOVED,
-  FEELING_LUCKY
-} from 'containers/smart-collection/smartCollections'
-import {
-  LET_THEM_DJ,
-  TOP_ALBUMS,
-  TRENDING_PLAYLISTS,
   CHILL_PLAYLISTS,
   UPBEAT_PLAYLISTS,
   INTENSE_PLAYLISTS,
@@ -63,6 +53,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { getTab } from 'containers/explore-page/store/selectors'
 import { setTab } from 'containers/explore-page/store/actions'
+import { useJustForYouTiles } from '../desktop/ExplorePage'
+import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
 
 const messages = {
   pageName: 'Explore',
@@ -80,17 +72,6 @@ you based on your likes, reposts, and follows. Refreshes often so if you like a 
   moodPlaylistsDescription:
     'Playlists made by Audius users, sorted by mood and feel.'
 }
-
-const justForYou = [
-  TRENDING_PLAYLISTS,
-  HEAVY_ROTATION,
-  LET_THEM_DJ,
-  BEST_NEW_RELEASES,
-  UNDER_THE_RADAR,
-  TOP_ALBUMS,
-  MOST_LOVED,
-  FEELING_LUCKY
-]
 
 const lifestyle = [
   CHILL_PLAYLISTS,
@@ -154,6 +135,9 @@ const ExplorePage = ({
 }: ExplorePageProps) => {
   useMainPageHeader()
 
+  const { isEnabled: isUnderground } = useIsTrendingUndergroundEnabled()
+  const justForYou = useJustForYouTiles(!!isUnderground)
+
   const justForYouTiles = justForYou.map(
     (t: SmartCollection | ExploreCollection) => {
       const Icon = t.icon ? t.icon : React.Fragment
@@ -183,6 +167,7 @@ const ExplorePage = ({
             // @ts-ignore
             icon={<Icon />}
             goToRoute={goToRoute}
+            isIncentivized={t.incentivized}
           />
         )
       }
@@ -268,7 +253,12 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div className={cn(styles.section, styles.doubleHeaderSection)}>
+        <div
+          className={cn(styles.section, {
+            [styles.doubleHeaderSection]: !isUnderground,
+            [styles.tripleHeaderSection]: isUnderground
+          })}
+        >
           {justForYouTiles}
         </div>
       </TabBodyHeader>,
@@ -302,7 +292,14 @@ const ExplorePage = ({
         )}
       </TabBodyHeader>
     ]
-  }, [playlistCards, profileCards, justForYouTiles, lifestyleTiles, status])
+  }, [
+    playlistCards,
+    profileCards,
+    justForYouTiles,
+    lifestyleTiles,
+    status,
+    isUnderground
+  ])
 
   const initialTab = useSelector(getTab)
   const dispatch = useDispatch()

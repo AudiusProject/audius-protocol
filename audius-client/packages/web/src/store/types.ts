@@ -68,6 +68,7 @@ import ServiceSelectionReducer from 'containers/service-selection/store/slice'
 import averageColor from 'store/application/ui/average-color/slice'
 import modals from 'store/application/ui/modals/slice'
 import trendingPlaylistsReducer from 'containers/trending-playlists/store/slice'
+import trendingUndergroundReducer from 'containers/trending-underground/store/slice'
 import rewardsUI from 'containers/audio-rewards-page/store/slice'
 
 import wallet from 'store/wallet/slice'
@@ -146,6 +147,7 @@ export type AppState = {
       deleted: ReturnType<typeof DeletedPageReducer>
       tokenDashboard: ReturnType<typeof tokenDashboard>
       trendingPlaylists: ReturnType<typeof trendingPlaylistsReducer>
+      trendingUnderground: ReturnType<typeof trendingUndergroundReducer>
     }
   }
 
