@@ -9,6 +9,7 @@ orbs:
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
 jobs:
+  resource_class: xlarge
   test-mad-dog-e2e:
     machine:
       image: ubuntu-1604:201903-01 # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
