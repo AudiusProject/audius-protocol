@@ -266,13 +266,17 @@ def search(args):
                     return results
                 return add_users(session, results)
 
+            # Accumulate user_ids for later
+            user_ids = set()
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
-                results['tracks'] = with_users_added(track_search_query(
-                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id, only_downloadable))
+                results['tracks'] = track_search_query(
+                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id, only_downloadable)
+                user_ids.update(get_users_ids(results['tracks']))
                 if current_user_id:
-                    results['saved_tracks'] = with_users_added(track_search_query(
-                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id, only_downloadable))
+                    results['saved_tracks'] = track_search_query(
+                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id, only_downloadable)
+                    user_ids.update(get_users_ids(results['saved_tracks']))
             if (searchKind in [SearchKind.all, SearchKind.users]):
                 results['users'] = user_search_query(
                     session, searchStr, limit, offset, False, is_auto_complete, current_user_id)
@@ -280,7 +284,7 @@ def search(args):
                     results['followed_users'] = user_search_query(
                         session, searchStr, limit, offset, True, is_auto_complete, current_user_id)
             if (searchKind in [SearchKind.all, SearchKind.playlists]):
-                results['playlists'] = with_users_added(playlist_search_query(
+                results['playlists'] = playlist_search_query(
                     session,
                     searchStr,
                     limit,
@@ -289,9 +293,10 @@ def search(args):
                     False,
                     is_auto_complete,
                     current_user_id
-                ))
+                )
+                user_ids.update(get_users_ids(results['playlists']))
                 if current_user_id:
-                    results['saved_playlists'] = with_users_added(playlist_search_query(
+                    results['saved_playlists'] = playlist_search_query(
                         session,
                         searchStr,
                         limit,
@@ -300,12 +305,14 @@ def search(args):
                         True,
                         is_auto_complete,
                         current_user_id
-                    ))
+                    )
+                    user_ids.update(get_users_ids(results['saved_playlists']))
             if (searchKind in [SearchKind.all, SearchKind.albums]):
-                results['albums'] = with_users_added(playlist_search_query(
-                    session, searchStr, limit, offset, True, False, is_auto_complete, current_user_id))
+                results['albums'] = playlist_search_query(
+                    session, searchStr, limit, offset, True, False, is_auto_complete, current_user_id)
+                user_ids.update(get_users_ids(results['albums']))
                 if current_user_id:
-                    results['saved_albums'] = with_users_added(playlist_search_query(
+                    results['saved_albums'] = playlist_search_query(
                         session,
                         searchStr,
                         limit,
@@ -314,7 +321,24 @@ def search(args):
                         True,
                         is_auto_complete,
                         current_user_id
-                    ))
+                    )
+                user_ids.update(get_users_ids(results['albums']))
+
+            # Add users back
+            users = get_users_by_id(session, list(user_ids), current_user_id)
+            logger.warning("USERS MAP!")
+
+            for (_, result_list) in results.items():
+                for result in result_list:
+                    user_id = None
+                    if 'playlist_owner_id' in result:
+                        user_id = result['playlist_owner_id']
+                    elif 'owner_id' in result:
+                        user_id = result['owner_id']
+
+                    if user_id is not None:
+                        user = users[user_id]
+                        result["user"] = user
 
     return results
 
