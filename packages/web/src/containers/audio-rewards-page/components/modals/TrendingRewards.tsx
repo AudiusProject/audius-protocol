@@ -5,7 +5,11 @@ import { TwitterTweetEmbed } from 'react-twitter-embed'
 import { useModalState } from 'hooks/useModalState'
 import ModalDrawer from './ModalDrawer'
 import ButtonWithArrow from '../ButtonWithArrow'
-import { TRENDING_PAGE, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
+import {
+  TRENDING_PAGE,
+  TRENDING_PLAYLISTS_PAGE,
+  TRENDING_UNDERGROUND_PAGE
+} from 'utils/route'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
@@ -20,28 +24,52 @@ import { useRemoteVar } from 'containers/remote-config/hooks'
 import { StringKeys } from 'services/remote-config'
 import { getTheme, isDarkMode } from 'utils/theme/theme'
 import Theme from 'models/Theme'
+import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
+import { isMobile } from 'utils/clientUtil'
+import cn from 'classnames'
 
 const messages = {
   tracksTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',
   playlistTitle: 'Top 5 Playlists Each Week Receive 100 $AUDIO',
+  undergroundTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',
   winners: 'Winners are selected every Friday at Noon PT!',
   lastWeek: "LAST WEEK'S WINNERS",
+  tracks: 'TRACKS',
   topTracks: 'TOP TRACKS',
+  playlists: 'PLAYLISTS',
   topPlaylists: 'TOP PLAYLISTS',
+  underground: 'UNDERGROUND',
   terms: 'Terms and Conditions Apply',
   modalTitle: '$AUDIO REWARDS',
   buttonTextTracks: 'Current Trending Tracks',
-  buttonTextPlaylists: 'Current Trending Playlists'
+  buttonTextPlaylists: 'Current Trending Playlists',
+  buttonTextUnderground: 'Current Underground Trending Tracks',
+  mobileButtonTextTracks: 'Trending Tracks',
+  mobileButtonTextPlaylists: 'Trending Playlists',
+  mobileButtonTextUnderground: 'Underground Trending Tracks'
+}
+
+const TRENDING_PAGES = {
+  tracks: TRENDING_PAGE,
+  playlists: TRENDING_PLAYLISTS_PAGE,
+  underground: TRENDING_UNDERGROUND_PAGE
 }
 
 const textMap = {
   playlists: {
     title: messages.playlistTitle,
-    button: messages.buttonTextPlaylists
+    button: messages.buttonTextPlaylists,
+    buttonMobile: messages.mobileButtonTextPlaylists
   },
   tracks: {
     title: messages.tracksTitle,
-    button: messages.buttonTextTracks
+    button: messages.buttonTextTracks,
+    buttonMobile: messages.mobileButtonTextTracks
+  },
+  underground: {
+    title: messages.undergroundTitle,
+    button: messages.buttonTextUnderground,
+    buttonMobile: messages.mobileButtonTextUnderground
   }
 }
 
@@ -67,7 +95,12 @@ const useRewardsType = (): [
 const useTweetId = (type: TrendingRewardsModalType) => {
   const tracksId = useRemoteVar(StringKeys.REWARDS_TWEET_ID_TRACKS)
   const playlistsId = useRemoteVar(StringKeys.REWARDS_TWEET_ID_PLAYLISTS)
-  return type === 'tracks' ? tracksId : playlistsId
+  const undergroundId = useRemoteVar(StringKeys.REWARDS_TWEET_ID_UNDERGROUND)
+  return {
+    tracks: tracksId,
+    playlists: playlistsId,
+    underground: undergroundId
+  }[type]
 }
 const shouldUseDarkTwitter = () => {
   const theme = getTheme()
@@ -85,22 +118,31 @@ const TrendingRewardsBody = ({
     window.open(TOS_URL, '_blank')
   }, [])
 
+  const mobile = isMobile()
   const tabOptions = [
     {
       key: 'tracks',
-      text: messages.topTracks
+      text: mobile ? messages.tracks : messages.topTracks
     },
     {
       key: 'playlists',
-      text: messages.topPlaylists
+      text: mobile ? messages.playlists : messages.topPlaylists
     }
   ]
+
+  // Add underground audio if enabled
+  const { isEnabled: isUndergroundEnabled } = useIsTrendingUndergroundEnabled()
+  if (isUndergroundEnabled) {
+    tabOptions.push({
+      key: 'underground',
+      text: messages.underground
+    })
+  }
 
   const navigate = useNavigateToPage()
 
   const onButtonClick = useCallback(() => {
-    const page =
-      modalType === 'tracks' ? TRENDING_PAGE : TRENDING_PLAYLISTS_PAGE
+    const page = TRENDING_PAGES[modalType]
     navigate(page)
     dismissModal()
   }, [navigate, modalType, dismissModal])
@@ -125,8 +167,11 @@ const TrendingRewardsBody = ({
             onSelectOption={option =>
               setModalType(option as TrendingRewardsModalType)
             }
-            textClassName={styles.slider}
+            textClassName={cn(styles.slider, {
+              [styles.compactSlider]: isUndergroundEnabled
+            })}
             activeTextClassName={styles.activeSlider}
+            key={`rewards-slider-${tabOptions.length}`}
           />
         </div>
         <div className={styles.titles}>
@@ -154,7 +199,7 @@ const TrendingRewardsBody = ({
           </div>
         </div>
         <ButtonWithArrow
-          text={textMap[modalType].button}
+          text={textMap[modalType][mobile ? 'buttonMobile' : 'button']}
           onClick={onButtonClick}
           className={styles.button}
         />
