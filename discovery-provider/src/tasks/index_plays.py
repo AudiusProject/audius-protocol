@@ -217,9 +217,7 @@ def update_play_count(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.error("SKIPPING PLAYS DEV ONLY")
-            # TODO: REMOVE THIS CHANGE BEFORE COMMITTING
-            # get_track_plays(self, db, update_lock)
+            get_track_plays(self, db, update_lock)
         else:
             logger.error(
                 f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock",

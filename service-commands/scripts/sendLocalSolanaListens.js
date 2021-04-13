@@ -2,11 +2,11 @@
 const axios = require('axios')
 
 async function run() {
-    let numRequests = 1
-    let randomTrackIds = Array.from({ length: numRequests }, () => Math.floor(Math.random() * 40));
+    let numRequests = 2
+    let randomTrackIds = Array.from({ length: numRequests }, () => Math.floor(Math.random() * 10000000));
     console.log(randomTrackIds)
-    await randomTrackIds.forEach(async(trackId)=>{
-        let randomUserId = Math.floor(Math.random() * 40)
+    await Promise.all(randomTrackIds.map(async (trackId) =>{
+        let randomUserId = Math.floor(Math.random() * 10000000)
         console.log(`Logging listen for trackId=${trackId}, userId=${randomUserId}`)
         let data = JSON.stringify({"userId": randomUserId, "solanaListen": true });
         let requestConfig = {
@@ -19,8 +19,9 @@ async function run() {
         }
         let resp = (await axios(requestConfig)).data
         let signature = resp.solTxSignature
-        console.log(`Processed signature: ${signature}`)
+        console.log(`trackId=${trackId}, userId=${randomUserId} | Processed signature: ${signature}`)
     })
+    )
 }
 
 run()
