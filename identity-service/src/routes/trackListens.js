@@ -6,6 +6,7 @@ const { handleResponse, successResponse, errorResponseBadRequest } = require('..
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 const instr = require('../solana-client.js')
+const config = require('../config.js')
 
 async function getListenHour () {
   let listenDate = new Date()
@@ -220,7 +221,7 @@ module.exports = function (app) {
 
     await instr.createAndVerifyMessage(
       null,
-      'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
+      config.get('solanaSignerPrivateKey'),
       userId.toString(),
       trackId.toString(),
       Date.now().toString()

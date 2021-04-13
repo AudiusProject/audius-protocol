@@ -528,6 +528,12 @@ const config = convict({
     default: null,
     env: 'solanaFeePayerWallet'
   },
+  solanaSignerPrivateKey: {
+    doc: 'solanaSignerPrivateKey',
+    format: 'string',
+    default: null,
+    env: 'solanaSignerPrivateKey'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
@@ -561,7 +567,8 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaProgramAddress: solanaContractConfig.programAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
     solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
-    solanaEndpoint: solanaContractConfig.endpoint
+    solanaEndpoint: solanaContractConfig.endpoint,
+    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey
   })
 }
 
