@@ -161,10 +161,7 @@ def index_solana_plays(self):
         if have_lock:
             logger.info(f"index_solana_plays.py | Acquired lock")
             process_solana_plays(solana_client)
-        # else:
-        #     logger.info(
-        #         "index_solana_plays.py | Failed to acquire index_solana_plays")
-    except Exception as e:
+   except Exception as e:
         logger.error("index_solana_plays.py | Fatal error in main loop",
                      exc_info=True)
         raise e

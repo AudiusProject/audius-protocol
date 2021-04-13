@@ -2,7 +2,7 @@
 const axios = require('axios')
 
 async function run() {
-    let numRequests = 5
+    let numRequests = 15
     let randomTrackIds = Array.from({ length: numRequests }, () => Math.floor(Math.random() * 40));
     console.log(randomTrackIds)
     await randomTrackIds.forEach(async(trackId)=>{
