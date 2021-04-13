@@ -1,16 +1,14 @@
-import logging
-import json
-import time
 import concurrent.futures
-from urllib.parse import urlparse, urljoin
-import requests
-import ipfshttpclient
-from cid import make_cid
+import json
+import logging
+import time
+from urllib.parse import urljoin, urlparse
 
+import ipfshttpclient
+import requests
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
-
 
 
 class IPFSClient:
