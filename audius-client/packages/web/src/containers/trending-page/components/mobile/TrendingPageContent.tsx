@@ -3,7 +3,7 @@ import cn from 'classnames'
 
 import styles from './TrendingPageContent.module.css'
 import Header from 'components/general/header/mobile/Header'
-import { DiscoverPageContentProps } from 'containers/discover-page/types'
+import { TrendingPageContentProps } from 'containers/trending-page/types'
 import TimeRange from 'models/TimeRange'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Lineup from 'containers/lineup/Lineup'
@@ -28,7 +28,7 @@ import {
   trendingWeekActions,
   trendingMonthActions,
   trendingYearActions
-} from 'containers/discover-page/store/lineups/trending/actions'
+} from 'containers/trending-page/store/lineups/trending/actions'
 import { LineupVariant } from 'containers/lineup/types'
 import TrendingFilterButton from './TrendingFilterButton'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
@@ -70,7 +70,7 @@ const TrendingPageMobileContent = ({
   getLineupForRange,
   trendingGenre,
   goToGenreSelection
-}: DiscoverPageContentProps) => {
+}: TrendingPageContentProps) => {
   // Set Nav-Bar Menu
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {

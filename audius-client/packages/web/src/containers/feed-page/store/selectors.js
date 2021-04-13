@@ -1,0 +1,19 @@
+import { createShallowSelector } from 'utils/selectorHelpers'
+import { getUsers } from 'store/cache/users/selectors'
+
+export const getSuggestedFollows = state => state.feed.suggestedFollows
+export const getDiscoverFeedLineup = state => state.feed.feed
+
+export const getFeedFilter = state => state.feed.feedFilter
+
+export const getSuggestedFollowUsers = state =>
+  getUsers(state, { ids: getSuggestedFollows(state) })
+
+export const makeGetSuggestedFollows = () => {
+  return createShallowSelector(
+    [getSuggestedFollowUsers, getSuggestedFollows],
+    (users, followIds) => {
+      return followIds.map(id => users[id]).filter(Boolean)
+    }
+  )
+}

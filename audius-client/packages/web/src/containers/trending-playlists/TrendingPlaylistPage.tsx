@@ -12,7 +12,7 @@ import styles from './TrendingPlaylistPage.module.css'
 import { BASE_URL, TRENDING_PLAYLISTS_PAGE } from 'utils/route'
 import { useLineupProps } from 'containers/lineup/hooks'
 import { useMobileHeader } from 'components/general/header/mobile/hooks'
-import RewardsBanner from 'containers/discover-page/components/RewardsBanner'
+import RewardsBanner from 'containers/trending-page/components/RewardsBanner'
 import { useDispatch } from 'react-redux'
 
 const messages = {

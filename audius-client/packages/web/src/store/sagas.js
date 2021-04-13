@@ -4,7 +4,8 @@ import confirmerSagas from 'store/confirmer/sagas'
 import backendSagas, { setupBackend } from 'store/backend/sagas'
 import routingSagas from 'store/routing/sagas'
 
-import discoverPageSagas from 'containers/discover-page/store/sagas'
+import feedPageSagas from 'containers/feed-page/store/sagas'
+import trendingPageSagas from 'containers/trending-page/store/sagas'
 import explorePageSagas from 'containers/explore-page/store/sagas'
 import exploreCollectionsPageSagas from 'containers/explore-page/store/collections/sagas'
 import searchPageSagas from 'containers/search-page/store/sagas'
@@ -76,7 +77,8 @@ export default function* rootSaga() {
     reachabilitySagas(),
 
     // Pages
-    discoverPageSagas(),
+    feedPageSagas(),
+    trendingPageSagas(),
     explorePageSagas(),
     exploreCollectionsPageSagas(),
     savedSagas(),

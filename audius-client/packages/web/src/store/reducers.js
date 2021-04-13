@@ -15,7 +15,8 @@ import upload from 'containers/upload-page/store/reducer'
 import profile from 'containers/profile-page/store/reducer'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
 import signOn from 'containers/sign-on/store/reducer'
-import discover from 'containers/discover-page/store/reducer'
+import feed from 'containers/feed-page/store/reducer'
+import trending from 'containers/trending-page/store/reducer'
 import explore from 'containers/explore-page/store/reducer'
 import exploreCollections from 'containers/explore-page/store/collections/slice'
 import history from 'containers/history-page/store/reducer'
@@ -94,7 +95,8 @@ const createRootReducer = routeHistory =>
     profile,
     dashboard,
     signOn,
-    discover,
+    feed,
+    trending,
     history,
     saved,
     searchBar,

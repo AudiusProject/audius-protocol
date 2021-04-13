@@ -3,10 +3,10 @@ import cn from 'classnames'
 
 import styles from './FeedPageContent.module.css'
 import Header from 'components/general/header/mobile/Header'
-import { DiscoverPageContentProps } from 'containers/discover-page/types'
+import { FeedPageContentProps } from 'containers/feed-page/types'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Lineup from 'containers/lineup/Lineup'
-import { feedActions } from 'containers/discover-page/store/lineups/feed/actions'
+import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
 import { useMainPageHeader } from 'containers/nav/store/context'
 import { Status } from 'store/types'
 import useAsyncPoll from 'hooks/useAsyncPoll'
@@ -38,7 +38,7 @@ const FeedPageMobileContent = ({
   setFeedFilter,
   refreshFeedInView,
   resetFeedLineup
-}: DiscoverPageContentProps) => {
+}: FeedPageContentProps) => {
   const { setHeader } = useContext(HeaderContext)
   useEffect(() => {
     setHeader(

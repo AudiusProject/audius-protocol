@@ -6,10 +6,10 @@ export const getTrendingEntries = (timeRange: TimeRange) => (
   state: AppState
 ): LineupStateTrack<{ id: number }>[] => {
   if (timeRange === TimeRange.WEEK) {
-    return state.discover.trendingWeek.entries
+    return state.trending.trendingWeek.entries
   } else if (timeRange === TimeRange.MONTH) {
-    return state.discover.trendingMonth.entries
+    return state.trending.trendingMonth.entries
   } else {
-    return state.discover.trendingYear.entries
+    return state.trending.trendingYear.entries
   }
 }

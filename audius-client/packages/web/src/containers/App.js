@@ -120,7 +120,8 @@ import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/
 
 import AnimatedSwitch from './animated-switch/AnimatedSwitch'
 
-import Discover from 'containers/discover-page/DiscoverPage'
+import FeedPage from 'containers/feed-page/FeedPage'
+import TrendingPage from 'containers/trending-page/TrendingPage'
 import CollectionPage from 'containers/collection-page/CollectionPage'
 import TrackPage from 'containers/track-page/TrackPage'
 import ProfilePage from 'containers/profile-page/ProfilePage'
@@ -542,7 +543,7 @@ class App extends Component {
                 path={FEED_PAGE}
                 isMobile={isMobileClient}
                 render={() => (
-                  <Discover feedIsMain containerRef={this.state.mainContent} />
+                  <FeedPage containerRef={this.state.mainContent} />
                 )}
               />
               <Route
@@ -573,10 +574,7 @@ class App extends Component {
                 exact
                 path={TRENDING_PAGE}
                 render={() => (
-                  <Discover
-                    feedIsMain={false}
-                    containerRef={this.state.mainContent}
-                  />
+                  <TrendingPage containerRef={this.state.mainContent} />
                 )}
               />
               <Route
