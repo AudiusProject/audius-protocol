@@ -14,11 +14,10 @@ DEFAULT_UPDATE_TIMEOUT=60
 def update_view(mat_view_name, db):
     with db.scoped_session() as session:
         start_time = time.time()
-        logger.info(f"index_aggregate_views.py | Updating materialized view {mat_view_name}")
+        logger.info(f"index_aggregate_views.py | Updating {mat_view_name}")
         session.execute(f"REFRESH MATERIALIZED VIEW CONCURRENTLY {mat_view_name}")
         logger.info(
-            f"index_aggregate_views.py | Finished updating materialized view {mat_view_name} in: {
-                time.time()-start_time} sec"
+            f"index_aggregate_views.py | Finished updating {mat_view_name} in: {time.time()-start_time} sec"
         )
 
 def update_materialized_view(db, redis, mat_view_name, timeout=DEFAULT_UPDATE_TIMEOUT):
