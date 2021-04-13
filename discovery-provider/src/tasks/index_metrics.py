@@ -1,4 +1,5 @@
 import json
+import time
 import logging
 import concurrent.futures
 from datetime import datetime, timedelta
@@ -127,6 +128,7 @@ def sweep_metrics(db, redis):
 
 def refresh_metrics_matviews(db):
     with db.scoped_session() as session:
+        start_time = time.time()
         logger.info('index_metrics.py | refreshing metrics matviews')
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_day_bucket')
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_month_bucket')
@@ -136,7 +138,7 @@ def refresh_metrics_matviews(db):
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_week')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_month')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_all_time')
-        logger.info('index_metrics.py | refreshed metrics matviews')
+        logger.info(f"index_metrics.py | refreshed metrics matviews in: {time.time()-start_time} sec")
 
 # Perform eth web3 call to fetch endpoint info
 def fetch_discovery_node_info(sp_id, sp_factory_instance):

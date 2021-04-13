@@ -92,11 +92,12 @@ class EthWeb3Manager {
     contractMethod,
     contractAddress,
     ownerWallet,
+    relayerWallet,
     txRetries = 5,
     txGasLimit = null
   ) {
     const encodedABI = contractMethod.encodeABI()
-    const gasLimit = txGasLimit || await estimateGas({ method: contractMethod })
+    const gasLimit = txGasLimit || await estimateGas({ from: relayerWallet, method: contractMethod })
     const response = await retry(async bail => {
       try {
         const attempt = await this.identityService.ethRelay(

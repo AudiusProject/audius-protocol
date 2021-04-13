@@ -13,7 +13,9 @@ def update_views(self, db):
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY playlist_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY album_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
-        logger.info(f"index_materialized_views.py | Finished updating materialized views in: {time.time()-start_time}")
+        logger.info(
+            f"index_materialized_views.py | Finished updating materialized views in: {time.time()-start_time} sec"
+        )
 
 
 ######## CELERY TASKS ########
