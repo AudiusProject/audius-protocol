@@ -32,6 +32,7 @@ declare global {
 const FULL_ENDPOINT_MAP = {
   trending: '/tracks/trending',
   trendingIds: '/tracks/trending/ids',
+  trendingUnderground: '/tracks/trending/underground',
   following: (userId: OpaqueID) => `/users/${userId}/following`,
   followers: (userId: OpaqueID) => `/users/${userId}/followers`,
   trackRepostUsers: (trackId: OpaqueID) => `/tracks/${trackId}/reposts`,
@@ -82,6 +83,12 @@ type GetTrendingArgs = {
   limit?: number
   currentUserId: Nullable<ID>
   genre: Nullable<string>
+}
+
+type GetTrendingUndergroundArgs = {
+  offset?: number
+  limit?: number
+  currentUserId: Nullable<ID>
 }
 
 type GetTrendingIdsArgs = {
@@ -296,6 +303,31 @@ class AudiusAPIClient {
     const trendingResponse: Nullable<APIResponse<
       APITrack[]
     >> = await this._getResponse(FULL_ENDPOINT_MAP.trending, params)
+
+    if (!trendingResponse) return []
+
+    const adapted = trendingResponse.data
+      .map(adapter.makeTrack)
+      .filter(removeNullable)
+    return adapted
+  }
+
+  async getTrendingUnderground({
+    limit = TRENDING_LIMIT,
+    offset = 0,
+    currentUserId
+  }: GetTrendingUndergroundArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      limit,
+      offset,
+      user_id: encodedCurrentUserId
+    }
+
+    const trendingResponse: Nullable<APIResponse<
+      APITrack[]
+    >> = await this._getResponse(FULL_ENDPOINT_MAP.trendingUnderground, params)
 
     if (!trendingResponse) return []
 

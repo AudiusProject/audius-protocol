@@ -5,6 +5,7 @@ import { animated } from 'react-spring'
 import useCardWeight from 'hooks/useCardWeight'
 
 import styles from './PerspectiveCard.module.css'
+import { ReactComponent as IconAudioRewardsPill } from 'assets/img/iconAudioRewardsPill.svg'
 
 type PerspectiveCardProps = {
   backgroundGradient?: string
@@ -15,6 +16,7 @@ type PerspectiveCardProps = {
   isDisabled?: boolean
   useOverlayBlendMode?: boolean
   onClick?: () => void
+  isIncentivized?: boolean
 }
 
 const PerspectiveCard = ({
@@ -25,7 +27,8 @@ const PerspectiveCard = ({
   className,
   isDisabled,
   useOverlayBlendMode = true,
-  onClick
+  onClick,
+  isIncentivized = false
 }: PerspectiveCardProps) => {
   const [cardRef, onMove, onLeave, transform] = useCardWeight({ isDisabled })
 
@@ -53,6 +56,11 @@ const PerspectiveCard = ({
             background: backgroundGradient
           }}
         >
+          {isIncentivized ? (
+            <div className={styles.rewardsPill}>
+              <IconAudioRewardsPill />
+            </div>
+          ) : null}
           {children}
           <div className={styles.backgroundIcon}>{backgroundIcon}</div>
         </div>

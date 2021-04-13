@@ -20,6 +20,7 @@ export const TERMS_OF_SERVICE = '/legal/terms-of-use'
 export const FEED_PAGE = '/feed'
 export const TRENDING_PAGE = '/trending'
 export const TRENDING_PLAYLISTS_PAGE = '/trending/playlists'
+export const TRENDING_UNDERGROUND_PAGE = '/trending/underground'
 
 export const EXPLORE_PAGE = '/explore'
 export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'

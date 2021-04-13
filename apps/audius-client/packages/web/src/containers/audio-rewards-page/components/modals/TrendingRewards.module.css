@@ -99,6 +99,10 @@
   font-size: 16px;
   padding: 8px 24px;
 }
+.mobile .compactSlider {
+  font-size: 13px;
+  padding: 8px 16px;
+}
 
 .activeSlider {
   color: var(--secondary);

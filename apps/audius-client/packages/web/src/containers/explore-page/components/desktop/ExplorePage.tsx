@@ -31,6 +31,7 @@ import {
   LET_THEM_DJ,
   TOP_ALBUMS,
   TRENDING_PLAYLISTS,
+  TRENDING_UNDERGROUND,
   CHILL_PLAYLISTS,
   UPBEAT_PLAYLISTS,
   INTENSE_PLAYLISTS,
@@ -38,6 +39,7 @@ import {
   INTIMATE_PLAYLISTS
 } from 'containers/explore-page/collections'
 import { ExploreCollectionsVariant } from 'containers/explore-page/store/types'
+import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
 
 const messages = {
   featuredPlaylists: 'Playlists We Love Right Now',
@@ -79,6 +81,14 @@ export type ExplorePageProps = {
   goToRoute: (route: string) => void
 }
 
+export const useJustForYouTiles = (isUnderground: boolean) => {
+  const justForYouTiles = [...justForYou]
+  if (isUnderground) {
+    justForYouTiles.splice(1, 0, TRENDING_UNDERGROUND)
+  }
+  return justForYouTiles
+}
+
 const ExplorePage = ({
   title,
   description,
@@ -96,6 +106,8 @@ const ExplorePage = ({
     setDidLoad: setDidLoadProfile
   } = useOrderedLoad(profiles.length)
 
+  const { isEnabled: isUnderground } = useIsTrendingUndergroundEnabled()
+  const justForYouTiles = useJustForYouTiles(!!isUnderground)
   const header = <Header primary={title} containerStyles={styles.header} />
   const onClickCard = useCallback(
     (url: string) => {
@@ -122,9 +134,13 @@ const ExplorePage = ({
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
-        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT}
+        layout={
+          isUnderground
+            ? Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT
+            : Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT
+        }
       >
-        {justForYou.map(i => {
+        {justForYouTiles.map(i => {
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
@@ -141,6 +157,7 @@ const ExplorePage = ({
               // @ts-ignore
               backgroundIcon={<Icon />}
               onClick={() => onClickCard(i.link)}
+              isIncentivized={!!i.incentivized}
             >
               <TextInterior title={title} subtitle={subtitle} />
             </PerspectiveCard>

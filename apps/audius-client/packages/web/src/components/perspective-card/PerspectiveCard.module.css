@@ -40,6 +40,16 @@
   mix-blend-mode: overlay;
 }
 
+.rewardsPill {
+  position: absolute;
+  left: 16px;
+  bottom: 13px;
+}
+
+.rewardsPill svg {
+  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1))
+}
+
 /* Don't try this at home kids.
  * You need this on FF or the perspective 3d scaling
  * of the container with overflow breaks the blend mode
@@ -50,7 +60,7 @@
   .perspectiveCard .backgroundIcon {
     transform: translate3d(0, 0, 0);
   }
-}  
+}
 
 .perspectiveCard .backgroundIcon svg {
   height: 110% !important;

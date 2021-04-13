@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 import { Tile } from './components/ExplainerTile'
 import styles from './RewardsTile.module.css'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -8,12 +8,14 @@ import { useRemoteVar } from 'containers/remote-config/hooks'
 import { StringKeys } from 'services/remote-config'
 import { useDispatch } from 'react-redux'
 import { setTrendingRewardsModalType } from './store/slice'
+import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
 
 type RewardID =
   | 'trending-track'
   | 'trending-playlist'
   | 'top-api'
   | 'verified-upload'
+  | 'trending-underground'
 
 type RewardPanelProps = {
   title: string
@@ -49,37 +51,6 @@ const RewardPanel = ({
   )
 }
 
-const rewardsMap = {
-  'trending-playlist': {
-    title: 'Top 5 Trending Playlists',
-    icon: <i className='emoji large chart-increasing' />,
-    description: 'Winners are selected every Friday at Noon PT!',
-    buttonText: 'See More',
-    id: 'trending-playlist' as 'trending-playlist'
-  },
-  'trending-track': {
-    title: 'Top 5 Trending Tracks',
-    icon: <i className='emoji large chart-increasing' />,
-    description: 'Winners are selected every Friday at Noon PT!',
-    buttonText: 'See More',
-    id: 'trending-track' as 'trending-track'
-  },
-  'top-api': {
-    title: 'Top 10 API Apps',
-    icon: <i className='emoji large nerd-face' />,
-    description: 'The top 10 Audius API apps each month win',
-    buttonText: 'More Info',
-    id: 'top-api' as 'top-api'
-  },
-  'verified-upload': {
-    title: 'Verified Upload',
-    icon: <i className='emoji large white-heavy-check-mark' />,
-    description: 'Verified on Twitter/Instagram? Upload & tag us',
-    buttonText: 'More Info',
-    id: 'verified-upload' as 'verified-upload'
-  }
-}
-
 type RewardsTileProps = {
   className?: string
 }
@@ -88,7 +59,8 @@ const validRewardIds: { [k in RewardID]: any } = {
   'trending-track': 1,
   'trending-playlist': 1,
   'top-api': 1,
-  'verified-upload': 1
+  'verified-upload': 1,
+  'trending-underground': 1
 }
 
 const isValidRewardId = (s: string): s is RewardID => s in validRewardIds
@@ -110,6 +82,52 @@ const useRewardIds = () => {
 }
 
 const RewardsTile = ({ className }: RewardsTileProps) => {
+  const { isEnabled: isUndergroundEnabled } = useIsTrendingUndergroundEnabled()
+  const rewardsMap = useMemo(
+    () => ({
+      'trending-playlist': {
+        title: 'Top 5 Trending Playlists',
+        icon: <i className='emoji large chart-increasing' />,
+        description: 'Winners are selected every Friday at Noon PT!',
+        buttonText: 'See More',
+        id: 'trending-playlist' as 'trending-playlist'
+      },
+      'trending-track': {
+        title: 'Top 5 Trending Tracks',
+        icon: <i className='emoji large chart-increasing' />,
+        description: 'Winners are selected every Friday at Noon PT!',
+        buttonText: 'See More',
+        id: 'trending-track' as 'trending-track'
+      },
+      'top-api': {
+        title: 'Top 10 API Apps',
+        icon: <i className='emoji large nerd-face' />,
+        description: 'The top 10 Audius API apps each month win',
+        buttonText: 'More Info',
+        id: 'top-api' as 'top-api'
+      },
+      'verified-upload': {
+        title: isUndergroundEnabled
+          ? 'First Upload With Your Verified Account'
+          : 'Verified Upload',
+        icon: <i className='emoji large white-heavy-check-mark' />,
+        description: isUndergroundEnabled
+          ? 'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us'
+          : 'Verified on Twitter/Instagram? Upload & tag us',
+        buttonText: 'More Info',
+        id: 'verified-upload' as 'verified-upload'
+      },
+      'trending-underground': {
+        title: 'Top 5 Underground Trending',
+        icon: <i className='emoji large chart-increasing' />,
+        description: 'Winners are selected every Friday at Noon PT!',
+        buttonText: 'See More',
+        id: 'trending-underground' as 'trending-underground'
+      }
+    }),
+    [isUndergroundEnabled]
+  )
+
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
   const callbacksMap = {
@@ -119,6 +137,10 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     },
     'trending-playlist': () => {
       dispatch(setTrendingRewardsModalType({ modalType: 'playlists' }))
+      setVisibility('TrendingRewardsExplainer')(true)
+    },
+    'trending-underground': () => {
+      dispatch(setTrendingRewardsModalType({ modalType: 'underground' }))
       setVisibility('TrendingRewardsExplainer')(true)
     },
     'top-api': () => {

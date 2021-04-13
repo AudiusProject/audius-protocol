@@ -15,6 +15,7 @@ const messages = {
   rewards: '$AUDIO REWARDS',
   tracksDescription: 'TOP 5 TRACKS EACH WEEK WIN $AUDIO',
   playlistsDescription: 'TOP 5 PLAYLISTS EACH WEEK WIN $AUDIO',
+  undergroundDescription: 'TOP 5 TRACKS EACH WEEK WIN $AUDIO',
   learnMore: 'LEARN MORE'
 }
 
@@ -24,11 +25,14 @@ const messageMap = {
   },
   playlists: {
     description: messages.playlistsDescription
+  },
+  underground: {
+    description: messages.undergroundDescription
   }
 }
 
 type RewardsBannerProps = {
-  bannerType: 'tracks' | 'playlists'
+  bannerType: 'tracks' | 'playlists' | 'underground'
 }
 
 const useHandleBannerClick = () => {

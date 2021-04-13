@@ -68,6 +68,21 @@
   flex-basis: calc(50% - 8px);
 }
 
+.tripleHeaderSection > *:nth-child(5n + 1),
+.tripleHeaderSection > *:nth-child(5n + 2),
+.tripleHeaderSection > *:nth-child(5n + 3) {
+  flex-basis: 100%;
+}
+
+.tripleHeaderSection > *:nth-child(5n + 4),
+.tripleHeaderSection > *:nth-child(5n + 5),
+.tripleHeaderSection > *:nth-child(5n + 6),
+.tripleHeaderSection > *:nth-child(5n + 7),
+.tripleHeaderSection > *:nth-child(5n + 8),
+.tripleHeaderSection > *:nth-child(5n + 9) {
+  flex-basis: calc(50% - 8px);
+}
+
 
 .spin {
   padding-top: 40%;

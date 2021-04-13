@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react'
 import cn from 'classnames'
 
 import styles from './ColorTile.module.css'
+import { ReactComponent as IconAudioRewardsPill } from 'assets/img/iconAudioRewardsPill.svg'
 
 type ColorTileProps = {
   title: string
@@ -13,6 +14,7 @@ type ColorTileProps = {
   emoji?: string
   className?: string
   goToRoute: (route: string) => void
+  isIncentivized?: boolean
 }
 
 const ColorTile = ({
@@ -24,7 +26,8 @@ const ColorTile = ({
   icon,
   emoji,
   className,
-  goToRoute
+  goToRoute,
+  isIncentivized
 }: ColorTileProps) => {
   return (
     <div
@@ -41,6 +44,11 @@ const ColorTile = ({
       <div className={styles.description}>{description}</div>
       {emoji && <i className={`emoji xl ${emoji}`} />}
       {icon && <div className={styles.icon}>{icon}</div>}
+      {isIncentivized ? (
+        <div className={styles.rewardsPill}>
+          <IconAudioRewardsPill />
+        </div>
+      ) : null}
     </div>
   )
 }
