@@ -8,6 +8,7 @@ const {
 } = require('../../apiHelpers')
 const { respondToURSMRequestForSignature } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
+const { enqueueSync } = require('./SyncQueueComponentService')
 
 const router = express.Router()
 
@@ -39,7 +40,6 @@ const respondToURSMRequestForProposalController = async (req) => {
 const syncRequestController = async (req, res) => {
   const walletPublicKeys = req.body.wallet // array
   const creatorNodeEndpoint = req.body.creator_node_endpoint // string
-  const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -54,30 +54,8 @@ const syncRequestController = async (req, res) => {
     req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
   }
 
-  if (immediate) {
-    let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
-    if (errorObj) {
-      return errorResponseServerError(errorObj)
-    } else {
-      return successResponse()
-    }
-  }
-
-  // Trigger nodesync operation with debounce
-  const debounceTime = config.get('debounceTime')
-  for (let wallet of walletPublicKeys) {
-    if (wallet in syncQueue) {
-      clearTimeout(syncQueue[wallet])
-      req.logger.info('clear timeout for', wallet, 'time', Date.now())
-    }
-    syncQueue[wallet] = setTimeout(
-      async function () {
-        return _nodesync(req, [wallet], creatorNodeEndpoint)
-      },
-      debounceTime
-    )
-    req.logger.info('set timeout for', wallet, 'time', Date.now())
-  }
+  // await secondarySync(req, walletPublicKeys, creatorNodeEndpoint)
+  await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
 
   return successResponse()
 }
@@ -85,6 +63,6 @@ const syncRequestController = async (req, res) => {
 // Routes
 
 router.get('/ursm_request_for_signature', handleResponse(respondToURSMRequestForProposalController))
-router.get('/sync', ensureStorageMiddleware, handleResponse(syncRequestController))
+router.get('/sync2', ensureStorageMiddleware, handleResponse(syncRequestController))
 
 module.exports = router
