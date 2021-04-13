@@ -1,7 +1,3 @@
-// The absolute highest we will suggest for a gas limit (upper bound).
-// Normally the gas estimator will estimate far far below this.
-const GAS_LIMIT_MAXIMUM = 1000000
-
 // Default multiplier on top of gas estimate to be extra safe that txns
 // will go through
 const GAS_LIMIT_MULTIPLIER = 1.05
@@ -18,7 +14,7 @@ const GAS_LIMIT_MULTIPLIER = 1.05
 const estimateGas = async ({
   method,
   from,
-  gasLimitMaximum = GAS_LIMIT_MAXIMUM,
+  gasLimitMaximum,
   multiplier = GAS_LIMIT_MULTIPLIER
 }) => {
   const estimatedGas = await method.estimateGas({ from, gas: gasLimitMaximum })
