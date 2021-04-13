@@ -2,7 +2,6 @@ import { ID, UID } from 'models/common/Identifiers'
 import TimeRange from 'models/TimeRange'
 import User from 'models/User'
 
-import FeedFilter from 'models/FeedFilter'
 import { Lineup } from 'models/common/Lineup'
 import Track from 'models/Track'
 
@@ -10,12 +9,7 @@ type ExtraTrendingLineupProps = {
   antiBot: boolean
 }
 
-export interface DiscoverPageContentProps {
-  feedTitle: string
-  feedDescription: string
-  feedIsMain: boolean
-  feed: Lineup<any>
-
+export interface TrendingPageContentProps {
   trendingTitle: string
   trendingDescription: string
   trending: Lineup<any>
@@ -29,17 +23,11 @@ export interface DiscoverPageContentProps {
   playTrendingTrack: (uid: UID) => void
   pauseTrendingTrack: () => void
   refreshTrendingInView: (overwrite: boolean) => void
-  refreshFeedInView: (overwrite: boolean, limit?: number) => void
   hasAccount: boolean
-  goToFeed: () => void
   goToTrending: () => void
   goToSignUp: () => void
   goToGenreSelection: () => void
-  setFeedInView: (inView: boolean) => void
   setTrendingInView: (inView: boolean) => void
-  loadMoreFeed: (offset: number, limit: number, overwrite: boolean) => void
-  playFeedTrack: (uid: UID) => void
-  pauseFeedTrack: () => void
   switchView: () => void
   getLineupProps: (
     lineup: Lineup<any>
@@ -53,9 +41,6 @@ export interface DiscoverPageContentProps {
     scrollParent: HTMLElement | null
     selfLoad: boolean
   }
-  feedFilter: FeedFilter
-  setFeedFilter: (filter: FeedFilter) => void
-  resetFeedLineup: () => void
   resetTrendingLineup: () => void
 
   trendingGenre: string | null

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react'
 
-import { DiscoverPageContentProps } from 'containers/discover-page/types'
+import { TrendingPageContentProps } from 'containers/trending-page/types'
 import TimeRange from 'models/TimeRange'
 import Lineup from 'containers/lineup/Lineup'
 import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
@@ -12,17 +12,14 @@ import {
   trendingWeekActions,
   trendingMonthActions,
   trendingYearActions
-} from 'containers/discover-page/store/lineups/trending/actions'
+} from 'containers/trending-page/store/lineups/trending/actions'
 import useTabs from 'hooks/useTabs/useTabs'
 import Header from 'components/general/header/desktop/Header'
 import TrendingGenreFilters from './TrendingGenreFilters'
 import Page from 'components/general/Page'
-import { Spring } from 'react-spring/renderprops'
-import { animated } from 'react-spring'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
-import baseStyles from './DiscoverPageContent.module.css'
 import styles from './TrendingPageContent.module.css'
 import RewardsBanner from '../RewardsBanner'
 
@@ -65,7 +62,7 @@ const getRangesToDisable = (timeRange: TimeRange) => {
   }
 }
 
-const TrendingPageContent = (props: DiscoverPageContentProps) => {
+const TrendingPageContent = (props: TrendingPageContentProps) => {
   const {
     trendingTitle,
     trendingDescription,
@@ -336,7 +333,6 @@ const TrendingPageContent = (props: DiscoverPageContentProps) => {
   // Setup Header
   const header = (
     <Header
-      containerStyles={baseStyles.mainHeader}
       primary={trendingTitle}
       variant={'main'}
       bottomBar={tabs}
@@ -359,16 +355,7 @@ const TrendingPageContent = (props: DiscoverPageContentProps) => {
         size='large'
         header={header}
       >
-        <div className={baseStyles.mainLineup}>
-          <Spring
-            key={'main-trending'}
-            from={{ opacity: 0.2 }}
-            to={{ opacity: 1 }}
-            config={{ duration: 200 }}
-          >
-            {style => <animated.div style={style}>{body}</animated.div>}
-          </Spring>
-        </div>
+        {body}
       </Page>
       <GenreSelectionModal
         genres={GENRES}

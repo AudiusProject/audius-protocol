@@ -5,12 +5,11 @@ import {
   push as pushRoute,
   replace as replaceRoute
 } from 'connected-react-router'
-import { feedActions } from './store/lineups/feed/actions'
 import { trendingActions } from './store/lineups/trending/actions'
-import * as discoverPageAction from './store/actions'
+import * as trendingPageActions from './store/actions'
 import { getHasAccount } from 'store/account/selectors'
 import { openSignOn } from 'containers/sign-on/store/actions'
-import { FEED_PAGE, TRENDING_PAGE, TRENDING_GENRES } from 'utils/route'
+import { TRENDING_GENRES } from 'utils/route'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
@@ -18,29 +17,24 @@ import TimeRange from 'models/TimeRange'
 import { GENRES } from 'utils/genres'
 
 import {
-  getDiscoverFeedLineup,
-  makeGetSuggestedFollows,
   getDiscoverTrendingLineup,
-  getFeedFilter,
   getTrendingTimeRange,
   getTrendingGenre,
   getDiscoverTrendingWeekLineup,
   getDiscoverTrendingYearLineup,
   getDiscoverTrendingMonthLineup,
   getLastFetchedTrendingGenre
-} from 'containers/discover-page/store/selectors'
+} from 'containers/trending-page/store/selectors'
 import {
   trendingWeekActions,
   trendingMonthActions,
   trendingYearActions
-} from 'containers/discover-page/store/lineups/trending/actions'
+} from 'containers/trending-page/store/lineups/trending/actions'
 import { isMobile } from 'utils/clientUtil'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
 const messages = {
-  feedTitle: 'Feed',
-  feedDescription: 'Listen to what people you follow are sharing',
   trendingTitle: 'Trending',
   trendingDescription: "Listen to what's trending on the Audius platform"
 }
@@ -56,23 +50,11 @@ const callLineupAction = (timeRange, action, ...args) => {
 }
 
 /**
- *  DiscoverPageProvider encapsulates the buisness logic
- *  around a connected DiscoverPage, injecting props into
- *  children as `DiscoverPageContentProps`.
+ *  TrendingPageProvider encapsulates the buisness logic
+ *  around a connected TrendingPage, injecting props into
+ *  children as `TrendingPageContentProps`.
  */
-class DiscoverPageProvider extends PureComponent {
-  goToTrending = () => {
-    this.props.history.push({
-      pathname: TRENDING_PAGE
-    })
-  }
-
-  goToFeed = () => {
-    this.props.history.push({
-      pathname: FEED_PAGE
-    })
-  }
-
+class TrendingPageProvider extends PureComponent {
   goToSignUp = () => {
     this.props.openSignOn(false)
   }
@@ -81,45 +63,29 @@ class DiscoverPageProvider extends PureComponent {
     this.props.goToRoute(TRENDING_GENRES)
   }
 
-  switchView = () => {
-    if (this.props.feedIsMain) {
-      this.goToTrending()
-    } else if (!this.props.hasAccount) {
-      this.goToSignUp()
-    } else {
-      this.goToFeed()
-    }
-  }
-
   matchesRoute = route => {
     return matchPath(window.location.pathname, {
       path: route
     })
   }
 
-  isOnDiscoverRoute = () => {
-    return this.matchesRoute(TRENDING_PAGE) || this.matchesRoute(FEED_PAGE)
-  }
-
   componentDidMount() {
     // Update the url search params on the trending page with the genre and timeRange
-    if (this.matchesRoute(TRENDING_PAGE)) {
-      const urlParams = new URLSearchParams(window.location.search)
-      const genre = urlParams.get('genre')
-      const timeRange = urlParams.get('timeRange')
-      const isValidGenre = genre && Object.values(GENRES).includes(genre)
+    const urlParams = new URLSearchParams(window.location.search)
+    const genre = urlParams.get('genre')
+    const timeRange = urlParams.get('timeRange')
+    const isValidGenre = genre && Object.values(GENRES).includes(genre)
 
-      // NOTE: b/c genre can be changed from a modal state, we need to check props before using url params
-      if (this.props.trendingGenre) {
-        this.updateGenreUrlParam(this.props.trendingGenre)
-      } else if (isValidGenre) {
-        this.props.setTrendingGenre(genre)
-      }
-      const isValidTimeRange =
-        timeRange && Object.values(TimeRange).includes(timeRange)
-      if (isValidTimeRange) {
-        this.props.setTrendingTimeRange(timeRange)
-      }
+    // NOTE: b/c genre can be changed from a modal state, we need to check props before using url params
+    if (this.props.trendingGenre) {
+      this.updateGenreUrlParam(this.props.trendingGenre)
+    } else if (isValidGenre) {
+      this.props.setTrendingGenre(genre)
+    }
+    const isValidTimeRange =
+      timeRange && Object.values(TimeRange).includes(timeRange)
+    if (isValidTimeRange) {
+      this.props.setTrendingTimeRange(timeRange)
     }
   }
 
@@ -134,15 +100,10 @@ class DiscoverPageProvider extends PureComponent {
   }
 
   componentWillUnmount() {
-    // Only reset the lineup if we're not staying
-    // on the discover page
-    if (this.isOnDiscoverRoute()) return
-
     // Only reset to if we're not on mobile (mobile should
     // preserve the current tab + state) or there was no
     // account (because the lineups could contain stale content).
     if (!this.props.isMobile || !this.props.hasAccount) {
-      this.props.resetFeedLineup()
       this.props.resetTrendingLineup()
       this.props.makeResetTrending(TimeRange.WEEK)()
       this.props.makeResetTrending(TimeRange.MONTH)()
@@ -208,11 +169,6 @@ class DiscoverPageProvider extends PureComponent {
 
   render() {
     const childProps = {
-      feedTitle: messages.feedTitle,
-      feedDescription: messages.feedDescription,
-      feedIsMain: this.props.feedIsMain,
-      feed: this.props.feed,
-
       trendingTitle: messages.trendingTitle,
       trendingDescription: messages.trendingDescription,
       trending: this.props.trending,
@@ -220,27 +176,15 @@ class DiscoverPageProvider extends PureComponent {
       trendingMonth: this.props.trendingMonth,
       trendingYear: this.props.trendingYear,
 
-      fetchSuggestedFollowUsers: this.props.fetchSuggestedFollowUsers,
-      followUsers: this.props.followUsers,
-      suggestedFollows: this.props.suggestedFollows,
       playTrendingTrack: this.props.playTrendingTrack,
       pauseTrendingTrack: this.props.pauseTrendingTrack,
       refreshTrendingInView: this.props.refreshTrendingInView,
-      refreshFeedInView: this.props.refreshFeedInView,
       hasAccount: this.props.hasAccount,
       goToTrending: this.goToTrending,
       goToSignUp: this.goToSignUp,
-      goToFeed: this.goToFeed,
       goToGenreSelection: this.goToGenreSelection,
-      setFeedInView: this.props.setFeedInView,
-      loadMoreFeed: this.props.loadMoreFeed,
-      playFeedTrack: this.props.playFeedTrack,
-      pauseFeedTrack: this.props.pauseFeedTrack,
       switchView: this.switchView,
       getLineupProps: this.getLineupProps,
-      setFeedFilter: this.props.setFeedFilter,
-      feedFilter: this.props.feedFilter,
-      resetFeedLineup: this.props.resetFeedLineup,
       resetTrendingLineup: this.props.resetTrendingLineup,
       trendingGenre: this.props.trendingGenre,
       trendingTimeRange: this.props.trendingTimeRange,
@@ -264,8 +208,6 @@ class DiscoverPageProvider extends PureComponent {
 
 const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
-  const getSuggestedFollows = makeGetSuggestedFollows()
-  const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
   const getTrendingLineup = makeGetLineupMetadatas(getDiscoverTrendingLineup)
   const getTrendingWeekLineup = makeGetLineupMetadatas(
     getDiscoverTrendingWeekLineup
@@ -279,16 +221,13 @@ const makeMapStateToProps = () => {
 
   const mapStateToProps = state => ({
     hasAccount: getHasAccount(state),
-    feed: getFeedLineup(state),
     trending: getTrendingLineup(state),
     trendingWeek: getTrendingWeekLineup(state),
     trendingMonth: getTrendingMonthLineup(state),
     trendingYear: getTrendingYearLineup(state),
-    suggestedFollows: getSuggestedFollows(state),
     currentQueueItem: getCurrentQueueItem(state),
     playing: getPlaying(state),
     buffering: getBuffering(state),
-    feedFilter: getFeedFilter(state),
     trendingTimeRange: getTrendingTimeRange(state),
     trendingGenre: getTrendingGenre(state),
     lastFetchedTrendingGenre: getLastFetchedTrendingGenre(state),
@@ -301,25 +240,8 @@ const mapDispatchToProps = dispatch => ({
   dispatch,
   openSignOn: signIn => dispatch(openSignOn(signIn)),
   resetTrendingLineup: () => dispatch(trendingActions.reset()),
-  resetFeedLineup: () => dispatch(feedActions.reset()),
-  fetchSuggestedFollowUsers: () =>
-    dispatch(discoverPageAction.fetchSuggestedFollowUsers()),
   goToRoute: route => dispatch(pushRoute(route)),
   replaceRoute: route => dispatch(replaceRoute(route)),
-  followUsers: userIds => dispatch(discoverPageAction.followUsers(userIds)),
-  setFeedFilter: filter => dispatch(discoverPageAction.setFeedFilter(filter)),
-
-  // Feed Lineup Actions
-  setFeedInView: inView => dispatch(feedActions.setInView(inView)),
-  loadMoreFeed: (offset, limit, overwrite) => {
-    dispatch(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
-    const trackEvent = make(Name.FEED_PAGINATE, { offset, limit })
-    dispatch(trackEvent)
-  },
-  refreshFeedInView: (overwrite, limit) =>
-    dispatch(feedActions.refreshInView(overwrite, null, limit)),
-  playFeedTrack: uid => dispatch(feedActions.play(uid)),
-  pauseFeedTrack: () => dispatch(feedActions.pause()),
 
   // Trending Lineup Actions
   refreshTrendingInView: overwrite =>
@@ -327,9 +249,9 @@ const mapDispatchToProps = dispatch => ({
   playTrendingTrack: uid => dispatch(trendingActions.play(uid)),
   pauseTrendingTrack: () => dispatch(trendingActions.pause()),
   setTrendingGenre: genre =>
-    dispatch(discoverPageAction.setTrendingGenre(genre)),
+    dispatch(trendingPageActions.setTrendingGenre(genre)),
   setTrendingTimeRange: timeRange =>
-    dispatch(discoverPageAction.setTrendingTimeRange(timeRange)),
+    dispatch(trendingPageActions.setTrendingTimeRange(timeRange)),
 
   // Dynamically dispatched trending actions
   makeRefreshTrendingInView: timeRange => {
@@ -375,5 +297,5 @@ const mapDispatchToProps = dispatch => ({
 })
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(DiscoverPageProvider)
+  connect(makeMapStateToProps, mapDispatchToProps)(TrendingPageProvider)
 )

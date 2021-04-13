@@ -1,6 +1,6 @@
 import { initialLineupState } from 'store/lineup/reducer'
 import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
-import { PREFIX } from 'containers/discover-page/store/lineups/feed/actions'
+import { PREFIX } from 'containers/feed-page/store/lineups/feed/actions'
 
 const initialState = {
   ...initialLineupState,

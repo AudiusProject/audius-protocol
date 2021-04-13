@@ -1,6 +1,7 @@
 import ArtistDashboardState from 'containers/artist-dashboard-page/store/types'
 import CollectionsPageState from 'containers/collection-page/store/types'
-import DiscoveryPageState from 'containers/discover-page/store/types'
+import FeedPageState from 'containers/feed-page/store/types'
+import TrendingPageState from 'containers/trending-page/store/types'
 import ExplorePageState from 'containers/explore-page/store/types'
 import HistoryPageState from 'containers/history-page/store/types'
 import NotificationState from 'containers/notification/store/types'
@@ -153,7 +154,8 @@ export type AppState = {
   profile: ProfilePageState
   dashboard: ArtistDashboardState
   signOn: SignOnPageState
-  discover: DiscoveryPageState
+  feed: FeedPageState
+  trending: TrendingPageState
   history: HistoryPageState
   saved: SavesPageState
   searchBar: SearchBarState

@@ -3,7 +3,7 @@ import { select } from 'redux-saga/effects'
 import { LineupSagas } from 'store/lineup/sagas'
 import TimeRange from 'models/TimeRange'
 
-import { getTrendingGenre } from 'containers/discover-page/store/selectors'
+import { getTrendingGenre } from 'containers/trending-page/store/selectors'
 
 import {
   TRENDING_WEEK_PREFIX,
@@ -41,7 +41,7 @@ class TrendingWeekSagas extends LineupSagas {
     super(
       TRENDING_WEEK_PREFIX,
       trendingWeekActions,
-      store => store.discover.trendingWeek,
+      store => store.trending.trendingWeek,
       getTracks(TimeRange.WEEK)
     )
   }
@@ -52,7 +52,7 @@ class TrendingMonthSagas extends LineupSagas {
     super(
       TRENDING_MONTH_PREFIX,
       trendingMonthActions,
-      store => store.discover.trendingMonth,
+      store => store.trending.trendingMonth,
       getTracks(TimeRange.MONTH)
     )
   }
@@ -63,7 +63,7 @@ class TrendingYearSagas extends LineupSagas {
     super(
       TRENDING_YEAR_PREFIX,
       trendingYearActions,
-      store => store.discover.trendingYear,
+      store => store.trending.trendingYear,
       getTracks(TimeRange.YEAR)
     )
   }

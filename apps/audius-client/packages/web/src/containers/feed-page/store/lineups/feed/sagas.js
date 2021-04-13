@@ -4,9 +4,9 @@ import AudiusBackend from 'services/AudiusBackend'
 import {
   PREFIX,
   feedActions
-} from 'containers/discover-page/store/lineups/feed/actions'
+} from 'containers/feed-page/store/lineups/feed/actions'
 import { LineupSagas } from 'store/lineup/sagas'
-import { getFeedFilter } from 'containers/discover-page/store/selectors'
+import { getFeedFilter } from 'containers/feed-page/store/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 import {
   getAccountReady,
@@ -75,7 +75,7 @@ class FeedSagas extends LineupSagas {
     super(
       PREFIX,
       feedActions,
-      store => store.discover.feed,
+      store => store.feed.feed,
       getTracks,
       keepActivityTimeStamp
     )
