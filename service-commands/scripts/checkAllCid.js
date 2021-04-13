@@ -14,7 +14,7 @@ function sleep (ms) {
 }
 
 function makeRequest (request) {
-  return retry(() => axios(request), { retries: 3 })
+  return retry(() => axios(request), { retries: 10 })
 }
 
 /**
@@ -126,6 +126,8 @@ async function getCidsExist (creatorNode, cids, batchSize = 500) {
       throw new Error('creator node out of date')
     }
 
+    await sleep(5000)
+
     const cidsExist = []
 
     for (let offset = 0; offset < cids.length; offset += batchSize) {
@@ -173,6 +175,8 @@ async function getImageCidsExist (creatorNode, cids, batchSize = 500) {
       throw new Error('creator node out of date')
     }
 
+    await sleep(5000)
+
     const cidsExist = []
 
     for (let offset = 0; offset < cids.length; offset += batchSize) {
@@ -207,7 +211,7 @@ async function run () {
 
   const trackCids = await getTrackCids(discoveryProvider, trackBatchSize)
   fs.writeFileSync('trackCids.json', JSON.stringify(trackCids, null, 4))
-  //  const tracksCids = require('trackCids.json')
+  // const trackCids = require('./trackCids.json')
 
   const totalUsers = (
     await makeRequest({
