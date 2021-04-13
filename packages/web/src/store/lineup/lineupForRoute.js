@@ -1,9 +1,7 @@
 import { matchPath } from 'react-router'
 
-import {
-  getDiscoverFeedLineup,
-  getCurrentDiscoverTrendingLineup
-} from 'containers/discover-page/store/selectors'
+import { getDiscoverFeedLineup } from 'containers/feed-page/store/selectors'
+import { getCurrentDiscoverTrendingLineup } from 'containers/trending-page/store/selectors'
 import { getHistoryTracksLineup } from 'containers/history-page/store/selectors'
 import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
 import { getProfileTracksLineup } from 'containers/profile-page/store/selectors'

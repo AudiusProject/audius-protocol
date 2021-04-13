@@ -1,9 +1,9 @@
-import { setLastFetchedTrendingGenre } from 'containers/discover-page/store/actions'
-import { getTrendingEntries } from 'containers/discover-page/store/lineups/trending/selectors'
+import { setLastFetchedTrendingGenre } from 'containers/trending-page/store/actions'
+import { getTrendingEntries } from 'containers/trending-page/store/lineups/trending/selectors'
 import {
   getLastFetchedTrendingGenre,
   getTrendingGenre
-} from 'containers/discover-page/store/selectors'
+} from 'containers/trending-page/store/selectors'
 import { ID } from 'models/common/Identifiers'
 import TimeRange from 'models/TimeRange'
 import Track, { UserTrackMetadata } from 'models/Track'

@@ -1,13 +1,12 @@
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
-import * as discoverActions from 'containers/discover-page/store/actions'
-import { feedActions } from 'containers/discover-page/store/lineups/feed/actions'
+import * as discoverActions from 'containers/feed-page/store/actions'
+import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
 import * as socialActions from 'store/social/users/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { fetchSuggestedFollowUserIds } from 'containers/sign-on/store/sagas'
 import { fetchUsers } from 'store/cache/users/sagas'
 
 import feedSagas from './lineups/feed/sagas.js'
-import trendingSagas from './lineups/trending/sagas.js'
 
 function* fetchSuggestedFollowUsers() {
   yield call(waitForBackendSetup)
@@ -62,10 +61,5 @@ function* watchFollowUsers() {
 }
 
 export default function sagas() {
-  return [
-    ...feedSagas(),
-    ...trendingSagas(),
-    watchFetchSuggestedFollowUsers,
-    watchFollowUsers
-  ]
+  return [...feedSagas(), watchFetchSuggestedFollowUsers, watchFollowUsers]
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import * as discoverPageActions from 'containers/discover-page//store/actions'
+import * as discoverPageActions from 'containers/trending-page/store/actions'
 import TrendingGenreSelectionPage from './components/TrendingGenreSelectionPage'
 import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
 import { Dispatch } from 'redux'
@@ -8,14 +8,14 @@ import { connect } from 'react-redux'
 import {
   getTrendingGenre,
   getTrendingTimeRange
-} from 'containers/discover-page/store/selectors'
+} from 'containers/trending-page/store/selectors'
 import { push as pushRoute } from 'connected-react-router'
 import { TRENDING_PAGE } from 'utils/route'
 import {
   trendingMonthActions,
   trendingYearActions,
   trendingWeekActions
-} from 'containers/discover-page/store/lineups/trending/actions'
+} from 'containers/trending-page/store/lineups/trending/actions'
 import TimeRange from 'models/TimeRange'
 
 type ConnectedTrendingGenreSelectionPageProps = {} & ReturnType<
