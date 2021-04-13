@@ -8,9 +8,9 @@ async function run() {
     let start = Date.now()
     let numSuccessfullyProcessed = 0
     await Promise.all(randomTrackIds.map(async (trackId) =>{
+        let randomUserId = Math.floor(Math.random() * 10000000)
+        console.log(`Logging listen for trackId=${trackId}, userId=${randomUserId}`)
         try {
-            let randomUserId = Math.floor(Math.random() * 10000000)
-            console.log(`Logging listen for trackId=${trackId}, userId=${randomUserId}`)
             let data = JSON.stringify({"userId": randomUserId, "solanaListen": true });
             let requestConfig = {
                 method: 'post',

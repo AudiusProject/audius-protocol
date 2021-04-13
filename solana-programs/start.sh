@@ -1,5 +1,6 @@
-address=BCd61FAc303e9fc78fDf612A71AAa7a47a36b2d6
-priv_key=c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a
+eth_account=$(python -c "from web3.auto import w3; a = w3.eth.account.create(); print(a.address[2:], a.privateKey.hex()[2:])")
+address=$(echo $eth_account | cut -d' ' -f1)
+priv_key=$(echo $eth_account | cut -d' ' -f2)
 
 solana config set -u devnet
 
@@ -30,13 +31,14 @@ signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
 valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
 
 cd ..
-cat > solana-program-config.json <<EOF
+cat >solana-program-config.json <<EOF
 {
     "createAndVerifyAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
     "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
     "validSigner": "$valid_signer",
     "feePayerWallet": $(cat feepayer.json),
     "ownerWallet": $(cat owner.json),
-    "endpoint": "https://devnet.solana.com"
+    "endpoint": "https://devnet.solana.com",
+    "signerPrivateKey": "$priv_key"
 }
 EOF
