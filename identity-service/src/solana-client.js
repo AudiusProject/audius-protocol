@@ -150,7 +150,7 @@ async function createAndVerifyMessage (
     transaction,
     [feePayer]
   )
-  console.log(txInfo)
+  return txInfo
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage

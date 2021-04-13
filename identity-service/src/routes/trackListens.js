@@ -209,9 +209,25 @@ module.exports = function (app) {
     if (!userId || !trackId) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
+    const solanaListen = req.body.solanaListen || false
+
+    // Dedicated listen flow
+    if (solanaListen) {
+      let solTxSignature = await instr.createAndVerifyMessage(
+        null,
+        'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
+        userId.toString(),
+        trackId.toString(),
+        Date.now().toString()
+      )
+      console.log(solTxSignature)
+      return successResponse({
+        solTxSignature
+      })
+    }
+
     let currentHour = await getListenHour()
     // TODO: Make all of this conditional based on request parameters
-    /*
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
         where: { hour: currentHour, trackId }
@@ -219,19 +235,9 @@ module.exports = function (app) {
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
-    */
-
-    await instr.createAndVerifyMessage(
-      null,
-      'c8fa5fdef48a400fc1005d9e939d5b7b99b29bddd56bbd4272c40d5e38e7ca0a',
-      userId.toString(),
-      trackId.toString(),
-      Date.now().toString()
-    )
 
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table
-    /*
     const isRealUser = typeof userId === 'number'
     if (isRealUser) {
       // Find / Create the record of the user listening to the track
@@ -244,7 +250,6 @@ module.exports = function (app) {
         await userTrackListenRecord.save()
       }
     }
-    */
 
     return successResponse({})
   }))
