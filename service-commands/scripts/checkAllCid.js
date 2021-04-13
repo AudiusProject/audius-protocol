@@ -5,15 +5,15 @@ const https = require('https')
 const axios = require('axios')
 const retry = require('async-retry')
 
-axios.defaults.timeout = 5000
-axios.defaults.httpAgent = new http.Agent({ timeout: 5000 })
-axios.defaults.httpsAgent = new https.Agent({ timeout: 5000 })
+axios.defaults.timeout = 10000
+axios.defaults.httpAgent = new http.Agent({ timeout: 10000 })
+axios.defaults.httpsAgent = new https.Agent({ timeout: 10000 })
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+function sleep (ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function makeRequest(request) {
+function makeRequest (request) {
   return retry(() => axios(request), { retries: 3 })
 }
 
@@ -23,7 +23,7 @@ function makeRequest(request) {
  * @param {number} limit
  * @returns {Array<Object>} userBatch
  */
-async function getUsersBatch(discoveryProvider, offset, limit) {
+async function getUsersBatch (discoveryProvider, offset, limit) {
   return (
     await makeRequest({
       method: 'get',
@@ -44,7 +44,7 @@ async function getUsersBatch(discoveryProvider, offset, limit) {
  * @param {number} batchSize - Batch Size to use for each request
  * @returns {Object} trackCids - A object mapping user id to a list of track cids
  */
-async function getTrackCids(discoveryProvider, batchSize) {
+async function getTrackCids (discoveryProvider, batchSize) {
   const trackCids = {}
 
   const totalTracks = (
@@ -85,7 +85,7 @@ async function getTrackCids(discoveryProvider, batchSize) {
  * @param {Array<string>} walletPublicKeys
  * @returns {Array<Object>} clockValues
  */
-async function getClockValues(creatorNode, walletPublicKeys) {
+async function getClockValues (creatorNode, walletPublicKeys) {
   try {
     return (
       await makeRequest({
@@ -109,8 +109,23 @@ async function getClockValues(creatorNode, walletPublicKeys) {
  * @param {Array<string>} cids
  * @returns {Array<Object>} cidsExist
  */
-async function getCidsExist(creatorNode, cids, batchSize = 500) {
+async function getCidsExist (creatorNode, cids, batchSize = 500) {
   try {
+    const supported =
+      (
+        await makeRequest({
+          method: 'post',
+          url: '/batch_cids_exist',
+          baseURL: creatorNode,
+          data: { cids: [] },
+          validateStatus: (status) => status === 200 || status === 404
+        })
+      ).status === 200
+
+    if (!supported) {
+      throw new Error('creator node out of date')
+    }
+
     const cidsExist = []
 
     for (let offset = 0; offset < cids.length; offset += batchSize) {
@@ -141,8 +156,23 @@ async function getCidsExist(creatorNode, cids, batchSize = 500) {
  * @param {Array<string>} cids
  * @returns {Array<Object>} cidsExist
  */
-async function getImageCidsExist(creatorNode, cids, batchSize = 500) {
+async function getImageCidsExist (creatorNode, cids, batchSize = 500) {
   try {
+    const supported =
+      (
+        await makeRequest({
+          method: 'post',
+          url: '/batch_image_cids_exist',
+          baseURL: creatorNode,
+          data: { cids: [] },
+          validateStatus: (status) => status === 200 || status === 404
+        })
+      ).status === 200
+
+    if (!supported) {
+      throw new Error('creator node out of date')
+    }
+
     const cidsExist = []
 
     for (let offset = 0; offset < cids.length; offset += batchSize) {
@@ -168,14 +198,16 @@ async function getImageCidsExist(creatorNode, cids, batchSize = 500) {
   }
 }
 
-async function run() {
-  // const discoveryProvider = "https://discoveryprovider.audius.co/"
-  const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
+async function run () {
+  const discoveryProvider = 'https://discoveryprovider.audius.co/'
+  // const discoveryProvider = "https://discoveryprovider.staging.audius.co/"
   // const discoveryProvider = 'http://localhost:5000'
   const trackBatchSize = 500
   const userBatchSize = 500
 
   const trackCids = await getTrackCids(discoveryProvider, trackBatchSize)
+  fs.writeFileSync('trackCids.json', JSON.stringify(trackCids, null, 4))
+  //  const tracksCids = require('trackCids.json')
 
   const totalUsers = (
     await makeRequest({
