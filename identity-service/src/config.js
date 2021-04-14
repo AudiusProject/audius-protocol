@@ -530,7 +530,7 @@ const config = convict({
   },
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
-    format: 'string',
+    format: String,
     default: null,
     env: 'solanaSignerPrivateKey'
   },
