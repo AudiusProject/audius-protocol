@@ -757,15 +757,12 @@ def milestones_followers():
     with db.scoped_session() as session:
         follower_counts = (
             session.query(
-                Follow.followee_user_id,
-                func.count(Follow.followee_user_id)
+                AggregateUser.user_id,
+                AggregateUser.follower_count
             )
             .filter(
-                Follow.is_current == True,
-                Follow.is_delete == False,
-                Follow.followee_user_id.in_(user_ids)
+                AggregateUser.user_id.in_(user_ids)
             )
-            .group_by(Follow.followee_user_id)
             .all()
         )
         follower_count_dict = \
