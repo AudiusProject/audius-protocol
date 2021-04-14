@@ -450,6 +450,18 @@ const config = convict({
     format: Boolean,
     env: 'enableRehydrate',
     default: true
+  },
+  maxManualRequestSyncJobConcurrency: {
+    doc: 'Max bull queue concurrency for manual sync request jobs',
+    format: 'nat',
+    env: 'maxManualRequestSyncJobConcurrency',
+    default: 15
+  },
+  maxRecurringRequestSyncJobConcurrency: {
+    doc: 'Max bull queue concurrency for recurring sync request jobs',
+    format: 'nat',
+    env: 'maxRecurringRequestSyncJobConcurrency',
+    default: 5
   }
 
   // unsupported options at the moment
