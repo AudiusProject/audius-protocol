@@ -1,6 +1,9 @@
 import binascii
 import codecs
 import logging
+import concurrent.futures
+import time 
+
 
 import base58
 from sqlalchemy import desc
@@ -89,6 +92,18 @@ def get_latest_slot(db):
     logger.info(f"index_solana_plays.py | returning {latest_slot} for highest slot")
     return latest_slot
 
+# Query a tx signature and confirm its existence
+def get_tx_in_db(session, tx_sig):
+    logger.info(f"index_solana_plays.py | checking db for {tx_sig}")
+    exists = False
+    tx_sig_db_count = (
+        session.query(Play)
+        .filter(Play.signature == tx_sig)
+    ).count()
+    exists = tx_sig_db_count > 0
+    logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
+    return exists
+
 def process_solana_plays(solana_client):
     db = index_solana_plays.db
 
@@ -102,6 +117,9 @@ def process_solana_plays(solana_client):
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = []
 
+    # Current batch of transactions
+    transaction_signature_batch = []
+
     last_tx_signature = None
 
     # Traverse recent records until an intersection is found with existing Plays table
@@ -110,45 +128,85 @@ def process_solana_plays(solana_client):
         transactions_history = solana_client.get_confirmed_signature_for_address2(
             TRACK_LISTEN_PROGRAM,
             before=last_tx_signature,
-            limit=15
+            limit=100
         )
         transactions_array = transactions_history['result']
-        logger.info(f"index_solana_plays.py | {transactions_array}")
+        # logger.info(f"index_solana_plays.py | {transactions_array}")
 
         if not transactions_array:
+            # This is considered an 'intersection' since there are no further transactions to process but
+            # really represents the end of known history for this ProgramId
             intersection_found = True
             logger.info(f"index_solana_plays.py | No transactions found before {last_tx_signature}")
         else:
-            for tx in transactions_array:
-                tx_sig = tx['signature']
-                tx_slot = tx['slot']
-                logger.info(f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={tx_slot}")
-                if tx['slot'] > latest_processed_slot:
-                    transaction_signatures.append(tx['signature'])
-                else:
-                    logger.info(
-                        f"index_solana_plays.py |\
-slot={tx_slot}, sig={tx_sig},\
-latest_processed_slot(db)={latest_processed_slot}"
-                    )
-                    # Exit loop and set terminal condition since this slot is >
-                    intersection_found = True
-                    break
-            last_tx = transactions_array[-1]
-            last_tx_signature = last_tx["signature"]
+            with db.scoped_session() as read_session:
+                for tx in transactions_array:
+                    tx_sig = tx['signature']
+                    tx_slot = tx['slot']
+                    logger.info(f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={tx_slot}")
+                    if tx['slot'] > latest_processed_slot:
+                        transaction_signature_batch.append(tx_sig)
+                    elif tx['slot'] == latest_processed_slot:
+                        # Check the tx signature for any txs in the latest batch, and if not present in DB, add to processing
+                        logger.info(
+                            f"index_solana_plays.py | Latest slot re-traversal\
+    slot={tx_slot}, sig={tx_sig},\
+    latest_processed_slot(db)={latest_processed_slot}")
+                        exists = get_tx_in_db(read_session, tx_sig)
+                        if exists:
+                            # Exit loop and set terminal condition since this tx has been found in DB
+                            # Transactions are returned with most recently committed first, so we can assume
+                            # subsequent transactions in this batch have already been processed
+                            intersection_found = True
+                            break
+                        else:
+                            # Ensure this transaction is still processed
+                            transaction_signature_batch.append(tx_sig)
+                    else:
+                        logger.info(
+                            f"index_solana_plays.py |\
+    slot={tx_slot}, sig={tx_sig},\
+    latest_processed_slot(db)={latest_processed_slot}"
+                        )
+                        # Exit loop and set terminal condition since this slot is < max known value in plays DB
+                        intersection_found = True
+                        break
+                last_tx = transactions_array[-1]
+                last_tx_signature = last_tx["signature"]
+                # Append batch of processed signatures
+                transaction_signatures.append(transaction_signature_batch)
+                # Reset batch state
+                transaction_signature_batch = []
         logger.info(
             f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}"
         )
 
-    logger.info(f"index_solana_plays.py | {transaction_signatures}")
+    logger.info(f"index_solana_plays.2py | {transaction_signatures}, {len(transaction_signatures)} entries")
+
+    transaction_signatures.reverse()
 
     # TODO: DO NOT LET transaction_signatures grow unbounded, cut off x last entries
+    logger.info(f"index_solana_plays.py | {transaction_signatures}")
 
-    with db.scoped_session() as session:
-        for sig in transaction_signatures:
-            logger.error(f"index_solana_plays.py | processing {sig}")
-            parse_sol_play_transaction(session, solana_client, sig)
+    for tx_sig_batch in transaction_signatures:
+        logger.error(f"index_solana_plays.py | processing {tx_sig_batch}")
+        batch_start_time = time.time()
+        # Process each batch in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            with db.scoped_session() as session:
+                parse_sol_tx_futures = {
+                    executor.submit(parse_sol_play_transaction, session, solana_client, tx_sig): tx_sig for tx_sig in tx_sig_batch
+                }
+                for future in concurrent.futures.as_completed(parse_sol_tx_futures):
+                    try:
+                        # No return value expected here so we just ensure all futures are resolved
+                        future.result()
+                    except Exception as exc:
+                        logger.error(exc)
 
+        batch_end_time = time.time()
+        batch_duration = batch_end_time - batch_start_time
+        logger.info(f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s")
 
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
