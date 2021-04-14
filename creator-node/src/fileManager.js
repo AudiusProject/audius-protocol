@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
+const promiseAny = require('promise.any')
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -173,11 +174,11 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
           decisionTree.push({ stage: 'Fetching from gateways', vals: gatewayUrlsSlice, time: Date.now() })
 
           /**
-           * Promise.any(promises) resolves to the first promise that resolves, or rejects if all reject
+           * promiseAny(promises) resolves to the first promise that resolves, or rejects if all reject
            * Each internal request must reject after a timeout to ensure this does not wait forever
            */
           try {
-            const resp = await Promise.any(gatewayUrlsSlice.map(
+            const resp = await promiseAny(gatewayUrlsSlice.map(
               async url => {
                 const gatewayResp = await axios({
                   method: 'get',
@@ -193,14 +194,14 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
               }
             ))
 
-            // Promise.any resolution means file was successfully retrieved -> short-circuit loop
+            // promiseAny resolution means file was successfully retrieved -> short-circuit loop
             if (resp.data) {
               response = resp
               break
             }
 
             /**
-             * Log Promise.any rejection and continue to next loop iteration
+             * Log promiseAny rejection and continue to next loop iteration
              * This just means that file retrieval failed from current gatewayUrlsSlice
              */
           } catch (e) {
