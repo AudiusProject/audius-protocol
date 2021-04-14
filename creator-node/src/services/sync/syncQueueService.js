@@ -1,8 +1,8 @@
 /**
- * 
+ *
  */
 
-const Bull = require("bull")
+const Bull = require('bull')
 
 const JobProcessorName = 'asdf'
 const JobProcessorConcurrency = 10
@@ -33,8 +33,8 @@ class SyncProcessingQueue {
     )
   }
 
-  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint }
+  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint, serviceRegistry }) {
+    const jobProps = { walletPublicKeys, creatorNodeEndpoint, serviceRegistry }
     const job = await this.queue.add(jobProps)
 
     return job

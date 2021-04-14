@@ -4,9 +4,10 @@
  */
 
 // takes in serviceRegistry to interact with syncService
-const enqueueSync = async ({ syncQueueService }, walletPublicKeys, creatorNodeEndpoint) => {
-  await syncQueueService.enqueueSync({
-    walletPublicKeys, creatorNodeEndpoint
+const enqueueSync = async (serviceRegistry, walletPublicKeys, creatorNodeEndpoint) => {
+  console.log(`SIDEST ENQUEUESYNC SYNCQUEUESERVICE: ${JSON.stringify(serviceRegistry.syncQueueService)}`)
+  await serviceRegistry.syncQueueService.enqueueSync({
+    walletPublicKeys, creatorNodeEndpoint, serviceRegistry
   })
 }
 

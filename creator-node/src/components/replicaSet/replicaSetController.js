@@ -4,11 +4,12 @@ const { serviceRegistry } = require('../../serviceRegistry')
 const {
   successResponse,
   handleResponse,
-  handleApiError
+  handleApiError,
+  errorResponseBadRequest
 } = require('../../apiHelpers')
 const { respondToURSMRequestForSignature } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
-const { enqueueSync } = require('./SyncQueueComponentService')
+const { enqueueSync } = require('./syncQueueComponentService')
 
 const router = express.Router()
 
@@ -54,6 +55,8 @@ const syncRequestController = async (req, res) => {
     req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
   }
 
+  console.log(`SIDTEST SYNCQUEUESERVICE: ${Object.keys(serviceRegistry)}`)
+
   // await secondarySync(req, walletPublicKeys, creatorNodeEndpoint)
   await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
 
@@ -63,6 +66,6 @@ const syncRequestController = async (req, res) => {
 // Routes
 
 router.get('/ursm_request_for_signature', handleResponse(respondToURSMRequestForProposalController))
-router.get('/sync2', ensureStorageMiddleware, handleResponse(syncRequestController))
+router.post('/sync2', ensureStorageMiddleware, handleResponse(syncRequestController))
 
 module.exports = router

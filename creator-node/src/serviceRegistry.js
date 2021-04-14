@@ -9,7 +9,7 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
-const SyncQueueService = require('./services/Sync/SyncQueueService')
+const SyncQueueService = require('./services/sync/syncQueueService')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
