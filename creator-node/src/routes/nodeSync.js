@@ -9,8 +9,8 @@ const { getIPFSPeerId } = require('../utils')
 
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
-const TrackSaveConcurrencyLimit = 10
-const NonTrackFileSaveConcurrencyLimit = 10
+
+const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
 module.exports = function (app) {
   /**
@@ -472,9 +472,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
         // Save all track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
-          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-          req.logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
+        for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
+          const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
+          req.logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
 
           await Promise.all(trackFilesSlice.map(
             trackFile => saveFileForMultihashToFS(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
@@ -483,9 +483,9 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         req.logger.info(redisKey, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
-          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-          req.logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
+        for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
+          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
+          req.logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency} out of total ${nonTrackFiles.length}...`)
           await Promise.all(nonTrackFilesSlice.map(
             nonTrackFile => {
               // Skip over directories since there's no actual content to sync
