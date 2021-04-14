@@ -184,8 +184,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
                 Follow.is_delete == False,
                 Follow.follower_user_id == current_user_id
             )
+            .subquery()
         )
-        current_user_followees = {r[0]: True for r in current_user_followees}
 
         current_user_followee_follow_counts = (
             session.query(
