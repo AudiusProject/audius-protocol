@@ -219,63 +219,64 @@ def add_users(session, results):
             result["user"] = user
     return results
 
-def perform_search_query(session, search_type, args):
-    search_str = args.get('search_str')
-    limit = args.get('limit')
-    offset = args.get('offset')
-    is_auto_complete = args.get('is_auto_complete')
-    current_user_id = args.get('current_user_id')
-    only_downloadable = args.get('only_downloadable')
+def perform_search_query(db, search_type, args):
+    with db.scoped_session() as session:
+        search_str = args.get('search_str')
+        limit = args.get('limit')
+        offset = args.get('offset')
+        is_auto_complete = args.get('is_auto_complete')
+        current_user_id = args.get('current_user_id')
+        only_downloadable = args.get('only_downloadable')
 
-    results = []
-    if search_type == 'tracks':
-        results = track_search_query(session, search_str, limit, offset, False, is_auto_complete, current_user_id, only_downloadable)
-    elif search_type == 'saved_tracks':
-        results = track_search_query(
-            session, search_str, limit, offset, True, is_auto_complete, current_user_id, only_downloadable)
-    elif search_type == 'users':
-        results = user_search_query(
-            session, search_str, limit, offset, False, is_auto_complete, current_user_id)
-    elif search_type == 'followed_users':
-        results = user_search_query(
-            session, search_str, limit, offset, True, is_auto_complete, current_user_id)
-    elif search_type == 'playlists':
-        results = playlist_search_query(
-            session,
-            search_str,
-            limit,
-            offset,
-            False,
-            False,
-            is_auto_complete,
-            current_user_id
-        )
-    elif search_type == 'saved_playlists':
-        results = playlist_search_query(
-            session,
-            search_str,
-            limit,
-            offset,
-            False,
-            True,
-            is_auto_complete,
-            current_user_id
-        )
-    elif search_type == 'albums':
-        results = playlist_search_query(
-            session, search_str, limit, offset, True, False, is_auto_complete, current_user_id)
-    elif search_type == 'saved_albums':
-        results = playlist_search_query(
-            session,
-            search_str,
-            limit,
-            offset,
-            True,
-            True,
-            is_auto_complete,
-            current_user_id
-        )
-    return results
+        results = None
+        if search_type == 'tracks':
+            results = track_search_query(session, search_str, limit, offset, False, is_auto_complete, current_user_id, only_downloadable)
+        elif search_type == 'saved_tracks':
+            results = track_search_query(
+                session, search_str, limit, offset, True, is_auto_complete, current_user_id, only_downloadable)
+        elif search_type == 'users':
+            results = user_search_query(
+                session, search_str, limit, offset, False, is_auto_complete, current_user_id)
+        elif search_type == 'followed_users':
+            results = user_search_query(
+                session, search_str, limit, offset, True, is_auto_complete, current_user_id)
+        elif search_type == 'playlists':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                False,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'saved_playlists':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                True,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'albums':
+            results = playlist_search_query(
+                session, search_str, limit, offset, True, False, is_auto_complete, current_user_id)
+        elif search_type == 'saved_albums':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                True,
+                True,
+                is_auto_complete,
+                current_user_id
+            )
+        return results
 
 # SEARCH QUERIES
 # We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
@@ -333,49 +334,50 @@ def search(args):
 
     if searchStr:
         db = get_db_read_replica()
-        with db.scoped_session() as session:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-                # Keep a mapping of future -> search_type
-                futures_map = {}
-                futures = []
 
-                # Helper fn to submit a future and add it to bookkeeping data structures
-                def submit_and_add(search_type):
-                    future = executor.submit(perform_search_query, session, search_type, args)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            # Keep a mapping of future -> search_type
+            futures_map = {}
+            futures = []
+
+            # Helper fn to submit a future and add it to bookkeeping data structures
+            def submit_and_add(search_type):
+                    future = executor.submit(perform_search_query, db, search_type, search_args)
                     futures.append(future)
                     futures_map[future] = search_type
 
-                if (searchKind in [SearchKind.all, SearchKind.tracks]):
-                    submit_and_add("tracks")
-                    if current_user_id:
-                        submit_and_add("saved_tracks")
+            if (searchKind in [SearchKind.all, SearchKind.tracks]):
+                submit_and_add("tracks")
+                if current_user_id:
+                    submit_and_add("saved_tracks")
 
-                if (searchKind in [SearchKind.all, SearchKind.users]):
-                    submit_and_add("users")
-                    if current_user_id:
-                        submit_and_add("followed_users")
+            if (searchKind in [SearchKind.all, SearchKind.users]):
+                submit_and_add("users")
+                if current_user_id:
+                    submit_and_add("followed_users")
 
-                if (searchKind in [SearchKind.all, SearchKind.playlists]):
-                    submit_and_add("playlists")
-                    if current_user_id:
-                        submit_and_add("saved_playlists")
+            if (searchKind in [SearchKind.all, SearchKind.playlists]):
+                submit_and_add("playlists")
+                if current_user_id:
+                    submit_and_add("saved_playlists")
 
-                if (searchKind in [SearchKind.all, SearchKind.albums]):
-                    submit_and_add("albums")
-                    if current_user_id:
-                        submit_and_add("saved_albums")
+            if (searchKind in [SearchKind.all, SearchKind.albums]):
+                submit_and_add("albums")
+                if current_user_id:
+                    submit_and_add("saved_albums")
 
-                # TODO: add a timeout here
-                for future in concurrent.futures.as_completed(futures):
-                    search_result = future.result()
-                    future_type = futures_map[future]
+            # TODO: add a timeout here
+            for future in concurrent.futures.as_completed(futures):
+                search_result = future.result()
+                future_type = futures_map[future]
 
-                    # Add to the final results
-                    results[future_type] = search_result
+                # Add to the final results
+                results[future_type] = search_result
 
-                    # Add to user_ids
-                    user_ids.update(get_users_ids(search_result))
+                # Add to user_ids
+                user_ids.update(get_users_ids(search_result))
 
+            with db.scoped_session() as session:
                 # Add users back
                 users = get_users_by_id(session, list(user_ids), current_user_id)
 
@@ -390,7 +392,6 @@ def search(args):
                         if user_id is not None:
                             user = users[user_id]
                             result["user"] = user
-    logger.warning(f"{results}")
     return results
 
 def track_search_query(
