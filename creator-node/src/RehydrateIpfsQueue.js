@@ -11,8 +11,11 @@ const PROCESS_NAMES = Object.freeze({
 })
 
 // minimum threshold per day to rehydrate
-const MIN_REHYDRATE_THRESHOLD = config.get('minRehydrateThreshold') || 10
+const MIN_REHYDRATE_THRESHOLD = 10
 const MAX_COUNT = 10000
+
+const REHYDRATE_FILE_TASK_TYPE = `rehydrateIpfsFromFsIfNecessary`
+const REHYDRATE_DIR_TASK_TYPE = 'rehydrateIpfsDirFromFsIfNecessary'
 
 class RehydrateRedisCounter {
   constructor (redis) {
@@ -31,8 +34,9 @@ class RehydrateRedisCounter {
 
   // keep count in redis for the number of times rehydrate is requested for each CID
   async incrementCount (taskType, CID) {
-    const count = await this.redis.hincrby(RehydrateRedisCounter.constructCounterRedisKey(taskType), CID, 1)
-    await this.redis.expire(RehydrateRedisCounter.constructCounterRedisKey(taskType), 60 * 60 * 24) // expire one day after final write
+    const taskTypeKey = RehydrateRedisCounter.constructCounterRedisKey(taskType)
+    const count = await this.redis.hincrby(taskTypeKey, CID, 1)
+    await this.redis.expire(taskTypeKey, 60 * 60 * 24) // expire one day after final write
     return count
   }
 
@@ -45,10 +49,12 @@ class RehydrateRedisCounter {
   static constructRehydrateCompleteRedisKey (taskType) {
     return `${taskType}:::rehydrateComplete:::${new Date().toISOString().split('T')[0]}`
   }
+
   // add CID to set of CIDs that have been rehydrated today
   async addToRehydratedSet (taskType, CID) {
-    await this.redis.sadd(RehydrateRedisCounter.constructRehydrateCompleteRedisKey(taskType), CID)
-    await this.redis.expire(RehydrateRedisCounter.constructRehydrateCompleteRedisKey(taskType), 60 * 60 * 24) // expire one day after final write
+    const taskTypeKey = RehydrateRedisCounter.constructRehydrateCompleteRedisKey(taskType)
+    await this.redis.sadd(taskTypeKey, CID)
+    await this.redis.expire(taskTypeKey, 60 * 60 * 24) // expire one day after final write
   }
 
   // check if CID has been rehydrated today
@@ -80,30 +86,28 @@ class RehydrateIpfsQueue {
     // Most errors in the rehydrate calls will be caught; this try/catch is to catch unexpected errors
 
     this.queue.process(PROCESS_NAMES.rehydrate_file, config.get('rehydrateMaxConcurrency'), async (job, done) => {
-      const taskType = `rehydrateIpfsFromFsIfNecessary`
       const { multihash, storagePath, filename, logContext } = job.data
 
-      this.logStatus(logContext, `Processing a ${taskType} task for ${multihash}`)
+      this.logStatus(logContext, `Processing a ${REHYDRATE_FILE_TASK_TYPE} task for ${multihash}`)
       try {
         await rehydrateIpfsFromFsIfNecessary(multihash, storagePath, logContext, filename)
-        await this.RehydrateRedisCounter.addToRehydratedSet(taskType, multihash)
+        await this.RehydrateRedisCounter.addToRehydratedSet(REHYDRATE_FILE_TASK_TYPE, multihash)
         done()
       } catch (e) {
-        this.logError(logContext, `Problem with processing a ${taskType} task for ${multihash}: ${e}`)
+        this.logError(logContext, `Problem with processing a ${REHYDRATE_FILE_TASK_TYPE} task for ${multihash}: ${e}`)
         done(e)
       }
     })
 
     this.queue.process(PROCESS_NAMES.rehydrate_dir, config.get('rehydrateMaxConcurrency'), async (job, done) => {
-      const taskType = 'rehydrateIpfsDirFromFsIfNecessary'
       const { multihash, logContext } = job.data
-      this.logStatus(logContext, `Processing a ${taskType} task for ${multihash}`)
+      this.logStatus(logContext, `Processing a ${REHYDRATE_DIR_TASK_TYPE} task for ${multihash}`)
       try {
         await rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
-        this.RehydrateRedisCounter.addToRehydratedSet(taskType, multihash)
+        await this.RehydrateRedisCounter.addToRehydratedSet(REHYDRATE_DIR_TASK_TYPE, multihash)
         done()
       } catch (e) {
-        this.logError(logContext, `Problem with processing a ${taskType} task for ${multihash}: ${e}`)
+        this.logError(logContext, `Problem with processing a ${REHYDRATE_DIR_TASK_TYPE} task for ${multihash}: ${e}`)
         done(e)
       }
     })
@@ -130,28 +134,33 @@ class RehydrateIpfsQueue {
    * @param {object} logContext
    */
   async addRehydrateIpfsFromFsIfNecessaryTask (multihash, storagePath, { logContext }, filename = null) {
-    const taskType = 'rehydrateIpfsFromFsIfNecessary'
-
     if (enableRehydrate) {
-      this.logStatus(logContext, `Attempting to add a ${taskType} task to the queue! CID: ${multihash}`)
-
       // disable adding to queue if max queue count is greater than some threshold
       const count = await this.queue.count()
-      if (count > MAX_COUNT) return
+      if (count > MAX_COUNT) {
+        this.logStatus(logContext, `Attempted to add a ${REHYDRATE_FILE_TASK_TYPE} task to the queue, but the queue was full. CID: ${multihash}`)
+        return
+      }
 
       // return early if we've rehydrated for this CID today
-      const rehydrateDone = await this.RehydrateRedisCounter.checkIfRehydratedToday(taskType, multihash)
-      if (rehydrateDone) return
+      const rehydrateDone = await this.RehydrateRedisCounter.checkIfRehydratedToday(REHYDRATE_FILE_TASK_TYPE, multihash)
+      if (rehydrateDone) {
+        this.logStatus(logContext, `Attempted to add a ${REHYDRATE_FILE_TASK_TYPE} task to the queue, but rehydrate already ran today. CID: ${multihash}`)
+        return
+      }
 
       // if the min threshold for rehydrating this CID hasn't been met, return early
-      const cidCount = await this.RehydrateRedisCounter.incrementCount(taskType, multihash)
-      if (cidCount < MIN_REHYDRATE_THRESHOLD) return
+      const cidCount = await this.RehydrateRedisCounter.incrementCount(REHYDRATE_FILE_TASK_TYPE, multihash)
+      if (cidCount < MIN_REHYDRATE_THRESHOLD) {
+        this.logStatus(logContext, `Attempted to add a ${REHYDRATE_FILE_TASK_TYPE} task to the queue, current count to threshold ${cidCount}/${MIN_REHYDRATE_THRESHOLD}. CID: ${multihash}`)
+        return
+      }
 
       const job = await this.queue.add(
         PROCESS_NAMES.rehydrate_file,
         { multihash, storagePath, filename, logContext }
       )
-      this.logStatus(logContext, `Successfully added a ${taskType} task! CID: ${multihash}`)
+      this.logStatus(logContext, `Successfully added a ${REHYDRATE_FILE_TASK_TYPE} task! CID: ${multihash}`)
 
       return job
     }
@@ -163,28 +172,35 @@ class RehydrateIpfsQueue {
    * @param {object} logContext
    */
   async addRehydrateIpfsDirFromFsIfNecessaryTask (multihash, { logContext }) {
-    const taskType = 'rehydrateIpfsDirFromFsIfNecessary'
-
     if (enableRehydrate) {
-      this.logStatus(logContext, `Attempting to add a ${taskType} task to the queue! CID: ${multihash}`)
+      this.logStatus(logContext, `Attempting to add a ${REHYDRATE_DIR_TASK_TYPE} task to the queue! CID: ${multihash}`)
 
       // disable adding to queue if max queue count is greater than some threshold
       const count = await this.queue.count()
-      if (count > MAX_COUNT) return
+      if (count > MAX_COUNT) {
+        this.logStatus(logContext, `Attempted to add a ${REHYDRATE_DIR_TASK_TYPE} task to the queue, but the queue was full. CID: ${multihash}`)
+        return
+      }
 
       // return early if we've rehydrated for this CID today
-      const rehydrateDone = await this.RehydrateRedisCounter.checkIfRehydratedToday(taskType, multihash)
-      if (rehydrateDone) return
+      const rehydrateDone = await this.RehydrateRedisCounter.checkIfRehydratedToday(REHYDRATE_DIR_TASK_TYPE, multihash)
+      if (rehydrateDone) {
+        this.logStatus(logContext, `Attempted to add a ${REHYDRATE_DIR_TASK_TYPE} task to the queue, but rehydrate already ran today. CID: ${multihash}`)
+        return
+      }
 
       // if the min threshold for rehydrating this CID hasn't been met, return early
-      const cidCount = await this.RehydrateRedisCounter.incrementCount(taskType, multihash)
-      if (cidCount < MIN_REHYDRATE_THRESHOLD) return
+      const cidCount = await this.RehydrateRedisCounter.incrementCount(REHYDRATE_DIR_TASK_TYPE, multihash)
+      if (cidCount < MIN_REHYDRATE_THRESHOLD) {
+        this.logStatus(logContext, `Attempted to add a ${REHYDRATE_DIR_TASK_TYPE} task to the queue, current count to threshold ${cidCount}/${MIN_REHYDRATE_THRESHOLD}. CID: ${multihash}`)
+        return
+      }
 
       const job = await this.queue.add(
         PROCESS_NAMES.rehydrate_dir,
         { multihash, logContext }
       )
-      this.logStatus(logContext, `Successfully added a ${taskType} task! CID: ${multihash}`)
+      this.logStatus(logContext, `Successfully added a ${REHYDRATE_DIR_TASK_TYPE} task! CID: ${multihash}`)
 
       return job
     }
