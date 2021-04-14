@@ -220,6 +220,7 @@ def add_users(session, results):
     return results
 
 def perform_search_query(db, search_type, args):
+    """Performs a search query of a given `search_type`. Handles it's own session. Used concurrently."""
     with db.scoped_session() as session:
         search_str = args.get('search_str')
         limit = args.get('limit')
@@ -334,7 +335,11 @@ def search(args):
 
     if searchStr:
         db = get_db_read_replica()
-
+        # Concurrency approach:
+        # Spin up a ThreadPoolExecutor for each request to perform_search_query
+        # to perform the different search types in parallel.
+        # After each future resolves, we then add users for each entity in a single
+        # db round trip.
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             # Keep a mapping of future -> search_type
             futures_map = {}
@@ -366,7 +371,6 @@ def search(args):
                 if current_user_id:
                     submit_and_add("saved_albums")
 
-            # TODO: add a timeout here
             for future in concurrent.futures.as_completed(futures):
                 search_result = future.result()
                 future_type = futures_map[future]
@@ -505,17 +509,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
                     d."user_id" as user_id, d."word" as word, similarity(d."word", :query) as score,
                     d."user_name" as name, :query as query
                 from "user_lexeme_dict" d
-                {
-                    'inner join "follows" f on f.followee_user_id=d.user_id'
-                    if personalized and current_user_id
-                    else ""
-                }
                 where d."word" % :query
-                {
-                    "and f.is_current=true and f.is_delete=false and f.follower_user_id=:current_user_id"
-                    if personalized and current_user_id
-                    else ""
-                }
             ) as results
             group by user_id, name, query
         ) as results2
