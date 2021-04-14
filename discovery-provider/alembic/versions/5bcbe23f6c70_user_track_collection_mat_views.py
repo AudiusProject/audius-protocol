@@ -19,13 +19,14 @@ depends_on = None
 def upgrade():
     connection = op.get_bind()
     connection.execute('''
+      begin;
         --- ======================= AGGREGATE USER =======================
         DROP MATERIALIZED VIEW IF EXISTS aggregate_user;
         DROP INDEX IF EXISTS aggregate_user_idx;
 
         CREATE MATERIALIZED VIEW aggregate_user as
         SELECT
-            u.user_id,
+            distinct(u.user_id),
             COALESCE (user_track.track_count, 0) as track_count,
             COALESCE (user_playlist.playlist_count, 0) as playlist_count,
             COALESCE (user_album.album_count, 0) as album_count,
@@ -217,7 +218,7 @@ def upgrade():
           p.is_delete is False;
 
         CREATE UNIQUE INDEX aggregate_playlist_idx ON aggregate_playlist (playlist_id);
-
+      commit;
     ''')
 
 
@@ -226,10 +227,12 @@ def downgrade():
     # ### end Alembic commands ###
     connection = op.get_bind()
     connection.execute('''
-      DROP INDEX IF EXISTS aggregate_user_idx;
-      DROP INDEX IF EXISTS aggregate_track_idx;
-      DROP INDEX IF EXISTS aggregate_playlist_idx;
-      DROP MATERIALIZED VIEW aggregate_user;
-      DROP MATERIALIZED VIEW aggregate_track;
-      DROP MATERIALIZED VIEW aggregate_playlist;
+      begin;
+        DROP INDEX IF EXISTS aggregate_user_idx;
+        DROP INDEX IF EXISTS aggregate_track_idx;
+        DROP INDEX IF EXISTS aggregate_playlist_idx;
+        DROP MATERIALIZED VIEW aggregate_user;
+        DROP MATERIALIZED VIEW aggregate_track;
+        DROP MATERIALIZED VIEW aggregate_playlist;
+      commit;
     ''')
