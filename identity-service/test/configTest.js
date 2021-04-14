@@ -101,8 +101,9 @@ describe('convict configuration test', function () {
       config.load({})
 
       // convict js converts env vars to its proper type
-      assert(
-        config.get(key) === validValue,
+      assert.deepStrictEqual(
+        config.get(key),
+        validValue,
         `The config key '${key}' with format type '${schema[key].format}' is still retaining its old value of '${oldValue}' instead of '${validValue}'`)
     }
   })
@@ -128,6 +129,10 @@ function getValidConfigValue (format) {
       break
     case 'boolean':
       validValue = generateRandomBoolean()
+      break
+    case 'string-array':
+      validValue = [generateRandomUUID()]
+      break
   }
   return validValue
 }
