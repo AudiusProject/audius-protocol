@@ -131,7 +131,7 @@ function getValidConfigValue (format) {
       validValue = generateRandomBoolean()
       break
     case 'string-array':
-      validValue = [generateRandomUUID()]
+      validValue = JSON.stringify([generateRandomUUID()])
       break
   }
   return validValue
