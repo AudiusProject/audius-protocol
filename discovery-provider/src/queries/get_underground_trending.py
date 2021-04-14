@@ -112,17 +112,6 @@ def get_scorable_track_data(session, redis_instance):
         ).group_by(Follow.followee_user_id, User.is_verified)
     ).subquery()
 
-    # Get following
-    following_query = (
-        session.query(
-            Follow.follower_user_id.label('user_id'),
-            func.count(Follow.follower_user_id).label('following_count')
-        ).filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-        ).group_by(Follow.follower_user_id)
-    ).subquery()
-
     base_query = (
         session.query(
             AggregatePlays.play_item_id.label('track_id'),
@@ -133,7 +122,7 @@ def get_scorable_track_data(session, redis_instance):
             follower_query.c.is_verified)
         .join(Track, Track.track_id == AggregatePlays.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
-        .join(following_query, following_query.c.user_id == Track.owner_id)
+        .join(AggregateUser, AggregateUser.user_id == Track.owner_id)
         .filter(
             Track.is_current == True,
             Track.is_delete == False,
@@ -142,7 +131,7 @@ def get_scorable_track_data(session, redis_instance):
             Track.track_id.notin_(exclude_track_ids),
             Track.created_at >= (datetime.now() - timedelta(days=o)),
             follower_query.c.follower_count < S,
-            following_query.c.following_count < r,
+            AggregateUser.following_count < r,
             AggregatePlays.count >= q
         )
     ).all()
