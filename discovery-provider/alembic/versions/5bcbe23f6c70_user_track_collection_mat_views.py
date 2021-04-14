@@ -1,7 +1,7 @@
 """user-track-collection-mat-views
 
 Revision ID: 5bcbe23f6c70
-Revises: bff7853e0983
+Revises: 2ff46a8686fa
 Create Date: 2021-04-12 20:01:40.395480
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '5bcbe23f6c70'
-down_revision = 'bff7853e0983'
+down_revision = '2ff46a8686fa'
 branch_labels = None
 depends_on = None
 
