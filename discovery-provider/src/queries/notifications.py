@@ -1,6 +1,6 @@
 import logging  # pylint: disable=C0302
 from flask import Blueprint, request
-from sqlalchemy import desc, func
+from sqlalchemy import desc
 
 from src import api_helpers
 from src.queries import response_name_constants as const
