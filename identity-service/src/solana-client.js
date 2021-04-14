@@ -5,17 +5,17 @@ const secp256k1 = require('secp256k1')
 const borsh = require('borsh')
 
 const VALID_SIGNER = config.get('solanaValidSigner')
-const AUDIUS_PROGRAM = new solanaWeb3.PublicKey(
+const AUDIUS_PROGRAM = config.get('solanaProgramAddress') ? new solanaWeb3.PublicKey(
   config.get('solanaProgramAddress')
-)
-const CREATE_AND_VERIFY_PROGRAM = new solanaWeb3.PublicKey(
+) : null
+const CREATE_AND_VERIFY_PROGRAM = config.get('solanaCreateAndVerifyAddress') ? new solanaWeb3.PublicKey(
   config.get('solanaCreateAndVerifyAddress')
-)
+) : null
 const INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
   'Sysvar1nstructions1111111111111111111111111'
 )
 
-const feePayer = new solanaWeb3.Account(config.get('solanaFeePayerWallet'))
+const feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
 
 class Assignable {
   constructor (data) {

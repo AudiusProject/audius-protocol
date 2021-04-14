@@ -501,7 +501,7 @@ const config = convict({
   solanaEndpoint: {
     doc: 'solanaEndpoint',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaEndpoint'
   },
   solanaCreateAndVerifyAddress: {
@@ -531,7 +531,7 @@ const config = convict({
   solanaSignerPrivateKey: {
     doc: 'solanaSignerPrivateKey',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaSignerPrivateKey'
   },
   sentryDSN: {
