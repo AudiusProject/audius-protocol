@@ -231,16 +231,46 @@ def perform_search_query(db, search_type, args):
 
         results = None
         if search_type == 'tracks':
-            results = track_search_query(session, search_str, limit, offset, False, is_auto_complete, current_user_id, only_downloadable)
+            results = track_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                is_auto_complete,
+                current_user_id,
+                only_downloadable
+            )
         elif search_type == 'saved_tracks':
             results = track_search_query(
-                session, search_str, limit, offset, True, is_auto_complete, current_user_id, only_downloadable)
+                session,
+                search_str,
+                limit,
+                offset,
+                True,
+                is_auto_complete,
+                current_user_id,
+                only_downloadable
+            )
         elif search_type == 'users':
             results = user_search_query(
-                session, search_str, limit, offset, False, is_auto_complete, current_user_id)
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                is_auto_complete,
+                current_user_id
+            )
         elif search_type == 'followed_users':
             results = user_search_query(
-                session, search_str, limit, offset, True, is_auto_complete, current_user_id)
+                session,
+                search_str,
+                limit, offset,
+                True,
+                is_auto_complete,
+                current_user_id
+            )
         elif search_type == 'playlists':
             results = playlist_search_query(
                 session,
@@ -265,7 +295,15 @@ def perform_search_query(db, search_type, args):
             )
         elif search_type == 'albums':
             results = playlist_search_query(
-                session, search_str, limit, offset, True, False, is_auto_complete, current_user_id)
+                session,
+                search_str,
+                limit,
+                offset,
+                True,
+                False,
+                is_auto_complete,
+                current_user_id
+            )
         elif search_type == 'saved_albums':
             results = playlist_search_query(
                 session,
@@ -301,15 +339,14 @@ def perform_search_query(db, search_type, args):
 
 def search(args):
     """ Perform a search. `args` should contain `is_auto_complete`,
-    `query`, `kind`, `current_user_id`, `with_users`, and `only_downloadable`
+    `query`, `kind`, `current_user_id`, and `only_downloadable`
     """
-    searchStr = args.get("query")
+    search_str = args.get("query")
 
     # when creating query table, we substitute this too
-    searchStr = searchStr.replace('&', 'and')
+    search_str = search_str.replace('&', 'and')
 
     kind = args.get("kind", "all")
-    with_users = args.get("with_users")
     is_auto_complete = args.get("is_auto_complete")
     current_user_id = args.get("current_user_id")
     only_downloadable = args.get("only_downloadable")
@@ -325,7 +362,7 @@ def search(args):
 
     # Create args for perform_search_query
     search_args = {
-        "search_str": searchStr,
+        "search_str": search_str,
         "limit": limit,
         "offset": offset,
         "is_auto_complete": is_auto_complete,
@@ -333,7 +370,7 @@ def search(args):
         "only_downloadable": only_downloadable
     }
 
-    if searchStr:
+    if search_str:
         db = get_db_read_replica()
         # Concurrency approach:
         # Spin up a ThreadPoolExecutor for each request to perform_search_query
@@ -347,9 +384,9 @@ def search(args):
 
             # Helper fn to submit a future and add it to bookkeeping data structures
             def submit_and_add(search_type):
-                    future = executor.submit(perform_search_query, db, search_type, search_args)
-                    futures.append(future)
-                    futures_map[future] = search_type
+                future = executor.submit(perform_search_query, db, search_type, search_args)
+                futures.append(future)
+                futures_map[future] = search_type
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
                 submit_and_add("tracks")
@@ -400,7 +437,7 @@ def search(args):
 
 def track_search_query(
         session,
-        searchStr,
+        search_str,
         limit,
         offset,
         personalized,
@@ -456,7 +493,7 @@ def track_search_query(
     track_ids = session.execute(
         res,
         {
-            "query": searchStr,
+            "query": search_str,
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "title_weight": trackTitleWeight,
@@ -470,7 +507,7 @@ def track_search_query(
 
     # TODO: Populate track metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
-    if is_auto_complete == True:
+    if is_auto_complete:
         # fetch users for tracks
         track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
         users = get_unpopulated_users(session, track_owner_ids)
@@ -497,7 +534,7 @@ def track_search_query(
     return tracks[0:limit]
 
 
-def user_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id):
+def user_search_query(session, search_str, limit, offset, personalized, is_auto_complete, current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -522,7 +559,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
     user_ids = session.execute(
         res,
         {
-            "query": searchStr,
+            "query": search_str,
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": userNameWeight,
@@ -558,7 +595,15 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
     return users[0:limit]
 
 
-def playlist_search_query(session, searchStr, limit, offset, is_album, personalized, is_auto_complete, current_user_id):
+def playlist_search_query(
+        session,
+        search_str,
+        limit,
+        offset,
+        is_album,
+        personalized,
+        is_auto_complete,
+        current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -605,7 +650,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
     playlist_ids = session.execute(
         res,
         {
-            "query": searchStr,
+            "query": search_str,
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": playlistNameWeight,
