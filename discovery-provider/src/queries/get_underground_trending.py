@@ -6,7 +6,8 @@ from dateutil.parser import parse
 
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import use_redis_cache
-from src.models import Track, RepostType, Follow, SaveType, User, AggregatePlays
+from src.models import Track, RepostType, Follow, SaveType, User, \
+    AggregatePlays, AggregateUser
 from src.queries.query_helpers import \
     get_karma, get_repost_counts, get_save_counts
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
