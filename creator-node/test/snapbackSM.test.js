@@ -14,8 +14,6 @@ const constants = {
   primaryClockVal: 1
 }
 
-const MAX_CONCURRENCY = 1
-
 describe('test sync queue', function () {
   let server
 
@@ -33,8 +31,15 @@ describe('test sync queue', function () {
 
   it('Manual and recurring syncs are processed correctly', async function () {
     const NodeResponseDelayMs = 500
-    const NumRecurringSyncsToAdd = 5
+
     const NumManualSyncsToAdd = 3
+    const NumRecurringSyncsToAdd = 5
+
+    // Set max concurrency values to lower than the number of jobs added to test queue
+    const MaxManualRequestSyncJobConcurrency = 3
+    const MaxRecurringRequestSyncJobConcurrency = 1
+    nodeConfig.set('maxManualRequestSyncJobConcurrency', MaxManualRequestSyncJobConcurrency)
+    nodeConfig.set('maxRecurringRequestSyncJobConcurrency', MaxRecurringRequestSyncJobConcurrency)
 
     // Mock out the initial call to sync
     nock(constants.secondaryEndpoint)
@@ -58,9 +63,9 @@ describe('test sync queue', function () {
     }
 
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-    await snapback.init(MAX_CONCURRENCY)
+    await snapback.init()
 
-    // Setup the recurring syncs
+    // Enqueue recurring requestSync jobs
     const recurringSyncIds = []
     for (let i = 0; i < NumRecurringSyncsToAdd; i++) {
       const { id } = await snapback.enqueueSync({
@@ -72,8 +77,11 @@ describe('test sync queue', function () {
       recurringSyncIds.push(id)
     }
     assert.strictEqual(recurringSyncIds.length, NumRecurringSyncsToAdd, `Failed to add ${NumRecurringSyncsToAdd} recurring syncs`)
+    let syncQueueJobs = await snapback.getSyncQueueJobs()
+    assert.strictEqual(syncQueueJobs.recurringActive.length, 0)
+    assert.strictEqual(syncQueueJobs.recurringWaiting.length, NumRecurringSyncsToAdd)
 
-    // setup manual syncs
+    // Enqueue manual requestSync jobs
     const manualSyncIds = []
     for (let i = 0; i < NumManualSyncsToAdd; i++) {
       const { id } = await snapback.enqueueSync({
@@ -85,10 +93,13 @@ describe('test sync queue', function () {
       manualSyncIds.push(id)
     }
     assert.strictEqual(manualSyncIds.length, NumManualSyncsToAdd, `Failed to add ${NumManualSyncsToAdd} manual syncs`)
+    syncQueueJobs = await snapback.getSyncQueueJobs()
+    assert.strictEqual(syncQueueJobs.manualActive.length, 0)
+    assert.strictEqual(syncQueueJobs.manualWaiting.length, NumManualSyncsToAdd)
 
     const totalJobsAddedCount = recurringSyncIds.length + manualSyncIds.length
 
-    let syncQueueJobs = await snapback.getSyncQueueJobs()
+    syncQueueJobs = await snapback.getSyncQueueJobs()
     let [
       manualWaitingJobIDs,
       recurringWaitingJobIDs
@@ -118,6 +129,10 @@ describe('test sync queue', function () {
         syncQueueJobs.manualWaiting.map(job => job.id),
         syncQueueJobs.recurringWaiting.map(job => job.id)
       ]
+
+      // Assert that active jobs queue size never exceeds configured max concurrency
+      assert.ok(syncQueueJobs.manualActive.length <= MaxManualRequestSyncJobConcurrency)
+      assert.ok(syncQueueJobs.recurringActive.length <= MaxRecurringRequestSyncJobConcurrency)
     }
 
     assert.strictEqual(manualWaitingJobIDs.length, 0)
