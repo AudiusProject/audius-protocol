@@ -1,5 +1,6 @@
 //! State transition types
 
+use solana_program::clock::UnixTimestamp;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 /// Track data
@@ -11,4 +12,6 @@ pub struct TrackData {
     pub track_id: String,
     /// track source
     pub source: String,
+    /// timestamp as nonce
+    pub timestamp: UnixTimestamp,
 }

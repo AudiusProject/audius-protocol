@@ -31,6 +31,7 @@ pub enum TemplateInstruction {
     ///   2. [] Signer group
     ///   3. [] Audius program account
     ///   4. [] Sysvar instruction account
+    ///   5. [] Sysvar clock account
     ExampleInstruction(InstructionArgs),
 }
 
@@ -50,6 +51,7 @@ pub fn init(
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new_readonly(audius::id(), false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
+        AccountMeta::new_readonly(sysvar::clock::id(), false),
     ];
     Ok(Instruction {
         program_id: *program_id,

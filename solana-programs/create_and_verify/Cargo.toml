@@ -23,6 +23,7 @@ solana-sdk = "1.6.4"
 libsecp256k1 = { version = "0.3.5" }
 rand = { version = "0.8.3" }
 sha3 = { version = "0.9.1" }
+chrono = "0.4"
 
 [lib]
 crate-type = ["cdylib", "lib"]
