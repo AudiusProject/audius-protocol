@@ -158,6 +158,11 @@ module.exports = function (app) {
    * This route is only run on secondaries, to export and sync data from a user's primary.
    */
   app.post('/sync', ensureStorageMiddleware, handleResponse(async (req, res) => {
+    const redisClient = req.app.get('redisClient')
+    const libs = req.app.get('audiusLibs')
+    const ipfs = req.app.get('ipfsAPI')
+    const ipfsLatest = req.app.get('ipfsLatestAPI')
+
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
@@ -176,7 +181,7 @@ module.exports = function (app) {
     }
 
     if (immediate) {
-      let errorObj = await _nodesync(req, walletPublicKeys, creatorNodeEndpoint)
+      let errorObj = await _nodesync(redisClient, libs, ipfs, ipfsLatest, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber)
       if (errorObj) {
         return errorResponseServerError(errorObj)
       } else {
@@ -193,7 +198,7 @@ module.exports = function (app) {
       }
       syncQueue[wallet] = setTimeout(
         async function () {
-          return _nodesync(req, [wallet], creatorNodeEndpoint)
+          return _nodesync(redisClient, libs, ipfs, ipfsLatest, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber)
         },
         debounceTime
       )
@@ -234,9 +239,9 @@ module.exports = function (app) {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
+async function _nodesync (redisClient, libs, ipfs, ipfsLatest, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
   const start = Date.now()
-  req.logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
+  logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
   // object to track if the function errored, returned at the end of the function
   let errorObj = null
@@ -244,7 +249,6 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
    */
-  const redisClient = req.app.get('redisClient')
   const redisLock = redisClient.lock
   let redisKey
   for (let wallet of walletPublicKeys) {
@@ -294,7 +298,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
     })
 
     if (resp.status !== 200) {
-      req.logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
+      logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
       throw new Error(resp.data['error'])
     }
 
@@ -310,16 +314,16 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       throw new Error(`Malformed response from ${creatorNodeEndpoint}.`)
     }
 
-    req.logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
+    logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
 
     try {
       // Attempt to connect directly to target CNode's IPFS node.
-      await _initBootstrapAndRefreshPeers(req, body.data.ipfsIDObj.addresses, redisKey)
-      req.logger.info(redisKey, 'IPFS Nodes connected + data export received')
+      await _initBootstrapAndRefreshPeers(ipfs, logger, body.data.ipfsIDObj.addresses, redisKey)
+      logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
       // since we have other fallbacks, keep going on with sync
-      req.logger.error(`Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`, e)
+      logger.error(`Error in _nodeSync calling _initBootstrapAndRefreshPeers for redisKey ${redisKey}`, e)
     }
 
     /**
@@ -341,11 +345,12 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
        */
       let userReplicaSet = []
       try {
-        const myCnodeEndpoint = await getOwnEndpoint(req)
+        const myCnodeEndpoint = await getOwnEndpoint(libs)
         userReplicaSet = await getCreatorNodeEndpoints({
-          req,
+          libs,
+          logger: logger,
           wallet: fetchedWalletPublicKey,
-          blockNumber: req.body.blockNumber,
+          blockNumber: blockNumber,
           ensurePrimary: false,
           myCnodeEndpoint
         })
@@ -359,7 +364,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Spread + set uniq's the array
         userReplicaSet = [...new Set(userReplicaSet)]
       } catch (e) {
-        req.logger.error(redisKey, `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`)
+        logger.error(redisKey, `Couldn't get user's replica set, can't use cnode gateways in saveFileForMultihashToFS - ${e.message}`)
       }
 
       if (!walletPublicKeys.includes(fetchedWalletPublicKey)) {
@@ -382,7 +387,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         throw new Error(`Cannot sync for localMaxClockVal ${localMaxClockVal} - imported data has max clock val ${fetchedLatestClockVal}`)
       } else if (fetchedLatestClockVal === localMaxClockVal) {
         // Already up to date, no sync necessary
-        req.logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`)
+        logger.info(redisKey, `User ${fetchedWalletPublicKey} already up to date! Both nodes have latest clock value ${localMaxClockVal}`)
         continue
       } else if (localMaxClockVal !== -1 && fetchedClockRecords[0] && fetchedClockRecords[0].clock !== localMaxClockVal + 1) {
         throw new Error(`Cannot sync - imported data is not contiguous. Local max clock val = ${localMaxClockVal} and imported min clock val ${fetchedClockRecords[0].clock}`)
@@ -395,7 +400,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
        * Process all DB updates for cnodeUser
        */
       try {
-        req.logger.info(redisKey, `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`)
+        logger.info(redisKey, `beginning add ops for cnodeUser wallet ${fetchedWalletPublicKey}`)
 
         /**
          * Update CNodeUser entry if exists else create new
@@ -454,7 +459,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         }
 
         const cnodeUserUUID = cnodeUser.cnodeUserUUID
-        req.logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`)
+        logger.info(redisKey, `Inserted CNodeUser for cnodeUser wallet ${fetchedWalletPublicKey}: cnodeUserUUID: ${cnodeUserUUID}`)
 
         /**
          * Populate all new data for fetched cnodeUser
@@ -474,18 +479,18 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
           const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
-          req.logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
+          logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
 
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihashToFS(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            trackFile => saveFileForMultihashToFS(ipfsLatest, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet)
           ))
         }
-        req.logger.info(redisKey, 'Saved all track files to disk.')
+        logger.info(redisKey, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
           const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
-          req.logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency} out of total ${nonTrackFiles.length}...`)
+          logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency} out of total ${nonTrackFiles.length}...`)
           await Promise.all(nonTrackFilesSlice.map(
             nonTrackFile => {
               // Skip over directories since there's no actual content to sync
@@ -494,53 +499,53 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihashToFS(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  return saveFileForMultihashToFS(ipfsLatest, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
                 } else {
-                  return saveFileForMultihashToFS(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  return saveFileForMultihashToFS(ipfsLatest, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
                 }
               }
             }
           ))
         }
-        req.logger.info(redisKey, 'Saved all non-track files to disk.')
+        logger.info(redisKey, 'Saved all non-track files to disk.')
 
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
           ...clockRecord,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'Saved all ClockRecord entries to DB')
+        logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => ({
           ...file,
           trackBlockchainId: null,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'Saved all non-track File entries to DB')
+        logger.info(redisKey, 'Saved all non-track File entries to DB')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
           ...track,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'Saved all Track entries to DB')
+        logger.info(redisKey, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(trackFiles.map(trackFile => ({
           ...trackFile,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'Saved all track File entries to DB')
+        logger.info(redisKey, 'Saved all track File entries to DB')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({
           ...audiusUser,
           cnodeUserUUID
         })), { transaction })
-        req.logger.info(redisKey, 'Saved all AudiusUser entries to DB')
+        logger.info(redisKey, 'Saved all AudiusUser entries to DB')
 
         await transaction.commit()
         await redisLock.removeLock(redisKey)
 
-        req.logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey}`)
+        logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey}`)
       } catch (e) {
-        req.logger.error(redisKey, `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`, e)
+        logger.error(redisKey, `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`, e)
 
         await transaction.rollback()
         await redisLock.removeLock(redisKey)
@@ -549,7 +554,7 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       }
     }
   } catch (e) {
-    req.logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e)
+    logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e)
     errorObj = e
   } finally {
     // Release all redis locks
@@ -558,16 +563,17 @@ async function _nodesync (req, walletPublicKeys, creatorNodeEndpoint) {
       await redisLock.removeLock(redisKey)
       delete (syncQueue[wallet])
     }
-    req.logger.info(redisKey, `DURATION SYNC ${Date.now() - start}`)
+    logger.info(redisKey, `DURATION SYNC ${Date.now() - start}`)
   }
 
   return errorObj
 }
 
-/** Given IPFS node peer addresses, add to bootstrap peers list and manually connect. */
-async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redisKey) {
-  req.logger.info(redisKey, 'Initializing Bootstrap Peers:')
-  const ipfs = req.app.get('ipfsAPI')
+/**
+ * Given IPFS node peer addresses, add to bootstrap peers list and manually connect
+ **/
+async function _initBootstrapAndRefreshPeers (ipfs, logger, targetIPFSPeerAddresses, redisKey) {
+  logger.info(redisKey, 'Initializing Bootstrap Peers:')
 
   // Get own IPFS node's peer addresses
   const ipfsID = await ipfs.id()
@@ -580,16 +586,16 @@ async function _initBootstrapAndRefreshPeers (req, targetIPFSPeerAddresses, redi
   for (let targetPeerAddress of targetIPFSPeerAddresses) {
     if (targetPeerAddress.includes('ip6') || targetPeerAddress.includes('127.0.0.1')) continue
     if (ipfsPeerAddresses.includes(targetPeerAddress)) {
-      req.logger.info(redisKey, 'ipfs addresses are same - do not connect')
+      logger.info(redisKey, 'ipfs addresses are same - do not connect')
       continue
     }
 
     // Add to list of bootstrap peers.
     let results = await ipfs.bootstrap.add(targetPeerAddress)
-    req.logger.info(redisKey, 'ipfs bootstrap add results:', results)
+    logger.info(redisKey, 'ipfs bootstrap add results:', results)
 
     // Manually connect to peer.
     results = await ipfs.swarm.connect(targetPeerAddress)
-    req.logger.info(redisKey, 'peer connection results:', results.Strings[0])
+    logger.info(redisKey, 'peer connection results:', results.Strings[0])
   }
 }

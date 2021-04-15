@@ -142,15 +142,15 @@ const ipfsStat = (CID, logContext, timeout = 1000) => {
 
 /**
  * Call ipfs.cat on a path with optional timeout and length parameters
+ * @param {*} ipfs
+ * @param {*} logger
  * @param {*} path IPFS cid for file
- * @param {*} req request object
  * @param {*} timeout timeout for IPFS op in ms
  * @param {*} length length of data to retrieve from file
  * @returns {Buffer}
  */
-const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
+const ipfsCat = (ipfs, logger, path, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
   const start = Date.now()
-  let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
     let chunks = []
@@ -170,7 +170,7 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
     for await (const chunk of ipfs.cat(path, options)) {
       chunks.push(chunk)
     }
-    req.logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
+    logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
     reject(e)
@@ -184,9 +184,8 @@ const ipfsCat = (path, req, timeout = 1000, length = null) => new Promise(async 
  * @param {Number} timeout timeout in ms
  * @returns {BufferListStream}
  */
-const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, reject) => {
+const ipfsGet = (ipfs, logger, path, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
-  let ipfs = req.app.get('ipfsLatestAPI')
 
   try {
     let chunks = []
@@ -211,7 +210,7 @@ const ipfsGet = (path, req, timeout = 1000) => new Promise(async (resolve, rejec
       }
       resolve(content)
     }
-    req.logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
+    logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
     resolve(Buffer.concat(chunks))
   } catch (e) {
     reject(e)
