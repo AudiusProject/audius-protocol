@@ -519,6 +519,7 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:10.16.3
       - image: ipfs/go-ipfs:release
+      - image: circleci/buildpack-deps:stretch
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
