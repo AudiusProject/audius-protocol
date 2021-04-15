@@ -58,6 +58,6 @@
   "headersTimeout": 60000,
   "captchaScoreSecret": "captcha_score_secret",
   "recaptchaServiceKey": "",
-  "solanaSignerPrivateKey": "[]",
+  "solanaFeePayerWallet": "[]",
   "sentryDSN": ""
 }

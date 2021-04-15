@@ -8,8 +8,10 @@ use audius::instruction::SignatureData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::next_account_info, account_info::AccountInfo, entrypoint::ProgramResult, msg,
-    program::invoke, pubkey::Pubkey,
+    program::invoke, pubkey::Pubkey, sysvar::clock::Clock, sysvar::Sysvar,
 };
+
+const MAX_TIME_DIFF: i64 = 10;
 
 /// Program state handler.
 pub struct Processor {}
@@ -29,6 +31,13 @@ impl Processor {
         let audius_account_info = next_account_info(account_info_iter)?;
         // sysvar instruction
         let sysvar_instruction = next_account_info(account_info_iter)?;
+        // clock sysvar account
+        let clock_account_info = next_account_info(account_info_iter)?;
+        let clock = Clock::from_account_info(&clock_account_info)?;
+
+        if (clock.unix_timestamp - instruction_data.track_data.timestamp).abs() > MAX_TIME_DIFF {
+            return Err(ProgramTemplateError::InvalidTimestamp.into());
+        }
 
         let signature_data = Box::new(SignatureData {
             signature: instruction_data.signature,
