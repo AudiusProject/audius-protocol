@@ -277,17 +277,29 @@ def index_blocks(self, db, blocks_list):
             total_user_changes, user_ids = user_state_update(
                 self, update_task, session, user_factory_txs, block_number, block_timestamp)
             user_state_changed = total_user_changes > 0
+            logger.info(
+                f"index.py | user_state_update completed"
+                f" user_state_changed={user_state_changed}"
+            )
 
             total_track_changes, track_ids = track_state_update(
                 self, update_task, session, track_factory_txs, block_number, block_timestamp
             )
             track_state_changed = total_track_changes > 0
+            logger.info(
+                f"index.py | track_state_update completed"
+                f" track_state_changed={track_state_changed}"
+            )
 
             social_feature_state_changed = ( # pylint: disable=W0612
                 social_feature_state_update(
                     self, update_task, session, social_feature_factory_txs, block_number, block_timestamp
                 )
                 > 0
+            )
+            logger.info(
+                f"index.py | social_feature_state_update completed"
+                f" social_feature_state_changed={social_feature_state_changed}"
             )
 
             # Index UserReplicaSet changes
@@ -303,19 +315,33 @@ def index_blocks(self, db, blocks_list):
                 )
             )
             user_replica_set_state_changed = total_user_replica_set_changes > 0
+            logger.info(
+                f"index.py | user_replica_set_state_update completed"
+                f" user_replica_set_state_changed={user_replica_set_state_changed}"
+            )
 
             # Playlist state operations processed in bulk
             total_playlist_changes, playlist_ids = playlist_state_update(
                 self, update_task, session, playlist_factory_txs, block_number, block_timestamp
             )
             playlist_state_changed = total_playlist_changes > 0
+            logger.info(
+                f"index.py | playlist_state_update completed"
+                f" playlist_state_changed={playlist_state_changed}"
+            )
 
             user_library_state_changed = user_library_state_update( # pylint: disable=W0612
                 self, update_task, session, user_library_factory_txs, block_number, block_timestamp
             )
+            logger.info(
+                f"index.py | user_library_state_update completed"
+                f" user_library_state_changed={user_library_state_changed}"
+            )
 
             track_lexeme_state_changed = (user_state_changed or track_state_changed)
             session.commit()
+            logger.info(f"index.py | session commmited to db")
+
             if user_state_changed:
                 if user_ids:
                     remove_cached_user_ids(redis, user_ids)
@@ -328,10 +354,12 @@ def index_blocks(self, db, blocks_list):
             if playlist_state_changed:
                 if playlist_ids:
                     remove_cached_playlist_ids(redis, playlist_ids)
+            logger.info(f"index.py | redis cache clean operations complete")
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
         redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
+        logger.info(f"index.py | update most recently processed block complete")
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")

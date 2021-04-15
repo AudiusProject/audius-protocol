@@ -73,12 +73,12 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
 
             num_total_changes += processedEntries
 
-    logger.info(f"[users indexing] There are {num_total_changes} events processed.")
+    logger.info(f"index.py | users.py | There are {num_total_changes} events processed.")
 
     # for each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_events_lookup.items():
-        logger.info(f"users.py | Adding {value_obj['user']}")
+        logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
             session.add(value_obj["user"])
@@ -153,7 +153,10 @@ def parse_user_event(
         is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
         # If cid is in blacklist, do not update user
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {metadata_multihash} in indexing update user metadata multihash")
+            logger.info(
+                f"index.py | users.py | Encountered blacklisted CID:"
+                f"{metadata_multihash} in indexing update user metadata multihash"
+            )
             return None
         user_record.metadata_multihash = metadata_multihash
     elif event_type == user_event_types_lookup["update_name"]:
@@ -166,14 +169,20 @@ def parse_user_event(
         profile_photo_multihash = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
         is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {profile_photo_multihash} in indexing update user profile photo")
+            logger.info(
+                f"index.py | users.py | Encountered blacklisted CID:"
+                f"{profile_photo_multihash} in indexing update user profile photo"
+            )
             return None
         user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
         cover_photo_multihash = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
         is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
         if is_blacklisted:
-            logger.info(f"Encountered blacklisted CID {cover_photo_multihash} in indexing update user cover photo")
+            logger.info(
+                f"index.py | users.py | Encountered blacklisted CID:"
+                f"{cover_photo_multihash} in indexing update user cover photo"
+            )
             return None
         user_record.cover_photo = cover_photo_multihash
     elif event_type == user_event_types_lookup["update_is_creator"]:
@@ -185,7 +194,7 @@ def parse_user_event(
         # legacy `creator_node_endpoint` changes
         # Reference user_replica_set.py for the updated indexing flow around this field
         replica_set_upgraded = user_replica_set_upgraded(user_record)
-        logger.info(f"users.py | {user_record.handle} Replica set upgraded: {replica_set_upgraded}")
+        logger.info(f"index.py | users.py | {user_record.handle} Replica set upgraded: {replica_set_upgraded}")
         if not replica_set_upgraded:
             user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
 
@@ -246,14 +255,14 @@ def parse_user_event(
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
     if user_record.profile_picture:
-        logger.info(f"users.py | Processing user profile_picture {user_record.profile_picture}")
+        logger.info(f"index.py | users.py | Processing user profile_picture {user_record.profile_picture}")
         user_record.profile_picture_sizes = user_record.profile_picture
         user_record.profile_picture = None
 
     # All incoming cover photos intended to be a directory
     # Any write to cover_photo field is replaced by cover_photo_sizes
     if user_record.cover_photo:
-        logger.info(f"users.py | Processing user cover photo {user_record.cover_photo}")
+        logger.info(f"index.py | users.py | Processing user cover photo {user_record.cover_photo}")
         user_record.cover_photo_sizes = user_record.cover_photo
         user_record.cover_photo = None
     return user_record
@@ -324,7 +333,7 @@ def update_user_associated_wallets(session, update_task, user_record, associated
         if is_updated_wallets:
             enqueue_balance_refresh(update_task.redis, [user_record.user_id])
     except Exception as e:
-        logger.error(f"Fatal updating user associated wallets while indexing {e}", exc_info=True)
+        logger.error(f"index.py | users.py | Fatal updating user associated wallets while indexing {e}", exc_info=True)
 
 
 def recover_user_id_hash(web3, user_id, signature):
@@ -342,7 +351,7 @@ def get_ipfs_metadata(update_task, user_record):
             user_metadata_format,
             user_record.creator_node_endpoint
         )
-        logger.info(f'users.py | {user_metadata}')
+        logger.info(f'index.py | users.py | {user_metadata}')
     return user_metadata
 
 # Determine whether this user has identity established on the UserReplicaSetManager contract
