@@ -788,3 +788,60 @@ is_delete={self.is_delete},\
 id={self.id},\
 user_id={self.user_id},\
 wallet={self.wallet})>"
+
+class AggregateUser(Base):
+    __tablename__ = "aggregate_user"
+
+    user_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    track_count = Column(Integer, nullable=False)
+    playlist_count = Column(Integer, nullable=False)
+    album_count = Column(Integer, nullable=False)
+    follower_count = Column(Integer, nullable=False)
+    following_count = Column(Integer, nullable=False)
+    repost_count = Column(Integer, nullable=False)
+    track_save_count = Column(Integer, nullable=False)
+
+    Index('aggregate_user_idx', 'user_id', unique=True)
+
+    def __repr__(self):
+        return f"<AggregateUser(\
+user_id={self.user_id},\
+track_count={self.track_count},\
+playlist_count={self.playlist_count},\
+album_count={self.album_count},\
+follower_count={self.follower_count},\
+following_count={self.following_count},\
+repost_count={self.repost_count},\
+track_save_count={self.track_save_count}>"
+
+class AggregateTrack(Base):
+    __tablename__ = "aggregate_track"
+
+    track_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    repost_count = Column(Integer, nullable=False)
+    save_count = Column(Integer, nullable=False)
+
+    Index('aggregate_track_idx', 'track_id', unique=True)
+
+    def __repr__(self):
+        return f"<AggregateTrack(\
+track_id={self.track_id},\
+repost_count={self.repost_count},\
+save_count={self.save_count}>"
+
+class AggregatePlaylist(Base):
+    __tablename__ = "aggregate_playlist"
+
+    playlist_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    is_album = Column(Boolean, nullable=False)
+    repost_count = Column(Integer, nullable=False)
+    save_count = Column(Integer, nullable=False)
+
+    Index('aggregate_playlist_idx', 'playlist_id', unique=True)
+
+    def __repr__(self):
+        return f"<AggregatePlaylist(\
+playlist_id={self.playlist_id},\
+is_album={self.is_album},\
+repost_count={self.repost_count},\
+save_count={self.save_count}>"

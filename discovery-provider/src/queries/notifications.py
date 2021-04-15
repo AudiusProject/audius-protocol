@@ -1,11 +1,12 @@
 import logging  # pylint: disable=C0302
 from flask import Blueprint, request
-from sqlalchemy import desc, func
+from sqlalchemy import desc
 
 from src import api_helpers
 from src.queries import response_name_constants as const
 from src.queries.query_helpers import get_repost_counts, get_save_counts, get_follower_count_dict
-from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, RepostType, Remix
+from src.models import Block, Follow, Save, SaveType, Playlist, Track, Repost, \
+    RepostType, Remix, AggregateUser
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 
@@ -757,15 +758,12 @@ def milestones_followers():
     with db.scoped_session() as session:
         follower_counts = (
             session.query(
-                Follow.followee_user_id,
-                func.count(Follow.followee_user_id)
+                AggregateUser.user_id,
+                AggregateUser.follower_count
             )
             .filter(
-                Follow.is_current == True,
-                Follow.is_delete == False,
-                Follow.followee_user_id.in_(user_ids)
+                AggregateUser.user_id.in_(user_ids)
             )
-            .group_by(Follow.followee_user_id)
             .all()
         )
         follower_count_dict = \
