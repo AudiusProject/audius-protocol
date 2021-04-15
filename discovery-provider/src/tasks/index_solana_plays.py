@@ -48,6 +48,10 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                 start_data3 = end_data2 + 8
                 end_data3 = l3 * 2 + start_data3
 
+                l4 = int(hex_data[end_data3:end_data3 + 2], 16)
+                start_data4 = end_data3 + 8
+                end_data4 = l4 * 2 + start_data4 
+
                 user_id = codecs.decode(hex_data[start_data1:end_data1], "hex")
                 track_id = codecs.decode(hex_data[start_data2:end_data2], "hex")
                 source = str(codecs.decode(hex_data[start_data3:end_data3], "hex"), 'utf-8')

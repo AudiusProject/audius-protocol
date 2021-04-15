@@ -11,7 +11,7 @@ use solana_program::{
     program::invoke, pubkey::Pubkey, sysvar::clock::Clock, sysvar::Sysvar,
 };
 
-const MAX_TIME_DIFF: i64 = 10;
+const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
 
 /// Program state handler.
 pub struct Processor {}
