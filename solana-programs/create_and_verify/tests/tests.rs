@@ -14,6 +14,7 @@ use solana_sdk::{
     transaction::Transaction,
     transport::TransportError,
 };
+use chrono::Utc;
 
 pub fn program_test() -> ProgramTest {
     ProgramTest::new(
@@ -148,6 +149,7 @@ async fn test_call_example_instruction() {
         user_id: String::from("U348512"),
         track_id: String::from("T52354"),
         source: String::from("some/path/to/source"),
+        timestamp: Utc::now().timestamp(),
     };
 
     let message = track_data.try_to_vec().unwrap();

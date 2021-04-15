@@ -8,9 +8,23 @@ solana-keygen new -s --no-bip39-passphrase
 solana-keygen new -s --no-bip39-passphrase -o feepayer.json
 solana-keygen new -s --no-bip39-passphrase -o owner.json
 
-solana airdrop 5
-solana airdrop 5 feepayer.json
-solana airdrop 5 owner.json
+solana airdrop --faucet-host 35.199.181.141 1
+solana airdrop --faucet-host 35.199.181.141 1
+solana airdrop --faucet-host 35.199.181.141 1
+solana airdrop --faucet-host 35.199.181.141 1
+solana airdrop --faucet-host 35.199.181.141 1
+
+solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
+solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
+solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
+solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
+solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
+
+solana airdrop --faucet-host 35.199.181.141 1 owner.json
+solana airdrop --faucet-host 35.199.181.141 1 owner.json
+solana airdrop --faucet-host 35.199.181.141 1 owner.json
+solana airdrop --faucet-host 35.199.181.141 1 owner.json
+solana airdrop --faucet-host 35.199.181.141 1 owner.json
 
 cd program
 cargo build-bpf
@@ -31,7 +45,7 @@ signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
 valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
 
 cd ..
-cat >solana-program-config.json <<EOF
+cat > solana-program-config.json <<EOF
 {
     "createAndVerifyAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
     "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",

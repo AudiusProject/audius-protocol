@@ -70,7 +70,7 @@ describe('convict configuration test', function () {
 
     for (var key in schema) {
       // special case this property since config.load will override the test value in the env var because of custom type coercion
-      if (key === 'relayerWallets' || key === 'ethRelayerWallets' || key === 'solanaSignerPrivateKey') {
+      if (key === 'relayerWallets' || key === 'ethRelayerWallets' || key === 'solanaFeePayerWallet') {
         assert.deepStrictEqual(Array.isArray(config.get(key)), true)
         continue
       }
