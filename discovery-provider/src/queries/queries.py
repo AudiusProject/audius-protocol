@@ -34,6 +34,7 @@ from src.queries.get_previously_private_playlists import get_previously_private_
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
+from src.queries.get_sol_plays import get_sol_play
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -558,5 +559,15 @@ def get_ursm_content_nodes():
         owner_wallet = request.args.get("owner_wallet") or None
         cnodes = get_ursm_cnodes(owner_wallet)
         return api_helpers.success_response(cnodes)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+@bp.route("/get_sol_play", methods=("GET",))
+def get_sol_play_tx():
+    try:
+        # Assign value only if not None or empty string
+        tx_sig = request.args.get("tx_sig") or None
+        sig = get_sol_play(tx_sig)
+        return api_helpers.success_response(sig)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
