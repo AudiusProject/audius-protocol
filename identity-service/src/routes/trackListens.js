@@ -224,7 +224,8 @@ module.exports = function (app) {
       config.get('solanaSignerPrivateKey'),
       userId.toString(),
       trackId.toString(),
-      Date.now().toString()
+      ''
+      // Date.now().toString()
     )
 
     // Clients will send a randomly generated string UUID for anonymous users.

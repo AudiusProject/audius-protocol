@@ -108,7 +108,8 @@ async function createAndVerifyMessage (
   let instructionArgs = new InstructionArgs({
     track_data: trackData,
     signature: Array.from(sigObj.signature),
-    recovery_id: sigObj.recid
+    recovery_id: sigObj.recid,
+    timestamp: Math.round(new Date().getTime() / 1000)
   })
 
   let instructionData = new InstructionEnum({
@@ -145,12 +146,13 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
-  let txInfo = await solanaWeb3.sendAndConfirmTransaction(
+  let signature = await solanaWeb3.sendAndConfirmTransaction(
     devnetConnection,
     transaction,
     [feePayer]
   )
-  console.log(txInfo)
+
+  console.log('Signature: ', signature)
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
