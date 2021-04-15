@@ -503,7 +503,13 @@ const config = convict({
     format: String,
     env: 'sentryDSN',
     default: ''
-  }
+  },
+  ethGasMultiplier: {
+    doc: 'Constant value to multiply the configured FAST gas price by - in order to optimize tx success',
+    format: Number,
+    env: 'ethGasMultiplier',
+    default: 1.2
+  },
 })
 
 // if you wanted to load a file
