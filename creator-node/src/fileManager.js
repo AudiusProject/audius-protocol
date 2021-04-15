@@ -78,7 +78,8 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * 2. attempt to fetch the CID from a variety of sources
  * 3. throws error if failure, couldn't find the file or file contents don't match CID;
  *    returns expectedStoragePath if successful
- * @param {Object} req request object
+ * @param {Object} serviceRegistry
+ * @param {Object} logger
  * @param {String} multihash IPFS cid
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
@@ -86,7 +87,9 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
  */
-async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+  const { ipfsLatest } = serviceRegistry
+
   // stores all the stages of this function along with associated information relevant to that step
   // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
   // so we only need to print it once in the global catch or after everthing finishes except for any return statements
@@ -149,10 +152,10 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
 
     // If file already stored on disk, return immediately.
     if (await fs.pathExists(expectedStoragePath)) {
-      req.logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
+      logger.debug(`File already stored at ${expectedStoragePath} for ${multihash}`)
       decisionTree.push({ stage: 'File already stored on disk', vals: [expectedStoragePath, multihash], time: Date.now() })
       // since this is early exit, print the decision tree here
-      _printDecisionTreeObj(req, decisionTree)
+      _printDecisionTreeObj(decisionTree, logger)
 
       return expectedStoragePath
     }
@@ -164,7 +167,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     if (gatewayUrlsMapped.length > 0) {
       try {
         let response
-        req.logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+        logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
         decisionTree.push({ stage: 'About to race requests via gateways', vals: gatewayUrlsMapped, time: Date.now() })
 
         const GatewayRetrievalConcurrencyLimit = 5
@@ -205,7 +208,7 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
              * This just means that file retrieval failed from current gatewayUrlsSlice
              */
           } catch (e) {
-            req.logger.error(`Error fetching file from gateways ${gatewayUrlsSlice}`)
+            logger.error(`Error fetching file from gateways ${gatewayUrlsSlice}`)
             decisionTree.push({ stage: 'Could not retrieve file from gateways', vals: gatewayUrlsSlice, time: Date.now() })
 
             continue
@@ -222,59 +225,59 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
         fileFound = true
 
         decisionTree.push({ stage: 'Wrote file to file system after fetching from gateway', vals: expectedStoragePath, time: Date.now() })
-        req.logger.info(`wrote file to ${expectedStoragePath}`)
+        logger.info(`wrote file to ${expectedStoragePath}`)
       } catch (e) {
         const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
         decisionTree.push({ stage: errorMsg, vals: e.message, time: Date.now() })
-        req.logger.warn(`${errorMsg} || ${e.message}`)
+        logger.warn(`${errorMsg} || ${e.message}`)
       }
     }
 
     // If file not found through gateways, check local ipfs node.
     if (!fileFound) {
-      req.logger.debug(`checking if ${multihash} already available on local ipfs node`)
+      logger.debug(`checking if ${multihash} already available on local ipfs node`)
       try {
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with cat', vals: multihash, time: Date.now() })
 
         // ipfsCat returns a Buffer
-        let fileBuffer = await Utils.ipfsCat(multihash, req, 1000)
+        let fileBuffer = await Utils.ipfsCat(serviceRegistry, logger, multihash, 1000)
 
         fileFound = true
-        req.logger.debug(`Retrieved file for ${multihash} from  with cat`)
+        logger.debug(`Retrieved file for ${multihash} from  with cat`)
         decisionTree.push({ stage: 'Retrieved file from local ipfs node with cat', vals: multihash, time: Date.now() })
 
         // Write file to disk.
         await fs.writeFile(expectedStoragePath, fileBuffer)
 
-        req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
+        logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs cat`)
         decisionTree.push({ stage: 'Wrote file to disk', vals: expectedStoragePath, time: Date.now() })
       } catch (e) {
-        req.logger.warn(`Multihash ${multihash} is not available on local ipfs node ${e.message}`)
+        logger.warn(`Multihash ${multihash} is not available on local ipfs node ${e.message}`)
         decisionTree.push({ stage: 'File not available on local ipfs node with cat', vals: multihash, time: Date.now() })
       }
     }
 
     // If file not already available on local ipfs node or via gateways, fetch from IPFS.
     if (!fileFound) {
-      req.logger.debug(`Attempting to get ${multihash} from IPFS`)
+      logger.debug(`Attempting to get ${multihash} from IPFS`)
       try {
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with get', vals: multihash, time: Date.now() })
 
         // ipfsGet returns a BufferListStream object which is not a buffer
         // not compatible into writeFile directly, but it can be streamed to a file
-        let fileBL = await Utils.ipfsGet(multihash, req, 1000)
+        let fileBL = await Utils.ipfsGet(serviceRegistry, logger, multihash, 1000)
 
-        req.logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
+        logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
         decisionTree.push({ stage: 'Retrieved file from local ipfs node with get', vals: multihash, time: Date.now() })
 
         // Write file to disk.
         await Utils.writeStreamToFileSystem(fileBL, expectedStoragePath)
 
         fileFound = true
-        req.logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
+        logger.info(`wrote file to ${expectedStoragePath}, obtained via ipfs get`)
         decisionTree.push({ stage: 'Wrote file to disk', vals: expectedStoragePath, time: Date.now() })
       } catch (e) {
-        req.logger.warn(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
+        logger.warn(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
         decisionTree.push({ stage: 'File not available on local ipfs node with ipfs get', vals: multihash, time: Date.now() })
       }
     }
@@ -288,9 +291,8 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
     // verify that the contents of the file match the file's cid
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
-      const ipfs = req.app.get('ipfsLatestAPI')
       const content = fs.createReadStream(expectedStoragePath)
-      for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
+      for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
           // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
@@ -304,20 +306,20 @@ async function saveFileForMultihashToFS (req, multihash, expectedStoragePath, ga
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
-    _printDecisionTreeObj(req, decisionTree)
+    _printDecisionTreeObj(decisionTree, logger)
     return expectedStoragePath
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
-    _printDecisionTreeObj(req, decisionTree)
+    _printDecisionTreeObj(decisionTree, logger)
     throw new Error(`saveFileForMultihashToFS - ${e}`)
   }
 }
 
-const _printDecisionTreeObj = (req, decisionTree) => {
+const _printDecisionTreeObj = (decisionTree, logger) => {
   try {
-    req.logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
+    logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
   } catch (e) {
-    req.logger.error('error printing saveFileForMultihashToFS decision tree', decisionTree)
+    logger.error('error printing saveFileForMultihashToFS decision tree', decisionTree)
   }
 }
 
