@@ -67,7 +67,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   let serviceEndpoint
   try {
-    serviceEndpoint = await getOwnEndpoint(req.app.get('audiusLibs'))
+    serviceEndpoint = await getOwnEndpoint(serviceRegistry)
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
@@ -75,7 +75,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   let creatorNodeEndpoints
   try {
     creatorNodeEndpoints = await getCreatorNodeEndpoints({
-      libs: req.app.get('audiusLibs'),
+      serviceRegistry,
       logger: req.logger,
       wallet: req.session.wallet,
       blockNumber: req.body.blockNumber,
@@ -189,15 +189,23 @@ async function triggerSecondarySyncs (req) {
  *    services has been registered, and we can't register the service unless the service starts up.
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
  */
-async function getOwnEndpoint (libs) {
-  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
-  // const libs = req.app.get('audiusLibs')
+async function getOwnEndpoint ({ libs }) {
+  if (config.get('isUserMetadataNode')) {
+    throw new Error('Not available for userMetadataNode')
+  }
 
   let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
-  if (!creatorNodeEndpoint) throw new Error('Must provide either creatorNodeEndpoint config var.')
+
+  if (!creatorNodeEndpoint) {
+    throw new Error('Must provide either creatorNodeEndpoint config var.')
+  }
 
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
-  if (!spId) throw new Error('Cannot get spId for node')
+
+  if (!spId) {
+    throw new Error('Cannot get spId for node')
+  }
+
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('content-node', spId)
 
   // Confirm on-chain endpoint exists and is valid FQDN
@@ -228,7 +236,7 @@ async function getOwnEndpoint (libs) {
  *      - Errors if retrieved primary does not match myCnodeEndpoint
  *    - If neither of above conditions are met, falls back to single discprov query without polling
  *
- * @param {Object} libs
+ * @param {Object} serviceRegistry
  * @param {Object} logger
  * @param {string} wallet - wallet used to query discprov for user data
  * @param {number} blockNumber - blocknumber of eth TX preceding CN call
@@ -237,13 +245,14 @@ async function getOwnEndpoint (libs) {
  *
  * @returns {Array} - array of strings of replica set
  */
-async function getCreatorNodeEndpoints ({ libs, logger, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
+async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
+  const { libs } = serviceRegistry
+
   if (config.get('isUserMetadataNode')) {
     throw new Error('Not available for userMetadataNode')
   }
 
   logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
-  // const libs = req.app.get('audiusLibs')
   const start = Date.now()
 
   let user = null

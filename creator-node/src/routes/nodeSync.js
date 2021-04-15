@@ -235,7 +235,9 @@ module.exports = function (app) {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
+async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
+  const { redis } = serviceRegistry
+
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
@@ -314,7 +316,7 @@ async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPubli
 
     try {
       // Attempt to connect directly to target CNode's IPFS node.
-      await _initBootstrapAndRefreshPeers(ipfs, logger, body.data.ipfsIDObj.addresses, redisKey)
+      await _initBootstrapAndRefreshPeers(serviceRegistry, logger, body.data.ipfsIDObj.addresses, redisKey)
       logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
@@ -341,9 +343,9 @@ async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPubli
        */
       let userReplicaSet = []
       try {
-        const myCnodeEndpoint = await getOwnEndpoint(libs)
+        const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
         userReplicaSet = await getCreatorNodeEndpoints({
-          libs,
+          serviceRegistry,
           logger: logger,
           wallet: fetchedWalletPublicKey,
           blockNumber: blockNumber,
@@ -478,7 +480,7 @@ async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPubli
           logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
 
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihashToFS(ipfsLatest, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            trackFile => saveFileForMultihashToFS(serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet)
           ))
         }
         logger.info(redisKey, 'Saved all track files to disk.')
@@ -495,9 +497,9 @@ async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPubli
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihashToFS(ipfsLatest, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  return saveFileForMultihashToFS(serviceRegistry, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
                 } else {
-                  return saveFileForMultihashToFS(ipfsLatest, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  return saveFileForMultihashToFS(serviceRegistry, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
                 }
               }
             }
@@ -568,7 +570,7 @@ async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPubli
 /**
  * Given IPFS node peer addresses, add to bootstrap peers list and manually connect
  **/
-async function _initBootstrapAndRefreshPeers (ipfs, logger, targetIPFSPeerAddresses, redisKey) {
+async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAddresses, redisKey) {
   logger.info(redisKey, 'Initializing Bootstrap Peers:')
 
   // Get own IPFS node's peer addresses

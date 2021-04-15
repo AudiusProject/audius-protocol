@@ -86,7 +86,9 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
  */
-async function saveFileForMultihashToFS (ipfs, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+  const { ipfsLatest } = serviceRegistry
+
   // stores all the stages of this function along with associated information relevant to that step
   // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
   // so we only need to print it once in the global catch or after everthing finishes except for any return statements
@@ -237,7 +239,7 @@ async function saveFileForMultihashToFS (ipfs, logger, multihash, expectedStorag
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with cat', vals: multihash, time: Date.now() })
 
         // ipfsCat returns a Buffer
-        let fileBuffer = await Utils.ipfsCat(ipfs, logger, multihash, 1000)
+        let fileBuffer = await Utils.ipfsCat(serviceRegistry, logger, multihash, 1000)
 
         fileFound = true
         logger.debug(`Retrieved file for ${multihash} from  with cat`)
@@ -262,7 +264,7 @@ async function saveFileForMultihashToFS (ipfs, logger, multihash, expectedStorag
 
         // ipfsGet returns a BufferListStream object which is not a buffer
         // not compatible into writeFile directly, but it can be streamed to a file
-        let fileBL = await Utils.ipfsGet(ipfs, logger, multihash, 1000)
+        let fileBL = await Utils.ipfsGet(serviceRegistry, logger, multihash, 1000)
 
         logger.debug(`retrieved file for multihash ${multihash} from local ipfs node`)
         decisionTree.push({ stage: 'Retrieved file from local ipfs node with get', vals: multihash, time: Date.now() })
@@ -289,7 +291,7 @@ async function saveFileForMultihashToFS (ipfs, logger, multihash, expectedStorag
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const content = fs.createReadStream(expectedStoragePath)
-      for await (const result of ipfs.add(content, { onlyHash: true, timeout: 10000 })) {
+      for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
           // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct

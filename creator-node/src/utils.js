@@ -149,7 +149,7 @@ const ipfsStat = (CID, logContext, timeout = 1000) => {
  * @param {*} length length of data to retrieve from file
  * @returns {Buffer}
  */
-const ipfsCat = (ipfs, logger, path, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
+const ipfsCat = ({ ipfsLatest }, logger, path, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
   const start = Date.now()
 
   try {
@@ -165,9 +165,9 @@ const ipfsCat = (ipfs, logger, path, timeout = 1000, length = null) => new Promi
       return reject(new Error('ipfsCat timed out'))
     }, 2 * timeout)
 
-    // ipfs.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    // ipfsLatest.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
-    for await (const chunk of ipfs.cat(path, options)) {
+    for await (const chunk of ipfsLatest.cat(path, options)) {
       chunks.push(chunk)
     }
     logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
@@ -184,7 +184,7 @@ const ipfsCat = (ipfs, logger, path, timeout = 1000, length = null) => new Promi
  * @param {Number} timeout timeout in ms
  * @returns {BufferListStream}
  */
-const ipfsGet = (ipfs, logger, path, timeout = 1000) => new Promise(async (resolve, reject) => {
+const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(async (resolve, reject) => {
   const start = Date.now()
 
   try {
@@ -199,9 +199,9 @@ const ipfsGet = (ipfs, logger, path, timeout = 1000) => new Promise(async (resol
       return reject(new Error('ipfsGet timed out'))
     }, 2 * timeout)
 
-    // ipfs.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    // ipfsLatest.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
     /* eslint-disable-next-line no-unused-vars */
-    for await (const file of ipfs.get(path, options)) {
+    for await (const file of ipfsLatest.get(path, options)) {
       if (!file.content) continue
 
       const content = new BufferListStream()
