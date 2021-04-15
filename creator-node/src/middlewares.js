@@ -53,8 +53,12 @@ async function syncLockMiddleware (req, res, next) {
   next()
 }
 
-/** Blocks writes if node is not the primary for audiusUser associated with wallet. */
+/**
+ * Blocks writes if node is not the primary for audiusUser associated with wallet
+ */
 async function ensurePrimaryMiddleware (req, res, next) {
+  const serviceRegistry = req.app.get('serviceRegistry')
+
   if (config.get('isUserMetadataNode')) {
     return next()
   }
