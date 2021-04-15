@@ -18,7 +18,8 @@ import {
   TRENDING_PAGE,
   EXPLORE_PAGE,
   FAVORITES_PAGE,
-  profilePage
+  profilePage,
+  getPathname
 } from 'utils/route'
 import { getLocationPathname } from './selectors'
 import { getUserHandle } from 'store/account/selectors'
@@ -55,7 +56,7 @@ function* trackLocation() {
       // Set first page actions
       const historyLength = (window as any).locationHistory.length
       const firstPageRoutes = [SIGN_IN_PAGE, SIGN_UP_PAGE, FEED_PAGE]
-      if (firstPageRoutes.includes(location.pathname) && !location.search) {
+      if (firstPageRoutes.includes(getPathname(location)) && !location.search) {
         // If native mobile, the sign in / sign up page should not offer a back btn option
         const message = new OnFirstPage()
         message.send()

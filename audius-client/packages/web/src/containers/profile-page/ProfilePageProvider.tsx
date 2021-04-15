@@ -30,7 +30,7 @@ import {
   getProfileTracksLineup
 } from './store/selectors'
 import { CollectionSortMode } from 'containers/profile-page/store/types'
-import { NOT_FOUND_PAGE, profilePage } from 'utils/route'
+import { getPathname, NOT_FOUND_PAGE, profilePage } from 'utils/route'
 import { newUserMetadata } from 'schemas'
 import { formatCount } from 'utils/formatUtil'
 
@@ -111,22 +111,22 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     this.props.resetProfile()
     this.props.resetArtistTracks()
     this.props.resetUserFeedTracks()
-    this.fetchProfile(this.props.location.pathname)
+    this.fetchProfile(getPathname(this.props.location))
 
     // Switching from profile page => profile page
     this.unlisten = this.props.history.listen((location, action) => {
       // If changing pages or "POP" on router (with goBack, the pathnames are equal)
       if (
-        this.props.location.pathname !== location.pathname ||
+        getPathname(this.props.location) !== getPathname(location) ||
         action === 'POP'
       ) {
         this.props.resetProfile()
         this.props.resetArtistTracks()
         this.props.resetUserFeedTracks()
-        const params = parseUserRoute(location.pathname)
+        const params = parseUserRoute(getPathname(location))
         if (params) {
           // Fetch profile if this is a new profile page
-          this.fetchProfile(location.pathname)
+          this.fetchProfile(getPathname(location))
         }
         this.setState({
           activeTab: null,
@@ -267,7 +267,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   refreshProfile = () => {
-    this.fetchProfile(this.props.location.pathname, true, false, true)
+    this.fetchProfile(getPathname(this.props.location), true, false, true)
   }
 
   updateName = (name: string) => {
@@ -914,7 +914,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
     return (
       <this.props.children
-        key={this.props.location.pathname}
+        key={getPathname(this.props.location)}
         {...childProps}
         {...mobileProps}
         {...desktopProps}

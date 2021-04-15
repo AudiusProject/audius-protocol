@@ -14,7 +14,8 @@ import { useLocation } from 'react-router-dom'
 import {
   EXPLORE_MOOD_PLAYLISTS_PAGE,
   REPOSTING_USERS_ROUTE,
-  FAVORITING_USERS_ROUTE
+  FAVORITING_USERS_ROUTE,
+  getPathname
 } from 'utils/route'
 import {
   EXPLORE_COLLECTIONS_MAP,
@@ -109,7 +110,7 @@ const ExploreCollectionsPageProvider = ({
       // Mood playlist
       const match = matchPath<{
         mood: string
-      }>(location.pathname, {
+      }>(getPathname(location), {
         path: EXPLORE_MOOD_PLAYLISTS_PAGE
       })
       if (match && match.params.mood) {

@@ -68,13 +68,17 @@ const RemixesPageProvider = ({
   }, [reset, resetTracks])
 
   const goToTrackPage = useCallback(() => {
-    goToRoute(
-      trackPage(user?.handle, originalTrack?.title, originalTrack?.track_id)
-    )
+    if (user && originalTrack) {
+      goToRoute(
+        trackPage(user?.handle, originalTrack?.title, originalTrack?.track_id)
+      )
+    }
   }, [goToRoute, originalTrack, user])
 
   const goToArtistPage = useCallback(() => {
-    goToRoute(profilePage(user?.handle))
+    if (user) {
+      goToRoute(profilePage(user?.handle))
+    }
   }, [goToRoute, user])
 
   const getLineupProps = () => {

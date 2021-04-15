@@ -14,7 +14,7 @@ import {
 } from 'store/application/ui/editTrackModal/selectors'
 import { AppState } from 'store/types'
 import { ID } from 'models/common/Identifiers'
-import { FEED_PAGE } from 'utils/route'
+import { FEED_PAGE, getPathname } from 'utils/route'
 
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
@@ -98,7 +98,7 @@ const EditTrackModal = ({
     setShowDeleteConfirmation(false)
     close()
     const match = matchPath<{ name: string; handle: string }>(
-      history.location.pathname,
+      getPathname(history.location),
       {
         path: '/:handle/:name',
         exact: true

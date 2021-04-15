@@ -18,7 +18,8 @@ import {
   FEED_PAGE,
   SAVED_PAGE,
   EXPLORE_PAGE,
-  profilePage
+  profilePage,
+  getPathname
 } from 'utils/route'
 import { getIsIOS } from 'utils/browser'
 
@@ -119,7 +120,7 @@ const AnimatedSwitch = ({
       ]
       return (
         baseRoutes.includes(udpatedRoute) &&
-        baseRoutes.includes(location.pathname)
+        baseRoutes.includes(getPathname(location))
       )
     },
     [location, handle]
@@ -128,7 +129,10 @@ const AnimatedSwitch = ({
   // Go back a page
   useEffect(() => {
     window.onpopstate = (e: any) => {
-      if (!getIsStackResetting() && !isBaseRoute(e.target.location.pathname)) {
+      if (
+        !getIsStackResetting() &&
+        !isBaseRoute(getPathname(e.target.location))
+      ) {
         setAnimation(
           slideDirection === SlideDirection.FROM_LEFT
             ? slideInRightTransition
@@ -142,7 +146,7 @@ const AnimatedSwitch = ({
 
   useEffect(() => {
     if (
-      DISABLED_PAGES.has(location.pathname) ||
+      DISABLED_PAGES.has(getPathname(location)) ||
       // Don't animate on replace transitions
       history.action === 'REPLACE' ||
       // @ts-ignore
@@ -156,7 +160,7 @@ const AnimatedSwitch = ({
 
   const transitions = useTransition(
     location,
-    location => location.pathname,
+    location => getPathname(location),
     getAnimation()
   )
 

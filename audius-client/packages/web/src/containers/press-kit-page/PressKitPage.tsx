@@ -7,7 +7,7 @@ import NavBanner from 'components/public-site/NavBanner'
 import Footer from 'components/public-site/Footer'
 
 import neonImg from 'assets/img/publicSite/neon.jpg'
-import { AUDIUS_PRESS_KIT_ZIP } from 'utils/links'
+import { AUDIUS_PRESS_KIT_ZIP } from 'utils/route'
 
 const messages = {
   title: 'Press Kit',

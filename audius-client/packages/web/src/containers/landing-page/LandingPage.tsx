@@ -21,6 +21,7 @@ import CTASignUp from './components/CTASignUp'
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import AppRedirectPopover from 'containers/app-redirect-popover/components/AppRedirectPopover'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
+import { getPathname } from 'utils/route'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
 
@@ -55,7 +56,7 @@ const LandingPage = (props: LandingPageProps) => {
     setShowCookieBanner(false)
   }, [])
 
-  // Show fanburst banner if url hash is present
+  // Show fanburst banner if url utm source is present
   const [showFanburstBanner, setShowFanburstBanner] = useState(false)
   useEffect(() => {
     if (
@@ -63,7 +64,7 @@ const LandingPage = (props: LandingPageProps) => {
       window.location.search.includes(FANBURST_UTM_SOURCE)
     ) {
       if (window.history && window.history.pushState) {
-        window.history.pushState('', '/', window.location.pathname)
+        window.history.pushState('', '/', getPathname())
       } else {
         window.location.hash = ''
       }

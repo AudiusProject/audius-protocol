@@ -1,10 +1,10 @@
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
 import { track } from 'store/analytics/providers/segment'
 import { Name } from 'services/analytics'
-import { findRoute } from 'utils/route'
+import { findRoute, getPathname } from 'utils/route'
 
 // Establish the "initial load" route
-const route = findRoute(window.location.pathname)
+const route = findRoute(getPathname())
 
 const sendToAnalytics = ({ name, delta }: { name: string; delta: number }) => {
   console.info(name, delta)

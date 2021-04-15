@@ -39,11 +39,12 @@ export type AddToPlaylistProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: AddToPlaylistProps) => {
-  const { account } = props
-  if (account) {
+  const { account, trackTitle } = props
+  if (account && trackTitle) {
     return {
       ...props,
-      account
+      account,
+      trackTitle
     }
   }
 })

@@ -9,7 +9,7 @@ import { trendingActions } from './store/lineups/trending/actions'
 import * as trendingPageActions from './store/actions'
 import { getHasAccount } from 'store/account/selectors'
 import { openSignOn } from 'containers/sign-on/store/actions'
-import { TRENDING_GENRES } from 'utils/route'
+import { getPathname, TRENDING_GENRES } from 'utils/route'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
@@ -64,7 +64,7 @@ class TrendingPageProvider extends PureComponent {
   }
 
   matchesRoute = route => {
-    return matchPath(window.location.pathname, {
+    return matchPath(getPathname(), {
       path: route
     })
   }

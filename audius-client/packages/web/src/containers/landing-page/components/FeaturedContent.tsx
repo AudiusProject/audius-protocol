@@ -12,6 +12,7 @@ import { ReactComponent as IconLines } from 'assets/img/publicSite/Lines.svg'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
 import useCardWeight from 'hooks/useCardWeight'
 import styles from './FeaturedContent.module.css'
+import { pushWindowRoute } from 'utils/route'
 
 const messages = {
   title: 'Featured Content',
@@ -24,10 +25,6 @@ type TrackProp = {
   imageUrl: string
   color: string
   onClick: () => void
-}
-
-const pushWindowRoute = (route: string) => {
-  window.location.href = route
 }
 
 const tracks: Array<TrackProp> = [

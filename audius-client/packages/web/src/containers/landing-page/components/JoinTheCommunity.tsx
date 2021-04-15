@@ -7,7 +7,11 @@ import cypherImage2x from 'assets/img/publicSite/cypher@2x.jpg'
 
 import useHasViewed from 'hooks/useHasViewed'
 import useCardWeight from 'hooks/useCardWeight'
-import { AUDIUS_PODCAST_LINK, AUDIUS_CYPHER_LINK } from 'utils/links'
+import {
+  AUDIUS_PODCAST_LINK,
+  AUDIUS_CYPHER_LINK,
+  pushWindowRoute
+} from 'utils/route'
 
 import styles from './JoinTheCommunity.module.css'
 
@@ -15,10 +19,6 @@ const messages = {
   title: 'Join The Community',
   subTitle:
     'The Audius community is full of up-and-coming DJs & producers looking to give back to the music scene'
-}
-
-const pushWindowRoute = (route: string) => {
-  window.location.href = route
 }
 
 const cards = [

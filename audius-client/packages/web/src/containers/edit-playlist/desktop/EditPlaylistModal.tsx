@@ -14,7 +14,7 @@ import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { editPlaylist, deletePlaylist } from 'store/cache/collections/actions'
 import { ID } from 'models/common/Identifiers'
 import { push as pushRoute } from 'connected-react-router'
-import { FEED_PAGE, playlistPage } from 'utils/route'
+import { FEED_PAGE, getPathname, playlistPage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 const messages = {
@@ -59,9 +59,11 @@ const EditPlaylistModal = ({
     setShowDeleteConfirmation(false)
     onClose()
     deletePlaylist(playlistId!)
-    const playlistRoute = playlistPage(handle, title, playlistId!)
-    // If on the playlist page, direct user to feed
-    if (location.pathname === playlistRoute) goToRoute(FEED_PAGE)
+    if (handle && title) {
+      const playlistRoute = playlistPage(handle, title, playlistId!)
+      // If on the playlist page, direct user to feed
+      if (getPathname(location) === playlistRoute) goToRoute(FEED_PAGE)
+    }
   }
   const onSaveEdit = (formFields: any) => {
     editPlaylist(playlistId!, formFields)

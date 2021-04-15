@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Button, ButtonType } from '@audius/stems'
 
 import styles from './AppRedirectPopover.module.css'
-import { APP_REDIRECT } from 'utils/route'
+import { APP_REDIRECT, getPathname } from 'utils/route'
 import AppIcon from 'assets/img/appIcon240.png'
 import { animated, useTransition } from 'react-spring'
 import { isMobile } from 'utils/clientUtil'
@@ -117,7 +117,7 @@ const AppRedirectPopover = ({
 
   const onClick = () => {
     onBeforeClickApp()
-    const { pathname } = window.location
+    const pathname = getPathname()
     const newHref = `https://redirect.audius.co${APP_REDIRECT}${pathname}`
     window.location.href = newHref
     decrementScroll()

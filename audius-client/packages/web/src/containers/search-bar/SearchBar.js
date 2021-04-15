@@ -7,7 +7,13 @@ import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
 import { fetchSearch, cancelFetchSearch, clearSearch } from './store/actions'
-import { trackPage, albumPage, playlistPage, profilePage } from 'utils/route'
+import {
+  trackPage,
+  albumPage,
+  playlistPage,
+  profilePage,
+  getPathname
+} from 'utils/route'
 import { push as pushRoute } from 'connected-react-router'
 import { getSearch } from 'containers/search-bar/store/selectors'
 import styles from './SearchBar.module.css'
@@ -23,11 +29,11 @@ class SearchBar extends Component {
   }
 
   componentDidMount() {
-    const { history, location } = this.props
+    const { history } = this.props
 
     // Clear search when navigating away from the search results page.
     history.listen((location, action) => {
-      const match = matchPath(location.pathname, {
+      const match = matchPath(getPathname(), {
         path: '/search/:query'
       })
       if (!match) {
@@ -36,7 +42,7 @@ class SearchBar extends Component {
     })
 
     // Set the initial search bar value if we loaded into a search page.
-    const match = matchPath(location.pathname, {
+    const match = matchPath(getPathname(), {
       path: '/search/:query'
     })
     if (has(match, 'params.query')) {

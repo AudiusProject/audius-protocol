@@ -44,6 +44,7 @@
       // Account recovery
       try{
         const urlParams = new URLSearchParams(window.location.search)
+        const useHashRouting = '%REACT_APP_USE_HASH_ROUTING%'
         const login = urlParams.get('login')
         const warning = urlParams.get('warning')
 
@@ -51,13 +52,23 @@
         if (login) {
           entropy = atob(login)
           window.localStorage.setItem('hedgehog-entropy-key', entropy)
-          window.history.replaceState({}, document.title, location.protocol + "//" + location.host + location.pathname);
+          let redirectUrl = location.protocol + "//" + location.host
+          if (useHashRouting) {
+            redirectUrl += '/#'
+          }
+          redirectUrl += location.pathname
+          window.history.replaceState({}, document.title, redirectUrl);
         }
         if (warning === 'RECOVERY_DO_NOT_SHARE') {
           const email = urlParams.get('email')
           window.localStorage.setItem('password-reset-required', email)
-          window.history.replaceState({}, document.title, location.protocol + "//" + location.host + location.pathname);
-          window.location = location.protocol + "//" + location.host + "/trending"
+          let redirectUrl = location.protocol + "//" + location.host
+          if (useHashRouting) {
+            redirectUrl += '/#'
+          }
+          redirectUrl += location.pathname
+          window.history.replaceState({}, document.title, redirectUrl);
+          window.location = location.protocol + "//" + location.host + (useHashRouting ? '/#': '') + "/trending"
         }
       } catch(e){
         console.error(e)

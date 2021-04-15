@@ -167,6 +167,8 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   addRouteHash = (page?: Pages) => {
     if (page) {
       this.props.history.replace(
+        // In the case of hash routing, this is still ok and will append #page
+        // to the existing route, e.g. /#/signup#page
         this.props.history.location.pathname + `#${page.toLowerCase()}`
       )
     }

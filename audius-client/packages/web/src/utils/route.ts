@@ -1,6 +1,11 @@
-import { encodeUrlName } from 'utils/formatUtil'
+import { MouseEvent } from 'react'
 import { matchPath } from 'react-router'
 import { push as pushRoute } from 'connected-react-router'
+import { ID } from 'models/common/Identifiers'
+import { encodeUrlName } from 'utils/formatUtil'
+import { Location as HistoryLocation } from 'history'
+
+const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING
 
 // Host/protocol.
 export const BASE_URL = `${
@@ -81,6 +86,31 @@ export const NOTIFICATION_SETTINGS_PAGE = '/settings/notifications'
 export const ABOUT_SETTINGS_PAGE = '/settings/about'
 export const TRENDING_GENRES = '/trending/genres'
 
+// External Links
+export const AUDIUS_TWITTER_LINK = 'https://twitter.com/AudiusProject'
+export const AUDIUS_INSTAMGRAM_LINK = 'https://www.instagram.com/audiusmusic'
+export const AUDIUS_DISCORD_LINK = 'https://discord.gg/yNUg2e2'
+
+// Org Links
+export const AUDIUS_ORG = 'https://audius.org'
+export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
+export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/developers'
+
+export const AUDIUS_HOME_LINK = '/'
+export const AUDIUS_LISTENING_LINK = '/trending'
+export const AUDIUS_SIGN_UP_LINK = '/signup'
+export const AUDIUS_PRESS_LINK = '/press'
+export const AUDIUS_HOT_AND_NEW =
+  '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
+export const AUDIUS_EXPLORE_LINK = '/explore'
+
+export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
+export const AUDIUS_PODCAST_LINK =
+  'https://www.youtube.com/playlist?list=PLKEECkHRxmPag5iYp4dTK5fGoRcoX40RY'
+export const AUDIUS_CYPHER_LINK = 'https://discord.gg/yNUg2e2'
+export const AUDIUS_PRESS_KIT_ZIP =
+  'https://s3-us-west-1.amazonaws.com/download.audius.co/Audius+Press+Kit+2.0.zip'
+
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,
@@ -157,28 +187,8 @@ export const staticRoutes = new Set([
   TRENDING_GENRES
 ])
 
-/**
- * For a given route, checks if any of the previous routes in the `orderedRoutes` array matches the window's pathname
- * Returns true if none of the previous routes mach and it does, otherwise false.
- */
-export const doesRenderPage = pageRoute => {
-  const pgIndex = orderedRoutes.findIndex(route => route === pageRoute)
-  if (pgIndex === -1) return false
-  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every(route => {
-    return !matchPath(window.location.pathname, {
-      path: route,
-      exact: true
-    })
-  })
-  if (!noPreviousMatches) return false
-  return matchPath(window.location.pathname, {
-    path: pageRoute,
-    exact: true
-  })
-}
-
 /** Given a pathname, finds a matching route */
-export const findRoute = pathname => {
+export const findRoute = (pathname: string) => {
   for (const route of orderedRoutes) {
     const match = matchPath(pathname, { path: route, exact: true })
     if (match) {
@@ -189,71 +199,144 @@ export const findRoute = pathname => {
 }
 
 // Create full formed urls for routes.
-export const trackPage = (handle, title, id) => {
+export const trackPage = (handle: string, title: string, id: ID) => {
   return `/${encodeUrlName(handle)}/${encodeUrlName(title)}-${id}`
 }
-export const fullTrackPage = (handle, title, id) => {
+export const fullTrackPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${trackPage(handle, title, id)}`
 }
 
-export const trackRemixesPage = (handle, title, id) => {
+export const trackRemixesPage = (handle: string, title: string, id: ID) => {
   return `${trackPage(handle, title, id)}/remixes`
 }
-export const fullTrackRemixesPage = (handle, title, id) => {
+export const fullTrackRemixesPage = (handle: string, title: string, id: ID) => {
   return `${fullTrackPage(handle, title, id)}/remixes`
 }
 
-export const albumPage = (handle, title, id) => {
+export const albumPage = (handle: string, title: string, id: ID) => {
   return `/${encodeUrlName(handle)}/album/${encodeUrlName(title)}-${id}`
 }
-export const fullAlbumPage = (handle, title, id) => {
+export const fullAlbumPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${albumPage(handle, title, id)}`
 }
 
-export const playlistPage = (handle, title, id) => {
+export const playlistPage = (
+  handle: string,
+  title: string,
+  id: ID | string
+) => {
   return `/${encodeUrlName(handle)}/playlist/${encodeUrlName(title)}-${id}`
 }
-export const fullPlaylistPage = (handle, title, id) => {
+export const fullPlaylistPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${playlistPage(handle, title, id)}`
 }
 
-export const profilePage = handle => {
+export const profilePage = (handle: string) => {
   return `/${encodeUrlName(handle)}`
 }
-export const fullProfilePage = handle => {
+export const fullProfilePage = (handle: string) => {
   return `${BASE_URL}${profilePage(handle)}`
 }
 
-export const searchResultsPage = query => {
+export const searchResultsPage = (query: string) => {
   return `/search/${query}`
 }
 
-export const fullSearchResultsPage = query => {
+export const fullSearchResultsPage = (query: string) => {
   return `${BASE_URL}${searchResultsPage(query)}`
 }
 
-export const exploreMoodPlaylistsPage = mood => {
+export const exploreMoodPlaylistsPage = (mood: string) => {
   return `/explore/${mood}`
 }
 
-export const doesMatchRoute = (route, exact = true) => {
-  return matchPath(window.location.pathname, {
+export const doesMatchRoute = (route: string, exact = true) => {
+  return matchPath(getPathname(), {
     path: route,
     exact
   })
 }
 
-export const stripBaseUrl = url => url.replace(BASE_URL, '')
+export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')
 
-export const getPathname = () => {
-  return BASENAME
-    ? window.location.pathname.replace(BASENAME, '')
-    : window.location.pathname
+/**
+ * Gets the pathname from the location or the hashed path name
+ * if using hash routing
+ * @param {Location} location
+ */
+export const getPathname = (
+  location: Location | HistoryLocation = window.location
+) => {
+  if (USE_HASH_ROUTING) {
+    return location.hash.replace('#', '')
+  }
+  return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname
 }
 
-// Only calls push route if unique
-export const pushUniqueRoute = route => {
-  if (route !== window.location.pathname) {
+/**
+ * For a given route, checks if any of the previous routes in the `orderedRoutes` array matches the window's pathname
+ * Returns true if none of the previous routes mach and it does, otherwise false.
+ */
+export const doesRenderPage = (pageRoute: string) => {
+  const pgIndex = orderedRoutes.findIndex(route => route === pageRoute)
+  if (pgIndex === -1) return false
+  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every(route => {
+    return !matchPath(getPathname(), {
+      path: route,
+      exact: true
+    })
+  })
+  if (!noPreviousMatches) return false
+  return matchPath(getPathname(), {
+    path: pageRoute,
+    exact: true
+  })
+}
+
+export const handleClickRoute = (route: string) => (e: MouseEvent) => {
+  e.preventDefault()
+  pushWindowRoute(route)
+}
+
+export const recordGoToSignup = (callback: () => void) => {
+  if ((window as any).analytics) {
+    ;(window as any).analytics.track(
+      'Create Account: Open',
+      { source: 'landing page' },
+      null,
+      callback
+    )
+  } else {
+    callback()
+  }
+}
+
+/**
+ * Forces a reload of the window by manually setting the location.href
+ */
+export const pushWindowRoute = (route: string) => {
+  let routeToPush: string
+  if (USE_HASH_ROUTING) {
+    routeToPush = `/#${route}`
+  } else {
+    routeToPush = route
+  }
+
+  if (route === AUDIUS_SIGN_UP_LINK) {
+    recordGoToSignup(() => {
+      window.location.href = routeToPush
+    })
+  } else {
+    window.location.href = routeToPush
+  }
+}
+
+/**
+ * Only calls push route if unique (not current route)
+ */
+export const pushUniqueRoute = (route: string) => {
+  const pathname = getPathname()
+  if (route !== pathname) {
     return pushRoute(route)
   }
   return { type: '' }

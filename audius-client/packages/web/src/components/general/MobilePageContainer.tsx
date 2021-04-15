@@ -10,6 +10,7 @@ import styles from './MobilePageContainer.module.css'
 import { ScrollContext } from 'containers/scroll-provider/ScrollProvider'
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 import useInstanceVar from 'hooks/useInstanceVar'
+import { getPathname } from 'utils/route'
 
 const messages = {
   dotAudius: '• Audius',
@@ -69,7 +70,7 @@ const MobilePageContainer = ({
   hasPlayBar
 }: MobilePageContainerProps) => {
   const { getScrollForRoute, setScrollForRoute } = useContext(ScrollContext)!
-  const [getInitialPathname] = useInstanceVar(window.location.pathname)
+  const [getInitialPathname] = useInstanceVar(getPathname())
   const [getLastScroll, setLastScroll] = useInstanceVar(0)
 
   // On mount, restore the last scroll position
@@ -82,7 +83,7 @@ const MobilePageContainer = ({
   useEffect(() => {
     // Store Y scroll in instance var as we scroll
     const onScroll = () => {
-      const path = window.location.pathname
+      const path = getPathname()
       // We can stay mounted after switching
       // paths, so check for this case
       if (path === getInitialPathname()) {

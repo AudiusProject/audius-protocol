@@ -21,7 +21,7 @@ import {
 import { isMobile } from 'utils/clientUtil'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
-import { TRENDING_PAGE } from 'utils/route'
+import { getPathname, TRENDING_PAGE } from 'utils/route'
 
 const messages = {
   feedTitle: 'Feed',
@@ -45,7 +45,7 @@ class FeedPageProvider extends PureComponent {
   }
 
   matchesRoute = route => {
-    return matchPath(window.location.pathname, {
+    return matchPath(getPathname(), {
       path: route
     })
   }

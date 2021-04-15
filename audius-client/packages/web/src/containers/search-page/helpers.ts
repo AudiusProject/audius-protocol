@@ -1,5 +1,8 @@
 import { SearchKind } from './store/types'
 import { matchPath } from 'react-router'
+import { getPathname } from 'utils/route'
+
+const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING
 
 type matchParams = {
   category?: string
@@ -14,6 +17,11 @@ const MOBILE_ALL_CATEGORY_RESULTS_LIMIT = 15
 const DESKTOP_SINGLE_CATEGORY_RESULTS_LIMIT = 40
 
 export const isTagSearch = () => {
+  if (USE_HASH_ROUTING) {
+    // URL will look like /#/search/#tag, so check if there are
+    // more than two things when we split on #
+    return window.location.hash.split('#').length > 2
+  }
   return !!window.location.hash
 }
 
@@ -22,7 +30,7 @@ export const getCategory = () => {
   if (isTagSearch()) {
     category = window.location.hash.slice(1).split('/')[1]
   } else {
-    const categoryMatch = matchPath(window.location.pathname, {
+    const categoryMatch = matchPath(getPathname(), {
       path: '/search/:query/:category',
       exact: true
     }) as match
@@ -48,11 +56,15 @@ export const getCategory = () => {
 
 export const getSearchTag = () => {
   // Trim off the leading '#' and remove any other paths (e.g. category)
+  if (USE_HASH_ROUTING) {
+    const pathname = getPathname()
+    return pathname.split('#')[1].split('/')[0]
+  }
   return window.location.hash.slice(1).split('/')[0]
 }
 
 export const getSearchText = () => {
-  const match = matchPath(window.location.pathname, {
+  const match = matchPath(getPathname(), {
     path: '/search/:query'
   }) as match
   if (!match) return ''

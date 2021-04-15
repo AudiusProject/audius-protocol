@@ -6,6 +6,7 @@ import { BackendDidSetup } from 'services/native-mobile-interface/lifecycle'
 import Dapp from './app'
 import { getCurrentUserExists } from 'services/LocalStorage'
 import { setupMobileLogging } from 'services/Logging'
+import { getPathname } from 'utils/route'
 
 const REACT_APP_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -29,12 +30,12 @@ const publicSiteSubPathnames = [
 ]
 
 const isPublicSiteRoute = (location = window.location) => {
-  const pathname = location.pathname.slice(1).toLowerCase()
+  const pathname = getPathname(location).slice(1).toLowerCase()
   return validPublicSitePathnames.includes(pathname)
 }
 
 const isPublicSiteSubRoute = (location = window.location) => {
-  const pathname = location.pathname.slice(1).toLowerCase()
+  const pathname = getPathname(location).slice(1).toLowerCase()
   return publicSiteSubPathnames.includes(pathname)
 }
 
