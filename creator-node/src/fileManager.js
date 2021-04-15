@@ -78,7 +78,8 @@ async function saveFileToIPFSFromFS (req, srcPath) {
  * 2. attempt to fetch the CID from a variety of sources
  * 3. throws error if failure, couldn't find the file or file contents don't match CID;
  *    returns expectedStoragePath if successful
- * @param {Object} req request object
+ * @param {Object} serviceRegistry
+ * @param {Object} logger
  * @param {String} multihash IPFS cid
  * @param {String} expectedStoragePath file system path similar to `/file_storage/Qm1`
  *                  for non dir files and `/file_storage/Qmdir/Qm2` for dir files
