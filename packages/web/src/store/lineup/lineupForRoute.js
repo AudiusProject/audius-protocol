@@ -23,12 +23,13 @@ import {
   UPLOAD_PAGE,
   DASHBOARD_PAGE,
   SETTINGS_PAGE,
-  NOT_FOUND_PAGE
+  NOT_FOUND_PAGE,
+  getPathname
 } from 'utils/route'
 
 export const getLineupSelectorForRoute = state => {
   const matchPage = path => {
-    const match = matchPath(window.location.pathname, {
+    const match = matchPath(getPathname(), {
       path: path,
       exact: true
     })

@@ -8,7 +8,8 @@ import {
   TRENDING_PAGE,
   EXPLORE_PAGE,
   FAVORITES_PAGE,
-  profilePage
+  profilePage,
+  getPathname
 } from 'utils/route'
 import { getUserHandle } from 'store/account/selectors'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -44,7 +45,7 @@ const ConnectedNavBar = ({
   ])
 
   const [lastNavRoute, setNavRoute] = useState(FEED_PAGE)
-  const currentRoute = history.location.pathname
+  const currentRoute = getPathname(history.location)
 
   if (lastNavRoute !== currentRoute) {
     // If the current route isn't what we memoized, check if it's a nav route

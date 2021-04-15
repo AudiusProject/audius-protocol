@@ -12,7 +12,7 @@ import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
 import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
 
-import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/links'
+import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/route'
 
 const messages = {
   title: 'UNLEASH YOUR MUSIC',

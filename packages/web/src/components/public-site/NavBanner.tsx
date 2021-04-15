@@ -16,7 +16,7 @@ import {
   AUDIUS_HOT_AND_NEW,
   AUDIUS_EXPLORE_LINK,
   AUDIUS_ORG
-} from 'utils/links'
+} from 'utils/route'
 
 import styles from './NavBanner.module.css'
 
@@ -52,11 +52,7 @@ const NavBanner = (props: NavBannerProps) => {
 
   const onStartListening = () => {
     props.setRenderPublicSite(false)
-    if (window.location.pathname === AUDIUS_HOME_LINK) {
-      window.history.pushState('', '/', AUDIUS_LISTENING_LINK)
-    } else {
-      pushWindowRoute(AUDIUS_LISTENING_LINK)
-    }
+    pushWindowRoute(AUDIUS_LISTENING_LINK)
   }
 
   useEffect(() => {
