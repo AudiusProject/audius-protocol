@@ -19,7 +19,7 @@ import User from 'models/User'
 import Collection from 'models/Collection'
 import { LineupState } from 'models/common/Lineup'
 import { ProfileUser, Tabs } from 'containers/profile-page/store/types'
-import useTabs from 'hooks/useTabs/useTabs'
+import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
@@ -262,6 +262,11 @@ const ProfilePage = ({
 
   const isUserOnTheirProfile = accountUserId === userId
 
+  const tabRecalculator = useTabRecalculator()
+  const recalculate = useCallback(() => {
+    tabRecalculator.recalculate()
+  }, [tabRecalculator])
+
   const getArtistProfileContent = () => {
     if (!profile || !albums || !playlists) return { headers: [], elements: [] }
     const albumCards = albums.map((album, index) => (
@@ -467,6 +472,7 @@ const ProfilePage = ({
             isUserOnTheirProfile={isUserOnTheirProfile}
             profile={profile}
             updateProfile={updateProfile}
+            onLoad={recalculate}
           />
         </div>
       )
@@ -589,6 +595,7 @@ const ProfilePage = ({
             isUserOnTheirProfile={isUserOnTheirProfile}
             profile={profile}
             updateProfile={updateProfile}
+            onLoad={recalculate}
           />
         </div>
       )
@@ -607,6 +614,7 @@ const ProfilePage = ({
     didChangeTabsFrom,
     isMobile: false,
     tabs: headers,
+    tabRecalculator,
     bodyClassName: styles.tabBody,
     initialTab: activeTab || undefined,
     elements
