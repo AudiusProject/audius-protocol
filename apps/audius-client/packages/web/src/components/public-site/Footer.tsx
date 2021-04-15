@@ -14,13 +14,13 @@ import {
   AUDIUS_DEV_STAKER_LINK,
   AUDIUS_TEAM_LINK,
   AUDIUS_PRESS_LINK,
-  AUDIUS_PRIVACY_POLICY_LINK,
-  AUDIUS_TERMS_OF_USE_LINK,
+  PRIVACY_POLICY,
+  TERMS_OF_SERVICE,
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,
   AUDIUS_EXPLORE_LINK,
   pushWindowRoute
-} from 'utils/links'
+} from 'utils/route'
 
 const handleClickRoute = (route: string) => (e: MouseEvent) => {
   e.preventDefault()
@@ -33,13 +33,13 @@ const onStartListening = () => pushWindowRoute(AUDIUS_LISTENING_LINK)
 const bottomLinks = [
   {
     text: 'Privacy Policy',
-    link: AUDIUS_PRIVACY_POLICY_LINK,
-    onClick: handleClickRoute(AUDIUS_PRIVACY_POLICY_LINK)
+    link: PRIVACY_POLICY,
+    onClick: handleClickRoute(PRIVACY_POLICY)
   },
   {
     text: 'Terms of Use',
-    link: AUDIUS_TERMS_OF_USE_LINK,
-    onClick: handleClickRoute(AUDIUS_TERMS_OF_USE_LINK)
+    link: TERMS_OF_SERVICE,
+    onClick: handleClickRoute(TERMS_OF_SERVICE)
   }
 ]
 

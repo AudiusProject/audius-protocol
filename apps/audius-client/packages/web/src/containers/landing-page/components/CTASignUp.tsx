@@ -7,7 +7,7 @@ import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobi
 import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 
-import { AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/links'
+import { AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/route'
 
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 

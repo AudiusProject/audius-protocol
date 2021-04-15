@@ -63,7 +63,8 @@ import {
   PROFILE_PAGE_ALBUMS,
   PROFILE_PAGE_PLAYLISTS,
   PROFILE_PAGE_REPOSTS,
-  TRENDING_UNDERGROUND_PAGE
+  TRENDING_UNDERGROUND_PAGE,
+  getPathname
 } from 'utils/route'
 import 'utils/redirect'
 import { isMobile, getClient } from 'utils/clientUtil'
@@ -196,9 +197,9 @@ class App extends Component {
     isUpdating: false,
 
     initialPage: true,
-    entryRoute: this.props.history.location.pathname,
+    entryRoute: getPathname(this.props.history.location),
     lastRoute: null,
-    currentRoute: this.props.history.location.pathname
+    currentRoute: getPathname(this.props.history.location)
   }
 
   ipc = null
@@ -220,7 +221,7 @@ class App extends Component {
         this.setState(prevState => ({
           initialPage: false,
           lastRoute: prevState.currentRoute,
-          currentRoute: location.pathname
+          currentRoute: getPathname(location)
         }))
       }
     )
@@ -307,7 +308,7 @@ class App extends Component {
       !this.props.hasAccount &&
       this.props.accountStatus !== Status.LOADING &&
       authenticatedRoutes.some(route => {
-        const match = matchPath(this.props.location.pathname, {
+        const match = matchPath(getPathname(this.props.location), {
           path: route,
           exact: true
         })
@@ -466,7 +467,7 @@ class App extends Component {
           onUpdate={this.acceptUpdateApp}
         />
       )
-    if (didError || this.props.location.pathname === ERROR_PAGE)
+    if (didError || getPathname(this.props.location) === ERROR_PAGE)
       return <SomethingWrong lastRoute={lastRoute} />
 
     const showBanner =
@@ -861,9 +862,7 @@ class App extends Component {
                   // pathname is not HOME_PAGE. Double check that it is and if not,
                   // just trigger a react router push to the current pathname
                   pathname:
-                    window.location.pathname === HOME_PAGE
-                      ? FEED_PAGE
-                      : window.location.pathname,
+                    getPathname() === HOME_PAGE ? FEED_PAGE : getPathname(),
                   search: includeSearch(this.props.location.search)
                     ? this.props.location.search
                     : ''
