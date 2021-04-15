@@ -142,7 +142,7 @@ const ipfsStat = (CID, logContext, timeout = 1000) => {
 
 /**
  * Call ipfs.cat on a path with optional timeout and length parameters
- * @param {*} ipfs
+ * @param {*} serviceRegistry
  * @param {*} logger
  * @param {*} path IPFS cid for file
  * @param {*} timeout timeout for IPFS op in ms
@@ -179,8 +179,9 @@ const ipfsCat = ({ ipfsLatest }, logger, path, timeout = 1000, length = null) =>
 
 /**
  * Call ipfs.get on a path with an optional timeout
+ * @param {*} serviceRegistry
+ * @param {*} logger
  * @param {String} path IPFS cid for file
- * @param {Object} req request object
  * @param {Number} timeout timeout in ms
  * @returns {BufferListStream}
  */
