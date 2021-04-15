@@ -151,7 +151,8 @@ def process_solana_plays(solana_client):
                     if tx['slot'] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx['slot'] == latest_processed_slot:
-                        # Check the tx signature for any txs in the latest batch, and if not present in DB, add to processing
+                        # Check the tx signature for any txs in the latest batch,
+                        # and if not present in DB, add to processing
                         logger.info(
                             f"index_solana_plays.py | Latest slot re-traversal\
     slot={tx_slot}, sig={tx_sig},\
@@ -199,7 +200,9 @@ def process_solana_plays(solana_client):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             with db.scoped_session() as session:
                 parse_sol_tx_futures = {
-                    executor.submit(parse_sol_play_transaction, session, solana_client, tx_sig): tx_sig for tx_sig in tx_sig_batch
+                    executor.submit(
+                        parse_sol_play_transaction, session, solana_client, tx_sig
+                    ): tx_sig for tx_sig in tx_sig_batch
                 }
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
