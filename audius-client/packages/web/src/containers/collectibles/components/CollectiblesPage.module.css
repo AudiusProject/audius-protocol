@@ -250,20 +250,18 @@
 
 .detailsMediaWrapper {
   margin: 24px;
-  max-width: 50vw;
-  max-height: 70vh;
-  overflow: hidden;
-  border-radius: 8px;
 }
 
 .detailsMediaWrapper img {
+  border-radius: 8px;
   width: 100%;
   pointer-events: none;
   cursor: default;
 }
 
 .detailsMediaWrapper video {
-  width: 100%;
+  border-radius: 8px;
+  max-height: 70vh;
   box-sizing: border-box;
   background-size: cover;
   background-position: center;
@@ -570,6 +568,10 @@
 .mobile .detailsDescription {
   margin-top: 16px;
   margin-bottom: 24px;
+}
+
+.nftDrawer .detailsMediaWrapper video {
+  max-width: 100%;
 }
 
 .mobileSubtitle {

@@ -1,17 +1,19 @@
+import { Nullable } from 'utils/typeUtils'
+
 type AssetContract = {
-  address: string
+  address: Nullable<string>
   asset_contract_type: string
   created_date: string
   name: string
   nft_version: string
-  opensea_version: string | null
-  owner: number | null
+  opensea_version: Nullable<string>
+  owner: Nullable<number>
   schema_name: string
   symbol: string
   total_supply: number
-  description: string | null
-  external_link: string | null
-  image_url: string | null
+  description: Nullable<string>
+  external_link: Nullable<string>
+  image_url: Nullable<string>
   default_to_fiat: boolean
   dev_buyer_fee_basis_points: number
   dev_seller_fee_basis_points: number
@@ -20,8 +22,8 @@ type AssetContract = {
   opensea_seller_fee_basis_points: number
   buyer_fee_basis_points: number
   seller_fee_basis_points: number
-  payout_address: string | null
-} | null
+  payout_address: Nullable<string>
+}
 
 type AssetPerson = {
   user: {
@@ -33,21 +35,21 @@ type AssetOwner = AssetPerson
 type AssetCreator = AssetPerson
 export type OpenSeaAsset = {
   token_id: string
-  name: string | null
-  description: string | null
-  external_link: string | null
-  permalink: string | null
-  image_url: string | null
-  image_preview_url: string | null
-  image_thumbnail_url: string | null
-  image_original_url: string | null
-  animation_url: string | null
-  animation_original_url: string | null
-  youtube_url: string | null
-  background_color: string | null
-  owner: AssetOwner
-  creator: AssetCreator
-  asset_contract: AssetContract
+  name: Nullable<string>
+  description: Nullable<string>
+  external_link: Nullable<string>
+  permalink: Nullable<string>
+  image_url: Nullable<string>
+  image_preview_url: Nullable<string>
+  image_thumbnail_url: Nullable<string>
+  image_original_url: Nullable<string>
+  animation_url: Nullable<string>
+  animation_original_url: Nullable<string>
+  youtube_url: Nullable<string>
+  background_color: Nullable<string>
+  owner: Nullable<AssetOwner>
+  creator: Nullable<AssetCreator>
+  asset_contract: Nullable<AssetContract>
 }
 
 export type OpenSeaEvent = {
