@@ -2,7 +2,7 @@ import binascii
 import codecs
 import logging
 import concurrent.futures
-import time 
+import time
 
 
 import base58
@@ -105,6 +105,10 @@ def get_tx_in_db(session, tx_sig):
     return exists
 
 def process_solana_plays(solana_client):
+    if not TRACK_LISTEN_PROGRAM:
+        logger.info(f"index_solana_plays.py | No program configured, exiting")
+        return
+
     db = index_solana_plays.db
 
     # Highest currently processed slot in the DB
