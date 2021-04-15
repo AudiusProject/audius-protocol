@@ -1,5 +1,6 @@
 const axios = require('axios')
 
+const { serviceRegistry } = require('../serviceRegistry')
 const models = require('../models')
 const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
@@ -158,11 +159,6 @@ module.exports = function (app) {
    * This route is only run on secondaries, to export and sync data from a user's primary.
    */
   app.post('/sync', ensureStorageMiddleware, handleResponse(async (req, res) => {
-    const redisClient = req.app.get('redisClient')
-    const libs = req.app.get('audiusLibs')
-    const ipfs = req.app.get('ipfsAPI')
-    const ipfsLatest = req.app.get('ipfsLatestAPI')
-
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
@@ -181,7 +177,7 @@ module.exports = function (app) {
     }
 
     if (immediate) {
-      let errorObj = await _nodesync(redisClient, libs, ipfs, ipfsLatest, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber)
+      let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber)
       if (errorObj) {
         return errorResponseServerError(errorObj)
       } else {
@@ -198,7 +194,7 @@ module.exports = function (app) {
       }
       syncQueue[wallet] = setTimeout(
         async function () {
-          return _nodesync(redisClient, libs, ipfs, ipfsLatest, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber)
+          return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber)
         },
         debounceTime
       )
@@ -239,7 +235,7 @@ module.exports = function (app) {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _nodesync (redisClient, libs, ipfs, ipfsLatest, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
+async function _nodesync ({ libs, redis, ipfs, ipfsLatest }, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
 
@@ -249,10 +245,10 @@ async function _nodesync (redisClient, libs, ipfs, ipfsLatest, logger, walletPub
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
    */
-  const redisLock = redisClient.lock
+  const redisLock = redis.lock
   let redisKey
   for (let wallet of walletPublicKeys) {
-    redisKey = redisClient.getNodeSyncRedisKey(wallet)
+    redisKey = redis.getNodeSyncRedisKey(wallet)
     let lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
       throw new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
@@ -559,7 +555,7 @@ async function _nodesync (redisClient, libs, ipfs, ipfsLatest, logger, walletPub
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
-      let redisKey = redisClient.getNodeSyncRedisKey(wallet)
+      let redisKey = redis.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
       delete (syncQueue[wallet])
     }
