@@ -237,15 +237,6 @@ module.exports = function (app) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
 
-    await instr.createAndVerifyMessage(
-      null,
-      config.get('solanaSignerPrivateKey'),
-      userId.toString(),
-      trackId.toString(),
-      ''
-      // Date.now().toString()
-    )
-
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table
     const isRealUser = typeof userId === 'number'
