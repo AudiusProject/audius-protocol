@@ -5,7 +5,7 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
-const instr = require('../solana-client.js')
+const solClient = require('../solana-client.js')
 const config = require('../config.js')
 
 async function getListenHour () {
@@ -210,7 +210,25 @@ module.exports = function (app) {
     if (!userId || !trackId) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
+    const solanaListen = req.body.solanaListen || false
+
+    // Dedicated listen flow
+    if (solanaListen) {
+      let solTxSignature = await solClient.createAndVerifyMessage(
+        null,
+        config.get('solanaSignerPrivateKey'),
+        userId.toString(),
+        trackId.toString(),
+        Date.now().toString()
+      )
+      console.log(solTxSignature)
+      return successResponse({
+        solTxSignature
+      })
+    }
+
     let currentHour = await getListenHour()
+    // TODO: Make all of this conditional based on request parameters
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
         where: { hour: currentHour, trackId }
@@ -473,6 +491,7 @@ module.exports = function (app) {
     if (limit > 5000) {
       return errorResponseBadRequest(`Provided limit ${limit} too large (must be <= 5000)`)
     }
+
 
     let updatedAtMoment
     try {

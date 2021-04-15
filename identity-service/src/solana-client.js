@@ -152,7 +152,7 @@ async function createAndVerifyMessage (
     [feePayer]
   )
 
-  console.log('Signature: ', signature)
+  return txInfo
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage

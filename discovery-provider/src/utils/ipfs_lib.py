@@ -194,7 +194,6 @@ class IPFSClient:
     def ipfs_id_multiaddr(self):
         return self._multiaddr
 
-
 def construct_image_dir_gateway_url(address, CID):
     """Construct the gateway url for an image directory.
 
