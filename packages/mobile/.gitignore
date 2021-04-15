@@ -3,6 +3,7 @@
 .DS_Store
 
 # Env
+.env
 .env.prod
 .env.stage
 .eslintcache
