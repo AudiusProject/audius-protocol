@@ -13,6 +13,7 @@ export enum CollectibleType {
 
 export type Collectible = {
   id: string
+  tokenId: string
   name: Nullable<string>
   description: Nullable<string>
   type: CollectibleType
@@ -25,4 +26,5 @@ export type Collectible = {
   dateLastTransferred: Nullable<string>
   externalLink: Nullable<string>
   permaLink: Nullable<string>
+  assetContractAddress: Nullable<string>
 }

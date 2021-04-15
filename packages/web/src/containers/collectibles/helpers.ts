@@ -168,7 +168,8 @@ export const assetToCollectible = async (
   }
 
   return {
-    id: asset.token_id,
+    id: `${asset.token_id}:::${asset.asset_contract?.address ?? ''}`,
+    tokenId: asset.token_id,
     name: asset.name,
     description: asset.description,
     type,
@@ -180,7 +181,8 @@ export const assetToCollectible = async (
     dateCreated: null,
     dateLastTransferred: null,
     externalLink: asset.external_link,
-    permaLink: asset.permalink
+    permaLink: asset.permalink,
+    assetContractAddress: asset.asset_contract?.address ?? null
   }
 }
 
