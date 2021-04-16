@@ -5,6 +5,7 @@ Test fixtures to support unit testing
 from unittest.mock import MagicMock
 import pytest
 import fakeredis
+import os
 import src.utils.redis_connection
 import src.utils.web3_provider
 import src.utils.db_session
@@ -79,9 +80,7 @@ def get_monitors_mock(monkeypatch):
 # Test fixture that mocks the os library
 @pytest.fixture()
 def get_os_mock(monkeypatch):
-    os = MagicMock()
-
-    def cpu_count(monitors):
+    def cpu_count():
         return 1
 
     monkeypatch.setattr(

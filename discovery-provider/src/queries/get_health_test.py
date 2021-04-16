@@ -242,7 +242,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock):
+def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock, get_os_mock):
     """Tests that the health check returns monitor data"""
     get_monitors_mock.return_value = {
         'database_connections': 2,
