@@ -47,19 +47,19 @@ def test_populate_playlist_metadata(app):
         session.execute("REFRESH MATERIALIZED VIEW aggregate_playlist")
         playlist_ids = [1, 2, 3, 4]
         playlists = [
-          { 'playlist_id': 1, "playlist_contents": {"track_ids": []} },
-          { 'playlist_id': 2, "playlist_contents": {"track_ids": []} },
-          { 'playlist_id': 3, "playlist_contents": {"track_ids": []} },
-          { 'playlist_id': 4, "playlist_contents": {"track_ids": []} }
+            {"playlist_id": 1, "playlist_contents": {"track_ids": []}},
+            {"playlist_id": 2, "playlist_contents": {"track_ids": []}},
+            {"playlist_id": 3, "playlist_contents": {"track_ids": []}},
+            {"playlist_id": 4, "playlist_contents": {"track_ids": []}}
         ]
 
         playlists = populate_playlist_metadata(
-          session,
-          playlist_ids,
-          playlists,
-          [RepostType.playlist, RepostType.album],
-          [SaveType.playlist, SaveType.album],
-          None
+            session,
+            playlist_ids,
+            playlists,
+            [RepostType.playlist, RepostType.album],
+            [SaveType.playlist, SaveType.album],
+            None
         )
         assert len(playlists) == 4
         assert playlists[0]['playlist_id'] == 1
@@ -79,18 +79,18 @@ def test_populate_playlist_metadata(app):
 
         curr_playlist_ids = [1, 2, 3]
         curr_playlists = [
-          { 'playlist_id': 1, "playlist_contents": {"track_ids": []} },
-          { 'playlist_id': 2, "playlist_contents": {"track_ids": []} },
-          { 'playlist_id': 3, "playlist_contents": {"track_ids": []} }
+            {"playlist_id": 1, "playlist_contents": {"track_ids": []}},
+            {"playlist_id": 2, "playlist_contents": {"track_ids": []}},
+            {"playlist_id": 3, "playlist_contents": {"track_ids": []}}
         ]
 
         playlists = populate_playlist_metadata(
-          session,
-          curr_playlist_ids,
-          curr_playlists,
-          [RepostType.playlist, RepostType.album],
-          [SaveType.playlist, SaveType.album],
-          1
+            session,
+            curr_playlist_ids,
+            curr_playlists,
+            [RepostType.playlist, RepostType.album],
+            [SaveType.playlist, SaveType.album],
+            1
         )
         assert len(playlists) == 3
 

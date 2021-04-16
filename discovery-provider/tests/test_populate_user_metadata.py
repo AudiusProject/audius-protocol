@@ -69,11 +69,11 @@ def test_populate_user_metadata(app):
         session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         user_ids = [1, 2, 3, 4, 5]
         users = [
-          { 'user_id': 1, 'is_verified': False },
-          { 'user_id': 2, 'is_verified': False },
-          { 'user_id': 3, 'is_verified': False },
-          { 'user_id': 4, 'is_verified': False },
-          { 'user_id': 5, 'is_verified': False }
+            {"user_id": 1, "is_verified": False},
+            {"user_id": 2, "is_verified": False},
+            {"user_id": 3, "is_verified": False},
+            {"user_id": 4, "is_verified": False},
+            {"user_id": 5, "is_verified": False}
         ]
 
         users = populate_user_metadata(session, user_ids, users, None)
@@ -121,9 +121,9 @@ def test_populate_user_metadata(app):
 
         curr_user_ids = [1, 2, 3]
         curr_users = [
-          { 'user_id': 1, 'is_verified': False },
-          { 'user_id': 2, 'is_verified': False },
-          { 'user_id': 3, 'is_verified': False }
+            {"user_id": 1, "is_verified": False},
+            {"user_id": 2, "is_verified": False},
+            {"user_id": 3, "is_verified": False}
         ]
 
         users = populate_user_metadata(session, curr_user_ids, curr_users, 1)
