@@ -22,6 +22,9 @@ class IPFSClient:
         self._ipfsid = self._api.id()
         self._multiaddr = get_valid_multiaddr_from_id_json(self._ipfsid)
 
+    def get_peer_info(self):
+        return self._ipfsid
+
     def get_metadata_from_json(self, metadata_format, resp_json):
         metadata = {}
         for parameter, value in metadata_format.items():

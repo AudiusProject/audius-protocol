@@ -34,6 +34,7 @@ from src.queries.get_previously_private_playlists import get_previously_private_
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
+from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -558,5 +559,13 @@ def get_ursm_content_nodes():
         owner_wallet = request.args.get("owner_wallet") or None
         cnodes = get_ursm_cnodes(owner_wallet)
         return api_helpers.success_response(cnodes)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+@bp.route("/ipfs_peer_info", methods=("GET",))
+def get_ipfs_peer_info_route():
+    try:
+        ipfs_peer_info = get_ipfs_peer_info()
+        return api_helpers.success_response(ipfs_peer_info)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
