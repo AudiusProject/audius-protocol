@@ -183,7 +183,8 @@ def get_health(args, use_redis_cache=True):
         "git": os.getenv("GIT_SHA"),
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
-        **sys_info
+        **sys_info,
+        "number_of_CPUs": os.cpu_count()
     }
 
     block_difference = abs(

@@ -1,5 +1,6 @@
-const { healthCheck, healthCheckVerbose } = require('./healthCheckComponentService')
 const assert = require('assert')
+
+const { healthCheck, healthCheckVerbose } = require('./healthCheckComponentService')
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
@@ -51,6 +52,21 @@ const mockLogger = {
   warn: () => {}
 }
 
+const osMock = {
+  cpus: () => {
+    return [
+      { model: 'Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz',
+        speed: 2600,
+        times:
+       { user: 29551250, nice: 0, sys: 49989120, idle: 308890910, irq: 0 } },
+      { model: 'Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz',
+        speed: 2600,
+        times:
+       { user: 3907930, nice: 0, sys: 5920680, idle: 378601600, irq: 0 } }
+    ]
+  }
+}
+
 describe('Test Health Check', function () {
   it('Should pass', async function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
@@ -95,7 +111,7 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
 
-    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock)
+    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock, osMock)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -121,7 +137,8 @@ describe('Test Health Check Verbose', function () {
       allocatedFileDescriptors: 3392,
       receivedBytesPerSec: 776.7638177541248,
       transferredBytesPerSec: 269500,
-      maxStorageUsedPercent: 95
+      maxStorageUsedPercent: 95,
+      numberOfCPUs: 2
     })
   })
 })

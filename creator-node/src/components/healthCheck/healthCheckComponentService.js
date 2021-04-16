@@ -50,14 +50,16 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
  * @param {*} ServiceRegistry
  * @param {*} logger
  */
-const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors) => {
+const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors, os) => {
   const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
 
   // Location information
   const country = config.get('serviceCountry')
   const latitude = config.get('serviceLatitude')
   const longitude = config.get('serviceLongitude')
+
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
+  const numberOfCPUs = os.cpus().length
 
   // System information
   const [
@@ -99,7 +101,8 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors)
     allocatedFileDescriptors,
     receivedBytesPerSec,
     transferredBytesPerSec,
-    maxStorageUsedPercent
+    maxStorageUsedPercent,
+    numberOfCPUs
   }
 
   return response
