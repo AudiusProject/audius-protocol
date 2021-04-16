@@ -10,7 +10,7 @@ ipfs_client = IPFSClient(
 )
 
 def convert_to_snake_case(value):
-    if value == 'ID': 
+    if value == 'ID':
         return 'id'
 
     return pattern.sub('_', value).lower()
