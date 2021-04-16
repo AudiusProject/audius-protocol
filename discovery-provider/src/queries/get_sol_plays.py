@@ -60,4 +60,4 @@ def get_track_listen_milestones(limit):
         track_id_play_counts = get_track_play_counts(session, track_ids)
         logger.error(track_id_play_counts)
 
-    return results
+    return track_id_play_counts
