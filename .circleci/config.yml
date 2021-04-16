@@ -10,6 +10,9 @@ orbs:
   coveralls: coveralls/coveralls@1.0.6
 jobs:
   test-mad-dog-e2e:
+    # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
+    # uses medium (2vcpu/4gb) by default
+    resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-1604:201903-01 # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
     steps:

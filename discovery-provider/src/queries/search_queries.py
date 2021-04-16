@@ -1,4 +1,5 @@
 from enum import Enum
+import concurrent.futures
 import logging  # pylint: disable=C0302
 from functools import cmp_to_key
 from flask import Blueprint, request
@@ -218,6 +219,104 @@ def add_users(session, results):
             result["user"] = user
     return results
 
+def perform_search_query(db, search_type, args):
+    """Performs a search query of a given `search_type`. Handles it's own session. Used concurrently."""
+    with db.scoped_session() as session:
+        search_str = args.get('search_str')
+        limit = args.get('limit')
+        offset = args.get('offset')
+        is_auto_complete = args.get('is_auto_complete')
+        current_user_id = args.get('current_user_id')
+        only_downloadable = args.get('only_downloadable')
+
+        results = None
+        if search_type == 'tracks':
+            results = track_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                is_auto_complete,
+                current_user_id,
+                only_downloadable
+            )
+        elif search_type == 'saved_tracks':
+            results = track_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                True,
+                is_auto_complete,
+                current_user_id,
+                only_downloadable
+            )
+        elif search_type == 'users':
+            results = user_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'followed_users':
+            results = user_search_query(
+                session,
+                search_str,
+                limit, offset,
+                True,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'playlists':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                False,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'saved_playlists':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                False,
+                True,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'albums':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                True,
+                False,
+                is_auto_complete,
+                current_user_id
+            )
+        elif search_type == 'saved_albums':
+            results = playlist_search_query(
+                session,
+                search_str,
+                limit,
+                offset,
+                True,
+                True,
+                is_auto_complete,
+                current_user_id
+            )
+        return results
+
 # SEARCH QUERIES
 # We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
 # limit to do this query by creating new wrappers for pg functions that do not exist like
@@ -240,15 +339,14 @@ def add_users(session, results):
 
 def search(args):
     """ Perform a search. `args` should contain `is_auto_complete`,
-    `query`, `kind`, `current_user_id`, `with_users`, and `only_downloadable`
+    `query`, `kind`, `current_user_id`, and `only_downloadable`
     """
-    searchStr = args.get("query")
+    search_str = args.get("query")
 
     # when creating query table, we substitute this too
-    searchStr = searchStr.replace('&', 'and')
+    search_str = search_str.replace('&', 'and')
 
     kind = args.get("kind", "all")
-    with_users = args.get("with_users")
     is_auto_complete = args.get("is_auto_complete")
     current_user_id = args.get("current_user_id")
     only_downloadable = args.get("only_downloadable")
@@ -258,69 +356,88 @@ def search(args):
     searchKind = SearchKind[kind]
 
     results = {}
-    if searchStr:
-        db = get_db_read_replica()
-        with db.scoped_session() as session:
-            def with_users_added(results):
-                if not with_users:
-                    return results
-                return add_users(session, results)
 
+    # Accumulate user_ids for later
+    user_ids = set()
+
+    # Create args for perform_search_query
+    search_args = {
+        "search_str": search_str,
+        "limit": limit,
+        "offset": offset,
+        "is_auto_complete": is_auto_complete,
+        "current_user_id": current_user_id,
+        "only_downloadable": only_downloadable
+    }
+
+    if search_str:
+        db = get_db_read_replica()
+        # Concurrency approach:
+        # Spin up a ThreadPoolExecutor for each request to perform_search_query
+        # to perform the different search types in parallel.
+        # After each future resolves, we then add users for each entity in a single
+        # db round trip.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            # Keep a mapping of future -> search_type
+            futures_map = {}
+            futures = []
+
+            # Helper fn to submit a future and add it to bookkeeping data structures
+            def submit_and_add(search_type):
+                future = executor.submit(perform_search_query, db, search_type, search_args)
+                futures.append(future)
+                futures_map[future] = search_type
 
             if (searchKind in [SearchKind.all, SearchKind.tracks]):
-                results['tracks'] = with_users_added(track_search_query(
-                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id, only_downloadable))
+                submit_and_add("tracks")
                 if current_user_id:
-                    results['saved_tracks'] = with_users_added(track_search_query(
-                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id, only_downloadable))
-            if (searchKind in [SearchKind.all, SearchKind.users]):
-                results['users'] = user_search_query(
-                    session, searchStr, limit, offset, False, is_auto_complete, current_user_id)
-                if current_user_id:
-                    results['followed_users'] = user_search_query(
-                        session, searchStr, limit, offset, True, is_auto_complete, current_user_id)
-            if (searchKind in [SearchKind.all, SearchKind.playlists]):
-                results['playlists'] = with_users_added(playlist_search_query(
-                    session,
-                    searchStr,
-                    limit,
-                    offset,
-                    False,
-                    False,
-                    is_auto_complete,
-                    current_user_id
-                ))
-                if current_user_id:
-                    results['saved_playlists'] = with_users_added(playlist_search_query(
-                        session,
-                        searchStr,
-                        limit,
-                        offset,
-                        False,
-                        True,
-                        is_auto_complete,
-                        current_user_id
-                    ))
-            if (searchKind in [SearchKind.all, SearchKind.albums]):
-                results['albums'] = with_users_added(playlist_search_query(
-                    session, searchStr, limit, offset, True, False, is_auto_complete, current_user_id))
-                if current_user_id:
-                    results['saved_albums'] = with_users_added(playlist_search_query(
-                        session,
-                        searchStr,
-                        limit,
-                        offset,
-                        True,
-                        True,
-                        is_auto_complete,
-                        current_user_id
-                    ))
+                    submit_and_add("saved_tracks")
 
+            if (searchKind in [SearchKind.all, SearchKind.users]):
+                submit_and_add("users")
+                if current_user_id:
+                    submit_and_add("followed_users")
+
+            if (searchKind in [SearchKind.all, SearchKind.playlists]):
+                submit_and_add("playlists")
+                if current_user_id:
+                    submit_and_add("saved_playlists")
+
+            if (searchKind in [SearchKind.all, SearchKind.albums]):
+                submit_and_add("albums")
+                if current_user_id:
+                    submit_and_add("saved_albums")
+
+            for future in concurrent.futures.as_completed(futures):
+                search_result = future.result()
+                future_type = futures_map[future]
+
+                # Add to the final results
+                results[future_type] = search_result
+
+                # Add to user_ids
+                user_ids.update(get_users_ids(search_result))
+
+            with db.scoped_session() as session:
+                # Add users back
+                users = get_users_by_id(session, list(user_ids), current_user_id)
+
+                for (_, result_list) in results.items():
+                    for result in result_list:
+                        user_id = None
+                        if 'playlist_owner_id' in result:
+                            user_id = result['playlist_owner_id']
+                        elif 'owner_id' in result:
+                            user_id = result['owner_id']
+
+                        if user_id is not None:
+                            user = users[user_id]
+                            result["user"] = user
     return results
 
 def track_search_query(
         session,
-        searchStr,
+        search_str,
         limit,
         offset,
         personalized,
@@ -376,7 +493,7 @@ def track_search_query(
     track_ids = session.execute(
         res,
         {
-            "query": searchStr,
+            "query": search_str,
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "title_weight": trackTitleWeight,
@@ -390,7 +507,7 @@ def track_search_query(
 
     # TODO: Populate track metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
-    if is_auto_complete == True:
+    if is_auto_complete:
         # fetch users for tracks
         track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
         users = get_unpopulated_users(session, track_owner_ids)
@@ -417,7 +534,7 @@ def track_search_query(
     return tracks[0:limit]
 
 
-def user_search_query(session, searchStr, limit, offset, personalized, is_auto_complete, current_user_id):
+def user_search_query(session, search_str, limit, offset, personalized, is_auto_complete, current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -429,17 +546,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
                     d."user_id" as user_id, d."word" as word, similarity(d."word", :query) as score,
                     d."user_name" as name, :query as query
                 from "user_lexeme_dict" d
-                {
-                    'inner join "follows" f on f.followee_user_id=d.user_id'
-                    if personalized and current_user_id
-                    else ""
-                }
                 where d."word" % :query
-                {
-                    "and f.is_current=true and f.is_delete=false and f.follower_user_id=:current_user_id"
-                    if personalized and current_user_id
-                    else ""
-                }
             ) as results
             group by user_id, name, query
         ) as results2
@@ -452,7 +559,7 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
     user_ids = session.execute(
         res,
         {
-            "query": searchStr,
+            "query": search_str,
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": userNameWeight,
@@ -488,7 +595,15 @@ def user_search_query(session, searchStr, limit, offset, personalized, is_auto_c
     return users[0:limit]
 
 
-def playlist_search_query(session, searchStr, limit, offset, is_album, personalized, is_auto_complete, current_user_id):
+def playlist_search_query(
+        session,
+        search_str,
+        limit,
+        offset,
+        is_album,
+        personalized,
+        is_auto_complete,
+        current_user_id):
     if personalized and not current_user_id:
         return []
 
@@ -535,7 +650,7 @@ def playlist_search_query(session, searchStr, limit, offset, is_album, personali
     playlist_ids = session.execute(
         res,
         {
-            "query": searchStr,
+            "query": search_str,
             "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
             "offset": offset,
             "name_weight": playlistNameWeight,

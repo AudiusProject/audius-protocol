@@ -1,7 +1,7 @@
 from sqlalchemy import func, desc
 
 from src import exceptions
-from src.models import User, Playlist, Save, SaveType, Follow
+from src.models import User, Playlist, Save, SaveType, AggregateUser
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
@@ -25,30 +25,16 @@ def get_savers_for_playlist(args):
         if playlist_entry is None:
             raise exceptions.NotFoundError('Resource not found for provided playlist id')
 
-        # Subquery to get all (user_id, follower_count) entries from Follows table.
-        follower_count_subquery = (
-            session.query(
-                Follow.followee_user_id,
-                func.count(Follow.followee_user_id).label(response_name_constants.follower_count)
-            )
-            .filter(
-                Follow.is_current == True,
-                Follow.is_delete == False
-            )
-            .group_by(Follow.followee_user_id)
-            .subquery()
-        )
-
         # Get all Users that saved Playlist, ordered by follower_count desc & paginated.
         query = (
             session.query(
                 User,
                 # Replace null values from left outer join with 0 to ensure sort works correctly.
-                (func.coalesce(follower_count_subquery.c.follower_count, 0))
+                (func.coalesce(AggregateUser.follower_count, 0))
                 .label(response_name_constants.follower_count)
             )
             # Left outer join to associate users with their follower count.
-            .outerjoin(follower_count_subquery, follower_count_subquery.c.followee_user_id == User.user_id)
+            .outerjoin(AggregateUser, AggregateUser.user_id == User.user_id)
             .filter(
                 User.is_current == True,
                 # Only select users that saved given playlist.

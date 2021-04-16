@@ -1,7 +1,7 @@
 import logging # pylint: disable=C0302
 from datetime import datetime
 from sqlalchemy import func, desc
-from src.models import Playlist, Save, SaveType, RepostType, Follow
+from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUser
 from src.tasks.generate_trending import time_delta_map
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_repost_counts, get_karma, get_save_counts, \
@@ -43,16 +43,6 @@ def get_scorable_playlist_data(session, time_range):
     """
     delta = time_delta_map.get(time_range) or time_delta_map.get('week')
 
-    following_query = (
-        session.query(
-            Follow.follower_user_id.label('user_id'),
-            func.count(Follow.follower_user_id).label('following_count')
-        ).filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-        ).group_by(Follow.follower_user_id)
-    ).subquery()
-
     # Get all playlists saved within time range (windowed_save_count):
     # Queries by Playlists Joined with Saves,
     # where a given playlist was saved at least once in the past `time_delta`.
@@ -65,7 +55,7 @@ def get_scorable_playlist_data(session, time_range):
             func.count(Save.save_item_id)
         )
         .join(Playlist, Playlist.playlist_id == Save.save_item_id)
-        .join(following_query, following_query.c.user_id == Playlist.playlist_owner_id)
+        .join(AggregateUser, AggregateUser.user_id == Playlist.playlist_owner_id)
         .filter(
             Save.is_current == True,
             Save.is_delete == False,
@@ -74,7 +64,7 @@ def get_scorable_playlist_data(session, time_range):
             Playlist.is_current == True,
             Playlist.is_delete == False,
             Playlist.is_private == False,
-            following_query.c.following_count < zq
+            AggregateUser.following_count < zq
         )
         .group_by(Save.save_item_id, Playlist.created_at, Playlist.playlist_owner_id)
         .order_by(desc(func.count(Save.save_item_id)))

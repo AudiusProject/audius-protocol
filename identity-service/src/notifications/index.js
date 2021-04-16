@@ -97,8 +97,6 @@ class NotificationProcessor {
     // Indexes network notifications
     this.notifQueue.process(async (job, done) => {
       let error = null
-      // Await blockchain IDs before indexing notifs
-      await this.idUpdateTask
 
       let minBlock = job.data.minBlock
       if (!minBlock && minBlock !== 0) throw new Error('no min block')

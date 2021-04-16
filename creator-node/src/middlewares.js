@@ -53,8 +53,12 @@ async function syncLockMiddleware (req, res, next) {
   next()
 }
 
-/** Blocks writes if node is not the primary for audiusUser associated with wallet. */
+/**
+ * Blocks writes if node is not the primary for audiusUser associated with wallet
+ */
 async function ensurePrimaryMiddleware (req, res, next) {
+  const serviceRegistry = req.app.get('serviceRegistry')
+
   if (config.get('isUserMetadataNode')) {
     return next()
   }
@@ -67,7 +71,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
 
   let serviceEndpoint
   try {
-    serviceEndpoint = await getOwnEndpoint(req)
+    serviceEndpoint = await getOwnEndpoint(serviceRegistry)
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
@@ -75,7 +79,8 @@ async function ensurePrimaryMiddleware (req, res, next) {
   let creatorNodeEndpoints
   try {
     creatorNodeEndpoints = await getCreatorNodeEndpoints({
-      req,
+      serviceRegistry,
+      logger: req.logger,
       wallet: req.session.wallet,
       blockNumber: req.body.blockNumber,
       ensurePrimary: true,
@@ -188,15 +193,23 @@ async function triggerSecondarySyncs (req) {
  *    services has been registered, and we can't register the service unless the service starts up.
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
  */
-async function getOwnEndpoint (req) {
-  if (config.get('isUserMetadataNode')) throw new Error('Not available for userMetadataNode')
-  const libs = req.app.get('audiusLibs')
+async function getOwnEndpoint ({ libs }) {
+  if (config.get('isUserMetadataNode')) {
+    throw new Error('Not available for userMetadataNode')
+  }
 
   let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
-  if (!creatorNodeEndpoint) throw new Error('Must provide either creatorNodeEndpoint config var.')
+
+  if (!creatorNodeEndpoint) {
+    throw new Error('Must provide either creatorNodeEndpoint config var.')
+  }
 
   const spId = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint(creatorNodeEndpoint)
-  if (!spId) throw new Error('Cannot get spId for node')
+
+  if (!spId) {
+    throw new Error('Cannot get spId for node')
+  }
+
   const spInfo = await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo('content-node', spId)
 
   // Confirm on-chain endpoint exists and is valid FQDN
@@ -227,7 +240,8 @@ async function getOwnEndpoint (req) {
  *      - Errors if retrieved primary does not match myCnodeEndpoint
  *    - If neither of above conditions are met, falls back to single discprov query without polling
  *
- * @param {Object} req - request object passed throughout route lifespan
+ * @param {Object} serviceRegistry
+ * @param {Object} logger
  * @param {string} wallet - wallet used to query discprov for user data
  * @param {number} blockNumber - blocknumber of eth TX preceding CN call
  * @param {string} myCnodeEndpoint - endpoint of this CN
@@ -235,13 +249,14 @@ async function getOwnEndpoint (req) {
  *
  * @returns {Array} - array of strings of replica set
  */
-async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
+async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
+  const { libs } = serviceRegistry
+
   if (config.get('isUserMetadataNode')) {
     throw new Error('Not available for userMetadataNode')
   }
 
-  req.logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
-  const libs = req.app.get('audiusLibs')
+  logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()
 
   let user = null
@@ -258,7 +273,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
 
     let discprovBlockNumber = -1
     for (let retry = 1; retry <= MaxRetries; retry++) {
-      req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+      logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
@@ -274,11 +289,11 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
           break
         }
       } catch (e) { // Ignore all errors until MaxRetries exceeded.
-        req.logger.info(e)
+        logger.info(e)
       }
 
       await utils.timeout(RetryTimeout)
-      req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
+      logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} discprovBlockNumber ${discprovBlockNumber} || blockNumber ${blockNumber}`)
     }
 
     // Error if discprov doesn't return any user for wallet
@@ -295,7 +310,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
      * Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
      * Errors if retrieved primary does not match myCnodeEndpoint
      */
-    req.logger.info(`getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`)
+    logger.info(`getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`)
 
     const start2 = Date.now()
 
@@ -305,7 +320,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
 
     let returnedPrimaryEndpoint = null
     for (let retry = 1; retry <= MaxRetries; retry++) {
-      req.logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+      logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
@@ -321,11 +336,11 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
           break
         }
       } catch (e) { // Ignore all errors until MaxRetries exceeded
-        req.logger.info(e)
+        logger.info(e)
       }
 
       await utils.timeout(RetryTimeout)
-      req.logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+      logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
     }
 
     // Error if discprov doesn't return any user for wallet
@@ -341,7 +356,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
     /**
      * If neither of above conditions are met, falls back to single discprov query without polling
      */
-    req.logger.info(`getCreatorNodeEndpoints || ensurePrimary === false, fetching user without retries`)
+    logger.info(`getCreatorNodeEndpoints || ensurePrimary === false, fetching user without retries`)
     user = await libs.User.getUsers(1, 0, null, wallet)
   }
 
@@ -352,7 +367,7 @@ async function getCreatorNodeEndpoints ({ req, wallet, blockNumber, ensurePrimar
   const endpoint = user[0]['creator_node_endpoint']
   const userReplicaSet = endpoint ? endpoint.split(',') : []
 
-  req.logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
+  logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
   return userReplicaSet
 }
 
