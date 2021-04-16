@@ -237,15 +237,6 @@ module.exports = function (app) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
 
-    await solClient.createAndVerifyMessage(
-      null,
-      config.get('solanaSignerPrivateKey'),
-      userId.toString(),
-      trackId.toString(),
-      ''
-      // Date.now().toString()
-    )
-
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table
     const isRealUser = typeof userId === 'number'
@@ -491,7 +482,6 @@ module.exports = function (app) {
     if (limit > 5000) {
       return errorResponseBadRequest(`Provided limit ${limit} too large (must be <= 5000)`)
     }
-
 
     let updatedAtMoment
     try {
