@@ -1,4 +1,3 @@
-const os = require('os')
 const express = require('express')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse, errorResponseServerError } = require('../../apiHelpers')
 const { healthCheck, healthCheckVerbose, healthCheckDuration } = require('./healthCheckComponentService')
