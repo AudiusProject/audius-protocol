@@ -97,13 +97,7 @@ const UserHeader = ({
     if (userListModalVisible) loadMore()
   }, [userListModalVisible, loadMore])
 
-  const onClickContainer = useCallback(
-    e => {
-      e.stopPropagation()
-      if (!userListModalVisible) onOpenUserListModal()
-    },
-    [userListModalVisible, onOpenUserListModal]
-  )
+  const onClickContainer = useCallback(e => e.stopPropagation(), [])
   const goToProfileRoute = useCallback(
     (handle: string) => {
       goToRoute(profilePage(handle))
