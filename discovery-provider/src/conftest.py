@@ -75,3 +75,18 @@ def get_monitors_mock(monkeypatch):
         get_monitors
     )
     return mock_get_monitors
+
+# Test fixture that mocks the os library
+@pytest.fixture()
+def get_os_mock(monkeypatch):
+    os = MagicMock()
+
+    def cpu_count(monitors):
+        return 1
+
+    monkeypatch.setattr(
+        os,
+        'cpu_count',
+        cpu_count
+    )
+    return get_os_mock
