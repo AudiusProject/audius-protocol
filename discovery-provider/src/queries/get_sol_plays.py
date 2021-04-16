@@ -3,7 +3,7 @@ from sqlalchemy import desc, func
 from src.models import Play
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import paginate_query
+from src.queries.query_helpers import paginate_query, get_track_play_counts
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +55,9 @@ def get_track_listen_milestones(limit):
         )
 
         results = session.query(subquery.c.play_item_id).all()
-        logger.error(results)
         # TODO: Now get the number of plays for each of these tracks
         track_ids = [result[0] for result in results]
-        logger.error(track_ids)
+        track_id_play_counts = get_track_play_counts(session, track_ids)
+        logger.error(track_id_play_counts)
 
     return results

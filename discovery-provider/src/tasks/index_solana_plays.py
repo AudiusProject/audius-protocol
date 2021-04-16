@@ -195,7 +195,7 @@ def process_solana_plays(solana_client):
             f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}"
         )
 
-    logger.info(f"index_solana_plays.2py | {transaction_signatures}, {len(transaction_signatures)} entries")
+    logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
 
     transaction_signatures.reverse()
 
@@ -219,10 +219,13 @@ def process_solana_plays(solana_client):
                         future.result()
                     except Exception as exc:
                         logger.error(exc)
+                session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s")
+
+    # TODO: Update AggregatePlays if number
 
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
