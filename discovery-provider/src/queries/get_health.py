@@ -186,7 +186,7 @@ def get_health(args, use_redis_cache=True):
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         **sys_info,
-        "number_of_cpus": current_app["machine"]["number_of_cpus"] or 0
+        "number_of_cpus": current_app.config["machine"]["number_of_cpus"] or 0
     }
 
     block_difference = abs(
