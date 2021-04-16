@@ -30,10 +30,16 @@ class SyncProcessingQueue {
       JobProcessorConcurrency,
       JobProcessorFnFilePath
     )
+
+    console.log(`SIDTEST SYNCPROCESSINGQUEUE COMPLETED INIT`)
   }
 
-  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint, serviceRegistry }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, serviceRegistry }
+  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
+    console.log(`SIDTEST SYNCPROCESSINGQUEUE ENQUEUESYNC`)
+    // if (!serviceRegistry.syncQueueService) {
+      
+    // }
+    const jobProps = { walletPublicKeys, creatorNodeEndpoint }
     const job = await this.queue.add(jobProps)
     return job
   }

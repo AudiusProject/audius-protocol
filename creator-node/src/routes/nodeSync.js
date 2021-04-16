@@ -158,7 +158,7 @@ module.exports = function (app) {
    *
    * This route is only run on secondaries, to export and sync data from a user's primary.
    */
-  app.post('/sync', ensureStorageMiddleware, handleResponse(async (req, res) => {
+  app.post('/sync2', ensureStorageMiddleware, handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean

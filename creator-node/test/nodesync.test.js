@@ -4,6 +4,7 @@ const path = require('path')
 const assert = require('assert')
 const _ = require('lodash')
 const nock = require('nock')
+// const axios = require('axios')
 
 const { timeout } = require('../src/utils')
 const config = require('../src/config')
@@ -647,6 +648,8 @@ describe.only('test nodesync', async function () {
         .get(uri => uri.includes('/export'))
         .reply(200, sampleExport)
 
+      // await axios.get()
+
       /**
        * All IPFS calls will fail since data doesn't exist, and node will fallback via gateway
        * Mock this route to ensure data retrieval succeeds.
@@ -662,11 +665,11 @@ describe.only('test nodesync', async function () {
 
       // test: sync
       await request(app)
-        .post('/sync2')
+        .post('/sync')
         .send({
           wallet: [pubKey.toLowerCase()],
-          creator_node_endpoint: TEST_ENDPOINT
-          // immediate: true
+          creator_node_endpoint: TEST_ENDPOINT,
+          immediate: true
         }).expect(200)
 
       await timeout(10000, 'SIDTEST WAITING FOR SYNC')

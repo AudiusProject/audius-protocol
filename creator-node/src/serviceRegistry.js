@@ -81,12 +81,13 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
 
+    // TODO
+    this.syncQueueService = new SyncQueueService(this.nodeConfig)
+    this.logError(`SIDTEST SYNCQUEUESERVICE INITTED`)
+
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
     await this._registerNodeOnL2URSM()
-
-    // TODO
-    this.syncQueueService = new SyncQueueService(this.nodeConfig)
 
     this.logInfo(`All services that require server successfully initialized!`)
   }

@@ -68,6 +68,6 @@ const syncRequestController = async (req, res) => {
 // Routes
 
 router.get('/ursm_request_for_signature', handleResponse(respondToURSMRequestForProposalController))
-router.post('/sync2', ensureStorageMiddleware, handleResponse(syncRequestController))
+router.post('/sync', ensureStorageMiddleware, handleResponse(syncRequestController))
 
 module.exports = router
