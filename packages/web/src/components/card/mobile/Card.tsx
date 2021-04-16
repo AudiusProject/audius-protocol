@@ -54,7 +54,6 @@ type CardProps = {
   primaryText: string | React.ReactNode
   secondaryText: string | React.ReactNode
   isUser?: boolean
-  isVerified?: boolean
   trackCount?: number
   // Socials
   reposts?: number
@@ -70,7 +69,6 @@ const Card = ({
   userId,
   imageSize = null,
   isUser,
-  isVerified,
   primaryText,
   secondaryText,
   trackCount,

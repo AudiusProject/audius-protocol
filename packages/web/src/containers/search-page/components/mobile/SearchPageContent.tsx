@@ -220,8 +220,7 @@ const CardSearchPage = ({
       route,
       primaryText,
       secondaryText,
-      imageSize,
-      isVerified
+      imageSize
     } = (() => {
       switch (cardType) {
         case CardType.USER: {
@@ -270,7 +269,6 @@ const CardSearchPage = ({
         secondaryText={secondaryText}
         onClick={() => goToRoute(route)}
         className=''
-        isVerified={isVerified}
       />
     )
   })
