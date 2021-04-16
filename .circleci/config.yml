@@ -519,7 +519,6 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:10.16.3
       - image: ipfs/go-ipfs:release
-      - image: circleci/buildpack-deps:stretch
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
@@ -539,6 +538,7 @@ jobs:
           condition: << parameters.force >>
           steps:
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+      - setup_remote_docker
       # restores data-contracts
       - restore_cache:
           keys:
@@ -554,7 +554,6 @@ jobs:
           command: |
             cd solana-programs
             touch solana-program-config.json
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker run -v "$PWD/solana-program-config.json:/usr/src/app/solana-program-config.json" audius/solana-programs
             cp solana-program-config.json ../identity-service
       # Download and cache dependencies
