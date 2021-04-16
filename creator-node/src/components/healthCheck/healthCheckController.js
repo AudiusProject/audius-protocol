@@ -95,7 +95,7 @@ const healthCheckVerboseController = async (req) => {
     logger,
     sequelize,
     getMonitors,
-    os
+    req.get('numberOfCPUs')
   )
 
   return successResponse({

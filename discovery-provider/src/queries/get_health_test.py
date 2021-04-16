@@ -242,7 +242,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock, get_os_mock):
+def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock, get_mock_app):
     """Tests that the health check returns monitor data"""
     get_monitors_mock.return_value = {
         'database_connections': 2,
@@ -282,7 +282,7 @@ def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_m
     assert health_results['total_memory'] == 6237151232
     assert health_results['used_memory'] == 3055149056
     assert health_results['transferred_bytes_per_sec'] == 7340.780857447676
-    assert health_results['number_of_CPUs'] == 1
+    assert health_results['number_of_cpus'] == 1
 
 def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
     """Tests that the health check returns verbose db stats"""

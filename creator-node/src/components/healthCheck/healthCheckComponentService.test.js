@@ -52,21 +52,6 @@ const mockLogger = {
   warn: () => {}
 }
 
-const osMock = {
-  cpus: () => {
-    return [
-      { model: 'Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz',
-        speed: 2600,
-        times:
-       { user: 29551250, nice: 0, sys: 49989120, idle: 308890910, irq: 0 } },
-      { model: 'Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz',
-        speed: 2600,
-        times:
-       { user: 3907930, nice: 0, sys: 5920680, idle: 378601600, irq: 0 } }
-    ]
-  }
-}
-
 describe('Test Health Check', function () {
   it('Should pass', async function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
@@ -111,7 +96,7 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
 
-    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock, osMock)
+    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,

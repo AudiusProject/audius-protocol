@@ -2,6 +2,8 @@ import logging
 import os
 import time
 
+from flask import current_app
+
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
@@ -184,7 +186,7 @@ def get_health(args, use_redis_cache=True):
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         **sys_info,
-        "number_of_CPUs": os.cpu_count()
+        "number_of_cpus": current_app["machine"]["number_of_cpus"] or 0
     }
 
     block_difference = abs(

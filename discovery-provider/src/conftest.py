@@ -3,7 +3,7 @@ Test fixtures to support unit testing
 """
 
 from unittest.mock import MagicMock
-import os
+from flask import current_app
 import pytest
 import fakeredis
 import src.utils.redis_connection
@@ -77,15 +77,27 @@ def get_monitors_mock(monkeypatch):
     )
     return mock_get_monitors
 
-# Test fixture that mocks the os library
+# # Test fixture that mocks the os library
+# @pytest.fixture()
+# def get_os_mock(monkeypatch):
+#     def cpu_count():
+#         return 1
+
+#     monkeypatch.setattr(
+#         os,
+#         'cpu_count',
+#         cpu_count
+#     )
+#     return get_os_mock
+
 @pytest.fixture()
-def get_os_mock(monkeypatch):
-    def cpu_count():
-        return 1
+def get_mock_app():
+    mock_app = MagicMock()
 
     monkeypatch.setattr(
-        os,
-        'cpu_count',
-        cpu_count
+        current_app,
+        "machine",
+        {"number_of_cpus": 1}
     )
-    return get_os_mock
+
+    return get_mock_app
