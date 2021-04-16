@@ -1,4 +1,3 @@
-import json
 import re
 
 from src.utils.ipfs_lib import IPFSClient
@@ -11,7 +10,9 @@ ipfs_client = IPFSClient(
 )
 
 def convert_to_snake_case(value):
-    if value == 'ID': return 'id'
+    if value == 'ID': 
+        return 'id'
+
     return pattern.sub('_', value).lower()
 
 def get_ipfs_peer_info():
