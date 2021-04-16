@@ -1,11 +1,8 @@
 import json
 import re
-import logging
 
 from src.utils.ipfs_lib import IPFSClient
 from src.utils.config import shared_config
-
-logger = logging.getLogger(__name__)
 
 # Convert key to snake case
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
