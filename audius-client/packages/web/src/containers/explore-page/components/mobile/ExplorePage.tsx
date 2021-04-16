@@ -237,7 +237,6 @@ const ExplorePage = ({
           userId={profile.user_id}
           imageSize={profile._profile_picture_sizes}
           isUser
-          isVerified={profile.is_verified}
           primaryText={profile.name}
           secondaryText={formatProfileCardSecondaryText(profile.follower_count)}
           onClick={() => goToRoute(profilePage(profile.handle))}

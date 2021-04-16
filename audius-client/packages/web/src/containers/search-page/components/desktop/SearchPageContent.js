@@ -159,7 +159,6 @@ class SearchPageContent extends Component {
               currentUserFollows: artist.does_current_user_follow,
               onShare: this.onShare('user', artist.user_id)
             }}
-            isVerified={artist.is_verified}
           />
         </Toast>
       )

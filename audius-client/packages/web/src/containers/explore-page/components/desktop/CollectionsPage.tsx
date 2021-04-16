@@ -83,7 +83,6 @@ const CollectionsPage = ({
         setDidLoad={setDidLoadPlaylist}
         key={playlist.playlist_id}
         id={playlist.playlist_id}
-        userId={playlist.playlist_owner_id}
         imageSize={playlist._cover_art_sizes}
         isPlaylist={!playlist.is_album}
         isPublic={!playlist.is_private}
