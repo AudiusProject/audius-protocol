@@ -237,7 +237,7 @@ module.exports = function (app) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
 
-    await instr.createAndVerifyMessage(
+    await solClient.createAndVerifyMessage(
       null,
       config.get('solanaSignerPrivateKey'),
       userId.toString(),
