@@ -91,8 +91,8 @@ def get_monitors_mock(monkeypatch):
 #     return get_os_mock
 
 @pytest.fixture()
-def get_mock_app():
-    mock_app = MagicMock()
+def get_mock_app(monkeypatch):
+    # mock_app = MagicMock()
 
     monkeypatch.setattr(
         current_app,
