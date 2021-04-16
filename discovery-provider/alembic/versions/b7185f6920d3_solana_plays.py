@@ -1,7 +1,7 @@
 """solana plays
 
 Revision ID: b7185f6920d3
-Revises: bff7853e0983
+Revises: 5bcbe23f6c70
 Create Date: 2021-04-12 15:40:15.563165
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'b7185f6920d3'
-down_revision = 'bff7853e0983'
+down_revision = '5bcbe23f6c70'
 branch_labels = None
 depends_on = None
 
