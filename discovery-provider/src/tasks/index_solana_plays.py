@@ -52,17 +52,22 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                 track_id = codecs.decode(hex_data[start_data2:end_data2], "hex")
                 source = str(codecs.decode(hex_data[start_data3:end_data3], "hex"), 'utf-8')
 
-                tx_slot = tx_info['result']['slot']
+                tx_slot = tx_info["result"]["slot"]
+                # tx_timestamp = tx_info["timestamp"]
 
                 logger.info(
                     f"index_solana_plays.py | Got transaction: {tx_info}"
                 )
+                # logger.info(
+                #     f"index_solana_plays.py | Got tx timestamp: {tx_timestamp}"
+                # )
                 logger.info(
                     f"index_solana_plays.py | \
 user_id: {user_id} track_id: {track_id}\
 source: {source}, slot: {tx_slot}, sig: {tx_sig}"
                 )
 
+# TODO: Ensure created_at matches SOL blocktime
                 session.add(
                     Play(
                         user_id=int(user_id),
@@ -232,7 +237,11 @@ def index_solana_plays(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info(f"index_solana_plays.py | Acquired lock")
-            process_solana_plays(solana_client)
+            # TODO: Discuss whether this is worth
+            while True:
+                process_solana_plays(solana_client)
+                # 50ms sleep time
+                time.sleep(50 / 1000)
     except Exception as e:
         logger.error("index_solana_plays.py | Fatal error in main loop",
                      exc_info=True)

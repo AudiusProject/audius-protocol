@@ -1,13 +1,14 @@
 
 const axios = require('axios')
 
+const MaxPollDurationMs = 30000
 
 async function delay (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 async function run() {
-    let numRequests = 1
+    let numRequests = 40
     let randomTrackIds = Array.from({ length: numRequests }, () => Math.floor(Math.random() * 10000000));
     console.log(randomTrackIds)
     let start = Date.now()
@@ -44,11 +45,13 @@ async function run() {
             method: 'get',
             url: `http://localhost:5000/get_sol_play?tx_sig=${signature}`
         }
-        console.log(requestConfig)
         let resp = (await axios(requestConfig)).data
         while (resp.data.length === 0) {
             await delay(500)
             resp = (await axios(requestConfig)).data
+            if (Date.now() - pollStart > MaxPollDurationMs) {
+                throw new Error(`Failed to find ${signature} in ${MaxPollDurationMs}ms`)
+            }
         }
         if (resp.data[0].signature === signature) {
             console.log(`Found ${signature} in discovery node after ${Date.now() - pollStart}ms | ${JSON.stringify(resp.data[0])}`)
