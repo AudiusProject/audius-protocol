@@ -77,9 +77,11 @@ describe('test sync queue', function () {
       recurringSyncIds.push(id)
     }
     assert.strictEqual(recurringSyncIds.length, NumRecurringSyncsToAdd, `Failed to add ${NumRecurringSyncsToAdd} recurring syncs`)
+
+    // Assert on range instead of strict value due to non-deterministic timing (by design)
     let syncQueueJobs = await snapback.getSyncQueueJobs()
-    assert.strictEqual(syncQueueJobs.recurringActive.length, 0)
-    assert.strictEqual(syncQueueJobs.recurringWaiting.length, NumRecurringSyncsToAdd)
+    assert.ok(syncQueueJobs.recurringActive.length <= MaxRecurringRequestSyncJobConcurrency)
+    assert.ok(syncQueueJobs.recurringWaiting.length >= NumRecurringSyncsToAdd - MaxRecurringRequestSyncJobConcurrency)
 
     // Enqueue manual requestSync jobs
     const manualSyncIds = []
@@ -93,9 +95,11 @@ describe('test sync queue', function () {
       manualSyncIds.push(id)
     }
     assert.strictEqual(manualSyncIds.length, NumManualSyncsToAdd, `Failed to add ${NumManualSyncsToAdd} manual syncs`)
+
+    // Assert on range instead of strict value due to non-deterministic timing (by design)
     syncQueueJobs = await snapback.getSyncQueueJobs()
-    assert.strictEqual(syncQueueJobs.manualActive.length, 0)
-    assert.strictEqual(syncQueueJobs.manualWaiting.length, NumManualSyncsToAdd)
+    assert.ok(syncQueueJobs.manualActive.length <= MaxManualRequestSyncJobConcurrency)
+    assert.ok(syncQueueJobs.manualWaiting.length >= NumManualSyncsToAdd - MaxManualRequestSyncJobConcurrency)
 
     const totalJobsAddedCount = recurringSyncIds.length + manualSyncIds.length
 
