@@ -6,9 +6,30 @@ from unittest.mock import MagicMock
 from flask import current_app
 import pytest
 import fakeredis
+from src import create_app
 import src.utils.redis_connection
 import src.utils.web3_provider
 import src.utils.db_session
+
+@pytest.fixture()
+def app():
+    # mock_app = MagicMock()
+
+    # monkeypatch.setattr(
+    #     current_app,
+    #     "machine",
+    #     {"number_of_cpus": 1}
+    # )
+    cpus_config = {
+        "machine" : {
+            "number_of_cpus": 1
+        }
+    }
+    app = create_app()
+    app.config = cpus_config
+
+    yield app
+
 
 # Test fixture to mock a postgres database using an in-memory alternative
 @pytest.fixture()
@@ -90,14 +111,3 @@ def get_monitors_mock(monkeypatch):
 #     )
 #     return get_os_mock
 
-@pytest.fixture()
-def get_mock_app(monkeypatch):
-    # mock_app = MagicMock()
-
-    monkeypatch.setattr(
-        current_app,
-        "machine",
-        {"number_of_cpus": 1}
-    )
-
-    return get_mock_app
