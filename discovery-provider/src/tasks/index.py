@@ -279,7 +279,7 @@ def index_blocks(self, db, blocks_list):
             user_state_changed = total_user_changes > 0
             logger.info(
                 f"index.py | user_state_update completed"
-                f" user_state_changed={user_state_changed}"
+                f" user_state_changed={user_state_changed} for block={block_number}"
             )
 
             total_track_changes, track_ids = track_state_update(
@@ -288,7 +288,7 @@ def index_blocks(self, db, blocks_list):
             track_state_changed = total_track_changes > 0
             logger.info(
                 f"index.py | track_state_update completed"
-                f" track_state_changed={track_state_changed}"
+                f" track_state_changed={track_state_changed} for block={block_number}"
             )
 
             social_feature_state_changed = ( # pylint: disable=W0612
@@ -299,7 +299,7 @@ def index_blocks(self, db, blocks_list):
             )
             logger.info(
                 f"index.py | social_feature_state_update completed"
-                f" social_feature_state_changed={social_feature_state_changed}"
+                f" social_feature_state_changed={social_feature_state_changed} for block={block_number}"
             )
 
             # Index UserReplicaSet changes
@@ -317,7 +317,7 @@ def index_blocks(self, db, blocks_list):
             user_replica_set_state_changed = total_user_replica_set_changes > 0
             logger.info(
                 f"index.py | user_replica_set_state_update completed"
-                f" user_replica_set_state_changed={user_replica_set_state_changed}"
+                f" user_replica_set_state_changed={user_replica_set_state_changed} for block={block_number}"
             )
 
             # Playlist state operations processed in bulk
@@ -327,7 +327,7 @@ def index_blocks(self, db, blocks_list):
             playlist_state_changed = total_playlist_changes > 0
             logger.info(
                 f"index.py | playlist_state_update completed"
-                f" playlist_state_changed={playlist_state_changed}"
+                f" playlist_state_changed={playlist_state_changed} for block={block_number}"
             )
 
             user_library_state_changed = user_library_state_update( # pylint: disable=W0612
@@ -335,7 +335,7 @@ def index_blocks(self, db, blocks_list):
             )
             logger.info(
                 f"index.py | user_library_state_update completed"
-                f" user_library_state_changed={user_library_state_changed}"
+                f" user_library_state_changed={user_library_state_changed} for block={block_number}"
             )
 
             track_lexeme_state_changed = (user_state_changed or track_state_changed)
