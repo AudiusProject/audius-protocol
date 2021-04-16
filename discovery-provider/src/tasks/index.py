@@ -340,7 +340,7 @@ def index_blocks(self, db, blocks_list):
 
             track_lexeme_state_changed = (user_state_changed or track_state_changed)
             session.commit()
-            logger.info(f"index.py | session commmited to db")
+            logger.info(f"index.py | session commmited to db for block=${block_number}")
 
             if user_state_changed:
                 if user_ids:
@@ -354,12 +354,12 @@ def index_blocks(self, db, blocks_list):
             if playlist_state_changed:
                 if playlist_ids:
                     remove_cached_playlist_ids(redis, playlist_ids)
-            logger.info(f"index.py | redis cache clean operations complete")
+            logger.info(f"index.py | redis cache clean operations complete for block=${block_number}")
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
         redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
-        logger.info(f"index.py | update most recently processed block complete")
+        logger.info(f"index.py | update most recently processed block complete for block=${block_number}")
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
