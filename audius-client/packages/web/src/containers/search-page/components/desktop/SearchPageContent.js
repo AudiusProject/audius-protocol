@@ -146,6 +146,7 @@ class SearchPageContent extends Component {
         >
           <Card
             id={artist.user_id}
+            userId={artist.user_id}
             imageSize={artist._profile_picture_sizes}
             isUser
             size={'small'}
