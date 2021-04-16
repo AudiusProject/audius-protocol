@@ -18,6 +18,7 @@ import {
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
+import UserBadges from 'containers/user-badges/UserBadges'
 
 const getEntityName = (entity: any) => entity.title || entity.playlist_name
 export const getRankSuffix = (rank: number) => {
@@ -83,12 +84,14 @@ const getEntityLink = (entity: any, fullRoute = false) => {
 }
 
 const UserName = ({
+  userId,
   name,
   handle,
   onProfileClick,
   withOnClick,
   isMobile = false
 }: {
+  userId: number
   name: string
   handle: string
   onProfileClick: (handle: string) => void
@@ -107,20 +110,47 @@ const UserName = ({
     return (
       <span className={styles.headerLink}>
         {isMobile ? (
-          <a onClick={onClick} href={`/${handle}`}>
-            {name}
-          </a>
-        ) : (
-          <ArtistPopover handle={handle}>
+          <div className={styles.userName}>
             <a onClick={onClick} href={`/${handle}`}>
               {name}
             </a>
+            <UserBadges
+              userId={userId}
+              badgeSize={12}
+              className={styles.badges}
+            />
+          </div>
+        ) : (
+          <ArtistPopover handle={handle}>
+            <div className={styles.userName}>
+              <a onClick={onClick} href={`/${handle}`}>
+                {name}
+              </a>
+              <UserBadges
+                userId={userId}
+                badgeSize={12}
+                className={styles.badges}
+              />
+            </div>
           </ArtistPopover>
         )}
       </span>
     )
   }
-  return <span className={styles.headerLink}>{name}</span>
+  return (
+    <span className={styles.headerLink}>
+      <div className={styles.userNameWrapper}>
+        <div className={styles.userName}>
+          <span>{name}</span>
+          <UserBadges
+            userId={userId}
+            badgeSize={12}
+            className={styles.badges}
+          />
+        </div>
+      </div>
+    </span>
+  )
 }
 
 export const formatBody = (
@@ -149,6 +179,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            userId={firstUser.user_id}
             name={firstUser.name}
             handle={firstUser.handle}
             onProfileClick={onProfileClick}
@@ -168,6 +199,7 @@ export const formatBody = (
             className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
           >
             <UserName
+              userId={user.user_id}
               name={user.name}
               handle={user.handle}
               onProfileClick={onProfileClick}
@@ -186,6 +218,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            userId={user.user_id}
             name={user.name}
             handle={user.handle}
             onProfileClick={onProfileClick}
@@ -215,6 +248,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            userId={firstUser.user_id}
             name={firstUser.name}
             handle={firstUser.handle}
             onProfileClick={onProfileClick}
@@ -245,6 +279,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            userId={firstUser.user_id}
             name={firstUser.name}
             handle={firstUser.handle}
             onProfileClick={onProfileClick}
@@ -323,6 +358,7 @@ export const formatBody = (
           </span>
           {` by `}
           <UserName
+            userId={user.user_id}
             name={user.name}
             handle={user.handle}
             onProfileClick={onProfileClick}
@@ -343,6 +379,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            userId={user.user_id}
             name={user.name}
             handle={user.handle}
             onProfileClick={onProfileClick}
