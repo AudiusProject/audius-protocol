@@ -1,7 +1,7 @@
 const axios = require('axios')
+const config = require('../../config.js')
 
 const { logger } = require('../../logging')
-const { serviceRegistry } = require('../../serviceRegistry')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
@@ -11,7 +11,9 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
  * @param {*} job
  */
 const syncQueueJobProcessorFn = async (job) => {
-  const { walletPublicKeys, creatorNodeEndpoint } = job.data
+  const { walletPublicKeys, creatorNodeEndpoint, serviceRegistry } = job.data
+
+  console.log(`SIDTEST SYNCQUEUEJOBPROCESSOR FN`)
 
   await _processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint)
 }
@@ -30,12 +32,18 @@ const syncQueueJobProcessorFn = async (job) => {
  *    what they receive in each export.
  */
 async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
-  const { redis, nodeConfig } = serviceRegistry
+  const { redis } = serviceRegistry
+  const nodeConfig = config
+  console.log(`SIDTEST PROCESSSYNC ${Object.keys(serviceRegistry)} ${Object.keys(nodeConfig)}`)
 
+  // TODO SIDTEST - issue is with nodeConfig
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
+  console.log(`SIDTEST PROCESSSYNC ${Object.keys(serviceRegistry)} // ${FileSaveMaxConcurrency}`)
 
   const start = Date.now()
+  console.log(`SIDTEST PROCESSSYNC 0.0`)
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
+  console.log(`SIDTEST PROCESSSYNC 0`)
 
   // object to track if the function errored, returned at the end of the function
   let errorObj = null
@@ -43,6 +51,7 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
    */
+  // TODO SIDTEST - issue is with redis
   const redisLock = redis.lock
   let redisKey
   for (let wallet of walletPublicKeys) {
@@ -54,6 +63,7 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
     await redisLock.setLock(redisKey)
   }
 
+  console.log(`SIDTEST PROCESSSYNC 1`)
   /**
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
@@ -64,6 +74,7 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
     })
     const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
 
+    console.log(`SIDTEST PROCESSSYNC 2 ${JSON.stringify(cnodeUser)}`)
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
      *
@@ -76,9 +87,12 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
       wallet_public_key: walletPublicKeys,
       clock_range_min: (localMaxClockVal + 1)
     }
+    // TODO comment
     if (nodeConfig.get('creatorNodeEndpoint')) {
       exportQueryParams.source_endpoint = nodeConfig.get('creatorNodeEndpoint')
     }
+
+    console.log(`SIDTEST PROCESSSYNC 3 EXPOERT QUERY PARAMS ${exportQueryParams}`)
 
     // Make export request to endpoint
     const resp = await axios({
@@ -90,6 +104,8 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
       /** @notice - this request timeout is arbitrarily large for now until we find an appropriate value */
       timeout: 300000 /* 5m = 300000ms */
     })
+
+    console.log(`SIDTEST EXPORT RESP ${JSON.stringify(resp.data)}`)
 
     if (resp.status !== 200) {
       logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)

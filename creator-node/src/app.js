@@ -62,6 +62,7 @@ app.use(errorHandler)
  * @param {ServiceRegistry} serviceRegistry object housing all Content Node Services
  */
 const initializeApp = (port, serviceRegistry) => {
+  console.log(`SIDTEST INITIALIZEAPP SERVICEREGISTRY SYNCQUEUESERVICE`)
   const storagePath = DiskManager.getConfigStoragePath()
 
   // TODO: Can remove these when all routes consume serviceRegistry

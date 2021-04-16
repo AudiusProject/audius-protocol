@@ -5,6 +5,7 @@ const assert = require('assert')
 const _ = require('lodash')
 const nock = require('nock')
 
+const { timeout } = require('../src/utils')
 const config = require('../src/config')
 const models = require('../src/models')
 const { getApp } = require('./lib/app')
@@ -664,9 +665,11 @@ describe.only('test nodesync', async function () {
         .post('/sync2')
         .send({
           wallet: [pubKey.toLowerCase()],
-          creator_node_endpoint: TEST_ENDPOINT,
-          immediate: true
+          creator_node_endpoint: TEST_ENDPOINT
+          // immediate: true
         }).expect(200)
+
+      await timeout(10000, 'SIDTEST WAITING FOR SYNC')
 
       const exportedCnodeUser = {
         walletPublicKey: cnodeUser.walletPublicKey,

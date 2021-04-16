@@ -4,13 +4,11 @@
 
 const Bull = require('bull')
 
-const JobProcessorName = 'asdf'
 const JobProcessorConcurrency = 10
 const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
 class SyncProcessingQueue {
   constructor (nodeConfig) {
-    console.log('SIDTEST SYNCPROCESSINGQUEUE IN CONSTRUCTOR')
     this.nodeConfig = nodeConfig
 
     this.queue = new Bull(
@@ -27,15 +25,15 @@ class SyncProcessingQueue {
       }
     )
 
+    // TODO comment
     this.queue.process(
-      JobProcessorName,
       JobProcessorConcurrency,
       JobProcessorFnFilePath
     )
   }
 
-  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint }
+  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint, serviceRegistry }) {
+    const jobProps = { walletPublicKeys, creatorNodeEndpoint, serviceRegistry }
     const job = await this.queue.add(jobProps)
     return job
   }

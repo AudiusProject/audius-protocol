@@ -1,4 +1,4 @@
-const nodeConfig = require('../../src/config')
+const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
@@ -26,7 +26,8 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    syncQueueService: new SyncQueueService(nodeConfig)
+    syncQueueService: new SyncQueueService(nodeConfig),
+    nodeConfig
   }
 
   const appInfo = require('../../src/app')(8000, mockServiceRegistry)
