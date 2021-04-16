@@ -64,10 +64,10 @@ def playlist_state_update(
 
             num_total_changes += processedEntries
 
-    logger.info(f"[playlist indexing] There are {num_total_changes} events processed.")
+    logger.info(f"index.py | playlists.py | There are {num_total_changes} events processed.")
 
     for playlist_id, value_obj in playlist_events_lookup.items():
-        logger.info(f"playlists.py | Adding {value_obj['playlist']})")
+        logger.info(f"index.py | playlists.py | Adding {value_obj['playlist']})")
         if value_obj["events"]:
             invalidate_old_playlist(session, playlist_id)
             session.add(value_obj["playlist"])
@@ -140,7 +140,7 @@ def parse_playlist_event(
     block_integer_time = int(block_timestamp)
 
     if event_type == playlist_event_types_lookup["playlist_created"]:
-        logger.info(f"[playlist_created] | Creating playlist {playlist_record.playlist_id}")
+        logger.info(f"index.py | playlists.py | Creating playlist {playlist_record.playlist_id}")
         playlist_record.playlist_owner_id = event_args._playlistOwnerId
         playlist_record.is_private = event_args._isPrivate
         playlist_record.is_album = event_args._isAlbum
@@ -155,12 +155,12 @@ def parse_playlist_event(
         playlist_record.created_at = block_datetime
 
     if event_type == playlist_event_types_lookup["playlist_deleted"]:
-        logger.info(f"[playlist_deleted] | Deleting playlist {playlist_record.playlist_id}")
+        logger.info(f"index.py | playlists.py | Deleting playlist {playlist_record.playlist_id}")
         playlist_record.is_delete = True
 
     if event_type == playlist_event_types_lookup["playlist_track_added"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            logger.info(f"[playlist_track_added] | Adding track {event_args._addedTrackId} to playlist \
+            logger.info(f"index.py | playlists.py | Adding track {event_args._addedTrackId} to playlist \
             {playlist_record.playlist_id}")
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
             new_playlist_content_array = old_playlist_content_array
@@ -173,7 +173,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_track_deleted"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            logger.info(f"[playlist_track_deleted] | Removing track {event_args._deletedTrackId} from \
+            logger.info(f"index.py | playlists.py | Removing track {event_args._deletedTrackId} from \
             playlist {playlist_record.playlist_id}")
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
             new_playlist_content_array = []
@@ -192,7 +192,7 @@ def parse_playlist_event(
 
     if event_type == playlist_event_types_lookup["playlist_tracks_ordered"]:
         if getattr(playlist_record, 'playlist_contents') is not None:
-            logger.info(f"[playlist_tracks_ordered] | Ordering playlist {playlist_record.playlist_id}")
+            logger.info(f"index.py | playlists.py | Ordering playlist {playlist_record.playlist_id}")
             old_playlist_content_array = playlist_record.playlist_contents["track_ids"]
 
             intermediate_track_time_lookup_dict = {}
@@ -220,12 +220,12 @@ def parse_playlist_event(
             playlist_record.playlist_contents = {"track_ids": playlist_content_array}
 
     if event_type == playlist_event_types_lookup["playlist_name_updated"]:
-        logger.info(f"[playlist_name_updated] | Updating playlist {playlist_record.playlist_id} name \
+        logger.info(f"index.py | playlists.py | Updating playlist {playlist_record.playlist_id} name \
         to {event_args._updatedPlaylistName}")
         playlist_record.playlist_name = event_args._updatedPlaylistName
 
     if event_type == playlist_event_types_lookup["playlist_privacy_updated"]:
-        logger.info(f"[playlist_privacy_updated] | Updating playlist {playlist_record.playlist_id} \
+        logger.info(f"index.py | playlists.py | Updating playlist {playlist_record.playlist_id} \
         privacy to {event_args._updatedIsPrivate}")
         playlist_record.is_private = event_args._updatedIsPrivate
 
@@ -238,7 +238,7 @@ def parse_playlist_event(
         is_blacklisted = is_blacklisted_ipld(session, playlist_record.playlist_image_multihash)
         if is_blacklisted:
             logger.info(
-                "[playlist_cover_photo_updated] | Encountered blacklisted CID %s in indexing \
+                "index.py | playlists.py | Encountered blacklisted CID %s in indexing \
                 playlist image multihash",
                 playlist_record.playlist_image_multihash
             )
@@ -246,18 +246,18 @@ def parse_playlist_event(
 
         # All incoming playlist images are set to ipfs dir in column playlist_image_sizes_multihash
         if playlist_record.playlist_image_multihash:
-            logger.info(f"[playlist_cover_photo_updated] | Processing playlist image \
+            logger.info(f"index.py | playlists.py | Processing playlist image \
             {playlist_record.playlist_image_multihash}")
             playlist_record.playlist_image_sizes_multihash = playlist_record.playlist_image_multihash
             playlist_record.playlist_image_multihash = None
 
     if event_type == playlist_event_types_lookup["playlist_description_updated"]:
-        logger.info(f"[playlist_description_updated] | Updating playlist {playlist_record.playlist_id} \
+        logger.info(f"index.py | playlists.py | Updating playlist {playlist_record.playlist_id} \
         description to {event_args._playlistDescription}")
         playlist_record.description = event_args._playlistDescription
 
     if event_type == playlist_event_types_lookup["playlist_upc_updated"]:
-        logger.info(f"[playlist_upc_updated] | Updating playlist {playlist_record.playlist_id} UPC \
+        logger.info(f"index.py | playlists.py | Updating playlist {playlist_record.playlist_id} UPC \
         to {event_args._playlistUPC}")
         playlist_record.upc = helpers.bytes32_to_str(event_args._playlistUPC)
 
