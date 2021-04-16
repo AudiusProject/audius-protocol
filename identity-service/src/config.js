@@ -509,7 +509,7 @@ const config = convict({
     format: Number,
     env: 'ethGasMultiplier',
     default: 1.2
-  },
+  }
 })
 
 // if you wanted to load a file
