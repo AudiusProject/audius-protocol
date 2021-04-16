@@ -22,7 +22,7 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 const sampleExportFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportFromClock2.json')
 
-describe('test nodesync', async function () {
+describe.only('test nodesync', async function () {
   let server, app
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
@@ -578,7 +578,7 @@ describe('test nodesync', async function () {
     })
   })
 
-  describe('Test /sync route', async function () {
+  describe.only('Test /sync2 route', async function () {
     const TEST_ENDPOINT = 'http://test-cn.co'
     const userMetadataURI = config.get('userMetadataNodeUrl')
     const { pubKey } = testEthereumConstants
@@ -633,7 +633,7 @@ describe('test nodesync', async function () {
       app = appInfo.app
     })
 
-    it('Syncs correctly from clean user state with mocked export object', async function () {
+    it.only('Syncs correctly from clean user state with mocked export object', async function () {
       // Get the saved export
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
@@ -661,7 +661,7 @@ describe('test nodesync', async function () {
 
       // test: sync
       await request(app)
-        .post('/sync')
+        .post('/sync2')
         .send({
           wallet: [pubKey.toLowerCase()],
           creator_node_endpoint: TEST_ENDPOINT,
@@ -803,7 +803,7 @@ describe('test nodesync', async function () {
 
       // test: sync
       await request(app)
-        .post('/sync')
+        .post('/sync2')
         .send({
           wallet: [pubKey.toLowerCase()],
           creator_node_endpoint: TEST_ENDPOINT,

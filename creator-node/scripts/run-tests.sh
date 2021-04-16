@@ -35,7 +35,7 @@ run_unit_tests () {
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 30000 --exit
+  ./node_modules/mocha/bin/mocha test/nodesync.test.js --timeout 30000 --exit
 }
 
 if [ "$1" == "standalone_creator" ]; then
@@ -100,7 +100,7 @@ export creatorNodeEndpoint="http://localhost:5000"
 export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 
 # tests
-run_unit_tests
+# run_unit_tests
 run_integration_tests
 
 rm -r $storagePath

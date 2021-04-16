@@ -1,15 +1,19 @@
-const { logger } = require('../../logging')
+const axios = require('axios')
 
+const { logger } = require('../../logging')
+const { serviceRegistry } = require('../../serviceRegistry')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-// const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../../apiHelpers')
-const { getOwnEndpoint2, getCreatorNodeEndpoints2 } = require('../../middlewares')
-// const { getIPFSPeerId } = require('../../utils')
+const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 
+/**
+ *
+ * @param {*} job
+ */
 const syncQueueJobProcessorFn = async (job) => {
-  const { walletPublicKeys, creatorNodeEndpoint, serviceRegistry } = job.data
+  const { walletPublicKeys, creatorNodeEndpoint } = job.data
 
-  await _processSync(walletPublicKeys, creatorNodeEndpoint, serviceRegistry)
+  await _processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint)
 }
 
 /**
@@ -25,11 +29,10 @@ const syncQueueJobProcessorFn = async (job) => {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegistry) {
-  const redisClient = serviceRegistry.redis
-  const config = serviceRegistry.nodeConfig
-  const ipfs = serviceRegistry.ipfs
-  const libs = serviceRegistry.libs
+async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
+  const { redis, nodeConfig } = serviceRegistry
+
+  const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
 
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
@@ -40,10 +43,10 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
   /**
    * Ensure access to each wallet, then acquire redis lock for duration of sync
    */
-  const redisLock = redisClient.lock
+  const redisLock = redis.lock
   let redisKey
   for (let wallet of walletPublicKeys) {
-    redisKey = redisClient.getNodeSyncRedisKey(wallet)
+    redisKey = redis.getNodeSyncRedisKey(wallet)
     let lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
       throw new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
@@ -73,8 +76,8 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
       wallet_public_key: walletPublicKeys,
       clock_range_min: (localMaxClockVal + 1)
     }
-    if (config.get('creatorNodeEndpoint')) {
-      exportQueryParams.source_endpoint = config.get('creatorNodeEndpoint')
+    if (nodeConfig.get('creatorNodeEndpoint')) {
+      exportQueryParams.source_endpoint = nodeConfig.get('creatorNodeEndpoint')
     }
 
     // Make export request to endpoint
@@ -109,7 +112,7 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
 
     try {
       // Attempt to connect directly to target CNode's IPFS node.
-      await _initBootstrapAndRefreshPeers(body.data.ipfsIDObj.addresses, redisKey, ipfs)
+      await _initBootstrapAndRefreshPeers(serviceRegistry, logger, body.data.ipfsIDObj.addresses, redisKey)
       logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
@@ -136,17 +139,20 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
        */
       let userReplicaSet = []
       try {
-        const myCnodeEndpoint = await getOwnEndpoint2(libs)
-        userReplicaSet = await getCreatorNodeEndpoints2({
+        const myCnodeEndpoint = await getOwnEndpoint(serviceRegistry)
+        userReplicaSet = await getCreatorNodeEndpoints({
+          serviceRegistry,
+          logger: logger,
           wallet: fetchedWalletPublicKey,
+          blockNumber,
           ensurePrimary: false,
-          myCnodeEndpoint,
-          logger,
-          libs
+          myCnodeEndpoint
         })
 
         // push user metadata node to user's replica set if defined
-        if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
+        if (nodeConfig.get('userMetadataNodeUrl')) {
+          userReplicaSet.push(nodeConfig.get('userMetadataNodeUrl'))
+        }
 
         // filter out current node from user's replica set
         userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
@@ -267,20 +273,20 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
         // Save all track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < trackFiles.length; i += TrackSaveConcurrencyLimit) {
-          const trackFilesSlice = trackFiles.slice(i, i + TrackSaveConcurrencyLimit)
-          logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + TrackSaveConcurrencyLimit} out of total ${trackFiles.length}...`)
+        for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
+          const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
+          logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
 
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihashToFS(req, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            trackFile => saveFileForMultihashToFS(serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet)
           ))
         }
         logger.info(redisKey, 'Saved all track files to disk.')
 
         // Save all non-track files to disk in batches (to limit concurrent load)
-        for (let i = 0; i < nonTrackFiles.length; i += NonTrackFileSaveConcurrencyLimit) {
-          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + NonTrackFileSaveConcurrencyLimit)
-          logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + NonTrackFileSaveConcurrencyLimit} out of total ${nonTrackFiles.length}...`)
+        for (let i = 0; i < nonTrackFiles.length; i += FileSaveMaxConcurrency) {
+          const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
+          logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency} out of total ${nonTrackFiles.length}...`)
           await Promise.all(nonTrackFilesSlice.map(
             nonTrackFile => {
               // Skip over directories since there's no actual content to sync
@@ -289,9 +295,9 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihashToFS(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  return saveFileForMultihashToFS(serviceRegistry, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
                 } else {
-                  return saveFileForMultihashToFS(req, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  return saveFileForMultihashToFS(serviceRegistry, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
                 }
               }
             }
@@ -349,9 +355,8 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
-      let redisKey = redisClient.getNodeSyncRedisKey(wallet)
+      let redisKey = redis.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
-      delete (syncQueue[wallet])
     }
     logger.info(redisKey, `DURATION SYNC ${Date.now() - start}`)
   }
@@ -359,8 +364,10 @@ async function _processSync (walletPublicKeys, creatorNodeEndpoint, serviceRegis
   return errorObj
 }
 
-/** Given IPFS node peer addresses, add to bootstrap peers list and manually connect. */
-async function _initBootstrapAndRefreshPeers (targetIPFSPeerAddresses, redisKey, ipfs) {
+/**
+ * Given IPFS node peer addresses, add to bootstrap peers list and manually connect
+ **/
+async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAddresses, redisKey) {
   logger.info(redisKey, 'Initializing Bootstrap Peers:')
 
   // Get own IPFS node's peer addresses

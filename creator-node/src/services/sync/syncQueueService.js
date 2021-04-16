@@ -10,6 +10,7 @@ const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
 class SyncProcessingQueue {
   constructor (nodeConfig) {
+    console.log('SIDTEST SYNCPROCESSINGQUEUE IN CONSTRUCTOR')
     this.nodeConfig = nodeConfig
 
     this.queue = new Bull(
@@ -33,10 +34,9 @@ class SyncProcessingQueue {
     )
   }
 
-  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint, serviceRegistry }) {
-    const jobProps = { walletPublicKeys, creatorNodeEndpoint, serviceRegistry }
+  async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
+    const jobProps = { walletPublicKeys, creatorNodeEndpoint }
     const job = await this.queue.add(jobProps)
-
     return job
   }
 }

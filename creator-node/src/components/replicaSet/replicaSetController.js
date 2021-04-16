@@ -1,6 +1,6 @@
 const express = require('express')
 
-const { serviceRegistry } = require('../../serviceRegistry')
+// const { serviceRegistry } = require('../../serviceRegistry')
 const {
   successResponse,
   handleResponse,
@@ -20,6 +20,8 @@ const router = express.Router()
  * Calls `URSMRegistrationComponentService
  */
 const respondToURSMRequestForProposalController = async (req) => {
+  const serviceRegistry = req.app.get('serviceRegistry')
+
   const { spID, timestamp, signature } = req.query
 
   const logger = req.logger
@@ -39,6 +41,8 @@ const respondToURSMRequestForProposalController = async (req) => {
  * This route is only run on secondaries, to export and sync data from a user's primary.
  */
 const syncRequestController = async (req, res) => {
+  const serviceRegistry = req.app.get('serviceRegistry')
+
   const walletPublicKeys = req.body.wallet // array
   const creatorNodeEndpoint = req.body.creator_node_endpoint // string
 
@@ -55,7 +59,7 @@ const syncRequestController = async (req, res) => {
     req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
   }
 
-  console.log(`SIDTEST SYNCQUEUESERVICE: ${Object.keys(serviceRegistry)}`)
+  console.log(`SIDTEST SYNCQUEUESERVICE SERVICEREGISTRY: ${Object.keys(serviceRegistry)}`)
 
   // await secondarySync(req, walletPublicKeys, creatorNodeEndpoint)
   await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
