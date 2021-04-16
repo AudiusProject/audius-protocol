@@ -5,13 +5,6 @@ const utils = require('./utils')
 const models = require('./models')
 const { logger } = require('./logging')
 
-/**
- * Represents the maximum number of syncs that can be issued at once
- * @notice ManualSyncQueue and RecurringSyncQueue will each have this concurrency,
- *    meaning that total max sync job concurrency = (2 * MaxParallelSyncJobs)
- */
-const MaxParallelSyncJobs = 7
-
 // Maximum number of time to wait for a sync operation, 6 minutes by default
 const MaxSyncMonitoringDurationInMs = 360000
 
@@ -50,6 +43,9 @@ class SnapbackSM {
     this.spID = this.nodeConfig.get('spID')
     this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
 
+    this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
+    this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
+
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
       throw new Error('Missing required configs - cannot start')
@@ -70,10 +66,8 @@ class SnapbackSM {
    * Initialize StateMachine processing:
    * - StateMachineQueue -> determines all system state changes required
    * - SyncQueue -> triggers syncs on secondaries
-   *
-   * @param maxParallelSyncJobs - Optionally accepts `maxParallelSyncJobs` to override sync concurrency limit `MaxParallelSyncJobs`
    */
-  async init (maxParallelSyncJobs = MaxParallelSyncJobs) {
+  async init () {
     // Empty all queues to minimize memory consumption
     await this.stateMachineQueue.empty()
     await this.manualSyncQueue.empty()
@@ -116,7 +110,7 @@ class SnapbackSM {
      *  - will trigger sync to secondary per job config
      */
     this.manualSyncQueue.process(
-      maxParallelSyncJobs /* max concurrency */,
+      this.MaxManualRequestSyncJobConcurrency,
       async (job, done) => {
         try {
           await this.processSyncOperation(job, SyncType.Manual)
@@ -133,7 +127,7 @@ class SnapbackSM {
      *  - will trigger sync to secondary per job config
      */
     this.recurringSyncQueue.process(
-      maxParallelSyncJobs /* max concurrency */,
+      this.MaxRecurringRequestSyncJobConcurrency,
       async (job, done) => {
         try {
           await this.processSyncOperation(job, SyncType.Recurring)

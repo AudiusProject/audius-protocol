@@ -3,6 +3,7 @@ import codecs
 import logging
 import concurrent.futures
 import time
+import datetime
 
 
 import base58
@@ -48,30 +49,32 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                 start_data3 = end_data2 + 8
                 end_data3 = l3 * 2 + start_data3
 
+                start_data4 = end_data3
+                end_data4 = start_data4 + 16
+
                 user_id = codecs.decode(hex_data[start_data1:end_data1], "hex")
                 track_id = codecs.decode(hex_data[start_data2:end_data2], "hex")
                 source = str(codecs.decode(hex_data[start_data3:end_data3], "hex"), 'utf-8')
+                created_at = int.from_bytes(codecs.decode(hex_data[start_data4:end_data4], "hex"), "little")
 
-                tx_slot = tx_info["result"]["slot"]
-                # tx_timestamp = tx_info["timestamp"]
+                tx_slot = tx_info['result']['slot']
+
+                logger.info(f"index_solana_plays.py | {start_data4} {end_data4}")
 
                 logger.info(
                     f"index_solana_plays.py | Got transaction: {tx_info}"
                 )
-                # logger.info(
-                #     f"index_solana_plays.py | Got tx timestamp: {tx_timestamp}"
-                # )
                 logger.info(
                     f"index_solana_plays.py | \
-user_id: {user_id} track_id: {track_id}\
-source: {source}, slot: {tx_slot}, sig: {tx_sig}"
+ user_id: {user_id} track_id: {track_id}\
+ source: {source}, created_at: {created_at}, slot: {tx_slot}, sig: {tx_sig}"
                 )
 
-# TODO: Ensure created_at matches SOL blocktime
                 session.add(
                     Play(
                         user_id=int(user_id),
                         play_item_id=int(track_id),
+                        created_at=datetime.datetime.utcfromtimestamp(created_at),
                         source=source,
                         slot=tx_slot,
                         signature=tx_sig
@@ -83,7 +86,7 @@ def get_latest_slot(db):
     with db.scoped_session() as session:
         highest_slot_query = (
             session.query(Play)
-            .filter(Play.slot != None)
+            .filter(Play.slot is not None)
             .order_by(desc(Play.slot))
         ).first()
         # Can be None prior to first write operations
@@ -109,9 +112,10 @@ def get_tx_in_db(session, tx_sig):
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
 
+
 def process_solana_plays(solana_client):
     if not TRACK_LISTEN_PROGRAM:
-        logger.info(f"index_solana_plays.py | No program configured, exiting")
+        logger.info("index_solana_plays.py | No program configured, exiting")
         return
 
     db = index_solana_plays.db
@@ -236,12 +240,8 @@ def index_solana_plays(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(f"index_solana_plays.py | Acquired lock")
-            # TODO: Discuss whether this is worth
-            while True:
-                process_solana_plays(solana_client)
-                # 50ms sleep time
-                time.sleep(50 / 1000)
+            logger.info("index_solana_plays.py | Acquired lock")
+            process_solana_plays(solana_client)
     except Exception as e:
         logger.error("index_solana_plays.py | Fatal error in main loop",
                      exc_info=True)

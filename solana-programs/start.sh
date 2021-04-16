@@ -8,23 +8,15 @@ solana-keygen new -s --no-bip39-passphrase
 solana-keygen new -s --no-bip39-passphrase -o feepayer.json
 solana-keygen new -s --no-bip39-passphrase -o owner.json
 
-solana airdrop --faucet-host 35.199.181.141 1
-solana airdrop --faucet-host 35.199.181.141 1
-solana airdrop --faucet-host 35.199.181.141 1
-solana airdrop --faucet-host 35.199.181.141 1
-solana airdrop --faucet-host 35.199.181.141 1
+solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
+sleep 1
 
-solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
-solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
-solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
-solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
-solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
-
-solana airdrop --faucet-host 35.199.181.141 1 owner.json
-solana airdrop --faucet-host 35.199.181.141 1 owner.json
-solana airdrop --faucet-host 35.199.181.141 1 owner.json
-solana airdrop --faucet-host 35.199.181.141 1 owner.json
-solana airdrop --faucet-host 35.199.181.141 1 owner.json
+solana airdrop --faucet-host 35.199.181.141 1
+sleep 1
+solana airdrop --faucet-host 35.199.181.141 1
+sleep 1
+solana airdrop --faucet-host 35.199.181.141 1
+sleep 1
 
 cd program
 cargo build-bpf
@@ -32,6 +24,13 @@ solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius-keypair.json 
 cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
 sed -i "s/$cur_address/$new_address/g" src/lib.rs
+
+solana airdrop --faucet-host 35.199.181.141 1
+sleep 1
+solana airdrop --faucet-host 35.199.181.141 1
+sleep 1
+solana airdrop --faucet-host 35.199.181.141 1
+sleep 1
 
 cd ../create_and_verify
 cargo build-bpf
@@ -45,7 +44,7 @@ signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
 valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
 
 cd ..
-cat > solana-program-config.json <<EOF
+cat >solana-program-config.json <<EOF
 {
     "createAndVerifyAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
     "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",

@@ -14,6 +14,9 @@ const CREATE_AND_VERIFY_PROGRAM = config.get('solanaCreateAndVerifyAddress') ? n
 const INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
   'Sysvar1nstructions1111111111111111111111111'
 )
+const CLOCK_PROGRAM = new solanaWeb3.PublicKey(
+  'SysvarC1ock11111111111111111111111111111111'
+)
 
 const feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
 
@@ -35,7 +38,8 @@ const trackDataSchema = new Map([
       fields: [
         ['user_id', 'string'],
         ['track_id', 'string'],
-        ['source', 'string']
+        ['source', 'string'],
+        ['timestamp', 'u64']
       ]
     }
   ]
@@ -68,7 +72,8 @@ const instructionSchema = new Map([
       fields: [
         ['user_id', 'string'],
         ['track_id', 'string'],
-        ['source', 'string']
+        ['source', 'string'],
+        ['timestamp', 'u64']
       ]
     }
   ]
@@ -97,7 +102,8 @@ async function createAndVerifyMessage (
   let trackData = new TrackData({
     user_id: userId,
     track_id: trackId,
-    source: source
+    source: source,
+    timestamp: Math.round(new Date().getTime() / 1000)
   })
 
   const serializedTrackData = borsh.serialize(trackDataSchema, trackData)
@@ -108,8 +114,7 @@ async function createAndVerifyMessage (
   let instructionArgs = new InstructionArgs({
     track_data: trackData,
     signature: Array.from(sigObj.signature),
-    recovery_id: sigObj.recid,
-    timestamp: Math.round(new Date().getTime() / 1000)
+    recovery_id: sigObj.recid
   })
 
   let instructionData = new InstructionEnum({
@@ -140,7 +145,8 @@ async function createAndVerifyMessage (
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
       { pubkey: signerGroup, isSigner: false, isWritable: false },
       { pubkey: AUDIUS_PROGRAM, isSigner: false, isWritable: false },
-      { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false }
+      { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false },
+      { pubkey: CLOCK_PROGRAM, isSigner: false, isWritable: false }
     ],
     programId: CREATE_AND_VERIFY_PROGRAM,
     data: serializedInstructionArgs
@@ -152,7 +158,7 @@ async function createAndVerifyMessage (
     [feePayer]
   )
 
-  return txInfo
+  return signature
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
