@@ -9,7 +9,8 @@ const {
   snapbackSMParallelSyncTest,
   userReplicaSetManagerTest,
   IpldBlacklistTest,
-  userReplicaSetBlockSaturationTest
+  userReplicaSetBlockSaturationTest,
+  solanaTrackListenCountsTest
 } = require('./tests/')
 
 // Configuration.
@@ -45,10 +46,7 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
   []
 )
 const services = [
-  [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
-  [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
   [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
-  ...contentNodeHealthChecks
 ]
 
 async function setupAllServices () {
@@ -68,6 +66,7 @@ async function tearDownAllServices () {
 // The default will be 'undefined' for the other tests that do not require
 // this flag.
 const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
+  console.log(testFn)
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
       const res = await testFn({
@@ -162,14 +161,14 @@ async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
 
   logger.info('Ensuring all nodes are healthy..')
-  try {
-    await Promise.all(
-      services.map(s => runSetupCommand(...s))
-    )
-  } catch (e) {
-    logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
-    process.exit(1)
-  }
+  // try {
+  //   await Promise.all(
+  //     services.map(s => runSetupCommand(...s))
+  //   )
+  // } catch (e) {
+  //   logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
+  //   process.exit(1)
+  // }
 
   const cmd = process.argv[3]
   const verbose = isVerbose()
@@ -221,6 +220,17 @@ async function main () {
           {
             numUsers: 1
           })
+        await testRunner([test])
+        break
+      }
+      case 'test-sol-listencount': {
+        const test = makeTest(
+          'solanaTrackListenCountsTest',
+          solanaTrackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
         await testRunner([test])
         break
       }
