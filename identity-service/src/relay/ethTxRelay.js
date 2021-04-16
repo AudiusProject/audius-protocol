@@ -67,6 +67,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
 
   // Select the 'fast' gas price
   let ethRelayGasPrice = ethGasPriceInfo[config.get('ethRelayerProdGasTier')]
+  ethRelayGasPrice = ethRelayGasPrice * parseFloat(config.get('ethGasMultiplier'))
 
   let resp
   try {
