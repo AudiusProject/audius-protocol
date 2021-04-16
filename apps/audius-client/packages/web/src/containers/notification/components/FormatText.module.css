@@ -35,3 +35,16 @@
   text-decoration: underline !important;
 }
 
+.userNameWrapper {
+  display: inline-block;
+}
+
+.userName {
+  display: flex;
+  align-items: center;
+}
+
+.badges {
+  margin-left: 4px;
+}
+
