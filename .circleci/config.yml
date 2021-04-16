@@ -557,7 +557,7 @@ jobs:
           command: |
             cd solana-programs
             touch solana-program-config.json
-            docker run -v "$PWD/solana-program-config.json:/usr/src/app/solana-program-config.json" audius/solana-programs
+            docker run -v "$(pwd)/solana-program-config.json:/usr/src/app/solana-program-config.json" audius/solana-programs
             cp solana-program-config.json ../identity-service
       # Download and cache dependencies
       - restore_cache:
