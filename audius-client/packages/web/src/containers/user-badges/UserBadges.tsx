@@ -38,18 +38,29 @@ type UserBadgesProps = {
   badgeSize: number
   className?: string
   useSVGTiers?: boolean
+  inline?: boolean
 }
 
 const UserBadges: React.FC<UserBadgesProps> = ({
   userId,
   badgeSize,
   className,
-  useSVGTiers = false
+  useSVGTiers = false,
+  inline = false
 }) => {
   const { tier, isVerified } = useSelectTierInfo(userId)
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
   const audioBadge = tierMap[tier]
 
+  if (inline) {
+    return (
+      <span className={cn(styles.inlineContainer, className)}>
+        {isVerified && <IconVerified height={badgeSize} width={badgeSize} />}
+        {audioBadge &&
+          cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
+      </span>
+    )
+  }
   return (
     <div className={cn(styles.container, className)}>
       {isVerified && <IconVerified height={badgeSize} width={badgeSize} />}

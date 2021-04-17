@@ -67,13 +67,14 @@ const RemixCard = ({
           <div className={styles.name}>
             <div className={styles.by}>{messages.by}</div>
             <div className={styles.hoverable}>{artistName}</div>
+            <UserBadges
+              className={styles.badges}
+              userId={userId}
+              badgeSize={12}
+              inline
+            />
           </div>
         </ArtistPopover>
-        <UserBadges
-          userId={userId}
-          badgeSize={12}
-          className={styles.iconVerified}
-        />
       </div>
     </div>
   )

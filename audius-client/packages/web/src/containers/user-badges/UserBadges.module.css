@@ -3,6 +3,7 @@
   overflow: visible;
 }
 
-.container svg {
+.container svg,
+.inlineContainer svg {
   margin-right: 4px !important;
 }
