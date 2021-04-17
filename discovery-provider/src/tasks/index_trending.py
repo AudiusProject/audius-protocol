@@ -10,6 +10,8 @@ from src.queries.get_underground_trending import UNDERGROUND_TRENDING_CACHE_KEY,
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
 
+genre_blacklist = {'sn_SomeGenre'}
+
 def get_genres(session):
     """Returns all genres"""
     genres = (
@@ -18,7 +20,7 @@ def get_genres(session):
         ).distinct(
             Track.genre
         )).all()
-    genres = filter(lambda x: x[0] is not None and x[0] != "", genres)
+    genres = filter(lambda x: x[0] is not None and x[0] != "" and not x[0] in genre_blacklist, genres)
     return list(map(lambda x: x[0], genres))
 
 
