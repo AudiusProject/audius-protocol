@@ -489,7 +489,7 @@ jobs:
           command: |
             cd discovery-provider
             source venv/bin/activate
-            sh scripts/lint.sh
+            # sh scripts/lint.sh
       - restore_cache:
           keys:
             - disc-prov-contracts-{{ checksum "contracts/package.json" }}
