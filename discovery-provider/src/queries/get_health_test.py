@@ -1,3 +1,4 @@
+import os
 from unittest.mock import MagicMock
 from hexbytes import HexBytes
 from src.utils.redis_constants import \
@@ -242,7 +243,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_with_monitors(app, web3_mock, redis_mock, db_mock, get_monitors_mock):
+def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock):
     """Tests that the health check returns monitor data"""
     get_monitors_mock.return_value = {
         'database_connections': 2,
@@ -272,18 +273,17 @@ def test_get_health_with_monitors(app, web3_mock, redis_mock, db_mock, get_monit
             is_current=True,
         ))
 
-    with app.app_context():
-        args = {}
-        health_results, error = get_health(args)
-        assert error == False
-        assert health_results['database_connections'] == 2
-        assert health_results['filesystem_size'] == 62725623808
-        assert health_results['filesystem_used'] == 50381168640
-        assert health_results['received_bytes_per_sec'] == 7942.038197103973
-        assert health_results['total_memory'] == 6237151232
-        assert health_results['used_memory'] == 3055149056
-        assert health_results['transferred_bytes_per_sec'] == 7340.780857447676
-        assert health_results['number_of_cpus'] == 1
+    args = {}
+    health_results, error = get_health(args)
+    assert error == False
+    assert health_results['database_connections'] == 2
+    assert health_results['filesystem_size'] == 62725623808
+    assert health_results['filesystem_used'] == 50381168640
+    assert health_results['received_bytes_per_sec'] == 7942.038197103973
+    assert health_results['total_memory'] == 6237151232
+    assert health_results['used_memory'] == 3055149056
+    assert health_results['transferred_bytes_per_sec'] == 7340.780857447676
+    assert health_results['number_of_cpus'] == os.cpu_count()
 
 def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
     """Tests that the health check returns verbose db stats"""

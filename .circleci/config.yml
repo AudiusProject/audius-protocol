@@ -489,7 +489,7 @@ jobs:
           command: |
             cd discovery-provider
             source venv/bin/activate
-            # sh scripts/lint.sh
+            sh scripts/lint.sh
       - restore_cache:
           keys:
             - disc-prov-contracts-{{ checksum "contracts/package.json" }}
@@ -664,8 +664,8 @@ workflows:
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
-          # requires:
-          #   - test-discovery-provider
+          requires:
+            - test-discovery-provider
 
       - test-identity-service
       - docker-build-and-push:

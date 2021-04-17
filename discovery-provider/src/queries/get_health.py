@@ -16,6 +16,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
+number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
@@ -186,7 +187,7 @@ def get_health(args, use_redis_cache=True):
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         **sys_info,
-        "number_of_cpus": current_app.config["machine"]["number_of_cpus"] or 0
+        "number_of_cpus": number_of_cpus
     }
 
     block_difference = abs(

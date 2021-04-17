@@ -1,7 +1,6 @@
 """
 Test fixtures to support unit testing
 """
-
 from unittest.mock import MagicMock
 from flask import current_app
 import pytest
@@ -10,26 +9,6 @@ from src import create_app
 import src.utils.redis_connection
 import src.utils.web3_provider
 import src.utils.db_session
-
-@pytest.fixture()
-def app():
-    # mock_app = MagicMock()
-
-    # monkeypatch.setattr(
-    #     current_app,
-    #     "machine",
-    #     {"number_of_cpus": 1}
-    # )
-    cpus_config = {
-        "machine" : {
-            "number_of_cpus": 1
-        }
-    }
-    app = create_app()
-    app.config = cpus_config
-
-    yield app
-
 
 # Test fixture to mock a postgres database using an in-memory alternative
 @pytest.fixture()
@@ -97,17 +76,3 @@ def get_monitors_mock(monkeypatch):
         get_monitors
     )
     return mock_get_monitors
-
-# # Test fixture that mocks the os library
-# @pytest.fixture()
-# def get_os_mock(monkeypatch):
-#     def cpu_count():
-#         return 1
-
-#     monkeypatch.setattr(
-#         os,
-#         'cpu_count',
-#         cpu_count
-#     )
-#     return get_os_mock
-

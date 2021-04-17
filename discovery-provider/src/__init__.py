@@ -259,9 +259,6 @@ def configure_flask(test_config, app, mode="app"):
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
 
-    # Set the number of cpus in the app config
-    app.config["machine"]["number_of_cpus"] = os.cpu_count()
-
     exceptions.register_exception_handlers(app)
     app.register_blueprint(queries.bp)
     app.register_blueprint(search.bp)
