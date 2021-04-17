@@ -259,6 +259,7 @@ def configure_flask(test_config, app, mode="app"):
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
 
+
     exceptions.register_exception_handlers(app)
     app.register_blueprint(queries.bp)
     app.register_blueprint(search.bp)
