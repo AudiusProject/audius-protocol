@@ -2,8 +2,6 @@ import logging
 import os
 import time
 
-from flask import current_app
-
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session

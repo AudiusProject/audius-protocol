@@ -1,6 +1,7 @@
 """
 Test fixtures to support unit testing
 """
+
 from unittest.mock import MagicMock
 import pytest
 import fakeredis
