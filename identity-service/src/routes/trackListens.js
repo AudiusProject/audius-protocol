@@ -483,7 +483,6 @@ module.exports = function (app) {
       return errorResponseBadRequest(`Provided limit ${limit} too large (must be <= 5000)`)
     }
 
-
     let updatedAtMoment
     try {
       updatedAtMoment = moment.unix(startTime)

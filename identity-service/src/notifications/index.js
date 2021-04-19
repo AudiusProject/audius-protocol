@@ -7,7 +7,7 @@ const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
 const {
   updateBlockchainIds,
-  calculateTrackListenMilestones,
+  // calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber
 } = require('./utils')
