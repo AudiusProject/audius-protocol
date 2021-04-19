@@ -106,21 +106,17 @@ const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
           amount={user.audToken}
           shortFormat
         />
-         <p className={styles.userSnippetLabel}>
-          {messages.wallet}
-        </p>
-     </div>
-     <div className={styles.snippetText}>
+        <p className={styles.userSnippetLabel}>{messages.wallet}</p>
+      </div>
+      <div className={styles.snippetText}>
         <DisplayAudio
           position={Position.BOTTOM}
           className={styles.tokenText}
           amount={activeStake}
           shortFormat
         />
-         <p className={styles.userSnippetLabel}>
-          {messages.staked}
-        </p>
-     </div>
+        <p className={styles.userSnippetLabel}>{messages.staked}</p>
+      </div>
     </div>
   )
 }
@@ -153,14 +149,14 @@ const AppBar: React.FC<AppBarProps> = (props: AppBarProps) => {
       <div className={styles.left}>
         <Logo className={styles.logo} />
         <div className={styles.name}>{messages.name}</div>
-          <div
-            className={clsx(styles.currentBlock, {
-              [styles.show]: showBlock
-            })}
-          >
-            <div className={styles.block}>{ethBlock}</div>
-            <div className={styles.title}>{messages.block}</div>
-          </div>
+        <div
+          className={clsx(styles.currentBlock, {
+            [styles.show]: showBlock
+          })}
+        >
+          <div className={styles.block}>{ethBlock}</div>
+          <div className={styles.title}>{messages.block}</div>
+        </div>
       </div>
       {!isMobile && (
         <div className={styles.right}>
