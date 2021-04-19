@@ -26,4 +26,4 @@ RUN cd program && \
 
 COPY start.sh ./
 
-CMD [ "sh", "start.sh" ]
+CMD [ "sh", "-c", "cp -r /mnt/* ./; sh start.sh" ]

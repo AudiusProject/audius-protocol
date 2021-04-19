@@ -1,5 +1,3 @@
-cp -r /mnt/* ./
-
 {
     eth_account=$(python -c "from web3.auto import w3; a = w3.eth.account.create(); print(a.address[2:], a.privateKey.hex()[2:])")
     address=$(echo $eth_account | cut -d' ' -f1)
