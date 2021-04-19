@@ -9,8 +9,8 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 
 /**
- *
- * @param {*} job
+ * Defines processing logic for all jobs as they are picked off SyncQueue
+ * @param {Object} job
  */
 const syncQueueJobProcessorFn = async (job) => {
   const { walletPublicKeys, creatorNodeEndpoint } = job.data

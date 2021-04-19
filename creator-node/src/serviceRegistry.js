@@ -81,9 +81,8 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
 
-    // TODO
+    // SyncqueueService construction (requires L1 identity)
     this.syncQueueService = new SyncQueueService(this.nodeConfig)
-    this.logError(`SIDTEST SYNCQUEUESERVICE INITTED`)
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely

@@ -59,7 +59,6 @@ const syncRequestController = async (req, res) => {
     req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
   }
 
-  // await secondarySync(req, walletPublicKeys, creatorNodeEndpoint)
   await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
 
   return successResponse()

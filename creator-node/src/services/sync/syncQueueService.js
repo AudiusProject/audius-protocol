@@ -1,12 +1,11 @@
-/**
- *
- */
-
 const Bull = require('bull')
 
 const JobProcessorConcurrency = 10
 const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
+/**
+ * SyncProcessingQueue - handles enqueuing and processing of Sync jobs on secondary
+ */
 class SyncProcessingQueue {
   constructor (nodeConfig) {
     this.nodeConfig = nodeConfig
