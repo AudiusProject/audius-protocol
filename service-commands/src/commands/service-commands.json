@@ -48,7 +48,7 @@
     "path": "solana-programs",
     "up": [
       "docker build --tag solana-programs solana-programs/",
-      "cd solana-programs/; touch solana-program-config.json && docker run -v \"$PWD/solana-program-config.json:/usr/src/app/solana-program-config.json\" solana-programs",
+      "cd solana-programs/; docker run solana-programs > solana-program-config.json",
       "cd solana-programs/; cp solana-program-config.json ../identity-service"
     ],
     "down": []
