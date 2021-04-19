@@ -8,6 +8,7 @@ const { indexMilestones } = require('./milestoneProcessing')
 const {
   updateBlockchainIds,
   calculateTrackListenMilestones,
+  calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
@@ -215,8 +216,13 @@ class NotificationProcessor {
 
     logger.info({ minBlock, oldMaxBlockNumber, startDate }, `${new Date()} - notifications main indexAll job`)
 
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
     // Query owners for tracks relevant to track listen counts
-    let listenCounts = await calculateTrackListenMilestones()
+    // Below can be toggled once milestones are calculated in discovery
+    // let listenCounts = await calculateTrackListenMilestones()
+    let listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
+
     let trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
@@ -225,8 +231,6 @@ class NotificationProcessor {
     let params = new URLSearchParams()
     trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
     params.append('min_block_number', minBlock)
-
-    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
     let reqObj = {
       method: 'get',

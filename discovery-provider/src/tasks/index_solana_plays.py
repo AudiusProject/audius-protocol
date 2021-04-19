@@ -84,7 +84,7 @@ def get_latest_slot(db):
             .filter(Play.signature != None)
             .order_by(desc(Play.slot))
         ).first()
-        logger.error(f"index_solana_plays.py | {highest_slot_query}")
+        logger.error(f"index_solana_plays.py | get_latest_slot: {highest_slot_query}")
         # Can be None prior to first write operations
         if highest_slot_query is not None:
             latest_slot = highest_slot_query.slot
