@@ -34,11 +34,8 @@ from src.queries.get_previously_private_playlists import get_previously_private_
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
-<<<<<<< HEAD
 from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
-=======
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
->>>>>>> @{-1}
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
