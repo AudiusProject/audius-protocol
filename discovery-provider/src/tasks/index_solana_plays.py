@@ -185,13 +185,7 @@ def process_solana_plays(solana_client):
             f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}"
         )
 
-<<<<<<< HEAD
     logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
-=======
-    logger.info(
-        f"index_solana_plays.2py | {transaction_signatures}, {len(transaction_signatures)} entries"
-    )
->>>>>>> @{-1}
 
     transaction_signatures.reverse()
 
