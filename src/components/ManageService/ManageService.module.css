@@ -51,7 +51,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-transform: uppercase;
-  color: #FFFFFF;
+  color: var(--static-white);
 }
 
 
