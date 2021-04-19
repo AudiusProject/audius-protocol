@@ -1,5 +1,3 @@
-import binascii
-import codecs
 import concurrent.futures
 import datetime
 import logging
