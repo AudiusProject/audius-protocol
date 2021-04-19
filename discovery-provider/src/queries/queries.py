@@ -585,7 +585,7 @@ def get_sol_play_tx():
 def get_track_listen_milestone_data():
     try:
         # Assign value only if not None or empty string
-        data = get_track_listen_milestones(40)
+        data = get_track_listen_milestones(100)
         return api_helpers.success_response(data)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
