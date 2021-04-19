@@ -34,7 +34,11 @@ from src.queries.get_previously_private_playlists import get_previously_private_
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
+<<<<<<< HEAD
 from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
+=======
+from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
+>>>>>>> @{-1}
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -578,5 +582,13 @@ def get_track_listen_milestone_data():
         # Assign value only if not None or empty string
         data = get_track_listen_milestones(40)
         return api_helpers.success_response(data)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+@bp.route("/ipfs_peer_info", methods=("GET",))
+def get_ipfs_peer_info_route():
+    try:
+        ipfs_peer_info = get_ipfs_peer_info()
+        return api_helpers.success_response(ipfs_peer_info)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
