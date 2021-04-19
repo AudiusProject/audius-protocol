@@ -78,8 +78,13 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
 def get_latest_slot(db):
     latest_slot = None
     with db.scoped_session() as session:
-        highest_slot_query = (session.query(Play).filter(
-            Play.slot is not None).order_by(desc(Play.slot))).first()
+        highest_slot_query = (
+            session.query(Play)
+            .filter(Play.slot != None)
+            .filter(Play.signature != None)
+            .order_by(desc(Play.slot))
+        ).first()
+        logger.error(f"index_solana_plays.py | {highest_slot_query}")
         # Can be None prior to first write operations
         if highest_slot_query is not None:
             latest_slot = highest_slot_query.slot
@@ -101,7 +106,6 @@ def get_tx_in_db(session, tx_sig):
     exists = tx_sig_db_count > 0
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
-
 
 def process_solana_plays(solana_client):
     if not TRACK_LISTEN_PROGRAM:
@@ -178,7 +182,8 @@ def process_solana_plays(solana_client):
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
                 # Append batch of processed signatures
-                transaction_signatures.append(transaction_signature_batch)
+                if transaction_signature_batch:
+                    transaction_signatures.append(transaction_signature_batch)
                 # Reset batch state
                 transaction_signature_batch = []
         logger.info(
@@ -191,6 +196,8 @@ def process_solana_plays(solana_client):
 
     # TODO: DO NOT LET transaction_signatures grow unbounded, cut off x last entries
     logger.info(f"index_solana_plays.py | {transaction_signatures}")
+
+    num_txs_processed = 0
 
     for tx_sig_batch in transaction_signatures:
         logger.error(f"index_solana_plays.py | processing {tx_sig_batch}")
@@ -208,18 +215,29 @@ def process_solana_plays(solana_client):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
+                        num_txs_processed += 1
                     except Exception as exc:
                         logger.error(exc)
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(
-            f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s"
+            f"index_solana_plays.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
+    logger.info(
+        f"index_solana_plays.py | processed {num_txs_processed} txs"
+    )
     # Update plays iff some batch is found
-    if transaction_signatures:
-        session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
+    if num_txs_processed > 0:
+        with db.scoped_session() as session:
+            logger.info(
+                f"index_solana_plays.py | Refreshing aggregate_plays materialized view"
+            )
+            session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
+            logger.info(
+                f"index_solana_plays.py | Finished refreshing aggregate_plays materialized view"
+            )
 
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
@@ -233,12 +251,16 @@ def index_solana_plays(self):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock("solana_plays_lock", timeout=7200)
+    play_count_lock = redis.lock("update_play_count_lock", timeout=10*60)
+
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_solana_plays.py | Acquired lock")
             process_solana_plays(solana_client)
+        else:
+            logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
         logger.error("index_solana_plays.py | Fatal error in main loop",
                      exc_info=True)

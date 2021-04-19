@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const MaxPollDurationMs = 30000
+const MaxPollDurationMs = 60000
 
 async function delay (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -35,9 +35,9 @@ async function submitTrackListen(trackId, userId, solanaListen = true) {
     } catch(e) {
         console.log(`Failed writing for trackId=${trackId}, userId=${userId}, ${e}`)
     }
-    console.log(`Polling signature for trackId=${trackId}, userId=${userId}, ${signature}`)
 
-    if (solanaListen) {
+    if (solanaListen && signature) {
+        console.log(`Polling signature for trackId=${trackId}, userId=${userId}, ${signature}`)
         // Poll discovery to confirm write into Plays table
         let pollStart = Date.now()
         let requestConfig = {
@@ -49,7 +49,7 @@ async function submitTrackListen(trackId, userId, solanaListen = true) {
             await delay(500)
             resp = (await axios(requestConfig)).data
             if (Date.now() - pollStart > MaxPollDurationMs) {
-                throw new Error(`Failed to find ${signature} in ${MaxPollDurationMs}ms`)
+                throw new Error(`Failed to find ${signature} for userId=${userId}, trackId=${trackId} in ${MaxPollDurationMs}ms`)
             }
         }
         if (resp.data[0].signature === signature) {
