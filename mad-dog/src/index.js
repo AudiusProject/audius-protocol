@@ -161,14 +161,14 @@ async function main () {
   logger.info('🐶 * Woof Woof * Welcome to Mad-Dog 🐶')
 
   logger.info('Ensuring all nodes are healthy..')
-  // try {
-  //   await Promise.all(
-  //     services.map(s => runSetupCommand(...s))
-  //   )
-  // } catch (e) {
-  //   logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
-  //   process.exit(1)
-  // }
+  try {
+    await Promise.all(
+      services.map(s => runSetupCommand(...s))
+    )
+  } catch (e) {
+    logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)
+    process.exit(1)
+  }
 
   const cmd = process.argv[3]
   const verbose = isVerbose()
