@@ -1,3 +1,4 @@
+const os = require('os')
 const express = require('express')
 const { handleResponse, successResponse, errorResponseBadRequest, handleResponseWithHeartbeat, sendResponse, errorResponseServerError } = require('../../apiHelpers')
 const { healthCheck, healthCheckVerbose, healthCheckDuration } = require('./healthCheckComponentService')
@@ -15,6 +16,7 @@ const router = express.Router()
 
 // 5 minutes in ms is the maximum age of a timestamp sent to /health_check/duration
 const MAX_HEALTH_CHECK_TIMESTAMP_AGE_MS = 300000
+const numberOfCPUs = os.cpus().length
 
 // Helper Functions
 /**
@@ -94,7 +96,7 @@ const healthCheckVerboseController = async (req) => {
     logger,
     sequelize,
     getMonitors,
-    req.get('numberOfCPUs')
+    numberOfCPUs
   )
 
   return successResponse({
