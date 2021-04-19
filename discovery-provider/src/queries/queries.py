@@ -566,6 +566,14 @@ def get_ursm_content_nodes():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+@bp.route("/ipfs_peer_info", methods=("GET",))
+def get_ipfs_peer_info_route():
+    try:
+        ipfs_peer_info = get_ipfs_peer_info()
+        return api_helpers.success_response(ipfs_peer_info)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
 @bp.route("/get_sol_play", methods=("GET",))
 def get_sol_play_tx():
     try:
@@ -582,13 +590,5 @@ def get_track_listen_milestone_data():
         # Assign value only if not None or empty string
         data = get_track_listen_milestones(40)
         return api_helpers.success_response(data)
-    except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400)
-
-@bp.route("/ipfs_peer_info", methods=("GET",))
-def get_ipfs_peer_info_route():
-    try:
-        ipfs_peer_info = get_ipfs_peer_info()
-        return api_helpers.success_response(ipfs_peer_info)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
