@@ -1,5 +1,6 @@
-const { healthCheck, healthCheckVerbose } = require('./healthCheckComponentService')
 const assert = require('assert')
+
+const { healthCheck, healthCheckVerbose } = require('./healthCheckComponentService')
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
@@ -95,7 +96,7 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
 
-    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock)
+    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -121,7 +122,8 @@ describe('Test Health Check Verbose', function () {
       allocatedFileDescriptors: 3392,
       receivedBytesPerSec: 776.7638177541248,
       transferredBytesPerSec: 269500,
-      maxStorageUsedPercent: 95
+      maxStorageUsedPercent: 95,
+      numberOfCPUs: 2
     })
   })
 })

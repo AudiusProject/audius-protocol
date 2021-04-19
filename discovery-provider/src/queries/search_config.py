@@ -3,7 +3,7 @@ import logging
 trackTitleWeight = 0.7
 userNameWeight = 0.7
 playlistNameWeight = 0.7
-minSearchSimilarity = 0.1
+minSearchSimilarity = 0.3
 
 
 logger = logging.getLogger(__name__)

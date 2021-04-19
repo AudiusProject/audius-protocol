@@ -14,6 +14,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
+number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
@@ -183,6 +184,7 @@ def get_health(args, use_redis_cache=True):
         "git": os.getenv("GIT_SHA"),
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
+        "number_of_cpus": number_of_cpus,
         **sys_info
     }
 

@@ -116,12 +116,12 @@ def user_replica_set_state_update(
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
     for user_id, value_obj in user_replica_set_events_lookup.items():
-        logger.info(f"user_replica_set.py | Replica Set Processing Adding {value_obj['user']}")
+        logger.info(f"index.py | user_replica_set.py | Replica Set Processing Adding {value_obj['user']}")
         invalidate_old_user(session, user_id)
         session.add(value_obj["user"])
 
     for content_node_id, value_obj in cnode_events_lookup.items():
-        logger.info(f"user_replica_set.py | Content Node Processing Adding {value_obj['content_node']}")
+        logger.info(f"index.py | user_replica_set.py | Content Node Processing Adding {value_obj['content_node']}")
         invalidate_old_cnode_record(session, content_node_id)
         session.add(value_obj["content_node"])
 
@@ -160,13 +160,17 @@ def get_endpoint_string_from_sp_ids(
             )
             # Conditionally log if endpoint is None after fetching
             if not secondary_endpoint:
-                logger.info(f"user_replica_set.py | Failed to find secondary info for {secondary_id}")
+                logger.info(f"index.py | user_replica_set.py | Failed to find secondary info for {secondary_id}")
             # Append to endpoint string regardless of status
             endpoint_string = f"{endpoint_string},{secondary_endpoint}"
     except Exception as exc:
-        logger.error(f"user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}")
+        logger.error(f"index.py | user_replica_set.py | ERROR in get_endpoint_string_from_sp_ids {exc}")
         raise exc
-    logger.info(f"user_replica_set.py | constructed {endpoint_string} from {primary},{secondaries}", exc_info=True)
+    logger.info(
+        f"index.py | user_replica_set.py | constructed:"
+        f"{endpoint_string} from {primary},{secondaries}",
+        exc_info=True
+    )
     return endpoint_string
 
 # Helper function to query endpoint in ursm cnode record parsing
@@ -180,7 +184,7 @@ def get_ursm_cnode_endpoint(update_task, sp_id):
             sp_id
         )
     except Exception as exc:
-        logger.error(f"user_replica_set.py | ERROR in get_ursm_cnode_endpoint {exc}", exc_info=True)
+        logger.error(f"index.py | user_replica_set.py | ERROR in get_ursm_cnode_endpoint {exc}", exc_info=True)
         raise exc
     return endpoint
 
@@ -194,11 +198,11 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
     sp_info_cached = get_pickled_key(update_task.redis, cache_key)
     if sp_info_cached:
         endpoint = sp_info_cached[1]
-        logger.info(f"user_replica_set.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}")
+        logger.info(f"index.py | user_replica_set.py | CACHE HIT FOR {cache_key}, found {sp_info_cached}")
         return sp_factory_inst, endpoint
 
     if not endpoint:
-        logger.info(f"user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}")
+        logger.info(f"index.py | user_replica_set.py | CACHE MISS FOR {cache_key}, found {sp_info_cached}")
         if sp_factory_inst is None:
             sp_factory_inst = get_sp_factory_inst(update_task)
 
@@ -206,7 +210,7 @@ def get_endpoint_from_id(update_task, sp_factory_inst, sp_id):
             content_node_service_type,
             sp_id
         ).call()
-        logger.info(f"user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}")
+        logger.info(f"index.py | user_replica_set.py | spID={sp_id} fetched {cn_endpoint_info}")
         endpoint = cn_endpoint_info[1]
 
     return sp_factory_inst, endpoint

@@ -1,3 +1,4 @@
+const os = require('os')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -79,6 +80,9 @@ const initializeApp = (port, serviceRegistry) => {
 
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
+
+  // The number of CPUs on this machine
+  app.set('numberOfCPUs', os.cpus().length)
 
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
