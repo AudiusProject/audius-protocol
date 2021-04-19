@@ -7,6 +7,7 @@ import {
   isNotFromNullAddress
 } from 'containers/collectibles/helpers'
 import { Collectible } from 'containers/collectibles/components/types'
+import * as allPromisesSettled from 'promise.allsettled'
 
 const OPENSEA_API_URL = process.env.REACT_APP_OPENSEA_API_URL
 const OPENSEA_NUM_ASSETS_LIMIT = 1000
@@ -212,6 +213,10 @@ class OpenSeaClient {
     })
   }
 }
+
+;(function () {
+  if (!Promise.allSettled) Promise.allSettled = allPromisesSettled
+})()
 
 const client = new OpenSeaClient()
 
