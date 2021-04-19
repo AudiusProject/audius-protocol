@@ -22,20 +22,7 @@ def get_sol_play(sol_tx_signature):
 
     return sol_play
 
-
-'''
-TODO: Recalcute calculateTrackListenMilestones
-Below is the distinct N query
-
-select play_item_id from (
-    select distinct(play_item_id), max(created_at) from plays group by play_item_id order by max desc limit 40
-) as ab;
-
-TODO: Use aggregate_plays instead for the count of each track
-^ use get_track_play_count_dict
-
-'''
-
+# For the n most recently listened to tracks, return the all time listen counts for those tracks
 def get_track_listen_milestones(limit):
     db = get_db_read_replica()
     logger.error("get_track_listen_milestones")
@@ -55,9 +42,7 @@ def get_track_listen_milestones(limit):
         )
 
         results = session.query(subquery.c.play_item_id).all()
-        # TODO: Now get the number of plays for each of these tracks
         track_ids = [result[0] for result in results]
         track_id_play_counts = get_track_play_counts(session, track_ids)
-        logger.error(track_id_play_counts)
 
     return track_id_play_counts
