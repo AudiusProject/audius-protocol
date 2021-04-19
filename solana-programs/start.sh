@@ -8,15 +8,11 @@ solana-keygen new -s --no-bip39-passphrase
 solana-keygen new -s --no-bip39-passphrase -o feepayer.json
 solana-keygen new -s --no-bip39-passphrase -o owner.json
 
-solana airdrop --faucet-host 35.199.181.141 1 feepayer.json
-sleep 1
+solana airdrop 1 feepayer.json
 
-solana airdrop --faucet-host 35.199.181.141 1
-sleep 1
-solana airdrop --faucet-host 35.199.181.141 1
-sleep 1
-solana airdrop --faucet-host 35.199.181.141 1
-sleep 1
+solana airdrop 1
+solana airdrop 1
+solana airdrop 1
 
 cd program
 cargo build-bpf
@@ -25,12 +21,9 @@ cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
 new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
 sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
-solana airdrop --faucet-host 35.199.181.141 1
-sleep 1
-solana airdrop --faucet-host 35.199.181.141 1
-sleep 1
-solana airdrop --faucet-host 35.199.181.141 1
-sleep 1
+solana airdrop 1
+solana airdrop 1
+solana airdrop 1
 
 cd ../create_and_verify
 cargo build-bpf
