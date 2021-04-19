@@ -58,6 +58,7 @@
     "orbit-controls": "0.0.1",
     "perspective-camera": "^2.0.1",
     "pixi.js": "^4.8.7",
+    "promise.allsettled": "^1.0.4",
     "prop-types": "^15.7.2",
     "raw-loader": "^0.5.1",
     "react": "^16.8.4",
