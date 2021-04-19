@@ -1,10 +1,9 @@
 import binascii
 import codecs
-import logging
 import concurrent.futures
-import time
 import datetime
-
+import logging
+import time
 
 import base58
 from sqlalchemy import desc
@@ -22,74 +21,68 @@ SOL_PLAYS_REDIS_KEY = "sol_plays"
 logger = logging.getLogger(__name__)
 
 
+def parse_instruction_data(data):
+    decoded = base58.b58decode(data)[1:]
+
+    user_id_length = int.from_bytes(decoded[0:4], "little")
+    user_id_start, user_id_end = 4, 4 + user_id_length
+    user_id = int(decoded[user_id_start:user_id_end])
+
+    track_id_length = int.from_bytes(decoded[user_id_end:user_id_end + 4],
+                                     "little")
+    track_id_start, track_id_end = user_id_end + 4, user_id_end + 4 + track_id_length
+    track_id = int(decoded[track_id_start:track_id_end])
+
+    source_length = int.from_bytes(decoded[track_id_end:track_id_end + 4],
+                                   "little")
+    source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
+    source = str(decoded[source_start:source_end], 'utf-8')
+
+    timestamp = int.from_bytes(decoded[source_end:source_end + 8], "little")
+
+    return user_id, track_id, source, timestamp
+
+
 def parse_sol_play_transaction(session, solana_client, tx_sig):
     # TODO: Parallelize this call to get_confirmed_transaction similar to blocks
-    tx_info = solana_client.get_confirmed_transaction(
-        tx_sig
-    )
-    if SECP_PROGRAM in tx_info["result"]["transaction"]["message"]["accountKeys"]:
-        audius_program_index = tx_info["result"]["transaction"]["message"]["accountKeys"].index(
-            TRACK_LISTEN_PROGRAM
-        )
-        for instruction in tx_info["result"]["transaction"]["message"]["instructions"]:
+    tx_info = solana_client.get_confirmed_transaction(tx_sig)
+    if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
+            "accountKeys"]:
+        audius_program_index = tx_info["result"]["transaction"]["message"][
+            "accountKeys"].index(TRACK_LISTEN_PROGRAM)
+        for instruction in tx_info["result"]["transaction"]["message"][
+                "instructions"]:
             if instruction["programIdIndex"] == audius_program_index:
-                hex_data = binascii.hexlify(
-                    bytearray(list(base58.b58decode(instruction["data"])))
-                )
-
-                l1 = int(hex_data[2:4], 16)
-                start_data1 = 10
-                end_data1 = l1 * 2 + start_data1
-
-                l2 = int(hex_data[end_data1:end_data1 + 2], 16)
-                start_data2 = end_data1 + 8
-                end_data2 = l2 * 2 + start_data2
-
-                l3 = int(hex_data[end_data2:end_data2 + 2], 16)
-                start_data3 = end_data2 + 8
-                end_data3 = l3 * 2 + start_data3
-
-                start_data4 = end_data3
-                end_data4 = start_data4 + 16
-
-                user_id = codecs.decode(hex_data[start_data1:end_data1], "hex")
-                track_id = codecs.decode(hex_data[start_data2:end_data2], "hex")
-                source = str(codecs.decode(hex_data[start_data3:end_data3], "hex"), 'utf-8')
-                created_at = int.from_bytes(codecs.decode(hex_data[start_data4:end_data4], "hex"), "little")
-
                 tx_slot = tx_info['result']['slot']
-
-                logger.info(f"index_solana_plays.py | {start_data4} {end_data4}")
+                user_id, track_id, source, timestamp = parse_instruction_data(
+                    instruction["data"])
+                created_at = datetime.datetime.utcfromtimestamp(timestamp)
 
                 logger.info(
-                    f"index_solana_plays.py | Got transaction: {tx_info}"
-                )
-                logger.info(
-                    f"index_solana_plays.py | \
- user_id: {user_id} track_id: {track_id}\
- source: {source}, created_at: {created_at}, slot: {tx_slot}, sig: {tx_sig}"
-                )
+                    f"index_solana_plays.py | Got transaction: {tx_info}")
+                logger.info("index_solana_plays.py | "
+                            f"user_id: {user_id} "
+                            f"track_id: {track_id} "
+                            f"source: {source} "
+                            f"created_at: {created_at} "
+                            f"slot: {tx_slot} "
+                            f"sig: {tx_sig}")
 
                 session.add(
-                    Play(
-                        user_id=int(user_id),
-                        play_item_id=int(track_id),
-                        created_at=datetime.datetime.utcfromtimestamp(created_at),
-                        source=source,
-                        slot=tx_slot,
-                        signature=tx_sig
-                    ))
+                    Play(user_id=user_id,
+                         play_item_id=track_id,
+                         created_at=created_at,
+                         source=source,
+                         slot=tx_slot,
+                         signature=tx_sig))
 
 
 # Query the highest traversed solana slot
 def get_latest_slot(db):
     latest_slot = None
     with db.scoped_session() as session:
-        highest_slot_query = (
-            session.query(Play)
-            .filter(Play.slot is not None)
-            .order_by(desc(Play.slot))
-        ).first()
+        highest_slot_query = (session.query(Play).filter(
+            Play.slot is not None).order_by(desc(Play.slot))).first()
         # Can be None prior to first write operations
         if highest_slot_query is not None:
             latest_slot = highest_slot_query.slot
@@ -98,7 +91,8 @@ def get_latest_slot(db):
     if latest_slot is None:
         latest_slot = 0
 
-    logger.info(f"index_solana_plays.py | returning {latest_slot} for highest slot")
+    logger.info(
+        f"index_solana_plays.py | returning {latest_slot} for highest slot")
     return latest_slot
 
 
@@ -106,10 +100,8 @@ def get_latest_slot(db):
 def get_tx_in_db(session, tx_sig):
     logger.info(f"index_solana_plays.py | checking db for {tx_sig}")
     exists = False
-    tx_sig_db_count = (
-        session.query(Play)
-        .filter(Play.signature == tx_sig)
-    ).count()
+    tx_sig_db_count = (session.query(Play).filter(
+        Play.signature == tx_sig)).count()
     exists = tx_sig_db_count > 0
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
@@ -124,7 +116,8 @@ def process_solana_plays(solana_client):
 
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
-    logger.info(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
+    logger.info(
+        f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
 
     # Loop exit condition
     intersection_found = False
@@ -141,10 +134,7 @@ def process_solana_plays(solana_client):
     while not intersection_found:
         # TODO: Is there any optimization around this limit value?
         transactions_history = solana_client.get_confirmed_signature_for_address2(
-            TRACK_LISTEN_PROGRAM,
-            before=last_tx_signature,
-            limit=100
-        )
+            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100)
         transactions_array = transactions_history['result']
         # logger.info(f"index_solana_plays.py | {transactions_array}")
 
@@ -152,13 +142,17 @@ def process_solana_plays(solana_client):
             # This is considered an 'intersection' since there are no further transactions to process but
             # really represents the end of known history for this ProgramId
             intersection_found = True
-            logger.info(f"index_solana_plays.py | No transactions found before {last_tx_signature}")
+            logger.info(
+                f"index_solana_plays.py | No transactions found before {last_tx_signature}"
+            )
         else:
             with db.scoped_session() as read_session:
                 for tx in transactions_array:
                     tx_sig = tx['signature']
                     tx_slot = tx['slot']
-                    logger.info(f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={tx_slot}")
+                    logger.info(
+                        f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={tx_slot}"
+                    )
                     if tx['slot'] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx['slot'] == latest_processed_slot:
@@ -179,11 +173,9 @@ def process_solana_plays(solana_client):
                             # Ensure this transaction is still processed
                             transaction_signature_batch.append(tx_sig)
                     else:
-                        logger.info(
-                            f"index_solana_plays.py |\
+                        logger.info(f"index_solana_plays.py |\
     slot={tx_slot}, sig={tx_sig},\
-    latest_processed_slot(db)={latest_processed_slot}"
-                        )
+    latest_processed_slot(db)={latest_processed_slot}")
                         # Exit loop and set terminal condition since this slot is < max known value in plays DB
                         intersection_found = True
                         break
@@ -197,7 +189,9 @@ def process_solana_plays(solana_client):
             f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}"
         )
 
-    logger.info(f"index_solana_plays.2py | {transaction_signatures}, {len(transaction_signatures)} entries")
+    logger.info(
+        f"index_solana_plays.2py | {transaction_signatures}, {len(transaction_signatures)} entries"
+    )
 
     transaction_signatures.reverse()
 
@@ -211,11 +205,12 @@ def process_solana_plays(solana_client):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             with db.scoped_session() as session:
                 parse_sol_tx_futures = {
-                    executor.submit(
-                        parse_sol_play_transaction, session, solana_client, tx_sig
-                    ): tx_sig for tx_sig in tx_sig_batch
+                    executor.submit(parse_sol_play_transaction, session,
+                                    solana_client, tx_sig): tx_sig
+                    for tx_sig in tx_sig_batch
                 }
-                for future in concurrent.futures.as_completed(parse_sol_tx_futures):
+                for future in concurrent.futures.as_completed(
+                        parse_sol_tx_futures):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
@@ -224,7 +219,9 @@ def process_solana_plays(solana_client):
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
-        logger.info(f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s")
+        logger.info(
+            f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s"
+        )
 
 
 ######## CELERY TASKS ########
