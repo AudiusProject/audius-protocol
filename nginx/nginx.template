@@ -64,8 +64,8 @@ http {
       proxy_pass http://node:8000;
     }
 
-    # Protocol Dashboard routes.
-    location /protocol_dashboard {
+    # IPFS routes.
+    location /ipfs {
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Methods' 'GET';
       proxy_pass http://node:8000;
