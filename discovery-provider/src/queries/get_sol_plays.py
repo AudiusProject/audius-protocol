@@ -3,7 +3,7 @@ from sqlalchemy import desc, func
 from src.models import Play
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import paginate_query, get_track_play_counts
+from src.queries.query_helpers import get_track_play_counts
 
 logger = logging.getLogger(__name__)
 

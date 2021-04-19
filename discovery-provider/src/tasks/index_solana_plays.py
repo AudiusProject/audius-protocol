@@ -9,7 +9,6 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 
-# TODO: These are configs
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["program_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 SLEEP_TIME = 1
@@ -42,7 +41,6 @@ def parse_instruction_data(data):
 
 
 def parse_sol_play_transaction(session, solana_client, tx_sig):
-    # TODO: Parallelize this call to get_confirmed_transaction similar to blocks
     tx_info = solana_client.get_confirmed_transaction(tx_sig)
     if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
             "accountKeys"]:
@@ -134,7 +132,8 @@ def process_solana_plays(solana_client):
     while not intersection_found:
         # TODO: Is there any optimization around this limit value?
         transactions_history = solana_client.get_confirmed_signature_for_address2(
-            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100)
+            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
+        )
         transactions_array = transactions_history['result']
         # logger.info(f"index_solana_plays.py | {transactions_array}")
 
@@ -251,7 +250,6 @@ def index_solana_plays(self):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock("solana_plays_lock", timeout=7200)
-    play_count_lock = redis.lock("update_play_count_lock", timeout=10*60)
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire
