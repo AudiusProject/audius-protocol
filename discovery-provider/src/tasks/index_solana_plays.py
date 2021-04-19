@@ -219,13 +219,14 @@ def process_solana_plays(solana_client):
                         future.result()
                     except Exception as exc:
                         logger.error(exc)
-                session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s")
 
-    # TODO: Update AggregatePlays if number
+    # Update plays iff some batch is found
+    if transaction_signatures:
+        session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
