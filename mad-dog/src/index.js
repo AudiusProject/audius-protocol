@@ -46,7 +46,10 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
   []
 )
 const services = [
+  [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+  [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
   [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+  ...contentNodeHealthChecks
 ]
 
 async function setupAllServices () {
