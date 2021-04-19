@@ -75,11 +75,11 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
 
             num_total_changes += processedEntries
 
-    logger.info(f"[track indexing] There are {num_total_changes} events processed.")
+    logger.info(f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed.")
 
     for track_id, value_obj in track_events.items():
         if value_obj['events']:
-            logger.info(f"tracks.py | Adding {value_obj['track']}")
+            logger.info(f"index.py | tracks.py | Adding {value_obj['track']}")
             invalidate_old_track(session, track_id)
             session.add(value_obj["track"])
 
@@ -182,12 +182,15 @@ def parse_track_event(
             bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
         )
         track_metadata_multihash = multihash.to_b58_string(buf)
-        logger.info(f"track metadata ipld : {track_metadata_multihash}")
+        logger.info(f"index.py | tracks.py | track metadata ipld : {track_metadata_multihash}")
 
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, track_metadata_multihash):
-            logger.info(f"Encountered blacklisted metadata CID {track_metadata_multihash} in indexing new track")
+            logger.info(
+                f"index.py | tracks.py | Encountered blacklisted metadata CID:"
+                f"{track_metadata_multihash} in indexing new track"
+            )
             return None
 
         owner_id = event_args._trackOwnerId
@@ -217,10 +220,13 @@ def parse_track_event(
         if track_record.cover_art:
             # If CID is in IPLD blacklist table, do not continue with indexing
             if is_blacklisted_ipld(session, track_record.cover_art):
-                logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing new track")
+                logger.info(
+                    f"index.py | tracks.py | Encountered blacklisted cover art CID:"
+                    f"{track_record.cover_art} in indexing new track"
+                )
                 return None
 
-            logger.warning(f"tracks.py | Processing track cover art {track_record.cover_art}")
+            logger.warning(f"index.py | tracks.py | Processing track cover art {track_record.cover_art}")
             track_record.cover_art_sizes = track_record.cover_art
             track_record.cover_art = None
 
@@ -234,12 +240,15 @@ def parse_track_event(
             bytes.fromhex(upd_track_metadata_digest), upd_track_metadata_hash_fn
         )
         upd_track_metadata_multihash = multihash.to_b58_string(update_buf)
-        logger.info(f"update track metadata ipld : {upd_track_metadata_multihash}")
+        logger.info(f"index.py | tracks.py | update track metadata ipld : {upd_track_metadata_multihash}")
 
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
         if is_blacklisted_ipld(session, upd_track_metadata_multihash):
-            logger.info(f"Encountered blacklisted metadata CID {upd_track_metadata_multihash} in indexing update track")
+            logger.info(
+                f"index.py | tracks.py | Encountered blacklisted metadata CID:"
+                f"{upd_track_metadata_multihash} in indexing update track"
+            )
             return None
 
         owner_id = event_args._trackOwnerId
@@ -270,10 +279,13 @@ def parse_track_event(
         if track_record.cover_art:
             # If CID is in IPLD blacklist table, do not continue with indexing
             if is_blacklisted_ipld(session, track_record.cover_art):
-                logger.info(f"Encountered blacklisted cover art CID {track_record.cover_art} in indexing update track")
+                logger.info(
+                    f"index.py | tracks.py | Encountered blacklisted cover art CID:"
+                    f"{track_record.cover_art} in indexing update track"
+                )
                 return None
 
-            logger.info(f"tracks.py | Processing track cover art {track_record.cover_art}")
+            logger.info(f"index.py | tracks.py | Processing track cover art {track_record.cover_art}")
             track_record.cover_art_sizes = track_record.cover_art
             track_record.cover_art = None
 
@@ -283,7 +295,7 @@ def parse_track_event(
         track_record.is_delete = True
         track_record.stem_of = null()
         track_record.remix_of = null()
-        logger.info(f"Removing track : {track_record.track_id}")
+        logger.info(f"index.py | tracks.py | Removing track : {track_record.track_id}")
 
     track_record.updated_at = block_datetime
 

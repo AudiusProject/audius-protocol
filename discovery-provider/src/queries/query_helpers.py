@@ -826,6 +826,7 @@ def get_karma(session, ids, time=None, is_playlist=False):
         )
         .filter(
             Repost.repost_item_id.in_(ids),
+            Repost.is_delete == False,
             Repost.is_current == True,
             Repost.repost_type == repost_type
         )
@@ -839,13 +840,14 @@ def get_karma(session, ids, time=None, is_playlist=False):
         .filter(
             Save.save_item_id.in_(ids),
             Save.is_current == True,
+            Save.is_delete == False,
             Save.save_type == save_type
         )
     )
     if time is not None:
         interval = "NOW() - interval '1 {}'".format(time)
         savers = savers.filter(
-            Repost.created_at >= text(interval)
+            Save.created_at >= text(interval)
         )
         reposters = reposters.filter(
             Repost.created_at >= text(interval)
@@ -864,7 +866,8 @@ def get_karma(session, ids, time=None, is_playlist=False):
             saves_and_reposts.c.user_id == Follow.followee_user_id
         )
         .filter(
-            Follow.is_current == True
+            Follow.is_current == True,
+            Follow.is_delete == False
         )
         .group_by(saves_and_reposts.c.item_id)
     )
