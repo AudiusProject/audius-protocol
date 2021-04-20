@@ -283,7 +283,7 @@ class FullTrending(Resource):
         trending = full_trending[offset: limit + offset]
         return success_response(trending)
 
-@full_ns.route("/trending/secondary")
+@full_ns.route("/trending/ePWJD")
 class FullTrendingSecondary(Resource):
     def get_cache_key(self):
         """Construct a cache key from genre + user + time"""
@@ -301,7 +301,7 @@ class FullTrendingSecondary(Resource):
         limit = format_limit(args, TRENDING_LIMIT)
         key = self.get_cache_key()
 
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS, TrendingVersion.SECONDARY)
+        strategy = trending_selector.get_strategy(TrendingType.TRACKS, TrendingVersion.ePWJD)
 
         # Attempt to use the cached tracks list
         if args['user_id'] is not None:
@@ -356,7 +356,7 @@ class FullUndergroundTrending(Resource):
             trending = trending[offset: limit + offset]
         return success_response(trending)
 
-@full_ns.route("/trending/underground/secondary")
+@full_ns.route("/trending/underground/ePWJD")
 class FullUndergroundTrendingSecondary(Resource):
     def get_cache_key(self):
         """Construct a cache key from user"""
@@ -377,7 +377,7 @@ class FullUndergroundTrendingSecondary(Resource):
             'offset': offset
         }
 
-        strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.SECONDARY)
+        strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.ePWJD)
 
         # If user ID, let get_underground_trending
         # handle caching + limit + offset

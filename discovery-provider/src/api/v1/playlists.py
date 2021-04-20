@@ -380,7 +380,7 @@ class FullTrendingPlaylists(Resource):
 
         return success_response(playlists)
 
-@full_ns.route("/trending/secondary")
+@full_ns.route("/trending/ePWJD")
 class FullTrendingPlaylistsSecondary(Resource):
     @full_ns.expect(full_trending_parser)
     @full_ns.doc(
@@ -415,7 +415,7 @@ class FullTrendingPlaylistsSecondary(Resource):
         current_user_id, time = args.get("user_id"), args.get("time", "week")
         time = "week" if time not in ["week", "month", "year"] else time
 
-        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, TrendingVersion.SECONDARY)
+        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, TrendingVersion.ePWJD)
 
         # If we have a user_id, we call into `get_trending_playlist`
         # which fetches the cached unpopulated tracks and then

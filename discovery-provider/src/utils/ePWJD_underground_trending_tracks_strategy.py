@@ -12,10 +12,10 @@ qq = 0.001
 oi = 20
 nb = 750
 
-class SecondaryUndergroundTrendingTracksStrategy():
+class UndergroundTrendingTracksStrategyePWJD():
     def __init__(self):
         self.trending_type = TrendingType.UNDERGROUND_TRACKS
-        self.version = TrendingVersion.SECONDARY
+        self.version = TrendingVersion.ePWJD
 
     def get_track_score(self, time, track):
         # pylint: disable=W,C,R

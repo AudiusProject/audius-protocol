@@ -7,4 +7,4 @@ class TrendingType(Enum):
 
 class TrendingVersion(Enum):
     DEFAULT = 'DEFAULT'
-    SECONDARY = 'SECONDARY'
+    ePWJD = 'ePWJD'

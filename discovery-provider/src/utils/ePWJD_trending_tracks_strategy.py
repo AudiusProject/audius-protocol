@@ -12,10 +12,10 @@ i = 0.01
 q = 40.0
 T = {'day': 1, 'week':7, 'month':30, 'year':365, 'allTime': 100000}
 
-class SecondaryTrendingTracksStrategy:
+class TrendingTracksStrategyePWJD:
     def __init__(self):
         self.trending_type = TrendingType.TRACKS
-        self.version = TrendingVersion.SECONDARY
+        self.version = TrendingVersion.ePWJD
 
     def get_track_score(self, time, track):
         # pylint: disable=W,C,R
