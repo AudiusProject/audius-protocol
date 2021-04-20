@@ -64,7 +64,8 @@ import {
   PROFILE_PAGE_PLAYLISTS,
   PROFILE_PAGE_REPOSTS,
   TRENDING_UNDERGROUND_PAGE,
-  getPathname
+  getPathname,
+  TRENDING_PLAYLISTS_PAGE_LEGACY
 } from 'utils/route'
 import 'utils/redirect'
 import { isMobile, getClient } from 'utils/clientUtil'
@@ -579,6 +580,10 @@ class App extends Component {
                 render={() => (
                   <TrendingPage containerRef={this.state.mainContent} />
                 )}
+              />
+              <Redirect
+                from={TRENDING_PLAYLISTS_PAGE_LEGACY}
+                to={TRENDING_PLAYLISTS_PAGE}
               />
               <Route
                 exact
