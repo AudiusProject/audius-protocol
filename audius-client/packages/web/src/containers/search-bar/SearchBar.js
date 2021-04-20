@@ -138,7 +138,8 @@ class SearchBar extends Component {
                 ? SquareSizes.SIZE_150_BY_150
                 : null,
               creatorNodeEndpoint: user.creator_node_endpoint,
-              defaultImage: profilePicEmpty
+              defaultImage: profilePicEmpty,
+              isVerifiedUser: user.is_verified
             }
           })
         },
