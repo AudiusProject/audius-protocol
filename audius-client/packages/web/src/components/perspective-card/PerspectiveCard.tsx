@@ -17,6 +17,7 @@ type PerspectiveCardProps = {
   useOverlayBlendMode?: boolean
   onClick?: () => void
   isIncentivized?: boolean
+  sensitivity?: number
 }
 
 const PerspectiveCard = ({
@@ -28,9 +29,13 @@ const PerspectiveCard = ({
   isDisabled,
   useOverlayBlendMode = true,
   onClick,
+  sensitivity,
   isIncentivized = false
 }: PerspectiveCardProps) => {
-  const [cardRef, onMove, onLeave, transform] = useCardWeight({ isDisabled })
+  const [cardRef, onMove, onLeave, transform] = useCardWeight({
+    isDisabled,
+    sensitivity
+  })
 
   return (
     <div

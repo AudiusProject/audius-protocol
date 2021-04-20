@@ -71,4 +71,5 @@ export type SmartCollection = {
   playlist_contents?: PlaylistContents
   has_current_user_saved?: boolean
   incentivized?: boolean // Whether we reward winners with Audio
+  cardSensitivity?: number
 }
