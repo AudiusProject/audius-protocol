@@ -154,7 +154,7 @@ jobs:
           paths:
             - build-mobile-staging
 
-  build-ci:
+  build-ipfs-staging:
     working_directory: ~/audius-client
     docker:
       - image: circleci/node:10.13
@@ -164,12 +164,15 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: build-ci
-          command: npm run build:ci
+          name: build-ipfs-staging
+          command: npm run build:ipfs-stage
+      - run:
+          name: zip build-ipfs-staging
+          command: zip -r build-ipfs-staging.zip ./build-ipfs-staging
       - persist_to_workspace:
           root: ./
           paths:
-            - build-ci
+            - build-ipfs-staging.zip
 
   test-staging:
     working_directory: ~/
@@ -240,6 +243,26 @@ jobs:
           root: ./
           paths:
             - build-mobile-production
+
+  build-ipfs-production:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/node:10.13
+    resource_class: large
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: build-ipfs-production
+          command: npm run build:ipfs-prod
+      - run:
+          name: zip build
+          command: zip -r build-ipfs-production.zip ./build-ipfs-production
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - build-ipfs-production.zip
 
   deploy-demo:
     working_directory: ~/audius-client
@@ -313,6 +336,54 @@ jobs:
       - run:
           name: Deploy to S3
           command: aws s3 sync build-mobile-staging s3://audius-mobile-staging/build --delete
+
+  deploy-ipfs-staging:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 cp build-ipfs-staging.zip s3://audius-site-ipfs/build-ipfs-staging.zip
+
+  update-staging-ga-ipfs-build:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update ipfs build in ga
+          command: npm run update-ipfs-build:stage
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./build_cid.txt
+
+  update-ipfs-staging-records:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Update Cloudflare records
+          command: |
+            DNS_NAME=_dnslink.ipfs.staging.audius.co
+            CID=$(cat ./build_cid.txt)
+            curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_AUDIUS_CO_ZONE}/dns_records/${CLOUDFLARE_STAGE_SITE_IPFS_DNS_ID}" \
+              -H "X-Auth-Email: ${CLOUDFLARE_AUTH_EMAIL}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_AUTH_KEY}" \
+              -H "Content-Type: application/json" \
+              --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
 
   deploy-release:
     working_directory: ~/audius-client
@@ -419,6 +490,54 @@ jobs:
       - run:
           name: Deploy to S3
           command: aws s3 sync build-mobile-production s3://audius-mobile/build --delete
+
+  deploy-ipfs-production:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Deploy to S3
+          command: aws s3 cp build-ipfs-production.zip s3://audius-site-ipfs/build-ipfs-production.zip
+
+  update-production-ga-ipfs-build:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: update ipfs build in ga
+          command: npm run update-ipfs-build:prod
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./build_cid.txt
+
+  update-ipfs-production-records:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/node:10.13
+    steps:
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Update Cloudflare records
+          command: |
+            DNS_NAME=_dnslink.ipfs.audius.co
+            CID=$(cat ./build_cid.txt)
+            curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_AUDIUS_CO_ZONE}/dns_records/${CLOUDFLARE_PROD_SITE_IPFS_DNS_ID}" \
+              -H "X-Auth-Email: ${CLOUDFLARE_AUTH_EMAIL}" \
+              -H "Authorization: Bearer ${CLOUDFLARE_AUTH_KEY}" \
+              -H "Content-Type: application/json" \
+              --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
 
   deploy-storybook:
     working_directory: ~/audius-client
@@ -632,6 +751,53 @@ workflows:
             branches:
               only: /^master$/
 
+      # Staging IPFS build
+      - build-ipfs-staging:
+          requires:
+            - init
+          filters:
+            branches:
+              only: /^master$/
+      - deploy-ipfs-staging:
+          context: Audius Client
+          requires:
+            - build-ipfs-staging
+          filters:
+            branches:
+              only: /^master$/
+      - hold-update-staging-ga-ipfs-build:
+          type: approval
+          requires:
+            - build-ipfs-staging
+          filters:
+            branches:
+              only: /^master$/
+      - update-staging-ga-ipfs-build:
+          context:
+            - Audius Client
+            - Pinata
+          requires:
+            - hold-update-staging-ga-ipfs-build
+          filters:
+            branches:
+              only: /^master$/
+      - hold-update-ipfs-staging-records:
+          type: approval
+          requires:
+            - update-staging-ga-ipfs-build
+          filters:
+            branches:
+              only: /^master$/
+      - update-ipfs-staging-records:
+          context:
+            - Audius Client
+            - Cloudflare API
+          requires:
+            - hold-update-ipfs-staging-records
+          filters:
+            branches:
+              only: /^master$/
+
       # Native Mobile
       - build-mobile-production:
           requires:
@@ -686,6 +852,53 @@ workflows:
           filters:
             branches:
               only: /(^master)|(^hotfix.*)$/
+
+      # Production IPFS build
+      - build-ipfs-production:
+          requires:
+            - init
+          filters:
+            branches:
+              only: /^master$/
+      - deploy-ipfs-production:
+          context: Audius Client
+          requires:
+            - build-ipfs-production
+          filters:
+            branches:
+              only: /^master$/
+      - hold-update-production-ga-ipfs-build:
+          type: approval
+          requires:
+            - build-ipfs-production
+          filters:
+            branches:
+              only: /^master$/
+      - update-production-ga-ipfs-build:
+          context:
+            - Audius Client
+            - Pinata
+          requires:
+            - hold-update-production-ga-ipfs-build
+          filters:
+            branches:
+              only: /^master$/
+      - hold-update-ipfs-production-records:
+          type: approval
+          requires:
+            - update-production-ga-ipfs-build
+          filters:
+            branches:
+              only: /^master$/
+      - update-ipfs-production-records:
+          context:
+            - Audius Client
+            - Cloudflare API
+          requires:
+            - hold-update-ipfs-production-records
+          filters:
+            branches:
+              only: /^master$/
 
       # Distribute staging desktop binaries.
       - hold-dist-mac-staging:

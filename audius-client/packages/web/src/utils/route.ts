@@ -268,7 +268,9 @@ export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')
 export const getPathname = (
   location: Location | HistoryLocation = window.location
 ) => {
-  if (USE_HASH_ROUTING) {
+  // If this is a Location, pathname will have a host. If it's a HistoryLocation,
+  // the hashrouter will automatically understand the pathname to be the hash route
+  if (USE_HASH_ROUTING && 'host' in location) {
     return location.hash.replace('#', '')
   }
   return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname

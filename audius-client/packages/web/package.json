@@ -112,7 +112,6 @@
     "build": "react-scripts --max_old_space_size=8192 build",
     "build:dev": "npm run write-sha && env-cmd ./.env/.env.dev env-cmd ./.env/.env.git npm run build && rm -rf build-development && mv build build-development",
     "build:stage": "npm run write-sha && env-cmd ./.env/.env.stage env-cmd ./.env/.env.git npm run build && rm -rf build-staging && mv build build-staging",
-    "build:ci": "npm run write-sha && env-cmd ./.env/.env.ci env-cmd ./.env/.env.git npm run build && rm -rf build-ci && mv build build-ci",
     "build:demo": "npm run write-sha && env-cmd ./.env/.env.stage env-cmd ./.env/.env.git npm run build && rm -rf build-demo && mv build build-demo",
     "build:prod": "npm run write-sha && env-cmd ./.env/.env.prod env-cmd ./.env/.env.git npm run build && rm -rf build-production && mv build build-production",
     "build:prod-source-maps": "npm run write-sha && env-cmd ./.env/.env.prod env-cmd ./.env/.env.source-maps env-cmd ./.env/.env.git npm run build && rm -rf build-production && mv build build-production",
@@ -147,7 +146,10 @@
     "write-sha": "./scripts/writeSHA.sh",
     "analyze": "source-map-explorer build-production/static/js/*.js",
     "analyzeBundle": "npm run build:prod && node ./scripts/analyzeBundle.js",
-    "typecheck": "tsc -w --allowJs"
+    "typecheck": "tsc -w --allowJs",
+    "update-ipfs-build:dev": "node ./scripts/updateIpfsBuild.js dev",
+    "update-ipfs-build:stage": "node ./scripts/updateIpfsBuild.js stage",
+    "update-ipfs-build:prod": "node ./scripts/updateIpfsBuild.js prod"
   },
   "pre-commit": [
     "lint"
@@ -172,6 +174,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "@pinata/sdk": "^1.1.13",
     "@storybook/addon-actions": "^4.1.6",
     "@storybook/addon-info": "^4.1.11",
     "@storybook/addon-knobs": "^4.1.6",
@@ -196,6 +199,7 @@
     "@types/react-router-dom": "^5.1.0",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
+    "abort-controller": "^3.0.0",
     "commander": "^2.20.0",
     "electron": "^7.0.0",
     "electron-builder": "^22.4.0",
@@ -215,6 +219,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "fetch-mock": "^9.6.0",
     "fs-extra": "^8.0.1",
+    "node-fetch": "^2.6.1",
     "pre-commit": "^1.2.2",
     "prettier": "2.0.5",
     "prettier-config-standard": "^1.0.1",
