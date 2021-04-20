@@ -7,11 +7,15 @@ import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { processAndCacheCollections } from 'store/cache/collections/utils'
 import Collection, { UserCollectionMetadata } from 'models/Collection'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { waitForRemoteConfig } from 'services/remote-config/Provider'
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
+  yield call(waitForRemoteConfig)
+  const TF = new Set(getRemoteVar(StringKeys.TPF)?.split(',') ?? [])
+
   const time = 'week' as 'week'
   const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
-  const playlists: UserCollectionMetadata[] = yield call(
+  let playlists: UserCollectionMetadata[] = yield call(
     args => apiClient.getTrendingPlaylists(args),
     {
       currentUserId,
@@ -20,6 +24,10 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
       time
     }
   )
+  playlists = playlists.filter(p => {
+    const shaId = window.Web3.utils.sha3(p.playlist_id.toString())
+    return !TF.has(shaId)
+  })
 
   // Omit playlists owned by Audius
   const userIdsToOmit = new Set(

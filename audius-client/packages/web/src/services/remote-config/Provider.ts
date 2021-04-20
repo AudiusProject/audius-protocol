@@ -131,6 +131,16 @@ export function getFeatureEnabled(flag: FeatureFlags) {
 }
 
 export const waitForRemoteConfig = async () => {
+  if (state.didInitialize) return true
+  let cb
+  await new Promise(resolve => {
+    cb = resolve
+    window.addEventListener('REMOTE_CONFIG_LOADED', cb)
+  })
+  if (cb) window.removeEventListener('REMOTE_CONFIG_LOADED', cb)
+}
+
+export const waitForRemoteConfigDataFile = async () => {
   // Wait for optimizely to load if necessary (as it can be an async or defer tag)
   // @ts-ignore: injected in index.html
   if (!window.optimizelyDatafile) {
@@ -147,7 +157,7 @@ export const waitForRemoteConfig = async () => {
 
 const init = async () => {
   console.time('remote-config')
-  await waitForRemoteConfig()
+  await waitForRemoteConfigDataFile()
 
   provider = optimizely.createInstance({
     // @ts-ignore: injected in index.html
@@ -162,6 +172,7 @@ const init = async () => {
       state.onDidInitializeFunc = undefined
     }
     console.timeEnd('remote-config')
+    window.dispatchEvent(new CustomEvent('REMOTE_CONFIG_LOADED'))
   })
 }
 
