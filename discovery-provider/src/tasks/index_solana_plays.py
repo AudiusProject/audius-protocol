@@ -228,13 +228,8 @@ def process_solana_plays(solana_client):
 
     logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
 
-    # TEST ONLY - Repopulate to 4587 records
-    if len(transaction_signatures) > 5:
-        raise Exception(f"TOO MANY SIGS {len(transaction_signatures)}")
-
     transaction_signatures.reverse()
 
-    # TODO: DO NOT LET transaction_signatures grow unbounded, cut off x last entries
     logger.info(f"index_solana_plays.py | {transaction_signatures}")
 
     num_txs_processed = 0
