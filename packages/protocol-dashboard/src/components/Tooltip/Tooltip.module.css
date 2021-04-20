@@ -25,7 +25,7 @@
 
 .tooltipText {
   position: relative;
-  color: #FFFFFF;
+  color: var(--static-white);
   font-family: "Avenir Next LT Pro";
   font-size: var(--font-xs);
   color: white;
