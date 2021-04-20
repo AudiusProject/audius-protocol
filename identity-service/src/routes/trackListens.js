@@ -221,7 +221,7 @@ module.exports = function (app) {
         trackId.toString(),
         Date.now().toString()
       )
-      console.log(solTxSignature)
+      logger.info(`Track listen tx submitted, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
       return successResponse({
         solTxSignature
       })
