@@ -18,6 +18,10 @@ const CLOCK_PROGRAM = new solanaWeb3.PublicKey(
   'SysvarC1ock11111111111111111111111111111111'
 )
 
+if (config.get('solanaFeePayerWallet')) {
+  console.log(`FeePayer found: ${config.get('solanaFeePayerWallet')}`)
+}
+
 const feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
 
 class Assignable {
