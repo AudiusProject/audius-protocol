@@ -7,7 +7,8 @@ from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_full_response,\
     make_response, success_response, search_parser, abort_bad_request_param, decode_string_id, \
-    extend_user, get_default_max, get_current_user_id, to_dict, format_offset, format_limit
+    extend_user, get_default_max, get_current_user_id, to_dict, format_offset, format_limit, \
+    abort_bad_path_param
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
@@ -380,8 +381,8 @@ class FullTrendingPlaylists(Resource):
 
         return success_response(playlists)
 
-@full_ns.route("/trending/ePWJD")
-class FullTrendingPlaylistsSecondary(Resource):
+@full_ns.route("/trending/<string:version")
+class FullTrendingPlaylistsAlternative(Resource):
     @full_ns.expect(full_trending_parser)
     @full_ns.doc(
         id="""Returns trending playlists for a time period""",
@@ -407,15 +408,19 @@ class FullTrendingPlaylistsSecondary(Resource):
 
     @record_metrics
     @full_ns.marshal_with(full_trending_playlists_response)
-    def get(self):
+    def get(self, version):
         """Get trending playlists"""
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', full_ns)
+
+        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, version_list[0])
+
         # Parse args
         args = full_trending_parser.parse_args()
         offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
         current_user_id, time = args.get("user_id"), args.get("time", "week")
         time = "week" if time not in ["week", "month", "year"] else time
-
-        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, TrendingVersion.ePWJD)
 
         # If we have a user_id, we call into `get_trending_playlist`
         # which fetches the cached unpopulated tracks and then
