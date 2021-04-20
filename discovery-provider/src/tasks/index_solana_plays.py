@@ -207,6 +207,14 @@ def process_solana_plays(solana_client):
                 # Append batch of processed signatures
                 if transaction_signature_batch:
                     transaction_signatures.append(transaction_signature_batch)
+
+                # Ensure processing does not grow unbounded
+                # TODO: Optimize values
+                if len(transaction_signatures) > 5:
+                    logger.info(f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries")
+                    transaction_signatures = transaction_signatures[-2:]
+                    logger.info(f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries")
+
                 # Reset batch state
                 transaction_signature_batch = []
         logger.info(
@@ -214,6 +222,10 @@ def process_solana_plays(solana_client):
         )
 
     logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
+
+    # TEST ONLY - Repopulate to 4587 records
+    if len(transaction_signatures) > 5:
+        raise Exception(f"TOO MANY SIGS {len(transaction_signatures)}")
 
     transaction_signatures.reverse()
 
