@@ -8,36 +8,32 @@ async function delay (ms) {
 
 let numSuccessfullyProcessed = 0
 
+const DEFAULT_INDEX = 0
+
 function randomNumber(min, max) {
     return Math.floor(Math.random() * (max - min) + min)
 }
 
-async function submitTrackListen(trackId, userId, solanaListen = true) {
+async function submitTrackListen(executeOne, trackId, userId, solanaListen = true) {
     let success = false
     let signature
     let start = Date.now()
+
     // Issue write operation
     try {
-        let data = JSON.stringify({"userId": userId, "solanaListen": solanaListen });
-        let requestConfig = {
-            method: 'post',
-            url: `http://localhost:7000/tracks/${trackId}/listen`,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data : data
-        }
-        let resp = (await axios(requestConfig)).data
-        signature = resp.solTxSignature
-        console.log(`trackId=${trackId}, userId=${userId} | Processed signature: ${signature} in ${Date.now() - start}ms`)
-        numSuccessfullyProcessed += 1
-        success = true
+        await executeOne(DEFAULT_INDEX, async (libs)=> {
+            let identityResp = await libs.logTrackListen(trackId, userId, null, null, true)
+            signature = identityResp.solTxSignature
+            console.log(`trackId=${trackId}, userId=${userId} | Processed signature: ${signature} in ${Date.now() - start}ms`)
+            numSuccessfullyProcessed += 1
+            success = true
+        })
     } catch(e) {
         console.log(`Failed writing for trackId=${trackId}, userId=${userId}, ${e}`)
     }
 
     if (solanaListen && signature) {
-        console.log(`Polling signature for trackId=${trackId}, userId=${userId}, ${signature}`)
+        console.log(`trackId=${trackId}, userId=${userId} | Polling signature ${signature}`)
         // Poll discovery to confirm write into Plays table
         let pollStart = Date.now()
         let requestConfig = {
@@ -52,8 +48,12 @@ async function submitTrackListen(trackId, userId, solanaListen = true) {
                 throw new Error(`Failed to find ${signature} for userId=${userId}, trackId=${trackId} in ${MaxPollDurationMs}ms`)
             }
         }
-        if (resp.data[0].signature === signature) {
-            console.log(`Found ${signature} in discovery node after ${Date.now() - pollStart}ms | ${JSON.stringify(resp.data[0])}`)
+        let discoveryResp = resp.data[0]
+        if (discoveryResp.signature === signature &&
+            discoveryResp.play_item_id === trackId &&
+            discoveryResp.user_id === userId
+        ) {
+            console.log(`Found ${signature} in discovery node after ${Date.now() - pollStart}ms | ${JSON.stringify(discoveryResp)}`)
         }
     }
 }
@@ -75,7 +75,11 @@ async function solanaTrackListenCountsTest({
             let randomUserId = Math.floor(Math.random() * 10000000)
             console.log(`Logging ${numListens} listens for trackId=${trackId}, userId=${randomUserId}`)
             while (numListens > 0) {
-                await submitTrackListen(trackId, randomUserId)
+                await submitTrackListen(
+                    executeOne,
+                    trackId,
+                    randomUserId
+                )
                 numListens--
             }
         })
