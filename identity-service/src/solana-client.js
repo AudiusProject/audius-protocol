@@ -82,7 +82,7 @@ let feePayer
 
 function getFeePayer () {
   if (!feePayer) {
-    feePayer =   config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
+    feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
   }
   return feePayer
 }
