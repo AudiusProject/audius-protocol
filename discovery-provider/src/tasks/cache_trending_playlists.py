@@ -4,16 +4,20 @@ from src.tasks.celery_app import celery
 from src.queries.get_trending_playlists import make_trending_cache_key, make_get_unpopulated_playlists
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_playlists_last_completion_redis_key
+from src.utils.trending_selector import TrendingSelector
+from src.utils.trending_strategy import TrendingType
 
 logger = logging.getLogger(__name__)
 
 TIME_RANGES = ["week", "month", "year"]
 
 def cache_trending(db, redis):
+    trending_selector = TrendingSelector()
+    strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS)
     with db.scoped_session() as session:
         for time_range in TIME_RANGES:
             key = make_trending_cache_key(time_range)
-            res = make_get_unpopulated_playlists(session, time_range)()
+            res = make_get_unpopulated_playlists(session, time_range, strategy)()
             pickle_and_set(redis, key, res)
 
 @celery.task(name="cache_trending_playlists", bind=True)

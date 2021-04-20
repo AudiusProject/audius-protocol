@@ -8,9 +8,9 @@ from src.queries.query_helpers import get_repost_counts, get_karma, get_save_cou
     populate_playlist_metadata, get_users_ids, get_users_by_id, populate_track_metadata, \
     add_users_to_tracks
 from src.queries import response_name_constants
-from src.queries.get_trending_tracks import z
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.utils.redis_cache import use_redis_cache
+from src.utils.trending_strategy import TrendingVersion
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import extend_playlist, extend_track
 
@@ -147,14 +147,14 @@ def get_scorable_playlist_data(session, time_range):
 
     return playlist_map.values()
 
-def make_get_unpopulated_playlists(session, time_range):
+def make_get_unpopulated_playlists(session, time_range, strategy):
     """Gets scorable data, scores and sorts, then returns full unpopulated playlists.
        Returns a function, because this is used in a Redis cache hook"""
     def wrapped():
         playlist_scoring_data = get_scorable_playlist_data(session, time_range)
 
         # score the playlists
-        scored_playlists = [z(time_range, playlist) for playlist in playlist_scoring_data]
+        scored_playlists = [strategy.get_track_score(time_range, playlist) for playlist in playlist_scoring_data]
         sorted_playlists = sorted(scored_playlists, key=lambda k: k['score'], reverse=True)
 
         # Get the unpopulated playlist metadata
@@ -169,10 +169,11 @@ def make_get_unpopulated_playlists(session, time_range):
         return (playlists, playlist_ids)
     return wrapped
 
-def make_trending_cache_key(time_range):
-    return f"generated-trending-playlists:{time_range}"
+def make_trending_cache_key(time_range, version=TrendingVersion.DEFAULT):
+    version_name = f":{version.name}" if version != TrendingVersion.DEFAULT else ''
+    return f"generated-trending-playlists{version_name}:{time_range}"
 
-def get_trending_playlists(args):
+def get_trending_playlists(args, strategy):
     """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -180,14 +181,14 @@ def get_trending_playlists(args):
         with_tracks = args.get("with_tracks", False)
         time = args.get("time")
         limit, offset = args.get("limit"), args.get("offset")
-        key = make_trending_cache_key(time)
+        key = make_trending_cache_key(time, strategy.version)
 
         # Get unpopulated playlists,
         # cached if it exists.
         (playlists, playlist_ids) = use_redis_cache(
             key,
             None,
-            make_get_unpopulated_playlists(session, time)
+            make_get_unpopulated_playlists(session, time, strategy)
         )
 
         # Apply limit + offset early to reduce the amount of
