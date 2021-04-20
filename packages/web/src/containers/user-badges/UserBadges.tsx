@@ -39,6 +39,11 @@ type UserBadgesProps = {
   className?: string
   useSVGTiers?: boolean
   inline?: boolean
+
+  // Normally, user badges is not a controlled component and selects
+  // badges off of the store. The override allows for it to be used
+  // in a controlled context where the desired store state is not available.
+  isVerifiedOverride?: boolean
 }
 
 const UserBadges: React.FC<UserBadgesProps> = ({
@@ -46,7 +51,8 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   badgeSize,
   className,
   useSVGTiers = false,
-  inline = false
+  inline = false,
+  isVerifiedOverride
 }) => {
   const { tier, isVerified } = useSelectTierInfo(userId)
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
@@ -55,7 +61,9 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   if (inline) {
     return (
       <span className={cn(styles.inlineContainer, className)}>
-        {isVerified && <IconVerified height={badgeSize} width={badgeSize} />}
+        {(isVerifiedOverride ?? isVerified) && (
+          <IconVerified height={badgeSize} width={badgeSize} />
+        )}
         {audioBadge &&
           cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
       </span>
@@ -63,7 +71,9 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   }
   return (
     <div className={cn(styles.container, className)}>
-      {isVerified && <IconVerified height={badgeSize} width={badgeSize} />}
+      {(isVerifiedOverride ?? isVerified) && (
+        <IconVerified height={badgeSize} width={badgeSize} />
+      )}
       {audioBadge &&
         cloneElement(audioBadge, { height: badgeSize, width: badgeSize })}
     </div>

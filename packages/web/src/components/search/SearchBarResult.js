@@ -59,7 +59,8 @@ const SearchBarResult = memo(props => {
     imageMultihash,
     creatorNodeEndpoint,
     size,
-    defaultImage
+    defaultImage,
+    isVerifiedUser
   } = props
   const isUser = kind === Kind.USERS
 
@@ -85,6 +86,7 @@ const SearchBarResult = memo(props => {
               className={styles.verified}
               userId={userId}
               badgeSize={10}
+              isVerifiedOverride={isVerifiedUser}
             />
           )}
         </span>
@@ -120,7 +122,8 @@ SearchBarResult.propTypes = {
   imageMultihash: PropTypes.string,
   creatorNodeEndpoint: PropTypes.string,
   size: PropTypes.string,
-  defaultImage: PropTypes.string
+  defaultImage: PropTypes.string,
+  isVerifiedUser: PropTypes.bool
 }
 
 SearchBarResult.defaultProps = {
