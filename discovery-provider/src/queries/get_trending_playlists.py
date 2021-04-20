@@ -9,7 +9,7 @@ from src.queries.query_helpers import get_repost_counts, get_karma, get_save_cou
     add_users_to_tracks
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.utils.redis_cache import use_redis_cache, get_playlists_cache_key
+from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 from src.utils.trending_strategy import TrendingVersion
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import extend_playlist, extend_track, format_offset, format_limit, \
@@ -288,7 +288,7 @@ def trending_playlists(request, args, strategy):
             'time': time,
             'with_tracks': True,
         }
-        key = get_playlists_cache_key(to_dict(request.args), request.path)
+        key = get_trending_cache_key(to_dict(request.args), request.path)
         playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args, strategy))
         playlists = playlists[offset: limit + offset]
 

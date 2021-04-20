@@ -7,11 +7,11 @@ from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
     extend_track, make_full_response, make_response, search_parser, extend_user, get_default_max, \
     trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
-    format_offset, format_limit, decode_string_id, stem_from_track, \
-    get_current_user_id, get_encoded_track_id, abort_bad_path_param
+    format_offset, format_limit, stem_from_track, get_current_user_id, get_encoded_track_id, \
+    abort_bad_path_param
 from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache, extract_key, use_redis_cache
+from src.utils.redis_cache import cache, extract_key, use_redis_cache, get_trending_cache_key
 from src.utils.trending_selector import TrendingSelector
 from src.utils.trending_strategy import TrendingType, TrendingVersion
 from flask.globals import request
@@ -24,10 +24,10 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
-from src.queries.get_trending import get_trending
+from src.queries.get_trending import trending, get_trending
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_random_tracks import get_random_tracks, DEFAULT_RANDOM_LIMIT
-from src.queries.get_underground_trending import get_underground_trending
+from src.queries.get_underground_trending import underground_trending
 
 logger = logging.getLogger(__name__)
 
@@ -250,38 +250,19 @@ class Trending(Resource):
         """Gets the top 100 trending (most popular) tracks on Audius"""
         args = trending_parser.parse_args()
         strategy = trending_selector.get_strategy(TrendingType.TRACKS)
-        trending = get_trending(args, strategy)
-        return success_response(trending)
+        trending_tracks = get_trending(args, strategy)
+        return success_response(trending_tracks)
 
 
 @full_ns.route("/trending")
 class FullTrending(Resource):
-    def get_cache_key(self):
-        """Construct a cache key from genre + user + time"""
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        request_items.pop('offset', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         args = full_trending_parser.parse_args()
-        offset = format_offset(args)
-        limit = format_limit(args, TRENDING_LIMIT)
-        key = self.get_cache_key()
-
         strategy = trending_selector.get_strategy(TrendingType.TRACKS)
-
-        # Attempt to use the cached tracks list
-        if args['user_id'] is not None:
-            full_trending = get_trending(args, strategy)
-        else:
-            full_trending = use_redis_cache(
-                key, TRENDING_TTL_SEC, lambda: get_trending(args, strategy))
-        trending = full_trending[offset: limit + offset]
-        return success_response(trending)
+        trending_tracks = trending(request, args, strategy)
+        return success_response(trending_tracks)
 
 underground_trending_parser = reqparse.RequestParser()
 underground_trending_parser.add_argument('limit', required=False)
@@ -290,53 +271,16 @@ underground_trending_parser.add_argument('user_id', required=False)
 
 @full_ns.route("/trending/underground")
 class FullUndergroundTrending(Resource):
-    def get_cache_key(self):
-        """Construct a cache key from user"""
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        request_items.pop('offset', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         args = underground_trending_parser.parse_args()
-        offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
-        current_user_id = args.get("user_id")
-        args = {
-            'limit': limit,
-            'offset': offset
-        }
-
         strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS)
-
-        # If user ID, let get_underground_trending
-        # handle caching + limit + offset
-        if current_user_id:
-            decoded = decode_string_id(current_user_id)
-            args["current_user_id"] = decoded
-            trending = get_underground_trending(args, strategy)
-        else:
-            # If no user ID, fetch all cached tracks
-            # and perform pagination here, passing
-            # no args so we get the full list of tracks.
-            key = self.get_cache_key()
-            trending = use_redis_cache(
-                key, TRENDING_TTL_SEC, lambda: get_underground_trending({}, strategy))
-            trending = trending[offset: limit + offset]
-        return success_response(trending)
+        trending_tracks = underground_trending(request, args, strategy)
+        return success_response(trending_tracks)
 
 @full_ns.route("/trending/underground/<string:version>")
 class FullUndergroundTrendingAlternative(Resource):
-    def get_cache_key(self):
-        """Construct a cache key from user"""
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        request_items.pop('offset', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -344,43 +288,13 @@ class FullUndergroundTrendingAlternative(Resource):
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
-        strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
-
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS, version_list[0])
         args = underground_trending_parser.parse_args()
-        offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
-        current_user_id = args.get("user_id")
-        args = {
-            'limit': limit,
-            'offset': offset
-        }
-
-        # If user ID, let get_underground_trending
-        # handle caching + limit + offset
-        if current_user_id:
-            decoded = decode_string_id(current_user_id)
-            args["current_user_id"] = decoded
-            trending = get_underground_trending(args, strategy)
-        else:
-            # If no user ID, fetch all cached tracks
-            # and perform pagination here, passing
-            # no args so we get the full list of tracks.
-            key = self.get_cache_key()
-            trending = use_redis_cache(
-                key, TRENDING_TTL_SEC, lambda: get_underground_trending({}, strategy))
-            trending = trending[offset: limit + offset]
-        return success_response(trending)
+        strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
+        trending_tracks = underground_trending(request, args, strategy)
+        return success_response(trending_tracks)
 
 @full_ns.route("/trending/<string:version>")
 class FullTrendingAlternative(Resource):
-    def get_cache_key(self):
-        """Construct a cache key from genre + user + time"""
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        request_items.pop('offset', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -388,21 +302,10 @@ class FullTrendingAlternative(Resource):
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS, version_list[0])
-
         args = full_trending_parser.parse_args()
-        offset = format_offset(args)
-        limit = format_limit(args, TRENDING_LIMIT)
-        key = self.get_cache_key()
-
-        # Attempt to use the cached tracks list
-        if args['user_id'] is not None:
-            full_trending = get_trending(args, strategy)
-        else:
-            full_trending = use_redis_cache(
-                key, TRENDING_TTL_SEC, lambda: get_trending(args, strategy))
-        trending = full_trending[offset: limit + offset]
-        return success_response(trending)
+        strategy = trending_selector.get_strategy(TrendingType.TRACKS, version_list[0])
+        trending_tracks = trending(request, args, strategy)
+        return success_response(trending_tracks)
 
 # Get random tracks for a genre and exclude tracks in the exclusion list
 random_track_parser = reqparse.RequestParser()

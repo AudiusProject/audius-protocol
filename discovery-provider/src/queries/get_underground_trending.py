@@ -4,7 +4,7 @@ import redis
 from sqlalchemy import func
 
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_cache import use_redis_cache
+from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 from src.models import Track, RepostType, Follow, SaveType, User, \
     AggregatePlays, AggregateUser
 from src.queries.query_helpers import \
@@ -12,8 +12,9 @@ from src.queries.query_helpers import \
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import populate_track_metadata, \
     get_users_ids, get_users_by_id
-from src.api.v1.helpers import extend_track
-from src.queries.get_trending_tracks import make_trending_cache_key
+from src.api.v1.helpers import extend_track, format_offset, format_limit, \
+    to_dict, decode_string_id
+from src.queries.get_trending_tracks import make_trending_cache_key, TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.utils.redis_cache import get_pickled_key
 from src.utils.config import shared_config
 from src.utils.trending_strategy import TrendingVersion
@@ -223,3 +224,27 @@ def get_underground_trending(args, strategy):
                 track['user'] = user
         sorted_tracks = list(map(extend_track, sorted_tracks))
         return sorted_tracks
+
+def underground_trending(request, args, strategy):
+    offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
+    current_user_id = args.get("user_id")
+    args = {
+        'limit': limit,
+        'offset': offset
+    }
+
+    # If user ID, let get_underground_trending
+    # handle caching + limit + offset
+    if current_user_id:
+        decoded = decode_string_id(current_user_id)
+        args["current_user_id"] = decoded
+        trending = get_underground_trending(args, strategy)
+    else:
+        # If no user ID, fetch all cached tracks
+        # and perform pagination here, passing
+        # no args so we get the full list of tracks.
+        key = get_trending_cache_key(to_dict(request.args), request.path)
+        trending = use_redis_cache(
+            key, TRENDING_TTL_SEC, lambda: get_underground_trending({}, strategy))
+        trending = trending[offset: limit + offset]
+    return trending

@@ -153,8 +153,7 @@ def remove_cached_playlist_ids(redis, playlist_ids):
         logger.error(
             "Unable to remove cached playlists: %s", e, exc_info=True)
 
-def get_playlists_cache_key(request_items, request_path):
+def get_trending_cache_key(request_items, request_path):
     request_items.pop('limit', None)
     request_items.pop('offset', None)
-    key = extract_key(request_path, request_items.items())
-    return key
+    return extract_key(request_path, request_items.items())
