@@ -23,6 +23,10 @@
 /build-production
 /build-mobile-production
 /storybook-static
+/build-ipfs-staging
+/build-ipfs-staging.zip
+/build-ipfs-production
+/build-ipfs-production.zip
 
 # distribution
 /dist
