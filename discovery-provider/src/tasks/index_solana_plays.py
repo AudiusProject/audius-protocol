@@ -116,7 +116,8 @@ def get_latest_slot(db):
         latest_slot = 0
 
     logger.info(
-        f"index_solana_plays.py | returning {latest_slot} for highest slot")
+        f"index_solana_plays.py | returning {latest_slot} for highest slot"
+    )
     return latest_slot
 
 # Query a tx signature and confirm its existence
@@ -247,11 +248,11 @@ def process_solana_plays(solana_client):
             f"index_solana_plays.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
-    logger.info(
-        f"index_solana_plays.py | processed {num_txs_processed} txs"
-    )
     # Update plays iff some batch is found
     if num_txs_processed > 0:
+        logger.info(
+            f"index_solana_plays.py | processed {num_txs_processed} txs"
+        )
         with db.scoped_session() as session:
             logger.info(
                 f"index_solana_plays.py | Refreshing aggregate_plays materialized view"
