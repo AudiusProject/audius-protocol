@@ -37,9 +37,9 @@ const endpoint = config[env].gaEndpoint
 const CONTENT_NODE_PEER_TIMEOUT = 1000 /* ms */ * 30 /* sec */
 
 const updateContentNodePeers = async () => {
-  const contentNodesRes = await fetch(`${endpoint}/protocol_dashboard/content_nodes`)
+  const contentNodesRes = await fetch(`${endpoint}/ipfs/content_nodes`)
   const contentNodes = await contentNodesRes.json()
-  const ipfsRes = await fetch(`${endpoint}/protocol_dashboard/ipfs`)
+  const ipfsRes = await fetch(`${endpoint}/ipfs/ipfs`)
   const ipfsId = await ipfsRes.json()
   const addr = ipfsId.addresses[0]
   const connections = {}
@@ -74,7 +74,7 @@ const updateContentNodePeers = async () => {
 }
 
 const updateGABuild = async () => {
-  const res = await fetch(`${endpoint}/protocol_dashboard/update_build`)
+  const res = await fetch(`${endpoint}/ipfs/update_build?site=protocolDashboard`)
   const response = await res.json()
   if (!response.success) {
     console.error('unable to update GA build')
@@ -84,7 +84,7 @@ const updateGABuild = async () => {
 }
 
 const pinGABuild = async () => {
-  const res = await fetch(`${endpoint}/protocol_dashboard/pin_build`)
+  const res = await fetch(`${endpoint}/ipfs/pin_build?site=protocolDashboard`)
   if (!res.ok) {
     console.error('unable to pin GA build')
     process.exit(1)
