@@ -404,7 +404,9 @@ class AudiusBackend {
         // Electron cannot use captcha until it serves its assets from
         // a "domain" (e.g. localhost) rather than the file system itself.
         // i.e. there is no way to instruct captcha that the domain is "file://"
-        captchaConfig: isElectron ? undefined : { siteKey: RECAPTCHA_SITE_KEY },
+        captchaConfig: isElectron()
+          ? undefined
+          : { siteKey: RECAPTCHA_SITE_KEY },
         isServer: false,
         enableUserReplicaSetManagerContract: getFeatureEnabled(
           FeatureFlags.ENABLE_USER_REPLICA_SET_MANAGER
