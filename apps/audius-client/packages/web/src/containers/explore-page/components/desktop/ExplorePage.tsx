@@ -158,6 +158,7 @@ const ExplorePage = ({
               backgroundIcon={<Icon />}
               onClick={() => onClickCard(i.link)}
               isIncentivized={!!i.incentivized}
+              sensitivity={i.cardSensitivity}
             >
               <TextInterior title={title} subtitle={subtitle} />
             </PerspectiveCard>

@@ -24,8 +24,7 @@ export const TERMS_OF_SERVICE = '/legal/terms-of-use'
 // Static routes.
 export const FEED_PAGE = '/feed'
 export const TRENDING_PAGE = '/trending'
-export const TRENDING_PLAYLISTS_PAGE = '/trending/playlists'
-export const TRENDING_UNDERGROUND_PAGE = '/trending/underground'
+export const TRENDING_PLAYLISTS_PAGE_LEGACY = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
 export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
@@ -36,6 +35,8 @@ export const EXPLORE_TOP_ALBUMS_PAGE = '/explore/top-albums'
 export const EXPLORE_MOST_LOVED_PAGE = '/explore/most-loved'
 export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
 export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
+export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
+export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
 
 export const SAVED_PAGE = '/favorites'
 export const FAVORITES_PAGE = '/favorites'
