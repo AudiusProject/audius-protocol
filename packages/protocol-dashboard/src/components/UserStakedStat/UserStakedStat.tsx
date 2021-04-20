@@ -1,5 +1,6 @@
 import React from 'react'
 import BN from 'bn.js'
+import clsx from 'clsx'
 
 import Paper from 'components/Paper'
 import styles from './UserStakedStat.module.css'
@@ -14,6 +15,7 @@ const messages = {
 }
 
 type OwnProps = {
+  className?: string
   wallet: Address
   totalDelegates: BN
   totalDelegatesStatus: Status
@@ -26,7 +28,7 @@ const UserStakedStat: React.FC<UserStakedStatProps> = (
   props: UserStakedStatProps
 ) => {
   return (
-    <Paper className={styles.stakedContainer}>
+    <Paper className={clsx(styles.stakedContainer, props.className)}>
       {props.isLoading ? (
         <Loading />
       ) : (

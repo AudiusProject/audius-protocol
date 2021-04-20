@@ -21,6 +21,7 @@ const messages = {
 }
 
 type OwnProps = {
+  className?: string
   staked: BN
   numDiscoveryNodes: number
   totalDelegates: BN
@@ -35,6 +36,7 @@ type StakingStatInfoProps = OwnProps
  * Shows stats about staking. Lives on the SP page
  */
 const StakingStatInfo: React.FC<StakingStatInfoProps> = ({
+  className,
   totalDelegates,
   totalDelegatesStatus,
   staked,
@@ -47,6 +49,7 @@ const StakingStatInfo: React.FC<StakingStatInfoProps> = ({
   return (
     <StatsChip
       className={clsx({
+        [className!]: !!className,
         [styles.delegatesContainer]: hasDelegates
       })}
       tooltipText={formatWei(staked)}

@@ -27,3 +27,8 @@
 .leftSpacing {
   margin-left: 0;
 }
+
+.stakingStat,
+.delegationState {
+  margin-top: 16px;
+}

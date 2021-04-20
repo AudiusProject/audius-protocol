@@ -7,6 +7,15 @@
 }
 
 .titleContainer {
-  display: flex;
-  flex-direction: column;
+  display: inline;
+}
+
+.titleSpacingLeft {
+  display: inline;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.userWalletName {
+  display: inline !important;
 }

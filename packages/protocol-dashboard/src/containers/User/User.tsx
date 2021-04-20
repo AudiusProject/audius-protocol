@@ -126,6 +126,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
         {showServiceProviderSkeletonTiles ? (
           <>
             <StakingStat
+              className={styles.stakingStat}
               staked={activeStake}
               totalDelegates={totalDelegates}
               totalDelegatesStatus={totalDelegatesStatus}
@@ -134,6 +135,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
               isLoading={status === Status.Loading}
             />
             <DelegationStatsChip
+              className={styles.delegationState}
               deployerCut={
                 (user as Operator | undefined)?.serviceProvider.deployerCut ?? 0
               }
@@ -146,6 +148,7 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
           </>
         ) : (
           <UserStakedStat
+            className={styles.stakingStat}
             wallet={user?.wallet}
             isLoading={status !== Status.Success}
             totalDelegates={activeStake}

@@ -6,6 +6,7 @@ import { formatWei } from 'utils/format'
 import { TICKER } from 'utils/consts'
 
 type DelegationStatsChipProps = {
+  className?: string
   deployerCut: number
   delegated: BN
   delegators: number
@@ -22,6 +23,7 @@ const messages = {
  * Shows stats about delegation. Lives on the SP page
  */
 const DelegationStatsChip = ({
+  className,
   deployerCut,
   delegated,
   delegators,
@@ -29,6 +31,7 @@ const DelegationStatsChip = ({
 }: DelegationStatsChipProps) => {
   return (
     <StatsChip
+      className={className}
       tooltipText={formatWei(delegated)}
       amount={delegated}
       primaryStatName={messages.delegated}
