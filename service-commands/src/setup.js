@@ -91,7 +91,8 @@ const execShellCommands = async (commands, service, { verbose }) => {
       await execShellCommand(command, service, { verbose })
     }
   } catch (e) {
-    throw new Error(e.message)
+    console.error(e)
+    process.exit(1);
   }
 }
 
