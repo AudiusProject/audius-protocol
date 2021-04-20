@@ -39,38 +39,62 @@ def parse_instruction_data(data):
 
     return user_id, track_id, source, timestamp
 
+# Retry 5x until a tx 'result' is found with valid contents
+# TODO: Clarify this unavailabilty
+def get_sol_tx_info(solana_client, tx_sig):
+    retries = 5
+    while retries > 0:
+        try:
+            tx_info = solana_client.get_confirmed_transaction(tx_sig)
+            if tx_info["result"] is not None:
+                return tx_info
+        except Exception as e:
+            logger.error(f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
+        retries -= 1
+        logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
 
 def parse_sol_play_transaction(session, solana_client, tx_sig):
-    tx_info = solana_client.get_confirmed_transaction(tx_sig)
-    if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
-            "accountKeys"]:
-        audius_program_index = tx_info["result"]["transaction"]["message"][
-            "accountKeys"].index(TRACK_LISTEN_PROGRAM)
-        for instruction in tx_info["result"]["transaction"]["message"][
-                "instructions"]:
-            if instruction["programIdIndex"] == audius_program_index:
-                tx_slot = tx_info['result']['slot']
-                user_id, track_id, source, timestamp = parse_instruction_data(
-                    instruction["data"])
-                created_at = datetime.datetime.utcfromtimestamp(timestamp)
+    try:
+        logger.info(f"index_solana_plays.py | Parsing {tx_sig}")
+        tx_info = get_sol_tx_info(solana_client, tx_sig)
+        logger.info(
+            f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
+        )
+        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
+                "accountKeys"]:
+            audius_program_index = tx_info["result"]["transaction"]["message"][
+                "accountKeys"].index(TRACK_LISTEN_PROGRAM)
+            for instruction in tx_info["result"]["transaction"]["message"][
+                    "instructions"]:
+                if instruction["programIdIndex"] == audius_program_index:
+                    tx_slot = tx_info['result']['slot']
+                    user_id, track_id, source, timestamp = parse_instruction_data(
+                        instruction["data"])
+                    created_at = datetime.datetime.utcfromtimestamp(timestamp)
 
-                logger.info(
-                    f"index_solana_plays.py | Got transaction: {tx_info}")
-                logger.info("index_solana_plays.py | "
-                            f"user_id: {user_id} "
-                            f"track_id: {track_id} "
-                            f"source: {source} "
-                            f"created_at: {created_at} "
-                            f"slot: {tx_slot} "
-                            f"sig: {tx_sig}")
+                    logger.info("index_solana_plays.py | "
+                                f"user_id: {user_id} "
+                                f"track_id: {track_id} "
+                                f"source: {source} "
+                                f"created_at: {created_at} "
+                                f"slot: {tx_slot} "
+                                f"sig: {tx_sig}")
 
-                session.add(
-                    Play(user_id=user_id,
-                         play_item_id=track_id,
-                         created_at=created_at,
-                         source=source,
-                         slot=tx_slot,
-                         signature=tx_sig))
+                    session.add(
+                        Play(
+                            user_id=user_id,
+                            play_item_id=track_id,
+                            created_at=created_at,
+                            source=source,
+                            slot=tx_slot,
+                            signature=tx_sig
+                        )
+                    )
+        else:
+            logger.info(f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM")
+    except Exception as e:
+        logger.error(f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True)
+
 
 # Query the highest traversed solana slot
 def get_latest_slot(db):
@@ -135,7 +159,6 @@ def process_solana_plays(solana_client):
             TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
         )
         transactions_array = transactions_history['result']
-        # logger.info(f"index_solana_plays.py | {transactions_array}")
 
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
@@ -216,7 +239,7 @@ def process_solana_plays(solana_client):
                         future.result()
                         num_txs_processed += 1
                     except Exception as exc:
-                        logger.error(exc)
+                        logger.error(f"index_solana_plays.py | {exc}")
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
@@ -260,8 +283,10 @@ def index_solana_plays(self):
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
-        logger.error("index_solana_plays.py | Fatal error in main loop",
-                     exc_info=True)
+        logger.error(
+            "index_solana_plays.py | Fatal error in main loop",
+            exc_info=True
+        )
         raise e
     finally:
         if have_lock:
