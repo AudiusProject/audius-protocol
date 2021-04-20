@@ -9,7 +9,6 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 
-# TODO: These are configs
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["program_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 SLEEP_TIME = 1
@@ -40,47 +39,74 @@ def parse_instruction_data(data):
 
     return user_id, track_id, source, timestamp
 
+# Retry 5x until a tx 'result' is found with valid contents
+# TODO: Clarify this unavailabilty
+def get_sol_tx_info(solana_client, tx_sig):
+    retries = 5
+    while retries > 0:
+        try:
+            tx_info = solana_client.get_confirmed_transaction(tx_sig)
+            if tx_info["result"] is not None:
+                return tx_info
+        except Exception as e:
+            logger.error(f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
+        retries -= 1
+        logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
 
 def parse_sol_play_transaction(session, solana_client, tx_sig):
-    # TODO: Parallelize this call to get_confirmed_transaction similar to blocks
-    tx_info = solana_client.get_confirmed_transaction(tx_sig)
-    if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
-            "accountKeys"]:
-        audius_program_index = tx_info["result"]["transaction"]["message"][
-            "accountKeys"].index(TRACK_LISTEN_PROGRAM)
-        for instruction in tx_info["result"]["transaction"]["message"][
-                "instructions"]:
-            if instruction["programIdIndex"] == audius_program_index:
-                tx_slot = tx_info['result']['slot']
-                user_id, track_id, source, timestamp = parse_instruction_data(
-                    instruction["data"])
-                created_at = datetime.datetime.utcfromtimestamp(timestamp)
+    try:
+        logger.info(f"index_solana_plays.py | Parsing {tx_sig}")
+        tx_info = get_sol_tx_info(solana_client, tx_sig)
+        logger.info(
+            f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
+        )
+        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
+                "accountKeys"]:
+            audius_program_index = tx_info["result"]["transaction"]["message"][
+                "accountKeys"].index(TRACK_LISTEN_PROGRAM)
+            for instruction in tx_info["result"]["transaction"]["message"][
+                    "instructions"]:
+                if instruction["programIdIndex"] == audius_program_index:
+                    tx_slot = tx_info['result']['slot']
+                    user_id, track_id, source, timestamp = parse_instruction_data(
+                        instruction["data"])
+                    created_at = datetime.datetime.utcfromtimestamp(timestamp)
 
-                logger.info(
-                    f"index_solana_plays.py | Got transaction: {tx_info}")
-                logger.info("index_solana_plays.py | "
-                            f"user_id: {user_id} "
-                            f"track_id: {track_id} "
-                            f"source: {source} "
-                            f"created_at: {created_at} "
-                            f"slot: {tx_slot} "
-                            f"sig: {tx_sig}")
+                    logger.info("index_solana_plays.py | "
+                                f"user_id: {user_id} "
+                                f"track_id: {track_id} "
+                                f"source: {source} "
+                                f"created_at: {created_at} "
+                                f"slot: {tx_slot} "
+                                f"sig: {tx_sig}")
 
-                session.add(
-                    Play(user_id=user_id,
-                         play_item_id=track_id,
-                         created_at=created_at,
-                         source=source,
-                         slot=tx_slot,
-                         signature=tx_sig))
+                    session.add(
+                        Play(
+                            user_id=user_id,
+                            play_item_id=track_id,
+                            created_at=created_at,
+                            source=source,
+                            slot=tx_slot,
+                            signature=tx_sig
+                        )
+                    )
+        else:
+            logger.info(f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM")
+    except Exception as e:
+        logger.error(f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True)
 
 
 # Query the highest traversed solana slot
 def get_latest_slot(db):
     latest_slot = None
     with db.scoped_session() as session:
-        highest_slot_query = (session.query(Play).filter(
-            Play.slot is not None).order_by(desc(Play.slot))).first()
+        highest_slot_query = (
+            session.query(Play)
+            .filter(Play.slot != None)
+            .filter(Play.signature != None)
+            .order_by(desc(Play.slot))
+        ).first()
+        logger.error(f"index_solana_plays.py | get_latest_slot: {highest_slot_query}")
         # Can be None prior to first write operations
         if highest_slot_query is not None:
             latest_slot = highest_slot_query.slot
@@ -90,9 +116,9 @@ def get_latest_slot(db):
         latest_slot = 0
 
     logger.info(
-        f"index_solana_plays.py | returning {latest_slot} for highest slot")
+        f"index_solana_plays.py | returning {latest_slot} for highest slot"
+    )
     return latest_slot
-
 
 # Query a tx signature and confirm its existence
 def get_tx_in_db(session, tx_sig):
@@ -103,7 +129,6 @@ def get_tx_in_db(session, tx_sig):
     exists = tx_sig_db_count > 0
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
-
 
 def process_solana_plays(solana_client):
     if not TRACK_LISTEN_PROGRAM:
@@ -132,9 +157,9 @@ def process_solana_plays(solana_client):
     while not intersection_found:
         # TODO: Is there any optimization around this limit value?
         transactions_history = solana_client.get_confirmed_signature_for_address2(
-            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100)
+            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
+        )
         transactions_array = transactions_history['result']
-        # logger.info(f"index_solana_plays.py | {transactions_array}")
 
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
@@ -180,21 +205,34 @@ def process_solana_plays(solana_client):
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
                 # Append batch of processed signatures
-                transaction_signatures.append(transaction_signature_batch)
+                if transaction_signature_batch:
+                    transaction_signatures.append(transaction_signature_batch)
+
+                # Ensure processing does not grow unbounded
+                # TODO: Optimize values
+                if len(transaction_signatures) > 5:
+                    logger.info(f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries")
+                    transaction_signatures = transaction_signatures[-2:]
+                    logger.info(f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries")
+
                 # Reset batch state
                 transaction_signature_batch = []
         logger.info(
             f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}"
         )
 
-    logger.info(
-        f"index_solana_plays.2py | {transaction_signatures}, {len(transaction_signatures)} entries"
-    )
+    logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
+
+    # TEST ONLY - Repopulate to 4587 records
+    if len(transaction_signatures) > 5:
+        raise Exception(f"TOO MANY SIGS {len(transaction_signatures)}")
 
     transaction_signatures.reverse()
 
     # TODO: DO NOT LET transaction_signatures grow unbounded, cut off x last entries
     logger.info(f"index_solana_plays.py | {transaction_signatures}")
+
+    num_txs_processed = 0
 
     for tx_sig_batch in transaction_signatures:
         logger.error(f"index_solana_plays.py | processing {tx_sig_batch}")
@@ -212,15 +250,29 @@ def process_solana_plays(solana_client):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
+                        num_txs_processed += 1
                     except Exception as exc:
-                        logger.error(exc)
+                        logger.error(f"index_solana_plays.py | {exc}")
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(
-            f"index_solana_plays.py | processed {len(tx_sig_batch)} txs in {batch_duration}s"
+            f"index_solana_plays.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
+    # Update plays iff some batch is found
+    if num_txs_processed > 0:
+        logger.info(
+            f"index_solana_plays.py | processed {num_txs_processed} txs"
+        )
+        with db.scoped_session() as session:
+            logger.info(
+                f"index_solana_plays.py | Refreshing aggregate_plays materialized view"
+            )
+            session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
+            logger.info(
+                f"index_solana_plays.py | Finished refreshing aggregate_plays materialized view"
+            )
 
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
@@ -234,15 +286,20 @@ def index_solana_plays(self):
     have_lock = False
     # Define redis lock object
     update_lock = redis.lock("solana_plays_lock", timeout=7200)
+
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_solana_plays.py | Acquired lock")
             process_solana_plays(solana_client)
+        else:
+            logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
-        logger.error("index_solana_plays.py | Fatal error in main loop",
-                     exc_info=True)
+        logger.error(
+            "index_solana_plays.py | Fatal error in main loop",
+            exc_info=True
+        )
         raise e
     finally:
         if have_lock:
