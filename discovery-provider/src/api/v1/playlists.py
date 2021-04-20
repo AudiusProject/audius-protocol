@@ -6,9 +6,8 @@ from src.queries.get_playlists import get_playlists
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_playlist, extend_track, make_full_response,\
-    make_response, success_response, search_parser, abort_bad_request_param, decode_string_id, \
-    extend_user, get_default_max, get_current_user_id, to_dict, format_offset, format_limit, \
-    abort_bad_path_param
+    make_response, success_response, search_parser, abort_bad_request_param, extend_user, get_default_max, \
+    get_current_user_id, abort_bad_path_param
 from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
@@ -17,7 +16,8 @@ from src.utils.trending_selector import TrendingSelector
 from src.utils.trending_strategy import TrendingType, TrendingVersion
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
-from src.queries.get_trending_playlists import get_trending_playlists, TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_trending_playlists import get_trending_playlists, TRENDING_LIMIT, TRENDING_TTL_SEC, \
+    trending_playlists
 from flask.globals import request
 from src.utils.db_session import get_db_read_replica
 
@@ -307,7 +307,9 @@ class TrendingPlaylists(Resource):
 
         return success_response(playlists)
 
-full_trending_playlists_response = make_full_response("full_trending_playlists_response", full_ns, fields.List(fields.Nested(full_playlist_model)))
+full_trending_playlists_response = make_full_response(
+    "full_trending_playlists_response", full_ns, fields.List(fields.Nested(full_playlist_model))
+)
 
 full_trending_parser = trending_parser.copy()
 full_trending_parser.add_argument('time', required=False)
@@ -333,59 +335,20 @@ class FullTrendingPlaylists(Resource):
         }
     )
 
-    def get_cache_key(self):
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        request_items.pop('offset', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_trending_playlists_response)
     def get(self):
         """Get trending playlists"""
-        # Parse args
         args = full_trending_parser.parse_args()
-        offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
-        current_user_id, time = args.get("user_id"), args.get("time", "week")
-        time = "week" if time not in ["week", "month", "year"] else time
-
         strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS)
-
-        # If we have a user_id, we call into `get_trending_playlist`
-        # which fetches the cached unpopulated tracks and then
-        # populates metadata. Otherwise, just
-        # retrieve the last cached value.
-        #
-        # If current_user_id,
-        # apply limit + offset inside the cached calculation.
-        # Otherwise, apply it here.
-        if current_user_id:
-            args = {
-                'time': time,
-                'with_tracks': True,
-                'limit': limit,
-                'offset': offset
-            }
-            decoded = decode_string_id(current_user_id)
-            args["current_user_id"] = decoded
-            playlists = get_trending_playlists(args, strategy)
-        else:
-            args = {
-                'time': time,
-                'with_tracks': True,
-            }
-            key = self.get_cache_key()
-            playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args, strategy))
-            playlists = playlists[offset: limit + offset]
-
+        playlists = trending_playlists(request, args, strategy)
         return success_response(playlists)
 
 @full_ns.route("/trending/<string:version")
 class FullTrendingPlaylistsAlternative(Resource):
     @full_ns.expect(full_trending_parser)
     @full_ns.doc(
-        id="""Returns trending playlists for a time period""",
+        id="""Returns alternative trending playlists for a time period""",
         params={
             'user_id': 'A User ID',
             'limit': 'Limit',
@@ -399,54 +362,15 @@ class FullTrendingPlaylistsAlternative(Resource):
         }
     )
 
-    def get_cache_key(self):
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        request_items.pop('offset', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_trending_playlists_response)
     def get(self, version):
-        """Get trending playlists"""
+        """Get alternative trending playlists"""
         version_list = list(filter(lambda v: v.name == version, TrendingVersion))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
-        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, version_list[0])
-
-        # Parse args
         args = full_trending_parser.parse_args()
-        offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
-        current_user_id, time = args.get("user_id"), args.get("time", "week")
-        time = "week" if time not in ["week", "month", "year"] else time
-
-        # If we have a user_id, we call into `get_trending_playlist`
-        # which fetches the cached unpopulated tracks and then
-        # populates metadata. Otherwise, just
-        # retrieve the last cached value.
-        #
-        # If current_user_id,
-        # apply limit + offset inside the cached calculation.
-        # Otherwise, apply it here.
-        if current_user_id:
-            args = {
-                'time': time,
-                'with_tracks': True,
-                'limit': limit,
-                'offset': offset
-            }
-            decoded = decode_string_id(current_user_id)
-            args["current_user_id"] = decoded
-            playlists = get_trending_playlists(args, strategy)
-        else:
-            args = {
-                'time': time,
-                'with_tracks': True,
-            }
-            key = self.get_cache_key()
-            playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args, strategy))
-            playlists = playlists[offset: limit + offset]
-
+        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, version_list[0])
+        playlists = trending_playlists(request, args, strategy)
         return success_response(playlists)

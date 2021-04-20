@@ -9,10 +9,11 @@ from src.queries.query_helpers import get_repost_counts, get_karma, get_save_cou
     add_users_to_tracks
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
-from src.utils.redis_cache import use_redis_cache
+from src.utils.redis_cache import use_redis_cache, get_playlists_cache_key
 from src.utils.trending_strategy import TrendingVersion
 from src.queries.get_playlist_tracks import get_playlist_tracks
-from src.api.v1.helpers import extend_playlist, extend_track
+from src.api.v1.helpers import extend_playlist, extend_track, format_offset, format_limit, \
+    to_dict, decode_string_id
 
 logger = logging.getLogger(__name__)
 
@@ -258,3 +259,37 @@ def get_trending_playlists(args, strategy):
         # Extend the playlists
         playlists = list(map(extend_playlist, playlists))
         return sorted_playlists
+
+def trending_playlists(request, args, strategy):
+    offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
+    current_user_id, time = args.get("user_id"), args.get("time", "week")
+    time = "week" if time not in ["week", "month", "year"] else time
+
+    # If we have a user_id, we call into `get_trending_playlist`
+    # which fetches the cached unpopulated tracks and then
+    # populates metadata. Otherwise, just
+    # retrieve the last cached value.
+    #
+    # If current_user_id,
+    # apply limit + offset inside the cached calculation.
+    # Otherwise, apply it here.
+    if current_user_id:
+        args = {
+            'time': time,
+            'with_tracks': True,
+            'limit': limit,
+            'offset': offset
+        }
+        decoded = decode_string_id(current_user_id)
+        args["current_user_id"] = decoded
+        playlists = get_trending_playlists(args, strategy)
+    else:
+        args = {
+            'time': time,
+            'with_tracks': True,
+        }
+        key = get_playlists_cache_key(to_dict(request.args), request.path)
+        playlists = use_redis_cache(key, TRENDING_TTL_SEC, lambda: get_trending_playlists(args, strategy))
+        playlists = playlists[offset: limit + offset]
+
+    return playlists
