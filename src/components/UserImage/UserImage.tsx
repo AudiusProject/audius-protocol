@@ -7,6 +7,7 @@ import styles from './UserImage.module.css'
 
 type UserImageProps = {
   className?: string
+  imgClassName?: string
   wallet: Address
   alt: string
   hasLoaded?: () => void
@@ -22,6 +23,7 @@ const preload = async (image: string, cb: () => void) => {
 }
 
 const UserImage = ({
+  imgClassName,
   className,
   wallet,
   alt,
@@ -44,7 +46,7 @@ const UserImage = ({
       })}
     >
       <img
-        className={clsx(className, {
+        className={clsx(className, imgClassName, {
           [styles.show]: !!image && preloaded
         })}
         src={image || undefined}
