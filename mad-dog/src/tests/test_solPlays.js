@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const MaxPollDurationMs = 60000
+const MaxPollDurationMs = 120000
 
 async function delay (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
