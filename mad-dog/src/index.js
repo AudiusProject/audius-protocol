@@ -258,12 +258,21 @@ async function main () {
             numUsers: 1
           })
 
+        const solTrackListenCountTest = makeTest(
+          'solanaTrackListenCountsTest',
+          solanaTrackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
+
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
           ursmTest,
-          ursmBlockSaturationTest
+          ursmBlockSaturationTest,
+          solTrackListenCountTest
         ]
 
         await testRunner(tests)
