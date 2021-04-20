@@ -7,8 +7,10 @@ import {
 import { ID } from 'models/common/Identifiers'
 import TimeRange from 'models/TimeRange'
 import Track, { UserTrackMetadata } from 'models/Track'
-import { put, select } from 'redux-saga/effects'
+import { call, put, select } from 'redux-saga/effects'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { waitForRemoteConfig } from 'services/remote-config/Provider'
 import { getTracks } from 'store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { AppState } from 'store/types'
@@ -29,6 +31,9 @@ export function* retrieveTrending({
   limit,
   currentUserId
 }: RetrieveTrendingArgs): Generator<any, Track[], any> {
+  yield call(waitForRemoteConfig)
+  const TF = new Set(getRemoteVar(StringKeys.TF)?.split(',') ?? [])
+
   const cachedTracks: ReturnType<ReturnType<
     typeof getTrendingEntries
   >> = yield select(getTrendingEntries(timeRange))
@@ -47,12 +52,16 @@ export function* retrieveTrending({
     return tracks
   }
 
-  const apiTracks: UserTrackMetadata[] = yield apiClient.getTrending({
+  let apiTracks: UserTrackMetadata[] = yield apiClient.getTrending({
     genre,
     offset,
     limit,
     currentUserId,
     timeRange
+  })
+  apiTracks = apiTracks.filter(t => {
+    const shaId = window.Web3.utils.sha3(t.track_id.toString())
+    return !TF.has(shaId)
   })
 
   const currentGenre = yield select(getTrendingGenre)

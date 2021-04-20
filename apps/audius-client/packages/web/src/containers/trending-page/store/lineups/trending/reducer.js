@@ -9,9 +9,7 @@ import {
 
 const initialState = {
   ...initialLineupState,
-  antiBot: true,
   dedupe: true,
-  containsDeleted: false,
   prefix: PREFIX
 }
 

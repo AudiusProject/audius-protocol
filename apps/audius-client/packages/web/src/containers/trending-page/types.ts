@@ -5,9 +5,7 @@ import User from 'models/User'
 import { Lineup } from 'models/common/Lineup'
 import Track from 'models/Track'
 
-type ExtraTrendingLineupProps = {
-  antiBot: boolean
-}
+type ExtraTrendingLineupProps = {}
 
 export interface TrendingPageContentProps {
   trendingTitle: string
