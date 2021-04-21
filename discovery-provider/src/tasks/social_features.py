@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from src import contract_addresses
+from src.app import contract_addresses
 from src.models import Repost, RepostType, Follow, Playlist
 
 logger = logging.getLogger(__name__)

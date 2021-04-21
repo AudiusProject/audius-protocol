@@ -1,7 +1,7 @@
 # exposes flask create_app() function as gunicorn entrypoint
 import logging
 
-from src import create_app
+from src.app import create_app
 
 logger = logging.getLogger(__name__)
 

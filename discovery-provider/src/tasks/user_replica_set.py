@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
-from src import contract_addresses, eth_abi_values
+from src.app import contract_addresses, eth_abi_values
 from src.models import URSMContentNode
 from src.tasks.users import lookup_user_record, invalidate_old_user
 from src.tasks.index_network_peers import content_node_service_type, sp_factory_registry_key

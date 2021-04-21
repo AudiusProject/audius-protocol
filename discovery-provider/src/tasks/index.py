@@ -1,7 +1,7 @@
 import logging
 import concurrent.futures
 
-from src import contract_addresses
+from src.app import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, \
     Save, URSMContentNode, AssociatedWallet
 from src.tasks.celery_app import celery
