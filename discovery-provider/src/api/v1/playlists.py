@@ -300,8 +300,8 @@ class TrendingPlaylists(Resource):
             "time": time,
             "with_tracks": False
         }
-
-        playlists = get_trending_playlists(args)
+        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS)
+        playlists = get_trending_playlists(args, strategy)
         playlists = playlists[:TRENDING_LIMIT]
         playlists = list(map(extend_playlist, playlists))
 
@@ -344,7 +344,7 @@ class FullTrendingPlaylists(Resource):
         playlists = trending_playlists(request, args, strategy)
         return success_response(playlists)
 
-@full_ns.route("/trending/<string:version")
+@full_ns.route("/trending/<string:version>")
 class FullTrendingPlaylistsAlternative(Resource):
     @full_ns.expect(full_trending_parser)
     @full_ns.doc(
