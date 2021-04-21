@@ -17,18 +17,17 @@ def get_sol_play(sol_tx_signature):
                 Play.signature == sol_tx_signature
             )
         )
-        query_results = base_query.all()
-        sol_play = helpers.query_result_to_list(query_results)
+        query_results = base_query.first()
+        sol_play = helpers.model_to_dictionary(query_results)
 
     return sol_play
 
 # For the n most recently listened to tracks, return the all time listen counts for those tracks
 def get_track_listen_milestones(limit):
     db = get_db_read_replica()
-    logger.error("get_track_listen_milestones")
 
     with db.scoped_session() as session:
-        subquery = (
+        results = (
             session.query(
                 Play.play_item_id.distinct().label('play_item_id'),
                 func.max(Play.created_at).label('max')
@@ -38,10 +37,9 @@ def get_track_listen_milestones(limit):
                 desc("max")
             ).limit(
                 limit
-            ).subquery()
+            ).all()
         )
 
-        results = session.query(subquery.c.play_item_id).all()
         track_ids = [result[0] for result in results]
         track_id_play_counts = get_track_play_counts(session, track_ids)
 
