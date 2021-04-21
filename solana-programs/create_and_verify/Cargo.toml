@@ -1,5 +1,5 @@
 [package]
-name = "solana_program_template"
+name = "track_listen_count"
 version = "0.1.0"
 edition = "2018"
 

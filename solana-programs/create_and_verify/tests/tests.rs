@@ -6,7 +6,7 @@ use rand::{thread_rng, Rng};
 use secp256k1::{PublicKey, SecretKey};
 use sha3::Digest;
 use solana_program::{hash::Hash, pubkey::Pubkey, system_instruction};
-use solana_program_template::*;
+use track_listen_count::*;
 use solana_program_test::*;
 use solana_sdk::{
     secp256k1_instruction,
@@ -18,7 +18,7 @@ use chrono::Utc;
 
 pub fn program_test() -> ProgramTest {
     ProgramTest::new(
-        "solana_program_template",
+        "track_listen_count",
         id(),
         processor!(processor::Processor::process_instruction),
     )
@@ -138,7 +138,7 @@ fn construct_eth_address(
 }
 
 #[tokio::test]
-async fn test_call_example_instruction() {
+async fn test_call_track_listen_instruction() {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
     let priv_key = SecretKey::parse(&key).unwrap();

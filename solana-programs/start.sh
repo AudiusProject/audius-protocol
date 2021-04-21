@@ -34,9 +34,9 @@
 
     cd ../create_and_verify
     cargo build-bpf
-    solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
+    solana-keygen new -s --no-bip39-passphrase -o target/deploy/track_listen_count-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
-    new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
+    new_address=$(solana program deploy target/deploy/track_listen_count.so --output json | jq -r '.programId')
     if [ -z "$new_address" ]; then
         echo "failed to deploy create_and_verify"
         exit 1
