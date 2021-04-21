@@ -17,7 +17,7 @@ from src.trending_strategies.trending_type_and_version import TrendingType, Tren
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_trending_playlists import get_trending_playlists, TRENDING_LIMIT, TRENDING_TTL_SEC, \
-    trending_playlists
+    get_full_trending_playlists
 from flask.globals import request
 from src.utils.db_session import get_db_read_replica
 
@@ -317,38 +317,12 @@ full_trending_parser.add_argument('limit', required=False)
 full_trending_parser.add_argument('offset', required=False)
 full_trending_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/trending")
+@full_ns.route("/trending/", defaults={"version": TrendingVersion.DEFAULT.name})
+@full_ns.route("/trending/<string:version>")
 class FullTrendingPlaylists(Resource):
     @full_ns.expect(full_trending_parser)
     @full_ns.doc(
-        id="""Returns trending playlists for a time period""",
-        params={
-            'user_id': 'A User ID',
-            'limit': 'Limit',
-            'offset': 'Offset',
-            'time': 'week / month / year'
-        },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
-    )
-
-    @record_metrics
-    @full_ns.marshal_with(full_trending_playlists_response)
-    def get(self):
-        """Get trending playlists"""
-        args = full_trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS)
-        playlists = trending_playlists(request, args, strategy)
-        return success_response(playlists)
-
-@full_ns.route("/trending/<string:version>")
-class FullTrendingPlaylistsAlternative(Resource):
-    @full_ns.expect(full_trending_parser)
-    @full_ns.doc(
-        id="""Returns alternative trending playlists for a time period""",
+        id="""Returns trending playlists for a time period based on the given trending version""",
         params={
             'user_id': 'A User ID',
             'limit': 'Limit',
@@ -365,12 +339,12 @@ class FullTrendingPlaylistsAlternative(Resource):
     @record_metrics
     @full_ns.marshal_with(full_trending_playlists_response)
     def get(self, version):
-        """Get alternative trending playlists"""
+        """Get trending playlists"""
         version_list = list(filter(lambda v: v.name == version, TrendingVersion))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
         args = full_trending_parser.parse_args()
         strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version_list[0])
-        playlists = trending_playlists(request, args, strategy)
+        playlists = get_full_trending_playlists(request, args, strategy)
         return success_response(playlists)

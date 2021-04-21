@@ -24,10 +24,10 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
-from src.queries.get_trending import trending, get_trending
+from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_random_tracks import get_random_tracks, DEFAULT_RANDOM_LIMIT
-from src.queries.get_underground_trending import underground_trending
+from src.queries.get_underground_trending import get_underground_trending
 
 logger = logging.getLogger(__name__)
 
@@ -253,48 +253,9 @@ class Trending(Resource):
         trending_tracks = get_trending(args, strategy)
         return success_response(trending_tracks)
 
-
-@full_ns.route("/trending")
-class FullTrending(Resource):
-    @record_metrics
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self):
-        args = full_trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
-        trending_tracks = trending(request, args, strategy)
-        return success_response(trending_tracks)
-
-underground_trending_parser = reqparse.RequestParser()
-underground_trending_parser.add_argument('limit', required=False)
-underground_trending_parser.add_argument('offset', required=False)
-underground_trending_parser.add_argument('user_id', required=False)
-
-@full_ns.route("/trending/underground")
-class FullUndergroundTrending(Resource):
-    @record_metrics
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self):
-        args = underground_trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS)
-        trending_tracks = underground_trending(request, args, strategy)
-        return success_response(trending_tracks)
-
-@full_ns.route("/trending/underground/<string:version>")
-class FullUndergroundTrendingAlternative(Resource):
-    @record_metrics
-    @full_ns.marshal_with(full_tracks_response)
-    def get(self, version):
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
-        if not version_list:
-            abort_bad_path_param('version', full_ns)
-
-        args = underground_trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
-        trending_tracks = underground_trending(request, args, strategy)
-        return success_response(trending_tracks)
-
+@full_ns.route("/trending/", defaults={"version": TrendingVersion.DEFAULT.name})
 @full_ns.route("/trending/<string:version>")
-class FullTrendingAlternative(Resource):
+class FullTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -304,7 +265,27 @@ class FullTrendingAlternative(Resource):
 
         args = full_trending_parser.parse_args()
         strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
-        trending_tracks = trending(request, args, strategy)
+        trending_tracks = get_full_trending(request, args, strategy)
+        return success_response(trending_tracks)
+
+underground_trending_parser = reqparse.RequestParser()
+underground_trending_parser.add_argument('limit', required=False)
+underground_trending_parser.add_argument('offset', required=False)
+underground_trending_parser.add_argument('user_id', required=False)
+
+@full_ns.route("/trending/underground/", defaults={"version": TrendingVersion.DEFAULT.name})
+@full_ns.route("/trending/underground/<string:version>")
+class FullUndergroundTrending(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self, version):
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', full_ns)
+
+        args = underground_trending_parser.parse_args()
+        strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
+        trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
 # Get random tracks for a genre and exclude tracks in the exclusion list

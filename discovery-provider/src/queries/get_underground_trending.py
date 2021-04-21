@@ -187,7 +187,7 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
 
     return wrapped
 
-def get_underground_trending(args, strategy):
+def _get_underground_trending(args, strategy):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         current_user_id = args.get("current_user_id", None)
@@ -225,7 +225,7 @@ def get_underground_trending(args, strategy):
         sorted_tracks = list(map(extend_track, sorted_tracks))
         return sorted_tracks
 
-def underground_trending(request, args, strategy):
+def get_underground_trending(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
     current_user_id = args.get("user_id")
     args = {
@@ -233,18 +233,18 @@ def underground_trending(request, args, strategy):
         'offset': offset
     }
 
-    # If user ID, let get_underground_trending
+    # If user ID, let _get_underground_trending
     # handle caching + limit + offset
     if current_user_id:
         decoded = decode_string_id(current_user_id)
         args["current_user_id"] = decoded
-        trending = get_underground_trending(args, strategy)
+        trending = _get_underground_trending(args, strategy)
     else:
         # If no user ID, fetch all cached tracks
         # and perform pagination here, passing
         # no args so we get the full list of tracks.
         key = get_trending_cache_key(to_dict(request.args), request.path)
         trending = use_redis_cache(
-            key, TRENDING_TTL_SEC, lambda: get_underground_trending({}, strategy))
+            key, TRENDING_TTL_SEC, lambda: _get_underground_trending({}, strategy))
         trending = trending[offset: limit + offset]
     return trending

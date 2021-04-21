@@ -260,7 +260,7 @@ def get_trending_playlists(args, strategy):
         playlists = list(map(extend_playlist, playlists))
         return sorted_playlists
 
-def trending_playlists(request, args, strategy):
+def get_full_trending_playlists(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
     current_user_id, time = args.get("user_id"), args.get("time", "week")
     time = "week" if time not in ["week", "month", "year"] else time

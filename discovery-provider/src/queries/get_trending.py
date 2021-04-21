@@ -28,7 +28,7 @@ def get_trending(args, strategy):
     tracks = get_trending_tracks(args, strategy)
     return list(map(extend_track, tracks))
 
-def trending(request, args, strategy):
+def get_full_trending(request, args, strategy):
     offset = format_offset(args)
     limit = format_limit(args, TRENDING_LIMIT)
     key = get_trending_cache_key(to_dict(request.args), request.path)
