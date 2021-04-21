@@ -1,5 +1,5 @@
 import logging
-from src import contract_addresses
+from src.app import contract_addresses
 from src.models import IPLDBlacklistBlock, BlacklistedIPLD
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update

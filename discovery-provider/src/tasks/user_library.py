@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from src import contract_addresses
+from src.app import contract_addresses
 from src.models import Playlist, SaveType, Save
 
 logger = logging.getLogger(__name__)
