@@ -17,7 +17,7 @@ from src.api.v1.helpers import extend_track, format_offset, format_limit, \
 from src.queries.get_trending_tracks import make_trending_cache_key, TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.utils.redis_cache import get_pickled_key
 from src.utils.config import shared_config
-from src.utils.trending_strategy import TrendingVersion
+from src.trending_strategies.trending_type_and_version import TrendingVersion
 
 redis_url = shared_config["redis"]["url"]
 redis = redis.Redis.from_url(url=redis_url)

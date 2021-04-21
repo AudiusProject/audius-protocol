@@ -10,7 +10,7 @@ from src.queries.query_helpers import get_repost_counts, get_karma, get_save_cou
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
-from src.utils.trending_strategy import TrendingVersion
+from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import extend_playlist, extend_track, format_offset, format_limit, \
     to_dict, decode_string_id

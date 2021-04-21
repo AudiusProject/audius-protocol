@@ -1,12 +1,12 @@
-from src.utils.default_trending_tracks_strategy import DefaultTrendingTracksStrategy
-from src.utils.ePWJD_trending_tracks_strategy import TrendingTracksStrategyePWJD
-from src.utils.default_underground_trending_tracks_strategy import DefaultUndergroundTrendingTracksStrategy
-from src.utils.ePWJD_underground_trending_tracks_strategy import UndergroundTrendingTracksStrategyePWJD
-from src.utils.default_trending_playlists_strategy import DefaultTrendingPlaylistsStrategy
-from src.utils.ePWJD_trending_playlists_strategy import TrendingPlaylistsStrategyePWJD
-from src.utils.trending_strategy import TrendingType, TrendingVersion
+from src.trending_strategies.default_trending_tracks_strategy import DefaultTrendingTracksStrategy
+from src.trending_strategies.ePWJD_trending_tracks_strategy import TrendingTracksStrategyePWJD
+from src.trending_strategies.default_underground_trending_tracks_strategy import DefaultUndergroundTrendingTracksStrategy
+from src.trending_strategies.ePWJD_underground_trending_tracks_strategy import UndergroundTrendingTracksStrategyePWJD
+from src.trending_strategies.default_trending_playlists_strategy import DefaultTrendingPlaylistsStrategy
+from src.trending_strategies.ePWJD_trending_playlists_strategy import TrendingPlaylistsStrategyePWJD
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
-class TrendingSelector:
+class TrendingStrategyFactory:
     def __init__(self):
         self.track_strategies = {
             TrendingVersion.DEFAULT: DefaultTrendingTracksStrategy(),

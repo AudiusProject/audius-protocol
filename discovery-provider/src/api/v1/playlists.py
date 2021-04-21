@@ -12,8 +12,8 @@ from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from src.utils.redis_metrics import record_metrics
-from src.utils.trending_selector import TrendingSelector
-from src.utils.trending_strategy import TrendingType, TrendingVersion
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
 from src.queries.get_trending_playlists import get_trending_playlists, TRENDING_LIMIT, TRENDING_TTL_SEC, \
@@ -23,7 +23,7 @@ from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
-trending_selector = TrendingSelector()
+trending_strategy_factory = TrendingStrategyFactory()
 
 ns = Namespace('playlists', description='Playlist related operations')
 full_ns = Namespace('playlists', description='Full playlist related operations')
@@ -300,7 +300,7 @@ class TrendingPlaylists(Resource):
             "time": time,
             "with_tracks": False
         }
-        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS)
         playlists = get_trending_playlists(args, strategy)
         playlists = playlists[:TRENDING_LIMIT]
         playlists = list(map(extend_playlist, playlists))
@@ -340,7 +340,7 @@ class FullTrendingPlaylists(Resource):
     def get(self):
         """Get trending playlists"""
         args = full_trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS)
         playlists = trending_playlists(request, args, strategy)
         return success_response(playlists)
 
@@ -371,6 +371,6 @@ class FullTrendingPlaylistsAlternative(Resource):
             abort_bad_path_param('version', full_ns)
 
         args = full_trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.PLAYLISTS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version_list[0])
         playlists = trending_playlists(request, args, strategy)
         return success_response(playlists)

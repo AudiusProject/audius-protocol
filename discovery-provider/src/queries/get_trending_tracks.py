@@ -4,7 +4,7 @@ from src.queries.query_helpers import populate_track_metadata, \
     get_users_ids, get_users_by_id
 from src.tasks.generate_trending import generate_trending
 from src.utils.redis_cache import use_redis_cache
-from src.utils.trending_strategy import TrendingVersion
+from src.trending_strategies.trending_type_and_version import TrendingVersion
 
 TRENDING_LIMIT = 100
 TRENDING_TTL_SEC = 30 * 60

@@ -1,6 +1,6 @@
 from datetime import datetime
 from dateutil.parser import parse
-from src.utils.trending_strategy import TrendingType, TrendingVersion
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 N = 1
 a = max

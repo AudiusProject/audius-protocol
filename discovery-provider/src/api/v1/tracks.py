@@ -12,8 +12,8 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
 from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache, get_trending_cache_key
-from src.utils.trending_selector import TrendingSelector
-from src.utils.trending_strategy import TrendingType, TrendingVersion
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
 from src.api.v1.models.users import user_model_full
@@ -31,7 +31,7 @@ from src.queries.get_underground_trending import underground_trending
 
 logger = logging.getLogger(__name__)
 
-trending_selector = TrendingSelector()
+trending_strategy_factory = TrendingStrategyFactory()
 
 # Models & namespaces
 
@@ -249,7 +249,7 @@ class Trending(Resource):
     def get(self):
         """Gets the top 100 trending (most popular) tracks on Audius"""
         args = trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         trending_tracks = get_trending(args, strategy)
         return success_response(trending_tracks)
 
@@ -260,7 +260,7 @@ class FullTrending(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         args = full_trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         trending_tracks = trending(request, args, strategy)
         return success_response(trending_tracks)
 
@@ -275,7 +275,7 @@ class FullUndergroundTrending(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         args = underground_trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS)
         trending_tracks = underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
@@ -289,7 +289,7 @@ class FullUndergroundTrendingAlternative(Resource):
             abort_bad_path_param('version', full_ns)
 
         args = underground_trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
         trending_tracks = underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
@@ -303,7 +303,7 @@ class FullTrendingAlternative(Resource):
             abort_bad_path_param('version', full_ns)
 
         args = full_trending_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
         trending_tracks = trending(request, args, strategy)
         return success_response(trending_tracks)
 
@@ -335,7 +335,7 @@ class RandomTrack(Resource):
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self):
         args = random_track_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
         args['limit'] = max(TRENDING_LIMIT, limit)
         tracks = get_random_tracks(args, strategy)
@@ -357,7 +357,7 @@ class FullRandomTrack(Resource):
     @full_ns.marshal_with(full_tracks_response)
     def get(self):
         args = full_random_track_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
         args['limit'] = max(TRENDING_LIMIT, limit)
         key = self.get_cache_key()
@@ -408,7 +408,7 @@ class FullTrendingIds(Resource):
     def get(self):
         """Gets the track ids of the top trending tracks on Audius"""
         args = trending_ids_route_parser.parse_args()
-        strategy = trending_selector.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         trending_ids = get_trending_ids(args, strategy)
         res = {
             "week": list(map(get_encoded_track_id, trending_ids["week"])),

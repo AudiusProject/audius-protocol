@@ -1,5 +1,5 @@
-from src.utils.default_trending_tracks_strategy import z
-from src.utils.trending_strategy import TrendingType, TrendingVersion
+from src.trending_strategies.default_trending_tracks_strategy import z
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 class DefaultTrendingPlaylistsStrategy:
     def __init__(self):
