@@ -33,7 +33,6 @@
 
     cd ../create_and_verify
     cargo build-bpf
-    # I think the below address is the upgrade authority?
     solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
     new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
