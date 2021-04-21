@@ -41,14 +41,14 @@ async function submitTrackListen(executeOne, trackId, userId, solanaListen = tru
             url: `http://localhost:5000/get_sol_play?tx_sig=${signature}`
         }
         let resp = (await axios(requestConfig)).data
-        while (resp.data.length === 0) {
+        while (!resp.data) {
             await delay(500)
             resp = (await axios(requestConfig)).data
             if (Date.now() - pollStart > MaxPollDurationMs) {
                 throw new Error(`Failed to find ${signature} for userId=${userId}, trackId=${trackId} in ${MaxPollDurationMs}ms`)
             }
         }
-        let discoveryResp = resp.data[0]
+        let discoveryResp = resp.data
         if (discoveryResp.signature === signature &&
             discoveryResp.play_item_id === trackId &&
             discoveryResp.user_id === userId
