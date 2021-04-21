@@ -55,6 +55,7 @@ cat <<EOF
     "trackListenCountAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
     "audiusEthRegistryAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
     "validSigner": "$valid_signer",
+    "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
     "ownerWallet": $(cat owner.json),
     "endpoint": "https://devnet.solana.com",
