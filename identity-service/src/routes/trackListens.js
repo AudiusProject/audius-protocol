@@ -218,9 +218,8 @@ module.exports = function (app) {
         null,
         config.get('solanaSignerPrivateKey'),
         userId.toString(),
-        trackId.toString(),
-        Date.now().toString()
-      )
+        trackId.toString()
+       )
       logger.info(`Track listen tx submitted, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
       return successResponse({
         solTxSignature

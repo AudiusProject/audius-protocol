@@ -1,3 +1,4 @@
+const EthereumWallet = require('ethereumjs-wallet')
 const config = require('./config')
 const solanaWeb3 = require('@solana/web3.js')
 const keccak256 = require('keccak256')
@@ -93,12 +94,14 @@ async function createAndVerifyMessage (
   validSigner,
   privateKey,
   userId,
-  trackId,
-  source
+  trackId
 ) {
   validSigner = validSigner || VALID_SIGNER
 
   let privKey = Buffer.from(privateKey, 'hex')
+  // Recover wallet to pass as source
+  const signerEthWallet = EthereumWallet.fromPrivateKey(privKey)
+  const signerWalletAddress = signerEthWallet.getAddressString()
   let pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
 
   let validSignerPubK = new solanaWeb3.PublicKey(validSigner)
@@ -111,7 +114,7 @@ async function createAndVerifyMessage (
   let trackData = new TrackData({
     user_id: userId,
     track_id: trackId,
-    source: pubKey,
+    source: signerWalletAddress,
     timestamp: Math.round(new Date().getTime() / 1000)
   })
 
