@@ -9,11 +9,13 @@
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
     solana-keygen new -s --no-bip39-passphrase -o owner.json
 
-    solana airdrop 1 feepayer.json
+    while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 1; do
+        solana airdrop 0.5 feepayer.json
+    done
 
-    solana airdrop 1
-    solana airdrop 1
-    solana airdrop 1
+    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
+        solana airdrop 0.5
+    done
 
     cd program
     cargo build-bpf
@@ -26,9 +28,9 @@
     fi
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
-    solana airdrop 1
-    solana airdrop 1
-    solana airdrop 1
+    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
+        solana airdrop 0.5
+    done
 
     cd ../create_and_verify
     cargo build-bpf
@@ -50,8 +52,8 @@ cd ..
 
 cat <<EOF
 {
-    "createAndVerifyAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
-    "programAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
+    "trackListenCountAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
+    "audiusEthRegistryAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
     "validSigner": "$valid_signer",
     "feePayerWallet": $(cat feepayer.json),
     "ownerWallet": $(cat owner.json),
