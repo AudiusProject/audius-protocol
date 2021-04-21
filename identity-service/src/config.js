@@ -504,17 +504,17 @@ const config = convict({
     default: '',
     env: 'solanaEndpoint'
   },
-  solanaCreateAndVerifyAddress: {
-    doc: 'solanaCreateAndVerifyAddress',
+  solanaTrackListenCountAddress: {
+    doc: 'solanaTrackListenCountAddress',
     format: String,
     default: null,
-    env: 'solanaCreateAndVerifyAddress'
+    env: 'solanaTrackListenCountAddress'
   },
-  solanaProgramAddress: {
-    doc: 'solanaProgramAddress',
+  solanaAudiusEthRegistryAddress: {
+    doc: 'solanaAudiusEthRegistryAddress',
     format: String,
     default: null,
-    env: 'solanaProgramAddress'
+    env: 'solanaAudiusEthRegistryAddress'
   },
   solanaValidSigner: {
     doc: 'solanaValidSigner',
@@ -569,8 +569,8 @@ if (fs.existsSync('eth-contract-config.json')) {
 if (fs.existsSync('solana-program-config.json')) {
   let solanaContractConfig = require('../solana-program-config.json')
   config.load({
-    solanaCreateAndVerifyAddress: solanaContractConfig.createAndVerifyAddress,
-    solanaProgramAddress: solanaContractConfig.programAddress,
+    solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
+    solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
     solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
     solanaEndpoint: solanaContractConfig.endpoint,

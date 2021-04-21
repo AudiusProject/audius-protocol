@@ -8,7 +8,7 @@ const solanaConfig = require('../../solana-programs/solana-program-config.json')
 // Updates audius_eth_contracts_registry in discovery provider
 const configureLocalDiscProv = async () => {
   let ethRegistryAddress = ethContractsMigrationOutput.registryAddress
-  let solanaProgramAddress = solanaConfig.createAndVerifyAddress
+  let solanaTrackListenCountAddress = solanaConfig.trackListenCountAddress
   let solanaEndpoint = solanaConfig.endpoint
   let envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
 
@@ -16,13 +16,13 @@ const configureLocalDiscProv = async () => {
     envPath,
     envPath,
     ethRegistryAddress,
-    solanaProgramAddress,
+    solanaTrackListenCountAddress,
     solanaEndpoint
   )
 }
 
 // Write an update to the local discovery provider config .env file
-const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryAddress, solanaProgramAddress, solanaEndpoint) => {
+const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryAddress, solanaTrackListenCountAddress, solanaEndpoint) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
     input: fileStream,
@@ -30,18 +30,18 @@ const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryA
   })
   let output = []
   let ethRegistryAddressFound = false
-  let solanaProgramAddressFound = false
+  let solanaTrackListenCountAddressFound = false
   let solanaEndpointFound = false
   const ethRegistryAddressLine = `audius_eth_contracts_registry=${ethRegistryAddress}`
-  const solanaProgramAddressLine = `audius_solana_program_address=${solanaProgramAddress}`
+  const solanaTrackListenCountAddressLine = `audius_solana_track_listen_count_address=${solanaTrackListenCountAddress}`
   const solanaEndpointLine = `audius_solana_endpoint=${solanaEndpoint}`
   for await (const line of rl) {
     if (line.includes('audius_eth_contracts_registry')) {
       output.push(ethRegistryAddressLine)
       ethRegistryAddressFound = true
-    } else if (line.includes('audius_solana_program_address')) {
-      output.push(solanaProgramAddressLine)
-      solanaProgramAddressFound = true
+    } else if (line.includes('audius_solana_track_listen_count_address')) {
+      output.push(solanaTrackListenCountAddressLine)
+      solanaTrackListenCountAddressFound = true
     } else if (line.includes('audius_solana_endpoint')) {
       output.push(solanaEndpointLine)
       solanaEndpointFound = true
@@ -52,8 +52,8 @@ const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryA
   if (!ethRegistryAddressFound) {
     output.push(ethRegistryAddressLine)
   }
-  if (!solanaProgramAddressFound) {
-    output.push(solanaProgramAddressLine)
+  if (!solanaTrackListenCountAddressFound) {
+    output.push(solanaTrackListenCountAddressLine)
   }
   if (!solanaEndpointFound) {
     output.push(solanaEndpointLine)
