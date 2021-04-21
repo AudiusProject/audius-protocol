@@ -45,3 +45,6 @@ class UndergroundTrendingTracksStrategyePWJD(BaseTrendingStrategy):
         if ul > te:
             rq = xy((1.0 / u),(uk(u,(1 - ul/te))))
         return{'score':vb * rq, **track}
+
+    def get_score_params(self):
+        return 1500, 1500, 50, 21, 7, 10

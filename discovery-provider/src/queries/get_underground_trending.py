@@ -27,14 +27,7 @@ logger = logging.getLogger(__name__)
 UNDERGROUND_TRENDING_CACHE_KEY = "generated-trending-tracks-underground"
 UNDERGROUND_TRENDING_LENGTH = 50
 
-S = 1500
-r = 1500
-q = 50
-o = 21
-f = 7
-qr = 10
-
-def get_scorable_track_data(session, redis_instance, version):
+def get_scorable_track_data(session, redis_instance, strategy):
     """
     Returns a map: {
         "track_id": string
@@ -51,7 +44,8 @@ def get_scorable_track_data(session, redis_instance, version):
     }
     """
 
-    trending_key = make_trending_cache_key("week", None, version)
+    S, r, q, o, f, qr = strategy.get_score_params()
+    trending_key = make_trending_cache_key("week", None, strategy.version)
     track_ids = []
     old_trending = get_pickled_key(redis_instance, trending_key)
     if old_trending:
@@ -175,7 +169,7 @@ def make_underground_trending_cache_key(version=TrendingVersion.DEFAULT):
 def make_get_unpopulated_tracks(session, redis_instance, strategy):
     def wrapped():
         # Score and sort
-        track_scoring_data = get_scorable_track_data(session, redis_instance, strategy.version)
+        track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
         scored_tracks = [strategy.get_track_score('week', track) for track in track_scoring_data]
         sorted_tracks = sorted(scored_tracks, key=lambda k: k['score'], reverse=True)
         sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]

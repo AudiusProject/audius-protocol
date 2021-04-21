@@ -9,3 +9,7 @@ class BaseTrendingStrategy(ABC):
     @abstractmethod
     def get_track_score(self, time, track):
         pass
+
+    @abstractmethod
+    def get_score_params(self):
+        pass

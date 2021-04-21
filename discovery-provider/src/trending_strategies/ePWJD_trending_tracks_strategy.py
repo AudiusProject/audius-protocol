@@ -38,3 +38,6 @@ class TrendingTracksStrategyePWJD(BaseTrendingStrategy):
         if k>L:
             Q=a((1.0/q),(M(q,(1-k/L))))
         return{'score':H*Q,**track}
+
+    def get_score_params(self):
+        return

@@ -27,9 +27,7 @@ TRENDING_TTL_SEC = 30 * 60
 # Max tracks to include in a playlist.
 PLAYLIST_TRACKS_LIMIT = 5
 
-zq = 1000
-
-def get_scorable_playlist_data(session, time_range):
+def get_scorable_playlist_data(session, time_range, strategy):
     """Gets data about playlists to be scored. Returns:
         Array<{
             "playlist_id": number
@@ -42,6 +40,8 @@ def get_scorable_playlist_data(session, time_range):
             "listens": number (always 1)
         }>
     """
+    zq = strategy.get_score_params()
+
     delta = time_delta_map.get(time_range) or time_delta_map.get('week')
 
     # Get all playlists saved within time range (windowed_save_count):
@@ -152,7 +152,7 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
     """Gets scorable data, scores and sorts, then returns full unpopulated playlists.
        Returns a function, because this is used in a Redis cache hook"""
     def wrapped():
-        playlist_scoring_data = get_scorable_playlist_data(session, time_range)
+        playlist_scoring_data = get_scorable_playlist_data(session, time_range, strategy)
 
         # score the playlists
         scored_playlists = [strategy.get_track_score(time_range, playlist) for playlist in playlist_scoring_data]
