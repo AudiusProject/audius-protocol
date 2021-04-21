@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const MaxPollDurationMs = 120000
+const MaxPollDurationMs = 240000
 
 async function delay (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
@@ -24,7 +24,7 @@ async function submitTrackListen(executeOne, trackId, userId, solanaListen = tru
         await executeOne(DEFAULT_INDEX, async (libs)=> {
             let identityResp = await libs.logTrackListen(trackId, userId, null, null, true)
             signature = identityResp.solTxSignature
-            console.log(`trackId=${trackId}, userId=${userId} | Processed signature: ${signature} in ${Date.now() - start}ms`)
+            console.log(`${Date.now()} trackId=${trackId}, userId=${userId} | Processed signature: ${signature} in ${Date.now() - start}ms`)
             numSuccessfullyProcessed += 1
             success = true
         })
@@ -33,7 +33,7 @@ async function submitTrackListen(executeOne, trackId, userId, solanaListen = tru
     }
 
     if (solanaListen && signature) {
-        console.log(`trackId=${trackId}, userId=${userId} | Polling signature ${signature}`)
+        console.log(`${Date.now()} trackId=${trackId}, userId=${userId} | Polling signature ${signature}`)
         // Poll discovery to confirm write into Plays table
         let pollStart = Date.now()
         let requestConfig = {
