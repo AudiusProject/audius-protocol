@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 # Get single play from table
 def get_sol_play(sol_tx_signature):
     db = get_db_read_replica()
+    sol_play = None
     with db.scoped_session() as session:
         base_query = (
             session.query(Play)
@@ -18,7 +19,8 @@ def get_sol_play(sol_tx_signature):
             )
         )
         query_results = base_query.first()
-        sol_play = helpers.model_to_dictionary(query_results)
+        if query_results:
+            sol_play = helpers.model_to_dictionary(query_results)
 
     return sol_play
 
