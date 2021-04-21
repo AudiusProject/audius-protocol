@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-const { serviceRegistry } = require('../serviceRegistry')
+// const { serviceRegistry } = require('../serviceRegistry')
 const models = require('../models')
 const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
@@ -162,6 +162,8 @@ module.exports = function (app) {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
+
+    const serviceRegistry = req.app.get('serviceRegistry')
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
     if (walletPublicKeys.length === 0) {
@@ -354,6 +356,7 @@ async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNode
         })
 
         // push user metadata node to user's replica set if defined
+        logger.error(`SIDTEST UMNODE: ${config.get('userMetadataNodeUrl')}`)
         if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
 
         // filter out current node from user's replica set
@@ -593,7 +596,7 @@ async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAd
     logger.info(redisKey, 'ipfs bootstrap add results:', results)
 
     // Manually connect to peer.
-    results = await ipfs.swarm.connect(targetPeerAddress)
-    logger.info(redisKey, 'peer connection results:', results.Strings[0])
+    // results = await ipfs.swarm.connect(targetPeerAddress)
+    // logger.info(redisKey, 'peer connection results:', results.Strings[0])
   }
 }

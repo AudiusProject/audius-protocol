@@ -1,8 +1,8 @@
 const axios = require('axios')
-const nodeConfig = require('../../config.js')
-const redis = require('../../redis')
+// const nodeConfig = require('../../config.js')
+// const redis = require('../../redis')
 
-const { serviceRegistry } = require('../../serviceRegistry')
+// const { serviceRegistry } = require('../../serviceRegistry')
 const { logger } = require('../../logging')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
@@ -31,10 +31,16 @@ const syncQueueJobProcessorFn = async (job) => {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
-  // TODO does'nt respect services coming from serviceRegistry 🤷‍♂️
-  // const { redis, nodeconfig } = serviceRegistry
-  console.log(`SIDTEST PROCESSSYNC ${Object.keys(serviceRegistry)} ${Object.keys(nodeConfig)} // target endpoint ${creatorNodeEndpoint}`)
+async function _processSync (nodeConfig, redis, ipfs, ipfsLatest, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
+  console.log(`SIDTEST STARTING _PROCESSSYNC ${walletPublicKeys} ${creatorNodeEndpoint}`)
+  console.log(`SIDTEST _PROCESSSYNC this.nodeConfig ${Object.keys(nodeConfig)}`)
+  console.log(`SIDTEST _PROCESSSYNC redis ${Object.keys(redis)}`)
+  console.log(`SIDTEST _PROCESSSYNC ipfs ${Object.keys(ipfs)}`)
+  console.log(`SIDTEST _PROCESSSYNC ipfsLatest ${Object.keys(ipfsLatest)}`)
+
+  const serviceRegistry = {
+    nodeConfig, redis, ipfs, ipfsLatest
+  }
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
 
@@ -57,8 +63,6 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
     }
     await redisLock.setLock(redisKey)
   }
-
-  console.log(`SIDTEST PROCESSSYNC 1`)
   /**
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
@@ -69,7 +73,7 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
     })
     const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
 
-    console.log(`SIDTEST PROCESSSYNC 2 ${JSON.stringify(cnodeUser)}`)
+    console.log(`SIDTEST PROCESSSYNC local cnodeuser ${JSON.stringify(cnodeUser)}`)
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
      *
@@ -104,8 +108,6 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
       /** @notice - this request timeout is arbitrarily large for now until we find an appropriate value */
       timeout: 300000 /* 5m = 300000ms */
     })
-
-    console.log(`SIDTEST EXPORT RESP ${JSON.stringify(resp.data)}`)
 
     if (resp.status !== 200) {
       logger.error(redisKey, `Failed to retrieve export from ${creatorNodeEndpoint} for wallets`, walletPublicKeys)
@@ -166,6 +168,7 @@ async function _processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpo
         })
 
         // push user metadata node to user's replica set if defined
+        logger.error(`SIDTEST UMNODE: ${nodeConfig.get('userMetadataNodeUrl')}`)
         if (nodeConfig.get('userMetadataNodeUrl')) {
           userReplicaSet.push(nodeConfig.get('userMetadataNodeUrl'))
         }
@@ -411,4 +414,5 @@ async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAd
   }
 }
 
-module.exports = syncQueueJobProcessorFn
+// module.exports = syncQueueJobProcessorFn
+module.exports = _processSync

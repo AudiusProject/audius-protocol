@@ -26,7 +26,7 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    syncQueueService: new SyncQueueService(nodeConfig),
+    syncQueueService: new SyncQueueService(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
     nodeConfig
   }
 

@@ -672,7 +672,7 @@ describe.only('test nodesync', async function () {
           immediate: true
         }).expect(200)
 
-      await timeout(10000, 'SIDTEST WAITING FOR SYNC')
+      await timeout(10000, true)
 
       const exportedCnodeUser = {
         walletPublicKey: cnodeUser.walletPublicKey,

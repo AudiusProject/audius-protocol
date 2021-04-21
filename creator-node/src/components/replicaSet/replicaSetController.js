@@ -1,6 +1,5 @@
 const express = require('express')
 
-// const { serviceRegistry } = require('../../serviceRegistry')
 const {
   successResponse,
   handleResponse,
