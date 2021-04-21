@@ -18,8 +18,6 @@ const CLOCK_PROGRAM = new solanaWeb3.PublicKey(
   'SysvarC1ock11111111111111111111111111111111'
 )
 
-const feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
-
 class Assignable {
   constructor (data) {
     Object.assign(this, data)
@@ -80,6 +78,14 @@ const instructionSchema = new Map([
 ])
 
 let devnetConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
+let feePayer
+
+function getFeePayer () {
+  if (!feePayer) {
+    feePayer = config.get('solanaFeePayerWallet') ? new solanaWeb3.Account(config.get('solanaFeePayerWallet')) : null
+  }
+  return feePayer
+}
 
 async function createAndVerifyMessage (
   validSigner,
@@ -152,10 +158,12 @@ async function createAndVerifyMessage (
     data: serializedInstructionArgs
   })
 
+  let feePayerAccount = getFeePayer()
+
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     devnetConnection,
     transaction,
-    [feePayer]
+    [feePayerAccount]
   )
 
   return signature

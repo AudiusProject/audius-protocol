@@ -552,12 +552,6 @@ jobs:
           command: |
             cd contracts/
             npm install
-      - run:
-          name: solana programs init
-          command: |
-            cd solana-programs
-            docker run audius/solana-programs > solana-program-config.json
-            cp solana-program-config.json ../identity-service
       # Download and cache dependencies
       - restore_cache:
           keys:

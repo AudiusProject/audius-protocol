@@ -13,6 +13,12 @@ TRACK_LISTEN_PROGRAM = shared_config["solana"]["program_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 SLEEP_TIME = 1
 
+# Maximum number of batches to process at once
+TX_SIGNATURES_MAX_BATCHES = 20
+
+# Last N entries present in tx_signatures array during processing
+TX_SIGNATURES_RESIZE_LENGTH = 10
+
 SOL_PLAYS_REDIS_KEY = "sol_plays"
 
 logger = logging.getLogger(__name__)
@@ -209,10 +215,9 @@ def process_solana_plays(solana_client):
                     transaction_signatures.append(transaction_signature_batch)
 
                 # Ensure processing does not grow unbounded
-                # TODO: Optimize values
-                if len(transaction_signatures) > 5:
+                if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
                     logger.info(f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries")
-                    transaction_signatures = transaction_signatures[-2:]
+                    transaction_signatures = transaction_signatures[-TX_SIGNATURES_RESIZE_LENGTH:]
                     logger.info(f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries")
 
                 # Reset batch state
@@ -223,13 +228,8 @@ def process_solana_plays(solana_client):
 
     logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
 
-    # TEST ONLY - Repopulate to 4587 records
-    if len(transaction_signatures) > 5:
-        raise Exception(f"TOO MANY SIGS {len(transaction_signatures)}")
-
     transaction_signatures.reverse()
 
-    # TODO: DO NOT LET transaction_signatures grow unbounded, cut off x last entries
     logger.info(f"index_solana_plays.py | {transaction_signatures}")
 
     num_txs_processed = 0
