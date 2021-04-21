@@ -1,5 +1,6 @@
 from datetime import datetime
 from dateutil.parser import parse
+from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 N = 1
@@ -12,10 +13,9 @@ i = 0.01
 q = 40.0
 T = {'day': 1, 'week':7, 'month':30, 'year':365, 'allTime': 100000}
 
-class TrendingTracksStrategyePWJD:
+class TrendingTracksStrategyePWJD(BaseTrendingStrategy):
     def __init__(self):
-        self.trending_type = TrendingType.TRACKS
-        self.version = TrendingVersion.ePWJD
+        super().__init__(TrendingType.TRACKS, TrendingVersion.ePWJD)
 
     def get_track_score(self, time, track):
         # pylint: disable=W,C,R

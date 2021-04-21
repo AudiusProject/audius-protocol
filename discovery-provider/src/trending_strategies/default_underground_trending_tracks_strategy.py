@@ -1,5 +1,6 @@
 from datetime import datetime
 from dateutil.parser import parse
+from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 b = 5
@@ -12,10 +13,9 @@ qq = 0.001
 oi = 20
 nb = 750
 
-class DefaultUndergroundTrendingTracksStrategy():
+class DefaultUndergroundTrendingTracksStrategy(BaseTrendingStrategy):
     def __init__(self):
-        self.trending_type = TrendingType.UNDERGROUND_TRACKS
-        self.version = TrendingVersion.DEFAULT
+        super().__init__(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.DEFAULT)
 
     def get_track_score(self, time, track):
         # pylint: disable=W,C,R

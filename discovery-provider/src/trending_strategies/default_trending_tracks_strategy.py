@@ -1,5 +1,6 @@
 from datetime import datetime
 from dateutil.parser import parse
+from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 N = 1
@@ -34,10 +35,9 @@ def z(time, track):
         Q=a((1.0/q),(M(q,(1-k/L))))
     return{'score':H*Q,**track}
 
-class DefaultTrendingTracksStrategy:
+class DefaultTrendingTracksStrategy(BaseTrendingStrategy):
     def __init__(self):
-        self.trending_type = TrendingType.TRACKS
-        self.version = TrendingVersion.DEFAULT
+        super().__init__(TrendingType.TRACKS, TrendingVersion.DEFAULT)
 
     def get_track_score(self, time, track):
         return z(time, track)

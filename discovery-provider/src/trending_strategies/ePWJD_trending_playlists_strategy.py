@@ -1,10 +1,10 @@
+from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.default_trending_tracks_strategy import z
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
-class TrendingPlaylistsStrategyePWJD:
+class TrendingPlaylistsStrategyePWJD(BaseTrendingStrategy):
     def __init__(self):
-        self.trending_type = TrendingType.PLAYLISTS
-        self.version = TrendingVersion.ePWJD
+        super().__init__(TrendingType.PLAYLISTS, TrendingVersion.ePWJD)
 
     def get_track_score(self, time, track):
         return z(time, track)
