@@ -9,21 +9,13 @@
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
     solana-keygen new -s --no-bip39-passphrase -o owner.json
 
-    solana airdrop 0.5 feepayer.json
-    solana airdrop 0.5 feepayer.json
-    solana airdrop 0.5 feepayer.json
+    while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 1; do
+        solana airdrop 0.5 feepayer.json
+    done
 
-    solana airdrop 0.5
-    solana airdrop 0.5
-    solana airdrop 0.5
-
-    solana airdrop 0.5
-    solana airdrop 0.5
-    solana airdrop 0.5
-
-    solana airdrop 0.5
-    solana airdrop 0.5
-    solana airdrop 0.5
+    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
+        solana airdrop 0.5
+    done
 
     cd program
     cargo build-bpf
@@ -36,17 +28,9 @@
     fi
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
-    solana airdrop 0.5
-    solana airdrop 0.5
-    solana airdrop 0.5
-
-    solana airdrop 0.5
-    solana airdrop 0.5
-    solana airdrop 0.5
-
-    solana airdrop 0.5
-    solana airdrop 0.5
-    solana airdrop 0.5
+    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
+        solana airdrop 0.5
+    done
 
     cd ../create_and_verify
     cargo build-bpf
