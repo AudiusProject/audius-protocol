@@ -1,6 +1,3 @@
-import logging
-
-
 class Base(Exception):
     pass
 

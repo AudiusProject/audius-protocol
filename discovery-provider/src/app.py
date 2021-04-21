@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import os
 import logging
 import ast
 import datetime
@@ -21,7 +20,7 @@ from src import exceptions
 from src import api_helpers
 from src.queries import queries, search, search_queries, health_check, notifications
 from src.api.v1 import api as api_v1
-from src.utils import helpers, config
+from src.utils import helpers
 from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
