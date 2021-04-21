@@ -78,6 +78,8 @@ const instructionSchema = new Map([
 ])
 
 let solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
+
+// FeePayer Solana Wallet
 let feePayer
 
 function getFeePayer () {
@@ -105,10 +107,11 @@ async function createAndVerifyMessage (
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
 
+  // Embed eth signer public key as source
   let trackData = new TrackData({
     user_id: userId,
     track_id: trackId,
-    source: source,
+    source: pubKey,
     timestamp: Math.round(new Date().getTime() / 1000)
   })
 
