@@ -17,8 +17,8 @@ export redisHost='localhost'
 export redisPort='6379'
 export dbUrl="postgres://postgres:postgres@localhost:$PG_PORT/audius_identity_service_test"
 export logLevel='debug' #should be error
-export solanaCreateAndVerifyAddress=''
-export solanaProgramAddress=''
+export solanaTrackListenCountAddress=''
+export solanaAudiusEthRegistryAddress=''
 export solanaValidSigner=''
 
 # Locally, the docker-compose files set up a database named audius_identity_service. For
