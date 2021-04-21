@@ -5,11 +5,11 @@ const secp256k1 = require('secp256k1')
 const borsh = require('borsh')
 
 const VALID_SIGNER = config.get('solanaValidSigner')
-const AUDIUS_PROGRAM = config.get('solanaProgramAddress') ? new solanaWeb3.PublicKey(
-  config.get('solanaProgramAddress')
+const AUDIUS_ETH_REGISTRY_PROGRAM = config.get('solanaAudiusEthRegistryAddress') ? new solanaWeb3.PublicKey(
+  config.get('solanaAudiusEthRegistryAddress')
 ) : null
-const CREATE_AND_VERIFY_PROGRAM = config.get('solanaCreateAndVerifyAddress') ? new solanaWeb3.PublicKey(
-  config.get('solanaCreateAndVerifyAddress')
+const TRACK_LISTEN_PROGRAM = config.get('solanaTrackListenCountAddress') ? new solanaWeb3.PublicKey(
+  config.get('solanaTrackListenCountAddress')
 ) : null
 const INSTRUCTIONS_PROGRAM = new solanaWeb3.PublicKey(
   'Sysvar1nstructions1111111111111111111111111'
@@ -77,7 +77,7 @@ const instructionSchema = new Map([
   ]
 ])
 
-let devnetConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
+let solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
 let feePayer
 
 function getFeePayer () {
@@ -100,7 +100,7 @@ async function createAndVerifyMessage (
   let pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
 
   let validSignerPubK = new solanaWeb3.PublicKey(validSigner)
-  let accInfo = await devnetConnection.getAccountInfo(validSignerPubK)
+  let accInfo = await solanaConnection.getAccountInfo(validSignerPubK)
   let signerGroup = new solanaWeb3.PublicKey(
     accInfo.data.toJSON().data.slice(1, 33)
   ) // cut off version and eth address from valid signer data
@@ -150,18 +150,18 @@ async function createAndVerifyMessage (
     keys: [
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
       { pubkey: signerGroup, isSigner: false, isWritable: false },
-      { pubkey: AUDIUS_PROGRAM, isSigner: false, isWritable: false },
+      { pubkey: AUDIUS_ETH_REGISTRY_PROGRAM, isSigner: false, isWritable: false },
       { pubkey: INSTRUCTIONS_PROGRAM, isSigner: false, isWritable: false },
       { pubkey: CLOCK_PROGRAM, isSigner: false, isWritable: false }
     ],
-    programId: CREATE_AND_VERIFY_PROGRAM,
+    programId: TRACK_LISTEN_PROGRAM,
     data: serializedInstructionArgs
   })
 
   let feePayerAccount = getFeePayer()
 
   let signature = await solanaWeb3.sendAndConfirmTransaction(
-    devnetConnection,
+    solanaConnection,
     transaction,
     [feePayerAccount]
   )

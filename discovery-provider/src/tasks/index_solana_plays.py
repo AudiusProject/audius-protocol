@@ -9,7 +9,7 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 
-TRACK_LISTEN_PROGRAM = shared_config["solana"]["program_address"]
+TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 SLEEP_TIME = 1
 
