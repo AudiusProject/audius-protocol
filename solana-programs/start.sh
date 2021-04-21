@@ -34,6 +34,7 @@
 
     cd ../create_and_verify
     cargo build-bpf
+    # I think the below address is the upgrade authority?
     solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
     new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
@@ -46,6 +47,7 @@
     cd ../cli
     signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
+    owner_id=$(cat ~/.config/solana/id.json)
 } >&2
 
 cd ..
@@ -58,6 +60,7 @@ cat <<EOF
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
     "ownerWallet": $(cat owner.json),
+    "ownerWallet2": "$owner_id",
     "endpoint": "https://devnet.solana.com",
     "signerPrivateKey": "$priv_key"
 }
