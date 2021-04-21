@@ -7,7 +7,6 @@
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
-    solana-keygen new -s --no-bip39-passphrase -o owner.json
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 1; do
         solana airdrop 0.5 feepayer.json
@@ -47,7 +46,7 @@
     cd ../cli
     signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
-    owner_id=$(cat ~/.config/solana/id.json)
+    owner_wallet=$(cat ~/.config/solana/id.json)
 } >&2
 
 cd ..
@@ -59,8 +58,7 @@ cat <<EOF
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
-    "ownerWallet": $(cat owner.json),
-    "ownerWallet2": "$owner_id",
+    "ownerWallet": "$owner_wallet",
     "endpoint": "https://devnet.solana.com",
     "signerPrivateKey": "$priv_key"
 }
