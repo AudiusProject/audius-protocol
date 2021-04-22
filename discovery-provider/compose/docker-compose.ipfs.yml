@@ -1,3 +1,4 @@
+# Compose file to run just the discovery ipfs container
 version: '3'
 services:
   ipfs-node:

@@ -1,5 +1,6 @@
-# Depends on the docker-compose.base.yml file for db, redis-server and ipfs-node processes
-
+# Compose file to run just the discovery flask server
+# pointed at whatever database is set in .env
+# The web server backend runs no workers, but needs redis and IPFS to be available
 version: '3'
 services:
   celery-worker:
