@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from src import create_celery
+from src.app import create_celery
 
 logger = logging.getLogger(__name__)
 

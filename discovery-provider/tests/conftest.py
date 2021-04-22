@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from pytest_postgresql import factories
 import alembic
 import alembic.config
-from src import create_app, create_celery
+from src.app import create_app, create_celery
 from src.utils import helpers
 from src.models import Base
 import src

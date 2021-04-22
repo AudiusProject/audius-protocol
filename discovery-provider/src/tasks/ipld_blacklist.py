@@ -1,5 +1,5 @@
 import logging
-from src import contract_addresses
+from src.app import contract_addresses
 from src.utils import helpers
 from src.models import BlacklistedIPLD
 

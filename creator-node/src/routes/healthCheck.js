@@ -9,7 +9,6 @@ const {
 const DiskManager = require('../diskManager')
 
 const MAX_DB_CONNECTIONS = config.get('dbConnectionPoolMax')
-const MAX_DISK_USAGE_PERCENT = 90 // 90%
 
 module.exports = function (app) {
   /**
@@ -86,7 +85,7 @@ module.exports = function (app) {
    */
   app.get('/disk_check', handleResponse(async (req, res) => {
     const maxUsageBytes = parseInt(req.query.maxUsageBytes)
-    const maxUsagePercent = parseInt(req.query.maxUsagePercent) || MAX_DISK_USAGE_PERCENT
+    const maxUsagePercent = parseInt(req.query.maxUsagePercent) || config.get('maxStorageUsedPercent')
 
     const storagePath = DiskManager.getConfigStoragePath()
     const [ total, used ] = await getMonitors([

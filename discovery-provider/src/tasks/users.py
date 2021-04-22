@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from eth_account.messages import defunct_hash_message
 from sqlalchemy.orm.session import make_transient
-from src import contract_addresses
+from src.app import contract_addresses
 from src.utils import helpers
 from src.models import User, AssociatedWallet
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
