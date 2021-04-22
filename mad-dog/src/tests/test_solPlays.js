@@ -66,7 +66,7 @@ async function solanaTrackListenCountsTest({
     executeOne,
 }) {
     let start = Date.now()
-    let numTracks = 350
+    let numTracks = 100
     let randomTrackIds = Array.from({ length: numTracks }, () => Math.floor(Math.random() * 10000000));
     await Promise.all(
         randomTrackIds.map(async (trackId) => {
