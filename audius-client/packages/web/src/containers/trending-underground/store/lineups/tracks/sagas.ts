@@ -31,10 +31,12 @@ function* getTrendingUnderground({
       offset
     }
   )
-  tracks = tracks.filter(t => {
-    const shaId = window.Web3.utils.sha3(t.track_id.toString())
-    return !TF.has(shaId)
-  })
+  if (TF.size > 0) {
+    tracks = tracks.filter(t => {
+      const shaId = window.Web3.utils.sha3(t.track_id.toString())
+      return !TF.has(shaId)
+    })
+  }
 
   const processed: Track[] = yield processAndCacheTracks(tracks)
   return processed

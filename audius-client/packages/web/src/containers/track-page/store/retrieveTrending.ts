@@ -59,10 +59,12 @@ export function* retrieveTrending({
     currentUserId,
     timeRange
   })
-  apiTracks = apiTracks.filter(t => {
-    const shaId = window.Web3.utils.sha3(t.track_id.toString())
-    return !TF.has(shaId)
-  })
+  if (TF.size > 0) {
+    apiTracks = apiTracks.filter(t => {
+      const shaId = window.Web3.utils.sha3(t.track_id.toString())
+      return !TF.has(shaId)
+    })
+  }
 
   const currentGenre = yield select(getTrendingGenre)
 

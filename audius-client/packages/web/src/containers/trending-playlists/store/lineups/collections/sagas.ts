@@ -24,10 +24,12 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
       time
     }
   )
-  playlists = playlists.filter(p => {
-    const shaId = window.Web3.utils.sha3(p.playlist_id.toString())
-    return !TF.has(shaId)
-  })
+  if (TF.size > 0) {
+    playlists = playlists.filter(p => {
+      const shaId = window.Web3.utils.sha3(p.playlist_id.toString())
+      return !TF.has(shaId)
+    })
+  }
 
   // Omit playlists owned by Audius
   const userIdsToOmit = new Set(
