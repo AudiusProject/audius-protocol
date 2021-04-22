@@ -26,7 +26,7 @@ from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
-from src.queries.get_random_tracks import get_random_tracks, DEFAULT_RANDOM_LIMIT
+from src.queries.get_random_tracks import get_random_tracks, get_full_random_tracks, DEFAULT_RANDOM_LIMIT
 from src.queries.get_underground_trending import get_underground_trending
 
 logger = logging.getLogger(__name__)
@@ -229,7 +229,8 @@ class TrackSearchResult(Resource):
 # `get_trending_tracks.py`, which caches the scored tracks before they are populated (keyed by genre + time).
 # With this second cache, each user_id can reuse on the same cached list of tracks, and then populate them uniquely.
 
-@ns.route("/trending")
+@ns.route("/trending/", defaults={"version": TrendingVersion.DEFAULT.name})
+@ns.route("/trending/<string:version>")
 class Trending(Resource):
     @record_metrics
     @ns.doc(
@@ -246,10 +247,14 @@ class Trending(Resource):
     )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
-    def get(self):
+    def get(self, version):
         """Gets the top 100 trending (most popular) tracks on Audius"""
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', full_ns)
+
         args = trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
         trending_tracks = get_trending(args, strategy)
         return success_response(trending_tracks)
 
@@ -295,7 +300,8 @@ random_track_parser.add_argument('limit', type=int, required=False)
 random_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
 random_track_parser.add_argument('time', required=False)
 
-@ns.route("/random")
+@ns.route("/random/", defaults={"version": TrendingVersion.DEFAULT.name})
+@ns.route("/random/<string:version>")
 class RandomTrack(Resource):
     @record_metrics
     @ns.doc(
@@ -314,43 +320,37 @@ class RandomTrack(Resource):
     )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
-    def get(self):
+    def get(self, version):
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', full_ns)
+
         args = random_track_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
         args['limit'] = max(TRENDING_LIMIT, limit)
-        tracks = get_random_tracks(args, strategy)
-        return success_response(tracks[:limit])
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        random_tracks = get_random_tracks(args, strategy)
+        return success_response(random_tracks[:limit])
 
 full_random_track_parser = random_track_parser.copy()
 full_random_track_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/random")
+@full_ns.route("/random/", defaults={"version": TrendingVersion.DEFAULT.name})
+@full_ns.route("/random/<string:version>")
 class FullRandomTrack(Resource):
-    def get_cache_key(self):
-        """Construct a cache key from genre + exclusion list + user + time"""
-        request_items = to_dict(request.args)
-        request_items.pop('limit', None)
-        key = extract_key(request.path, request_items.items())
-        return key
-
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
-    def get(self):
+    def get(self, version):
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', full_ns)
+
         args = full_random_track_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
         args['limit'] = max(TRENDING_LIMIT, limit)
-        key = self.get_cache_key()
-
-        # Attempt to use the cached tracks list
-        if args['user_id'] is not None:
-            full_random = get_random_tracks(args, strategy)
-        else:
-            full_random = use_redis_cache(
-                key, TRENDING_TTL_SEC, lambda: get_random_tracks(args, strategy))
-        random = full_random[:limit]
-        return success_response(random)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        full_random_tracks = get_full_random_tracks(request, args, strategy)
+        return success_response(full_random_tracks[:limit])
 
 
 trending_ids_route_parser = reqparse.RequestParser()
