@@ -7,6 +7,7 @@ export const TOP_ALBUMS_URL = 'https://download.audius.co/static-resources/top-a
 export const TOP_PLAYLISTS_URL = 'https://download.audius.co/static-resources/top-playlists.png'
 export const MOST_LOVED_URL = 'https://download.audius.co/static-resources/most-loved.png'
 export const FEELING_LUCKY_URL = 'https://download.audius.co/static-resources/feeling-lucky.png'
+export const UNDERGROUND_TRENDING_URL = 'https://download.audius.co/static-resources/underground-trending.png'
 export const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
 
 export interface ExploreInfoType {
@@ -50,6 +51,16 @@ export const exploreMap: { [key: string]: ExploreInfoType } = {
     title: 'Trending Playlists',
     description: 'The trending playlists on Audius right now',
     image: TOP_PLAYLISTS_URL
+  },
+  'playlists': {
+    title: 'Trending Playlists',
+    description: 'The trending playlists on Audius right now',
+    image: TOP_PLAYLISTS_URL
+  },
+  'underground': {
+    title: 'Underground Trending',
+    description: 'Some of the best up-and-coming music on Audius all in one place',
+    image: UNDERGROUND_TRENDING_URL
   },
   'most-loved': {
     title: 'Most Loved',
