@@ -3,7 +3,7 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u devnet
+    solana config set -u http://34.122.200.71:8899
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
@@ -34,9 +34,9 @@
 
     cd ../create_and_verify
     cargo build-bpf
-    solana-keygen new -s --no-bip39-passphrase -o target/deploy/track_listen_count-keypair.json --force
+    solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
-    new_address=$(solana program deploy target/deploy/track_listen_count.so --output json | jq -r '.programId')
+    new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
     if [ -z "$new_address" ]; then
         echo "failed to deploy create_and_verify"
         exit 1
@@ -57,7 +57,7 @@ cat <<EOF
     "validSigner": "$valid_signer",
     "feePayerWallet": $(cat feepayer.json),
     "ownerWallet": $(cat owner.json),
-    "endpoint": "https://devnet.solana.com",
+    "endpoint": "http://34.122.200.71:8899",
     "signerPrivateKey": "$priv_key"
 }
 EOF
