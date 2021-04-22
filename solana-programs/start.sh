@@ -3,17 +3,21 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u devnet
+    sol_rpc_endpoint=http://34.122.200.71:8899
+    sol_faucet_host=34.122.200.71
+
+    solana config set -u $sol_rpc_endpoint
+    solana airdrop --faucet-host $sol_faucet_host 0.5
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 1; do
-        solana airdrop --faucet-host 35.199.181.141 0.5 feepayer.json
+        solana airdrop --faucet-host $sol_faucet_host 0.5 feepayer.json
     done
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
-        solana airdrop --faucet-host 35.199.181.141 0.5
+        solana airdrop --faucet-host $sol_faucet_host 0.5
     done
 
     cd program
@@ -28,7 +32,7 @@
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
-        solana airdrop --faucet-host 35.199.181.141 0.5
+        solana airdrop --faucet-host $sol_faucet_host 0.5
     done
 
     cd ../create_and_verify
