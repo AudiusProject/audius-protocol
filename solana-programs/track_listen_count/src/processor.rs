@@ -77,8 +77,8 @@ impl Processor {
         let instruction = TemplateInstruction::try_from_slice(input)
             .or(Err(ProgramTemplateError::InstructionUnpackError))?;
         match instruction {
-            TemplateInstruction::ExampleInstruction(signature_data) => {
-                msg!("Instruction: ExampleInstruction");
+            TemplateInstruction::TrackListenInstruction(signature_data) => {
+                msg!("Instruction: TrackListenInstruction");
                 Self::process_track_listen_instruction(program_id, accounts, signature_data)
             }
         }
