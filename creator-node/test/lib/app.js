@@ -35,6 +35,19 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
   return appInfo
 }
 
+function getServiceRegistryMock (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null) {
+  return {
+    ipfs: ipfsClient,
+    ipfsLatest: ipfsLatestClient || ipfsClient,
+    libs: libsClient,
+    blacklistManager: blacklistManager,
+    redis: redisClient,
+    monitoringQueue: new MonitoringQueueMock(),
+    syncQueueService: new SyncQueueService(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
+    nodeConfig
+  }
+}
+
 function clearRequireCache () {
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool
@@ -46,4 +59,4 @@ function clearRequireCache () {
   })
 }
 
-module.exports = { getApp }
+module.exports = { getApp, getServiceRegistryMock }

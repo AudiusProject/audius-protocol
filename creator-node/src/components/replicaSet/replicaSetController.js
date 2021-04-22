@@ -39,7 +39,7 @@ const respondToURSMRequestForProposalController = async (req) => {
  *
  * This route is only run on secondaries, to export and sync data from a user's primary.
  */
-const syncRequestController = async (req, res) => {
+const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
 
   const walletPublicKeys = req.body.wallet // array
@@ -66,6 +66,6 @@ const syncRequestController = async (req, res) => {
 // Routes
 
 router.get('/ursm_request_for_signature', handleResponse(respondToURSMRequestForProposalController))
-router.post('/sync', ensureStorageMiddleware, handleResponse(syncRequestController))
+router.post('/sync', ensureStorageMiddleware, handleResponse(syncRouteController))
 
 module.exports = router
