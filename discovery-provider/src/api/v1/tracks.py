@@ -369,7 +369,8 @@ trending_ids_response = make_response(
     fields.Nested(trending_times_ids)
 )
 
-@full_ns.route("/trending/ids")
+@full_ns.route("/trending/ids/", defaults={"version": TrendingVersion.DEFAULT.name})
+@full_ns.route("/trending/ids/<string:version>")
 class FullTrendingIds(Resource):
     @record_metrics
     @full_ns.expect(trending_ids_route_parser)
@@ -386,10 +387,14 @@ class FullTrendingIds(Resource):
         }
     )
     @full_ns.marshal_with(trending_ids_response)
-    def get(self):
-        """Gets the track ids of the top trending tracks on Audius"""
+    def get(self, version):
+        """Gets the track ids of the top trending tracks on Audius based on the trending version"""
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', full_ns)
+
         args = trending_ids_route_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
         trending_ids = get_trending_ids(args, strategy)
         res = {
             "week": list(map(get_encoded_track_id, trending_ids["week"])),
