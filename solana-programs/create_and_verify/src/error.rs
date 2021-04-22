@@ -12,6 +12,9 @@ use thiserror::Error;
 /// Errors that may be returned by the CreateAndVerify program.
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum ProgramTemplateError {
+    /// Example error
+    #[error("Example error")]
+    ExampleError,
     /// Instruction unpack error
     #[error("Instruction unpack error")]
     InstructionUnpackError,
@@ -39,6 +42,7 @@ impl PrintProgramError for ProgramTemplateError {
         E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive,
     {
         match self {
+            ProgramTemplateError::ExampleError => msg!("Example error message"),
             ProgramTemplateError::InstructionUnpackError => msg!("Instruction unpack error"),
             ProgramTemplateError::InvalidTrackData => msg!("Invalid track data were passed"),
             ProgramTemplateError::InvalidTimestamp => msg!("Difference between timestamp and current time is too big"),
