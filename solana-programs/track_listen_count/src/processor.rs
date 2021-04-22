@@ -4,7 +4,7 @@ use crate::{
     error::ProgramTemplateError,
     instruction::{InstructionArgs, TemplateInstruction},
 };
-use audius::instruction::SignatureData;
+use audius_eth_registry::instruction::SignatureData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::next_account_info, account_info::AccountInfo, entrypoint::ProgramResult, msg,
@@ -17,7 +17,7 @@ const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
 pub struct Processor {}
 impl Processor {
     /// Call Audius program to verify signature
-    pub fn process_example_instruction(
+    pub fn process_track_listen_instruction(
         _program_id: &Pubkey,
         accounts: &[AccountInfo],
         instruction_data: InstructionArgs,
@@ -49,8 +49,8 @@ impl Processor {
         });
 
         invoke(
-            &audius::instruction::validate_signature_with_sysvar(
-                &audius::id(),
+            &audius_eth_registry::instruction::validate_signature_with_sysvar(
+                &audius_eth_registry::id(),
                 valid_signer_info.key,
                 signer_group_info.key,
                 sysvar_instruction.key,
@@ -77,9 +77,9 @@ impl Processor {
         let instruction = TemplateInstruction::try_from_slice(input)
             .or(Err(ProgramTemplateError::InstructionUnpackError))?;
         match instruction {
-            TemplateInstruction::ExampleInstruction(signature_data) => {
-                msg!("Instruction: ExampleInstruction");
-                Self::process_example_instruction(program_id, accounts, signature_data)
+            TemplateInstruction::TrackListenInstruction(signature_data) => {
+                msg!("Instruction: TrackListenInstruction");
+                Self::process_track_listen_instruction(program_id, accounts, signature_data)
             }
         }
     }

@@ -3,7 +3,7 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u devnet
+    solana config set -u http://34.122.200.71:8899
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
@@ -16,13 +16,13 @@
         solana airdrop --faucet-host 35.199.181.141 0.5
     done
 
-    cd program
+    cd audius_eth_registry
     cargo build-bpf
     solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
     new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
     if [ -z "$new_address" ]; then
-        echo "failed to deploy program"
+        echo "failed to deploy audius_eth_registry"
         exit 1
     fi
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
@@ -31,13 +31,13 @@
         solana airdrop --faucet-host 35.199.181.141 0.5
     done
 
-    cd ../create_and_verify
+    cd ../track_listen_count
     cargo build-bpf
-    solana-keygen new -s --no-bip39-passphrase -o target/deploy/solana_program_template-keypair.json --force
+    solana-keygen new -s --no-bip39-passphrase -o target/deploy/track_listen_count-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
-    new_address=$(solana program deploy target/deploy/solana_program_template.so --output json | jq -r '.programId')
+    new_address=$(solana program deploy target/deploy/track_listen_count.so --output json | jq -r '.programId')
     if [ -z "$new_address" ]; then
-        echo "failed to deploy create_and_verify"
+        echo "failed to deploy track_listen_count"
         exit 1
     fi
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
@@ -52,7 +52,7 @@ cd ..
 
 cat <<EOF
 {
-    "trackListenCountAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' create_and_verify/src/lib.rs)",
+    "trackListenCountAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' track_listen_count/src/lib.rs)",
     "audiusEthRegistryAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",

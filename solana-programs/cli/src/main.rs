@@ -1,4 +1,4 @@
-use audius::{
+use audius_eth_registry::{
     instruction::{
         clear_valid_signer, init_signer_group, init_valid_signer, validate_signature, SignatureData,
     },
@@ -80,10 +80,10 @@ fn command_create_signer_group(config: &Config) -> CommandResult {
                 &signer_group.pubkey(),
                 signer_group_account_balance,
                 SignerGroup::LEN as u64,
-                &audius::id(),
+                &audius_eth_registry::id(),
             ),
             init_signer_group(
-                &audius::id(),
+                &audius_eth_registry::id(),
                 &signer_group.pubkey(),
                 &config.owner.pubkey(),
             )
@@ -129,10 +129,10 @@ fn command_create_valid_signer(
                 &valid_signer.pubkey(),
                 valid_signer_account_balance,
                 ValidSigner::LEN as u64,
-                &audius::id(),
+                &audius_eth_registry::id(),
             ),
             init_valid_signer(
-                &audius::id(),
+                &audius_eth_registry::id(),
                 &valid_signer.pubkey(),
                 signer_group,
                 &config.owner.pubkey(),
@@ -167,7 +167,7 @@ fn command_clear_valid_signer(config: &Config, valid_signer: &Pubkey) -> Command
 
     let mut transaction = Transaction::new_with_payer(
         &[clear_valid_signer(
-            &audius::id(),
+            &audius_eth_registry::id(),
             valid_signer,
             &valid_signer_data.signer_group,
             &config.owner.pubkey(),
@@ -230,7 +230,7 @@ fn command_send_message(
         &[
             secp256_program_instruction,
             validate_signature(
-                &audius::id(),
+                &audius_eth_registry::id(),
                 valid_signer,
                 &valid_signer_data.signer_group,
                 signature_data,

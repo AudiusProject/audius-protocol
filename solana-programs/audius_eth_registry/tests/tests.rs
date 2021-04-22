@@ -1,6 +1,6 @@
 #![cfg(feature = "test-bpf")]
 
-use audius::*;
+use audius_eth_registry::*;
 use borsh::BorshDeserialize;
 use rand::{thread_rng, Rng};
 use secp256k1::{PublicKey, SecretKey};
