@@ -10,4 +10,4 @@ class DefaultTrendingPlaylistsStrategy(BaseTrendingStrategy):
         return z(time, track)
 
     def get_score_params(self):
-        return 1000
+        return {'zq': 1000}

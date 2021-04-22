@@ -47,4 +47,4 @@ class UndergroundTrendingTracksStrategyePWJD(BaseTrendingStrategy):
         return{'score':vb * rq, **track}
 
     def get_score_params(self):
-        return 1500, 1500, 50, 21, 7, 10
+        return {'S': 1500, 'r': 1500, 'q': 50, 'o': 21, 'f': 7, 'qr': 10}

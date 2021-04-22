@@ -40,7 +40,8 @@ def get_scorable_playlist_data(session, time_range, strategy):
             "listens": number (always 1)
         }>
     """
-    zq = strategy.get_score_params()
+    score_params = strategy.get_score_params()
+    zq = score_params['zq']
 
     delta = time_delta_map.get(time_range) or time_delta_map.get('week')
 

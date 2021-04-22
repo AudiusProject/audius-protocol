@@ -44,7 +44,13 @@ def get_scorable_track_data(session, redis_instance, strategy):
     }
     """
 
-    S, r, q, o, f, qr = strategy.get_score_params()
+    score_params = strategy.get_score_params()
+    S = score_params['S']
+    r = score_params['r']
+    q = score_params['q']
+    o = score_params['o']
+    f = score_params['f']
+    qr = score_params['qr']
     trending_key = make_trending_cache_key("week", None, strategy.version)
     track_ids = []
     old_trending = get_pickled_key(redis_instance, trending_key)
