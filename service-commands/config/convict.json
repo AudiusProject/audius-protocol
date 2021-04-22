@@ -1,6 +1,6 @@
 {
   "protocol_dir": {
-    "default": "~/code/AudiusProject/audius-protocol",
+    "default": "~/Documents/Audius/audius-protocol",
     "env": "PROTOCOL_DIR"
   },
   "remote_dev_host": {
