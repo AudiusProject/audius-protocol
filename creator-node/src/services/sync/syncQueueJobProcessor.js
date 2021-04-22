@@ -3,7 +3,7 @@ const processSync = require('./processSync')
 /**
  * TODO explain why this direct require is required -> can be run in separate process, does not have shared memory state, etc
  */
- const { serviceRegistry } = require('../../serviceRegistry')
+const { serviceRegistry } = require('../../serviceRegistry')
 
 /**
  * TODO clean up comment
@@ -11,7 +11,7 @@ const processSync = require('./processSync')
  * - note this swallos failures, primary will handle re-syncing
  * - add TODO to record failures in redis or something
  * Defines processing logic for all jobs as they are picked off SyncQueue
- * 
+ *
  * @param {Object} job
  */
 const syncQueueJobProcessorFn = async (job) => {

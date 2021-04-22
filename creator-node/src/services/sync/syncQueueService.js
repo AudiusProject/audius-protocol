@@ -35,7 +35,7 @@ class SyncProcessingQueue {
        *    path to file containing job processor function
        * https://github.com/OptimalBits/bull/tree/013c51942e559517c57a117c27a550a0fb583aa8#separate-processes
        */
-     this.queue.process(
+    this.queue.process(
       JobProcessorConcurrency,
       JobProcessorFnFilePath
     )

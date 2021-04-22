@@ -5,7 +5,6 @@ const assert = require('assert')
 const _ = require('lodash')
 const nock = require('nock')
 
-const { timeout } = require('../src/utils')
 const config = require('../src/config')
 const models = require('../src/models')
 const { getApp, getServiceRegistryMock } = require('./lib/app')
@@ -661,7 +660,7 @@ describe('test nodesync', async function () {
         .persist()
         .get(uri => uri.includes('/ipfs'))
         .reply(200, { data: Buffer.alloc(32) })
-      
+
       // Confirm no local user state before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
