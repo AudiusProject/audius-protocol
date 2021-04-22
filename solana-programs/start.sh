@@ -3,7 +3,7 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u http://34.122.200.71:8899
+    solana config set -u devnet
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
