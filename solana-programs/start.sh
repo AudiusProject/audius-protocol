@@ -3,7 +3,9 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u devnet
+    sol_rpc_endpoint=http://34.122.200.71:8899
+    # Remote test-validator
+    solana config set -u $sol_rpc_endpoint 
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
@@ -57,8 +59,8 @@ cat <<EOF
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
-    "ownerWallet": "$owner_wallet",
-    "endpoint": "https://devnet.solana.com",
+    "ownerWallet": $owner_wallet,
+    "endpoint": "$sol_rpc_endpoint",
     "signerPrivateKey": "$priv_key"
 }
 EOF
