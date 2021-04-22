@@ -314,7 +314,6 @@ class FullUndergroundTrending(Resource):
             # and perform pagination here, passing
             # no args so we get the full list of tracks.
             key = self.get_cache_key()
-            trending = get_underground_trending(args)
             trending = use_redis_cache(
                 key, TRENDING_TTL_SEC, lambda: get_underground_trending({}))
             trending = trending[offset: limit + offset]

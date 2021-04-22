@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null
-from src import contract_addresses
+from src.app import contract_addresses
 from src.utils import multihash, helpers
 from src.models import Track, User, Stem, Remix
 from src.tasks.metadata import track_metadata_format
