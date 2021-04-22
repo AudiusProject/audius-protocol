@@ -4,7 +4,7 @@ use crate::{
     error::ProgramTemplateError,
     instruction::{InstructionArgs, TemplateInstruction},
 };
-use audius::instruction::SignatureData;
+use audius_eth_registry::instruction::SignatureData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::next_account_info, account_info::AccountInfo, entrypoint::ProgramResult, msg,
@@ -49,8 +49,8 @@ impl Processor {
         });
 
         invoke(
-            &audius::instruction::validate_signature_with_sysvar(
-                &audius::id(),
+            &audius_eth_registry::instruction::validate_signature_with_sysvar(
+                &audius_eth_registry::id(),
                 valid_signer_info.key,
                 signer_group_info.key,
                 sysvar_instruction.key,

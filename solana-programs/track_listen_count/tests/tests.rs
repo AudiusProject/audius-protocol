@@ -28,8 +28,8 @@ async fn setup() -> (BanksClient, Keypair, Hash, Keypair, Keypair) {
     let mut test_solana_env = program_test();
     test_solana_env.add_program(
         "audius",
-        audius::id(),
-        processor!(audius::processor::Processor::process),
+        audius_eth_registry::id(),
+        processor!(audius_eth_registry::processor::Processor::process),
     );
 
     let (mut banks_client, payer, recent_blockhash) = test_solana_env.start().await;
@@ -42,7 +42,7 @@ async fn setup() -> (BanksClient, Keypair, Hash, Keypair, Keypair) {
         &payer,
         &recent_blockhash,
         &signer_group,
-        audius::state::SignerGroup::LEN,
+        audius_eth_registry::state::SignerGroup::LEN,
     )
     .await
     .unwrap();
@@ -72,7 +72,7 @@ async fn create_account(
             &account.pubkey(),
             account_rent,
             struct_size as u64,
-            &audius::id(),
+            &audius_eth_registry::id(),
         )],
         Some(&payer.pubkey()),
     );
@@ -90,7 +90,7 @@ async fn process_tx_init_signer_group(
 ) -> Result<(), TransportError> {
     let mut transaction = Transaction::new_with_payer(
         &[
-            audius::instruction::init_signer_group(&audius::id(), signer_group, group_owner)
+            audius_eth_registry::instruction::init_signer_group(&audius_eth_registry::id(), signer_group, group_owner)
                 .unwrap(),
         ],
         Some(&payer.pubkey()),
@@ -107,11 +107,11 @@ async fn process_tx_init_valid_signer(
     payer: &Keypair,
     recent_blockhash: Hash,
     banks_client: &mut BanksClient,
-    eth_address: [u8; audius::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+    eth_address: [u8; audius_eth_registry::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE],
 ) -> Result<(), TransportError> {
     let mut transaction = Transaction::new_with_payer(
-        &[audius::instruction::init_valid_signer(
-            &audius::id(),
+        &[audius_eth_registry::instruction::init_valid_signer(
+            &audius_eth_registry::id(),
             valid_signer,
             signer_group,
             &group_owner.pubkey(),
@@ -127,12 +127,12 @@ async fn process_tx_init_valid_signer(
 
 fn construct_eth_address(
     pubkey: &PublicKey,
-) -> [u8; audius::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE] {
-    let mut addr = [0u8; audius::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE];
+) -> [u8; audius_eth_registry::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE] {
+    let mut addr = [0u8; audius_eth_registry::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE];
     addr.copy_from_slice(&sha3::Keccak256::digest(&pubkey.serialize()[1..])[12..]);
     assert_eq!(
         addr.len(),
-        audius::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE
+        audius_eth_registry::state::SecpSignatureOffsets::ETH_ADDRESS_SIZE
     );
     addr
 }
@@ -158,18 +158,18 @@ async fn test_call_track_listen_instruction() {
         secp256k1_instruction::new_secp256k1_instruction(&priv_key, message.as_ref());
 
     let start = 1;
-    let end = start + audius::state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
+    let end = start + audius_eth_registry::state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
 
-    let offsets = audius::state::SecpSignatureOffsets::try_from_slice(
+    let offsets = audius_eth_registry::state::SecpSignatureOffsets::try_from_slice(
         &secp256_program_instruction.data[start..end],
     )
     .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
-    let sig_end = sig_start + audius::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
+    let sig_end = sig_start + audius_eth_registry::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
 
-    let mut signature: [u8; audius::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-        [0u8; audius::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
+    let mut signature: [u8; audius_eth_registry::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
+        [0u8; audius_eth_registry::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
     signature.copy_from_slice(&secp256_program_instruction.data[sig_start..sig_end]);
 
     let recovery_id = secp256_program_instruction.data[sig_end];
@@ -193,7 +193,7 @@ async fn test_call_track_listen_instruction() {
         &payer,
         &recent_blockhash,
         &valid_signer,
-        audius::state::ValidSigner::LEN,
+        audius_eth_registry::state::ValidSigner::LEN,
     )
     .await
     .unwrap();

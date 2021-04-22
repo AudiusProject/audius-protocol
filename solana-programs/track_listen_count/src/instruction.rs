@@ -16,7 +16,7 @@ pub struct InstructionArgs {
     /// data of track
     pub track_data: TrackData,
     /// signature to verify
-    pub signature: [u8; audius::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE],
+    pub signature: [u8; audius_eth_registry::state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE],
     /// recovery ID used to verify signature
     pub recovery_id: u8,
 }
@@ -49,7 +49,7 @@ pub fn init(
     let accounts = vec![
         AccountMeta::new_readonly(*valid_signer_account, false),
         AccountMeta::new_readonly(*signer_group, false),
-        AccountMeta::new_readonly(audius::id(), false),
+        AccountMeta::new_readonly(audius_eth_registry::id(), false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
         AccountMeta::new_readonly(sysvar::clock::id(), false),
     ];
