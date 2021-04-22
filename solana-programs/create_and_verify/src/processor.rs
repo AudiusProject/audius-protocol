@@ -17,7 +17,7 @@ const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
 pub struct Processor {}
 impl Processor {
     /// Call Audius program to verify signature
-    pub fn process_example_instruction(
+    pub fn process_track_listen_instruction(
         _program_id: &Pubkey,
         accounts: &[AccountInfo],
         instruction_data: InstructionArgs,
@@ -79,7 +79,7 @@ impl Processor {
         match instruction {
             TemplateInstruction::ExampleInstruction(signature_data) => {
                 msg!("Instruction: ExampleInstruction");
-                Self::process_example_instruction(program_id, accounts, signature_data)
+                Self::process_track_listen_instruction(program_id, accounts, signature_data)
             }
         }
     }

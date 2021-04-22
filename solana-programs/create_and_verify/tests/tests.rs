@@ -138,7 +138,7 @@ fn construct_eth_address(
 }
 
 #[tokio::test]
-async fn test_call_example_instruction() {
+async fn test_call_track_listen_instruction() {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
     let priv_key = SecretKey::parse(&key).unwrap();
