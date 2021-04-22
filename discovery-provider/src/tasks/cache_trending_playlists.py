@@ -5,7 +5,7 @@ from src.queries.get_trending_playlists import make_trending_cache_key, make_get
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_playlists_last_completion_redis_key
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
-from src.trending_strategies.trending_type_and_version import TrendingType
+from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 logger = logging.getLogger(__name__)
 
@@ -14,12 +14,13 @@ TIME_RANGES = ["week", "month", "year"]
 trending_strategy_factory = TrendingStrategyFactory()
 
 def cache_trending(db, redis):
-    strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS)
     with db.scoped_session() as session:
-        for time_range in TIME_RANGES:
-            key = make_trending_cache_key(time_range)
-            res = make_get_unpopulated_playlists(session, time_range, strategy)()
-            pickle_and_set(redis, key, res)
+        for version in TrendingVersion:
+            strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version)
+            for time_range in TIME_RANGES:
+                key = make_trending_cache_key(time_range)
+                res = make_get_unpopulated_playlists(session, time_range, strategy)()
+                pickle_and_set(redis, key, res)
 
 @celery.task(name="cache_trending_playlists", bind=True)
 def cache_trending_playlists(self):
