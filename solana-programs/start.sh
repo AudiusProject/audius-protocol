@@ -5,7 +5,7 @@
 
     sol_rpc_endpoint=http://34.122.200.71:8899
     # Remote test-validator
-    solana config set -u $sol_rpc_endpoint 
+    solana config set -u $sol_rpc_endpoint
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
