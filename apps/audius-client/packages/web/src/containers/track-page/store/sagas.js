@@ -14,6 +14,11 @@ import { retrieveTracks } from 'store/cache/tracks/utils'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 import { getUsers } from 'store/cache/users/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import {
+  getRemoteVar,
+  waitForRemoteConfig
+} from 'services/remote-config/Provider'
+import { StringKeys } from 'services/remote-config'
 
 export const TRENDING_BADGE_LIMIT = 10
 
@@ -21,11 +26,27 @@ function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     try {
       yield call(waitForBackendSetup)
+      yield call(waitForRemoteConfig)
+      const TF = new Set(getRemoteVar(StringKeys.TF)?.split(',') ?? [])
       let trendingTrackRanks = yield select(getTrendingTrackRanks)
       if (!trendingTrackRanks) {
         const trendingRanks = yield apiClient.getTrendingIds({
           limit: TRENDING_BADGE_LIMIT
         })
+        if (TF.size > 0) {
+          trendingRanks.week = trendingRanks.week.filter(i => {
+            const shaId = window.Web3.utils.sha3(i.toString())
+            return !TF.has(shaId)
+          })
+          trendingRanks.month = trendingRanks.month.filter(i => {
+            const shaId = window.Web3.utils.sha3(i.toString())
+            return !TF.has(shaId)
+          })
+          trendingRanks.year = trendingRanks.year.filter(i => {
+            const shaId = window.Web3.utils.sha3(i.toString())
+            return !TF.has(shaId)
+          })
+        }
 
         yield put(trackPageActions.setTrackTrendingRanks(trendingRanks))
         trendingTrackRanks = yield select(getTrendingTrackRanks)
