@@ -20,7 +20,7 @@ hex = "0.4.2"
 libsecp256k1 = "0.3.5"
 sha3 = "0.9.1"
 borsh = "0.8.2"
-audius = { path="../program", features = [ "no-entrypoint" ] }
+audius_eth_registry = { path="../audius_eth_registry", features = [ "no-entrypoint" ] }
 
 [[bin]]
 name = "audius"
