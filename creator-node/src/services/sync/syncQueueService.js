@@ -5,6 +5,7 @@ const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
+ * sync job = this node (secondary) will sync data for a user from their primary
  */
 class SyncQueue {
   /**
