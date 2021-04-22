@@ -21,10 +21,10 @@ const { stringifiedDateFields } = require('./lib/utils')
 const processSync = require('../src/services/sync/processSync')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
-const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
-const sampleExportFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportFromClock2.json')
+const sampleExportDummyCIDPath = path.resolve(__dirname, 'syncAssets/sampleExportDummyCID.json')
+const sampleExportDummyCIDFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportDummyCIDFromClock2.json')
 
-describe.only('test nodesync', async function () {
+describe('test nodesync', async function () {
   let server, app
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
@@ -38,6 +38,7 @@ describe.only('test nodesync', async function () {
 
   /** Wipe DB + Redis */
   beforeEach(async function () {
+    console.log(`SIDTEST WIPE DB & REDI`)
     try {
       await destroyUsers()
     } catch (e) {
@@ -581,10 +582,13 @@ describe.only('test nodesync', async function () {
     })
   })
 
-  describe.only('Test /sync2 route', async function () {
+  describe('Test processSync function', async function () {
+    let serviceRegistryMock
+
     const TEST_ENDPOINT = 'http://test-cn.co'
     const userMetadataURI = config.get('userMetadataNodeUrl')
     const { pubKey } = testEthereumConstants
+    const userWallets = [pubKey.toLowerCase()]
 
     const createUser = async function () {
       // Create user
@@ -619,11 +623,11 @@ describe.only('test nodesync', async function () {
       return cnodeUserUUID
     }
 
-
     /**
      * Setup deps + mocks + app
      */
     beforeEach(async function () {
+      console.log(`SIDTEST DESCRIBE BEFORE EACH - SETUP DEPS MOCK APP`)
       nock.cleanAll()
 
       maxExportClockValueRange = originalMaxExportClockValueRange
@@ -635,11 +639,13 @@ describe.only('test nodesync', async function () {
       const appInfo = await getApp(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest)
       server = appInfo.server
       app = appInfo.app
+
+      serviceRegistryMock = getServiceRegistryMock(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest)
     })
 
-    it.only('Test processSync function - from clean user state with mocked export object', async function () {
+    it('Test processSync function - Syncs correctly from clean user state with mocked export object', async function () {
       // Unpack sample export data
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
+      const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDPath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
       const audiusUser = cnodeUser.audiusUsers[0]
       const { tracks, files, clockRecords, clockInfo } = cnodeUser
@@ -655,25 +661,12 @@ describe.only('test nodesync', async function () {
         .persist()
         .get(uri => uri.includes('/ipfs'))
         .reply(200, { data: Buffer.alloc(32) })
-
+      
       // Confirm no local user state before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
 
-      // test: sync
-      // await request(app)
-      //   .post('/sync')
-      //   .send({
-      //     wallet: [pubKey.toLowerCase()],
-      //     creator_node_endpoint: TEST_ENDPOINT,
-      //     immediate: true
-      //   }).expect(200)
-
-      // await timeout(10000, true)
-
-      const userWallets = [pubKey.toLowerCase()]
-
-      const serviceRegistryMock = getServiceRegistryMock(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest)
+      // call process sync
       await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
       const exportedCnodeUser = {
@@ -777,148 +770,9 @@ describe.only('test nodesync', async function () {
       assert.deepStrictEqual(localClockInfo, clockInfo)
     })
 
-    it('Syncs correctly from clean user state with mocked export object', async function () {
+    it('Test processSync function - Syncs correctly when cnodeUser data already exists locally', async function () {
       // Get the saved export
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportPath))
-      const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
-      const audiusUser = cnodeUser.audiusUsers[0]
-      const { tracks, files, clockRecords, clockInfo } = cnodeUser
-
-      // Setup mocked responses -> replace with S3 files
-      nock(TEST_ENDPOINT)
-        .persist()
-        .get(uri => uri.includes('/export'))
-        .reply(200, sampleExport)
-
-      /**
-       * All IPFS calls will fail since data doesn't exist, and node will fallback via gateway
-       * Mock this route to ensure data retrieval succeeds.
-       * TODO - replace with S3 file
-       */
-      nock(userMetadataURI)
-        .persist()
-        .get(uri => uri.includes('/ipfs'))
-        .reply(200, { data: Buffer.alloc(32) })
-
-      // Confirm no local user state before sync
-      const initialCNodeUserCount = await models.CNodeUser.count()
-      assert.strictEqual(initialCNodeUserCount, 0)
-
-      // test: sync
-      await request(app)
-        .post('/sync')
-        .send({
-          wallet: [pubKey.toLowerCase()],
-          creator_node_endpoint: TEST_ENDPOINT,
-          immediate: true
-        }).expect(200)
-
-      await timeout(10000, true)
-
-      const exportedCnodeUser = {
-        walletPublicKey: cnodeUser.walletPublicKey,
-        lastLogin: cnodeUser.lastLogin,
-        latestBlockNumber: cnodeUser.latestBlockNumber,
-        clock: cnodeUser.clock,
-        createdAt: cnodeUser.createdAt
-      }
-
-      // verify CNodeUser
-      const localCNodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
-        where: {
-          walletPublicKey: cnodeUser.walletPublicKey
-        },
-        raw: true
-      }))
-      assert.deepStrictEqual(
-        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
-        exportedCnodeUser
-      )
-
-      const cnodeUserUUID = localCNodeUser.cnodeUserUUID
-
-      // verify AudiusUser
-      const localAudiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
-        where: {
-          cnodeUserUUID,
-          clock: audiusUser.clock
-        },
-        raw: true
-      }))
-      assert.deepStrictEqual(
-        _.omit(localAudiusUser, ['cnodeUserUUID']),
-        _.omit(audiusUser, ['cnodeUserUUID'])
-      )
-
-      // TODO verify: expected files are all on disc
-
-      // verify clock records
-      for (let exportedRecord of clockRecords) {
-        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
-        const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            sourceTable,
-            createdAt,
-            updatedAt
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(
-          _.omit(localRecord, ['cnodeUserUUID']),
-          _.omit(exportedRecord, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify files
-      for (let exportedFile of files) {
-        const { fileUUID, multihash, clock } = exportedFile
-        const localFile = stringifiedDateFields(await models.File.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            multihash,
-            fileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedFile, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify tracks
-      for (let exportedTrack of tracks) {
-        const { clock, blockchainId, metadataFileUUID } = exportedTrack
-        const localFile = stringifiedDateFields(await models.Track.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            blockchainId,
-            metadataFileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedTrack, ['cnodeUserUUID'])
-        )
-      }
-
-      // verify clockInfo
-      const localClockInfo = {
-        requestedClockRangeMin: 0,
-        requestedClockRangeMax: 0 + (maxExportClockValueRange - 1),
-        localClockMax: localCNodeUser.clock
-      }
-      assert.deepStrictEqual(localClockInfo, clockInfo)
-    })
-
-    it('Syncs correctly when cnodeUser data already exists locally', async function () {
-      // Get the saved export
-      const sampleExport = JSON.parse(fs.readFileSync(sampleExportFromClock2Path))
+      const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDFromClock2Path))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
       const audiusUser = cnodeUser.audiusUsers[0]
       const { tracks, files, clockRecords, clockInfo } = cnodeUser
@@ -949,13 +803,7 @@ describe.only('test nodesync', async function () {
       const localCNodeUserBeforeSync = stringifiedDateFields(localCNodeUsersBeforeSync[0])
 
       // test: sync
-      await request(app)
-        .post('/sync2')
-        .send({
-          wallet: [pubKey.toLowerCase()],
-          creator_node_endpoint: TEST_ENDPOINT,
-          immediate: true
-        }).expect(200)
+      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
       const exportedCnodeUser = {
         walletPublicKey: cnodeUser.walletPublicKey,
