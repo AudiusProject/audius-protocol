@@ -37,7 +37,6 @@ describe('test nodesync', async function () {
 
   /** Wipe DB + Redis */
   beforeEach(async function () {
-    console.log(`SIDTEST WIPE DB & REDI`)
     try {
       await destroyUsers()
     } catch (e) {
@@ -626,7 +625,6 @@ describe('test nodesync', async function () {
      * Setup deps + mocks + app
      */
     beforeEach(async function () {
-      console.log(`SIDTEST DESCRIBE BEFORE EACH - SETUP DEPS MOCK APP`)
       nock.cleanAll()
 
       maxExportClockValueRange = originalMaxExportClockValueRange
@@ -642,7 +640,7 @@ describe('test nodesync', async function () {
       serviceRegistryMock = getServiceRegistryMock(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest)
     })
 
-    it('Test processSync function - Syncs correctly from clean user state with mocked export object', async function () {
+    it('Syncs correctly from clean user state with mocked export object', async function () {
       // Unpack sample export data
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDPath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
@@ -769,7 +767,7 @@ describe('test nodesync', async function () {
       assert.deepStrictEqual(localClockInfo, clockInfo)
     })
 
-    it('Test processSync function - Syncs correctly when cnodeUser data already exists locally', async function () {
+    it('Syncs correctly when cnodeUser data already exists locally', async function () {
       // Get the saved export
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDFromClock2Path))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]

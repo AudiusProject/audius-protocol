@@ -38,6 +38,8 @@ const respondToURSMRequestForProposalController = async (req) => {
  * of all user data, update DB state accordingly, fetch all files and make them available.
  *
  * This route is only run on secondaries, to export and sync data from a user's primary.
+ *
+ * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')

@@ -1,6 +1,6 @@
 const axios = require('axios')
 
-// const { serviceRegistry } = require('../serviceRegistry')
+const { serviceRegistry } = require('../serviceRegistry')
 const models = require('../models')
 const { saveFileForMultihashToFS } = require('../fileManager')
 const { handleResponse, successResponse, errorResponse, errorResponseServerError, errorResponseBadRequest } = require('../apiHelpers')
@@ -153,17 +153,18 @@ module.exports = function (app) {
   }))
 
   /**
+   * @notice - this route is deprecated in favor of /sync in `src/components/replicaSet/replicaSetController.js`
+   *    leaving this old code here in case a revert is required
+   *
    * Given walletPublicKeys array and target creatorNodeEndpoint, will request export
    * of all user data, update DB state accordingly, fetch all files and make them available.
    *
    * This route is only run on secondaries, to export and sync data from a user's primary.
    */
-  app.post('/sync2', ensureStorageMiddleware, handleResponse(async (req, res) => {
+  app.post('/sync_old', ensureStorageMiddleware, handleResponse(async (req, res) => {
     const walletPublicKeys = req.body.wallet // array
     const creatorNodeEndpoint = req.body.creator_node_endpoint // string
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
-
-    const serviceRegistry = req.app.get('serviceRegistry')
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
     if (walletPublicKeys.length === 0) {
@@ -356,7 +357,6 @@ async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNode
         })
 
         // push user metadata node to user's replica set if defined
-        logger.error(`SIDTEST UMNODE: ${config.get('userMetadataNodeUrl')}`)
         if (config.get('userMetadataNodeUrl')) userReplicaSet.push(config.get('userMetadataNodeUrl'))
 
         // filter out current node from user's replica set
@@ -596,7 +596,7 @@ async function _initBootstrapAndRefreshPeers ({ ipfs }, logger, targetIPFSPeerAd
     logger.info(redisKey, 'ipfs bootstrap add results:', results)
 
     // Manually connect to peer.
-    // results = await ipfs.swarm.connect(targetPeerAddress)
-    // logger.info(redisKey, 'peer connection results:', results.Strings[0])
+    results = await ipfs.swarm.connect(targetPeerAddress)
+    logger.info(redisKey, 'peer connection results:', results.Strings[0])
   }
 }

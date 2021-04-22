@@ -4,11 +4,11 @@ const JobProcessorConcurrency = 10
 const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
 /**
- * SyncProcessingQueue - handles enqueuing and processing of Sync jobs on secondary
+ * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
  */
-class SyncProcessingQueue {
+class SyncQueue {
   /**
-   * TODO better comment
+   * Construct bull queue and define job processor
    */
   constructor (nodeConfig, redis, ipfs, ipfsLatest) {
     this.nodeConfig = nodeConfig
@@ -39,8 +39,6 @@ class SyncProcessingQueue {
       JobProcessorConcurrency,
       JobProcessorFnFilePath
     )
-
-    console.log(`SIDTEST SYNCPROCESSINGQUEUE COMPLETED INIT`)
   }
 
   async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
@@ -50,4 +48,4 @@ class SyncProcessingQueue {
   }
 }
 
-module.exports = SyncProcessingQueue
+module.exports = SyncQueue

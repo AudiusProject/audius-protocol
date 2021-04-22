@@ -18,8 +18,6 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
  *    what they receive in each export.
  */
 async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
-  console.log(`SIDTEST STARTING _PROCESSSYNC ${walletPublicKeys} ${creatorNodeEndpoint}`)
-
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
@@ -43,6 +41,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     }
     await redisLock.setLock(redisKey)
   }
+
   /**
    * Perform all sync operations, catch and log error if thrown, and always release redis locks after.
    */
@@ -53,7 +52,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     })
     const localMaxClockVal = (cnodeUser) ? cnodeUser.clock : -1
 
-    console.log(`SIDTEST PROCESSSYNC local cnodeuser ${JSON.stringify(cnodeUser)}`)
     /**
      * Fetch data export from creatorNodeEndpoint for given walletPublicKeys and clock value range
      *
@@ -66,19 +64,12 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       wallet_public_key: walletPublicKeys,
       clock_range_min: (localMaxClockVal + 1)
     }
-    // TODO comment
+
+    // This is used only for logging by primary to record endpoint of requesting node
     if (nodeConfig.get('creatorNodeEndpoint')) {
       exportQueryParams.source_endpoint = nodeConfig.get('creatorNodeEndpoint')
     }
 
-    console.log(`SIDTEST PROCESSSYNC 3 EXPOERT QUERY PARAMS ${JSON.stringify(exportQueryParams)}`)
-
-    // Make export request to endpoint
-    // try {
-
-    // } catch (e) {
-
-    // }
     const resp = await axios({
       method: 'get',
       baseURL: creatorNodeEndpoint,
@@ -148,7 +139,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         })
 
         // push user metadata node to user's replica set if defined
-        logger.error(`SIDTEST UMNODE: ${nodeConfig.get('userMetadataNodeUrl')}`)
         if (nodeConfig.get('userMetadataNodeUrl')) {
           userReplicaSet.push(nodeConfig.get('userMetadataNodeUrl'))
         }

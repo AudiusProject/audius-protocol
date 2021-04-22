@@ -42,6 +42,9 @@ class ServiceRegistry {
     this.snapbackSM = null
     this.URSMRegistrationManager = null
     this.syncQueueService = null
+
+    this.servicesInitialized = false
+    this.servicesThatRequireServerInitialized = false
   }
 
   /**
@@ -58,7 +61,10 @@ class ServiceRegistry {
       this.libs = await this._initAudiusLibs()
     }
 
+    // Intentionally not awaitted
     this.monitoringQueue.start()
+
+    this.servicesInitialized = true
   }
 
   /**
@@ -88,6 +94,7 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._registerNodeOnL2URSM()
 
+    this.servicesThatRequireServerInitialized = true
     this.logInfo(`All services that require server successfully initialized!`)
   }
 
