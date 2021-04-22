@@ -38,3 +38,6 @@ services:
       - "8080:8080" # ipfs gateway
     volumes:
       - ./compose/ipfs:/data/ipfs
+    logging:
+      options:
+        max-size: 500m
