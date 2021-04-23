@@ -4,6 +4,7 @@ import * as audioActions from './store/audio/actions'
 import * as oauthActions from './store/oauth/actions'
 import * as lifecycleActions from './store/lifecycle/actions'
 import * as notificationsActions from './store/notifications/actions'
+import * as searchActions from './store/search/actions'
 import * as themeActions from './store/theme/actions'
 import { showCastPicker } from './store/googleCast/controller'
 import * as webActions from './store/web/actions'
@@ -62,6 +63,14 @@ export enum MessageType {
   REFRESH_NOTIFICATIONS = 'refresh-notifications',
   MARK_ALL_NOTIFICATIONS_AS_VIEWED = 'mark-all-notifications-as-viewed',
 
+  // Search
+  OPEN_SEARCH = 'open-search',
+  UPDATE_SEARCH_QUERY = 'update-search-query',
+  SUBMIT_SEARCH_QUERY = 'submit-search-query',
+
+  FETCH_SEARCH_SUCCESS = 'fetch-search-success',
+  FETCH_SEARCH_FAILURE = 'fetch-search-failure',
+  
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
 
@@ -219,6 +228,22 @@ export const handleMessage = async (
     case MessageType.FETCH_NOTIFICATIONS_FAILURE:
       return dispatch(notificationsActions.append(Status.FAILURE, []))
 
+    // Search
+    case MessageType.OPEN_SEARCH:
+      dispatch(searchActions.open(message.reset))
+      return
+
+    case MessageType.FETCH_SEARCH_SUCCESS:
+      dispatch(searchActions.setResults({
+        query: message.query,
+        results: message.results
+      }))
+      return
+
+    case MessageType.FETCH_SEARCH_FAILURE:
+      dispatch(searchActions.fetchSearchFailed({ query: message.query }))
+      return
+  
     // OAuth
     case MessageType.REQUEST_TWITTER_AUTH:
       return dispatch(oauthActions.openPopup(message, Provider.TWITTER))

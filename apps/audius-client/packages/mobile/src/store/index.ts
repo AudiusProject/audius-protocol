@@ -6,6 +6,7 @@ import oauth, { OAuthState } from './oauth/reducer'
 import web, { WebState } from './web/reducer'
 import lifecycle, { LifecycleState } from './lifecycle/reducer'
 import notifications, { NotificationsState } from './notifications/reducer'
+import search, { SearchState } from './search/reducer'
 import theme, { ThemeState } from './theme/reducer'
 
 export type AppState = {
@@ -15,7 +16,8 @@ export type AppState = {
   lifecycle: LifecycleState
   googleCast: GoogleCastState
   notifications: NotificationsState
-  theme: ThemeState
+  theme: ThemeState,
+  search: SearchState
 }
 
 const createRootReducer = () =>
@@ -26,7 +28,8 @@ const createRootReducer = () =>
     lifecycle,
     googleCast,
     notifications,
-    theme
+    theme,
+    search
   })
 
 export default createRootReducer

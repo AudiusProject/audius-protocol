@@ -5,7 +5,7 @@ import User, { UserMetadata } from './User'
 import Favorite from './Favorite'
 import { ReactNode } from 'react'
 import { UserTrackMetadata } from './Track'
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from '../utils/typeUtils'
 
 export enum Variant {
   USER_GENERATED = 'user-generated',
@@ -16,7 +16,12 @@ type PlaylistContents = {
   track_ids: Array<{ time: number; track: ID }>
 }
 
-export type CollectionMetadata = {
+export type CollectionImage = {
+  cover_art: Nullable<CID>
+  cover_art_sizes: Nullable<CID>
+}
+
+export type CollectionMetadata = CollectionImage & {
   blocknumber: number
   variant: Variant.USER_GENERATED
   description: Nullable<string>
@@ -32,12 +37,11 @@ export type CollectionMetadata = {
   }
   tracks?: UserTrackMetadata[]
   playlist_id: ID
-  cover_art: CID | null
   playlist_name: string
   playlist_owner_id: ID
   repost_count: number
   save_count: number
-  upc?: string | null
+  upc?: Nullable<string>
   updated_at: string
   activity_timestamp?: string
 }

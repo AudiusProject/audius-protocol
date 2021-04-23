@@ -10,7 +10,8 @@ import React, {
   useState,
   useEffect,
   RefObject,
-  useCallback
+  useCallback,
+  useContext
 } from 'react'
 import Config from 'react-native-config'
 import AsyncStorage from '@react-native-community/async-storage'
@@ -39,9 +40,10 @@ import {
   postMessage as postMessageUtil
 } from '../../utils/postMessage'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
-import useAppState from '../../utils/useAppState'
-import useKeyboardListeners from '../../utils/useKeyboardListeners'
+import useAppState from '../../hooks/useAppState'
+import useKeyboardListeners from '../../hooks/useKeyboardListeners'
 import NotificationReminder from '../notification-reminder/NotificationReminder'
+import { WebRefContext } from './WebRef'
 
 const URL_OVERRIDE = Config.URL_OVERRIDE
 const STATIC_PORT = Config.STATIC_SERVER_PORT || 3100
@@ -475,6 +477,15 @@ const WebApp = ({
 
   useKeyboardListeners(webRef)
 
+  const contextRef = useContext(WebRefContext)
+
+  const setWebRef = useCallback((ref: RefObject<MessagePostingWebView>) => {
+    // @ts-ignore
+    webRef.current = ref
+    // @ts-ignore
+    contextRef.webRef.current = ref
+  }, [])
+  
   const [atTop, setAtTop] = useState(true)
   const onScroll = (navState: any) => {
     if (Platform.OS === 'ios') return
@@ -492,7 +503,7 @@ const WebApp = ({
           // See: https://github.com/react-native-webview/react-native-webview/issues/735
           autoManageStatusBarEnabled={false}
           key={key}
-          ref={webRef}
+          ref={setWebRef}
           source={{ uri }}
           decelerationRate='normal' // Default iOS inertial scrolling
           onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
