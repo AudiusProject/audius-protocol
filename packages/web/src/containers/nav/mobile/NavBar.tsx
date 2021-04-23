@@ -29,6 +29,7 @@ import { getIsIOS } from 'utils/browser'
 import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
 import { useLocation } from 'react-router-dom'
 import { isMatrix } from 'utils/theme/theme'
+import { onNativeBack } from 'utils/nativeRoute'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -124,11 +125,12 @@ const NavBar = ({
   const onGoBack = useCallback(() => {
     // @ts-ignore
     if (location.state?.fromNativeNotifications) {
-      onClickNotifications()
+      // @ts-ignore
+      onNativeBack(location.state?.fromPage)
     } else {
       goBack()
     }
-  }, [goBack, onClickNotifications, location])
+  }, [goBack, location])
 
   const goBackAndResetSlide = useCallback(() => {
     onGoBack()
