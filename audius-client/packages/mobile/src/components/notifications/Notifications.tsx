@@ -25,8 +25,8 @@ import List from './List'
 import { postMessage } from '../../utils/postMessage'
 import { MessageType } from '../../message'
 import { useTheme } from '../../utils/theme'
-import useAppState from '../../utils/useAppState'
-import useLocation from '../../utils/useLocation'
+import useAppState from '../../hooks/useAppState'
+import useLocation from '../../hooks/useLocation'
 
 const INITIAL_OFFSET = 10
 const MAX_BG_OPACITY = 0.3
@@ -239,7 +239,8 @@ const Notifications = ({
         postMessage(webRef.current, {
           type: MessageType.PUSH_ROUTE,
           route,
-          isAction: true
+          isAction: true,
+          fromPage: 'notifications'
         })
       }
       slideOut()
@@ -253,7 +254,8 @@ const Notifications = ({
       postMessage(webRef.current, {
         type: MessageType.PUSH_ROUTE,
         route: anchorRoute || '/',
-        isAction: true
+        isAction: true,
+        fromPage: 'notifications'
       })
       setAnchorRoute(null)
     }
