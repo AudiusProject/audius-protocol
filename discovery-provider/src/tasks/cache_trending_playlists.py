@@ -13,14 +13,12 @@ TIME_RANGES = ["week", "month", "year"]
 
 trending_strategy_factory = TrendingStrategyFactory()
 
-def cache_trending(db, redis):
+def cache_trending(db, redis, strategy):
     with db.scoped_session() as session:
-        for version in TrendingVersion:
-            strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version)
-            for time_range in TIME_RANGES:
-                key = make_trending_cache_key(time_range)
-                res = make_get_unpopulated_playlists(session, time_range, strategy)()
-                pickle_and_set(redis, key, res)
+        for time_range in TIME_RANGES:
+            key = make_trending_cache_key(time_range)
+            res = make_get_unpopulated_playlists(session, time_range, strategy)()
+            pickle_and_set(redis, key, res)
 
 @celery.task(name="cache_trending_playlists", bind=True)
 def cache_trending_playlists(self):
@@ -36,12 +34,14 @@ def cache_trending_playlists(self):
         have_lock = update_lock.acquire(blocking=False)
 
         if have_lock:
-            logger.info(f"cache_trending_playlists.py | Starting")
-            start_time = time.time()
-            cache_trending(db, redis)
-            end_time = time.time()
-            logger.info(f"cache_trending_playlists.py | Finished in {end_time - start_time} seconds")
-            redis.set(trending_playlists_last_completion_redis_key, int(end_time))
+            for version in TrendingVersion:
+                logger.info(f"cache_trending_playlists.py ({version.name} version) | Starting")
+                strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version)
+                start_time = time.time()
+                cache_trending(db, redis, strategy)
+                end_time = time.time()
+                logger.info(f"cache_trending_playlists.py ({version.name} version) | Finished in {end_time - start_time} seconds")
+                redis.set(trending_playlists_last_completion_redis_key, int(end_time))
         else:
             logger.info("cache_trending_playlists.py | Failed to acquire lock")
     except Exception as e:
