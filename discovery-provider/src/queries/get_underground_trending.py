@@ -51,6 +51,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
     o = score_params['o']
     f = score_params['f']
     qr = score_params['qr']
+    xf = score_params['xf']
+    pt = score_params['pt']
     trending_key = make_trending_cache_key("week", None, strategy.version)
     track_ids = []
     old_trending = get_pickled_key(redis_instance, trending_key)
@@ -94,6 +96,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             Track.track_id.notin_(exclude_track_ids),
             Track.created_at >= (datetime.now() - timedelta(days=o)),
             follower_query.c.follower_count < S,
+            follower_query.c.follower_count >= pt,
             AggregateUser.following_count < r,
             AggregatePlays.count >= q
         )
@@ -152,7 +155,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "week"
     )
 
-    karma_scores = get_karma(session, tuple(track_ids), None)
+    karma_scores = get_karma(session, tuple(track_ids), None, False, xf)
 
     # Associate all the extra data
     for (track_id, repost_count) in repost_counts:

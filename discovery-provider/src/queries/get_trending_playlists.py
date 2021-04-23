@@ -42,6 +42,8 @@ def get_scorable_playlist_data(session, time_range, strategy):
     """
     score_params = strategy.get_score_params()
     zq = score_params['zq']
+    xf = score_params['xf']
+    pt = score_params['pt']
 
     delta = time_delta_map.get(time_range) or time_delta_map.get('week')
 
@@ -138,12 +140,13 @@ def get_scorable_playlist_data(session, time_range, strategy):
         .all()
     )
     for (followee_user_id, follower_count) in follower_counts:
-        owned_playlist_ids = playlist_owner_id_map[followee_user_id]
-        for playlist_id in owned_playlist_ids:
-            playlist_map[playlist_id][response_name_constants.owner_follower_count] = follower_count
+        if follower_count >= pt:
+            owned_playlist_ids = playlist_owner_id_map[followee_user_id]
+            for playlist_id in owned_playlist_ids:
+                playlist_map[playlist_id][response_name_constants.owner_follower_count] = follower_count
 
     # Add karma
-    karma_scores = get_karma(session, tuple(playlist_ids), None, True)
+    karma_scores = get_karma(session, tuple(playlist_ids), None, True, xf)
     for (playlist_id, karma) in karma_scores:
         playlist_map[playlist_id]["karma"] = karma
 

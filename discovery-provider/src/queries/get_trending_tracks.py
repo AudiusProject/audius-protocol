@@ -15,7 +15,7 @@ def make_trending_cache_key(time_range, genre, version=TrendingVersion.DEFAULT):
     return f"generated-trending{version_name}:{time_range}:{(genre.lower() if genre else '')}"
 
 def generate_unpopulated_trending(session, genre, time_range, strategy, limit=TRENDING_LIMIT):
-    trending_tracks = generate_trending(session, time_range, genre, limit, 0)
+    trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
 
     track_scores = [strategy.get_track_score(time_range, track) for track in trending_tracks['listen_counts']]
     sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)

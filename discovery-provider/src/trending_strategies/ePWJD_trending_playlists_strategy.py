@@ -1,5 +1,5 @@
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
-from src.trending_strategies.default_trending_tracks_strategy import z
+from src.trending_strategies.ePWJD_trending_tracks_strategy import z
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
 class TrendingPlaylistsStrategyePWJD(BaseTrendingStrategy):
@@ -10,4 +10,4 @@ class TrendingPlaylistsStrategyePWJD(BaseTrendingStrategy):
         return z(time, track)
 
     def get_score_params(self):
-        return {'zq': 1000}
+        return {'zq': 1000, 'xf': True, 'pt': 0}

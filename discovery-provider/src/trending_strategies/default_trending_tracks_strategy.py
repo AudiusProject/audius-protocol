@@ -43,4 +43,4 @@ class DefaultTrendingTracksStrategy(BaseTrendingStrategy):
         return z(time, track)
 
     def get_score_params(self):
-        return
+        return {'xf': False, 'pt': 0}
