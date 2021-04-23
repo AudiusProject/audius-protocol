@@ -4,7 +4,7 @@ import logging
 import concurrent.futures
 from datetime import datetime, timedelta
 import requests
-from src import eth_abi_values
+from src.app import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn

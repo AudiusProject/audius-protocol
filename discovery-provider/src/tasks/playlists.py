@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
-from src import contract_addresses
+from src.app import contract_addresses
 from src.utils import helpers
 from src.models import Playlist
 from src.utils.playlist_event_constants import playlist_event_types_arr, playlist_event_types_lookup

@@ -1,7 +1,7 @@
 import logging
 import time
 from sqlalchemy import and_
-from src import eth_abi_values
+from src.app import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet
 from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
