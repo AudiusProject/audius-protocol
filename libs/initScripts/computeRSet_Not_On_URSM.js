@@ -8,23 +8,26 @@ const CreatorNode = require('../src/services/creatorNode')
 const CONTENT_NODE_TYPE = 'content-node'
 
 // PROD
-// const ETH_PROVIDER_URL = 'https://eth.audius.co'
-// const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.audius.co'
-// const USER_METADATA_ENDPOINT = 'https://usermetadata.audius.co/'
-// const ETH_REGISTRY_ADDRESS = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
-// const ETH_TOKEN_ADDRESS = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
-// const ETH_OWNER_WALLET = '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5'
+const ETH_PROVIDER_ENDPOINT = 'https://eth.audius.co'
+const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.audius.co'
+const USER_METADATA_ENDPOINT = 'https://usermetadata.audius.co/'
+const IDENTITY_SERVICE_ENDPOINT = 'https://identityservice.audius.co'
+const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'https://poa-gateway.audius.co'
+const ETH_REGISTRY_ADDRESS = '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C'
+const ETH_TOKEN_ADDRESS = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
+const ETH_OWNER_WALLET = '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5'
+const DATA_CONTRACTS_REGISTRY_ADDRESS = '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2'
 
 // STAGING
-const ETH_PROVIDER_ENDPOINT = 'https://eth.staging.audius.co'
-const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.staging.audius.co'
-const USER_METADATA_ENDPOINT = 'https://usermetadata.staging.audius.co'
-const IDENTITY_SERVICE_ENDPOINT = 'https://identityservice.staging.audius.co'
-const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'https://poa-gateway.staging.audius.co'
-const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
-const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
-const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
-const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
+// const ETH_PROVIDER_ENDPOINT = 'https://eth.staging.audius.co'
+// const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.staging.audius.co'
+// const USER_METADATA_ENDPOINT = 'https://usermetadata.staging.audius.co'
+// const IDENTITY_SERVICE_ENDPOINT = 'https://identityservice.staging.audius.co'
+// const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'https://poa-gateway.staging.audius.co'
+// const ETH_REGISTRY_ADDRESS = '0xe39b1cA04fc06c416c4eaBd188Cb1330b8FED781'
+// const ETH_TOKEN_ADDRESS = '0x74f24429ec3708fc21381e017194A5711E93B751'
+// const ETH_OWNER_WALLET = '0xcccc7428648c4AdC0ae262D3547584dDAE25c465'
+// const DATA_CONTRACTS_REGISTRY_ADDRESS = '0x793373aBF96583d5eb71a15d86fFE732CD04D452'
 
 
 // NOTE: Migrate URSM first via `node setup.js run user-replica-set-manager up`
@@ -56,7 +59,7 @@ const getEnv = env => {
 // export URSM_BOOTSTRAPPER_PRIVATE_KEY=
 const URSM_BOOTSTRAPPER_PRIVATE_KEY = getEnv('URSM_BOOTSTRAPPER_PRIVATE_KEY')
 
-const NUM_USERS_PER_BATCH_REQUEST = 25
+const NUM_USERS_PER_BATCH_REQUEST = 50
 
 const configureAndInitLibs = async () => {
   const audiusLibsConfig = {
@@ -127,6 +130,7 @@ async function getAllUsersWithRSetButNotOnURSM (offset, audiusLibs) {
       0 /* offset */,
       range(offset, offset + NUM_USERS_PER_BATCH_REQUEST) /* idsArray */
     )
+
     subsetUsers
       // Filter to users that have an rset but not on URSM
       .filter(user => user.creator_node_endpoint && !user.secondary_ids && !user.primary_id) // users with rset not on contract
@@ -220,6 +224,9 @@ const run = async () => {
   const audiusLibs = await configureAndInitLibs()
   audiusLibs.discoveryProvider.setEndpoint(DISCOVERY_NODE_ENDPOINT) // to use waitForDPIndexing call
 
+  let userReplicaBootstrapAddress = await audiusLibs.contracts.UserReplicaSetManagerClient.getUserReplicaSetBootstrapAddress()
+  console.log(`URSM Bootstrap: ${userReplicaBootstrapAddress}`)
+
   // Get all SPs, and create a mapping like:
   //    <spId - {endpoint, number_of_times_selected}>
   const { spEndpointToSpIdAndCount } = await getSPs(audiusLibs)
@@ -235,8 +242,9 @@ const run = async () => {
   let userIdsSuccess = []
   let userIdsFail = []
 
-  const numUsersToProcess = numOfUsers
-  for (offset = 4000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  // const numUsersToProcess = numOfUsers
+  const numUsersToProcess = 140000
+  for (offset = 120000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     const batchStart = Date.now()
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
@@ -302,7 +310,7 @@ const run = async () => {
     // Write data to file
     writeDataToFile(spEndpointToSpIdAndCount, userIdToRSet, offset)
 
-    let sliceLength = 10
+    let sliceLength = 25
     let i
     for (i = 0; i < userIdsWithRSetButNotOnURSM.length; i+= sliceLength) {
       const range = userIdsWithRSetButNotOnURSM.slice(i, i + sliceLength)
@@ -327,20 +335,22 @@ const run = async () => {
           userIdsFail.push({ userId, error: e.message })
         }
       }))
-      /*
-      const userId = parseInt(userIdsWithRSetButNotOnURSM[i])
-      const replicaSetSecondarySpIds = userIdToRSet[userId]
-      */
+      // const userId = parseInt(userIdsWithRSetButNotOnURSM[i])
+      // const replicaSetSecondarySpIds = userIdToRSet[userId]
     }
+
     const batchEnd = Date.now()
     const batchDuration = batchEnd - batchStart
     console.log(`\nbatchDuration: ${batchDuration}ms`)
+
   }
 
   const end = Date.now() - start
-  console.log(`Sucessful upgrades for users=${userIdsSuccess}`)
+  console.log(`Sucessful upgrades for ${userIdsSuccess.length} users, ${userIdsSuccess}`)
   console.log(`Failed upgrades for userIds=${JSON.stringify(userIdsFail, null, 2)}`)
   console.log(`\nTime Taken: ${end}ms`)
 }
 
 run()
+
+// node computeRSet_Not_On_URSM.js | tee 4_22_21_migration_5.txt
