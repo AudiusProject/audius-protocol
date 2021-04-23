@@ -13,8 +13,8 @@ RUN apt-get update && \
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
-COPY track_listen_count track_listen_count
 COPY audius_eth_registry audius_eth_registry
+COPY track_listen_count track_listen_count
 COPY cli cli
 
 RUN cd audius_eth_registry && \

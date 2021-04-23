@@ -3,24 +3,24 @@
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
 
-    solana config set -u devnet
+    solana config set -u $SOLANA_HOST
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 1; do
-        solana airdrop --faucet-host 35.199.181.141 0.5 feepayer.json
+        solana airdrop 0.5 feepayer.json
     done
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
-        solana airdrop --faucet-host 35.199.181.141 0.5
+        solana airdrop 0.5
     done
 
     cd audius_eth_registry
     cargo build-bpf
-    solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius-keypair.json --force
+    solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius_eth_registry-keypair.json --force
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
-    new_address=$(solana program deploy target/deploy/audius.so --output json | jq -r '.programId')
+    new_address=$(solana program deploy target/deploy/audius_eth_registry.so --output json | jq -r '.programId')
     if [ -z "$new_address" ]; then
         echo "failed to deploy audius_eth_registry"
         exit 1
@@ -28,7 +28,7 @@
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
     while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
-        solana airdrop --faucet-host 35.199.181.141 0.5
+        solana airdrop 0.5
     done
 
     cd ../track_listen_count
@@ -53,12 +53,12 @@ cd ..
 cat <<EOF
 {
     "trackListenCountAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' track_listen_count/src/lib.rs)",
-    "audiusEthRegistryAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)",
+    "audiusEthRegistryAddress": "$(grep -Po '(?<=declare_id!\(").*(?=")' audius_eth_registry/src/lib.rs)",
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
     "ownerWallet": "$owner_wallet",
-    "endpoint": "https://devnet.solana.com",
+    "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$priv_key"
 }
 EOF
