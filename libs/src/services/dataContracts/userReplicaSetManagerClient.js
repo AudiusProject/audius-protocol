@@ -108,6 +108,16 @@ class UserReplicaSetManagerClient extends ContractClient {
   }
 
   /**
+   * Return the current replica set bootstrap address
+   */
+  async getUserReplicaSetBootstrapAddress () {
+    const method = await this.getMethod('getUserReplicaSetBootstrapAddress')
+    let currentWallet = this.web3Manager.getWalletAddress()
+    let resp = await method.call({ from: currentWallet })
+    return resp
+  }
+
+  /**
    * Return the current ownerWallet and delegateOwnerWallet for a given spID
    * @param {number} userId
    */
