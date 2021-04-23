@@ -13,13 +13,13 @@ RUN apt-get update && \
 
 ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:${PATH}"
 
-COPY create_and_verify create_and_verify
-COPY program program
+COPY audius_eth_registry audius_eth_registry
+COPY track_listen_count track_listen_count
 COPY cli cli
 
-RUN cd program && \
+RUN cd audius_eth_registry && \
     cargo build-bpf && \
-    cd ../create_and_verify && \
+    cd ../track_listen_count && \
     cargo build-bpf  && \
     cd ../cli && \
     cargo build
