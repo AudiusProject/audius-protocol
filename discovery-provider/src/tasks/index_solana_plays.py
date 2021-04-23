@@ -19,11 +19,10 @@ TX_SIGNATURES_MAX_BATCHES = 20
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 10
 
-SOL_PLAYS_REDIS_KEY = "sol_plays"
-
 logger = logging.getLogger(__name__)
 
-
+# Parse signed data message from each transaction submitted to
+# Audius TrackListenCount program
 def parse_instruction_data(data):
     decoded = base58.b58decode(data)[1:]
 
