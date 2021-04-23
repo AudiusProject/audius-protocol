@@ -8,6 +8,8 @@ import { getUserId } from 'store/account/selectors'
 import { getSearch } from './selectors'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import mobileSagas from './mobileSagas'
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export function* getSearchResults(searchText) {
   const userId = yield select(getUserId)
@@ -47,7 +49,7 @@ function* fetchSearchAsync(action) {
         })
       )
     } else {
-      yield put(searchActions.fetchSearchFailed())
+      yield put(searchActions.fetchSearchFailed(action.searchText))
     }
   }
 }
@@ -73,5 +75,6 @@ function* watchSearch() {
 }
 
 export default function sagas() {
-  return [watchSearch]
+  const sagas = [watchSearch]
+  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }

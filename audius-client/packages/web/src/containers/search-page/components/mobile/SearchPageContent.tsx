@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
@@ -14,8 +14,11 @@ import styles from './SearchPageContent.module.css'
 import { LineupState } from 'models/common/Lineup'
 import Lineup from 'containers/lineup/Lineup'
 import { Dispatch } from 'redux'
-import { useMainPageHeader } from 'containers/nav/store/context'
-
+import NavContext, {
+  LeftPreset,
+  CenterPreset,
+  RightPreset
+} from 'containers/nav/store/context'
 import useTabs from 'hooks/useTabs/useTabs'
 import Card from 'components/card/mobile/Card'
 import { UserCollection } from 'models/Collection'
@@ -30,6 +33,7 @@ import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
 import Spin from 'antd/lib/spin'
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type SearchPageContentProps = {
   tracks: LineupState<{}>
@@ -304,7 +308,21 @@ const SearchPageContent = (props: SearchPageContentProps) => {
   const searchTitle = props.isTagSearch ? 'Tag Search' : 'Search'
 
   // Set nav header
-  useMainPageHeader()
+  const { setLeft, setCenter, setRight } = useContext(NavContext)!
+  useEffect(() => {
+    // If native, add the ability to navigate back to the native search
+    if (NATIVE_MOBILE) {
+      setLeft(LeftPreset.BACK)
+      setCenter(CenterPreset.LOGO)
+      setRight(null)
+    } else {
+      // If non-native mobile, show the notification and search icons
+      setLeft(LeftPreset.NOTIFICATION)
+      setCenter(CenterPreset.LOGO)
+      setRight(RightPreset.SEARCH)
+    }
+  }, [setLeft, setCenter, setRight])
+
   const record = useRecord()
   const { searchText } = props
   const didChangeTabsFrom = useCallback(

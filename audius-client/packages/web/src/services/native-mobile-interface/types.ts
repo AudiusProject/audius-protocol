@@ -35,6 +35,14 @@ export enum MessageType {
   REFRESH_NOTIFICATIONS = 'refresh-notifications',
   MARK_ALL_NOTIFICATIONS_AS_VIEWED = 'mark-all-notifications-as-viewed',
 
+  // Search
+  OPEN_SEARCH = 'open-search',
+  UPDATE_SEARCH_QUERY = 'update-search-query',
+  SUBMIT_SEARCH_QUERY = 'submit-search-query',
+
+  FETCH_SEARCH_SUCCESS = 'fetch-search-success',
+  FETCH_SEARCH_FAILURE = 'fetch-search-failure',
+
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
 
