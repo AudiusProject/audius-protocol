@@ -40,7 +40,8 @@ def cache_trending_playlists(self):
                 start_time = time.time()
                 cache_trending(db, redis, strategy)
                 end_time = time.time()
-                logger.info(f"cache_trending_playlists.py ({version.name} version) | Finished in {end_time - start_time} seconds")
+                logger.info(f"cache_trending_playlists.py ({version.name} version) | \
+                    Finished in {end_time - start_time} seconds")
                 redis.set(trending_playlists_last_completion_redis_key, int(end_time))
         else:
             logger.info("cache_trending_playlists.py | Failed to acquire lock")

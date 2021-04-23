@@ -95,7 +95,8 @@ def index_trending(self, db, redis):
                     pickle_and_set(redis, key, res)
                     cache_end_time = time.time()
                     total_time = cache_end_time - cache_start_time
-                    logger.info(f"index_trending.py | Cached trending ({version.name} version) for {genre}-{time_range} in {total_time} seconds")
+                    logger.info(f"index_trending.py | Cached trending ({version.name} version) \
+                        for {genre}-{time_range} in {total_time} seconds")
 
         # Cache underground trending
         for version in TrendingVersion:
@@ -106,7 +107,8 @@ def index_trending(self, db, redis):
             pickle_and_set(redis, key, res)
             cache_end_time = time.time()
             total_time = cache_end_time - cache_start_time
-            logger.info(f"index_trending.py | Cached underground trending ({version.name} version) in {total_time} seconds")
+            logger.info(f"index_trending.py | Cached underground trending ({version.name} version) \
+                in {total_time} seconds")
 
     update_end = time.time()
     update_total = update_end - update_start
