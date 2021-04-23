@@ -97,7 +97,8 @@ class SnapbackSM {
           this.log(`StateMachineQueue error processing ${e}`)
         }
 
-        const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
+        // const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
+        const stateMachineJobInterval = DevDelayInMS
 
         this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
         await utils.timeout(stateMachineJobInterval)
@@ -185,13 +186,14 @@ class SnapbackSM {
   }
 
   /**
-   * Retrieve users with this node as primary
+   * Retrieve users with this node as replica (primary or secondary)
    *  - Makes single request to discovery node to retrieve all users
    *
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodePrimaryUsers () {
+  async getNodeUsers () {
+    // Fetch discovery node currently connected to libs as this can change
     const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
 
     // Re-initialize if no discovery provider selected by libs instance
@@ -199,15 +201,15 @@ class SnapbackSM {
       throw new Error('No discovery provider currently selected, exiting')
     }
 
+    // Request all users that have this node as a replica (either primary or secondary)
     const requestParams = {
       method: 'get',
       baseURL: discoveryProviderEndpoint,
-      url: `users/creator_node`,
+      url: `users/content_node/all`,
       params: {
         creator_node_endpoint: this.endpoint
       }
     }
-
     const resp = await axios(requestParams)
 
     return resp.data.data
@@ -288,15 +290,23 @@ class SnapbackSM {
   }
 
   /**
-   * @param {Array} nodePrimaryUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {Array} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @returns {Array} array of content node endpoint strings
    */
-  async computeContentNodePeerSet (nodePrimaryUserInfoList) {
-    const peerList = nodePrimaryUserInfoList.map(userInfo => userInfo.secondary1).concat(
-      nodePrimaryUserInfoList.map(userInfo => userInfo.secondary2)
+  async computeContentNodePeerSet (nodeUserInfoList) {
+    let peerList = (
+      nodeUserInfoList.map(userInfo => userInfo.primary)
+      .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
+      .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
     )
-    const peerSet = new Set(peerList.filter(Boolean))
 
+    peerList = peerList.filter(Boolean) // filter out falsey values
+
+    peerList = peerList.filter(peer => (peer != this.endpoint)) // remove self from peerList
+
+    let peerSet = new Set(peerList) // convert to Set to get uniques
+
+    // TODO decide if return as set or list
     return peerSet
   }
 
@@ -308,13 +318,21 @@ class SnapbackSM {
   async processStateMachineOperation () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
-    await this.computeContentNodePeerSet()
+    // Retrieve list of all users which have this node as replica
+    const nodeUsers = await this.getNodeUsers()
+    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary == this.endpoint))
 
-    // Retrieve list of all users which have this node as primary
-    const usersList = await this.getNodePrimaryUsers()
+    this.log(`NODEUSERS ${JSON.stringify(nodeUsers)}`)
+    this.log(`NODEPRIMARYUSERS ${JSON.stringify(nodePrimaryUsers)}`)
 
     // Build content node peer set
-    await this.computeContentNodePeerSet(usersList)
+    const peerSet = await this.computeContentNodePeerSet(nodeUsers)
+    this.log(`PEERSET ${JSON.stringify(Array.from(peerSet))}`)
+
+    /**
+     * Build map of content node to list of all users that need to be processed
+     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
+     */
 
     // Generate list of wallets by node to query clock number
     // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
@@ -326,11 +344,7 @@ class SnapbackSM {
     // Wallets being processed in this state machine operation
     let wallets = []
 
-    /**
-     * Build map of content node to list of all users that need to be processed
-     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
-     */
-    usersList.forEach(
+    nodePrimaryUsers.forEach(
       (user) => {
         // determine if user should be processed by checking if user_id % moduloBase = currentModuloSlice
         const userId = user.user_id
@@ -399,7 +413,7 @@ class SnapbackSM {
     this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
 
     // Issue syncs if necessary
-    // For each user in the initially returned usersList,
+    // For each user in the initially returned nodePrimaryUsers,
     //  compare local primary clock value to value from secondary retrieved in bulk above
     let numSyncsIssued = 0
     await Promise.all(
@@ -455,10 +469,8 @@ class SnapbackSM {
     const previousModuloSlice = this.currentModuloSlice
     this.currentModuloSlice += 1
     this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice} out of ${ModuloBase}`)
 
-    this.log(`Issued ${numSyncsIssued} sync ops`)
-    this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} / ${ModuloBase} ------------------`)
+    this.log(`------------------END Process SnapbackSM Operation || Issued ${numSyncsIssued} SyncRequest ops in slice ${previousModuloSlice} of ${ModuloBase}. Moving to slice ${this.currentModuloSlice} ------------------`)
   }
 
   /**

@@ -542,6 +542,7 @@ def get_previously_private_playlists_route():
 
 
 # Get the users with a given `creator_node_endpoint` as primary
+# This route is deprecated in favor of `/users/content_node` below, but left for backwards-compatibility
 @bp.route("/users/creator_node", methods=("GET",))
 def get_creator_node_users():
     try:
@@ -553,20 +554,19 @@ def get_creator_node_users():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+
+# New route to call get_users_cnode with replica_type param
+# - Leaving `/users/creator_node` above untouched for backwards-compatibility
 @bp.route("/users/content_node/<replica_type>", methods=("GET",))
 def get_content_node_users(replica_type):
-    '''
-    New route to call get_users_cnode with replica_type param
-    Leaving `/users/creator_node` above untouched for backwards-compatibility
-    '''
     try:
         if "creator_node_endpoint" not in request.args:
             raise exceptions.ArgumentError("Missing creator_node_endpoint")
         cnode_url = request.args.get("creator_node_endpoint")
 
-        if replica_type == ReplicaType.PRIMARY:
+        if replica_type == 'primary':
             users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
-        elif replica_type == ReplicaType.SECONDARY:
+        elif replica_type == 'secondary':
             users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
         else:
             users = get_users_cnode(cnode_url, ReplicaType.ALL)
