@@ -7,6 +7,8 @@ import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 
 import styles from './SearchBar.module.css'
 import { Status } from 'store/types'
+import { OpenSearchMessage } from 'services/native-mobile-interface/search'
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 interface SearchBarProps {
   className?: string
@@ -74,15 +76,19 @@ const SearchBar = ({
   }
 
   const onClick = () => {
-    if (open) {
-      if (value.trimLeft() !== '') {
-        beginSearch()
-      } else {
-        onSearch('')
-        onClose()
-      }
+    if (NATIVE_MOBILE) {
+      new OpenSearchMessage({ reset: true }).send()
     } else {
-      onOpen()
+      if (open) {
+        if (value.trimLeft() !== '') {
+          beginSearch()
+        } else {
+          onSearch('')
+          onClose()
+        }
+      } else {
+        onOpen()
+      }
     }
   }
 
