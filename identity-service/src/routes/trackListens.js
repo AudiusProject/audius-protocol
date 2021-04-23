@@ -219,7 +219,7 @@ module.exports = function (app) {
         config.get('solanaSignerPrivateKey'),
         userId.toString(),
         trackId.toString(),
-        Date.now().toString()
+        'relay' // Static source value to indicate relayed listens
       )
       logger.info(`Track listen tx submitted, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
       return successResponse({
