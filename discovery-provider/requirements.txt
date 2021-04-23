@@ -24,6 +24,7 @@ pytest-postgresql==2.4.1
 eventlet==0.28.0
 psutil==5.8.0
 
+# Below dependencies added during Solana integration
 base58==2.1.0
 certifi==2020.12.5
 cffi==1.14.5
