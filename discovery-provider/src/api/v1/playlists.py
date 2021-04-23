@@ -274,7 +274,9 @@ class FullPlaylistReposts(Resource):
 trending_response = make_response("trending_playlists_response", ns, fields.List(fields.Nested(playlist_model)))
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('time', required=False)
-@ns.route("/trending")
+
+@ns.route("/trending/", defaults={"version": TrendingVersion.DEFAULT.name})
+@ns.route("/trending/<string:version>")
 class TrendingPlaylists(Resource):
     @record_metrics
     @ns.doc(
@@ -291,8 +293,12 @@ class TrendingPlaylists(Resource):
     @ns.expect(trending_parser)
     @ns.marshal_with(trending_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
-    def get(self):
+    def get(self, version):
         """Gets top trending playlists for time period on Audius"""
+        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        if not version_list:
+            abort_bad_path_param('version', ns)
+
         args = trending_parser.parse_args()
         time = args.get("time")
         time = "week" if time not in ["week", "month", "year"] else time
@@ -300,7 +306,7 @@ class TrendingPlaylists(Resource):
             "time": time,
             "with_tracks": False
         }
-        strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS)
+        strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version_list[0])
         playlists = get_trending_playlists(args, strategy)
         playlists = playlists[:TRENDING_LIMIT]
         playlists = list(map(extend_playlist, playlists))

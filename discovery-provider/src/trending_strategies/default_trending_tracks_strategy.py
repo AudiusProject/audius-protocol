@@ -27,7 +27,7 @@ def z(time, track):
         return{'score':0,**track}
     H=(N*E+F*e+O*x+R*t+i*A)*j
     L=T[time]
-    K=datetime.datetime.now()
+    K=datetime.now()
     w=parse(o)
     k=(K-w).days
     Q=1

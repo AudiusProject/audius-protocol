@@ -251,7 +251,7 @@ class Trending(Resource):
         """Gets the top 100 trending (most popular) tracks on Audius"""
         version_list = list(filter(lambda v: v.name == version, TrendingVersion))
         if not version_list:
-            abort_bad_path_param('version', full_ns)
+            abort_bad_path_param('version', ns)
 
         args = trending_parser.parse_args()
         strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
@@ -323,7 +323,7 @@ class RandomTrack(Resource):
     def get(self, version):
         version_list = list(filter(lambda v: v.name == version, TrendingVersion))
         if not version_list:
-            abort_bad_path_param('version', full_ns)
+            abort_bad_path_param('version', ns)
 
         args = random_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
