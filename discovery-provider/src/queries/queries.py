@@ -32,7 +32,7 @@ from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
-from src.queries.get_users_cnode import get_users_cnode
+from src.queries.get_users_cnode import get_users_cnode, ReplicaType
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.utils.redis_metrics import record_metrics
@@ -540,7 +540,8 @@ def get_previously_private_playlists_route():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
-# Get the users for a given creator node url
+
+# Get the users with a given `creator_node_endpoint` as primary
 @bp.route("/users/creator_node", methods=("GET",))
 def get_creator_node_users():
     try:
@@ -548,6 +549,28 @@ def get_creator_node_users():
             raise exceptions.ArgumentError("Missing creator_node_endpoint")
         cnode_url = request.args.get("creator_node_endpoint")
         users = get_users_cnode(cnode_url)
+        return api_helpers.success_response(users)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+@bp.route("/users/content_node/<replica_type>", methods=("GET",))
+def get_content_node_users(replica_type):
+    '''
+    New route to call get_users_cnode with replica_type param
+    Leaving `/users/creator_node` above untouched for backwards-compatibility
+    '''
+    try:
+        if "creator_node_endpoint" not in request.args:
+            raise exceptions.ArgumentError("Missing creator_node_endpoint")
+        cnode_url = request.args.get("creator_node_endpoint")
+
+        if replica_type == ReplicaType.PRIMARY:
+            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
+        elif replica_type == ReplicaType.SECONDARY:
+            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
+        else:
+            users = get_users_cnode(cnode_url, ReplicaType.ALL)
+
         return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
@@ -561,6 +584,7 @@ def get_ursm_content_nodes():
         return api_helpers.success_response(cnodes)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 @bp.route("/ipfs_peer_info", methods=("GET",))
 def get_ipfs_peer_info_route():
