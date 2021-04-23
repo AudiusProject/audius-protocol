@@ -12,7 +12,8 @@ import {
   User
 } from '../../../store/notifications/types'
 import IconTwitterBird from '../../../assets/images/iconTwitterBird.svg'
-import { getEntityRoute, getUserRoute } from '../routeUtil'
+import { getEntityRoute } from '../routeUtil'
+import { getUserRoute } from '../../../utils/routes'
 import { getRankSuffix } from './Trending'
 
 export const formatAchievementText = (

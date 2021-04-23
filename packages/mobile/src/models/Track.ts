@@ -5,7 +5,7 @@ import User, { UserMetadata } from 'models/User'
 import Favorite from 'models/Favorite'
 import Timestamped from './common/Timestamped'
 import { StemCategory } from './Stems'
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from '../utils/typeUtils'
 
 export interface TrackSegment {
   duration: string
@@ -48,11 +48,20 @@ export type RemixOf = {
   tracks: Remix[]
 }
 
-export type TrackMetadata = {
+export type TrackImage = {
+  cover_art: Nullable<CID>
+  cover_art_sizes: Nullable<CID>
+}
+
+export type TrackId = {
+  track_id: number
+  route_id: string
+}
+
+export type TrackMetadata = TrackImage & TrackId & {
   blocknumber: number
   activity_timestamp?: string
   is_delete: boolean
-  track_id: number
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
@@ -73,10 +82,7 @@ export type TrackMetadata = {
   save_count: number
   tags: Nullable<string>
   title: string
-  route_id: string
   track_segments: TrackSegment[]
-  cover_art: Nullable<CID>
-  cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
   field_visibility?: FieldVisibility
   listenCount?: number

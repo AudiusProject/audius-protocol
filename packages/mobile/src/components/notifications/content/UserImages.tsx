@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
-import { getUserListRoute, getUserRoute } from '../routeUtil'
+import { getUserListRoute } from '../routeUtil'
+import { getUserRoute } from '../../../utils/routes'
 import { useTheme } from '../../../utils/theme'
 import { Notification } from '../../../store/notifications/types'
 import User from '../../../models/User'

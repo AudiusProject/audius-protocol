@@ -3,7 +3,7 @@ import { checkNotifications, RESULTS } from 'react-native-permissions'
 
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import { postMessage as postMessageUtil } from '../../utils/postMessage'
-import useSessionCount from '../../utils/useSessionCount'
+import useSessionCount from '../../hooks/useSessionCount'
 import { Message, MessageType } from '../../message'
 
 const REMINDER_EVERY_N_SESSIONS = 10
