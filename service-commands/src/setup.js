@@ -287,7 +287,7 @@ const performHealthCheck = async (service, serviceNumber) => {
  */
 const discoveryNodeUp = async () => {
   console.log(
-    '\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
 
@@ -335,7 +335,7 @@ const discoveryNodeUp = async () => {
  */
 const discoveryNodeWebServerUp = async () => {
   console.log(
-    '\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
 
@@ -381,7 +381,7 @@ const discoveryNodeWebServerUp = async () => {
  */
 const allUp = async ({ numCreatorNodes = 4 }) => {
   console.log(
-    '\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
 
@@ -438,7 +438,7 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
 
