@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { Image } from 'react-native'
+import Config from 'react-native-config'
 import { UserMultihash } from '../../models/User'
 import { TrackImage as TrackImageType } from '../../models/Track'
 
@@ -16,14 +17,15 @@ const getTrackImageUrl = (track: TrackImageType, cNode: string) => {
 const getHasImage = (track: TrackImageType) => {
   return !!(track.cover_art_sizes || track.cover_art)
 }
+const gateways = [`${Config.USER_NODE}`, `${Config.LEGACY_USER_NODE}`]
 
 const useTrackImage = (track: TrackImageType, user: UserMultihash) => {
-  const cNodes = user.creator_node_endpoint.split(',').filter(Boolean)
+  const cNodes = user.creator_node_endpoint !== null ? user.creator_node_endpoint.split(',').filter(Boolean) : gateways
   const [didError, setDidError] = useState(cNodes.length === 0 || !getHasImage(track))
   const [source, setSource] = useState(didError ? null : { uri: getTrackImageUrl(track, cNodes[0]) })
   const onError = useCallback(() => {
     if (didError) return
-    const nodes = user.creator_node_endpoint.split(',').filter(Boolean)
+    const nodes = user.creator_node_endpoint !== null ? user.creator_node_endpoint.split(',').filter(Boolean) : gateways
     const numNodes = nodes.length
     const currInd = nodes.findIndex((cn: string) => (source?.uri ?? '').includes(cn)) 
     if (currInd !== 1 && currInd < numNodes - 1) {
@@ -32,6 +34,7 @@ const useTrackImage = (track: TrackImageType, user: UserMultihash) => {
       setDidError(true)
     }
   }, [cNodes, track, source])
+  console.log({ source, didError })
   return { source, didError, onError }
 }
 
