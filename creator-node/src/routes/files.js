@@ -317,6 +317,14 @@ const getDirCID = async (req, res) => {
 }
 
 module.exports = function (app) {
+  app.get('/processing_status', handleResponse(async (req, res) => {
+    const taskType = req.query.taskType
+    const uuid = req.query.uuid
+    const value = await redisClient.get(`${taskType}:::${uuid}`) || '{}'
+
+    return successResponse(JSON.parse(value))
+  }))
+
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */

@@ -1,8 +1,10 @@
 const axios = require('axios')
 const FormData = require('form-data')
+const { wait } = require('../../utils')
 const uuid = require('../../utils/uuid')
-
 const SchemaValidator = require('../schemaValidator')
+
+const MAX_TRACK_TRANSCODE_TIMEOUT = 600000 // 10 min
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -336,6 +338,46 @@ class CreatorNode {
    */
   async uploadTrackAudio (file, onProgress) {
     const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
+
+    // If the "/track_content" response still contains these keys, then CN has not been updated
+    // to be used with the transcode polling system. Return the response immediately
+    // This is backwards compatible with an older version of CN
+    if (body.transcodedTrackCID && body.transcodedTrackUUID && body.track_segments && body.source_file) {
+      return body
+    }
+
+    const { uuid } = body
+    const start = Date.now()
+    while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
+      const { status, resp } = await this.getProcessingStatus('transcode', uuid)
+      // Should have a body structure of:
+      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+      if (status && status === 'DONE') return resp.object.data
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/processing_status`, uuid)
+
+      // Check the transcode status every 5s
+      await wait(5000)
+    }
+
+    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/processing_status`, uuid)
+  }
+
+  /**
+   * Gets the task progress given the task type and uuid associated with the task
+   * @param {string} taskType
+   * @param {string} uuid
+   * @returns the status, and the success or failed response if the task is complete
+   */
+  async getProcessingStatus (taskType, uuid) {
+    const { data: body } = await this._makeRequest({
+      url: '/processing_status',
+      params: {
+        taskType,
+        uuid
+      },
+      method: 'get'
+    })
+
     return body
   }
 
