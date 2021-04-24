@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { Image } from 'react-native'
+import Config from 'react-native-config'
 import { UserMultihash } from '../../models/User'
 import { CollectionImage } from '../../models/Collection'
 
@@ -17,13 +18,15 @@ const getHasImage = (playlist: CollectionImage) => {
   return !!(playlist.cover_art_sizes || playlist.cover_art)
 }
 
+const gateways = [`${Config.USER_NODE}`, `${Config.LEGACY_USER_NODE}`]
+
 const usePlaylistImage = (playlist: CollectionImage, user: UserMultihash) => {
-  const cNodes = user.creator_node_endpoint.split(',').filter(Boolean)
+  const cNodes = user.creator_node_endpoint !== null ? user.creator_node_endpoint.split(',').filter(Boolean) : gateways
   const [didError, setDidError] = useState(cNodes.length === 0 || !getHasImage(playlist))
   const [source, setSource] = useState(didError ? null : { uri: getPlaylistImageUrl(playlist, cNodes[0]) })
   const onError = useCallback(() => {
     if (didError) return
-    const nodes = user.creator_node_endpoint.split(',').filter(Boolean)
+    const nodes = user.creator_node_endpoint !== null ? user.creator_node_endpoint.split(',').filter(Boolean) : gateways
     const numNodes = nodes.length
     const currInd = nodes.findIndex((cn: string) => (source?.uri ?? '').includes(cn)) 
     if (currInd !== -1 && currInd < numNodes - 1) {
