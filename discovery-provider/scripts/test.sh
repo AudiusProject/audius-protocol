@@ -38,7 +38,6 @@ if [ ! -f .gitignore ]; then
 fi
 
 set -e
-sh scripts/lint.sh
 
 # initialize virtual environment
 # rm -r venv
@@ -59,14 +58,26 @@ node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
 cd_discprov_repo
 
 # Stop dependencies, if present
-docker-compose -f docker-compose.base.yml stop
-docker-compose -f docker-compose.base.yml rm -f
-# docker-compose -f docker-compose.ipfs.yml stop
-# docker-compose -f docker-compose.ipfs.yml rm -f
+docker network rm audius_dev
+docker-compose \
+  -f compose/docker-compose.db.yml \
+  -f compose/docker-compose.redis.yml \
+  -f compose/docker-compose.ipfs.yml \
+  stop
+docker-compose \
+  -f compose/docker-compose.db.yml \
+  -f compose/docker-compose.redis.yml \
+  -f compose/docker-compose.ipfs.yml \
+  rm -rf
 
 # Bring up local dependencies - postgres, redis, ipfs
-docker-compose -f docker-compose.base.yml up -d
-# docker-compose -f docker-compose.ipfs.yml up -d
+docker network create audius_dev
+docker-compose \
+  -f compose/docker-compose.db.yml \
+  -f compose/docker-compose.redis.yml \
+  -f compose/docker-compose.ipfs.yml \
+  up -d
+
 sleep 5
 
 # Unit tests
