@@ -275,17 +275,6 @@ class Track extends Base {
     return CreatorNode.checkIfDownloadAvailable(trackId, creatorNodeEndpoints)
   }
 
-  /**
-   * Checks the status given of a given task type and uuid associated with the task
-   * @param {string} taskType
-   * @param {string} uuid
-   * @returns the status and response if task is complete or failed
-   */
-  async getProcessingStatus (taskType, uuid) {
-    this.REQUIRES(Services.CREATOR_NODE)
-    return this.creatorNode.getProcessingStatus(taskType, uuid)
-  }
-
   /* ------- SETTERS ------- */
 
   /**
