@@ -4,10 +4,9 @@ const { promisify } = require('util')
 
 const config = require('../config.js')
 const models = require('../models')
-const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
+const { saveFileFromBufferToIPFSAndDisk, handleTrackContentUpload } = require('../fileManager')
 const {
   handleResponse,
-  trackProgress,
   sendResponse,
   successResponse,
   errorResponseBadRequest,

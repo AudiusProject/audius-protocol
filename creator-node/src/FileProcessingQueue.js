@@ -50,7 +50,8 @@ class FileProcessingQueue {
 
   // TODO: Will make this job a background process
   async addTranscodeTask (transcodeParams) {
-    this.logStatus(transcodeParams.logContext, `Adding ${PROCESS_NAMES.transcode} task! uuid=${uuid}}`)
+    const { logContext } = transcodeParams
+    this.logStatus(logContext, `Adding ${PROCESS_NAMES.transcode} task! uuid=${logContext.requestID}}`)
 
     const job = await this.queue.add(
       PROCESS_NAMES.transcode,
