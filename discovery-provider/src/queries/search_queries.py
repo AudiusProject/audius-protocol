@@ -6,7 +6,12 @@ from flask import Blueprint, request
 import sqlalchemy
 
 from src import api_helpers, exceptions
-from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight, trackSimilarityWeight, trackRepostWeight, playlistRepostWeight, userFollowerWeight, trackUserNameWeight, playlistUserNameWeight
+from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight, trackSimilarityWeight, \
+    trackRepostWeight, playlistRepostWeight, userFollowerWeight, trackUserNameWeight, playlistUserNameWeight, \
+    track_title_exact_match_boost, track_handle_exact_match_boost, track_user_name_exact_match_boost, \
+    user_handle_exact_match_boost, playlist_name_exact_match_boost, playlist_handle_exact_match_boost, \
+    playlist_user_name_exact_match_boost
+     
 from src.models import Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -24,10 +29,6 @@ bp = Blueprint("search_tags", __name__)
 
 
 ######## VARS ########
-
-# Search for at least 10 items in the lexeme even if the user requests fewer
-# this is to allow secondary sorts to be more effective.
-MIN_SEARCH_LEXEME_LIMIT = 10
 
 class SearchKind(Enum):
     all = 1
@@ -429,21 +430,22 @@ def track_search_query(
     if personalized and not current_user_id:
         return []
 
+    distinct_owner_id = is_auto_complete
 
     res = sqlalchemy.text(
         # pylint: disable=C0301
         f"""
         select track_id, b.balance, b.associated_wallets_balance from (
-            select distinct on (owner_id) track_id, owner_id, total_score from (
+            select {'distinct on (owner_id)' if distinct_owner_id else ''} track_id, owner_id, total_score from (
                 select track_id, owner_id, 
                     (
                         (:similarity_weight * sum(score)) +
                         (:title_weight * similarity(coalesce(title, ''), query)) +
                         (:user_name_weight * similarity(coalesce(user_name, ''), query)) +
                         (:repost_weight * log(case when (repost_count = 0) then 1 else repost_count end)) +
-                        (case when (lower(query) = coalesce(title, '')) then 5 else 0 end) +
-                        (case when (lower(query) = handle) then 20 else 0 end) +
-                        (case when (lower(query) = user_name) then 5 else 0 end)
+                        (case when (lower(query) = coalesce(title, '')) then :title_match_boost else 0 end) +
+                        (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
+                        (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                     ) as total_score
                 from (
                     select
@@ -488,13 +490,16 @@ def track_search_query(
         res,
         {
             "query": search_str,
-            "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
+            "limit": limit,
             "offset": offset,
             "title_weight": trackTitleWeight,
             "repost_weight": trackRepostWeight,
             "similarity_weight": trackSimilarityWeight,
             "current_user_id": current_user_id,
-            "user_name_weight": trackUserNameWeight
+            "user_name_weight": trackUserNameWeight,
+            "title_match_boost": track_title_exact_match_boost,
+            "handle_match_boost": track_handle_exact_match_boost,
+            "user_name_match_boost": track_user_name_exact_match_boost
         },
     ).fetchall()
 
@@ -533,22 +538,18 @@ def track_search_query(
 
     return tracks[0:limit]
 
-
 def user_search_query(session, search_str, limit, offset, personalized, is_auto_complete, current_user_id):
     if personalized and not current_user_id:
         return []
 
-    # TODO: test whether we want the small similarity constant for handle (I think not)
-    # Add exact matches for usernames
-                # -- (0.3 * similarity(coalesce(handle, ''), query)) +
     res = sqlalchemy.text(
         f"""
         select u.user_id, b.balance, b.associated_wallets_balance from (
             select user_id from (
                 select user_id, (
                     sum(score) +
-                    (:follower_weight * log(case when (follower_count = 0) then 1 else follower_count end)) + 
-                    (case when (handle=query) then 10 else 0 end) +
+                    (:follower_weight * log(case when (follower_count = 0) then 1 else follower_count end)) +
+                    (case when (handle=query) then :handle_match_boost else 0 end) +
                     (:name_weight * similarity(coalesce(name, ''), query))) as total_score from (
                         select
                                 d."user_id" as user_id,
@@ -559,7 +560,7 @@ def user_search_query(session, search_str, limit, offset, personalized, is_auto_
                                 :query as query,
                                 d."follower_count" as follower_count
                         from "user_lexeme_dict" d
-                        where 
+                        where
                             d."word" % :query OR
                             d."handle" = :query
                 ) as results
@@ -576,11 +577,12 @@ def user_search_query(session, search_str, limit, offset, personalized, is_auto_
         res,
         {
             "query": search_str,
-            "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
+            "limit": limit,
             "offset": offset,
             "name_weight": userNameWeight,
             "follower_weight": userFollowerWeight,
             "current_user_id": current_user_id,
+            "handle_match_boost": user_handle_exact_match_boost
         },
     ).fetchall()
 
@@ -629,6 +631,8 @@ def playlist_search_query(
     repost_type = RepostType.album if is_album else RepostType.playlist
     save_type = SaveType.album if is_album else SaveType.playlist
 
+    distinct_owner_id = is_auto_complete
+
     # SQLAlchemy doesn't expose a way to escape a string with double-quotes instead of
     # single-quotes, so we have to use traditional string substitution. This is safe
     # because the value is not user-specified.
@@ -636,15 +640,15 @@ def playlist_search_query(
         # pylint: disable=C0301
         f"""
         select p.playlist_id, b.balance, b.associated_wallets_balance from (
-            select distinct on (owner_id) playlist_id, owner_id, total_score from (
+            select {'distinct on (owner_id)' if distinct_owner_id else ''} playlist_id, owner_id, total_score from (
                 select playlist_id, owner_id, (
                     sum(score) +
                     (:name_weight * similarity(coalesce(playlist_name, ''), query)) +
                     (:user_name_weight * similarity(coalesce(user_name, ''), query)) +
-                    (:repost_weight * repost_count) +
-                    (case when (lower(query) = coalesce(playlist_name, '')) then 5 else 0 end) +
-                    (case when (lower(query) = handle) then 10 else 0 end) +
-                    (case when (lower(query) = user_name) then 5 else 0 end)
+                    (:repost_weight * log(case when (repost_count = 0) then 1 else repost_count end)) +
+                    (case when (lower(query) = coalesce(playlist_name, '')) then :name_match_boost else 0 end) +
+                    (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
+                    (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                 ) as total_score
                 from (
                     select
@@ -679,20 +683,21 @@ def playlist_search_query(
         res,
         {
             "query": search_str,
-            "limit": max(limit, MIN_SEARCH_LEXEME_LIMIT),
+            "limit": limit,
             "offset": offset,
             "name_weight": playlistNameWeight,
             "repost_weight": playlistRepostWeight,
             "current_user_id": current_user_id,
-            "user_name_weight": playlistUserNameWeight
+            "user_name_weight": playlistUserNameWeight,
+            "name_match_boost": playlist_name_exact_match_boost,
+            "handle_match_boost": playlist_handle_exact_match_boost,
+            "user_name_match_boost": playlist_user_name_exact_match_boost
         },
     ).fetchall()
 
     # playlist_ids is list of tuples - simplify to 1-D list
     playlist_ids = [i[0] for i in playlist_data]
     playlists = get_unpopulated_playlists(session, playlist_ids, True)
-    logger.warning("PLAYLISTS")
-    logger.warning(f"{len(playlists)} - {len(playlist_ids)}")
 
     # TODO: Populate playlist metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
