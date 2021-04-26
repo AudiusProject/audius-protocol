@@ -5,9 +5,9 @@ from src.utils.config import shared_config
 
 # Convert key to snake case
 pattern = re.compile(r'(?<!^)(?=[A-Z])')
-ipfs_client = IPFSClient(
-    shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
-)
+# ipfs_client = IPFSClient(
+#     shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
+# )
 
 def convert_to_snake_case(value):
     if value == 'ID':

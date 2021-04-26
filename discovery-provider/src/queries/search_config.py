@@ -1,9 +1,18 @@
 import logging
 
 trackTitleWeight = 0.7
+trackSimilarityWeight = 5
+trackUserNameWeight = 8
+trackRepostWeight = 10 # TODO: tune this
+
+playlistRepostWeight = 0.2
+playlistUserNameWeight = 8
+
 userNameWeight = 0.7
+userFollowerWeight = 0.5
 playlistNameWeight = 0.7
-minSearchSimilarity = 0.3
+
+minSearchSimilarity = 0.4
 
 
 logger = logging.getLogger(__name__)
