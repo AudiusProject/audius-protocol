@@ -1,5 +1,7 @@
 const Bull = require('bull')
 
+const { logger } = require('../../logging')
+
 const JobProcessorConcurrency = 10
 const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
@@ -40,11 +42,15 @@ class SyncQueue {
       JobProcessorConcurrency,
       JobProcessorFnFilePath
     )
+
+    logger.info(`SIDTEST SYNCQUEUE CONSTRUCTION DONE`)
   }
 
   async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
+    logger.info(`SIDTEST SYNCQUEUE ENQUEUESYNC START`)
     const jobProps = { walletPublicKeys, creatorNodeEndpoint }
     const job = await this.queue.add(jobProps)
+    logger.info(`SIDTEST SYNCQUEUE ENQUEUESYNC ADDED JOB`)
     return job
   }
 }

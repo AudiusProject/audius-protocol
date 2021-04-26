@@ -14,6 +14,7 @@ const { serviceRegistry } = require('../../serviceRegistry')
  */
 const syncQueueJobProcessorFn = async (job) => {
   const { walletPublicKeys, creatorNodeEndpoint } = job.data
+  logger.info(`SIDTEST SYNCQUEUEJOBPROCFN BEGIN SYNC FOR ${walletPublicKeys} & ${creatorNodeEndpoint}`)
 
   await _ensureServiceRegistryInitialized()
 
@@ -25,6 +26,7 @@ const syncQueueJobProcessorFn = async (job) => {
 }
 
 const _ensureServiceRegistryInitialized = async () => {
+  logger.info(`SIDTEST _ensureServiceRegistryInitialized STARTING`)
   if (!this.serviceRegistry.servicesInitialized) {
     await this.serviceRegistry.initServices()
   }
@@ -32,6 +34,8 @@ const _ensureServiceRegistryInitialized = async () => {
   if (!this.serviceRegistry.servicesThatRequireServerInitialized) {
     await this.serviceRegistry.initServicesThatRequireServer()
   }
+
+  logger.info(`SIDTEST _ensureServiceRegistryInitialized STARTING`)
 }
 
 module.exports = syncQueueJobProcessorFn
