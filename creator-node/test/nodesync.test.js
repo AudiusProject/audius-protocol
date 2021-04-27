@@ -16,11 +16,13 @@ const ipfsImport = require('../src/ipfsClient')
 // TODO - upgrade to newer ipfs client
 const ipfsClient = ipfsImport.ipfs
 const redisClient = require('../src/redis')
-const { stringifiedDateFields } = require('./lib/utils')
+const { wait, stringifiedDateFields } = require('./lib/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 const sampleExportFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportFromClock2.json')
+
+const MAX_TRANSCODE_TRACK_TIMEOUT = 300000 // 5 min
 
 describe('test nodesync', async function () {
   let server, app
@@ -91,15 +93,41 @@ describe('test nodesync', async function () {
       const file = fs.readFileSync(testAudioFilePath)
 
       // Upload track content
-      const { body: { data: trackContentRespBody } } = await request(app)
+      const { body: { data: { uuid } } } = await request(app)
         .post('/track_content')
         .attach('file', file, { filename: 'fname.mp3' })
         .set('Content-Type', 'multipart/form-data')
         .set('X-Session-ID', sessionToken)
-      transcodedTrackCID = trackContentRespBody.transcodedTrackCID
-      transcodedTrackUUID = trackContentRespBody.transcodedTrackUUID
-      trackSegments = trackContentRespBody.track_segments
-      sourceFile = trackContentRespBody.source_file
+
+      const start = Date.now()
+      let trackUploadResponse
+      while (Date.now() - start < MAX_TRANSCODE_TRACK_TIMEOUT) {
+        const { body: { data: { status, resp } } } = await request(app)
+          .get('/processing_status')
+          .query({
+            taskType: 'transcode',
+            uuid: uuid
+          })
+
+        // Should have a body structure of:
+        //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+        if (status && status === 'DONE') {
+          trackUploadResponse = resp.object.data
+          break
+        }
+
+        if (status && status === 'FAILED') throw new Error(`Transcode failed: ${JSON.stringify(resp)}`)
+
+        // Check the transcode status every 1s
+        await wait(1000)
+      }
+
+      if (!trackUploadResponse) throw new Error(`Transcode exceeded max timeout=${MAX_TRANSCODE_TRACK_TIMEOUT}ms`)
+
+      transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID
+      trackSegments = trackUploadResponse.track_segments
+      sourceFile = trackUploadResponse.source_file
+      transcodedTrackCID = trackUploadResponse.transcodedTrackCID
 
       // Upload track metadata
       const trackMetadata = {
@@ -243,8 +271,8 @@ describe('test nodesync', async function () {
 
         // compare exported data
         const exportedUserData = exportBody.data.cnodeUsers
-        assert.deepStrictEqual(exportedUserData, expectedData)
         assert.deepStrictEqual(clockRecords.length, cnodeUserClock)
+        assert.deepStrictEqual(exportedUserData, expectedData)
       })
     })
 

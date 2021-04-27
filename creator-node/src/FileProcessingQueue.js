@@ -77,7 +77,7 @@ class FileProcessingQueue {
       await redisClient.set(`${taskType}:::${uuid}`, JSON.stringify(state), 'EX', EXPIRATION)
     } else {
       state = { status: PROCESS_STATES.FAILED, resp }
-      this.logError(logContext, `Error with ${taskType}. uuid=${uuid}}`)
+      this.logError(logContext, `Error with ${taskType}. uuid=${uuid}} resp=${JSON.stringify(resp)}`)
       await redisClient.set(`${taskType}:::${uuid}`, JSON.stringify(state), 'EX', EXPIRATION)
     }
 

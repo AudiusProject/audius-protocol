@@ -5,4 +5,8 @@ const stringifiedDateFields = (obj) => {
   return newObj
 }
 
-module.exports = { stringifiedDateFields }
+const wait = (milliseconds) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+module.exports = { wait, stringifiedDateFields }

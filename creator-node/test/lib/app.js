@@ -26,6 +26,14 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     monitoringQueue: new MonitoringQueueMock()
   }
 
+  // Update the import to be the mocked ServiceRegistry instance
+  require.cache[require.resolve('../../src/serviceRegistry')] = {
+    exports: { serviceRegistry: mockServiceRegistry }
+  }
+
+  require.cache[require.resolve('../../src/serviceRegistry')].exports.serviceRegistry.ipfs.addFromFs.exactly(33)
+  require.cache[require.resolve('../../src/serviceRegistry')].exports.serviceRegistry.ipfs.pin.add.exactly(33)
+
   const appInfo = require('../../src/app')(8000, mockServiceRegistry)
   appInfo.mockServiceRegistry = mockServiceRegistry
   return appInfo

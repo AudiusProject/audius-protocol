@@ -45,7 +45,9 @@ module.exports = function (app) {
           fileSizeError: req.fileSizeError,
           fileFilterError: req.fileFilterError,
           fileDestination: req.file.destination,
-          cnodeUserUUID: req.session.cnodeUserUUID
+          session: {
+            cnodeUserUUID: req.session.cnodeUserUUID
+          }
         }
       }
     )

@@ -13,10 +13,12 @@ const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
+const { wait } = require('./lib/utils')
 
 // Dummy keys from circle config.yml
 const DELEGATE_OWNER_WALLET = '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
 const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d'
+const MAX_TRANSCODE_TRACK_TIMEOUT = 300000 // 5 min
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
@@ -623,13 +625,46 @@ describe('test ContentBlacklist', function () {
     // Upload a track
     const file = fs.readFileSync(testAudioFilePath)
     // set track content
-    const {
-      body: { data: { transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } }
-    } = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', sessionToken)
+
+    const start = Date.now()
+    let trackUploadResponse
+    while (Date.now() - start < MAX_TRANSCODE_TRACK_TIMEOUT) {
+      const { body: { data: { status, resp } } } = await request(app)
+        .get('/processing_status')
+        .query({
+          taskType: 'transcode',
+          uuid: uuid
+        })
+
+      // Should have a body structure of:
+      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+      if (status && status === 'DONE') {
+        trackUploadResponse = resp
+        break
+      }
+
+      if (status && status === 'FAILED') throw new Error(`Transcode failed: ${JSON.stringify(resp)}`)
+
+      // Check the transcode status every 1s
+      await wait(1000)
+    }
+
+    if (!trackUploadResponse) throw new Error(`Transcode exceeded max timeout=${MAX_TRANSCODE_TRACK_TIMEOUT}ms`)
+
+    const {
+      object: {
+        data: {
+          transcodedTrackUUID,
+          track_segments: trackSegments,
+          source_file: sourceFile
+        }
+      }
+    } = trackUploadResponse
 
     // set track metadata
     const trackMetadata = {

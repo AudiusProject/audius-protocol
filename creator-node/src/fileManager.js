@@ -55,7 +55,7 @@ async function saveFileToIPFSFromFS ({ logContext }, req, srcPath) {
   const logger = genericLogger.child(logContext)
 
   // make sure user has authenticated before saving file
-  if (!req.cnodeUserUUID) {
+  if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
@@ -524,7 +524,7 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
 
   const routeTimeStart = Date.now()
   let codeBlockTimeStart
-  const cnodeUserUUID = req.cnodeUserUUID
+  const cnodeUserUUID = req.session.cnodeUserUUID
 
   // Create track transcode and segments, and save all to disk
   let transcodedFilePath
@@ -551,7 +551,7 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
   codeBlockTimeStart = Date.now()
   const transcodeFileIPFSResp = await saveFileToIPFSFromFS(
     { logContext: req.logContext },
-    { cnodeUserUUID: req.cnodeUserUUID },
+    { session: { cnodeUserUUID: req.session.cnodeUserUUID } },
     transcodedFilePath
   )
 
@@ -563,7 +563,7 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
       const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
       const { multihash, dstPath } = await saveFileToIPFSFromFS(
         { logContext: req.logContext },
-        { cnodeUserUUID: req.cnodeUserUUID },
+        { session: { cnodeUserUUID: req.session.cnodeUserUUID } },
         segmentAbsolutePath
       )
       return { multihash, srcPath: segmentFilePath, dstPath }

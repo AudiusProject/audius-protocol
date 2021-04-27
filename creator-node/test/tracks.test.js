@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
 const sinon = require('sinon')
+// const proxyquire = require('proxyquire')
 
 const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
@@ -17,12 +18,39 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
+const { wait } = require('./lib/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 const testAudiusFileNumSegments = 32
 
-describe('test Tracks with mocked IPFS', function () {
+const MAX_TRANSCODE_TRACK_TIMEOUT = 300000 // 5 min
+
+const pollTrackTranscodeResponse = async (app, uuid) => {
+  const start = Date.now()
+  while (Date.now() - start < MAX_TRANSCODE_TRACK_TIMEOUT) {
+    const { body: { data: { status, resp } } } = await request(app)
+      .get('/processing_status')
+      .query({
+        taskType: 'transcode',
+        uuid: uuid
+      })
+
+    // Should have a body structure of:
+    //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+    if (status && status === 'DONE') {
+      return resp.object.data
+    }
+    if (status && status === 'FAILED') throw new Error(`Transcode failed: ${JSON.stringify(resp)}`)
+
+    // Check the transcode status every 1s
+    await wait(1000)
+  }
+
+  throw new Error(`Transcode exceeded max timeout=${MAX_TRANSCODE_TRACK_TIMEOUT}ms`)
+}
+
+describe.only('test Tracks with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock
 
   beforeEach(async () => {
@@ -35,6 +63,8 @@ describe('test Tracks with mocked IPFS', function () {
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
+
+    console.log('\n======================RUNNING THE NEXT TEST======================\n')
   })
 
   afterEach(async () => {
@@ -83,7 +113,7 @@ describe('test Tracks with mocked IPFS', function () {
     await server.close()
   })
 
-  it('fails to upload when maxMemoryFileSizeBytes exceeded', async function () {
+  it.only('fails to upload when maxMemoryFileSizeBytes exceeded', async function () {
     // Configure extremely small file size
     process.env.maxMemoryFileSizeBytes = 10
 
@@ -112,26 +142,28 @@ describe('test Tracks with mocked IPFS', function () {
     await server.close()
   })
 
-  it('uploads /track_content', async function () {
+  it.only('uploads /track_content', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
-    ipfsMock.addFromFs.exactly(33)
-    ipfsMock.pin.add.exactly(33)
+    // require.cache[require.resolve('../src/serviceRegistry')].exports.serviceRegistry.ipfs.addFromFs.exactly(33)
+    // require.cache[require.resolve('../src/serviceRegistry')].exports.serviceRegistry.ipfs.pin.add.exactly(33)
 
-    const trackContentResp = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
-    assert.deepStrictEqual(trackContentResp.body.data.transcodedTrackCID, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(typeof trackContentResp.body.data.transcodedTrackUUID, 'string')
-  })
 
-  // depends on "uploads /track_content"
+    const { track_segments: trackSegments, source_file: sourceFile, transcodedTrackCID, transcodedTrackUUID } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
+    assert.deepStrictEqual(transcodedTrackCID, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(typeof transcodedTrackUUID, 'string')
+  }).timeout(0)
+
+  // depends on "uploads /track_content"; if that test fails, this test will fail to due to similarity
   it('creates Audius track', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 
@@ -139,32 +171,33 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const trackContentResp = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
       test: 'field1',
       owner_id: 1,
-      track_segments: trackContentResp.body.data.track_segments
+      track_segments: trackSegments
     }
 
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(200)
 
     assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-  })
+  }).timeout(0)
 
   // depends on "uploads /track_content"
   it('fails to create Audius track when segments not provided', async function () {
@@ -174,16 +207,17 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -194,7 +228,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: resp1.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(400)
   })
 
@@ -206,16 +240,17 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -227,7 +262,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: resp1.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(400)
   })
 
@@ -239,16 +274,17 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -259,7 +295,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: resp1.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(400)
   })
 
@@ -271,27 +307,28 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
-    const trackContentResp = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     const metadata = {
       test: 'field1',
-      track_segments: trackContentResp.body.data.track_segments,
+      track_segments: trackSegments,
       owner_id: 1
     }
 
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(200)
 
     if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
@@ -313,15 +350,16 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
+    const { track_segments: trackSegments } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
 
     // creates a downloadable Audius track with no track_id and no source_file
     const metadata = {
@@ -349,21 +387,22 @@ describe('test Tracks with mocked IPFS', function () {
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
-    const trackContentResp = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = await pollTrackTranscodeResponse(app, uuid)
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // needs debugging as to why this 'cid' key is needed for test to work
     const metadata = {
       test: 'field1',
-      track_segments: trackContentResp.body.data.track_segments,
+      track_segments: trackSegments,
       owner_id: 1,
       download: {
         'is_downloadable': true,
@@ -375,7 +414,7 @@ describe('test Tracks with mocked IPFS', function () {
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(200)
 
     if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
@@ -476,17 +515,18 @@ describe('test Tracks with real IPFS', function () {
     const file = fs.readFileSync(testAudioFilePath)
 
     // Make /track_content call with test file + expect success
-    const resp = await request(app)
+    const { body: { data: { uuid } } } = await request(app)
       .post('/track_content')
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
       .expect(200)
 
+    const { track_segments: trackSegments, transcodedTrackCID } = await pollTrackTranscodeResponse(app, uuid)
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
-    const transcodedTrackPath = DiskManager.computeFilePath(resp.body.data.transcodedTrackCID)
+    const transcodedTrackPath = DiskManager.computeFilePath(transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
@@ -494,9 +534,8 @@ describe('test Tracks with real IPFS', function () {
     //    and each segment disk file is exactly as expected
     // Note - The exact output of track segmentation is deterministic only for a given environment/ffmpeg version
     //    This test may break in the future but at that point we should re-generate the reference segment files.
-    const segmentCIDs = resp.body.data.track_segments
-    assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
-    segmentCIDs.map(function (cid, index) {
+    assert.deepStrictEqual(trackSegments.length, testAudiusFileNumSegments)
+    trackSegments.map(function (cid, index) {
       const cidPath = DiskManager.computeFilePath(cid.multihash)
 
       // Ensure file exists
