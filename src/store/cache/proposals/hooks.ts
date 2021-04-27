@@ -7,6 +7,7 @@ import { AppState } from 'store/types'
 import {
   setActiveProposals,
   setAllProposals,
+  setExecutionDelay,
   setProposal,
   setVotingPeriod
 } from './slice'
@@ -15,7 +16,8 @@ import { Proposal, ProposalEvent, Outcome } from 'types'
 import {
   useTotalStaked,
   useDispatchBasedOnBlockNumber,
-  useTimeRemaining
+  useTimeRemaining,
+  useEthBlockNumber
 } from 'store/cache/protocol/hooks'
 
 // -------------------------------- Selectors  --------------------------------
@@ -45,6 +47,9 @@ export const getProposal = (
 
 export const getVotingPeriod = (state: AppState) =>
   state.cache.proposals.votingPeriod
+
+export const getExecutionDelay = (state: AppState) =>
+  state.cache.proposals.executionDelay
 
 // -------------------------------- Thunk Actions  --------------------------------
 
@@ -143,6 +148,18 @@ export function fetchVotingPeriod(): ThunkAction<
   }
 }
 
+export function fetchExecutionDelay(): ThunkAction<
+  void,
+  AppState,
+  Audius,
+  Action<string>
+> {
+  return async (dispatch, getState, aud) => {
+    const executionDelay = await aud.Governance.getExecutionDelay()
+    dispatch(setExecutionDelay({ executionDelay }))
+  }
+}
+
 // -------------------------------- Hooks  --------------------------------
 
 export const useProposals = () => {
@@ -195,9 +212,27 @@ export const useVotingPeriod = () => {
   return { votingPeriod }
 }
 
+export const useExecutionDelay = () => {
+  const executionDelay = useSelector(getExecutionDelay)
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (!executionDelay) {
+      dispatch(fetchExecutionDelay())
+    }
+  }, [dispatch, executionDelay])
+
+  return { executionDelay }
+}
+
 export const useProposalTimeRemaining = (submissionBlock: number) => {
   const { votingPeriod } = useVotingPeriod()
   const remaining = useTimeRemaining(submissionBlock, votingPeriod)
+  return remaining
+}
+
+export const useExecutionDelayTimeRemaining = (votingDeadlineBlock: number) => {
+  const { executionDelay } = useExecutionDelay()
+  const remaining = useTimeRemaining(votingDeadlineBlock, executionDelay)
   return remaining
 }
 
@@ -206,4 +241,62 @@ export const useAmountAbstained = (proposal: Proposal) => {
   if (!proposal || !totalStaked) return null
   const voteMagnitude = proposal.voteMagnitudeYes.add(proposal.voteMagnitudeNo)
   return totalStaked.sub(voteMagnitude)
+}
+
+/**
+ * Although a proposal can be InProgress, there's several substates like:
+ * InProgress - can be voted on
+ * InProgressExecutionDelay - cannot be voted on, but not yet ready for execution
+ * InProgressAwaitingExecution - can be executed
+ * @param proposal Proposal object
+ */
+export const useGetInProgressProposalSubstate = (proposal: Proposal) => {
+  const { votingPeriod } = useVotingPeriod()
+  const { executionDelay } = useExecutionDelay()
+  const currentBlockNumber = useEthBlockNumber()
+
+  if (!proposal || !proposal.submissionBlockNumber) return null
+
+  const { submissionBlockNumber } = proposal
+  if (
+    !submissionBlockNumber ||
+    !votingPeriod ||
+    !executionDelay ||
+    !currentBlockNumber
+  )
+    return null
+
+  if (
+    currentBlockNumber >=
+    submissionBlockNumber + votingPeriod + executionDelay
+  ) {
+    return Outcome.InProgressAwaitingExecution
+  } else if (currentBlockNumber >= submissionBlockNumber + votingPeriod) {
+    return Outcome.InProgressExecutionDelay
+  }
+  return Outcome.InProgress
+}
+
+/**
+ * Calculate the block numbers for major milestones along a proposal's lifetime
+ * submissionBlock - block where the submission occurred
+ * votingDeadlineBlock - block before which all voting must occure
+ * executionDeadlineBlock - block after which a proposal can be executed
+ * @param proposal Proposal object
+ */
+export const useProposalMilestoneBlocks = (proposal: Proposal) => {
+  const { votingPeriod } = useVotingPeriod()
+  const { executionDelay } = useExecutionDelay()
+
+  if (!proposal || !proposal.submissionBlockNumber) return null
+
+  const { submissionBlockNumber } = proposal
+  if (!submissionBlockNumber || !votingPeriod || !executionDelay) return null
+
+  return {
+    submissionBlock: submissionBlockNumber,
+    votingDeadlineBlock: submissionBlockNumber + votingPeriod,
+    executionDeadlineBlock:
+      submissionBlockNumber + votingPeriod + executionDelay
+  }
 }
