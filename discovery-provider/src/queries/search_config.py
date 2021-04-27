@@ -3,7 +3,7 @@ import logging
 # Global
 
 # Threshold for lexeme similarity, in [0, 1].
-# Lower values are slower and match more rows, higher values are quicker 
+# Lower values are slower and match more rows, higher values are quicker
 # but may exclude viable candidates.
 min_search_similarity = 0.4
 

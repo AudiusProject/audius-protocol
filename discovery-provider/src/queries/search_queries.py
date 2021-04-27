@@ -6,12 +6,12 @@ from flask import Blueprint, request
 import sqlalchemy
 
 from src import api_helpers, exceptions
-from src.queries.search_config import track_title_weight, user_name_weight, playlist_name_weight, track_similarity_weight, \
-    track_repost_weight, playlist_repost_weight, user_follower_weight, track_user_name_weight, playlist_user_name_weight, \
-    track_title_exact_match_boost, track_handle_exact_match_boost, track_user_name_exact_match_boost, \
-    user_handle_exact_match_boost, playlist_name_exact_match_boost, playlist_handle_exact_match_boost, \
-    playlist_user_name_exact_match_boost
-     
+from src.queries.search_config import track_title_weight, user_name_weight, playlist_name_weight, \
+    track_similarity_weight, track_repost_weight, playlist_repost_weight, user_follower_weight, \
+    track_user_name_weight, playlist_user_name_weight, track_title_exact_match_boost, \
+    track_handle_exact_match_boost, track_user_name_exact_match_boost, \
+    user_handle_exact_match_boost, playlist_name_exact_match_boost, \
+    playlist_handle_exact_match_boost, playlist_user_name_exact_match_boost
 from src.models import Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -437,7 +437,7 @@ def track_search_query(
         f"""
         select track_id, b.balance, b.associated_wallets_balance from (
             select {'distinct on (owner_id)' if distinct_owner_id else ''} track_id, owner_id, total_score from (
-                select track_id, owner_id, 
+                select track_id, owner_id,
                     (
                         (:similarity_weight * sum(score)) +
                         (:title_weight * similarity(coalesce(title, ''), query)) +
@@ -516,8 +516,7 @@ def track_search_query(
         users_dict = {user["user_id"]: user for user in users}
 
         # attach user objects to track objects
-        for i in range(len(tracks)):
-            track = tracks[i]
+        for i, track in enumerate(tracks):
             user = users_dict[track["owner_id"]]
             # Add user balance
             balance = track_data[i][1]
@@ -592,8 +591,7 @@ def user_search_query(session, search_str, limit, offset, personalized, is_auto_
     users = get_unpopulated_users(session, user_ids)
 
     if is_auto_complete:
-        for i in range(len(users)):
-            user = users[i]
+        for i, user in enumerate(users):
             balance = user_info[i]['balance']
             associated_wallets_balance = user_info[i]['associated_wallets_balance']
             user[response_name_constants.balance] = balance
@@ -708,8 +706,7 @@ def playlist_search_query(
         users_dict = {user["user_id"]: user for user in users}
 
         # attach user objects to playlist objects
-        for i in range(len(playlists)):
-            playlist = playlists[i]
+        for i, playlist in enumerate(playlists):
             user = users_dict[playlist["playlist_owner_id"]]
             # Add user balance
             balance = playlist_data[i][1]
