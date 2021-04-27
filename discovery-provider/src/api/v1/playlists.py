@@ -275,7 +275,7 @@ trending_response = make_response("trending_playlists_response", ns, fields.List
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('time', required=False)
 
-@ns.route("/trending/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
+@ns.route("/trending", defaults={"version": DEFAULT_TRENDING_VERSION.name}, strict_slashes=False)
 @ns.route("/trending/<string:version>")
 class TrendingPlaylists(Resource):
     @record_metrics
@@ -324,7 +324,7 @@ full_trending_parser.add_argument('limit', required=False)
 full_trending_parser.add_argument('offset', required=False)
 full_trending_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/trending/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
+@full_ns.route("/trending", defaults={"version": DEFAULT_TRENDING_VERSION.name}, strict_slashes=False)
 @full_ns.route("/trending/<string:version>")
 class FullTrendingPlaylists(Resource):
     @full_ns.expect(full_trending_parser)
