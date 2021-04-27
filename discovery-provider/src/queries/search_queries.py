@@ -6,8 +6,8 @@ from flask import Blueprint, request
 import sqlalchemy
 
 from src import api_helpers, exceptions
-from src.queries.search_config import trackTitleWeight, userNameWeight, playlistNameWeight, trackSimilarityWeight, \
-    trackRepostWeight, playlistRepostWeight, userFollowerWeight, trackUserNameWeight, playlistUserNameWeight, \
+from src.queries.search_config import track_title_weight, user_name_weight, playlist_name_weight, track_similarity_weight, \
+    track_repost_weight, playlist_repost_weight, user_follower_weight, track_user_name_weight, playlist_user_name_weight, \
     track_title_exact_match_boost, track_handle_exact_match_boost, track_user_name_exact_match_boost, \
     user_handle_exact_match_boost, playlist_name_exact_match_boost, playlist_handle_exact_match_boost, \
     playlist_user_name_exact_match_boost
@@ -492,11 +492,11 @@ def track_search_query(
             "query": search_str,
             "limit": limit,
             "offset": offset,
-            "title_weight": trackTitleWeight,
-            "repost_weight": trackRepostWeight,
-            "similarity_weight": trackSimilarityWeight,
+            "title_weight": track_title_weight,
+            "repost_weight": track_repost_weight,
+            "similarity_weight": track_similarity_weight,
             "current_user_id": current_user_id,
-            "user_name_weight": trackUserNameWeight,
+            "user_name_weight": track_user_name_weight,
             "title_match_boost": track_title_exact_match_boost,
             "handle_match_boost": track_handle_exact_match_boost,
             "user_name_match_boost": track_user_name_exact_match_boost
@@ -579,8 +579,8 @@ def user_search_query(session, search_str, limit, offset, personalized, is_auto_
             "query": search_str,
             "limit": limit,
             "offset": offset,
-            "name_weight": userNameWeight,
-            "follower_weight": userFollowerWeight,
+            "name_weight": user_name_weight,
+            "follower_weight": user_follower_weight,
             "current_user_id": current_user_id,
             "handle_match_boost": user_handle_exact_match_boost
         },
@@ -685,10 +685,10 @@ def playlist_search_query(
             "query": search_str,
             "limit": limit,
             "offset": offset,
-            "name_weight": playlistNameWeight,
-            "repost_weight": playlistRepostWeight,
+            "name_weight": playlist_name_weight,
+            "repost_weight": playlist_repost_weight,
             "current_user_id": current_user_id,
-            "user_name_weight": playlistUserNameWeight,
+            "user_name_weight": playlist_user_name_weight,
             "name_match_boost": playlist_name_exact_match_boost,
             "handle_match_boost": playlist_handle_exact_match_boost,
             "user_name_match_boost": playlist_user_name_exact_match_boost

@@ -19,7 +19,6 @@ depends_on = None
 def upgrade():
     connection = op.get_bind()
     connection.execute('''
-    -- Update user lexeme matview to include user handles
 
     DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict;
     DROP INDEX IF EXISTS user_words_idx;
@@ -63,10 +62,6 @@ def upgrade():
     CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
     CREATE INDEX user_handles_idx ON user_lexeme_dict(handle); 
 
-    -- Update tracks matview to:
-    --      lowercase track title
-    -- 	    add handle and name columns
-
     DROP MATERIALIZED VIEW IF EXISTS track_lexeme_dict;
     DROP INDEX IF EXISTS track_words_idx;
 
@@ -109,9 +104,6 @@ def upgrade():
     CREATE INDEX track_user_name_idx ON track_lexeme_dict USING gin(user_name gin_trgm_ops);
     CREATE INDEX tracks_user_handle_idx ON track_lexeme_dict(handle);
 
-    -- Playlist + Album Matview:
-    --      Adds handles + user_names
-
     DROP MATERIALIZED VIEW IF EXISTS playlist_lexeme_dict;
     DROP MATERIALIZED VIEW IF EXISTS album_lexeme_dict;
     DROP INDEX IF EXISTS playlist_words_idx;
@@ -121,7 +113,7 @@ def upgrade():
     SELECT * FROM (
         SELECT
             p.playlist_id,
-            lower(p.playlist_name),
+            lower(p.playlist_name) as playlist_name,
             p.playlist_owner_id as owner_id,
             lower(u.handle) as handle,
             lower(u.name) as user_name,
@@ -154,12 +146,11 @@ def upgrade():
         GROUP BY p.playlist_id, p.playlist_name, p.playlist_owner_id, u.handle, u.name, a.repost_count
     ) AS words;
 
-
     CREATE MATERIALIZED VIEW album_lexeme_dict as
     SELECT * FROM (
         SELECT
             p.playlist_id,
-            lower(p.playlist_name),
+            lower(p.playlist_name) as playlist_name,
             p.playlist_owner_id as owner_id,
             lower(u.handle) as handle,
             lower(u.name) as user_name,

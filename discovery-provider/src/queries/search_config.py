@@ -5,18 +5,18 @@ import logging
 # Threshold for lexeme similarity, in [0, 1].
 # Lower values are slower and match more rows, higher values are quicker 
 # but may exclude viable candidates.
-minSearchSimilarity = 0.4
+min_search_similarity = 0.4
 
 # Tracks
 
 # Weight for query similarity against title
-trackTitleWeight = 0.7
+track_title_weight = 0.7
 # Weight for query similarity to words in track title (summed)
-trackSimilarityWeight = 5
+track_similarity_weight = 5
 # Weight for query similarity to track owner's username
-trackUserNameWeight = 8
+track_user_name_weight = 8
 # Weight for track reposts.
-trackRepostWeight = 10
+track_repost_weight = 10
 track_title_exact_match_boost = 5
 track_handle_exact_match_boost = 20
 track_user_name_exact_match_boost = 5
@@ -24,11 +24,11 @@ track_user_name_exact_match_boost = 5
 # Playlists
 
 # Weight for playlist reposts
-playlistRepostWeight = 0.2
+playlist_repost_weight = 20
 # Weight for similarity between query and playlist owner username
-playlistUserNameWeight = 8
+playlist_user_name_weight = 8
 # Weight for similarity between query and playlist name
-playlistNameWeight = 0.7
+playlist_name_weight = 2
 playlist_name_exact_match_boost = 5
 playlist_handle_exact_match_boost = 10
 playlist_user_name_exact_match_boost = 5
@@ -36,9 +36,9 @@ playlist_user_name_exact_match_boost = 5
 # Users
 
 # Weight for similarity between query and user name
-userNameWeight = 0.7
+user_name_weight = 0.7
 # Weight for user follower count (logged)
-userFollowerWeight = 0.5
+user_follower_weight = 0.5
 # Boost for exact handle match
 user_handle_exact_match_boost = 10
 
@@ -58,7 +58,7 @@ def set_search_similarity(cursor):
     """
     try:
         cursor.execute(
-            f"SET pg_trgm.similarity_threshold = {minSearchSimilarity}"
+            f"SET pg_trgm.similarity_threshold = {min_search_similarity}"
         )
     except Exception as e:
         logger.error(f"Unable to set similarity_threshold: {e}")
