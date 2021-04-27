@@ -5,7 +5,7 @@ from src.queries.get_trending_playlists import make_trending_cache_key, make_get
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_playlists_last_completion_redis_key
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
-from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
+from src.trending_strategies.trending_type_and_version import TrendingType
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,8 @@ def cache_trending_playlists(self):
         have_lock = update_lock.acquire(blocking=False)
 
         if have_lock:
-            for version in TrendingVersion:
+            trending_playlist_versions = trending_strategy_factory.get_versions_for_type(TrendingType.PLAYLISTS).keys()
+            for version in trending_playlist_versions:
                 logger.info(f"cache_trending_playlists.py ({version.name} version) | Starting")
                 strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS, version)
                 start_time = time.time()

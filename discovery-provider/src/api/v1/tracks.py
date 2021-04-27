@@ -249,7 +249,8 @@ class Trending(Resource):
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         """Gets the top 100 trending (most popular) tracks on Audius"""
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
         if not version_list:
             abort_bad_path_param('version', ns)
 
@@ -264,7 +265,8 @@ class FullTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
@@ -284,7 +286,8 @@ class FullUndergroundTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        underground_trending_versions = trending_strategy_factory.get_versions_for_type(TrendingType.UNDERGROUND_TRACKS).keys()
+        version_list = list(filter(lambda v: v.name == version, underground_trending_versions))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
@@ -321,7 +324,8 @@ class RandomTrack(Resource):
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
         if not version_list:
             abort_bad_path_param('version', ns)
 
@@ -341,7 +345,8 @@ class FullRandomTrack(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
@@ -389,7 +394,8 @@ class FullTrendingIds(Resource):
     @full_ns.marshal_with(trending_ids_response)
     def get(self, version):
         """Gets the track ids of the top trending tracks on Audius based on the trending version"""
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 

@@ -295,7 +295,8 @@ class TrendingPlaylists(Resource):
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         """Gets top trending playlists for time period on Audius"""
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(TrendingType.PLAYLISTS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_playlist_versions))
         if not version_list:
             abort_bad_path_param('version', ns)
 
@@ -346,7 +347,8 @@ class FullTrendingPlaylists(Resource):
     @full_ns.marshal_with(full_trending_playlists_response)
     def get(self, version):
         """Get trending playlists"""
-        version_list = list(filter(lambda v: v.name == version, TrendingVersion))
+        trending_playlist_versions = trending_strategy_factory.get_versions_for_type(TrendingType.PLAYLISTS).keys()
+        version_list = list(filter(lambda v: v.name == version, trending_playlist_versions))
         if not version_list:
             abort_bad_path_param('version', full_ns)
 

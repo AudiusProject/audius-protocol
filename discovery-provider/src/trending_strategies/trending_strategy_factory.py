@@ -9,22 +9,23 @@ from src.trending_strategies.trending_type_and_version import TrendingType, Tren
 
 class TrendingStrategyFactory:
     def __init__(self):
-        self.track_strategies = {
-            TrendingVersion.DEFAULT: DefaultTrendingTracksStrategy(),
-            TrendingVersion.ePWJD: TrendingTracksStrategyePWJD()
-        }
-        self.underground_track_strategies = {
-            TrendingVersion.DEFAULT: DefaultUndergroundTrendingTracksStrategy(),
-            TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD()
-        }
-        self.playlist_strategies = {
-            TrendingVersion.DEFAULT: DefaultTrendingPlaylistsStrategy(),
-            TrendingVersion.ePWJD: TrendingPlaylistsStrategyePWJD()
+        self.strategies = {
+            TrendingType.TRACKS: {
+                TrendingVersion.DEFAULT: DefaultTrendingTracksStrategy(),
+                TrendingVersion.ePWJD: TrendingTracksStrategyePWJD()
+            },
+            TrendingType.UNDERGROUND_TRACKS: {
+                TrendingVersion.DEFAULT: DefaultUndergroundTrendingTracksStrategy(),
+                TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD()
+            },
+            TrendingType.PLAYLISTS: {
+                TrendingVersion.DEFAULT: DefaultTrendingPlaylistsStrategy(),
+                TrendingVersion.ePWJD: TrendingPlaylistsStrategyePWJD()
+            }
         }
 
     def get_strategy(self, trending_type, version=TrendingVersion.DEFAULT):
-        if trending_type == TrendingType.TRACKS:
-            return self.track_strategies[version]
-        if trending_type == TrendingType.UNDERGROUND_TRACKS:
-            return self.underground_track_strategies[version]
-        return self.playlist_strategies[version]
+        return self.strategies[trending_type][version]
+
+    def get_versions_for_type(self, trending_type):
+        return self.strategies[trending_type]
