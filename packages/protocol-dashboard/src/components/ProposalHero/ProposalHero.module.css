@@ -65,7 +65,7 @@
   border-bottom: 1px solid var(--neutral-light-8);
 }
 
-.timeRemaining {
+.voteStatusContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;

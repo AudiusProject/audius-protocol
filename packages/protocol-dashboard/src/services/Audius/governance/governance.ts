@@ -283,6 +283,11 @@ export default class Governance {
     })
   }
 
+  async evaluateProposalOutcome({ proposalId }: { proposalId: ProposalId }) {
+    await this.aud.hasPermissions(Permission.WRITE)
+    await this.getContract().evaluateProposalOutcome(proposalId)
+  }
+
   // Helpers
 
   getContract() {

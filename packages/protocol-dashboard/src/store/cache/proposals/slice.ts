@@ -11,13 +11,16 @@ export type State = {
   resolvedProposals: number[] | null
   // Voting period to determine when votes are due
   votingPeriod: number | null
+  // Execution delay after voting period but before being able to execute a governance proposal
+  executionDelay: number | null
 }
 
 export const initialState: State = {
   activeProposals: null,
   allProposals: {},
   resolvedProposals: null,
-  votingPeriod: null
+  votingPeriod: null,
+  executionDelay: null
 }
 
 type SetActiveProposals = {
@@ -34,6 +37,10 @@ type SetProposal = {
 
 type SetVotingPeriod = {
   votingPeriod: number
+}
+
+type SetExecutionDelay = {
+  executionDelay: number
 }
 
 const slice = createSlice({
@@ -64,6 +71,10 @@ const slice = createSlice({
     setVotingPeriod: (state, action: PayloadAction<SetVotingPeriod>) => {
       const { votingPeriod } = action.payload
       state.votingPeriod = votingPeriod
+    },
+    setExecutionDelay: (state, action: PayloadAction<SetExecutionDelay>) => {
+      const { executionDelay } = action.payload
+      state.executionDelay = executionDelay
     }
   }
 })
@@ -72,7 +83,8 @@ export const {
   setActiveProposals,
   setAllProposals,
   setProposal,
-  setVotingPeriod
+  setVotingPeriod,
+  setExecutionDelay
 } = slice.actions
 
 export default slice.reducer
