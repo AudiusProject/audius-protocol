@@ -110,7 +110,7 @@ def test_gets_all_results(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the", 10, 0, False, False, None, False)
+        res = track_search_query(session, "the track", 10, 0, False, False, None, False)
         assert len(res) == 2
 
 def test_gets_downloadable_results(app):
@@ -119,5 +119,5 @@ def test_gets_downloadable_results(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the", 10, 0, False, False, None, True)
+        res = track_search_query(session, "the track", 10, 0, False, False, None, True)
         assert len(res) == 1
