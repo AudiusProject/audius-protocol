@@ -70,7 +70,7 @@ async function updateBlockchainIds () {
  * total listen count for each of those tracks
  * This includes track listens writen to Solan
  *
- * @returns Array [{trackId, listenCount}, trackId, listenCount}]
+ * @returns Array [{trackId, listenCount}, trackId, listenCount]
  */
 async function calculateTrackListenMilestonesFromDiscovery (discoveryProvider) {
   // Pull listen count notification data from discovery provider
