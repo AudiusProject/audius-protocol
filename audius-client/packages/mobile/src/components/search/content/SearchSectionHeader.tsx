@@ -13,16 +13,16 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    textTransform: 'uppercase',
     paddingLeft: 12,
     paddingRight: 12,
     paddingTop: 16,
     paddingBottom: 16
   },
   header: {
-    fontWeight: "800",
+    textTransform: 'uppercase',
     fontSize: 17,
-    marginRight: 8
+    marginRight: 8,
+    fontFamily: 'AvenirNextLTPro-Heavy'
   },
   divider: {
     flex: 1,
@@ -36,7 +36,7 @@ const SearchSectionHeader = ({ title }: SearchSectionHeaderProps) => {
     color: 'secondary'
   })
   const dividerStyle = useTheme(styles.divider, {
-    borderTopColor: 'neutral'
+    borderTopColor: 'neutralLight8'
   })
   return (
     <View style={styles.container}>

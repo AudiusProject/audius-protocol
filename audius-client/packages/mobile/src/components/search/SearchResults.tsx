@@ -54,9 +54,9 @@ const SearchResults = () => {
         stickySectionHeadersEnabled={false}
         sections={sectionWithMore}
         keyExtractor={(item) => {
-          if ('user_id' in item) return item.user_id.toString()
-          else if ('track_id' in item) return item.track_id.toString()
-          return item.playlist_id.toString()
+          if ('track_id' in item) return `track-${item.track_id}`
+          else if ('user_id' in item) return `user-${item.user_id}`
+          return `playlist-${item.playlist_id}`
         }}
         renderItem={({ section: { title }, item }) => <SearchItem type={title as SectionHeader} item={item} />}
         renderSectionHeader={({ section: { title } }) => title === 'more' ? (

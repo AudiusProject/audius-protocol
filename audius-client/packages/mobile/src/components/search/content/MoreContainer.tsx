@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   },
   moreText: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'AvenirNextLTPro-Bold',
     marginRight: 8
   }
 })

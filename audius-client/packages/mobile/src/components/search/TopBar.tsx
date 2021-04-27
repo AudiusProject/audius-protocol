@@ -62,7 +62,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     paddingLeft: 8,
-    paddingRight: 26
+    paddingRight: 26,
+    fontFamily: 'AvenirNextLTPro-Medium'
   },
   temp: {
     color: 'red'
@@ -87,6 +88,7 @@ const TopBar = ({
   const inputStyles = useTheme(styles.input, {
     backgroundColor: 'neutralLight10',
     borderColor: 'neutralLight8',
+    color: 'neutral'
   })
 
   const textRef = useRef<TextInput>(null)
