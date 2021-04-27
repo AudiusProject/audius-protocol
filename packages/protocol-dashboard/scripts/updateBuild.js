@@ -74,7 +74,7 @@ const updateContentNodePeers = async () => {
 }
 
 const updateGABuild = async () => {
-  const res = await fetch(`${endpoint}/ipfs/update_build?site=protocolDashboard`)
+  const res = await fetch(`${endpoint}/ipfs/update_build?site=protocol-dashboard`)
   const response = await res.json()
   if (!response.success) {
     console.error('unable to update GA build')
@@ -84,7 +84,7 @@ const updateGABuild = async () => {
 }
 
 const pinGABuild = async () => {
-  const res = await fetch(`${endpoint}/ipfs/pin_build?site=protocolDashboard`)
+  const res = await fetch(`${endpoint}/ipfs/pin_build?site=protocol-dashboard`)
   if (!res.ok) {
     console.error('unable to pin GA build')
     process.exit(1)
