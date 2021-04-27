@@ -1,13 +1,18 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
 
-import { Proposal as ProposalType, Vote } from 'types'
+import { Outcome, Proposal as ProposalType, Vote } from 'types'
 import VoteMeter from 'components/VoteMeter'
 import ProposalStatusBadge from 'components/ProposalStatusBadge'
 import { usePushRoute } from 'utils/effects'
 import { proposalPage } from 'utils/routes'
 import { leftPadZero, getHumanReadableTime, getDate } from 'utils/format'
-import { useProposalTimeRemaining } from 'store/cache/proposals/hooks'
+import {
+  useExecutionDelayTimeRemaining,
+  useGetInProgressProposalSubstate,
+  useProposalMilestoneBlocks,
+  useProposalTimeRemaining
+} from 'store/cache/proposals/hooks'
 import ProposalStatusChip from 'components/ProposalStatusChip'
 import Voted from 'components/Voted'
 import { createStyles } from 'utils/mobile'
@@ -33,6 +38,38 @@ type OwnProps = {
 
 type ProposalProps = OwnProps
 
+const InProgressTimeRemaining: React.FC<{ proposal: ProposalType }> = ({
+  proposal
+}) => {
+  const { timeRemaining } = useProposalTimeRemaining(
+    proposal.submissionBlockNumber
+  )
+  return timeRemaining ? (
+    <div
+      className={clsx(styles.timeRemaining, {
+        [styles.show]: timeRemaining
+      })}
+    >
+      {`${getHumanReadableTime(timeRemaining)} ${messages.timeRemaining}`}
+    </div>
+  ) : null
+}
+
+const ExecutionDelayTimeRemaining: React.FC<{
+  votingDeadlineBlock: number
+}> = ({ votingDeadlineBlock }) => {
+  const { timeRemaining } = useExecutionDelayTimeRemaining(votingDeadlineBlock)
+  return timeRemaining ? (
+    <div
+      className={clsx(styles.timeRemaining, {
+        [styles.show]: timeRemaining
+      })}
+    >
+      {`${getHumanReadableTime(timeRemaining)} ${messages.timeRemaining}`}
+    </div>
+  ) : null
+}
+
 const Proposal: React.FC<ProposalProps> = ({
   header,
   proposal,
@@ -46,9 +83,8 @@ const Proposal: React.FC<ProposalProps> = ({
     if (onClick) onClick()
     pushRoute(proposalPage(proposal.proposalId))
   }, [proposal, pushRoute, onClick])
-  const { timeRemaining } = useProposalTimeRemaining(
-    proposal.submissionBlockNumber
-  )
+  const inProgressProposalSubstate = useGetInProgressProposalSubstate(proposal)
+  const proposalMilestoneBlocks = useProposalMilestoneBlocks(proposal)
 
   const evaluatedBlockTimestamp = proposal?.evaluatedBlock?.timestamp ?? null
 
@@ -66,23 +102,29 @@ const Proposal: React.FC<ProposalProps> = ({
           {proposal.name || proposal.description || proposal.functionSignature}
         </div>
         <div className={clsx(styles.info, { [styles.infoHeader]: !!header })}>
-          <ProposalStatusBadge outcome={proposal.outcome} />
+          <ProposalStatusBadge
+            outcome={inProgressProposalSubstate || proposal.outcome}
+          />
           <div className={styles.id}>{leftPadZero(proposal.proposalId, 3)}</div>
           {evaluatedBlockTimestamp ? (
             <div className={styles.executed}>
               {`Executed ${getDate(evaluatedBlockTimestamp * 1000)}`}
             </div>
           ) : (
-            <div
-              className={clsx(styles.timeRemaining, {
-                [styles.show]: timeRemaining
-              })}
-            >
-              {timeRemaining &&
-                `${getHumanReadableTime(timeRemaining)} ${
-                  messages.timeRemaining
-                }`}
-            </div>
+            <>
+              {inProgressProposalSubstate === Outcome.InProgress && (
+                <InProgressTimeRemaining proposal={proposal} />
+              )}
+              {inProgressProposalSubstate ===
+                Outcome.InProgressExecutionDelay &&
+                proposalMilestoneBlocks?.votingDeadlineBlock && (
+                  <ExecutionDelayTimeRemaining
+                    votingDeadlineBlock={
+                      proposalMilestoneBlocks.votingDeadlineBlock
+                    }
+                  />
+                )}
+            </>
           )}
         </div>
       </div>

@@ -12,6 +12,8 @@ const messages = {
   [Outcome.ApprovedExecutionFailed]: 'Approved Execution Failed',
   [Outcome.Evaluating]: 'Pending Execution', // This is an internal state that will not ever be set
   [Outcome.InProgress]: 'In Progress', // Chip should not be shown for inProgress
+  [Outcome.InProgressExecutionDelay]: 'Execution Cooldown',
+  [Outcome.InProgressAwaitingExecution]: 'Proposal Can Be Executed',
   [Outcome.Vetoed]: 'Vetoed',
   [Outcome.TargetContractAddressChanged]: 'Target Contract Address Changed',
   [Outcome.TargetContractCodeHashChanged]: 'Target Contract Code Hash Changed'
@@ -51,6 +53,16 @@ const outcomeMapping = {
   },
   [Outcome.InProgress]: {
     text: messages[Outcome.InProgress],
+    style: styles.pending,
+    icon: Pending
+  },
+  [Outcome.InProgressExecutionDelay]: {
+    text: messages[Outcome.InProgressExecutionDelay],
+    style: styles.pending,
+    icon: Pending
+  },
+  [Outcome.InProgressAwaitingExecution]: {
+    text: messages[Outcome.InProgressAwaitingExecution],
     style: styles.pending,
     icon: Pending
   },

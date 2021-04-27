@@ -24,7 +24,7 @@
   border: 1px solid var(--neutral-light-4);
 }
 
-.executionPending {
+.pending {
   color: #E8AB57;
   border: 1px solid #E8AB57;
 }

@@ -11,12 +11,16 @@ import { ReactComponent as IconThumbUp } from 'assets/img/iconThumbUp.svg'
 import { ReactComponent as IconThumbDown } from 'assets/img/iconThumbDown.svg'
 import ConfirmTransactionModal from 'components/ConfirmTransactionModal'
 import { useSubmitVote } from 'store/actions/submitVote'
+import { useExecuteProposal } from 'store/actions/executeProposal'
 import { StandaloneBox } from 'components/ConfirmTransactionModal/ConfirmTransactionModal'
 import Loading from 'components/Loading'
 import DisplayAudio from 'components/DisplayAudio'
 import {
   useProposalTimeRemaining,
-  useAmountAbstained
+  useAmountAbstained,
+  useGetInProgressProposalSubstate,
+  useProposalMilestoneBlocks,
+  useExecutionDelayTimeRemaining
 } from 'store/cache/proposals/hooks'
 import { useAccountUser } from 'store/account/hooks'
 import { Position } from 'components/Tooltip'
@@ -34,13 +38,16 @@ const styles = createStyles({ desktopStyles, mobileStyles })
 const messages = {
   voteFor: 'Vote For',
   voteAgainst: 'Vote Against',
-  timeRemaining: 'Est. Time Remaining',
+  timeRemaining: 'Est. Voting Period Remaining',
+  executionDelay: 'Voting Ended, Can Execute In',
+  awaitExecuteProposal: 'Awaiting Proposal Execution',
   targetBlock: 'Target Block',
   notVoted: 'NOT-VOTED',
   voted: 'VOTED',
   quorum: 'QUORUM',
   quorumMet: 'Quorum Met',
-  quorumNotMet: 'Quorum Not Met'
+  quorumNotMet: 'Quorum Not Met',
+  executeProposal: 'Execute Proposal'
 }
 
 type VoteCTAProps = {
@@ -68,7 +75,7 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
 
   return (
     <div className={styles.voteCTA}>
-      <div className={styles.timeRemaining}>
+      <div className={styles.voteStatusContainer}>
         {timeRemaining !== null && (
           <>
             <div className={styles.title}>{messages.timeRemaining}</div>
@@ -103,6 +110,67 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
           />
         </div>
       )}
+    </div>
+  )
+}
+
+type ExecutionDelayCTAProps = {
+  votingDeadlineBlock: number
+}
+
+const ExecutionDelayCTA: React.FC<ExecutionDelayCTAProps> = ({
+  votingDeadlineBlock
+}) => {
+  const { timeRemaining, targetBlock } = useExecutionDelayTimeRemaining(
+    votingDeadlineBlock
+  )
+
+  return (
+    <div className={styles.voteCTA}>
+      <div className={styles.voteStatusContainer}>
+        {timeRemaining !== null && (
+          <>
+            <div className={styles.title}>{messages.executionDelay}</div>
+            <div className={styles.time}>
+              {getHumanReadableTime(timeRemaining)}
+            </div>
+          </>
+        )}
+        <div className={styles.blocks}>
+          <span>{`${messages.targetBlock}: ${targetBlock}`}</span>
+        </div>
+      </div>
+      <div>
+        <Button
+          text={messages.executeProposal}
+          type={ButtonType.GREEN}
+          isDepressed={true}
+          isDisabled={true}
+        />
+      </div>
+    </div>
+  )
+}
+
+type ExecuteProposalCTAProps = {
+  onExecuteProposal: () => void
+}
+
+const ExecuteProposalCTA: React.FC<ExecuteProposalCTAProps> = ({
+  onExecuteProposal
+}) => {
+  return (
+    <div className={styles.voteCTA}>
+      <div className={styles.voteStatusContainer}>
+        <div className={styles.title}>{messages.awaitExecuteProposal}</div>
+      </div>
+      <div>
+        <Button
+          text={messages.executeProposal}
+          type={ButtonType.GREEN}
+          onClick={onExecuteProposal}
+        />
+      </div>
     </div>
   )
 }
@@ -171,7 +239,15 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
 
   const amountAbstained = useAmountAbstained(proposal) || Utils.toBN('0')
 
-  const isActive = proposal?.outcome === Outcome.InProgress
+  const inProgressProposalSubstate = useGetInProgressProposalSubstate(proposal)
+  const proposalMilestoneBlocks = useProposalMilestoneBlocks(proposal)
+
+  const isActive =
+    proposal?.outcome === Outcome.InProgress &&
+    (inProgressProposalSubstate === Outcome.InProgress ||
+      inProgressProposalSubstate === Outcome.InProgressAwaitingExecution ||
+      inProgressProposalSubstate === Outcome.InProgressExecutionDelay)
+
   const evaluatedBlockTimestamp = proposal?.evaluatedBlock?.timestamp ?? null
 
   const submitVoteBox = (
@@ -189,12 +265,53 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
     ? totalMagnitudeVoted.gte(proposal.quorum)
     : false
 
+  // execute proposal
+  const [executeProposalReset, setExecuteProposalReset] = useState(false)
+  useEffect(() => {
+    if (executeProposalReset) setExecuteProposalReset(false)
+  }, [executeProposalReset, setExecuteProposalReset])
+
+  const {
+    executeProposal,
+    error: executeError,
+    status: executeStatus
+  } = useExecuteProposal(reset)
+  const [isExecuteConfirmModalOpen, setIsExecuteConfirmModalOpen] = useState(
+    false
+  )
+
+  const onExecuteCloseConfirm = useCallback(
+    () => setIsExecuteConfirmModalOpen(false),
+    []
+  )
+
+  const onExecuteProposal = useCallback(() => {
+    setIsExecuteConfirmModalOpen(true)
+  }, [setIsExecuteConfirmModalOpen])
+
+  const onExecuteConfirm = useCallback(() => {
+    executeProposal(proposal.proposalId)
+  }, [executeProposal, proposal])
+
+  useEffect(() => {
+    if (executeStatus === Status.Success) {
+      setIsExecuteConfirmModalOpen(false)
+      setExecuteProposalReset(true)
+    }
+  }, [executeStatus, setIsExecuteConfirmModalOpen, setExecuteProposalReset])
+
+  const confirmExecuteProposalBox = (
+    <StandaloneBox className={styles.confirmation}>
+      {`Executing proposal ${proposal?.proposalId}`}
+    </StandaloneBox>
+  )
+
   return (
     <Paper className={styles.container}>
       {proposal && proposal.proposer ? (
         <>
           <User wallet={proposal.proposer} />
-          {isActive && (
+          {isActive && inProgressProposalSubstate === Outcome.InProgress && (
             <VoteCTA
               currentVote={currentVote}
               onVoteFor={onVoteFor}
@@ -202,11 +319,27 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
               submissionBlock={proposal.submissionBlockNumber}
             />
           )}
+          {isActive &&
+            inProgressProposalSubstate === Outcome.InProgressExecutionDelay &&
+            proposalMilestoneBlocks?.votingDeadlineBlock && (
+              <ExecutionDelayCTA
+                votingDeadlineBlock={
+                  proposalMilestoneBlocks.votingDeadlineBlock
+                }
+              />
+            )}
+          {isActive &&
+            inProgressProposalSubstate ===
+              Outcome.InProgressAwaitingExecution && (
+              <ExecuteProposalCTA onExecuteProposal={onExecuteProposal} />
+            )}
           <div className={styles.bottom}>
             <div className={styles.left}>
               <div className={styles.description}>{proposal.name}</div>
               <div className={styles.info}>
-                <ProposalStatusBadge outcome={proposal.outcome} />
+                <ProposalStatusBadge
+                  outcome={inProgressProposalSubstate || proposal.outcome}
+                />
                 <div className={styles.id}>
                   {leftPadZero(proposal.proposalId, 3)}
                 </div>
@@ -269,6 +402,7 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
           <Loading />
         </div>
       )}
+      {/* submit vote modal */}
       <ConfirmTransactionModal
         withArrow={false}
         isOpen={isConfirmModalOpen}
@@ -277,6 +411,16 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
         topBox={submitVoteBox}
         error={error}
         status={status}
+      />
+      {/* execute proposal modal */}
+      <ConfirmTransactionModal
+        withArrow={false}
+        isOpen={isExecuteConfirmModalOpen}
+        onClose={onExecuteCloseConfirm}
+        onConfirm={onExecuteConfirm}
+        topBox={confirmExecuteProposalBox}
+        error={executeError}
+        status={executeStatus}
       />
     </Paper>
   )
