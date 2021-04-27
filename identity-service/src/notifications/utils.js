@@ -68,7 +68,7 @@ async function updateBlockchainIds () {
 /**
  * Queries the discovery provider and returns n most listened to tracks, with the
  * total listen count for each of those tracks
- * This includes track listens writen to Solan
+ * This includes track listens writen to Solana
  *
  * @returns Array [{trackId, listenCount}, trackId, listenCount]
  */
