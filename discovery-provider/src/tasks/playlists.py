@@ -208,6 +208,9 @@ def parse_playlist_event(
 
             playlist_content_array = []
             for track_id in event_args._orderedTrackIds:
+                if track_id not in intermediate_track_time_lookup_dict:
+                    logger.info(f"index.py | playlist.py | Track id {track_id} not in intermediate")
+                    continue
                 track_time_array_length = len(intermediate_track_time_lookup_dict[track_id])
                 if track_time_array_length > 1:
                     track_time = intermediate_track_time_lookup_dict[track_id].pop(0)
