@@ -17,7 +17,7 @@ search_similarity_weight = 5
 search_user_name_weight = 8
 # Weight for track reposts.
 search_repost_weight = 15
-search_title_exact_match_boost = 5
+search_title_exact_match_boost = 10
 search_handle_exact_match_boost = 15
 search_user_name_exact_match_boost = 5
 
