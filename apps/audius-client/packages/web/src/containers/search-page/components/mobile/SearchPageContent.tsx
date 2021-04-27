@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect } from 'react'
+import cn from 'classnames'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
@@ -23,6 +24,8 @@ import useTabs from 'hooks/useTabs/useTabs'
 import Card from 'components/card/mobile/Card'
 import { UserCollection } from 'models/Collection'
 import CardLineup from 'containers/lineup/CardLineup'
+import Header from 'components/general/header/mobile/Header'
+import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import {
   albumPage,
   playlistPage,
@@ -291,6 +294,7 @@ const CardSearchPage = ({
 }
 
 const messages = {
+  title: 'More Results',
   tracksTitle: 'Tracks',
   albumsTitle: 'Albums',
   playlistsTitle: 'Playlists',
@@ -407,6 +411,14 @@ const SearchPageContent = (props: SearchPageContentProps) => {
       }
 
   const { tabs, body } = useTabs(computedTabs)
+  const { setHeader } = useContext(HeaderContext)
+  useEffect(() => {
+    setHeader(
+      <>
+        <Header className={styles.header} title={messages.title} />
+      </>
+    )
+  }, [setHeader])
 
   return (
     <MobilePageContainer
@@ -415,7 +427,13 @@ const SearchPageContent = (props: SearchPageContentProps) => {
       canonicalUrl={fullSearchResultsPage(searchText)}
     >
       <div className={styles.tabContainer}>
-        <div className={styles.tabBar}>{tabs}</div>
+        <div
+          className={cn(styles.tabBar, {
+            [styles.nativeTabBar]: NATIVE_MOBILE
+          })}
+        >
+          {tabs}
+        </div>
         <div className={styles.pageContainer}>{body}</div>
       </div>
     </MobilePageContainer>
