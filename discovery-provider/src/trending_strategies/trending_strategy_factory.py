@@ -7,6 +7,7 @@ from src.trending_strategies.ePWJD_trending_tracks_strategy import TrendingTrack
 from src.trending_strategies.ePWJD_underground_trending_tracks_strategy import UndergroundTrendingTracksStrategyePWJD
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 
+DEFAULT_TRENDING_VERSION = TrendingVersion.eYZmn
 class TrendingStrategyFactory:
     def __init__(self):
         self.strategies = {
@@ -24,7 +25,7 @@ class TrendingStrategyFactory:
             }
         }
 
-    def get_strategy(self, trending_type, version=TrendingVersion.eYZmn):
+    def get_strategy(self, trending_type, version=DEFAULT_TRENDING_VERSION):
         return self.strategies[trending_type][version]
 
     def get_versions_for_type(self, trending_type):

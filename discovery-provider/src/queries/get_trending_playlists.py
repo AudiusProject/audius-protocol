@@ -10,7 +10,7 @@ from src.queries.query_helpers import get_repost_counts, get_karma, get_save_cou
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
-from src.trending_strategies.trending_type_and_version import TrendingVersion
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSION
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import extend_playlist, extend_track, format_offset, format_limit, \
     to_dict, decode_string_id
@@ -174,8 +174,8 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
         return (playlists, playlist_ids)
     return wrapped
 
-def make_trending_cache_key(time_range, version=TrendingVersion.eYZmn):
-    version_name = f":{version.name}" if version != TrendingVersion.eYZmn else ''
+def make_trending_cache_key(time_range, version=DEFAULT_TRENDING_VERSION):
+    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSION else ''
     return f"generated-trending-playlists{version_name}:{time_range}"
 
 def get_trending_playlists(args, strategy):

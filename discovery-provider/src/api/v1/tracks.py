@@ -12,7 +12,7 @@ from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
 from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache, get_trending_cache_key
-from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory, DEFAULT_TRENDING_VERSION
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
@@ -229,7 +229,7 @@ class TrackSearchResult(Resource):
 # `get_trending_tracks.py`, which caches the scored tracks before they are populated (keyed by genre + time).
 # With this second cache, each user_id can reuse on the same cached list of tracks, and then populate them uniquely.
 
-@ns.route("/trending/", defaults={"version": TrendingVersion.eYZmn.name})
+@ns.route("/trending/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @ns.route("/trending/<string:version>")
 class Trending(Resource):
     @record_metrics
@@ -259,7 +259,7 @@ class Trending(Resource):
         trending_tracks = get_trending(args, strategy)
         return success_response(trending_tracks)
 
-@full_ns.route("/trending/", defaults={"version": TrendingVersion.eYZmn.name})
+@full_ns.route("/trending/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @full_ns.route("/trending/<string:version>")
 class FullTrending(Resource):
     @record_metrics
@@ -280,7 +280,7 @@ underground_trending_parser.add_argument('limit', required=False)
 underground_trending_parser.add_argument('offset', required=False)
 underground_trending_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/trending/underground/", defaults={"version": TrendingVersion.eYZmn.name})
+@full_ns.route("/trending/underground/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @full_ns.route("/trending/underground/<string:version>")
 class FullUndergroundTrending(Resource):
     @record_metrics
@@ -303,7 +303,7 @@ random_track_parser.add_argument('limit', type=int, required=False)
 random_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
 random_track_parser.add_argument('time', required=False)
 
-@ns.route("/random/", defaults={"version": TrendingVersion.eYZmn.name})
+@ns.route("/random/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @ns.route("/random/<string:version>")
 class RandomTrack(Resource):
     @record_metrics
@@ -339,7 +339,7 @@ class RandomTrack(Resource):
 full_random_track_parser = random_track_parser.copy()
 full_random_track_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/random/", defaults={"version": TrendingVersion.eYZmn.name})
+@full_ns.route("/random/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @full_ns.route("/random/<string:version>")
 class FullRandomTrack(Resource):
     @record_metrics
@@ -374,7 +374,7 @@ trending_ids_response = make_response(
     fields.Nested(trending_times_ids)
 )
 
-@full_ns.route("/trending/ids/", defaults={"version": TrendingVersion.eYZmn.name})
+@full_ns.route("/trending/ids/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @full_ns.route("/trending/ids/<string:version>")
 class FullTrendingIds(Resource):
     @record_metrics

@@ -12,7 +12,7 @@ from .models.tracks import track
 from src.queries.search_queries import SearchKind, search
 from src.utils.redis_cache import cache, extract_key, use_redis_cache
 from src.utils.redis_metrics import record_metrics
-from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory, DEFAULT_TRENDING_VERSION
 from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
 from src.queries.get_reposters_for_playlist import get_reposters_for_playlist
 from src.queries.get_savers_for_playlist import get_savers_for_playlist
@@ -275,7 +275,7 @@ trending_response = make_response("trending_playlists_response", ns, fields.List
 trending_parser = reqparse.RequestParser()
 trending_parser.add_argument('time', required=False)
 
-@ns.route("/trending/", defaults={"version": TrendingVersion.eYZmn.name})
+@ns.route("/trending/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @ns.route("/trending/<string:version>")
 class TrendingPlaylists(Resource):
     @record_metrics
@@ -324,7 +324,7 @@ full_trending_parser.add_argument('limit', required=False)
 full_trending_parser.add_argument('offset', required=False)
 full_trending_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/trending/", defaults={"version": TrendingVersion.eYZmn.name})
+@full_ns.route("/trending/", defaults={"version": DEFAULT_TRENDING_VERSION.name})
 @full_ns.route("/trending/<string:version>")
 class FullTrendingPlaylists(Resource):
     @full_ns.expect(full_trending_parser)

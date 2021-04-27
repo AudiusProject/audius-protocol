@@ -4,14 +4,14 @@ from src.queries.query_helpers import populate_track_metadata, \
     get_users_ids, get_users_by_id
 from src.tasks.generate_trending import generate_trending
 from src.utils.redis_cache import use_redis_cache
-from src.trending_strategies.trending_type_and_version import TrendingVersion
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSION
 
 TRENDING_LIMIT = 100
 TRENDING_TTL_SEC = 30 * 60
 
-def make_trending_cache_key(time_range, genre, version=TrendingVersion.eYZmn):
+def make_trending_cache_key(time_range, genre, version=DEFAULT_TRENDING_VERSION):
     """Makes a cache key resembling `generated-trending:week:electronic`"""
-    version_name = f":{version.name}" if version != TrendingVersion.eYZmn else ''
+    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSION else ''
     return f"generated-trending{version_name}:{time_range}:{(genre.lower() if genre else '')}"
 
 def generate_unpopulated_trending(session, genre, time_range, strategy, limit=TRENDING_LIMIT):
