@@ -121,7 +121,7 @@ def upgrade():
     SELECT * FROM (
         SELECT
             p.playlist_id,
-            p.playlist_name,
+            lower(p.playlist_name),
             p.playlist_owner_id as owner_id,
             lower(u.handle) as handle,
             lower(u.name) as user_name,
@@ -159,7 +159,7 @@ def upgrade():
     SELECT * FROM (
         SELECT
             p.playlist_id,
-            p.playlist_name,
+            lower(p.playlist_name),
             p.playlist_owner_id as owner_id,
             lower(u.handle) as handle,
             lower(u.name) as user_name,
