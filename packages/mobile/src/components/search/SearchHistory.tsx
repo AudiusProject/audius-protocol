@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 14,
+    fontFamily: 'AvenirNextLTPro-Regular'
   },
   arrow: {
     height: 12,
@@ -58,7 +59,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   clearText: {
-    fontSize: 14
+    fontSize: 14,
+    fontFamily: 'AvenirNextLTPro-Bold'
   }
 })
 
@@ -117,6 +119,7 @@ const SearchHistory = () => {
       <FlatList
         keyboardShouldPersistTaps={'always'}
         data={searchHistory.concat('clear')}
+        keyExtractor={(item, idx) => `${item}-${idx}`}
         renderItem={({ item }) => item !== 'clear' ? (
           <SearchHistoryItem key={item} text={item} />
         ) : (

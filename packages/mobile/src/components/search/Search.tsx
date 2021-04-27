@@ -146,7 +146,7 @@ const Search = () => {
       >
         <View style={containerStyle}>
           <TopBar onClose={onClose} isOpen={didOpen} />
-          <Header text={'Search'} />
+          <Header text={'Search'} containerStyle={{ width: 90 }} />
           {body}
         </View>
       </Animated.View>
