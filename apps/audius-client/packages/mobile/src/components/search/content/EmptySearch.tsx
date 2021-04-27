@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 14,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'AvenirNextLTPro-Bold',
     width: 240
   }
 })

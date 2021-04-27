@@ -36,7 +36,8 @@ const styles = StyleSheet.create({
     height: 58
   },
   name: {
-    fontSize: 14
+    fontSize: 14,
+    fontFamily: 'AvenirNextLTPro-Medium'
   },
   badgeContainer: {
     flex: 1
