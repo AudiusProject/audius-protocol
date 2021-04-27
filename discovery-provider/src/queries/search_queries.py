@@ -6,12 +6,11 @@ from flask import Blueprint, request
 import sqlalchemy
 
 from src import api_helpers, exceptions
-from src.queries.search_config import track_title_weight, user_name_weight, playlist_name_weight, \
-    track_similarity_weight, track_repost_weight, playlist_repost_weight, user_follower_weight, \
-    track_user_name_weight, playlist_user_name_weight, track_title_exact_match_boost, \
-    track_handle_exact_match_boost, track_user_name_exact_match_boost, \
-    user_handle_exact_match_boost, playlist_name_exact_match_boost, \
-    playlist_handle_exact_match_boost, playlist_user_name_exact_match_boost
+from src.queries.search_config import search_title_weight, user_name_weight, \
+    search_similarity_weight, search_repost_weight, user_follower_weight, \
+    search_user_name_weight, search_title_exact_match_boost, \
+    search_handle_exact_match_boost, search_user_name_exact_match_boost, \
+    user_handle_exact_match_boost
 from src.models import Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -430,13 +429,11 @@ def track_search_query(
     if personalized and not current_user_id:
         return []
 
-    distinct_owner_id = is_auto_complete
-
     res = sqlalchemy.text(
         # pylint: disable=C0301
         f"""
         select track_id, b.balance, b.associated_wallets_balance from (
-            select {'distinct on (owner_id)' if distinct_owner_id else ''} track_id, owner_id, total_score from (
+            select distinct on (owner_id) track_id, owner_id, total_score from (
                 select track_id, owner_id,
                     (
                         (:similarity_weight * sum(score)) +
@@ -463,7 +460,7 @@ def track_search_query(
                         if only_downloadable
                         else ""
                     }
-                    where (d."word" % :query or d."handle" = lower(:query)) or d."user_name" % lower(:query)
+                    where d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query)
                     {
                         "and s.save_type='track' and s.is_current=true and " +
                         "s.is_delete=false and s.user_id = :current_user_id"
@@ -492,14 +489,14 @@ def track_search_query(
             "query": search_str,
             "limit": limit,
             "offset": offset,
-            "title_weight": track_title_weight,
-            "repost_weight": track_repost_weight,
-            "similarity_weight": track_similarity_weight,
+            "title_weight": search_title_weight,
+            "repost_weight": search_repost_weight,
+            "similarity_weight": search_similarity_weight,
             "current_user_id": current_user_id,
-            "user_name_weight": track_user_name_weight,
-            "title_match_boost": track_title_exact_match_boost,
-            "handle_match_boost": track_handle_exact_match_boost,
-            "user_name_match_boost": track_user_name_exact_match_boost
+            "user_name_weight": search_user_name_weight,
+            "title_match_boost": search_title_exact_match_boost,
+            "handle_match_boost": search_handle_exact_match_boost,
+            "user_name_match_boost": search_user_name_exact_match_boost
         },
     ).fetchall()
 
@@ -629,8 +626,6 @@ def playlist_search_query(
     repost_type = RepostType.album if is_album else RepostType.playlist
     save_type = SaveType.album if is_album else SaveType.playlist
 
-    distinct_owner_id = is_auto_complete
-
     # SQLAlchemy doesn't expose a way to escape a string with double-quotes instead of
     # single-quotes, so we have to use traditional string substitution. This is safe
     # because the value is not user-specified.
@@ -638,13 +633,13 @@ def playlist_search_query(
         # pylint: disable=C0301
         f"""
         select p.playlist_id, b.balance, b.associated_wallets_balance from (
-            select {'distinct on (owner_id)' if distinct_owner_id else ''} playlist_id, owner_id, total_score from (
+            select distinct on (owner_id) playlist_id, owner_id, total_score from (
                 select playlist_id, owner_id, (
-                    sum(score) +
-                    (:name_weight * similarity(coalesce(playlist_name, ''), query)) +
+                    (:similarity_weight * sum(score)) +
+                    (:title_weight * similarity(coalesce(playlist_name, ''), query)) +
                     (:user_name_weight * similarity(coalesce(user_name, ''), query)) +
                     (:repost_weight * log(case when (repost_count = 0) then 1 else repost_count end)) +
-                    (case when (lower(query) = coalesce(playlist_name, '')) then :name_match_boost else 0 end) +
+                    (case when (lower(query) = coalesce(playlist_name, '')) then :title_match_boost else 0 end) +
                     (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                     (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                 ) as total_score
@@ -683,13 +678,14 @@ def playlist_search_query(
             "query": search_str,
             "limit": limit,
             "offset": offset,
-            "name_weight": playlist_name_weight,
-            "repost_weight": playlist_repost_weight,
+            "title_weight": search_title_weight,
+            "repost_weight": search_repost_weight,
+            "similarity_weight": search_similarity_weight,
             "current_user_id": current_user_id,
-            "user_name_weight": playlist_user_name_weight,
-            "name_match_boost": playlist_name_exact_match_boost,
-            "handle_match_boost": playlist_handle_exact_match_boost,
-            "user_name_match_boost": playlist_user_name_exact_match_boost
+            "user_name_weight": search_user_name_weight,
+            "title_match_boost": search_title_exact_match_boost,
+            "handle_match_boost": search_handle_exact_match_boost,
+            "user_name_match_boost": search_user_name_exact_match_boost
         },
     ).fetchall()
 

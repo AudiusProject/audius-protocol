@@ -7,31 +7,19 @@ import logging
 # but may exclude viable candidates.
 min_search_similarity = 0.4
 
-# Tracks
+# Playlist and Track Search Weights
 
 # Weight for query similarity against title
-track_title_weight = 0.7
+search_title_weight = 2
 # Weight for query similarity to words in track title (summed)
-track_similarity_weight = 5
+search_similarity_weight = 5
 # Weight for query similarity to track owner's username
-track_user_name_weight = 8
+search_user_name_weight = 8
 # Weight for track reposts.
-track_repost_weight = 10
-track_title_exact_match_boost = 5
-track_handle_exact_match_boost = 20
-track_user_name_exact_match_boost = 5
-
-# Playlists
-
-# Weight for playlist reposts
-playlist_repost_weight = 20
-# Weight for similarity between query and playlist owner username
-playlist_user_name_weight = 8
-# Weight for similarity between query and playlist name
-playlist_name_weight = 2
-playlist_name_exact_match_boost = 5
-playlist_handle_exact_match_boost = 10
-playlist_user_name_exact_match_boost = 5
+search_repost_weight = 15
+search_title_exact_match_boost = 5
+search_handle_exact_match_boost = 15
+search_user_name_exact_match_boost = 5
 
 # Users
 
@@ -41,9 +29,6 @@ user_name_weight = 0.7
 user_follower_weight = 0.5
 # Boost for exact handle match
 user_handle_exact_match_boost = 10
-
-
-
 
 logger = logging.getLogger(__name__)
 
