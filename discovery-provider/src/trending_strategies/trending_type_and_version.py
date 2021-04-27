@@ -6,5 +6,5 @@ class TrendingType(Enum):
     PLAYLISTS = 3
 
 class TrendingVersion(Enum):
-    DEFAULT = 'DEFAULT'
+    eYZmn = 'eYZmn'
     ePWJD = 'ePWJD'

@@ -9,9 +9,9 @@ from src.trending_strategies.trending_type_and_version import TrendingVersion
 TRENDING_LIMIT = 100
 TRENDING_TTL_SEC = 30 * 60
 
-def make_trending_cache_key(time_range, genre, version=TrendingVersion.DEFAULT):
+def make_trending_cache_key(time_range, genre, version=TrendingVersion.eYZmn):
     """Makes a cache key resembling `generated-trending:week:electronic`"""
-    version_name = f":{version.name}" if version != TrendingVersion.DEFAULT else ''
+    version_name = f":{version.name}" if version != TrendingVersion.eYZmn else ''
     return f"generated-trending{version_name}:{time_range}:{(genre.lower() if genre else '')}"
 
 def generate_unpopulated_trending(session, genre, time_range, strategy, limit=TRENDING_LIMIT):

@@ -35,9 +35,9 @@ def z(time, track):
         Q=a((1.0/q),(M(q,(1-k/L))))
     return{'score':H*Q,**track}
 
-class DefaultTrendingTracksStrategy(BaseTrendingStrategy):
+class TrendingTracksStrategyeYZmn(BaseTrendingStrategy):
     def __init__(self):
-        super().__init__(TrendingType.TRACKS, TrendingVersion.DEFAULT)
+        super().__init__(TrendingType.TRACKS, TrendingVersion.eYZmn)
 
     def get_track_score(self, time, track):
         return z(time, track)

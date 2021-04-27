@@ -171,8 +171,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
 
     return list(tracks_map.values())
 
-def make_underground_trending_cache_key(version=TrendingVersion.DEFAULT):
-    version_name = f":{version.name}" if version != TrendingVersion.DEFAULT else ''
+def make_underground_trending_cache_key(version=TrendingVersion.eYZmn):
+    version_name = f":{version.name}" if version != TrendingVersion.eYZmn else ''
     return f"{UNDERGROUND_TRENDING_CACHE_KEY}{version_name}"
 
 def make_get_unpopulated_tracks(session, redis_instance, strategy):

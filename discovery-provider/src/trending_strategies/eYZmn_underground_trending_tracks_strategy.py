@@ -13,9 +13,9 @@ qq = 0.001
 oi = 20
 nb = 750
 
-class DefaultUndergroundTrendingTracksStrategy(BaseTrendingStrategy):
+class UndergroundTrendingTracksStrategyeYZmn(BaseTrendingStrategy):
     def __init__(self):
-        super().__init__(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.DEFAULT)
+        super().__init__(TrendingType.UNDERGROUND_TRACKS, TrendingVersion.eYZmn)
 
     def get_track_score(self, time, track):
         # pylint: disable=W,C,R

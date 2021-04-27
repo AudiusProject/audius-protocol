@@ -174,8 +174,8 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
         return (playlists, playlist_ids)
     return wrapped
 
-def make_trending_cache_key(time_range, version=TrendingVersion.DEFAULT):
-    version_name = f":{version.name}" if version != TrendingVersion.DEFAULT else ''
+def make_trending_cache_key(time_range, version=TrendingVersion.eYZmn):
+    version_name = f":{version.name}" if version != TrendingVersion.eYZmn else ''
     return f"generated-trending-playlists{version_name}:{time_range}"
 
 def get_trending_playlists(args, strategy):
