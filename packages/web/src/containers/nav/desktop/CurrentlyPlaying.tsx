@@ -11,6 +11,7 @@ import styles from './CurrentlyPlaying.module.css'
 
 type CurrentlyPlayingProps = {
   isOwner: boolean
+  isUnlisted: boolean
   trackId: number
   trackTitle: string
   coverArtSizes: CoverArtSizes
@@ -30,6 +31,7 @@ type WrapperStyle = {
 
 const CurrentlyPlaying = ({
   isOwner,
+  isUnlisted,
   trackId,
   trackTitle,
   coverArtSizes,
@@ -75,7 +77,7 @@ const CurrentlyPlaying = ({
 
   return (
     <Draggable
-      isDisabled={!trackId}
+      isDisabled={!trackId || isUnlisted}
       text={trackTitle}
       kind='track'
       id={trackId}

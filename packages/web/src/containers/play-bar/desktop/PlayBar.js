@@ -257,6 +257,7 @@ class PlayBar extends Component {
     let reposted = false
     let favorited = false
     let isOwner = false
+    let isTrackUnlisted = false
 
     if (uid && track && user) {
       trackTitle = track.title
@@ -271,6 +272,7 @@ class PlayBar extends Component {
       trackId = track.track_id
       reposted = track.has_current_user_reposted
       favorited = track.has_current_user_saved || false
+      isTrackUnlisted = track.is_unlisted
     }
 
     let playButtonStatus
@@ -297,6 +299,7 @@ class PlayBar extends Component {
               artistHandle={artistHandle}
               artistUserId={artistUserId}
               isVerified={isVerified}
+              isTrackUnlisted={isTrackUnlisted}
               onClickTrackTitle={this.goToTrackPage}
               onClickArtistName={this.goToArtistPage}
             />
