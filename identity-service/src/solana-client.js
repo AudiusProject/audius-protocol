@@ -18,15 +18,29 @@ const CLOCK_PROGRAM = new solanaWeb3.PublicKey(
   'SysvarC1ock11111111111111111111111111111111'
 )
 
-class Assignable {
-  constructor (data) {
-    Object.assign(this, data)
+class TrackData {
+  constructor ({ userId, trackId, source, timestamp }) {
+    this.userId = userId
+    this.trackId = trackId
+    this.source = source
+    this.timestamp = timestamp
   }
 }
 
-class TrackData extends Assignable {}
-class InstructionArgs extends Assignable {}
-class InstructionEnum extends Assignable {}
+class InstructionArgs {
+  constructor ({ trackData, signature, recoveryId }) {
+    this.trackData = trackData
+    this.signature = signature
+    this.recoveryId = recoveryId
+  }
+}
+
+class InstructionEnum {
+  constructor ({ instruction, choose }) {
+    this.instruction = instruction
+    this.choose = choose
+  }
+}
 
 const trackDataSchema = new Map([
   [
@@ -34,8 +48,8 @@ const trackDataSchema = new Map([
     {
       kind: 'struct',
       fields: [
-        ['user_id', 'string'],
-        ['track_id', 'string'],
+        ['userId', 'string'],
+        ['trackId', 'string'],
         ['source', 'string'],
         ['timestamp', 'u64']
       ]
@@ -57,9 +71,9 @@ const instructionSchema = new Map([
     {
       kind: 'struct',
       fields: [
-        ['track_data', TrackData],
+        ['trackData', TrackData],
         ['signature', [64]],
-        ['recovery_id', 'u8']
+        ['recoveryId', 'u8']
       ]
     }
   ],
@@ -68,8 +82,8 @@ const instructionSchema = new Map([
     {
       kind: 'struct',
       fields: [
-        ['user_id', 'string'],
-        ['track_id', 'string'],
+        ['userId', 'string'],
+        ['trackId', 'string'],
         ['source', 'string'],
         ['timestamp', 'u64']
       ]
@@ -106,8 +120,8 @@ async function createAndVerifyMessage (
   ) // cut off version and eth address from valid signer data
 
   let trackData = new TrackData({
-    user_id: userId,
-    track_id: trackId,
+    userId: userId,
+    trackId: trackId,
     source: source,
     timestamp: Math.round(new Date().getTime() / 1000)
   })
@@ -118,9 +132,9 @@ async function createAndVerifyMessage (
   const sigObj = secp256k1.ecdsaSign(Uint8Array.from(msgHash), privKey)
 
   let instructionArgs = new InstructionArgs({
-    track_data: trackData,
+    trackData: trackData,
     signature: Array.from(sigObj.signature),
-    recovery_id: sigObj.recid
+    recoveryId: sigObj.recid
   })
 
   let instructionData = new InstructionEnum({

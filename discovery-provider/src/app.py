@@ -376,7 +376,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_solana_plays": {
                 "task": "index_solana_plays",
-                "schedule": timedelta(seconds=1)
+                "schedule": timedelta(seconds=5)
             },
             "update_aggregate_user": {
                 "task": "update_aggregate_user",
