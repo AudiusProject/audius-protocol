@@ -36,15 +36,17 @@ module.exports = function (app) {
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    const fileUploadError = req.fileSizeError || req.fileFilterError
+
     await FileProcessingQueue.addTranscodeTask(
       {
         logContext: req.logContext,
         req: {
-          fileName: req.fileName,
-          fileDir: req.fileDir,
+          fileName: fileUploadError ? null : req.fileName,
+          fileDir: fileUploadError ? null : req.fileDir,
+          fileDestination: fileUploadError ? null : req.file.destination,
           fileSizeError: req.fileSizeError,
           fileFilterError: req.fileFilterError,
-          fileDestination: req.file.destination,
           session: {
             cnodeUserUUID: req.session.cnodeUserUUID
           }

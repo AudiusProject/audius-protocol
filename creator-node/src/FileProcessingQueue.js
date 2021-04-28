@@ -2,7 +2,7 @@ const Bull = require('bull')
 const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
-const { handleTrackContentRoute: transcodeFn } = require('./fileManager')
+const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
 
 const EXPIRATION = 7200 // 2 hours in seconds
 const PROCESS_NAMES = Object.freeze({
