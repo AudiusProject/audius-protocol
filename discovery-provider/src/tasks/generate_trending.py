@@ -112,7 +112,11 @@ def get_listen_counts(session, time, genre, limit, offset):
     } for listen in listens]
     return listens
 
-def generate_trending(session, time, genre, limit, offset):
+def generate_trending(session, time, genre, limit, offset, strategy):
+    score_params = strategy.get_score_params()
+    xf = score_params['xf']
+    pt = score_params['pt']
+
     # Get listen counts
     listen_counts = get_listen_counts(session, time, genre, limit, offset)
 
@@ -178,7 +182,7 @@ def generate_trending(session, time, genre, limit, offset):
         .all()
     )
     follower_count_dict = \
-            {user_id: follower_count for (user_id, follower_count) in follower_counts}
+            {user_id: follower_count for (user_id, follower_count) in follower_counts if follower_count > pt}
 
     # Query save counts
     save_counts = get_save_counts(session, False, True, track_ids, None)
@@ -198,7 +202,7 @@ def generate_trending(session, time, genre, limit, offset):
         if save_type == SaveType.track
     }
 
-    karma_query = get_karma(session, tuple(track_ids))
+    karma_query = get_karma(session, tuple(track_ids), None, False, xf)
     karma_counts_for_id = {track_id: karma for (track_id, karma) in karma_query}
 
     trending_tracks = []

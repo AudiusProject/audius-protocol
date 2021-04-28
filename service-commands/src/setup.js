@@ -391,8 +391,7 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
-    // Intentionally disabled until migration has been run on production
-    // [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
 
   const start = Date.now()
