@@ -35,7 +35,7 @@ run_unit_tests () {
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 0 --exit
+  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 30000 --exit
 }
 
 if [ "$1" == "standalone_creator" ]; then

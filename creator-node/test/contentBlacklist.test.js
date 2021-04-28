@@ -633,13 +633,9 @@ describe('test ContentBlacklist', function () {
     const trackUploadResponse = await pollTrackTranscodeResponse(app, uuid)
 
     const {
-      object: {
-        data: {
-          transcodedTrackUUID,
-          track_segments: trackSegments,
-          source_file: sourceFile
-        }
-      }
+      transcodedTrackUUID,
+      track_segments: trackSegments,
+      source_file: sourceFile
     } = trackUploadResponse
 
     // set track metadata
