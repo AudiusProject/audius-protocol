@@ -18,6 +18,7 @@ interface PlayingTrackInfoProps {
   trackTitle: string
   profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
+  isTrackUnlisted: boolean
   artistUserId: ID
   artistName: string
   artistHandle: string
@@ -42,7 +43,8 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
   artistHandle,
   onClickTrackTitle,
   onClickArtistName,
-  isVerified
+  isVerified,
+  isTrackUnlisted
 }) => {
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
@@ -76,7 +78,7 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
       </div>
       <div className={styles.text}>
         <Draggable
-          isDisabled={!trackTitle}
+          isDisabled={!trackTitle || isTrackUnlisted}
           text={trackTitle}
           isOwner={isOwner}
           kind='track'

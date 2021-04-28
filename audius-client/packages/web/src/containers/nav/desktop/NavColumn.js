@@ -444,6 +444,7 @@ const NavColumn = ({
         <CurrentlyPlaying
           trackId={currentQueueItem.track?.track_id ?? null}
           trackTitle={currentQueueItem.track?.title ?? null}
+          isUnlisted={currentQueueItem.track?.is_unlisted ?? false}
           isOwner={
             // Note: if neither are defined, it should eval to false, so setting default to different values
             (currentQueueItem?.user?.handle ?? null) ===
