@@ -1582,6 +1582,267 @@ def upgrade():
         INSERT INTO "aggregate_daily_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-21', 'LUNCHBOXFM', '4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_daily_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-22', 'LUNCHBOXFM', '4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
+        -- ================== Monthly apps ==================
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'BeardBitsApp', '15581', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'BeardBitsApp', '15581', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'BeardBitsApp', '15581', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'BeardBitsApp', '15581', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'BeardBitsApp', '15581', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'BeardBitsApp', '15581', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'BestFreeRingtones', '730843', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'BestFreeRingtones', '730843', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'BestFreeRingtones', '730843', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'BestFreeRingtones', '730843', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'BestFreeRingtones', '730843', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'BestFreeRingtones', '730843', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'BoomCapMusicPlayer', '546', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'BoomCapMusicPlayer', '546', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'BoomCapMusicPlayer', '546', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'BoomCapMusicPlayer', '546', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'BoomCapMusicPlayer', '546', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'BoomCapMusicPlayer', '546', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'DADOMUSIC', '413756', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'DADOMUSIC', '413756', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'DADOMUSIC', '413756', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'DADOMUSIC', '413756', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'DADOMUSIC', '413756', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'DADOMUSIC', '413756', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'EXAMPLEAPP', '14249', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'EXAMPLEAPP', '14249', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'EXAMPLEAPP', '14249', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'EXAMPLEAPP', '14249', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'EXAMPLEAPP', '14249', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'EXAMPLEAPP', '14249', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'Kaseta', '1331', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'Kaseta', '1331', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'Kaseta', '1331', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'Kaseta', '1331', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'Kaseta', '1331', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'Kaseta', '1331', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'LUNCHTIMEFM', '1810', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'LUNCHTIMEFM', '1810', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'LUNCHTIMEFM', '1810', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'LUNCHTIMEFM', '1810', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'LUNCHTIMEFM', '1810', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'LUNCHTIMEFM', '1810', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'MUSICKILLER', '11467', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'MUSICKILLER', '11467', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'MUSICKILLER', '11467', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'MUSICKILLER', '11467', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'MUSICKILLER', '11467', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'MUSICKILLER', '11467', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'MUSICRACER', '680057', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'MUSICRACER', '680057', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'MUSICRACER', '680057', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'MUSICRACER', '680057', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'MUSICRACER', '680057', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'MUSICRACER', '680057', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'MUSICRACERSTEAM', '88658', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'MUSICRACERSTEAM', '88658', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'MUSICRACERSTEAM', '88658', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'MUSICRACERSTEAM', '88658', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'MUSICRACERSTEAM', '88658', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'MUSICRACERSTEAM', '88658', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'My Cool App v1.0.2', '747', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'My Cool App v1.0.2', '747', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'My Cool App v1.0.2', '747', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'My Cool App v1.0.2', '747', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'My Cool App v1.0.2', '747', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'My Cool App v1.0.2', '747', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'Nuclear', '8116', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'Nuclear', '8116', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'Nuclear', '8116', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'Nuclear', '8116', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'Nuclear', '8116', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'Nuclear', '8116', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'Remixmonsta', '29978', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'Remixmonsta', '29978', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'Remixmonsta', '29978', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'Remixmonsta', '29978', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'Remixmonsta', '29978', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'Remixmonsta', '29978', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'STOPWATCHRADIO', '1344', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'STOPWATCHRADIO', '1344', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'STOPWATCHRADIO', '1344', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'STOPWATCHRADIO', '1344', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'STOPWATCHRADIO', '1344', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'STOPWATCHRADIO', '1344', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'Shuffly Music', '32390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'Shuffly Music', '32390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'Shuffly Music', '32390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'Shuffly Music', '32390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'Shuffly Music', '32390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'Shuffly Music', '32390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'Zapier', '27426', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'Zapier', '27426', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'Zapier', '27426', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'Zapier', '27426', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'Zapier', '27426', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'Zapier', '27426', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'asphalt', '3266', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'asphalt', '3266', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'asphalt', '3266', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'asphalt', '3266', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'asphalt', '3266', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'asphalt', '3266', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'bassboostercompanjenapps', '153571', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'bassboostercompanjenapps', '153571', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'bassboostercompanjenapps', '153571', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'bassboostercompanjenapps', '153571', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'bassboostercompanjenapps', '153571', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'bassboostercompanjenapps', '153571', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'com.itbuilds.musicplayer', '251336', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'com.itbuilds.musicplayer', '251336', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'com.itbuilds.musicplayer', '251336', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'com.itbuilds.musicplayer', '251336', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'com.itbuilds.musicplayer', '251336', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'com.itbuilds.musicplayer', '251336', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'com.itbuilds.musicplayerflatdesign', '561299', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'com.itbuilds.musicplayerflatdesign', '561299', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'com.itbuilds.musicplayerflatdesign', '561299', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'com.itbuilds.musicplayerflatdesign', '561299', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'com.itbuilds.musicplayerflatdesign', '561299', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'com.itbuilds.musicplayerflatdesign', '561299', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'com.itdistrict.musicplayera', '1231', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'com.itdistrict.musicplayera', '1231', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'com.itdistrict.musicplayera', '1231', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'com.itdistrict.musicplayera', '1231', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'com.itdistrict.musicplayera', '1231', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'com.itdistrict.musicplayera', '1231', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'dev', '327', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'dev', '327', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'dev', '327', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'dev', '327', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'dev', '327', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'dev', '327', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'epic', '67127', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'epic', '67127', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'epic', '67127', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'epic', '67127', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'epic', '67127', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'epic', '67127', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'hang', '6905', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'hang', '6905', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'hang', '6905', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'hang', '6905', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'hang', '6905', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'hang', '6905', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'hiddenfm', '18390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'hiddenfm', '18390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'hiddenfm', '18390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'hiddenfm', '18390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'hiddenfm', '18390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'hiddenfm', '18390', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'learning_the_api', '505', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'learning_the_api', '505', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'learning_the_api', '505', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'learning_the_api', '505', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'learning_the_api', '505', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'learning_the_api', '505', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'lofi-clouds-radio', '9382', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'lofi-clouds-radio', '9382', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'lofi-clouds-radio', '9382', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'lofi-clouds-radio', '9382', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'lofi-clouds-radio', '9382', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'lofi-clouds-radio', '9382', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'lofi-cloulds-radio', '735', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'lofi-cloulds-radio', '735', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'lofi-cloulds-radio', '735', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'lofi-cloulds-radio', '735', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'lofi-cloulds-radio', '735', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'lofi-cloulds-radio', '735', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'mubo', '6683', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'mubo', '6683', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'mubo', '6683', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'mubo', '6683', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'mubo', '6683', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'mubo', '6683', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'musicplayercompanjenapps', '7358218', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'musicplayercompanjenapps', '7358218', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'musicplayercompanjenapps', '7358218', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'musicplayercompanjenapps', '7358218', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'musicplayercompanjenapps', '7358218', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'musicplayercompanjenapps', '7358218', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'nova', '1289122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'nova', '1289122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'nova', '1289122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'nova', '1289122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'nova', '1289122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'nova', '1289122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'odesli', '10563342', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'odesli', '10563342', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'odesli', '10563342', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'odesli', '10563342', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'odesli', '10563342', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'odesli', '10563342', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'songwhip', '142337', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'songwhip', '142337', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'songwhip', '142337', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'songwhip', '142337', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'songwhip', '142337', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'songwhip', '142337', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'stereoload', '57122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'stereoload', '57122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'stereoload', '57122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'stereoload', '57122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'stereoload', '57122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'stereoload', '57122', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'tuner', '2767', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'tuner', '2767', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'tuner', '2767', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'tuner', '2767', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'tuner', '2767', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'tuner', '2767', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-01-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-02-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
 
     commit;
     ''')
