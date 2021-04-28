@@ -21,8 +21,21 @@ TX_SIGNATURES_RESIZE_LENGTH = 10
 
 logger = logging.getLogger(__name__)
 
-# Parse signed data message from each transaction submitted to
-# Audius TrackListenCount program
+'''
+Parse signed data message from each transaction submitted to
+Audius TrackListenCount program
+
+pub struct TrackData {
+    /// user ID
+    pub user_id: String,
+    /// track ID
+    pub track_id: String,
+    /// track source
+    pub source: String,
+    /// timestamp as nonce
+    pub timestamp: UnixTimestamp,
+}
+'''
 def parse_instruction_data(data):
     decoded = base58.b58decode(data)[1:]
 
