@@ -9,8 +9,7 @@ Revises: 29864cb80469
 Create Date: 2021-04-27 00:29:31.849031
 
 """
-from alembic import op
-import sqlalchemy as sa
+from alembic import context, op
 
 
 # revision identifiers, used by Alembic.
@@ -21,6 +20,12 @@ depends_on = None
 
 
 def upgrade():
+    # Do not run this migration in the case of the test environment
+    # since it seeds data that corrupts test state
+    mode = context.config.get_main_option("mode")
+    if mode == "test":
+        return
+
     connection = op.get_bind()
     connection.execute('''
     begin;
