@@ -1,7 +1,7 @@
 //! Program state processor
 
 use crate::{
-    error::ProgramTemplateError,
+    error::TrackListenCountError,
     instruction::{InstructionArgs, TemplateInstruction},
 };
 use audius_eth_registry::instruction::SignatureData;
@@ -36,7 +36,7 @@ impl Processor {
         let clock = Clock::from_account_info(&clock_account_info)?;
 
         if (clock.unix_timestamp - instruction_data.track_data.timestamp).abs() > MAX_TIME_DIFF {
-            return Err(ProgramTemplateError::InvalidTimestamp.into());
+            return Err(TrackListenCountError::InvalidTimestamp.into());
         }
 
         let signature_data = Box::new(SignatureData {
@@ -45,7 +45,7 @@ impl Processor {
             message: instruction_data
                 .track_data
                 .try_to_vec()
-                .or(Err(ProgramTemplateError::InvalidTrackData))?,
+                .or(Err(TrackListenCountError::InvalidTrackData))?,
         });
 
         invoke(
@@ -75,7 +75,7 @@ impl Processor {
         input: &[u8],
     ) -> ProgramResult {
         let instruction = TemplateInstruction::try_from_slice(input)
-            .or(Err(ProgramTemplateError::InstructionUnpackError))?;
+            .or(Err(TrackListenCountError::InstructionUnpackError))?;
         match instruction {
             TemplateInstruction::TrackListenInstruction(signature_data) => {
                 msg!("Instruction: TrackListenInstruction");

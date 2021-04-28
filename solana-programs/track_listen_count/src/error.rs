@@ -11,7 +11,7 @@ use thiserror::Error;
 
 /// Errors that may be returned by the CreateAndVerify program.
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
-pub enum ProgramTemplateError {
+pub enum TrackListenCountError {
     /// Instruction unpack error
     #[error("Instruction unpack error")]
     InstructionUnpackError,
@@ -22,26 +22,26 @@ pub enum ProgramTemplateError {
     #[error("Difference between timestamp and current time is too big")]
     InvalidTimestamp,
 }
-impl From<ProgramTemplateError> for ProgramError {
-    fn from(e: ProgramTemplateError) -> Self {
+impl From<TrackListenCountError> for ProgramError {
+    fn from(e: TrackListenCountError) -> Self {
         ProgramError::Custom(e as u32)
     }
 }
-impl<T> DecodeError<T> for ProgramTemplateError {
+impl<T> DecodeError<T> for TrackListenCountError {
     fn type_of() -> &'static str {
-        "ProgramTemplateError"
+        "TrackListenCountError"
     }
 }
 
-impl PrintProgramError for ProgramTemplateError {
+impl PrintProgramError for TrackListenCountError {
     fn print<E>(&self)
     where
         E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive,
     {
         match self {
-            ProgramTemplateError::InstructionUnpackError => msg!("Instruction unpack error"),
-            ProgramTemplateError::InvalidTrackData => msg!("Invalid track data were passed"),
-            ProgramTemplateError::InvalidTimestamp => msg!("Difference between timestamp and current time is too big"),
+            TrackListenCountError::InstructionUnpackError => msg!("Instruction unpack error"),
+            TrackListenCountError::InvalidTrackData => msg!("Invalid track data were passed"),
+            TrackListenCountError::InvalidTimestamp => msg!("Difference between timestamp and current time is too big"),
         }
     }
 }
