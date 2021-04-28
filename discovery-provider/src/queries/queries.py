@@ -553,6 +553,7 @@ def get_creator_node_users():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+# Get the list of content nodes registered on UserReplicaSetManager
 @bp.route("/ursm_content_nodes", methods=("GET",))
 def get_ursm_content_nodes():
     try:
@@ -563,6 +564,7 @@ def get_ursm_content_nodes():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+# Get this discovery provider's ipfs peer info
 @bp.route("/ipfs_peer_info", methods=("GET",))
 def get_ipfs_peer_info_route():
     try:
@@ -571,6 +573,7 @@ def get_ipfs_peer_info_route():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+# Get details for a single play written to Solana
 @bp.route("/get_sol_play", methods=("GET",))
 def get_sol_play_tx():
     try:
@@ -581,6 +584,8 @@ def get_sol_play_tx():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+# Get details for latest track listen milestones
+# Used to parse and issue notifications
 @bp.route("/track_listen_milestones", methods=("GET",))
 def get_track_listen_milestone_data():
     try:

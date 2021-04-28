@@ -25,7 +25,7 @@ def get_sol_play(sol_tx_signature):
     return sol_play
 
 # For the n most recently listened to tracks, return the all time listen counts for those tracks
-def get_track_listen_milestones(limit):
+def get_track_listen_milestones(limit=100):
     db = get_db_read_replica()
 
     with db.scoped_session() as session:
