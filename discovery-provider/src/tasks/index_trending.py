@@ -5,7 +5,9 @@ from src.tasks.celery_app import celery
 from src.queries.get_trending_tracks import make_trending_cache_key, generate_unpopulated_trending
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
-from src.queries.get_underground_trending import UNDERGROUND_TRENDING_CACHE_KEY, make_get_unpopulated_tracks
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.queries.get_underground_trending import make_underground_trending_cache_key, make_get_unpopulated_tracks
 
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
@@ -72,6 +74,7 @@ def get_genres(session):
     genres = filter(lambda x: x[0] is not None and x[0] != "" and x[0] in genre_allowlist, genres)
     return list(map(lambda x: x[0], genres))
 
+trending_strategy_factory = TrendingStrategyFactory()
 
 def index_trending(self, db, redis):
     logger.info('index_trending.py | starting indexing')
@@ -82,22 +85,34 @@ def index_trending(self, db, redis):
         # Make sure to cache empty genre
         genres.append(None)
 
-        for genre in genres:
-            for time_range in time_ranges:
-                cache_start_time = time.time()
-                res = generate_unpopulated_trending(session, genre, time_range)
-                key = make_trending_cache_key(time_range, genre)
-                pickle_and_set(redis, key, res)
-                cache_end_time = time.time()
-                total_time = cache_end_time - cache_start_time
-                logger.info(f"index_trending.py | Cached trending for {genre}-{time_range} in {total_time} seconds")
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
+        for version in trending_track_versions:
+            strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version)
+            for genre in genres:
+                for time_range in time_ranges:
+                    cache_start_time = time.time()
+                    res = generate_unpopulated_trending(session, genre, time_range, strategy)
+                    key = make_trending_cache_key(time_range, genre)
+                    pickle_and_set(redis, key, res)
+                    cache_end_time = time.time()
+                    total_time = cache_end_time - cache_start_time
+                    logger.info(f"index_trending.py | Cached trending ({version.name} version) \
+                        for {genre}-{time_range} in {total_time} seconds")
 
         # Cache underground trending
-        cache_start_time = time.time()
-        res = make_get_unpopulated_tracks(session, redis)()
-        pickle_and_set(redis, UNDERGROUND_TRENDING_CACHE_KEY, res)
-        cache_end_time = time.time()
-        logger.info(f"index_trending.py | Cached underground trending in {total_time} seconds")
+        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.UNDERGROUND_TRACKS
+        ).keys()
+        for version in underground_trending_versions:
+            strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version)
+            cache_start_time = time.time()
+            res = make_get_unpopulated_tracks(session, redis, strategy)()
+            key = make_underground_trending_cache_key()
+            pickle_and_set(redis, key, res)
+            cache_end_time = time.time()
+            total_time = cache_end_time - cache_start_time
+            logger.info(f"index_trending.py | Cached underground trending ({version.name} version) \
+                in {total_time} seconds")
 
     update_end = time.time()
     update_total = update_end - update_start
