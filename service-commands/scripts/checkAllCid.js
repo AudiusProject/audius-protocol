@@ -17,7 +17,7 @@ function sleep (ms) {
 }
 
 function makeRequest (request) {
-  return retry(() => axios(request), { retries: 10 })
+  return retry(() => axios(request), { retries: 3 })
 }
 
 /**
