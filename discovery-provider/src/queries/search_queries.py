@@ -460,7 +460,7 @@ def track_search_query(
                         if only_downloadable
                         else ""
                     }
-                    where d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query)
+                    where (d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query))
                     {
                         "and s.save_type='track' and s.is_current=true and " +
                         "s.is_delete=false and s.user_id = :current_user_id"
@@ -476,7 +476,7 @@ def track_search_query(
                 group by track_id, title, query, user_name, handle, repost_count, owner_id
             ) as results2
             order by owner_id, total_score desc
-        ) as u join user_balances b on u.owner_id = b.user_id
+        ) as u left join user_balances b on u.owner_id = b.user_id
         order by total_score desc
         limit :limit
         offset :offset;
@@ -565,7 +565,7 @@ def user_search_query(session, search_str, limit, offset, personalized, is_auto_
             order by total_score desc, user_id asc
             limit :limit
             offset :offset
-        ) as u join user_balances b on u.user_id = b.user_id
+        ) as u left join user_balances b on u.user_id = b.user_id
         """
     )
 
@@ -654,7 +654,7 @@ def playlist_search_query(
                         if personalized and current_user_id
                         else ""
                     }
-                    where d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query)
+                    where (d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query))
                     {
                         "and s.save_type='" + save_type +
                         "' and s.is_current=true and s.is_delete=false and s.user_id=:current_user_id"
@@ -665,7 +665,7 @@ def playlist_search_query(
                 group by playlist_id, playlist_name, query, repost_count, user_name, handle, owner_id
             ) as results2
             order by owner_id, total_score desc
-        ) as p join user_balances b on p.owner_id = b.user_id
+        ) as p left join user_balances b on p.owner_id = b.user_id
         order by total_score desc
         limit :limit
         offset :offset;
