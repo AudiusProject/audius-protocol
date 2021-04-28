@@ -13,11 +13,11 @@ const cidsExistsSupported = {}
 const imageCidsExistsSupported = {}
 
 function sleep (ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function makeRequest (request) {
-  return retry(() => axios(request), { retries: 3 })
+function makeRequest (request, retries = 5) {
+  return retry(() => axios(request), { retries })
 }
 
 /**
@@ -27,19 +27,27 @@ function makeRequest (request) {
  * @returns {Array<Object>} userBatch
  */
 async function getUsersBatch (discoveryProvider, offset, limit) {
-  return (
-    await makeRequest({
-      method: 'get',
-      url: '/users',
-      baseURL: discoveryProvider,
-      params: { offset, limit }
-    })
-  ).data.data.map(user => ({
-    ...user,
-    creator_node_endpoint: user.creator_node_endpoint
-      ? user.creator_node_endpoint.split(',').filter(endpoint => endpoint)
-      : []
-  }))
+  try {
+    return (
+      await makeRequest(
+        {
+          method: 'get',
+          url: '/users',
+          baseURL: discoveryProvider,
+          params: { offset, limit }
+        },
+        10
+      )
+    ).data.data.map(user => ({
+      ...user,
+      creator_node_endpoint: user.creator_node_endpoint
+        ? user.creator_node_endpoint.split(',').filter(endpoint => endpoint)
+        : []
+    }))
+  } catch (err) {
+    console.log(`Got ${err} when fetching users from discovery-provider`)
+    return []
+  }
 }
 
 /**
@@ -122,12 +130,12 @@ async function getCidsExist (creatorNode, cids, batchSize = 500) {
             url: '/batch_cids_exist',
             baseURL: creatorNode,
             data: { cids: [] },
-            validateStatus: (status) => status === 200 || status === 404
+            validateStatus: status => status === 200 || status === 404
           })
         ).status === 200
 
       if (cidsExistsSupported[creatorNode]) {
-        await sleep(5000)
+        await sleep(6000)
       }
     }
 
@@ -150,7 +158,7 @@ async function getCidsExist (creatorNode, cids, batchSize = 500) {
         ).data.data.cids
       )
 
-      await sleep(5000)
+      await sleep(6000)
     }
 
     return cidsExist
@@ -175,12 +183,12 @@ async function getImageCidsExist (creatorNode, cids, batchSize = 500) {
             url: '/batch_image_cids_exist',
             baseURL: creatorNode,
             data: { cids: [] },
-            validateStatus: (status) => status === 200 || status === 404
+            validateStatus: status => status === 200 || status === 404
           })
         ).status === 200
 
       if (imageCidsExistsSupported[creatorNode]) {
-        await sleep(5000)
+        await sleep(6000)
       }
     }
 
@@ -203,7 +211,7 @@ async function getImageCidsExist (creatorNode, cids, batchSize = 500) {
         ).data.data.cids
       )
 
-      await sleep(5000)
+      await sleep(6000)
     }
 
     return cidsExist
