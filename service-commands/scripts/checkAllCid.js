@@ -9,6 +9,9 @@ axios.defaults.timeout = 10000
 axios.defaults.httpAgent = new http.Agent({ timeout: 10000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 10000 })
 
+const cidsExistsSupported = {}
+const imageCidsExistsSupported = {}
+
 function sleep (ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -111,22 +114,26 @@ async function getClockValues (creatorNode, walletPublicKeys) {
  */
 async function getCidsExist (creatorNode, cids, batchSize = 500) {
   try {
-    const supported =
-      (
-        await makeRequest({
-          method: 'post',
-          url: '/batch_cids_exist',
-          baseURL: creatorNode,
-          data: { cids: [] },
-          validateStatus: (status) => status === 200 || status === 404
-        })
-      ).status === 200
+    if (cidsExistsSupported[creatorNode] === undefined) {
+      cidsExistsSupported[creatorNode] =
+        (
+          await makeRequest({
+            method: 'post',
+            url: '/batch_cids_exist',
+            baseURL: creatorNode,
+            data: { cids: [] },
+            validateStatus: (status) => status === 200 || status === 404
+          })
+        ).status === 200
 
-    if (!supported) {
-      throw new Error('creator node out of date')
+      if (cidsExistsSupported[creatorNode]) {
+        await sleep(5000)
+      }
     }
 
-    await sleep(5000)
+    if (!cidsExistsSupported[creatorNode]) {
+      throw new Error('creator node out of date')
+    }
 
     const cidsExist = []
 
@@ -160,22 +167,26 @@ async function getCidsExist (creatorNode, cids, batchSize = 500) {
  */
 async function getImageCidsExist (creatorNode, cids, batchSize = 500) {
   try {
-    const supported =
-      (
-        await makeRequest({
-          method: 'post',
-          url: '/batch_image_cids_exist',
-          baseURL: creatorNode,
-          data: { cids: [] },
-          validateStatus: (status) => status === 200 || status === 404
-        })
-      ).status === 200
+    if (imageCidsExistsSupported[creatorNode] === undefined) {
+      imageCidsExistsSupported[creatorNode] =
+        (
+          await makeRequest({
+            method: 'post',
+            url: '/batch_image_cids_exist',
+            baseURL: creatorNode,
+            data: { cids: [] },
+            validateStatus: (status) => status === 200 || status === 404
+          })
+        ).status === 200
 
-    if (!supported) {
-      throw new Error('creator node out of date')
+      if (imageCidsExistsSupported[creatorNode]) {
+        await sleep(5000)
+      }
     }
 
-    await sleep(5000)
+    if (!imageCidsExistsSupported[creatorNode]) {
+      throw new Error('creator node out of date')
+    }
 
     const cidsExist = []
 
