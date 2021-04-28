@@ -1,14 +1,15 @@
 import logging  # pylint: disable=C0302
 import random
 
-from src.api.v1.helpers import extend_track, decode_string_id
-from src.queries.get_trending_tracks import get_trending_tracks
+from src.api.v1.helpers import extend_track, decode_string_id, to_dict
+from src.queries.get_trending_tracks import get_trending_tracks, TRENDING_TTL_SEC
+from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_RANDOM_LIMIT = 10
 
-def get_random_tracks(args):
+def get_random_tracks(args, strategy):
     """Gets random tracks from trending by getting the currently cached tracks and then populating them."""
     exclusion_list = args.get("exclusion_list") or []
     time = args.get("time") if args.get("time") is not None else 'week'
@@ -25,8 +26,19 @@ def get_random_tracks(args):
     if current_user_id:
         args["current_user_id"] = decode_string_id(current_user_id)
 
-    tracks = get_trending_tracks(args)
+    tracks = get_trending_tracks(args, strategy)
     filtered_tracks = list(filter(lambda track: track['track_id'] not in exclusion_list, tracks))
 
     random.shuffle(filtered_tracks)
     return list(map(extend_track, filtered_tracks))
+
+def get_full_random_tracks(request, args, strategy):
+    # Attempt to use the cached tracks list
+    if args['user_id'] is not None:
+        full_random = get_random_tracks(args, strategy)
+    else:
+        key = get_trending_cache_key(to_dict(request.args), request.path)
+        full_random = use_redis_cache(
+            key, TRENDING_TTL_SEC, lambda: get_random_tracks(args, strategy)
+        )
+    return full_random

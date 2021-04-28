@@ -7,15 +7,15 @@ logger = logging.getLogger(__name__)
 
 request_cache_path = '/v1/full/tracks/trending'
 
-def get_time_trending(cache_args, time, limit):
+def get_time_trending(cache_args, time, limit, strategy):
     time_params = {**cache_args, 'time':time}
     time_cache_key = extract_key(request_cache_path, time_params.items())
-    time_trending = use_redis_cache(time_cache_key, TRENDING_TTL_SEC, lambda: get_trending(time_params))
+    time_trending = use_redis_cache(time_cache_key, TRENDING_TTL_SEC, lambda: get_trending(time_params, strategy))
     time_trending_track_ids = [{"track_id": track['track_id']} for track in time_trending]
     time_trending_track_ids = time_trending_track_ids[:limit]
     return time_trending_track_ids
 
-def get_trending_ids(args):
+def get_trending_ids(args, strategy):
     """
     Fetches the ids of the trending tracks using the route's cache
 
@@ -33,9 +33,9 @@ def get_trending_ids(args):
     if "genre" in args:
         cache_args['genre'] = args["genre"]
 
-    week_trending_track_ids = get_time_trending(cache_args, 'week', limit)
-    month_trending_track_ids = get_time_trending(cache_args, 'month', limit)
-    year_trending_track_ids = get_time_trending(cache_args, 'year', limit)
+    week_trending_track_ids = get_time_trending(cache_args, 'week', limit, strategy)
+    month_trending_track_ids = get_time_trending(cache_args, 'month', limit, strategy)
+    year_trending_track_ids = get_time_trending(cache_args, 'year', limit, strategy)
 
     return {
         "week": week_trending_track_ids,

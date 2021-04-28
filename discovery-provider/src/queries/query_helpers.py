@@ -813,7 +813,7 @@ def get_repost_counts(
     return repost_counts_query.all()
 
 
-def get_karma(session, ids, time=None, is_playlist=False):
+def get_karma(session, ids, time=None, is_playlist=False, xf=False):
     """Gets the total karma for provided ids (track or playlist)"""
 
     repost_type = (RepostType.playlist if is_playlist else RepostType.track)
@@ -854,6 +854,23 @@ def get_karma(session, ids, time=None, is_playlist=False):
         )
 
     saves_and_reposts = reposters.union_all(savers).subquery()
+    if xf:
+        saves_and_reposts = (
+            session.query(
+                saves_and_reposts.c.user_id.label('user_id'),
+                saves_and_reposts.c.item_id.label('item_id')
+            )
+            .select_from(saves_and_reposts)
+            .join(
+                User,
+                saves_and_reposts.c.user_id == User.user_id
+            )
+            .filter(
+                User.cover_photo != None,
+                User.profile_picture != None,
+                User.bio != None,
+            )
+        ).subquery()
 
     query = (
         session.query(

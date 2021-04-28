@@ -27,7 +27,7 @@ def get_playlist_tracks(session, args):
     try:
         playlists = args.get("playlists")
         if not playlists:
-            playlist_ids = args.get("playlist_ids")
+            playlist_ids = args.get("playlist_ids", [])
             playlists = (
                 session
                 .query(Playlist)
