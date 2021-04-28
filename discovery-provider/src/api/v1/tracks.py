@@ -26,7 +26,7 @@ from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
-from src.queries.get_random_tracks import get_random_tracks, get_full_random_tracks, DEFAULT_RANDOM_LIMIT
+from src.queries.get_recommended_tracks import get_recommended_tracks, get_full_recommended_tracks, DEFAULT_RECOMMENDED_LIMIT
 from src.queries.get_underground_trending import get_underground_trending
 
 logger = logging.getLogger(__name__)
@@ -296,22 +296,22 @@ class FullUndergroundTrending(Resource):
         trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
-# Get random tracks for a genre and exclude tracks in the exclusion list
-random_track_parser = reqparse.RequestParser()
-random_track_parser.add_argument('genre', required=False)
-random_track_parser.add_argument('limit', type=int, required=False)
-random_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
-random_track_parser.add_argument('time', required=False)
+# Get recommended tracks for a genre and exclude tracks in the exclusion list
+recommended_track_parser = reqparse.RequestParser()
+recommended_track_parser.add_argument('genre', required=False)
+recommended_track_parser.add_argument('limit', type=int, required=False)
+recommended_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
+recommended_track_parser.add_argument('time', required=False)
 
-@ns.route("/random", defaults={"version": DEFAULT_TRENDING_VERSION.name}, strict_slashes=False)
-@ns.route("/random/<string:version>")
-class RandomTrack(Resource):
+@ns.route("/recommended", defaults={"version": DEFAULT_TRENDING_VERSION.name}, strict_slashes=False)
+@ns.route("/recommended/<string:version>")
+class RecommendedTrack(Resource):
     @record_metrics
     @ns.doc(
-        id="""Random Tracks""",
+        id="""Recommended Tracks""",
         params={
-            'genre': 'Random trending tracks for a specified genre',
-            'limit': 'Number of random tracks to fetch',
+            'genre': 'Recommended trending tracks for a specified genre',
+            'limit': 'Number of recommended tracks to fetch',
             'exclusion_list': 'List of track ids to exclude',
             'time': 'Trending tracks over a specified time range (week, month, allTime)'
         },
@@ -329,19 +329,19 @@ class RandomTrack(Resource):
         if not version_list:
             abort_bad_path_param('version', ns)
 
-        args = random_track_parser.parse_args()
-        limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
+        args = recommended_track_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
         args['limit'] = max(TRENDING_LIMIT, limit)
         strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
-        random_tracks = get_random_tracks(args, strategy)
-        return success_response(random_tracks[:limit])
+        recommended_tracks = get_recommended_tracks(args, strategy)
+        return success_response(recommended_tracks[:limit])
 
-full_random_track_parser = random_track_parser.copy()
-full_random_track_parser.add_argument('user_id', required=False)
+full_recommended_track_parser = recommended_track_parser.copy()
+full_recommended_track_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/random", defaults={"version": DEFAULT_TRENDING_VERSION.name}, strict_slashes=False)
-@full_ns.route("/random/<string:version>")
-class FullRandomTrack(Resource):
+@full_ns.route("/recommended", defaults={"version": DEFAULT_TRENDING_VERSION.name}, strict_slashes=False)
+@full_ns.route("/recommended/<string:version>")
+class FullRecommendedTrack(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -350,12 +350,12 @@ class FullRandomTrack(Resource):
         if not version_list:
             abort_bad_path_param('version', full_ns)
 
-        args = full_random_track_parser.parse_args()
-        limit = format_limit(args, default_limit=DEFAULT_RANDOM_LIMIT)
+        args = full_recommended_track_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
         args['limit'] = max(TRENDING_LIMIT, limit)
         strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
-        full_random_tracks = get_full_random_tracks(request, args, strategy)
-        return success_response(full_random_tracks[:limit])
+        full_recommended_tracks = get_full_recommended_tracks(request, args, strategy)
+        return success_response(full_recommended_tracks[:limit])
 
 
 trending_ids_route_parser = reqparse.RequestParser()
