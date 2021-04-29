@@ -60,7 +60,7 @@ def parse_instruction_data(data):
     return user_id, track_id, source, timestamp
 
 # Retry 5x until a tx 'result' is found with valid contents
-# TODO: Clarify this unavailabilty
+# If not found, move forward
 def get_sol_tx_info(solana_client, tx_sig):
     retries = 5
     while retries > 0:
@@ -150,6 +150,84 @@ def get_tx_in_db(session, tx_sig):
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
 
+'''
+Processing of plays through the Solana TrackListenCount program is handled differently
+than the original indexing layer
+
+Below we monitor the on chain 'programId' which is passed as a config - this will
+be deployed exactly once to Solana in conjunction with the AudiusEthRegistry
+
+Each transaction here is signed by a trusted ethereum address authorized within the audius
+protocol.
+
+Monitoring the address is performed by leveraging the `get_confirmed_signature_for_address2`
+function, which accepts 'limit' and 'before' parameters which are key to the logic below.
+This function returns tx signatures processed by the programId in confirmation order,
+with the most recently confirmed returned first.
+
+For example, if there are 1000 transactions and we request with a limit of 1000, the returned
+array will have the following format:
+[1000th, 999th, ..., 3rd, 2nd, 1]
+
+This indexing logic leverages the above to monitor the 'slots' for each transaction, based on
+the highest value currently stored in the discovery database and comparing that with the slots
+of the latest returned transactions until an intersection is explicitly found between the two.
+
+In the startup case, where there are no DB records present an intersection is considered 'found'
+when there are no records remaining - indicating that we have reached the end of the transaction
+history for this particular programId.
+
+For example, given the following state:
+
+latest_processed_slot = 200 <- latest slot stored in database
+
+last_tx_signature = None <- None by design, as we must start querying the most recent chain
+transactions
+
+transactions_history = get_confirmed_signature_for_address_2(before=None) =
+[
+    sig300, slot=230,
+    sig299, slot=230
+    sig298, slot=229
+    ...
+    sig250, slot=210
+]
+Since no intersection has been found, the above is loaded as a single 'batch' into an array of
+tx_signature batches that now has the following state:
+
+tx_batches = [batch1]
+
+Now, last_tx_signature = sig250
+transactions_history = get_confirmed_signature_for_address_2(before=None) =
+[
+    sig250, slot=210
+    sig249, slot=209
+    sig248, slot=209
+    ...
+    sig202, slot=201
+    sig201, slot=200 <-- slot intersection
+]
+
+Here, we continue storing each transaction in a new 'batch' array until a tx with a
+slot equal to the latest_processed_slot is found - in this case, 200.
+
+Additionally, once an equivalent slot is found we explicitly validate that sig201 is present in
+the local DB - if not, processing continues until an explicit signature + slot intersection is
+found or no history is remaining
+
+At this point, tx_batches = [batch1, batch2]
+
+tx_batches is reversed in order to apply the oldest transactions first - as follows:
+
+tx_batches = [batch2, batch1]
+
+Each batch is then processed in parallel and committed to the local database.
+
+It is important to note that we also limit the maximum size of tx_batches to ensure that this array
+does not grow unbounded over time and new discovery providers are able to safely recover all information.
+This is performed by simply slicing the tx_batches array and discarding the newest transactions until an intersection
+is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
+'''
 def process_solana_plays(solana_client):
     if not TRACK_LISTEN_PROGRAM:
         logger.info("index_solana_plays.py | No program configured, exiting")
@@ -197,7 +275,7 @@ def process_solana_plays(solana_client):
                     )
                     if tx['slot'] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
-                    elif tx['slot'] == latest_processed_slot:
+                    elif tx['slot'] <= latest_processed_slot:
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
                         logger.info(
@@ -214,13 +292,6 @@ def process_solana_plays(solana_client):
                         else:
                             # Ensure this transaction is still processed
                             transaction_signature_batch.append(tx_sig)
-                    else:
-                        logger.info(f"index_solana_plays.py |\
-    slot={tx_slot}, sig={tx_sig},\
-    latest_processed_slot(db)={latest_processed_slot}")
-                        # Exit loop and set terminal condition since this slot is < max known value in plays DB
-                        intersection_found = True
-                        break
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
