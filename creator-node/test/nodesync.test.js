@@ -25,7 +25,7 @@ const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 const sampleExportFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportFromClock2.json')
 
 describe('test nodesync', async function () {
-  let server, app
+  let server, app, mockServiceRegistry
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
   let maxExportClockValueRange = originalMaxExportClockValueRange
@@ -34,6 +34,7 @@ describe('test nodesync', async function () {
     const appInfo = await getApp(ipfsClient, libsMock, BlacklistManager)
     server = appInfo.server
     app = appInfo.app
+    mockServiceRegistry = appInfo.mockServiceRegistry
   }
 
   beforeEach(async function () {
@@ -91,7 +92,11 @@ describe('test nodesync', async function () {
 
       /** Upload a track */
 
-      const trackUploadResponse = (await uploadTrack(testAudioFilePath, cnodeUserUUID)).data
+      const trackUploadResponse = (await uploadTrack(
+        testAudioFilePath,
+        cnodeUserUUID,
+        mockServiceRegistry.ipfs,
+        mockServiceRegistry.blacklistManager)).data
 
       transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID
       trackSegments = trackUploadResponse.track_segments

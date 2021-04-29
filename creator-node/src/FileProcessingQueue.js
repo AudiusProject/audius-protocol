@@ -3,6 +3,7 @@ const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
 const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
+const { serviceRegistry } = require('./serviceRegistry')
 
 const EXPIRATION = 7200 // 2 hours in seconds
 const PROCESS_NAMES = Object.freeze({
@@ -63,13 +64,16 @@ class FileProcessingQueue {
 
   // Note: "track" in `_trackProgress` is used as a verb, not the noun "track"
   async _trackProgress (taskType, func, { logContext, req }) {
+    if (!serviceRegistry.blacklistManager.initialized) {
+      serviceRegistry.initServices({ blacklistManager: true })
+    }
+
     const uuid = logContext.requestID
-    // TODO: consider expiry?
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(logContext, `Starting ${taskType}! uuid=${uuid}}`)
     await redisClient.set(`${taskType}:::${uuid}`, JSON.stringify(state), 'EX', EXPIRATION)
-    const resp = await func({ logContext }, req)
+    const resp = await func({ logContext }, req, serviceRegistry.ipfs, serviceRegistry.blacklistManager)
 
     if (resp.statusCode === 200) {
       state = { status: PROCESS_STATES.DONE, resp }

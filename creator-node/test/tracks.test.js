@@ -24,8 +24,17 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 const testAudiusFileNumSegments = 32
 
+const logContext = {
+  logContext: {
+    requestID: uuid(),
+    requestMethod: 'POST',
+    requestHostname: '127.0.0.1',
+    requestUrl: '/track_content'
+  }
+}
+
 describe('test Tracks with mocked IPFS', function () {
-  let app, server, session, ipfsMock, libsMock, handleTrackContentRoute
+  let app, server, session, ipfsMock, libsMock, handleTrackContentRoute, mockServiceRegistry
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
@@ -36,6 +45,7 @@ describe('test Tracks with mocked IPFS', function () {
 
     app = appInfo.app
     server = appInfo.server
+    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser()
 
     handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
@@ -126,22 +136,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments, source_file: sourceFile, transcodedTrackCID, transcodedTrackUUID } = resp.object.data
@@ -161,22 +159,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp.object.data
@@ -208,22 +194,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp.object.data
@@ -253,22 +227,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp.object.data
@@ -299,22 +261,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { source_file: sourceFile } = resp.object.data
@@ -340,22 +290,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
     const { track_segments: trackSegments, source_file: sourceFile } = resp.object.data
 
@@ -390,22 +328,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments } = resp.object.data
@@ -438,22 +364,10 @@ describe('test Tracks with mocked IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments, source_file: sourceFile } = resp.object.data
@@ -493,7 +407,7 @@ describe('test Tracks with mocked IPFS', function () {
 })
 
 describe('test Tracks with real IPFS', function () {
-  let app2, server, session, libsMock, ipfs, handleTrackContentRoute
+  let app2, server, session, libsMock, ipfs, handleTrackContentRoute, mockServiceRegistry
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
@@ -505,6 +419,7 @@ describe('test Tracks with real IPFS', function () {
 
     app2 = appInfo.app
     server = appInfo.server
+    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser()
 
     handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
@@ -523,25 +438,13 @@ describe('test Tracks with real IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
-    assert.deepStrictEqual(resp.object.error.message, 'failed to segment')
+    assert.ok(resp.object.error.includes('failed to segment'))
   })
 
   it('sends server error response if transcoding fails', async function () {
@@ -551,25 +454,13 @@ describe('test Tracks with real IPFS', function () {
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
-    assert.deepStrictEqual(resp.object.error.message, 'failed to transcode')
+    assert.ok(resp.object.error.includes('failed to transcode'))
   })
 
   // Note: if hashing logic from ipfs ever changes, this test will fail
@@ -588,22 +479,10 @@ describe('test Tracks with real IPFS', function () {
     // Attempt to associate track content and get forbidden error
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     assert.deepStrictEqual(resp.statusCode, 403)
@@ -616,22 +495,10 @@ describe('test Tracks with real IPFS', function () {
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
-      {
-        logContext: {
-          requestID: uuid(),
-          requestMethod: 'POST',
-          requestHostname: '127.0.0.1',
-          requestUrl: '/track_content'
-        }
-      },
-      {
-        fileName: `${fileUUID}.mp3`,
-        fileDir,
-        fileDestination: fileDir,
-        session: {
-          cnodeUserUUID: session.cnodeUserUUID
-        }
-      }
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
     )
 
     const { track_segments: trackSegments, transcodedTrackCID } = resp.object.data
@@ -762,6 +629,18 @@ describe('test Tracks with real IPFS', function () {
 
   it.skip('TODO - parallel track upload', async function () {})
 })
+
+// Create the req context for handleTrackContentRoute
+function getReqObj (fileUUID, fileDir, session) {
+  return {
+    fileName: `${fileUUID}.mp3`,
+    fileDir,
+    fileDestination: fileDir,
+    session: {
+      cnodeUserUUID: session.cnodeUserUUID
+    }
+  }
+}
 
 /**
  * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir

@@ -8,7 +8,7 @@ const DiskManager = require('../../src/diskManager')
 const { wait } = require('./utils')
 const { handleTrackContentRoute } = require('../../src/components/tracks/tracksComponentService')
 
-const uploadTrack = async (filePath, cnodeUserUUID) => {
+const uploadTrack = async (filePath, cnodeUserUUID, ipfs, blacklistManager) => {
   const { fileUUID, fileDir } = saveFileToStorage(filePath)
   const resp = await handleTrackContentRoute({
     logContext: {
@@ -25,7 +25,10 @@ const uploadTrack = async (filePath, cnodeUserUUID) => {
     session: {
       cnodeUserUUID
     }
-  })
+  },
+  ipfs,
+  blacklistManager
+  )
 
   return resp.object
 }

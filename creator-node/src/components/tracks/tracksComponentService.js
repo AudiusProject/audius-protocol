@@ -2,7 +2,6 @@ const path = require('path')
 
 const { successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../../apiHelpers')
 const { logger: genericLogger } = require('../../logging')
-const { serviceRegistry } = require('../../serviceRegistry')
 const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
 const models = require('../../models')
@@ -22,9 +21,8 @@ const SaveFileToIPFSConcurrencyLimit = 10
  * @returns a success or error server response
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
-const handleTrackContentRoute = async ({ logContext }, req) => {
+const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManager) => {
   const logger = genericLogger.child(logContext)
-  const blacklistManager = serviceRegistry.blacklistManager
 
   if (req.fileSizeError) {
     // Prune upload artifacts
@@ -61,7 +59,7 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
     // Prune upload artifacts
     removeTrackFolder({ logContext }, req.fileDir)
 
-    return errorResponseServerError(err)
+    return errorResponseServerError(err.toString())
   }
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
@@ -69,7 +67,8 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
   const transcodeFileIPFSResp = await saveFileToIPFSFromFS(
     { logContext: req.logContext },
     { session: { cnodeUserUUID: req.session.cnodeUserUUID } },
-    transcodedFilePath
+    transcodedFilePath,
+    ipfs
   )
 
   let segmentFileIPFSResps = []
@@ -81,7 +80,8 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
       const { multihash, dstPath } = await saveFileToIPFSFromFS(
         { logContext: req.logContext },
         { session: { cnodeUserUUID: req.session.cnodeUserUUID } },
-        segmentAbsolutePath
+        segmentAbsolutePath,
+        ipfs
       )
       return { multihash, srcPath: segmentFilePath, dstPath }
     }))
@@ -166,7 +166,7 @@ const handleTrackContentRoute = async ({ logContext }, req) => {
     // Prune upload artifacts
     removeTrackFolder({ logContext }, req.fileDir)
 
-    return errorResponseServerError(e)
+    return errorResponseServerError(e.toString())
   }
   logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
