@@ -460,7 +460,7 @@ def track_search_query(
                         if only_downloadable
                         else ""
                     }
-                    where (d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query))
+                    where (d."word" % lower(:query) or d."handle" = lower(:query) or d."user_name" % lower(:query))
                     {
                         "and s.save_type='track' and s.is_current=true and " +
                         "s.is_delete=false and s.user_id = :current_user_id"
@@ -654,7 +654,7 @@ def playlist_search_query(
                         if personalized and current_user_id
                         else ""
                     }
-                    where (d."word" % :query or d."handle" = lower(:query) or d."user_name" % lower(:query))
+                    where (d."word" % lower(:query) or d."handle" = lower(:query) or d."user_name" % lower(:query))
                     {
                         "and s.save_type='" + save_type +
                         "' and s.is_current=true and s.is_delete=false and s.user_id=:current_user_id"
