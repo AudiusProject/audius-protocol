@@ -2,10 +2,9 @@ import logging # pylint: disable=C0302
 from datetime import datetime, timedelta
 import redis
 from sqlalchemy import func
-from dateutil.parser import parse
 
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_cache import use_redis_cache
+from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 from src.models import Track, RepostType, Follow, SaveType, User, \
     AggregatePlays, AggregateUser
 from src.queries.query_helpers import \
@@ -13,10 +12,12 @@ from src.queries.query_helpers import \
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import populate_track_metadata, \
     get_users_ids, get_users_by_id
-from src.api.v1.helpers import extend_track
-from src.queries.get_trending_tracks import make_trending_cache_key
+from src.api.v1.helpers import extend_track, format_offset, format_limit, \
+    to_dict, decode_string_id
+from src.queries.get_trending_tracks import make_trending_cache_key, TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.utils.redis_cache import get_pickled_key
 from src.utils.config import shared_config
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSION
 
 redis_url = shared_config["redis"]["url"]
 redis = redis.Redis.from_url(url=redis_url)
@@ -26,53 +27,7 @@ logger = logging.getLogger(__name__)
 UNDERGROUND_TRENDING_CACHE_KEY = "generated-trending-tracks-underground"
 UNDERGROUND_TRENDING_LENGTH = 50
 
-S = 1500
-r = 1500
-q = 50
-o = 21
-f = 7
-b = 5
-qw = 50
-hg = 1
-ie = 0.25
-pn = 0.01
-u = 30.0
-qq = 0.001
-oi = 20
-nb = 750
-om = 1500
-qr = 10
-
-def z2(time, track):
-    # pylint: disable=W,C,R
-    mn = track['listens']
-    c =track['windowed_repost_count']
-    x = track['repost_count']
-    v =track['windowed_save_count']
-    ut =track['save_count']
-    ll=track['created_at']
-    bq=track['owner_follower_count']
-    ty = track['owner_verified']
-    kz = track['karma']
-    xy=max
-    uk=pow
-    if bq<3:
-        return{'score':0,**track}
-    oj = qq if ty else 1
-    zu = 1
-    if bq >= nb:
-        zu = xy(uk(oi,1-((1/nb)*(bq-nb)+1)),1/oi)
-    vb = ((b*mn+qw*c+hg*v+ie*x+pn*ut+zu*bq)*kz*zu*oj)
-    te = 7
-    fd = datetime.now()
-    xn = parse(ll)
-    ul = (fd-xn).days
-    rq = 1
-    if ul > te:
-        rq = xy((1.0 / u),(uk(u,(1 - ul/te))))
-    return{'score':vb * rq, **track}
-
-def get_scorable_track_data(session, redis_instance):
+def get_scorable_track_data(session, redis_instance, strategy):
     """
     Returns a map: {
         "track_id": string
@@ -89,7 +44,16 @@ def get_scorable_track_data(session, redis_instance):
     }
     """
 
-    trending_key = make_trending_cache_key("week", None)
+    score_params = strategy.get_score_params()
+    S = score_params['S']
+    r = score_params['r']
+    q = score_params['q']
+    o = score_params['o']
+    f = score_params['f']
+    qr = score_params['qr']
+    xf = score_params['xf']
+    pt = score_params['pt']
+    trending_key = make_trending_cache_key("week", None, strategy.version)
     track_ids = []
     old_trending = get_pickled_key(redis_instance, trending_key)
     if old_trending:
@@ -132,6 +96,7 @@ def get_scorable_track_data(session, redis_instance):
             Track.track_id.notin_(exclude_track_ids),
             Track.created_at >= (datetime.now() - timedelta(days=o)),
             follower_query.c.follower_count < S,
+            follower_query.c.follower_count >= pt,
             AggregateUser.following_count < r,
             AggregatePlays.count >= q
         )
@@ -190,7 +155,7 @@ def get_scorable_track_data(session, redis_instance):
         "week"
     )
 
-    karma_scores = get_karma(session, tuple(track_ids), None)
+    karma_scores = get_karma(session, tuple(track_ids), None, False, xf)
 
     # Associate all the extra data
     for (track_id, repost_count) in repost_counts:
@@ -206,12 +171,15 @@ def get_scorable_track_data(session, redis_instance):
 
     return list(tracks_map.values())
 
+def make_underground_trending_cache_key(version=DEFAULT_TRENDING_VERSION):
+    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSION else ''
+    return f"{UNDERGROUND_TRENDING_CACHE_KEY}{version_name}"
 
-def make_get_unpopulated_tracks(session, redis_instance):
+def make_get_unpopulated_tracks(session, redis_instance, strategy):
     def wrapped():
         # Score and sort
-        track_scoring_data = get_scorable_track_data(session, redis_instance)
-        scored_tracks = [z2('week', track) for track in track_scoring_data]
+        track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
+        scored_tracks = [strategy.get_track_score('week', track) for track in track_scoring_data]
         sorted_tracks = sorted(scored_tracks, key=lambda k: k['score'], reverse=True)
         sorted_tracks = sorted_tracks[:UNDERGROUND_TRENDING_LENGTH]
 
@@ -222,16 +190,17 @@ def make_get_unpopulated_tracks(session, redis_instance):
 
     return wrapped
 
-def get_underground_trending(args):
+def _get_underground_trending(args, strategy):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         current_user_id = args.get("current_user_id", None)
         limit, offset = args.get("limit"), args.get("offset")
+        key = make_underground_trending_cache_key(strategy.version)
 
         (tracks, track_ids) = use_redis_cache(
-            UNDERGROUND_TRENDING_CACHE_KEY,
+            key,
             None,
-            make_get_unpopulated_tracks(session, redis)
+            make_get_unpopulated_tracks(session, redis, strategy)
         )
 
         # Apply limit + offset early to reduce the amount of
@@ -258,3 +227,27 @@ def get_underground_trending(args):
                 track['user'] = user
         sorted_tracks = list(map(extend_track, sorted_tracks))
         return sorted_tracks
+
+def get_underground_trending(request, args, strategy):
+    offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
+    current_user_id = args.get("user_id")
+    args = {
+        'limit': limit,
+        'offset': offset
+    }
+
+    # If user ID, let _get_underground_trending
+    # handle caching + limit + offset
+    if current_user_id:
+        decoded = decode_string_id(current_user_id)
+        args["current_user_id"] = decoded
+        trending = _get_underground_trending(args, strategy)
+    else:
+        # If no user ID, fetch all cached tracks
+        # and perform pagination here, passing
+        # no args so we get the full list of tracks.
+        key = get_trending_cache_key(to_dict(request.args), request.path)
+        trending = use_redis_cache(
+            key, TRENDING_TTL_SEC, lambda: _get_underground_trending({}, strategy))
+        trending = trending[offset: limit + offset]
+    return trending
