@@ -175,10 +175,10 @@ def process_solana_plays(solana_client):
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
-         transactions_history = solana_client.get_confirmed_signature_for_address2(
+        transactions_history = solana_client.get_confirmed_signature_for_address2(
             TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
         )
-        transactions_array = transactions_history['result']
+        transactions_array = transactions_history["result"]
 
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
@@ -221,6 +221,7 @@ def process_solana_plays(solana_client):
                         # Exit loop and set terminal condition since this slot is < max known value in plays DB
                         intersection_found = True
                         break
+                # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
                 # Append batch of processed signatures
