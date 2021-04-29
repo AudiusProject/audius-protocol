@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 Parse signed data message from each transaction submitted to
 Audius TrackListenCount program
 
+Formatted in the following struct:
+
 pub struct TrackData {
     /// user ID
     pub user_id: String,
@@ -173,8 +175,7 @@ def process_solana_plays(solana_client):
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
-        # TODO: Is there any optimization around this limit value?
-        transactions_history = solana_client.get_confirmed_signature_for_address2(
+         transactions_history = solana_client.get_confirmed_signature_for_address2(
             TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
         )
         transactions_array = transactions_history['result']

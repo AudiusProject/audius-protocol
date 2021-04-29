@@ -444,6 +444,7 @@ class Play(Base):
 
     Index('ix_plays_user_play_item', 'play_item_id', 'user_id', unique=False)
     Index('ix_plays_user_play_item_date', 'play_item_id', 'user_id', 'created_at', unique=False)
+    Index('ix_plays_sol_signature', 'play_item_id', 'signature', unique=False)
 
     def __repr__(self):
         return f"<Play(\
