@@ -150,6 +150,7 @@ def get_tx_in_db(session, tx_sig):
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
 
+# pylint: disable=W0105
 '''
 Processing of plays through the Solana TrackListenCount program is handled differently
 than the original indexing layer
