@@ -10,14 +10,14 @@ min_search_similarity = 0.4
 # Playlist and Track Search Weights
 
 # Weight for query similarity against title
-search_title_weight = 2
+search_title_weight = 12
 # Weight for query similarity to words in track title (summed)
 search_similarity_weight = 5
 # Weight for query similarity to track owner's username
 search_user_name_weight = 8
 # Weight for track reposts.
 search_repost_weight = 15
-search_title_exact_match_boost = 10
+search_title_exact_match_boost = 20
 search_handle_exact_match_boost = 15
 search_user_name_exact_match_boost = 5
 
