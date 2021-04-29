@@ -272,20 +272,6 @@ def process_solana_plays(solana_client):
             f"index_solana_plays.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
-    # Update plays iff some batch is found
-    if num_txs_processed > 0:
-        logger.info(
-            f"index_solana_plays.py | processed {num_txs_processed} txs"
-        )
-        with db.scoped_session() as session:
-            logger.info(
-                f"index_solana_plays.py | Refreshing aggregate_plays materialized view"
-            )
-            session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
-            logger.info(
-                f"index_solana_plays.py | Finished refreshing aggregate_plays materialized view"
-            )
-
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
 def index_solana_plays(self):
