@@ -24,7 +24,7 @@ def upgrade():
     DROP INDEX IF EXISTS user_words_idx;
 
     CREATE MATERIALIZED VIEW user_lexeme_dict as
-    SELECT * FROM (
+    SELECT row_number() OVER (PARTITION BY true), * FROM (
         SELECT
             u.user_id,
             lower(u.name) as user_name,
@@ -61,12 +61,13 @@ def upgrade():
 
     CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
     CREATE INDEX user_handles_idx ON user_lexeme_dict(handle); 
+    CREATE UNIQUE INDEX user_row_number_idx ON user_lexeme_dict(row_number);
 
     DROP MATERIALIZED VIEW IF EXISTS track_lexeme_dict;
     DROP INDEX IF EXISTS track_words_idx;
 
     CREATE MATERIALIZED VIEW track_lexeme_dict as
-    SELECT * FROM (
+    SELECT row_number() OVER (PARTITION BY true), * FROM (
         SELECT
             t.track_id,
             t.owner_id as owner_id,
@@ -103,6 +104,7 @@ def upgrade():
     CREATE INDEX track_words_idx ON track_lexeme_dict USING gin(word gin_trgm_ops);
     CREATE INDEX track_user_name_idx ON track_lexeme_dict USING gin(user_name gin_trgm_ops);
     CREATE INDEX tracks_user_handle_idx ON track_lexeme_dict(handle);
+    CREATE UNIQUE INDEX track_row_number_idx ON track_lexeme_dict(row_number);
 
     DROP MATERIALIZED VIEW IF EXISTS playlist_lexeme_dict;
     DROP MATERIALIZED VIEW IF EXISTS album_lexeme_dict;
@@ -110,7 +112,7 @@ def upgrade():
     DROP INDEX IF EXISTS album_words_idx;
 
     CREATE MATERIALIZED VIEW playlist_lexeme_dict as
-    SELECT * FROM (
+    SELECT row_number() OVER (PARTITION BY true), * FROM (
         SELECT
             p.playlist_id,
             lower(p.playlist_name) as playlist_name,
@@ -147,7 +149,7 @@ def upgrade():
     ) AS words;
 
     CREATE MATERIALIZED VIEW album_lexeme_dict as
-    SELECT * FROM (
+    SELECT row_number() OVER (PARTITION BY true), * FROM (
         SELECT
             p.playlist_id,
             lower(p.playlist_name) as playlist_name,
@@ -186,10 +188,12 @@ def upgrade():
     CREATE INDEX playlist_words_idx ON playlist_lexeme_dict USING gin(word gin_trgm_ops);
     CREATE INDEX playlist_user_name_idx ON playlist_lexeme_dict USING gin(user_name gin_trgm_ops);
     CREATE INDEX playlist_user_handle_idx ON playlist_lexeme_dict(handle);
+    CREATE UNIQUE INDEX playlist_row_number_idx ON playlist_lexeme_dict(row_number);
 
     CREATE INDEX album_words_idx ON album_lexeme_dict USING gin(word gin_trgm_ops);
     CREATE INDEX album_user_name_idx ON album_lexeme_dict USING gin(user_name gin_trgm_ops);
     CREATE INDEX album_user_handle_idx ON album_lexeme_dict(handle);
+    CREATE UNIQUE INDEX album_row_number_idx ON album_lexeme_dict(row_number);
     '''
     )
 
