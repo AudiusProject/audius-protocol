@@ -22,8 +22,13 @@ router.get('/', async (
 
       if (!url) throw new Error('No url provided')
       if (!replace) throw new Error('No replace json provided')
+
       // @ts-ignore
-      const agent = new HttpsProxyAgent(PROXY_URL)
+      const proxyOpts = urlLib.parse(PROXY_URL)
+      // @ts-ignore
+      proxyOpts.rejectUnauthorized = false
+      // @ts-ignore
+      const agent = new HttpsProxyAgent(proxyOpts)
 
       let formattedUrl = url
       const parsedReplaceJSON = JSON.parse(replace)
@@ -33,6 +38,8 @@ router.get('/', async (
       const options = urlLib.parse(formattedUrl)
       // @ts-ignore
       options.agent = agent
+      // @ts-ignore
+      options.rejectUnauthorized = false
 
       console.log(`Proxying to ${formattedUrl}`)
       const result = await new Promise((resolve, reject) => {
