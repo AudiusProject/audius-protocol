@@ -102,7 +102,7 @@ def upgrade():
         INSERT INTO "aggregate_daily_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2021-04-22', '142615', '142615', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
         -- ================== Monthly totals ==================
-        DELETE FROM "aggregate_monthly_total_users_metrics" WHERE "timestamp" < '2021-07-01';
+        DELETE FROM "aggregate_monthly_total_users_metrics" WHERE "timestamp" < '2021-05-01';
 
         INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2020-07-01', '69054', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2020-08-01', '11262930', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
@@ -115,7 +115,7 @@ def upgrade():
         INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2021-03-01', '53405945', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
         -- ================== Monthly uniques ==================
-        DELETE FROM "aggregate_monthly_unique_users_metrics" WHERE "timestamp" < '2021-07-01';
+        DELETE FROM "aggregate_monthly_unique_users_metrics" WHERE "timestamp" < '2021-05-01';
 
         INSERT INTO "aggregate_monthly_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2020-07-01', '0', '0', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2020-08-01', '575901', '575901', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
@@ -1583,6 +1583,7 @@ def upgrade():
         INSERT INTO "aggregate_daily_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-22', 'LUNCHBOXFM', '4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
         -- ================== Monthly apps ==================
+        DELETE FROM "aggregate_monthly_app_name_metrics" where "timestamp" < '2021-05-01'; 
 
         INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-11-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2020-12-01', 'AudiusTree', '4195', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
@@ -1843,11 +1844,19 @@ def upgrade():
         INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-03-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-
     commit;
     ''')
 
 
 def downgrade():
-    # This migration has no downgrade, but can be run multiple times idempotently
-    pass
+    connection = op.get_bind()
+    connection.execute('''
+    begin;
+        DELETE FROM "aggregate_daily_total_users_metrics" WHERE "timestamp" < '2021-04-23';
+        DELETE FROM "aggregate_daily_unique_users_metrics" WHERE "timestamp" < '2021-04-23';
+        DELETE FROM "aggregate_monthly_total_users_metrics" WHERE "timestamp" < '2021-05-01';
+        DELETE FROM "aggregate_monthly_unique_users_metrics" WHERE "timestamp" < '2021-05-01';
+        DELETE FROM "aggregate_daily_app_name_metrics" where "timestamp" < '2021-04-23';
+        DELETE FROM "aggregate_monthly_app_name_metrics" where "timestamp" < '2021-05-01'; 
+    commit;
+    ''')
