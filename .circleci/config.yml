@@ -176,10 +176,8 @@ jobs:
             npm link @audius/service-commands
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             "$(which node)" setup.js up -nc 4
-            cd /home/circleci/project/service-commands/scripts/
-            "$(which node)" setup.js run user-replica-set-manager up
             cd /home/circleci/project/mad-dog/
             docker ps
             export ipfsHost="localhost"
