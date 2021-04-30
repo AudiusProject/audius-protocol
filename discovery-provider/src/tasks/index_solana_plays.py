@@ -11,7 +11,6 @@ from src.utils.config import shared_config
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
-SLEEP_TIME = 1
 
 # Maximum number of batches to process at once
 TX_SIGNATURES_MAX_BATCHES = 20
@@ -75,7 +74,6 @@ def get_sol_tx_info(solana_client, tx_sig):
 
 def parse_sol_play_transaction(session, solana_client, tx_sig):
     try:
-        logger.info(f"index_solana_plays.py | Parsing {tx_sig}")
         tx_info = get_sol_tx_info(solana_client, tx_sig)
         logger.info(
             f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
@@ -126,7 +124,6 @@ def get_latest_slot(db):
             .filter(Play.signature != None)
             .order_by(desc(Play.slot))
         ).first()
-        logger.error(f"index_solana_plays.py | get_latest_slot: {highest_slot_query}")
         # Can be None prior to first write operations
         if highest_slot_query is not None:
             latest_slot = highest_slot_query.slot
@@ -142,7 +139,6 @@ def get_latest_slot(db):
 
 # Query a tx signature and confirm its existence
 def get_tx_in_db(session, tx_sig):
-    logger.info(f"index_solana_plays.py | checking db for {tx_sig}")
     exists = False
     tx_sig_db_count = (session.query(Play).filter(
         Play.signature == tx_sig)).count()
@@ -196,7 +192,7 @@ transactions_history = get_confirmed_signature_for_address_2(before=None) =
 Since no intersection has been found, the above is loaded as a single 'batch' into an array of
 tx_signature batches that now has the following state:
 
-tx_batches = [batch1]
+tx_batches = [batch_300_to_250]
 
 Now, last_tx_signature = sig250
 transactions_history = get_confirmed_signature_for_address_2(before=None) =
@@ -216,11 +212,11 @@ Additionally, once an equivalent slot is found we explicitly validate that sig20
 the local DB - if not, processing continues until an explicit signature + slot intersection is
 found or no history is remaining
 
-At this point, tx_batches = [batch1, batch2]
+At this point, tx_batches = [batch_300_to_250, batch_250_to_200]
 
 tx_batches is reversed in order to apply the oldest transactions first - as follows:
 
-tx_batches = [batch2, batch1]
+tx_batches = [batch_250_to_200, batch_300_to_250]
 
 Each batch is then processed in parallel and committed to the local database.
 
