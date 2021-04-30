@@ -61,18 +61,8 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw error if cnodeUserUUID is not present', async () => {
-      const reqOverride = {
-        session: {},
-        logger: {
-          info: () => {}
-        },
-        app: {
-          get: () => { return DiskManager.getConfigStoragePath() }
-        }
-      }
-
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, reqOverride, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath, ipfs)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -88,7 +78,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
         assert.fail('Should not have passed if ipfs is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs is down!')
@@ -109,7 +99,7 @@ describe('test fileManager', () => {
       )
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -128,7 +118,7 @@ describe('test fileManager', () => {
       sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
       } catch (e) {
         assert.fail(e.message)
       }

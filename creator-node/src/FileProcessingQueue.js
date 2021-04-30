@@ -15,6 +15,10 @@ const PROCESS_STATES = Object.freeze({
   FAILED: 'FAILED'
 })
 
+function constructProcessKey (taskType, uuid) {
+  return `${taskType}:::${uuid}`
+}
+
 class FileProcessingQueue {
   constructor () {
     this.queue = new Bull(
@@ -29,12 +33,16 @@ class FileProcessingQueue {
         }
       }
     )
-    this.maxConcurrency = 5 // arbitrary; can adjust
 
-    this.queue.process(PROCESS_NAMES.transcode, this.maxConcurrency, async (job, done) => {
+    this.queue.process(PROCESS_NAMES.transcode, async (job, done) => {
       const { transcodeParams } = job.data
-      const resp = await this._trackProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
-      done(resp)
+
+      try {
+        const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
+        done(null, { response })
+      } catch (e) {
+        done(e.message)
+      }
     })
   }
 
@@ -62,32 +70,36 @@ class FileProcessingQueue {
     return job
   }
 
-  // Note: "track" in `_trackProgress` is used as a verb, not the noun "track"
-  async _trackProgress (taskType, func, { logContext, req }) {
-    if (!serviceRegistry.blacklistManager.initialized) {
-      serviceRegistry.initServices({ blacklistManager: true })
-    }
+  async monitorProgress (taskType, func, { logContext, req }) {
+    const blacklistManager = await serviceRegistry.getBlacklistManager()
+    const ipfs = serviceRegistry.getIPFS()
 
     const uuid = logContext.requestID
+    const redisKey = this.constructProcessKey(taskType, uuid)
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(logContext, `Starting ${taskType}! uuid=${uuid}}`)
-    await redisClient.set(`${taskType}:::${uuid}`, JSON.stringify(state), 'EX', EXPIRATION)
-    const resp = await func({ logContext }, req, serviceRegistry.ipfs, serviceRegistry.blacklistManager)
+    await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
 
-    if (resp.statusCode === 200) {
-      state = { status: PROCESS_STATES.DONE, resp }
+    let response
+    try {
+      response = await func({ logContext }, req, ipfs, blacklistManager)
+      state = { status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(logContext, `Successful ${taskType}! uuid=${uuid}}`)
-      await redisClient.set(`${taskType}:::${uuid}`, JSON.stringify(state), 'EX', EXPIRATION)
-    } else {
-      state = { status: PROCESS_STATES.FAILED, resp }
-      this.logError(logContext, `Error with ${taskType}. uuid=${uuid}} resp=${JSON.stringify(resp)}`)
-      await redisClient.set(`${taskType}:::${uuid}`, JSON.stringify(state), 'EX', EXPIRATION)
+      await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
+    } catch (e) {
+      state = { status: PROCESS_STATES.FAILED, resp: e.message }
+      this.logError(logContext, `Error with ${taskType}. uuid=${uuid}} resp=${JSON.stringify(e.message)}`)
+      await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
+      throw e
     }
 
-    return resp
+    return response
   }
 }
 
-module.exports.FileProcessingQueue = new FileProcessingQueue()
-module.exports.PROCESS_NAMES = PROCESS_NAMES
+module.exports = {
+  FileProcessingQueue: new FileProcessingQueue(),
+  PROCESS_NAMES,
+  constructProcessKey
+}

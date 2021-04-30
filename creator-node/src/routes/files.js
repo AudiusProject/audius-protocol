@@ -34,6 +34,8 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
+const { constructProcessKey } = require('../FileProcessingQueue')
+
 const { promisify } = require('util')
 
 const fsStat = promisify(fs.stat)
@@ -318,9 +320,8 @@ const getDirCID = async (req, res) => {
 
 module.exports = function (app) {
   app.get('/processing_status', handleResponse(async (req, res) => {
-    const taskType = req.query.taskType
-    const uuid = req.query.uuid
-    const value = await redisClient.get(`${taskType}:::${uuid}`) || '{}'
+    const redisKey = constructProcessKey(req.query.taskType, req.query.uuid)
+    const value = await redisClient.get(redisKey) || '{}'
 
     return successResponse(JSON.parse(value))
   }))

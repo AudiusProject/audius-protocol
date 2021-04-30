@@ -1,12 +1,19 @@
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
+const path = require('path')
 
 const config = require('../config.js')
 const models = require('../models')
-const { saveFileFromBufferToIPFSAndDisk, handleTrackContentUpload } = require('../fileManager')
+const {
+  saveFileFromBufferToIPFSAndDisk,
+  saveFileToIPFSFromFS,
+  removeTrackFolder,
+  handleTrackContentUpload
+} = require('../fileManager')
 const {
   handleResponse,
+  handleResponseWithHeartbeat,
   sendResponse,
   successResponse,
   errorResponseBadRequest,
@@ -21,6 +28,8 @@ const {
   triggerSecondarySyncs,
   ensureStorageMiddleware
 } = require('../middlewares')
+const TranscodingQueue = require('../TranscodingQueue')
+const { getSegmentsDuration } = require('../segmentDuration')
 
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
@@ -31,22 +40,26 @@ const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 
 const readFile = promisify(fs.readFile)
 
+const SaveFileToIPFSConcurrencyLimit = 10
+
 module.exports = function (app) {
   /**
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
+   * @note this track content route is used in conjunction with the polling.
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
-    const fileUploadError = req.fileSizeError || req.fileFilterError
+  app.post('/polling_track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError || req.fileFilterError) {
+      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+      return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+    }
 
     await FileProcessingQueue.addTranscodeTask(
       {
         logContext: req.logContext,
         req: {
-          fileName: fileUploadError ? null : req.fileName,
-          fileDir: fileUploadError ? null : req.fileDir,
-          fileDestination: fileUploadError ? null : req.file.destination,
-          fileSizeError: req.fileSizeError,
-          fileFilterError: req.fileFilterError,
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          fileDestination: req.file.destination,
           session: {
             cnodeUserUUID: req.session.cnodeUserUUID
           }
@@ -54,6 +67,159 @@ module.exports = function (app) {
       }
     )
     return successResponse({ uuid: req.logContext.requestID })
+  }))
+
+  /**
+     * upload track segment files and make avail - will later be associated with Audius track
+     * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
+     */
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
+    if (req.fileSizeError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileSizeError)
+    }
+    if (req.fileFilterError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileFilterError)
+    }
+
+    const routeTimeStart = Date.now()
+    let codeBlockTimeStart
+    const cnodeUserUUID = req.session.cnodeUserUUID
+
+    // Create track transcode and segments, and save all to disk
+    let transcodedFilePath
+    let segmentFilePaths
+    try {
+      codeBlockTimeStart = Date.now()
+
+      const transcode = await Promise.all([
+        TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext }),
+        TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext })
+      ])
+      segmentFilePaths = transcode[0].filePaths
+      transcodedFilePath = transcode[1].filePath
+
+      req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    } catch (err) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError(err)
+    }
+
+    // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
+    codeBlockTimeStart = Date.now()
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, req.app.get('ipfsAPI'))
+
+    let segmentFileIPFSResps = []
+    for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
+      const segmentFilePathsSlice = segmentFilePaths.slice(i, i + SaveFileToIPFSConcurrencyLimit)
+
+      const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
+        const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
+        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, req.app.get('ipfsAPI'))
+        return { multihash, srcPath: segmentFilePath, dstPath }
+      }))
+
+      segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
+    }
+    req.logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+
+    // Retrieve all segment durations as map(segment srcFilePath => segment duration)
+    codeBlockTimeStart = Date.now()
+    const segmentDurations = await getSegmentsDuration(req.fileName, req.file.destination)
+    req.logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+
+    // For all segments, build array of (segment multihash, segment duration)
+    let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
+      return {
+        multihash: segmentFileIPFSResp.multihash,
+        duration: segmentDurations[segmentFileIPFSResp.srcPath]
+      }
+    })
+
+    // exclude 0-length segments that are sometimes outputted by ffmpeg segmentation
+    trackSegments = trackSegments.filter(trackSegment => trackSegment.duration)
+
+    // error if there are no track segments
+    if (!trackSegments || !trackSegments.length) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError('Track upload failed - no track segments')
+    }
+
+    // Error if any segment CID is in blacklist.
+    try {
+      await Promise.all(trackSegments.map(async segmentObj => {
+        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
+          throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
+        }
+      }))
+    } catch (e) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      if (e.message.indexOf('blacklisted') >= 0) {
+        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node: ${e}`)
+      } else {
+        return errorResponseServerError(e.message)
+      }
+    }
+
+    // Record entries for transcode and segment files in DB
+    codeBlockTimeStart = Date.now()
+    const transaction = await models.sequelize.transaction()
+    let transcodeFileUUID
+    try {
+      // Record transcode file entry in DB
+      const createTranscodeFileQueryObj = {
+        multihash: transcodeFileIPFSResp.multihash,
+        sourceFile: req.fileName,
+        storagePath: transcodeFileIPFSResp.dstPath,
+        type: 'copy320' // TODO - replace with models enum
+      }
+      const file = await DBManager.createNewDataRecord(createTranscodeFileQueryObj, cnodeUserUUID, models.File, transaction)
+      transcodeFileUUID = file.fileUUID
+
+      // Record all segment file entries in DB
+      // Must be written sequentially to ensure clock values are correctly incremented and populated
+      for (const { multihash, dstPath } of segmentFileIPFSResps) {
+        const createSegmentFileQueryObj = {
+          multihash,
+          sourceFile: req.fileName,
+          storagePath: dstPath,
+          type: 'track' // TODO - replace with models enum
+        }
+        await DBManager.createNewDataRecord(createSegmentFileQueryObj, cnodeUserUUID, models.File, transaction)
+      }
+
+      await transaction.commit()
+    } catch (e) {
+      await transaction.rollback()
+
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseServerError(e)
+    }
+    req.logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+
+    // Prune upload artifacts after success
+    removeTrackFolder(req, req.fileDir)
+
+    req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
+    return successResponse({
+      'transcodedTrackCID': transcodeFileIPFSResp.multihash,
+      'transcodedTrackUUID': transcodeFileUUID,
+      'track_segments': trackSegments,
+      'source_file': req.fileName
+    })
   }))
 
   /**

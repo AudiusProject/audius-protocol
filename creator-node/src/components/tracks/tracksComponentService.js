@@ -1,6 +1,5 @@
 const path = require('path')
 
-const { successResponse, errorResponseBadRequest, errorResponseServerError, errorResponseForbidden } = require('../../apiHelpers')
 const { logger: genericLogger } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
@@ -17,29 +16,18 @@ const SaveFileToIPFSConcurrencyLimit = 10
  * we can pass this task into a worker queue.
  *
  * @param {Object} logContext the context of the request used to create a generic logger
- * @param {Object} req more request specific context
+ * @param {Object} requestProps more request specific context, NOT the req object from Express
+ * @param {Object} ipfs ipfs instance
+ * @param {Object} blacklistManager blacklistManager instance
  * @returns a success or error server response
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
-const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManager) => {
+const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, blacklistManager) => {
   const logger = genericLogger.child(logContext)
-
-  if (req.fileSizeError) {
-    // Prune upload artifacts
-    removeTrackFolder({ logContext }, req.fileDir)
-
-    return errorResponseBadRequest(req.fileSizeError)
-  }
-  if (req.fileFilterError) {
-    // Prune upload artifacts
-    removeTrackFolder({ logContext }, req.fileDir)
-
-    return errorResponseBadRequest(req.fileFilterError)
-  }
 
   const routeTimeStart = Date.now()
   let codeBlockTimeStart
-  const cnodeUserUUID = req.session.cnodeUserUUID
+  const cnodeUserUUID = requestProps.session.cnodeUserUUID
 
   // Create track transcode and segments, and save all to disk
   let transcodedFilePath
@@ -48,25 +36,25 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
     codeBlockTimeStart = Date.now()
 
     const transcode = await Promise.all([
-      TranscodingQueue.segment(req.fileDir, req.fileName, { logContext }),
-      TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext })
+      TranscodingQueue.segment(requestProps.fileDir, requestProps.fileName, { logContext }),
+      TranscodingQueue.transcode320(requestProps.fileDir, requestProps.fileName, { logContext })
     ])
     segmentFilePaths = transcode[0].filePaths
     transcodedFilePath = transcode[1].filePath
 
-    logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+    logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
   } catch (err) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, req.fileDir)
+    removeTrackFolder({ logContext }, requestProps.fileDir)
 
-    return errorResponseServerError(err.toString())
+    throw new Error(err.toString())
   }
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
   codeBlockTimeStart = Date.now()
   const transcodeFileIPFSResp = await saveFileToIPFSFromFS(
-    { logContext: req.logContext },
-    { session: { cnodeUserUUID: req.session.cnodeUserUUID } },
+    { logContext: requestProps.logContext },
+    requestProps.session.cnodeUserUUID,
     transcodedFilePath,
     ipfs
   )
@@ -76,10 +64,10 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
     const segmentFilePathsSlice = segmentFilePaths.slice(i, i + SaveFileToIPFSConcurrencyLimit)
 
     const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
-      const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
+      const segmentAbsolutePath = path.join(requestProps.fileDir, 'segments', segmentFilePath)
       const { multihash, dstPath } = await saveFileToIPFSFromFS(
-        { logContext: req.logContext },
-        { session: { cnodeUserUUID: req.session.cnodeUserUUID } },
+        { logContext: requestProps.logContext },
+        requestProps.session.cnodeUserUUID,
         segmentAbsolutePath,
         ipfs
       )
@@ -88,12 +76,12 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
 
     segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
   }
-  logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+  logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // Retrieve all segment durations as map(segment srcFilePath => segment duration)
   codeBlockTimeStart = Date.now()
-  const segmentDurations = await getSegmentsDuration(req.fileName, req.fileDestination)
-  logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+  const segmentDurations = await getSegmentsDuration(requestProps.fileName, requestProps.fileDestination)
+  logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // For all segments, build array of (segment multihash, segment duration)
   let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
@@ -109,9 +97,9 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
   // error if there are no track segments
   if (!trackSegments || !trackSegments.length) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, req.fileDir)
+    removeTrackFolder({ logContext }, requestProps.fileDir)
 
-    return errorResponseServerError('Track upload failed - no track segments')
+    throw new Error('Track upload failed - no track segments')
   }
 
   // Error if any segment CID is in blacklist.
@@ -123,12 +111,12 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
     }))
   } catch (e) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, req.fileDir)
+    removeTrackFolder({ logContext }, requestProps.fileDir)
 
     if (e.message.indexOf('blacklisted') >= 0) {
-      return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node: ${e}`)
+      throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node: ${e.toString()}`)
     } else {
-      return errorResponseServerError(e.message)
+      throw new Error(e.message)
     }
   }
 
@@ -140,7 +128,7 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
     // Record transcode file entry in DB
     const createTranscodeFileQueryObj = {
       multihash: transcodeFileIPFSResp.multihash,
-      sourceFile: req.fileName,
+      sourceFile: requestProps.fileName,
       storagePath: transcodeFileIPFSResp.dstPath,
       type: 'copy320' // TODO - replace with models enum
     }
@@ -152,7 +140,7 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
     for (const { multihash, dstPath } of segmentFileIPFSResps) {
       const createSegmentFileQueryObj = {
         multihash,
-        sourceFile: req.fileName,
+        sourceFile: requestProps.fileName,
         storagePath: dstPath,
         type: 'track' // TODO - replace with models enum
       }
@@ -164,22 +152,22 @@ const handleTrackContentRoute = async ({ logContext }, req, ipfs, blacklistManag
     await transaction.rollback()
 
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, req.fileDir)
+    removeTrackFolder({ logContext }, requestProps.fileDir)
 
-    return errorResponseServerError(e.toString())
+    throw new Error(e.toString())
   }
-  logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
+  logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // Prune upload artifacts after success
-  removeTrackFolder({ logContext }, req.fileDir)
+  removeTrackFolder({ logContext }, requestProps.fileDir)
 
-  logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
-  return successResponse({
-    'transcodedTrackCID': transcodeFileIPFSResp.multihash,
-    'transcodedTrackUUID': transcodeFileUUID,
-    'track_segments': trackSegments,
-    'source_file': req.fileName
-  })
+  logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${requestProps.fileName}`)
+  return {
+    transcodedTrackCID: transcodeFileIPFSResp.multihash,
+    transcodedTrackUUID: transcodeFileUUID,
+    track_segments: trackSegments,
+    source_file: requestProps.fileName
+  }
 }
 
 module.exports = {

@@ -92,11 +92,12 @@ describe('test nodesync', async function () {
 
       /** Upload a track */
 
-      const trackUploadResponse = (await uploadTrack(
+      const trackUploadResponse = await uploadTrack(
         testAudioFilePath,
         cnodeUserUUID,
         mockServiceRegistry.ipfs,
-        mockServiceRegistry.blacklistManager)).data
+        mockServiceRegistry.blacklistManager
+      )
 
       transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID
       trackSegments = trackUploadResponse.track_segments

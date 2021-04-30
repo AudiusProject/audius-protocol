@@ -44,22 +44,37 @@ class ServiceRegistry {
   /**
    * Configure all services
    */
-  async initServices (initConfig = { blacklistManager: true, libs: true, monitoringQueue: true }) {
+  async initServices () {
     // Initialize private IPFS gateway counters
     this.redis.set('ipfsGatewayReqs', 0)
     this.redis.set('ipfsStandaloneReqs', 0)
 
-    if (initConfig.blacklistManager) {
-      await this.blacklistManager.init()
-    }
+    await this.blacklistManager.init()
 
-    if (initConfig.libs && !config.get('isUserMetadataNode')) {
+    if (!config.get('isUserMetadataNode')) {
       this.libs = await this._initAudiusLibs()
     }
 
-    if (initConfig.monitoringQueue) {
-      this.monitoringQueue.start()
+    this.monitoringQueue.start()
+  }
+
+  /**
+  * Initializes the blacklistManager if it is not already initialized, and then returns it
+  * @returns initialized blacklistManager instance
+  */
+  async getBlacklistManager () {
+    if (!this.blacklistManager.initialized) {
+      await this.blacklistManager.init()
     }
+
+    return this.blacklistManager
+  }
+
+  /**
+   * Returns the ipfs instance
+   */
+  async getIPFS () {
+    return this.ipfs
   }
 
   /**

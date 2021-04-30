@@ -42,11 +42,11 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS ({ logContext }, req, srcPath, ipfs) {
+async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs) {
   const logger = genericLogger.child(logContext)
 
   // make sure user has authenticated before saving file
-  if (!req.session.cnodeUserUUID) {
+  if (!cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
