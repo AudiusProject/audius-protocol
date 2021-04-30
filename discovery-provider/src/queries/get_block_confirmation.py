@@ -1,7 +1,7 @@
 from src.models import Block
 from src.utils import helpers, db_session
 
-# returns a tuple (<boolean>, <boolean>) that represents whether
+# returns a dictionary that represents whether
 # the given blockhash is present, the given blocknumber is passed
 def get_block_confirmation(blockhash, blocknumber):
     db = db_session.get_db_read_replica()
