@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
@@ -9,6 +10,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
     most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key, \
     trending_tracks_last_completion_redis_key, trending_playlists_last_completion_redis_key
+
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
