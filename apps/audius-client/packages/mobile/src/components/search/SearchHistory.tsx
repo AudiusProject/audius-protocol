@@ -15,6 +15,8 @@ import { useDispatchWebAction } from '../../hooks/useWebAction'
 import { MessageType } from '../../message'
 import EmptySearch from './content/EmptySearch'
 import IconArrow from '../../assets/images/iconArrow.svg'
+import { usePushSearchRoute } from './utils'
+import { getTagSearchRoute } from '../../utils/routes'
 
 const messages = {
   clear: 'Clear Recent Searches',
@@ -29,7 +31,7 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     display: 'flex',
-    flexDirection: "row",
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
@@ -37,6 +39,9 @@ const styles = StyleSheet.create({
     paddingRight: 14,
     height: 40,
     borderBottomWidth: 1
+  },
+  itemTextContainer: {
+    flex: 1
   },
   itemText: {
     fontSize: 14,
@@ -48,9 +53,7 @@ const styles = StyleSheet.create({
   },
   clearTouchable: {
     marginTop: 12,
-    marginBottom: 12,
-    marginLeft: 24,
-    marginRight: 24,
+    marginBottom: 32
   },
   clearContainer: {
     padding: 12,
@@ -71,18 +74,25 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
   const backgroundColor = useColor('neutralLight8')
   const color = useColor('neutralLight4')
   const itemTextStyles = useTheme(styles.itemText, { color: 'neutral' })
-  const itemContainerStyles = useTheme(styles.itemContainer, { borderBottomColor: 'neutralLight8' })
+  const itemContainerStyles = useTheme(styles.itemContainer, {
+    borderBottomColor: 'neutralLight8'
+  })
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWebAction()
+  const pushRoute = usePushSearchRoute()
 
   const onPress = useCallback(() => {
     dispatch(submitQuery(text))
-    dispatchWeb({
-      type: MessageType.SUBMIT_SEARCH_QUERY,
-      query: text,
-      isAction: true
-    })
-  }, [dispatch, text])
+    if (text.startsWith('#')) {
+      pushRoute(getTagSearchRoute(text.substring(1)), 'search')
+    } else {
+      dispatchWeb({
+        type: MessageType.SUBMIT_SEARCH_QUERY,
+        query: text,
+        isAction: true
+      })
+    }
+  }, [dispatch, text, pushRoute, dispatchWeb])
 
   return (
     <TouchableHighlight
@@ -91,7 +101,11 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
       onPress={onPress}
     >
       <View style={itemContainerStyles}>
-        <Text style={itemTextStyles}>{text}</Text>
+        <View style={styles.itemTextContainer}>
+          <Text numberOfLines={1} style={itemTextStyles}>
+            {text}
+          </Text>
+        </View>
         <IconArrow style={styles.arrow} fill={color} />
       </View>
     </TouchableHighlight>
@@ -99,19 +113,16 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
 }
 
 const SearchHistory = () => {
-  const {
-    searchHistory,
-    clearHistory
-  } = useSearchHistory()
+  const { searchHistory, clearHistory } = useSearchHistory()
 
   const backgroundColor = useColor('neutralLight8')
-  const containerStyles = useTheme(styles.container, { borderTopColor: 'neutralLight8' })
+  const containerStyles = useTheme(styles.container, {
+    borderTopColor: 'neutralLight8'
+  })
   const clearTextStyle = useTheme(styles.clearText, { color: 'neutralLight4' })
 
   if (!searchHistory || searchHistory.length === 0) {
-    return (
-      <EmptySearch />
-    )
+    return <EmptySearch />
   }
 
   return (
@@ -120,21 +131,23 @@ const SearchHistory = () => {
         keyboardShouldPersistTaps={'always'}
         data={searchHistory.concat('clear')}
         keyExtractor={(item, idx) => `${item}-${idx}`}
-        renderItem={({ item }) => item !== 'clear' ? (
-          <SearchHistoryItem key={item} text={item} />
-        ) : (
-          <TouchableHighlight
-            key={'clear'}
-            onPress={clearHistory}
-            style={styles.clearTouchable}
-            underlayColor={backgroundColor}
-            activeOpacity={0.8}
-          >
-            <View style={styles.clearContainer}>
-              <Text style={clearTextStyle}>{messages.clear}</Text>
-            </View>
-          </TouchableHighlight>
-        )}
+        renderItem={({ item }) =>
+          item !== 'clear' ? (
+            <SearchHistoryItem key={item} text={item} />
+          ) : (
+            <TouchableHighlight
+              key={'clear'}
+              onPress={clearHistory}
+              style={styles.clearTouchable}
+              underlayColor={backgroundColor}
+              activeOpacity={0.8}
+            >
+              <View style={styles.clearContainer}>
+                <Text style={clearTextStyle}>{messages.clear}</Text>
+              </View>
+            </TouchableHighlight>
+          )
+        }
       />
     </View>
   )

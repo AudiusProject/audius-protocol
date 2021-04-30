@@ -1,15 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  StyleSheet,
-  Animated,
-  View
-} from 'react-native'
+import { StyleSheet, Animated, View } from 'react-native'
 
 import {
   getIsOpen,
@@ -27,6 +18,7 @@ import SearchHistory from './SearchHistory'
 import SearchResults from './SearchResults'
 import Header from '../header/Header'
 import EmptySearch from './content/EmptySearch'
+import { getEmptyPageRoute } from '../../utils/routes'
 
 const FADE_DURATION = 80
 
@@ -37,7 +29,9 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     width: '100%',
-    height: '100%'
+    height: '100%',
+    elevation: 1,
+    zIndex: 2
   },
   container: {
     flex: 1,
@@ -45,7 +39,8 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     width: '100%',
-    height: '100%'
+    height: '100%',
+    zIndex: 3
   }
 })
 
@@ -60,6 +55,7 @@ const Search = () => {
 
   const { pathname } = useLocation() || {}
 
+  const pushWebRouteNoClose = usePushWebRoute()
   const fadeAnim = useRef(new Animated.Value(0)).current
   const fadeIn = useCallback(() => {
     setViewDisplay('flex')
@@ -67,14 +63,18 @@ const Search = () => {
       toValue: 1,
       duration: FADE_DURATION,
       useNativeDriver: true
-    }).start(() => {
-      setDidOpen(true)
+    }).start(({ finished }) => {
+      if (finished) {
+        setDidOpen(true)
+        pushWebRouteNoClose(getEmptyPageRoute(), 'search')
+      }
     })
-  }, [fadeAnim, setViewDisplay, setDidOpen])
+  }, [fadeAnim, setViewDisplay, setDidOpen, pushWebRouteNoClose])
 
   const fadeOut = useCallback(() => {
     Animated.timing(fadeAnim, {
       toValue: 0,
+      delay: 80,
       duration: FADE_DURATION,
       useNativeDriver: true
     }).start(() => {
@@ -113,7 +113,7 @@ const Search = () => {
     } else {
       close()
     }
-  }, [setAnchorRoute, anchorRoute])
+  }, [setAnchorRoute, anchorRoute, pushWebRoute, close])
 
   const containerStyle = useTheme(styles.container, {
     backgroundColor: 'white'
@@ -122,14 +122,20 @@ const Search = () => {
   const searchQuery = useSelector(getSearchQuery)
   const searchResultQuery = useSelector(getSearchResultQuery)
   const searchResults = useSelector(getSearchResults)
-  const hasResults = Object.values(searchResults).some(result => result && result.length > 0)
+  const hasResults = Object.values(searchResults).some(
+    result => result && result.length > 0
+  )
   let body = null
   if (!!searchQuery && hasResults) {
-    body = (<SearchResults />)
+    body = <SearchResults />
   } else if (!!searchQuery && !!searchResultQuery && !hasResults) {
-    body = (<EmptySearch query={searchResultQuery} />)
+    body = <EmptySearch query={searchResultQuery} />
   } else {
     body = <SearchHistory />
+  }
+
+  if (!isOpen && !didOpen) {
+    return null
   }
 
   return (

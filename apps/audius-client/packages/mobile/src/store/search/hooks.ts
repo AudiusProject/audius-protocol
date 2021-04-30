@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-community/async-storage'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import * as searchActions from './actions'
 import { getSearchHistory } from './selectors'
@@ -50,13 +50,18 @@ const useSearchHistory = () => {
   const clearHistory = useCallback(async () => {
     dispatch(searchActions.setSearchHistory([]))
     await clearSearchHistory()
-  }, [dispatch])  
+  }, [dispatch])
 
-  const appendSearchItem = useCallback(async (query: string) => {
-    const updatedHistory = [query, ...searchHistory]
-    dispatch(searchActions.setSearchHistory(updatedHistory))
-    await setSearchHistory(updatedHistory)
-  }, [searchHistory, dispatch])  
+  const appendSearchItem = useCallback(
+    async (query: string) => {
+      const trimmedQuery = query.trim()
+      if (trimmedQuery === '') return
+      const updatedHistory = [trimmedQuery, ...searchHistory]
+      dispatch(searchActions.setSearchHistory(updatedHistory))
+      await setSearchHistory(updatedHistory)
+    },
+    [searchHistory, dispatch]
+  )
 
   return {
     searchHistory,

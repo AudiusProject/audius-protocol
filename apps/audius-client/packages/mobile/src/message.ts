@@ -70,7 +70,7 @@ export enum MessageType {
 
   FETCH_SEARCH_SUCCESS = 'fetch-search-success',
   FETCH_SEARCH_FAILURE = 'fetch-search-failure',
-  
+
   // Haptics
   HAPTIC_FEEDBACK = 'haptic-feedback',
 
@@ -234,16 +234,18 @@ export const handleMessage = async (
       return
 
     case MessageType.FETCH_SEARCH_SUCCESS:
-      dispatch(searchActions.setResults({
-        query: message.query,
-        results: message.results
-      }))
+      dispatch(
+        searchActions.setResults({
+          query: message.query,
+          results: message.results
+        })
+      )
       return
 
     case MessageType.FETCH_SEARCH_FAILURE:
       dispatch(searchActions.fetchSearchFailed({ query: message.query }))
       return
-  
+
     // OAuth
     case MessageType.REQUEST_TWITTER_AUTH:
       return dispatch(oauthActions.openPopup(message, Provider.TWITTER))

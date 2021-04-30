@@ -5,9 +5,9 @@ import { useColor } from '../../utils/theme'
 /**
  * Fades in images
  */
-type ImageLoadProps = ImageProps & { style?: Object } 
+type ImageLoadProps = ImageProps & { style?: Record<string, any> }
 const ImageLoader = (props: ImageLoadProps) => {
-  const { style = {} , ...restProps } = props
+  const { style = {}, ...restProps } = props
   const [opacity] = useState(new Animated.Value(0))
   const backgroundColor = useColor('neutralLight5')
 
@@ -15,28 +15,30 @@ const ImageLoader = (props: ImageLoadProps) => {
     Animated.timing(opacity, {
       toValue: 1,
       duration: 500,
-      useNativeDriver: true,
-    }).start();
+      useNativeDriver: true
+    }).start()
   }, [opacity])
   return (
-    <View style={[
-      style,
-      {
-        backgroundColor
-      },
-    ]}>
+    <View
+      style={[
+        style,
+        {
+          backgroundColor
+        }
+      ]}
+    >
       <Animated.Image
         onLoad={onLoad}
         {...restProps}
         style={[
           {
-            opacity,
+            opacity
           },
           style
         ]}
       />
     </View>
-  );
+  )
 }
 
 export default ImageLoader

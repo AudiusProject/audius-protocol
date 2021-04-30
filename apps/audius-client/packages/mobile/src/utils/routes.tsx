@@ -1,5 +1,5 @@
 import Config from 'react-native-config'
-import Track, { TrackId } from '../models/Track'
+import { TrackId } from '../models/Track'
 import { UserCollection } from '../models/Collection'
 import { UserHandle } from '../models/User'
 
@@ -60,10 +60,17 @@ export const getCollectionRoute = (
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }
 
-export const getSearchRoute = (
-  query: string,
-  fullUrl = false
-) => {
+export const getSearchRoute = (query: string, fullUrl = false) => {
   const route = `/search/${encodeUrlName(query)}`
+  return fullUrl ? `${AUDIUS_URL}${route}` : route
+}
+
+export const getTagSearchRoute = (query: string, fullUrl = false) => {
+  const route = `/search/#${encodeUrlName(query)}`
+  return fullUrl ? `${AUDIUS_URL}${route}` : route
+}
+
+export const getEmptyPageRoute = (fullUrl = false) => {
+  const route = `/empty_page`
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }

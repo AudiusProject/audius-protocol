@@ -14,10 +14,10 @@ import { SearchResults } from './types'
 
 export type SearchState = {
   isOpen: boolean
-  status: Status,
-  query: string,
-  resultQuery: string,
-  results: SearchResults,
+  status: Status
+  query: string
+  resultQuery: string
+  results: SearchResults
   history: string[]
 }
 
@@ -26,19 +26,16 @@ const initialState = {
   query: '',
   resultQuery: '',
   results: {
-    'users': [],
-    'tracks': [],
-    'playlists': [],
-    'albums': []
+    users: [],
+    tracks: [],
+    playlists: [],
+    albums: []
   },
   status: Status.LOADING,
   history: []
 }
 
-const reducer = (
-  state: SearchState = initialState,
-  action: SearchActions
-) => {
+const reducer = (state: SearchState = initialState, action: SearchActions) => {
   switch (action.type) {
     case OPEN:
       if (action.reset) {
@@ -61,13 +58,13 @@ const reducer = (
       return {
         ...state,
         query: action.query
-      }      
+      }
     }
     case SUBMIT_QUERY: {
       return {
         ...state,
         query: action.query
-      }      
+      }
     }
     case SET_RESULTS:
       return {

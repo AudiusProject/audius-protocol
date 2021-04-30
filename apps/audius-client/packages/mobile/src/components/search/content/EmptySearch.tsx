@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  StyleSheet,
-  View,
-  Text
-} from 'react-native'
+import { StyleSheet, View, Text } from 'react-native'
 import IconBigSearch from '../../../assets/images/iconBigSearch.svg'
 import { useColor, useTheme } from '../../../utils/theme'
 
@@ -28,18 +24,18 @@ const styles = StyleSheet.create({
   }
 })
 
-
 type EmptySearchProps = { query?: string }
 const EmptySearch = ({ query = '' }: EmptySearchProps) => {
   const color = useColor('neutralLight4')
   const emptyTextStyle = useTheme(styles.emptyText, { color: 'neutralLight4' })
 
-  const text = query === '' ? messages.empty : `${messages.noResults} "${query}"` 
+  const text =
+    query === '' ? messages.empty : `${messages.noResults} "${query}"`
   return (
     <View style={styles.emptyContainer}>
-    <IconBigSearch width={90} height={90} fill={color} />
-    <Text style={emptyTextStyle}>{text}</Text>
-  </View>
-)
+      <IconBigSearch width={90} height={90} fill={color} />
+      <Text style={emptyTextStyle}>{text}</Text>
+    </View>
+  )
 }
 export default EmptySearch
