@@ -31,7 +31,7 @@ const IPLDBlacklistFactoryRegistryKey = 'IPLDBlacklistFactory'
 const UserReplicaSetManagerRegistryKey = 'UserReplicaSetManager'
 
 class AudiusContracts {
-  constructor (web3Manager, registryAddress, isServer, enableUserReplicaSetManagerContract) {
+  constructor (web3Manager, registryAddress, isServer) {
     this.web3Manager = web3Manager
     this.registryAddress = registryAddress
     this.isServer = isServer
@@ -93,8 +93,6 @@ class AudiusContracts {
       this.UserLibraryFactoryClient,
       this.IPLDBlacklistFactoryClient
     ]
-
-    this.enableUserReplicaSetManagerContract = enableUserReplicaSetManagerContract
   }
 
   async init () {
@@ -108,10 +106,6 @@ class AudiusContracts {
   // Until the contract is deployed and added to the data contract registry, replica set
   // operations will flow through the existing UserFactory
   async initUserReplicaSetManagerClient (selectNewEndpointOnRetry = false) {
-    if (!this.enableUserReplicaSetManagerContract) {
-      return
-    }
-
     try {
       if (
         this.UserReplicaSetManagerClient &&
