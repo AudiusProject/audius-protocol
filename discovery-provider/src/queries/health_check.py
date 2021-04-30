@@ -3,7 +3,7 @@ import logging
 from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
-from src.queries.get_health import get_health, get_latest_ipld_indexed_block, get_block_confirmation
+from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.api_helpers import success_response
 from src.utils import helpers
 
@@ -92,16 +92,3 @@ def ipld_block_check():
 def ip_check():
     ip = helpers.get_ip(request)
     return success_response(ip, sign_response=False)
-
-@bp.route("/block_confirmation", methods=["GET"])
-def block_confirmation():
-    blockhash = request.args.get("blockhash")
-    blocknumber = request.args.get("blocknumber", type=int)
-    response = {"block_found": False, "block_passed": False}
-    bad_request = True
-    if blockhash is not None and blocknumber is not None:
-        bad_request = False
-        logger.info(f"ARGS: {blockhash, blocknumber}")
-        logger.info(f"block_confirmation | ARGS: {blockhash, blocknumber}")
-        response = get_block_confirmation(blockhash, blocknumber)
-    return success_response(response, 400 if bad_request else 200)
