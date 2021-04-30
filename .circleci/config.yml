@@ -90,6 +90,20 @@ jobs:
           paths:
             - ./build_cid.txt
 
+  publish-staging-build-cids:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Push to S3
+          command: aws s3 cp build_cid.txt s3://dashboard.staging.audius.org/build_cid.txt
+
   update-staging-records:
     working_directory: ~/protocol-dashboard
     docker:
@@ -159,6 +173,20 @@ jobs:
           paths:
             - ./build_cid.txt
 
+  publish-prod-build-cids:
+    working_directory: ~/protocol-dashboard
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Push to S3
+          command: aws s3 cp build_cid.txt s3://dashboard.audius.org/build_cid.txt
+
   update-prod-records:
     working_directory: ~/protocol-dashboard
     docker:
@@ -199,6 +227,13 @@ workflows:
           filters:
             branches:
               only: /^main$/
+      - publish-staging-build-cids:
+          context: Audius Client
+          requires:
+            - update-staging-ga-build
+          filters:
+            branches:
+              only: /^main$/
       - hold-update-staging-records:
           type: approval
           requires:
@@ -236,6 +271,13 @@ workflows:
           context: Pinata
           requires:
             - deploy-prod
+          filters:
+            branches:
+              only: /^main$/
+      - publish-prod-build-cids:
+          context: Audius Client
+          requires:
+            - update-prod-ga-build
           filters:
             branches:
               only: /^main$/
