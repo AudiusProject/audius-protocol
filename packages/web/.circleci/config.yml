@@ -367,6 +367,20 @@ jobs:
           paths:
             - ./build_cid.txt
 
+  publish-staging-build-cids:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Push to S3
+          command: aws s3 cp build_cid.txt s3://audius-site-ipfs/build_cid_staging.txt
+
   update-ipfs-staging-records:
     working_directory: ~/audius-client
     docker:
@@ -520,6 +534,20 @@ jobs:
           root: ./
           paths:
             - ./build_cid.txt
+
+  publish-production-build-cids:
+    working_directory: ~/audius-client
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Push to S3
+          command: aws s3 cp build_cid.txt s3://audius-site-ipfs/build_cid_production.txt
 
   update-ipfs-production-records:
     working_directory: ~/audius-client
@@ -768,7 +796,7 @@ workflows:
       - hold-update-staging-ga-ipfs-build:
           type: approval
           requires:
-            - build-ipfs-staging
+            - deploy-ipfs-staging
           filters:
             branches:
               only: /^master$/
@@ -778,6 +806,14 @@ workflows:
             - Pinata
           requires:
             - hold-update-staging-ga-ipfs-build
+          filters:
+            branches:
+              only: /^master$/
+      - publish-staging-build-cids:
+          context:
+            - Audius Client
+          requires:
+            - update-staging-ga-ipfs-build
           filters:
             branches:
               only: /^master$/
@@ -870,7 +906,7 @@ workflows:
       - hold-update-production-ga-ipfs-build:
           type: approval
           requires:
-            - build-ipfs-production
+            - deploy-ipfs-production
           filters:
             branches:
               only: /^master$/
@@ -880,6 +916,14 @@ workflows:
             - Pinata
           requires:
             - hold-update-production-ga-ipfs-build
+          filters:
+            branches:
+              only: /^master$/
+      - publish-production-build-cids:
+          context:
+            - Audius Client
+          requires:
+            - update-production-ga-ipfs-build
           filters:
             branches:
               only: /^master$/
