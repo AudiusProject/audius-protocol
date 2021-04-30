@@ -1,11 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  StyleSheet,
-  View,
-  Text
-} from 'react-native'
+import React from 'react'
+import { StyleSheet, View, Text } from 'react-native'
 import { useTheme } from '../../../utils/theme'
-
 
 const styles = StyleSheet.create({
   container: {
@@ -47,4 +42,3 @@ const SearchSectionHeader = ({ title }: SearchSectionHeaderProps) => {
 }
 
 export default SearchSectionHeader
-

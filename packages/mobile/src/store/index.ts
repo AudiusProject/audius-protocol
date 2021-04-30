@@ -16,7 +16,7 @@ export type AppState = {
   lifecycle: LifecycleState
   googleCast: GoogleCastState
   notifications: NotificationsState
-  theme: ThemeState,
+  theme: ThemeState
   search: SearchState
 }
 

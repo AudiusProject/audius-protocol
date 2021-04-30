@@ -6,7 +6,7 @@ import React, {
   useState
 } from 'react'
 import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import {
   StyleSheet,
   Animated,
@@ -20,6 +20,7 @@ import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import { getIsOpen } from '../../store/notifications/selectors'
 import * as notificationsActions from '../../store/notifications/actions'
 import { getIsSignedIn } from '../../store/lifecycle/selectors'
+import { getIsOpen as getIsSearchOpen } from '../../store/search/selectors'
 import TopBar from './TopBar'
 import List from './List'
 import { postMessage } from '../../utils/postMessage'
@@ -271,8 +272,9 @@ const Notifications = ({
       pathname === '/favorites' ||
       pathname.startsWith('/search'))
   const isFromNativeNotifications = state?.fromNativeNotifications ?? false
+  const isSearchOpen = useSelector(getIsSearchOpen)
   const canShowNotifications =
-    (isMainRoute || isFromNativeNotifications) && isSignedIn
+    (isMainRoute || isFromNativeNotifications) && isSignedIn && !isSearchOpen
 
   useEffect(() => {
     if (isOpen) {

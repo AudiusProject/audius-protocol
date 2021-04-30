@@ -17,7 +17,7 @@ const messages = {
 
 const styles = StyleSheet.create({
   topBar: {
-    height: IS_IOS ? 85 : 55
+    height: IS_IOS ? 87 : 55
   },
   container: {
     position: 'absolute',

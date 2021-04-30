@@ -27,11 +27,10 @@ export const badgeTiers: { tier: BadgeTier; minAudio: BN }[] = [
   }
 ]
 
-export const getBadgeTier = (
-  user: UserBalance,
-) => {
-  const totalBalance = new BN(user.balance ?? '0').add(
-    new BN(user.associated_wallets_balance ?? '0')).div(WEI)
+export const getBadgeTier = (user: UserBalance) => {
+  const totalBalance = new BN(user.balance ?? '0')
+    .add(new BN(user.associated_wallets_balance ?? '0'))
+    .div(WEI)
 
   const index = badgeTiers.findIndex(t => {
     return t.minAudio.lte(totalBalance)
