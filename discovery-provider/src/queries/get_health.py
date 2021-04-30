@@ -267,7 +267,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
 # returns a tuple (<boolean>, <boolean>) that represents whether
 # the given blockhash is present, the given blocknumber is passed
-def _get_db_block_confirmation(blockhash, blocknumber):
+def get_block_confirmation(blockhash, blocknumber):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         blockhash_query = session.query(Block).filter(
@@ -283,7 +283,3 @@ def _get_db_block_confirmation(blockhash, blocknumber):
         latest_block_number = latest_block_record['number'] or 0
 
         return len(blockhash_query) > 0, latest_block_number >= blocknumber
-
-
-def get_block_confirmation(blockhash, blocknumber):
-    return _get_db_block_confirmation(blockhash, blocknumber)
