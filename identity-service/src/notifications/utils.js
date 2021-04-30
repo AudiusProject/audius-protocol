@@ -66,6 +66,32 @@ async function updateBlockchainIds () {
 }
 
 /**
+ * Queries the discovery provider and returns n most listened to tracks, with the
+ * total listen count for each of those tracks
+ * This includes track listens writen to Solana
+ *
+ * @returns Array [{trackId, listenCount}, trackId, listenCount]
+ */
+async function calculateTrackListenMilestonesFromDiscovery (discoveryProvider) {
+  // Pull listen count notification data from discovery provider
+  let reqObj = {
+    method: 'get',
+    url: `${discoveryProvider.discoveryProviderEndpoint}/track_listen_milestones`,
+    timeout: 120000 // two minutes
+  }
+
+  let listenCountBody = ((await axios(reqObj)).data).data
+  let parsedListenCounts = []
+  for (let key in listenCountBody) {
+    parsedListenCounts.push({
+      trackId: key,
+      listenCount: listenCountBody[key]
+    })
+  }
+  return parsedListenCounts
+}
+
+/**
  * For the n most recently listened to tracks, return the all time listen counts for those tracks
  * where n is `trackListenMilestonePollCount
  *
@@ -177,6 +203,7 @@ module.exports = {
   decodeHashId,
   updateBlockchainIds,
   calculateTrackListenMilestones,
+  calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber,
   shouldNotifyUser
 }

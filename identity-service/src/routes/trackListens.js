@@ -5,6 +5,8 @@ const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
+const solClient = require('../solana-client.js')
+const config = require('../config.js')
 
 async function getListenHour () {
   let listenDate = new Date()
@@ -208,7 +210,25 @@ module.exports = function (app) {
     if (!userId || !trackId) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
+    const solanaListen = req.body.solanaListen || false
+
+    // Dedicated listen flow
+    if (solanaListen) {
+      let solTxSignature = await solClient.createAndVerifyMessage(
+        null,
+        config.get('solanaSignerPrivateKey'),
+        userId.toString(),
+        trackId.toString(),
+        'relay' // Static source value to indicate relayed listens
+      )
+      logger.info(`Track listen tx submitted, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+      return successResponse({
+        solTxSignature
+      })
+    }
+
     let currentHour = await getListenHour()
+    // TODO: Make all of this conditional based on request parameters
     let trackListenRecord = await models.TrackListenCount.findOrCreate(
       {
         where: { hour: currentHour, trackId }
@@ -216,7 +236,6 @@ module.exports = function (app) {
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
-    await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
 
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table

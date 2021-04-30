@@ -113,6 +113,8 @@ jobs:
       - run:
           name: identity-service repo init
           command: |
+            source ~/.bash_profile
+            nvm install v10.16
             cd identity-service/
             npm install
       - save_cache:
@@ -537,6 +539,7 @@ jobs:
           condition: << parameters.force >>
           steps:
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+      - setup_remote_docker
       # restores data-contracts
       - restore_cache:
           keys:
@@ -580,7 +583,8 @@ jobs:
         type: string
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Get tag or latest
           command: |
@@ -671,5 +675,9 @@ workflows:
           repo: identity-service
           requires:
             - test-identity-service
+
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
 
       - test-mad-dog-e2e
