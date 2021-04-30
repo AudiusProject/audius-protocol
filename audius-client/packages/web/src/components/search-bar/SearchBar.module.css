@@ -36,7 +36,8 @@
   fill: var(--neutral-light-6);
 }
 
-.searchWrapper:hover .iconSearch path {
+.searchWrapper:not(.native):hover .iconSearch path,
+.searchWrapper:active .iconSearch path {
   fill: var(--neutral);
 }
 

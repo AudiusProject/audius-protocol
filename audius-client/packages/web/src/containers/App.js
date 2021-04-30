@@ -44,6 +44,7 @@ import {
   SIGN_UP_PAGE,
   authenticatedRoutes,
   ERROR_PAGE,
+  EMPTY_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
   ACCOUNT_SETTINGS_PAGE,
@@ -139,6 +140,7 @@ import SearchPage from 'containers/search-page/SearchPage'
 import HistoryPage from 'containers/history-page/HistoryPage'
 import SavedPage from 'containers/saved-page/SavedPage'
 import ExplorePage from 'containers/explore-page/ExplorePage'
+import EmptyPage from 'containers/empty-page/EmptyPage'
 import RepostsPage from 'containers/reposts-page/RepostsPage'
 import FavoritesPage from 'containers/favorites-page/FavoritesPage'
 import NotificationUsersPage from 'containers/notification-users-page/NotificationUsersPage'
@@ -846,7 +848,12 @@ class App extends Component {
                 isMobile={isMobileClient}
                 component={FollowersPage}
               />
-
+              <MobileRoute
+                exact
+                path={EMPTY_PAGE}
+                isMobile={isMobileClient}
+                component={EmptyPage}
+              />
               <Route
                 exact
                 path={PROFILE_PAGE}
