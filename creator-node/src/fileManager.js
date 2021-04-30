@@ -50,16 +50,8 @@ async function saveFileToIPFSFromFS ({ logContext }, req, srcPath, ipfs) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  let multihash
-  try {
-    // Add to IPFS without pinning and retrieve multihash
-    multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
-  } catch (e) {
-    if (e.message.includes('Anonymous mock')) {
-      console.log('this is weird\n', e)
-    }
-    throw e
-  }
+  // Add to IPFS without pinning and retrieve multihash
+  let multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
