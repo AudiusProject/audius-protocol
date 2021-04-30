@@ -55,6 +55,11 @@ adb -s <device name> reverse tcp:8081 tcp:8081
 npm run android
 ```
 
+If you run into issues, try cleaning the android build folder
+```
+cd android && ./gradlew clean && cd ..
+```
+
 ## Debugging
 
 * To debug the native-layer of the app, install [React Native Debugger](https://github.com/jhen0409/react-native-debugger) and enable debugging (Cmd + D) in the simulator.
@@ -63,7 +68,7 @@ npm run android
 On Android, you can use the adb Android Studio tool or
 ```
 # Show device logs
-db logcat '*:V'
+adb logcat '*:V'
 ```
 
 ## Helpful
