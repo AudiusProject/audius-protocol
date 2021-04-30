@@ -13,7 +13,9 @@ def get_block_confirmation(blockhash, blocknumber):
         latest_block_query = session.query(Block).filter(
             Block.is_current == True
         ).all()
-        assert len(latest_block_query) == 1, "Expected SINGLE row marked as current"
+
+        if len(latest_block_query) != 1:
+            raise Exception("Expected SINGLE row marked as current")
 
         latest_block_record = helpers.model_to_dictionary(latest_block_query[0])
         latest_block_number = latest_block_record['number'] or 0
