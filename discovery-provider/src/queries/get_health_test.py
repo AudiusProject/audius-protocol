@@ -369,18 +369,18 @@ def test_get_block_confirmation(web3_mock, redis_mock, db_mock):
             is_current=True,
         ))
 
-    block_found, block_passed = get_block_confirmation(blockhash, blocknumber)
-    assert block_found == True
-    assert block_passed == True
+    block_confirmation = get_block_confirmation(blockhash, blocknumber)
+    assert block_confirmation['block_found'] == True
+    assert block_confirmation['block_passed'] == True
 
-    latest_block_found, latest_block_passed = get_block_confirmation(latest_blockhash, latest_blocknumber)
-    assert latest_block_found == True
-    assert latest_block_passed == True
+    latest_block_confirmation = get_block_confirmation(latest_blockhash, latest_blocknumber)
+    assert latest_block_confirmation['block_found'] == True
+    assert latest_block_confirmation['block_passed'] == True
 
-    new_block_found, new_block_passed = get_block_confirmation('0xfe', 2)
-    assert new_block_found == False
-    assert new_block_passed == True
+    new_block_confirmation = get_block_confirmation('0xfe', 2)
+    assert new_block_confirmation['block_found'] == False
+    assert new_block_confirmation['block_passed'] == True
 
-    new_block_found, new_block_passed = get_block_confirmation('0xff', 3)
-    assert new_block_found == False
-    assert new_block_passed == False
+    new_block_confirmation = get_block_confirmation('0xff', 3)
+    assert new_block_confirmation['block_found'] == False
+    assert new_block_confirmation['block_passed'] == False

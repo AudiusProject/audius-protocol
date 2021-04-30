@@ -267,4 +267,7 @@ def get_block_confirmation(blockhash, blocknumber):
         latest_block_record = helpers.model_to_dictionary(latest_block_query[0])
         latest_block_number = latest_block_record['number'] or 0
 
-        return len(blockhash_query) > 0, latest_block_number >= blocknumber
+        return {
+            "block_found": len(blockhash_query) > 0,
+            "block_passed": latest_block_number >= blocknumber
+        }

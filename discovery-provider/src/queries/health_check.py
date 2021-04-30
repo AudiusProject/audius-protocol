@@ -97,17 +97,11 @@ def ip_check():
 def block_confirmation():
     blockhash = request.args.get("blockhash")
     blocknumber = request.args.get("blocknumber", type=int)
-    block_found, block_passed = False, False
+    response = {"block_found": False, "block_passed": False}
     bad_request = True
     if blockhash is not None and blocknumber is not None:
         bad_request = False
         logger.info(f"ARGS: {blockhash, blocknumber}")
         logger.info(f"block_confirmation | ARGS: {blockhash, blocknumber}")
-        block_found, block_passed = get_block_confirmation(blockhash, blocknumber)
-    return success_response(
-        {
-            "block_found": block_found,
-            "block_passed": block_passed
-        },
-        400 if bad_request else 200
-    )
+        response = get_block_confirmation(blockhash, blocknumber)
+    return success_response(response, 400 if bad_request else 200)
