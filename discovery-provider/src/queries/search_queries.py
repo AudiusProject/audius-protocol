@@ -589,8 +589,8 @@ def user_search_query(session, search_str, limit, offset, personalized, is_auto_
 
     if is_auto_complete:
         for i, user in enumerate(users):
-            balance = user_info[i]['balance']
-            associated_wallets_balance = user_info[i]['associated_wallets_balance']
+            balance = user_info[i][1]
+            associated_wallets_balance = user_info[i][2]
             user[response_name_constants.balance] = balance
             user[response_name_constants.associated_wallets_balance] = associated_wallets_balance
     else:
