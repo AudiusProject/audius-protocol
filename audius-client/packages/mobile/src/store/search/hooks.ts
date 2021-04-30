@@ -27,15 +27,7 @@ export const setSearchHistory = async (history: string[]) => {
   await AsyncStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history))
 }
 
-/**
- * Invokes `callback` every `frequency` sessions
- * @param callback
- * @param frequency
- * @param startAt which session to start at
- */
 const useSearchHistory = () => {
-  // Memoize each time the callback is invoked to guard against callback
-  // being redefined each rernder and over triggering
   const searchHistory = useSelector(getSearchHistory)
   const dispatch = useDispatch()
 
@@ -56,7 +48,8 @@ const useSearchHistory = () => {
     async (query: string) => {
       const trimmedQuery = query.trim()
       if (trimmedQuery === '') return
-      const updatedHistory = [trimmedQuery, ...searchHistory]
+      const filteredSearch = searchHistory.filter(term => term !== trimmedQuery)
+      const updatedHistory = [trimmedQuery, ...filteredSearch]
       dispatch(searchActions.setSearchHistory(updatedHistory))
       await setSearchHistory(updatedHistory)
     },
