@@ -264,3 +264,26 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
             logger.error(f"Could not set values in redis for get_latest_chain_block_set_if_nx: {e}")
 
     return latest_block_num, latest_block_hash
+
+# returns a tuple (<boolean>, <boolean>) that represents whether
+# the given blockhash is present, the given blocknumber is passed
+def _get_db_block_confirmation(blockhash, blocknumber):
+    db = db_session.get_db_read_replica()
+    with db.scoped_session() as session:
+        blockhash_query = session.query(Block).filter(
+            Block.blockhash == blockhash
+        ).all()
+
+        latest_block_query = session.query(Block).filter(
+            Block.is_current == True
+        ).all()
+        assert len(latest_block_query) == 1, "Expected SINGLE row marked as current"
+
+        latest_block_record = helpers.model_to_dictionary(latest_block_query[0])
+        latest_block_number = latest_block_record['number'] or 0
+
+        return len(blockhash_query) > 0, latest_block_number >= blocknumber
+
+
+def get_block_confirmation(blockhash, blocknumber):
+    return _get_db_block_confirmation(blockhash, blocknumber)
