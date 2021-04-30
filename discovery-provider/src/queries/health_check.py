@@ -102,6 +102,7 @@ def block_confirmation():
     if blockhash is not None and blocknumber is not None:
         bad_request = False
         logger.info(f"ARGS: {blockhash, blocknumber}")
+        logger.info(f"block_confirmation | ARGS: {blockhash, blocknumber}")
         block_found, block_passed = get_block_confirmation(blockhash, blocknumber)
     return success_response(
         {
