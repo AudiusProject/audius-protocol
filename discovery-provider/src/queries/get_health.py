@@ -1,7 +1,6 @@
 import logging
 import os
 import time
-from sqlalchemy import desc
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
@@ -10,8 +9,6 @@ from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
     most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key, \
     trending_tracks_last_completion_redis_key, trending_playlists_last_completion_redis_key
-
-LATEST_INDEXED_BLOCKS_LIMIT = 20
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -34,13 +31,10 @@ def _get_db_block_state():
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         # Fetch latest block from DB
-        db_block_query = session.query(Block).order_by(
-            desc(Block.number)
-        ).limit(LATEST_INDEXED_BLOCKS_LIMIT).all()
-        results = [helpers.model_to_dictionary(record) for record in db_block_query]
-        assert len(results) > 0
-        assert results[0]['is_current'], True
-        return results
+        db_block_query = session.query(Block).filter(
+            Block.is_current == True).all()
+        assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+        return helpers.model_to_dictionary(db_block_query[0])
 
 # Returns number of and info on open db connections
 def _get_db_conn_state():
@@ -126,7 +120,6 @@ def get_health(args, use_redis_cache=True):
     latest_block_hash = None
     latest_indexed_block_num = None
     latest_indexed_block_hash = None
-    db_blocks = []
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
@@ -153,20 +146,13 @@ def get_health(args, use_redis_cache=True):
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
-    # Fetch latest indexed blocks
-    db_block_state = _get_db_block_state()
-    for result in db_block_state:
-        db_blocks.append({
-            "number": result["number"] or 0,
-            "blockhash": result["blockhash"]
-        })
-
-    # set latest indexed blocks from db state if:
+    # fetch latest db state if:
     # we explicitly don't want to use redis cache or
     # value from redis cache is None
     if not use_redis_cache or latest_indexed_block_num is None or latest_indexed_block_hash is None:
-        latest_indexed_block_num = db_block_state[0]["number"] or 0
-        latest_indexed_block_hash = db_block_state[0]["blockhash"]
+        db_block_state = _get_db_block_state()
+        latest_indexed_block_num = db_block_state["number"] or 0
+        latest_indexed_block_hash = db_block_state["blockhash"]
 
     trending_tracks_age_sec = get_elapsed_time_redis(redis, trending_tracks_last_completion_redis_key)
     trending_playlists_age_sec = get_elapsed_time_redis(redis, trending_playlists_last_completion_redis_key)
@@ -193,7 +179,6 @@ def get_health(args, use_redis_cache=True):
             "number": latest_indexed_block_num,
             "blockhash": latest_indexed_block_hash
         },
-        "latest_indexed_blocks": db_blocks,
         "git": os.getenv("GIT_SHA"),
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
