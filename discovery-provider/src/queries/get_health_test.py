@@ -365,7 +365,7 @@ def test_get_block_confirmation(web3_mock, redis_mock, db_mock):
         session.add(Block(
             blockhash=latest_blockhash,
             number=latest_blocknumber,
-            parenthash='0x00',
+            parenthash=blockhash,
             is_current=True,
         ))
 
