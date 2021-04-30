@@ -227,7 +227,7 @@ class CreatorNode {
    * @param {object} metadata the metadata for the track
    * @param {function?} onProgress an optional on progerss callback
    */
-  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
+  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}, useTrackContentPolling) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
@@ -248,7 +248,11 @@ class CreatorNode {
     }
 
     let uploadPromises = []
-    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
+    if (useTrackContentPolling) {
+      uploadPromises.push(this.uploadTrackAudioPolling(trackFile, onTrackProgress))
+    } else {
+      uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
+    }
     if (coverArtFile) uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
@@ -338,21 +342,33 @@ class CreatorNode {
    */
   async uploadTrackAudio (file, onProgress) {
     const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
+    return body
+  }
 
-    // If the "/track_content" response still contains these keys, then CN has not been updated
-    // to be used with the transcode polling system. Return the response immediately
-    // This is backwards compatible with an older version of CN
-    if (body.transcodedTrackCID && body.transcodedTrackUUID && body.track_segments && body.source_file) {
-      return body
+  /**
+   * Track upload flow with polling.
+   * @param {File} file track to upload
+   * @param {function?} onProgress called with loaded bytes and total bytes
+   * @return {Object} response body
+   *
+   * @note Rename this function to `uploadTrackAudio` and update the actual route when
+   * we want to fully use polling for track content, and remove the existing method
+   */
+  async uploadTrackAudioPolling (file, onProgress) {
+    let uuid
+    try {
+      ({ data: { uuid } } = await this._uploadFile(file, '/polling_track_content', onProgress))
+    } catch (e) {
+      // TODO: if error.statusCode !== 400, try this ; for backwards compat
+      return this.uploadTrackAudio(file, onProgress)
     }
 
-    const { uuid } = body
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
       const { status, resp } = await this.getProcessingStatus('transcode', uuid)
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
-      if (status && status === 'DONE') return resp.object.data
+      if (status && status === 'DONE') return resp
       if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/processing_status`, uuid)
 
       // Check the transcode status every 5s
