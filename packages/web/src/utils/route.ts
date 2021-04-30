@@ -86,6 +86,7 @@ export const ACCOUNT_VERIFICATION_SETTINGS_PAGE =
 export const NOTIFICATION_SETTINGS_PAGE = '/settings/notifications'
 export const ABOUT_SETTINGS_PAGE = '/settings/about'
 export const TRENDING_GENRES = '/trending/genres'
+export const EMPTY_PAGE = '/empty_page'
 
 // External Links
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/AudiusProject'
@@ -132,6 +133,7 @@ export const orderedRoutes = [
   TRENDING_GENRES,
   TRENDING_PAGE,
   EXPLORE_PAGE,
+  EMPTY_PAGE,
   SEARCH_CATEGORY_PAGE,
   SEARCH_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -173,6 +175,7 @@ export const staticRoutes = new Set([
   SETTINGS_PAGE,
   HOME_PAGE,
   NOT_FOUND_PAGE,
+  EMPTY_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
   ERROR_PAGE,
