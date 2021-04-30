@@ -114,7 +114,9 @@ const SearchBar = ({
         {...(open ? {} : { disabled: true })}
       />
       <div
-        className={cn(styles.searchWrapper, iconClassname)}
+        className={cn(styles.searchWrapper, iconClassname, {
+          [styles.native]: !!NATIVE_MOBILE
+        })}
         onMouseDown={onClick}
       >
         <DetailIcon

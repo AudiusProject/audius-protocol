@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import cn from 'classnames'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
@@ -30,12 +30,16 @@ import {
   albumPage,
   playlistPage,
   profilePage,
-  fullSearchResultsPage
+  fullSearchResultsPage,
+  SEARCH_PAGE
 } from 'utils/route'
 import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 
 import Spin from 'antd/lib/spin'
+import { matchPath } from 'react-router'
+import { getLocationPathname } from 'store/routing/selectors'
+import { useSelector } from 'utils/reducer'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type SearchPageContentProps = {
@@ -295,6 +299,7 @@ const CardSearchPage = ({
 
 const messages = {
   title: 'More Results',
+  tagSearchTitle: 'Tag Search',
   tracksTitle: 'Tracks',
   albumsTitle: 'Albums',
   playlistsTitle: 'Playlists',
@@ -345,80 +350,102 @@ const SearchPageContent = (props: SearchPageContentProps) => {
     },
     [record, searchText]
   )
+  const { isTagSearch } = props
   // Show fewer tabs if this is a tagSearch
-  const computedTabs = props.isTagSearch
-    ? {
-        didChangeTabsFrom,
-        tabs: [
-          {
-            icon: <IconNote />,
-            text: messages.tracksTitle,
-            label: Tabs.TRACKS
-          },
-          { icon: <IconUser />, text: messages.peopleTitle, label: Tabs.PEOPLE }
-        ],
-        elements: [
-          <TracksSearchPage key='tagTrackSearch' {...props} />,
-          <CardSearchPage
-            key='tagUserSearch'
-            {...props}
-            cardType={CardType.USER}
-          />
-        ]
-      }
-    : {
-        didChangeTabsFrom,
-        tabs: [
-          {
-            icon: <IconUser />,
-            text: messages.peopleTitle,
-            label: Tabs.PEOPLE
-          },
-          {
-            icon: <IconNote />,
-            text: messages.tracksTitle,
-            label: Tabs.TRACKS
-          },
-          {
-            icon: <IconAlbum />,
-            text: messages.albumsTitle,
-            label: Tabs.ALBUMS
-          },
-          {
-            icon: <IconPlaylists />,
-            text: messages.playlistsTitle,
-            label: Tabs.PLAYLISTS
-          }
-        ],
-        elements: [
-          <CardSearchPage
-            key='userSearch'
-            {...props}
-            cardType={CardType.USER}
-          />,
-          <TracksSearchPage key='trackSearch' {...props} />,
-          <CardSearchPage
-            key='albumSearch'
-            {...props}
-            cardType={CardType.ALBUM}
-          />,
-          <CardSearchPage
-            key='playlistSearch'
-            {...props}
-            cardType={CardType.PLAYLIST}
-          />
-        ]
-      }
+  const computedTabs = useMemo(() => {
+    return isTagSearch
+      ? {
+          didChangeTabsFrom,
+          tabs: [
+            {
+              icon: <IconNote />,
+              text: messages.tracksTitle,
+              label: Tabs.TRACKS
+            },
+            {
+              icon: <IconUser />,
+              text: messages.peopleTitle,
+              label: Tabs.PEOPLE
+            }
+          ],
+          elements: [
+            <TracksSearchPage key='tagTrackSearch' {...props} />,
+            <CardSearchPage
+              key='tagUserSearch'
+              {...props}
+              cardType={CardType.USER}
+            />
+          ]
+        }
+      : {
+          didChangeTabsFrom,
+          tabs: [
+            {
+              icon: <IconUser />,
+              text: messages.peopleTitle,
+              label: Tabs.PEOPLE
+            },
+            {
+              icon: <IconNote />,
+              text: messages.tracksTitle,
+              label: Tabs.TRACKS
+            },
+            {
+              icon: <IconAlbum />,
+              text: messages.albumsTitle,
+              label: Tabs.ALBUMS
+            },
+            {
+              icon: <IconPlaylists />,
+              text: messages.playlistsTitle,
+              label: Tabs.PLAYLISTS
+            }
+          ],
+          elements: [
+            <CardSearchPage
+              key='userSearch'
+              {...props}
+              cardType={CardType.USER}
+            />,
+            <TracksSearchPage key='trackSearch' {...props} />,
+            <CardSearchPage
+              key='albumSearch'
+              {...props}
+              cardType={CardType.ALBUM}
+            />,
+            <CardSearchPage
+              key='playlistSearch'
+              {...props}
+              cardType={CardType.PLAYLIST}
+            />
+          ]
+        }
+  }, [isTagSearch, props, didChangeTabsFrom])
 
   const { tabs, body } = useTabs(computedTabs)
   const { setHeader } = useContext(HeaderContext)
+  const pathname = useSelector(getLocationPathname)
   useEffect(() => {
+    const isSearchPage = matchPath(pathname, {
+      path: SEARCH_PAGE
+    })
+    if (!isSearchPage) return
     setHeader(
       <>
-        <Header className={styles.header} title={messages.title} />
+        <Header
+          className={styles.header}
+          title={isTagSearch ? messages.tagSearchTitle : messages.title}
+        />
+        <div
+          className={cn(styles.tabBar, {
+            [styles.nativeTabBar]: NATIVE_MOBILE
+          })}
+        >
+          {tabs}
+        </div>
       </>
     )
-  }, [setHeader])
+  }, [setHeader, tabs, pathname, isTagSearch])
 
   return (
     <MobilePageContainer
@@ -427,13 +454,6 @@ const SearchPageContent = (props: SearchPageContentProps) => {
       canonicalUrl={fullSearchResultsPage(searchText)}
     >
       <div className={styles.tabContainer}>
-        <div
-          className={cn(styles.tabBar, {
-            [styles.nativeTabBar]: NATIVE_MOBILE
-          })}
-        >
-          {tabs}
-        </div>
         <div className={styles.pageContainer}>{body}</div>
       </div>
     </MobilePageContainer>
