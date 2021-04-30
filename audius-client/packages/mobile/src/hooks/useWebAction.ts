@@ -1,25 +1,12 @@
-import React, {
-  memo,
-  ReactNode,
-  createContext,
-  useRef,
-  RefObject,
-  useCallback,
-  useState,
-  useEffect,
-  useContext
-} from 'react'
-import WebView from 'react-native-webview'
-import { MessagePostingWebView } from '../types/MessagePostingWebView'
+import { useCallback, useContext } from 'react'
 import { WebRefContext } from '../components/web/WebRef'
 import { postMessage } from '../utils/postMessage'
 import { MessageType } from '../message'
 
-
 export const useDispatchWebAction = () => {
   const { webRef } = useContext(WebRefContext)
   return useCallback(
-    (action: { type: MessageType } & { [key: string]: any } ) => {
+    (action: { type: MessageType } & { [key: string]: any }) => {
       if (webRef?.current) {
         postMessage(webRef.current, action)
       }
@@ -44,5 +31,4 @@ export const usePushWebRoute = (onLeave?: () => void) => {
     },
     [webRef, onLeave]
   )
-  
 }

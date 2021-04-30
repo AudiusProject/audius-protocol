@@ -1,10 +1,5 @@
 import React, { ReactElement } from 'react'
-import {
-  StyleSheet,
-  View,
-  Image,
-  Text
-} from 'react-native'
+import { StyleSheet, View, Image, Text } from 'react-native'
 
 import IconBronzeBadgeSVG from '../../assets/images/IconBronzeBadge.svg'
 import IconSilverBadgeSVG from '../../assets/images/IconSilverBadge.svg'
@@ -17,13 +12,12 @@ import getBadgeTier, { BadgeTier } from '../../utils/badgeTier'
 import { Nullable } from '../../utils/typeUtils'
 import { UserName, UserBalance, UserVerified } from '../../models/User'
 
-
 type UserBadgesProps = {
   user: UserName & UserBalance & UserVerified
   badgeSize?: number
   useSVGTiers?: boolean
-  style?: Object
-  nameStyle?: Object
+  style?: Record<string, any>
+  nameStyle?: Record<string, any>
 }
 
 const styles = StyleSheet.create({
@@ -54,10 +48,30 @@ export const audioTierMapPng: {
   [tier in BadgeTier]: Nullable<ReactElement>
 } = {
   none: null,
-  bronze: <Image style={[styles.badge, styles.image]} source={require('../../assets/images/tokenBadgeBronze40.png')} />,
-  silver: <Image style={[styles.badge, styles.image]} source={require('../../assets/images/tokenBadgeSilver40.png')} />,
-  gold: <Image style={[styles.badge, styles.image]} source={require('../../assets/images/tokenBadgeGold40.png')} />,
-  platinum: <Image style={[styles.badge, styles.image]} source={require('../../assets/images/tokenBadgePlatinum40.png')} />
+  bronze: (
+    <Image
+      style={[styles.badge, styles.image]}
+      source={require('../../assets/images/tokenBadgeBronze40.png')}
+    />
+  ),
+  silver: (
+    <Image
+      style={[styles.badge, styles.image]}
+      source={require('../../assets/images/tokenBadgeSilver40.png')}
+    />
+  ),
+  gold: (
+    <Image
+      style={[styles.badge, styles.image]}
+      source={require('../../assets/images/tokenBadgeGold40.png')}
+    />
+  ),
+  platinum: (
+    <Image
+      style={[styles.badge, styles.image]}
+      source={require('../../assets/images/tokenBadgePlatinum40.png')}
+    />
+  )
 }
 
 const UserBadges: React.FC<UserBadgesProps> = ({
@@ -72,8 +86,16 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   const tierElement = tierMap[tier]
   return (
     <View style={[styles.container, style]}>
-      <Text style={nameStyle} numberOfLines={1}>{user.name}</Text>
-      {user.is_verified && <IconVerified height={badgeSize} width={badgeSize} style={styles.badge}/>}
+      <Text style={nameStyle} numberOfLines={1}>
+        {user.name}
+      </Text>
+      {user.is_verified && (
+        <IconVerified
+          height={badgeSize}
+          width={badgeSize}
+          style={styles.badge}
+        />
+      )}
       {tierElement}
     </View>
   )

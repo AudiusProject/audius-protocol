@@ -1,4 +1,4 @@
-import { SearchResults } from "./types"
+import { SearchResults } from './types'
 
 export const OPEN = 'SEARCH/OPEN'
 export const CLOSE = 'SEARCH/CLOSE'
@@ -10,7 +10,7 @@ export const SET_HISTORY = 'SEARCH/SET_HISTORY'
 export const FETCH_SEARCH_FAILED = 'SEARCH/FETCH_SEARCH_FAILED'
 
 type OpenAction = {
-  type: typeof OPEN,
+  type: typeof OPEN
   reset: boolean
 }
 
@@ -19,7 +19,7 @@ type CloseAction = {
 }
 
 type UpdateQueryAction = {
-  type: typeof UPDATE_QUERY,
+  type: typeof UPDATE_QUERY
   query: string
 }
 
@@ -39,12 +39,12 @@ type ClearHistoryAction = {
 }
 
 type SetSearchHistoryAction = {
-  type: typeof SET_HISTORY,
+  type: typeof SET_HISTORY
   searchHistory: string[]
 }
 
 type FetchSearchFailedAction = {
-  type: typeof FETCH_SEARCH_FAILED,
+  type: typeof FETCH_SEARCH_FAILED
   query: string
 }
 
@@ -58,7 +58,7 @@ export type SearchActions =
   | SubmitQueryAction
   | FetchSearchFailedAction
 
-export const open = (reset: boolean = true): OpenAction => ({
+export const open = (reset = true): OpenAction => ({
   type: OPEN,
   reset
 })
@@ -77,7 +77,10 @@ export const submitQuery = (query: string): SubmitQueryAction => ({
   query
 })
 
-export const setResults = ({ query, results }: {
+export const setResults = ({
+  query,
+  results
+}: {
   query: string
   results: any
 }): SetResultsAction => ({
@@ -90,12 +93,18 @@ export const clearHistory = (): ClearHistoryAction => ({
   type: CLEAR_HISTORY
 })
 
-export const setSearchHistory = (searchHistory: string[]): SetSearchHistoryAction => ({
+export const setSearchHistory = (
+  searchHistory: string[]
+): SetSearchHistoryAction => ({
   type: SET_HISTORY,
   searchHistory
 })
 
-export const fetchSearchFailed = ({ query }: { query: string }): FetchSearchFailedAction => ({
+export const fetchSearchFailed = ({
+  query
+}: {
+  query: string
+}): FetchSearchFailedAction => ({
   type: FETCH_SEARCH_FAILED,
   query
 })

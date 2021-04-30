@@ -35,36 +35,38 @@ export type UserBalance = {
   balance: string
 }
 
-export type UserMetadata = UserName & UserHandle & 
-  UserBalance & UserVerified & {
-  album_count: number
-  bio: string | null
-  cover_photo: Nullable<CID>
-  creator_node_endpoint: Nullable<string>
-  current_user_followee_follow_count: number
-  does_current_user_follow: boolean
-  followee_count: number
-  follower_count: number
-  handle_lc: string
-  is_creator: boolean
-  location: Nullable<string>
-  playlist_count: number
-  profile_picture: Nullable<CID>
-  repost_count: number
-  track_count: number
-  cover_photo_sizes: Nullable<CID>
-  profile_picture_sizes: Nullable<CID>
+export type UserMetadata = UserName &
+  UserHandle &
+  UserBalance &
+  UserVerified & {
+    album_count: number
+    bio: string | null
+    cover_photo: Nullable<CID>
+    creator_node_endpoint: Nullable<string>
+    current_user_followee_follow_count: number
+    does_current_user_follow: boolean
+    followee_count: number
+    follower_count: number
+    handle_lc: string
+    is_creator: boolean
+    location: Nullable<string>
+    playlist_count: number
+    profile_picture: Nullable<CID>
+    repost_count: number
+    track_count: number
+    cover_photo_sizes: Nullable<CID>
+    profile_picture_sizes: Nullable<CID>
 
-  // Only present on the "current" account
-  track_save_count?: number
-  user_id: number
-  twitter_handle?: string
-  instagram_handle?: string
-  website?: string
-  donation?: string
-  twitterVerified?: boolean
-  instagramVerified?: boolean
-} & Timestamped
+    // Only present on the "current" account
+    track_save_count?: number
+    user_id: number
+    twitter_handle?: string
+    instagram_handle?: string
+    website?: string
+    donation?: string
+    twitterVerified?: boolean
+    instagramVerified?: boolean
+  } & Timestamped
 
 export type ComputedUserProperties = {
   _profile_picture_sizes: ProfilePictureSizes

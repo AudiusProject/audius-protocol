@@ -1,7 +1,5 @@
 import Config from 'react-native-config'
-import { UserCollection } from '../../models/Collection'
 import Track from '../../models/Track'
-import User from '../../models/User'
 import {
   Achievement,
   Entity,

@@ -58,47 +58,48 @@ export type TrackId = {
   route_id: string
 }
 
-export type TrackMetadata = TrackImage & TrackId & {
-  blocknumber: number
-  activity_timestamp?: string
-  is_delete: boolean
-  created_at: string
-  isrc: Nullable<string>
-  iswc: Nullable<string>
-  credits_splits: Nullable<string>
-  description: Nullable<string>
-  followee_reposts: Repost[]
-  followee_saves: Favorite[]
-  genre: string
-  has_current_user_reposted: boolean
-  has_current_user_saved: boolean
-  download: Nullable<Download>
-  license: Nullable<string>
-  mood: Nullable<string>
-  play_count: number
-  owner_id: ID
-  release_date: Nullable<string>
-  repost_count: number
-  save_count: number
-  tags: Nullable<string>
-  title: string
-  track_segments: TrackSegment[]
-  is_unlisted: boolean
-  field_visibility?: FieldVisibility
-  listenCount?: number
+export type TrackMetadata = TrackImage &
+  TrackId & {
+    blocknumber: number
+    activity_timestamp?: string
+    is_delete: boolean
+    created_at: string
+    isrc: Nullable<string>
+    iswc: Nullable<string>
+    credits_splits: Nullable<string>
+    description: Nullable<string>
+    followee_reposts: Repost[]
+    followee_saves: Favorite[]
+    genre: string
+    has_current_user_reposted: boolean
+    has_current_user_saved: boolean
+    download: Nullable<Download>
+    license: Nullable<string>
+    mood: Nullable<string>
+    play_count: number
+    owner_id: ID
+    release_date: Nullable<string>
+    repost_count: number
+    save_count: number
+    tags: Nullable<string>
+    title: string
+    track_segments: TrackSegment[]
+    is_unlisted: boolean
+    field_visibility?: FieldVisibility
+    listenCount?: number
 
-  // Optional Fields
-  is_invalid?: boolean
-  stem_of?: {
-    parent_track_id: ID
-    category: StemCategory
-  }
-  remix_of: Nullable<RemixOf>
+    // Optional Fields
+    is_invalid?: boolean
+    stem_of?: {
+      parent_track_id: ID
+      category: StemCategory
+    }
+    remix_of: Nullable<RemixOf>
 
-  // Added fields
-  dateListened?: string
-  duration: number
-} & Timestamped
+    // Added fields
+    dateListened?: string
+    duration: number
+  } & Timestamped
 
 export type Stem = {
   track_id: ID
