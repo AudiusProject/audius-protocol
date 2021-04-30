@@ -4,8 +4,12 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 
-# first run the below command to generate a single json file
-# jq '[[.[]], inputs] | add' output.* > output.json
+
+def add_labels(rects):
+    for label in ax.bar_label(rects, padding=2):
+        label.set_text((format(int(label.get_text()), ',')))
+
+
 users = json.load(open('output.json'))
 
 creator_nodes = set()
@@ -41,8 +45,8 @@ ax.set_yticks(y)
 ax.set_yticklabels(creator_nodes)
 ax.legend()
 
-ax.bar_label(synced_rects, padding=2)
-ax.bar_label(remaining_rects, padding=2)
+add_labels(synced_rects)
+add_labels(remaining_rects)
 
 fig.tight_layout()
 
@@ -75,8 +79,8 @@ ax.set_yticks(y)
 ax.set_yticklabels(creator_nodes)
 ax.legend()
 
-ax.bar_label(total_rects, padding=2)
-ax.bar_label(as_primary_rects, padding=2)
+add_labels(total_rects)
+add_labels(as_primary_rects)
 
 fig.tight_layout()
 
@@ -101,6 +105,8 @@ rects = ax.bar(np.arange(len(frequency)), frequency)
 ax.set_xticks(np.arange(len(frequency)))
 ax.set_xlabel('# of time cid was replicated')
 ax.set_ylabel('frequency')
+
+add_labels(rects)
 
 fig.tight_layout()
 
