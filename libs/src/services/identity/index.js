@@ -120,8 +120,14 @@ class IdentityService {
    * @param {string} signatureData.signature
    * @param {string} signatureData.timestamp
    */
-  async logTrackListen (trackId, userId, listenerAddress, signatureData) {
-    const data = { userId }
+  async logTrackListen (
+    trackId,
+    userId,
+    listenerAddress,
+    signatureData,
+    solanaListen = false
+  ) {
+    const data = { userId, solanaListen }
     if (signatureData) {
       data.signature = signatureData.signature
       data.timestamp = signatureData.timestamp

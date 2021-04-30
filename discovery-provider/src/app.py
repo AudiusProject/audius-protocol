@@ -10,6 +10,7 @@ from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
 from celery import Task
 from celery.schedules import timedelta, crontab
+from solana.rpc.api import Client
 
 import redis
 from flask import Flask
@@ -28,6 +29,8 @@ from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 from src.utils.redis_metrics import METRICS_INTERVAL
 
+SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
+
 # these global vars will be set in create_celery function
 web3endpoint = None
 web3 = None
@@ -36,6 +39,7 @@ abi_values = None
 eth_web3 = None
 eth_abi_values = None
 
+solana_client = None
 registry = None
 user_factory = None
 track_factory = None
@@ -134,6 +138,7 @@ def create_app(test_config=None):
 def create_celery(test_config=None):
     # pylint: disable=W0603
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
+    global solana_client
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
@@ -143,6 +148,9 @@ def create_celery(test_config=None):
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
     # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
+
+    # Initialize Solana web3 provider
+    solana_client = Client(SOLANA_ENDPOINT)
 
     global registry
     global user_factory
@@ -314,7 +322,7 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_materialized_views",
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
                  "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
-                 "src.tasks.cache_trending_playlists",
+                 "src.tasks.cache_trending_playlists", "src.tasks.index_solana_plays",
                  "src.tasks.index_aggregate_views"
                  ],
         beat_schedule={
@@ -366,6 +374,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30)
             },
+            "index_solana_plays": {
+                "task": "index_solana_plays",
+                "schedule": timedelta(seconds=5)
+            },
             "update_aggregate_user": {
                 "task": "update_aggregate_user",
                 "schedule": timedelta(seconds=30)
@@ -416,6 +428,7 @@ def configure_celery(flask_app, celery, test_config=None):
             self._ipfs_client = ipfs_client
             self._redis = redis_inst
             self._eth_web3_provider = eth_web3
+            self._solana_client = solana_client
 
         @property
         def abi_values(self):
@@ -444,6 +457,10 @@ def configure_celery(flask_app, celery, test_config=None):
         @property
         def eth_web3(self):
             return self._eth_web3_provider
+
+        @property
+        def solana_client(self):
+            return self._solana_client
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 

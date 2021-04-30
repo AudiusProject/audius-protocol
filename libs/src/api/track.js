@@ -528,12 +528,18 @@ class Track extends Base {
    * @param {string} unauthUuid account for those not logged in
    * @param {number} trackId listened to
    */
-  async logTrackListen (trackId, unauthUuid) {
+  async logTrackListen (trackId, unauthUuid, solanaListen = false) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const accountId = this.userStateManager.getCurrentUserId()
 
     const userId = accountId || unauthUuid
-    return this.identityService.logTrackListen(trackId, userId)
+    return this.identityService.logTrackListen(
+      trackId,
+      userId,
+      null,
+      null,
+      solanaListen
+    )
   }
 
   /** Adds a repost for a given user and track
