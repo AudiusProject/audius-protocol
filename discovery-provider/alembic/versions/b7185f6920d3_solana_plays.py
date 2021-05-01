@@ -1,7 +1,7 @@
 """solana plays
 
 Revision ID: b7185f6920d3
-Revises: 5bcbe23f6c70
+Revises: af43df9fbde0
 Create Date: 2021-04-12 15:40:15.563165
 
 """

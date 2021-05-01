@@ -5,7 +5,7 @@ of the audius protocol dashboard on 4/23/2021.
 These metrics are computed going forward by discovery nodes in a live manner.
 
 Revision ID: d9992d2d598c
-Revises: 29864cb80469
+Revises: b7185f6920d3
 Create Date: 2021-04-27 00:29:31.849031
 
 """
@@ -14,7 +14,7 @@ from alembic import context, op
 
 # revision identifiers, used by Alembic.
 revision = 'd9992d2d598c'
-down_revision = '29864cb80469'
+down_revision = 'b7185f6920d3'
 branch_labels = None
 depends_on = None
 
