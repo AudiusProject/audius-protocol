@@ -113,6 +113,7 @@ def upgrade():
         INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2021-01-01', '35823791', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2021-02-01', '58980350', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2021-03-01', '53405945', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_total_users_metrics" ("timestamp", "count", "created_at", "updated_at") VALUES ('2021-04-01', '65419013', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
         -- ================== Monthly uniques ==================
         DELETE FROM "aggregate_monthly_unique_users_metrics" WHERE "timestamp" < '2021-05-01';
@@ -126,6 +127,7 @@ def upgrade():
         INSERT INTO "aggregate_monthly_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2021-01-01', '2879795', '2879795', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2021-02-01', '4387427', '4387427', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
         INSERT INTO "aggregate_monthly_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2021-03-01', '3173491', '3173491', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        INSERT INTO "aggregate_monthly_unique_users_metrics" ("timestamp", "count", "summed_count", "created_at", "updated_at") VALUES ('2021-04-01', '4136314', '4136314', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
         -- ================== Daily apps ==================
         DELETE FROM "aggregate_daily_app_name_metrics" where "timestamp" < '2021-04-23';
