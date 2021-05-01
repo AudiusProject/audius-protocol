@@ -4,7 +4,7 @@ const { wait } = require('../../utils')
 const uuid = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
 
-const MAX_TRACK_TRANSCODE_TIMEOUT = 600000 // 10 min
+const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -357,10 +357,9 @@ class CreatorNode {
   async uploadTrackAudioPolling (file, onProgress) {
     let uuid
     try {
-      ({ data: { uuid } } = await this._uploadFile(file, '/polling_track_content', onProgress))
+      ({ data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress))
     } catch (e) {
-      // TODO: if error.statusCode !== 400, try this ; for backwards compat
-      return this.uploadTrackAudio(file, onProgress)
+      await this._handleErrorHelper(e)
     }
 
     const start = Date.now()
@@ -369,13 +368,13 @@ class CreatorNode {
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/processing_status`, uuid)
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/track_content`, uuid)
 
       // Check the transcode status every 5s
       await wait(5000)
     }
 
-    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/processing_status`, uuid)
+    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/track_content`, uuid)
   }
 
   /**
@@ -386,7 +385,7 @@ class CreatorNode {
    */
   async getProcessingStatus (taskType, uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/processing_status',
+      url: '/track_content',
       params: {
         taskType,
         uuid

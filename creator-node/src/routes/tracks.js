@@ -47,7 +47,7 @@ module.exports = function (app) {
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
    * @note this track content route is used in conjunction with the polling.
    */
-  app.post('/polling_track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
     if (req.fileSizeError || req.fileFilterError) {
       removeTrackFolder({ logContext: req.logContext }, req.fileDir)
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)

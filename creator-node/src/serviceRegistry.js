@@ -73,7 +73,7 @@ class ServiceRegistry {
   /**
    * Returns the ipfs instance
    */
-  async getIPFS () {
+  getIPFS () {
     return this.ipfs
   }
 

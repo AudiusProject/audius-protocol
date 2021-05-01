@@ -319,7 +319,7 @@ const getDirCID = async (req, res) => {
 }
 
 module.exports = function (app) {
-  app.get('/processing_status', handleResponse(async (req, res) => {
+  app.get('/track_content', handleResponse(async (req, res) => {
     const redisKey = constructProcessKey(req.query.taskType, req.query.uuid)
     const value = await redisClient.get(redisKey) || '{}'
 

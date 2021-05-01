@@ -5,7 +5,7 @@ const redisClient = require('./redis')
 const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
 const { serviceRegistry } = require('./serviceRegistry')
 
-const EXPIRATION = 7200 // 2 hours in seconds
+const EXPIRATION = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
   transcode: 'transcode'
 })
@@ -41,6 +41,7 @@ class FileProcessingQueue {
         const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
         done(null, { response })
       } catch (e) {
+        this.logError(transcodeParams.logContext, `Could not add taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext}: ${e.toString()}`)
         done(e.message)
       }
     })
@@ -75,7 +76,7 @@ class FileProcessingQueue {
     const ipfs = serviceRegistry.getIPFS()
 
     const uuid = logContext.requestID
-    const redisKey = this.constructProcessKey(taskType, uuid)
+    const redisKey = constructProcessKey(taskType, uuid)
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
     this.logStatus(logContext, `Starting ${taskType}! uuid=${uuid}}`)

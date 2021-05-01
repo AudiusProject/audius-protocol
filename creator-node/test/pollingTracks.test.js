@@ -24,7 +24,7 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 
 const testAudiusFileNumSegments = 32
-const TRACK_CONTENT_POLLING_ROUTE = '/polling_track_content'
+const TRACK_CONTENT_POLLING_ROUTE = '/track_content_async'
 
 const logContext = {
   logContext: {
@@ -59,7 +59,7 @@ describe('test Tracks with mocked IPFS', function () {
     await server.close()
   })
 
-  // Testing middleware -- leave as /polling_track_content
+  // Testing middleware -- leave as /track_content_async
   it('fails to upload when format is not accepted', async function () {
     const file = fs.readFileSync(testAudioFileWrongFormatPath)
 
@@ -71,7 +71,7 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(400)
   })
 
-  // Testing middleware -- leave as /polling_track_content
+  // Testing middleware -- leave as /track_content_async
   it('fails to upload when maxAudioFileSizeBytes exceeded', async function () {
     // Configure extremely small file size
     process.env.maxAudioFileSizeBytes = 10
@@ -129,7 +129,7 @@ describe('test Tracks with mocked IPFS', function () {
     process.env.maxMemoryFileSizeBytes = defaultConfig['maxMemoryFileSizeBytes']
   })
 
-  it('uploads /polling_track_content', async function () {
+  it('uploads /track_content_async', async function () {
     ipfsMock.addFromFs.exactly(33)
     ipfsMock.pin.add.exactly(33)
 
@@ -150,8 +150,8 @@ describe('test Tracks with mocked IPFS', function () {
     assert.deepStrictEqual(typeof transcodedTrackUUID, 'string')
   })
 
-  // depends on "uploads /polling_track_content"; if that test fails, this test will fail to due to similarity
-  it('creates Audius track using application logic for /polling_track_content', async function () {
+  // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
+  it('creates Audius track using application logic for /track_content_async', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
@@ -185,7 +185,7 @@ describe('test Tracks with mocked IPFS', function () {
     assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
   })
 
-  // depends on "uploads /polling_track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create Audius track when segments not provided', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
@@ -218,7 +218,7 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(400)
   })
 
-  // depends on "uploads /polling_track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create Audius track when invalid segment multihashes are provided', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
@@ -252,7 +252,7 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(400)
   })
 
-  // depends on "uploads /polling_track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create Audius track when owner_id is not provided', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
@@ -281,7 +281,7 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(400)
   })
 
-  // depends on "uploads /polling_track_content" and "creates Audius track" tests
+  // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('completes Audius track creation', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
@@ -319,7 +319,7 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(200)
   })
 
-  // depends on "uploads /polling_track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create downloadable track with no track_id and no source_id present', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
@@ -355,7 +355,7 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(400)
   })
 
-  // depends on "uploads /polling_track_content" and "creates Audius track" tests
+  // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('creates a downloadable track', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
@@ -429,7 +429,7 @@ describe('test Tracks with real IPFS', function () {
     await server.close()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /polling_track_content TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
     const { handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
       '../../TranscodingQueue': { segment: sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment')) }
