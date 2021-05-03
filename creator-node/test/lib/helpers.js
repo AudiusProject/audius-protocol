@@ -13,7 +13,7 @@ const uploadTrack = async (filePath, cnodeUserUUID, ipfs, blacklistManager) => {
       requestID: uuid(),
       requestMethod: 'POST',
       requestHostname: '127.0.0.1',
-      requestUrl: '/track_content'
+      requestUrl: '/track_content_async'
     }
   },
   {

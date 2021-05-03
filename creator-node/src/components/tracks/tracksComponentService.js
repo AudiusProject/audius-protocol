@@ -12,7 +12,7 @@ const SaveFileToIPFSConcurrencyLimit = 10
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
  *
- * Also the logic used in /track_content route. Params are extracted to keys that are necessary for the job so that
+ * Also the logic used in /track_content_async route. Params are extracted to keys that are necessary for the job so that
  * we can pass this task into a worker queue.
  *
  * @param {Object} logContext the context of the request used to create a generic logger
@@ -42,7 +42,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
     segmentFilePaths = transcode[0].filePaths
     transcodedFilePath = transcode[1].filePath
 
-    logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+    logger.info(`Time taken in /track_content_async to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
   } catch (err) {
     // Prune upload artifacts
     removeTrackFolder({ logContext }, requestProps.fileDir)
@@ -76,12 +76,12 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
 
     segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
   }
-  logger.info(`Time taken in /track_content for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+  logger.info(`Time taken in /track_content_async for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // Retrieve all segment durations as map(segment srcFilePath => segment duration)
   codeBlockTimeStart = Date.now()
   const segmentDurations = await getSegmentsDuration(requestProps.fileName, requestProps.fileDestination)
-  logger.info(`Time taken in /track_content to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+  logger.info(`Time taken in /track_content_async to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // For all segments, build array of (segment multihash, segment duration)
   let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
@@ -156,12 +156,12 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
 
     throw new Error(e.toString())
   }
-  logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+  logger.info(`Time taken in /track_content_async for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // Prune upload artifacts after success
   removeTrackFolder({ logContext }, requestProps.fileDir)
 
-  logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${requestProps.fileName}`)
+  logger.info(`Time taken in /track_content_async for full route: ${Date.now() - routeTimeStart}ms for file ${requestProps.fileName}`)
   return {
     transcodedTrackCID: transcodeFileIPFSResp.multihash,
     transcodedTrackUUID: transcodeFileUUID,

@@ -369,13 +369,13 @@ class CreatorNode {
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/track_content`, uuid)
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/track_content_async`, uuid)
 
       // Check the transcode status every 5s
       await wait(POLL_STATUS_INTERVAL)
     }
 
-    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/track_content`, uuid)
+    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/track_content_async`, uuid)
   }
 
   /**
@@ -386,7 +386,7 @@ class CreatorNode {
    */
   async getProcessingStatus (taskType, uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/track_content',
+      url: '/track_content_status',
       params: {
         taskType,
         uuid
