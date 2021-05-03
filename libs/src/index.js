@@ -174,8 +174,7 @@ class AudiusLibs {
     comstockConfig,
     captchaConfig,
     isServer,
-    isDebug = false,
-    enableUserReplicaSetManagerContract = false
+    isDebug = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -209,8 +208,6 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
-
-    this.enableUserReplicaSetManagerContract = enableUserReplicaSetManagerContract
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -271,8 +268,7 @@ class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config ? this.web3Config.registryAddress : null,
-        this.isServer,
-        this.enableUserReplicaSetManagerContract
+        this.isServer
       )
       contractsToInit.push(this.contracts.init())
     }

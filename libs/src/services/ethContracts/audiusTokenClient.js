@@ -1,5 +1,3 @@
-const DEFAULT_GAS_AMOUNT = 200000
-
 class AudiusTokenClient {
   constructor (ethWeb3Manager, contractABI, contractAddress) {
     this.ethWeb3Manager = ethWeb3Manager
@@ -51,13 +49,13 @@ class AudiusTokenClient {
     return { txReceipt: tx }
   }
 
-  async transferFrom (owner, recipient, amount) {
+  async transferFrom (owner, recipient, relayer, amount) {
     const method = this.AudiusTokenContract.methods.transferFrom(owner, recipient, amount)
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
       owner,
-      /* txGasLimit */ DEFAULT_GAS_AMOUNT,
+      relayer,
       /* retries */ 0
     )
     return { txReceipt: tx }
@@ -86,7 +84,7 @@ class AudiusTokenClient {
       contractMethod,
       this.contractAddress,
       owner,
-      /* txGasLimit */ DEFAULT_GAS_AMOUNT,
+      spender,
       /* retries */ 0
     )
     return tx
@@ -102,9 +100,9 @@ class AudiusTokenClient {
     } else {
       tx = await this.ethWeb3Manager.sendTransaction(
         contractMethod,
-        1000000,
         this.contractAddress,
-        privateKey)
+        privateKey
+      )
     }
     return { txReceipt: tx }
   }

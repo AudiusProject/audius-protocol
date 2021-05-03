@@ -193,7 +193,7 @@ class URSMRegistrationManager {
   async _submitRequestForSignature (nodeEndpoint, spID) {
     const { timestamp, signature } = generateTimestampAndSignature({ spID }, this.delegatePrivateKey)
 
-    let RFPResp = await axios({
+    const RFPResp = await axios({
       baseURL: nodeEndpoint,
       url: '/ursm_request_for_signature',
       method: 'get',
@@ -204,12 +204,12 @@ class URSMRegistrationManager {
         signature
       }
     })
-    RFPResp = parseCNodeResponse(RFPResp, ['spID', 'nonce', 'sig'])
+    const { responseData } = parseCNodeResponse(RFPResp, ['spID', 'nonce', 'sig'])
 
     return {
-      spID: RFPResp.spID,
-      nonce: RFPResp.nonce,
-      sig: RFPResp.sig
+      spID: responseData.spID,
+      nonce: responseData.nonce,
+      sig: responseData.sig
     }
   }
 }

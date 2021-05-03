@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from src import contract_addresses
+from src.app import contract_addresses
 from src.models import Playlist, SaveType, Save
 
 logger = logging.getLogger(__name__)
@@ -111,6 +111,7 @@ def add_track_save(
         block_datetime,
         track_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_track_events = user_library_contract.events.TrackSaveAdded().processReceipt(
         tx_receipt
     )
@@ -126,6 +127,7 @@ def add_track_save(
             save = Save(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=save_user_id,
                 save_item_id=save_track_id,
                 save_type=SaveType.track,
@@ -149,6 +151,7 @@ def add_playlist_save(
         block_datetime,
         playlist_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = user_library_contract.events.PlaylistSaveAdded().processReceipt(
         tx_receipt
     )
@@ -173,6 +176,7 @@ def add_playlist_save(
             save = Save(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=save_user_id,
                 save_item_id=save_playlist_id,
                 save_type=save_type,
@@ -196,6 +200,7 @@ def delete_track_save(
         block_datetime,
         track_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_delete_track_events = user_library_contract.events.TrackSaveDeleted().processReceipt(
         tx_receipt
     )
@@ -210,6 +215,7 @@ def delete_track_save(
             save = Save(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=save_user_id,
                 save_item_id=save_track_id,
                 save_type=SaveType.track,
@@ -233,6 +239,7 @@ def delete_playlist_save(
         block_datetime,
         playlist_state_changes,
 ):
+    txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = user_library_contract.events.PlaylistSaveDeleted().processReceipt(
         tx_receipt
     )
@@ -257,6 +264,7 @@ def delete_playlist_save(
             save = Save(
                 blockhash=update_task.web3.toHex(event.blockHash),
                 blocknumber=block_number,
+                txhash=txhash,
                 user_id=save_user_id,
                 save_item_id=save_playlist_id,
                 save_type=save_type,

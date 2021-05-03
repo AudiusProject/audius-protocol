@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import unquote
 from sqlalchemy import func, desc
 
-from src.models import Track, RepostType, Follow, SaveType, Play
+from src.models import AggregatePlays, Track, RepostType, Follow, SaveType, Play
 from src.queries import response_name_constants
 from src.queries.query_helpers import \
     get_karma, get_repost_counts, get_save_counts, get_genre_list
@@ -64,17 +64,33 @@ def get_listen_counts(session, time, genre, limit, offset):
                )
 
     # Construct base query
+    if time:
+        # If we want to query plays by time, use the plays table directly
+        base_query = (
+            session
+            .query(Play.play_item_id, func.count(Play.id).label('count'), Track.created_at)
+            .join(Track, Track.track_id == Play.play_item_id)
+        )
+    else:
+        # Otherwise, it's safe to just query over the aggregate plays table (all time)
+        base_query = (
+            session
+            .query(AggregatePlays.play_item_id.label('id'), AggregatePlays.count.label('count'), Track.created_at)
+            .join(Track, Track.track_id == AggregatePlays.play_item_id)
+        )
+
     base_query = (
-        session.query(Play.play_item_id, func.count(Play.id))
-        .join(Track, Track.track_id == Play.play_item_id)
+        base_query
         .filter(
             Track.is_current == True,
             Track.is_delete == False,
             Track.is_unlisted == False,
             Track.stem_of == None
         )
-        .group_by(Play.play_item_id)
     )
+
+    if time:
+        base_query = base_query.group_by(Play.play_item_id, Track.created_at)
 
     # Add filters to query
     base_query = with_time_filter(base_query, time)
@@ -82,38 +98,39 @@ def get_listen_counts(session, time, genre, limit, offset):
 
     # Add limit + offset + sort
     base_query = (base_query
-                  .order_by(desc(func.count(Play.id)))
+                  .order_by(desc('count'))
                   .limit(limit)
                   .offset(offset))
 
     listens = base_query.all()
 
     # Format the results
-    listens = [{"track_id": listen[0], "listens": listen[1]} for listen in listens]
+    listens = [{
+        "track_id": listen[0],
+        "listens": listen[1],
+        "created_at": listen[2]
+    } for listen in listens]
     return listens
 
-def generate_trending(session, time, genre, limit, offset):
+def generate_trending(session, time, genre, limit, offset, strategy):
+    score_params = strategy.get_score_params()
+    xf = score_params['xf']
+    pt = score_params['pt']
+
     # Get listen counts
     listen_counts = get_listen_counts(session, time, genre, limit, offset)
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
-    # Get created_at info
-    tracks_created_at = (
-        session.query(Track.track_id, Track.created_at)
-        .filter(Track.track_id.in_(track_ids))
-        .all()
-    )
-
     # Generate track id -> created_at date
     track_created_at_dict = {
-        record[0]: record[1] for record in tracks_created_at
+        record["track_id"]: record["created_at"] for record in listen_counts
     }
 
     # Query repost counts
     repost_counts = get_repost_counts(session, False, True, track_ids, None)
 
-        # Generate track_id --> repost_count mapping
+    # Generate track_id --> repost_count mapping
     track_repost_counts = {
         repost_item_id: repost_count
         for (repost_item_id, repost_count, repost_type) in repost_counts
@@ -165,7 +182,7 @@ def generate_trending(session, time, genre, limit, offset):
         .all()
     )
     follower_count_dict = \
-            {user_id: follower_count for (user_id, follower_count) in follower_counts}
+            {user_id: follower_count for (user_id, follower_count) in follower_counts if follower_count > pt}
 
     # Query save counts
     save_counts = get_save_counts(session, False, True, track_ids, None)
@@ -185,7 +202,7 @@ def generate_trending(session, time, genre, limit, offset):
         if save_type == SaveType.track
     }
 
-    karma_query = get_karma(session, tuple(track_ids))
+    karma_query = get_karma(session, tuple(track_ids), None, False, xf)
     karma_counts_for_id = {track_id: karma for (track_id, karma) in karma_query}
 
     trending_tracks = []
@@ -204,7 +221,7 @@ def generate_trending(session, time, genre, limit, offset):
         # Populate save counts with respect to time
         track_entry[response_name_constants.windowed_save_count] = track_save_counts_for_time.get(track_id, 0)
 
-        # Populate listen counts
+        # Populate owner follower count
         owner_id = track_owner_dict[track_id]
         owner_follow_count = follower_count_dict.get(owner_id, 0)
         track_entry[response_name_constants.track_owner_id] = owner_id

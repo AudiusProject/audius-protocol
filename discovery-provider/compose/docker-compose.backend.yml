@@ -1,5 +1,4 @@
-# Depends on the docker-compose.base.yml file for db, redis-server and ipfs-node processes
-
+# Compose file to run the discovery backend stack (web server and celery workers)
 version: '3'
 services:
   celery-worker:

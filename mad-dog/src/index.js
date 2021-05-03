@@ -8,7 +8,9 @@ const {
   coreIntegration,
   snapbackSMParallelSyncTest,
   userReplicaSetManagerTest,
-  IpldBlacklistTest
+  IpldBlacklistTest,
+  userReplicaSetBlockSaturationTest,
+  solanaTrackListenCountsTest
 } = require('./tests/')
 
 // Configuration.
@@ -67,6 +69,7 @@ async function tearDownAllServices () {
 // The default will be 'undefined' for the other tests that do not require
 // this flag.
 const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
+  console.log(testFn)
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
       const res = await testFn({
@@ -213,6 +216,27 @@ async function main () {
         await testRunner([test])
         break
       }
+      case 'test-ursm-sat': {
+        const test = makeTest(
+          'userReplicaSetBlockSaturationTest',
+          userReplicaSetBlockSaturationTest,
+          {
+            numUsers: 1
+          })
+        await testRunner([test])
+        break
+      }
+      case 'test-sol-listencount': {
+        const test = makeTest(
+          'solanaTrackListenCountsTest',
+          solanaTrackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
+        await testRunner([test])
+        break
+      }
       case 'test-ci': {
         const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -240,12 +264,28 @@ async function main () {
           userReplicaSetManagerTest,
           { numUsers: USER_REPLICA_SET_NUM_USERS }
         )
+        const ursmBlockSaturationTest = makeTest(
+          'userReplicaSetBlockSaturationTest',
+          userReplicaSetBlockSaturationTest,
+          {
+            numUsers: 1
+          })
+
+        const solTrackListenCountTest = makeTest(
+          'solanaTrackListenCountsTest',
+          solanaTrackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
 
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
-          ursmTest
+          ursmTest,
+          ursmBlockSaturationTest,
+          solTrackListenCountTest
         ]
 
         await testRunner(tests)

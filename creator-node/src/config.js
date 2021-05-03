@@ -273,6 +273,14 @@ const config = convict({
     default: -1
   },
 
+  // NodeSync filesave concurrency limit
+  nodeSyncFileSaveMaxConcurrency: {
+    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
+    format: 'nat',
+    env: 'nodeSyncFileSaveMaxConcurrency',
+    default: 10
+  },
+
   // wallet information
   delegateOwnerWallet: {
     doc: 'wallet address',
@@ -439,12 +447,29 @@ const config = convict({
     env: 'maxStorageUsedPercent',
     default: 95
   },
-
   pinAddCIDs: {
     doc: 'Array of comma separated CIDs to pin',
     format: String,
     env: 'pinAddCIDs',
     default: ''
+  },
+  enableRehydrate: {
+    doc: 'Flag to enable or disable rehydrate',
+    format: Boolean,
+    env: 'enableRehydrate',
+    default: true
+  },
+  maxManualRequestSyncJobConcurrency: {
+    doc: 'Max bull queue concurrency for manual sync request jobs',
+    format: 'nat',
+    env: 'maxManualRequestSyncJobConcurrency',
+    default: 15
+  },
+  maxRecurringRequestSyncJobConcurrency: {
+    doc: 'Max bull queue concurrency for recurring sync request jobs',
+    format: 'nat',
+    env: 'maxRecurringRequestSyncJobConcurrency',
+    default: 5
   }
 
   // unsupported options at the moment

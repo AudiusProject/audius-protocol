@@ -57,7 +57,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' || !resp.body.metadataFileUUID) {
+    if (resp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' || !resp.body.data.metadataFileUUID) {
       throw new Error('invalid return data')
     }
   })
@@ -75,14 +75,14 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
+    if (resp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
       throw new Error('invalid return data')
     }
 
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
-      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.metadataFileUUID })
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
   })
 })
@@ -153,7 +153,7 @@ describe('Test AudiusUsers with real IPFS', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = DiskManager.computeFilePath(resp.body.metadataMultihash)
+    const metadataPath = DiskManager.computeFilePath(resp.body.data.metadataMultihash)
     assert.ok(fs.existsSync(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -163,7 +163,7 @@ describe('Test AudiusUsers with real IPFS', function () {
 
     // check that the correct metadata file properties were written to db
     const file = await models.File.findOne({ where: {
-      multihash: resp.body.metadataMultihash,
+      multihash: resp.body.data.metadataMultihash,
       storagePath: metadataPath,
       type: 'metadata'
     } })
@@ -172,7 +172,7 @@ describe('Test AudiusUsers with real IPFS', function () {
     // check that the metadata file is in IPFS
     let ipfsResp
     try {
-      ipfsResp = await ipfs.cat(resp.body.metadataMultihash)
+      ipfsResp = await ipfs.cat(resp.body.data.metadataMultihash)
     } catch (e) {
       // If CID is not present, will throw timeout error
       assert.fail(e.message)

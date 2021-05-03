@@ -42,8 +42,7 @@ class PlaylistFactoryClient extends ContractClient {
     const tx = await this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
-      contractAddress,
-      8000000
+      contractAddress
     )
     return parseInt(tx.events.PlaylistCreated.returnValues._playlistId, 10)
   }
@@ -92,8 +91,7 @@ class PlaylistFactoryClient extends ContractClient {
     return this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
-      contractAddress,
-      1000000 // TODO move to const
+      contractAddress
     )
   }
 
@@ -122,7 +120,6 @@ class PlaylistFactoryClient extends ContractClient {
       method,
       this.contractRegistryKey,
       contractAddress,
-      undefined, // txGasLimit
       retries
     )
   }
@@ -151,7 +148,6 @@ class PlaylistFactoryClient extends ContractClient {
       method, // contractMethod
       this.contractRegistryKey,
       contractAddress,
-      8000000, // txGasLimit
       retries
     )
   }

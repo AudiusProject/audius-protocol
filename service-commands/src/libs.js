@@ -586,12 +586,37 @@ function LibsWrapper (walletIndex = 0) {
     )
   }
 
+  this.updateBio = async (userId, bioString) => {
+    return this.libsInstance.contracts.UserFactoryClient.updateBio(userId, bioString)
+  }
+
+  this.updateName = async (userId, userName) => {
+    return this.libsInstance.contracts.UserFactoryClient.updateBio(userId, userName)
+  }
+
   this.getDiscoveryNodeEndpoint = () => {
     return this.libsInstance.discoveryProvider.discoveryProviderEndpoint
   }
 
   this.getURSMContentNodes = (ownerWallet) => {
     return this.libsInstance.discoveryProvider.getURSMContentNodes(ownerWallet)
+  }
+
+  // Record a single track listen
+  this.logTrackListen = (
+    trackId,
+    userId,
+    listenerAddress,
+    signatureData,
+    solanaListen
+  ) => {
+    return this.libsInstance.identityService.logTrackListen(
+      trackId,
+      userId,
+      listenerAddress,
+      signatureData,
+      solanaListen
+    )
   }
 
   /**

@@ -72,6 +72,9 @@ const initializeApp = (port, serviceRegistry) => {
   // add a newer version of ipfs as app property
   app.set('ipfsLatestAPI', serviceRegistry.ipfsLatest)
 
+  // Eventually, all components should pull services off the serviceRegistry
+  app.set('serviceRegistry', serviceRegistry)
+
   // https://expressjs.com/en/guide/behind-proxies.html
   app.set('trust proxy', true)
 

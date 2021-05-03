@@ -1,7 +1,6 @@
 const config = require('./config')
 
 const { requestNotExcludedFromLogging } = require('./logging')
-const versionInfo = require('../.version.json')
 const { generateTimestampAndSignature } = require('./apiSigning')
 
 module.exports.handleResponse = (func) => {
@@ -115,6 +114,11 @@ const sendResponseWithHeartbeatTerminator =
       } else {
         logger.info('Error processing request:', resp.object.error)
       }
+
+      // Converts the error object into an object that JSON.stringify can parse
+      if (resp.object.error) {
+        resp.object.error = Object.getOwnPropertyNames(resp.object.error).reduce((acc, cur) => { acc[cur] = resp.object.error[cur]; return acc }, {})
+      }
     }
 
     // Construct the remainder of the JSON response
@@ -139,10 +143,7 @@ module.exports.successResponse = (obj = {}) => {
     data: {
       ...obj
     },
-    // TODO: remove duplication of obj -- kept for backwards compatibility
-    ...obj,
-    signer: config.get('delegateOwnerWallet'),
-    ...versionInfo
+    signer: config.get('delegateOwnerWallet')
   }
 
   const { timestamp, signature } = generateTimestampAndSignature(toSignData, config.get('delegatePrivateKey'))
@@ -251,12 +252,11 @@ module.exports.parseCNodeResponse = (respObj, requiredFields = []) => {
   })
 
   return {
-    ...respObj.data.data,
+    responseData: respObj.data.data,
     signatureData: {
       signer: respObj.data.signer,
       timestamp: respObj.data.timestamp,
       signature: respObj.data.signature
-    },
-    rawResponse: respObj.data
+    }
   }
 }

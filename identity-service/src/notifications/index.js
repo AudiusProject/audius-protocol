@@ -7,7 +7,8 @@ const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
 const {
   updateBlockchainIds,
-  calculateTrackListenMilestones,
+  // calculateTrackListenMilestones,
+  calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
@@ -21,6 +22,14 @@ const { indexTrendingTracks } = require('./trendingTrackProcessing')
 const sendNotifications = require('./sendNotifications/index.js')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 
+const NOTIFICATION_INTERVAL_SEC = 3 * 1000
+const NOTIFICATION_EMAILS_INTERVAL_SEC = 10 * 60 * 1000
+const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
+
+const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
+const NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = 'notifications:emails:last-success'
+const NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = 'notifications:announcements:last-success'
+
 // Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
 const defaultJobOptions = {
   removeOnComplete: true,
@@ -28,7 +37,9 @@ const defaultJobOptions = {
 }
 
 class NotificationProcessor {
-  constructor () {
+  constructor ({
+    errorHandler
+  }) {
     this.notifQueue = new Bull(
       `notification-queue-${Date.now()}`,
       {
@@ -56,6 +67,11 @@ class NotificationProcessor {
         },
         defaultJobOptions
       })
+    if (errorHandler) {
+      this.errorHandler = errorHandler
+    } else {
+      this.errorHandler = () => null
+    }
   }
 
   /**
@@ -81,8 +97,7 @@ class NotificationProcessor {
     // Notification processing job
     // Indexes network notifications
     this.notifQueue.process(async (job, done) => {
-      // Await blockchain IDs before indexing notifs
-      await this.idUpdateTask
+      let error = null
 
       let minBlock = job.data.minBlock
       if (!minBlock && minBlock !== 0) throw new Error('no min block')
@@ -104,6 +119,9 @@ class NotificationProcessor {
         // Update cached max block number
         await this.redis.set('maxBlockNumber', maxBlockNumber)
 
+        // Record success
+        await this.redis.set(NOTIFICATION_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+
         // Restart job with updated startBlock
         await this.notifQueue.add({
           type: notificationJobType,
@@ -112,7 +130,9 @@ class NotificationProcessor {
           jobId: `${notificationJobType}:${Date.now()}`
         })
       } catch (e) {
+        error = e
         logger.error(`Restarting due to error indexing notifications : ${e}`)
+        this.errorHandler(e)
         // Restart job with same startBlock
         await this.notifQueue.add({
           type: notificationJobType,
@@ -122,38 +142,52 @@ class NotificationProcessor {
         })
       }
       // Delay 3s
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_INTERVAL_SEC))
 
-      done()
+      done(error)
     })
 
     // Email notification queue
     this.emailQueue.process(async (job, done) => {
       logger.info('processEmailNotifications')
-      await processEmailNotifications(expressApp, audiusLibs)
-      await processDownloadAppEmail(expressApp, audiusLibs)
-
+      let error = null
+      try {
+        await processEmailNotifications(expressApp, audiusLibs)
+        await processDownloadAppEmail(expressApp, audiusLibs)
+        await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+      } catch (e) {
+        error = e
+        logger.error(`processEmailNotifications - Problem with processing a emails: ${e}`)
+        this.errorHandler(e)
+      }
       // Wait 10 minutes before re-running the job
-      await new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000))
+      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
       await this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: `unreadEmailJob:${Date.now()}` })
-      done()
+      done(error)
     })
 
     // Announcement push notifications queue
     this.announcementQueue.process(async (job, done) => {
-      await pushAnnouncementNotifications()
+      logger.info('pushAnnouncementNotifications')
+      let error = null
+      try {
+        await pushAnnouncementNotifications()
+        await this.redis.set(NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+      } catch (e) {
+        error = e
+        logger.error(`pushAnnouncementNotifications - Problem with processing announcements: ${e}`)
+        this.errorHandler(e)
+      }
       // Delay 30s
-      await new Promise(resolve => setTimeout(resolve, 30 * 1000))
+      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC))
       await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
-      done()
+      done(error)
     })
 
+    // Add initial jobs to the queue
     if (!fs.existsSync(emailCachePath)) {
       fs.mkdirSync(emailCachePath)
     }
-
-    // Every 10 minutes cron: '*/10 * * * *'
-    this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: Date.now() })
 
     let startBlock = await getHighestBlockNumber()
     logger.info(`Starting with ${startBlock}`)
@@ -164,6 +198,7 @@ class NotificationProcessor {
       jobId: `${notificationJobType}:${Date.now()}`
     })
 
+    await this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: Date.now() })
     await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
   }
 
@@ -181,8 +216,13 @@ class NotificationProcessor {
 
     logger.info({ minBlock, oldMaxBlockNumber, startDate }, `${new Date()} - notifications main indexAll job`)
 
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+
     // Query owners for tracks relevant to track listen counts
-    let listenCounts = await calculateTrackListenMilestones()
+    // Below can be toggled once milestones are calculated in discovery
+    // let listenCounts = await calculateTrackListenMilestones()
+    let listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
+
     let trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
@@ -192,13 +232,11 @@ class NotificationProcessor {
     trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
     params.append('min_block_number', minBlock)
 
-    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-
     let reqObj = {
       method: 'get',
       url: `${discoveryProvider.discoveryProviderEndpoint}/notifications`,
       params,
-      timeout: 10000
+      timeout: 120000 // two minutes
     }
 
     let body = (await axios(reqObj)).data
@@ -249,3 +287,6 @@ class NotificationProcessor {
 }
 
 module.exports = NotificationProcessor
+module.exports.NOTIFICATION_JOB_LAST_SUCCESS_KEY = NOTIFICATION_JOB_LAST_SUCCESS_KEY
+module.exports.NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY
+module.exports.NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY

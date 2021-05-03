@@ -7,7 +7,8 @@ from flask import request
 from src import exceptions
 from src.queries import response_name_constants
 from src.models import User, Track, Repost, RepostType, Follow, \
-    Playlist, Save, SaveType, Remix, AggregatePlays
+    Playlist, Save, SaveType, Remix, AggregatePlays,  \
+    AggregateUser, AggregateTrack, AggregatePlaylist
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_balances import get_balances, enqueue_balance_refresh
@@ -102,132 +103,44 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     if current_user_id:
         enqueue_balance_refresh(redis, [current_user_id])
 
-    # build dict of user id --> track count
-    track_counts = (
+    aggregate_user = (
         session.query(
-            Track.owner_id,
-            func.count(Track.owner_id)
+            AggregateUser.user_id,
+            AggregateUser.track_count,
+            AggregateUser.playlist_count,
+            AggregateUser.album_count,
+            AggregateUser.follower_count,
+            AggregateUser.following_count,
+            AggregateUser.repost_count,
+            AggregateUser.track_save_count
         )
         .filter(
-            Track.is_current == True,
-            Track.is_delete == False,
-            Track.is_unlisted == False,
-            Track.stem_of == None,
-            Track.owner_id.in_(user_ids)
+            AggregateUser.user_id.in_(user_ids)
         )
-        .group_by(Track.owner_id)
         .all()
     )
-    track_count_dict = {user_id: track_count for (
-        user_id, track_count) in track_counts}
 
-    # build dict of user id --> playlist count
-    playlist_counts = (
-        session.query(
-            Playlist.playlist_owner_id,
-            func.count(Playlist.playlist_owner_id)
-        )
-        .filter(
-            Playlist.is_current == True,
-            Playlist.is_album == False,
-            Playlist.is_private == False,
-            Playlist.is_delete == False,
-            Playlist.playlist_owner_id.in_(user_ids)
-        )
-        .group_by(Playlist.playlist_owner_id)
-        .all()
-    )
-    playlist_count_dict = {user_id: playlist_count for (
-        user_id, playlist_count) in playlist_counts}
-
-    # build dict of user id --> album count
-    album_counts = (
-        session.query(
-            Playlist.playlist_owner_id,
-            func.count(Playlist.playlist_owner_id)
-        )
-        .filter(
-            Playlist.is_current == True,
-            Playlist.is_album == True,
-            Playlist.is_private == False,
-            Playlist.is_delete == False,
-            Playlist.playlist_owner_id.in_(user_ids)
-        )
-        .group_by(Playlist.playlist_owner_id)
-        .all()
-    )
-    album_count_dict = {user_id: album_count for (
-        user_id, album_count) in album_counts}
-
-    # build dict of user id --> follower count
-    follower_counts = (
-        session.query(
-            Follow.followee_user_id,
-            func.count(Follow.followee_user_id)
-        )
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            Follow.followee_user_id.in_(user_ids)
-        )
-        .group_by(Follow.followee_user_id)
-        .all()
-    )
-    follower_count_dict = {user_id: follower_count for (
-        user_id, follower_count) in follower_counts}
-
-    # build dict of user id --> followee count
-    followee_counts = (
-        session.query(
-            Follow.follower_user_id,
-            func.count(Follow.follower_user_id)
-        )
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            Follow.follower_user_id.in_(user_ids)
-        )
-        .group_by(Follow.follower_user_id)
-        .all()
-    )
-    followee_count_dict = {user_id: followee_count for (
-        user_id, followee_count) in followee_counts}
-
-    # build dict of user id --> repost count
-    repost_counts = (
-        session.query(
-            Repost.user_id,
-            func.count(Repost.user_id)
-        )
-        .filter(
-            Repost.is_current == True,
-            Repost.is_delete == False,
-            Repost.user_id.in_(user_ids)
-        )
-        .group_by(Repost.user_id)
-        .all()
-    )
-    repost_count_dict = {user_id: repost_count for (
-        user_id, repost_count) in repost_counts}
-    track_save_count_dict = {}
-    if with_track_save_count:
-        # build dict of user id --> track save count
-        track_save_counts = (
-            session.query(
-                Save.user_id,
-                func.count(Save.user_id)
-            )
-            .filter(
-                Save.is_current == True,
-                Save.is_delete == False,
-                Save.save_type == SaveType.track,
-                Save.user_id.in_(user_ids)
-            )
-            .group_by(Save.user_id)
-            .all()
-        )
-        track_save_count_dict = {user_id: user_track_save_count for (
-            user_id, user_track_save_count) in track_save_counts}
+    # build dict of user id --> track/playlist/album/follower/followee/repost/track save counts
+    count_dict = {
+        user_id: {
+            response_name_constants.track_count: track_count,
+            response_name_constants.playlist_count: playlist_count,
+            response_name_constants.album_count: album_count,
+            response_name_constants.follower_count: follower_count,
+            response_name_constants.followee_count: following_count,
+            response_name_constants.repost_count: repost_count,
+            response_name_constants.track_save_count: track_save_count
+        } for (
+            user_id,
+            track_count,
+            playlist_count,
+            album_count,
+            follower_count,
+            following_count,
+            repost_count,
+            track_save_count
+        ) in aggregate_user
+    }
 
     # build dict of user id --> track blocknumber
     track_blocknumbers = (
@@ -271,8 +184,8 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
                 Follow.is_delete == False,
                 Follow.follower_user_id == current_user_id
             )
+            .subquery()
         )
-        current_user_followees = {r[0]: True for r in current_user_followees}
 
         current_user_followee_follow_counts = (
             session.query(
@@ -297,23 +210,23 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     for user in users:
         user_id = user["user_id"]
         user_balance = balance_dict.get(user_id, {})
-        user[response_name_constants.track_count] = track_count_dict.get(
-            user_id, 0)
-        user[response_name_constants.playlist_count] = playlist_count_dict.get(
-            user_id, 0)
-        user[response_name_constants.album_count] = album_count_dict.get(
-            user_id, 0)
-        user[response_name_constants.follower_count] = follower_count_dict.get(
-            user_id, 0)
-        user[response_name_constants.followee_count] = followee_count_dict.get(
-            user_id, 0)
-        user[response_name_constants.repost_count] = repost_count_dict.get(
-            user_id, 0)
+        user[response_name_constants.track_count] = count_dict.get(
+            user_id, {}).get(response_name_constants.track_count, 0)
+        user[response_name_constants.playlist_count] = count_dict.get(
+            user_id, {}).get(response_name_constants.playlist_count, 0)
+        user[response_name_constants.album_count] = count_dict.get(
+            user_id, {}).get(response_name_constants.album_count, 0)
+        user[response_name_constants.follower_count] = count_dict.get(
+            user_id, {}).get(response_name_constants.follower_count, 0)
+        user[response_name_constants.followee_count] = count_dict.get(
+            user_id, {}).get(response_name_constants.followee_count, 0)
+        user[response_name_constants.repost_count] = count_dict.get(
+            user_id, {}).get(response_name_constants.repost_count, 0)
         user[response_name_constants.track_blocknumber] = track_blocknumber_dict.get(
             user_id, -1)
         if with_track_save_count:
-            user[response_name_constants.track_save_count] = track_save_count_dict.get(
-                user_id, 0)
+            user[response_name_constants.track_save_count] = count_dict.get(
+                user_id, {}).get(response_name_constants.track_save_count, 0)
         # current user specific
         user[response_name_constants.does_current_user_follow] = current_user_followed_user_ids.get(
             user_id, False)
@@ -322,30 +235,6 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
         user[response_name_constants.balance] = user_balance.get("owner_wallet_balance", 0)
         user[response_name_constants.associated_wallets_balance] = user_balance.get("associated_wallets_balance", 0)
 
-    return users
-
-
-def populate_user_follower_counts(session, user_ids, users):
-    """Gets user follower counts for an array of user_ids and corresponding users"""
-    follower_counts = (
-        session.query(
-            Follow.followee_user_id,
-            func.count(Follow.followee_user_id)
-        )
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            Follow.followee_user_id.in_(user_ids)
-        )
-        .group_by(Follow.followee_user_id)
-        .all()
-    )
-    follower_count_dict = {user_id: follower_count for (
-        user_id, follower_count) in follower_counts}
-    for user in users:
-        user_id = user["user_id"]
-        user[response_name_constants.follower_count] = follower_count_dict.get(
-            user_id, 0)
     return users
 
 
@@ -371,40 +260,28 @@ def get_track_play_count_dict(session, track_ids):
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
 def populate_track_metadata(session, track_ids, tracks, current_user_id):
     # build dict of track id --> repost count
-    repost_counts = (
+    counts = (
         session.query(
-            Repost.repost_item_id,
-            func.count(Repost.repost_item_id)
+            AggregateTrack.track_id,
+            AggregateTrack.repost_count,
+            AggregateTrack.save_count
         )
         .filter(
-            Repost.is_current == True,
-            Repost.is_delete == False,
-            Repost.repost_item_id.in_(track_ids),
-            Repost.repost_type == RepostType.track
+            AggregateTrack.track_id.in_(track_ids),
         )
-        .group_by(Repost.repost_item_id)
         .all()
     )
-    repost_count_dict = {track_id: repost_count for (
-        track_id, repost_count) in repost_counts}
 
-    # build dict of track id --> save count
-    save_counts = (
-        session.query(
-            Save.save_item_id,
-            func.count(Save.save_item_id)
-        )
-        .filter(
-            Save.is_current == True,
-            Save.is_delete == False,
-            Save.save_type == SaveType.track,
-            Save.save_item_id.in_(track_ids)
-        )
-        .group_by(Save.save_item_id)
-        .all()
-    )
-    save_count_dict = {track_id: save_count for (
-        track_id, save_count) in save_counts}
+    count_dict = {
+        track_id: {
+            response_name_constants.repost_count: repost_count,
+            response_name_constants.save_count: save_count
+        } for (
+            track_id,
+            repost_count,
+            save_count
+        ) in counts
+    }
 
     play_count_dict = get_track_play_count_dict(session, track_ids)
 
@@ -497,10 +374,10 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
 
     for track in tracks:
         track_id = track["track_id"]
-        track[response_name_constants.repost_count] = repost_count_dict.get(
-            track_id, 0)
-        track[response_name_constants.save_count] = save_count_dict.get(
-            track_id, 0)
+        track[response_name_constants.repost_count] = count_dict.get(
+            track_id, {}).get(response_name_constants.repost_count, 0)
+        track[response_name_constants.save_count] = count_dict.get(
+            track_id, {}).get(response_name_constants.save_count, 0)
         track[response_name_constants.play_count] = play_count_dict.get(
             track_id, 0)
         # current user specific
@@ -528,31 +405,6 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         else:
             track[response_name_constants.remix_of] = None
 
-    return tracks
-
-
-def populate_track_repost_counts(session, track_ids, tracks):
-    """Gets track repost counts for an array of track_ids and corresponding tracks"""
-    repost_counts = (
-        session.query(
-            Repost.repost_item_id,
-            func.count(Repost.repost_item_id)
-        )
-        .filter(
-            Repost.is_current == True,
-            Repost.is_delete == False,
-            Repost.repost_item_id.in_(track_ids),
-            Repost.repost_type == RepostType.track
-        )
-        .group_by(Repost.repost_item_id)
-        .all()
-    )
-    repost_count_dict = {track_id: repost_count for (
-        track_id, repost_count) in repost_counts}
-    for track in tracks:
-        track_id = track["track_id"]
-        track[response_name_constants.repost_count] = repost_count_dict.get(
-            track_id, 0)
     return tracks
 
 
@@ -684,13 +536,29 @@ def get_track_remix_metadata(session, tracks, current_user_id):
 
 
 def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, save_types, current_user_id):
-    # build dict of playlist id --> repost count
-    playlist_repost_counts = dict(get_repost_counts(
-        session, False, False, playlist_ids, repost_types))
+    # build dict of playlist id --> repost & save count
+    counts = (
+        session.query(
+            AggregatePlaylist.playlist_id,
+            AggregatePlaylist.repost_count,
+            AggregatePlaylist.save_count
+        )
+        .filter(
+            AggregatePlaylist.playlist_id.in_(playlist_ids),
+        )
+        .all()
+    )
 
-    # build dict of playlist id --> save count
-    playlist_save_counts = dict(get_save_counts(
-        session, False, False, playlist_ids, save_types))
+    count_dict = {
+        playlist_id: {
+            response_name_constants.repost_count: repost_count,
+            response_name_constants.save_count: save_count
+        } for (
+            playlist_id,
+            repost_count,
+            save_count
+        ) in counts
+    }
 
     user_reposted_playlist_dict = {}
     user_saved_playlist_dict = {}
@@ -787,10 +655,10 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
-        playlist[response_name_constants.repost_count] = playlist_repost_counts.get(
-            playlist_id, 0)
-        playlist[response_name_constants.save_count] = playlist_save_counts.get(
-            playlist_id, 0)
+        playlist[response_name_constants.repost_count] = count_dict.get(
+            playlist_id, {}).get(response_name_constants.repost_count, 0)
+        playlist[response_name_constants.save_count] = count_dict.get(
+            playlist_id, {}).get(response_name_constants.save_count, 0)
 
         total_play_count = 0
         for track in playlist['playlist_contents']['track_ids']:
@@ -808,21 +676,6 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             playlist_id, False)
 
     return playlists
-
-
-def populate_playlist_repost_counts(session, playlist_ids, playlists, repost_types):
-    """Gets playlist repost counts for an array of playlist_ids and corresponding playlists"""
-    # build dict of playlist id --> repost count
-    playlist_repost_counts = dict(get_repost_counts(
-        session, False, False, playlist_ids, repost_types))
-
-    for playlist in playlists:
-        playlist_id = playlist["playlist_id"]
-        playlist[response_name_constants.repost_count] = playlist_repost_counts.get(
-            playlist_id, 0)
-
-    return playlists
-
 
 def get_repost_counts_query(
         session,
@@ -852,7 +705,7 @@ def get_repost_counts_query(
         Repost.is_delete == False
     )
 
-    if filter_ids:
+    if filter_ids is not None:
         repost_counts_query = repost_counts_query.filter(
             query_col.in_(filter_ids)
         )
@@ -902,7 +755,7 @@ def get_repost_counts(
     return repost_counts_query.all()
 
 
-def get_karma(session, ids, time=None, is_playlist=False):
+def get_karma(session, ids, time=None, is_playlist=False, xf=False):
     """Gets the total karma for provided ids (track or playlist)"""
 
     repost_type = (RepostType.playlist if is_playlist else RepostType.track)
@@ -915,6 +768,7 @@ def get_karma(session, ids, time=None, is_playlist=False):
         )
         .filter(
             Repost.repost_item_id.in_(ids),
+            Repost.is_delete == False,
             Repost.is_current == True,
             Repost.repost_type == repost_type
         )
@@ -928,19 +782,37 @@ def get_karma(session, ids, time=None, is_playlist=False):
         .filter(
             Save.save_item_id.in_(ids),
             Save.is_current == True,
+            Save.is_delete == False,
             Save.save_type == save_type
         )
     )
     if time is not None:
         interval = "NOW() - interval '1 {}'".format(time)
         savers = savers.filter(
-            Repost.created_at >= text(interval)
+            Save.created_at >= text(interval)
         )
         reposters = reposters.filter(
             Repost.created_at >= text(interval)
         )
 
     saves_and_reposts = reposters.union_all(savers).subquery()
+    if xf:
+        saves_and_reposts = (
+            session.query(
+                saves_and_reposts.c.user_id.label('user_id'),
+                saves_and_reposts.c.item_id.label('item_id')
+            )
+            .select_from(saves_and_reposts)
+            .join(
+                User,
+                saves_and_reposts.c.user_id == User.user_id
+            )
+            .filter(
+                User.cover_photo != None,
+                User.profile_picture != None,
+                User.bio != None,
+            )
+        ).subquery()
 
     query = (
         session.query(
@@ -953,7 +825,8 @@ def get_karma(session, ids, time=None, is_playlist=False):
             saves_and_reposts.c.user_id == Follow.followee_user_id
         )
         .filter(
-            Follow.is_current == True
+            Follow.is_current == True,
+            Follow.is_delete == False
         )
         .group_by(saves_and_reposts.c.item_id)
     )
@@ -989,7 +862,7 @@ def get_save_counts_query(
         Save.is_delete == False
     )
 
-    if filter_ids:
+    if filter_ids is not None:
         save_counts_query = save_counts_query.filter(
             Save.save_item_id.in_(filter_ids)
         )
@@ -1037,27 +910,6 @@ def get_save_counts(
             Save.created_at >= text(interval)
         )
     return save_counts_query.all()
-
-
-def get_followee_count_dict(session, user_ids):
-    # build dict of user id --> followee count
-    followee_counts = (
-        session.query(
-            Follow.follower_user_id,
-            func.count(Follow.follower_user_id)
-        )
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            Follow.follower_user_id.in_(user_ids)
-        )
-        .group_by(Follow.follower_user_id)
-        .all()
-    )
-    followee_count_dict = {user_id: followee_count for (
-        user_id, followee_count) in followee_counts}
-    return followee_count_dict
-
 
 def get_follower_count_dict(session, user_ids, max_block_number=None):
     follower_counts = (

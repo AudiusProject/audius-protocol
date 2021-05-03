@@ -1,6 +1,5 @@
 const Utils = require('../../utils')
 const GovernedContractClient = require('../contracts/GovernedContractClient')
-const DEFAULT_GAS_AMOUNT = 200000
 
 class ServiceTypeManagerClient extends GovernedContractClient {
   async setServiceVersion (serviceType, serviceVersion, privateKey = null) {
@@ -11,7 +10,6 @@ class ServiceTypeManagerClient extends GovernedContractClient {
     )
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT,
       (await this.governanceClient.getAddress()),
       privateKey
     )
@@ -27,7 +25,6 @@ class ServiceTypeManagerClient extends GovernedContractClient {
 
     return this.web3Manager.sendTransaction(
       method,
-      DEFAULT_GAS_AMOUNT,
       (await this.governanceClient.getAddress()),
       privateKey
     )

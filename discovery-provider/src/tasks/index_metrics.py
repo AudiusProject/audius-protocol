@@ -1,16 +1,17 @@
 import json
+import time
 import logging
 import concurrent.futures
 from datetime import datetime, timedelta
 import requests
-from src import eth_abi_values
+from src.app import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
 from src.utils.redis_metrics import metrics_prefix, metrics_applications, \
     metrics_routes, metrics_visited_nodes, merge_route_metrics, merge_app_metrics, \
     parse_metrics_key, get_rounded_date_time, datetime_format_secondary, METRICS_INTERVAL, \
-    personal_route_metrics, personal_app_metrics
+    personal_route_metrics, personal_app_metrics, get_summed_unique_metrics, persist_summed_unique_counts
 from src.queries.update_historical_metrics import update_historical_daily_route_metrics, \
     update_historical_monthly_route_metrics, update_historical_daily_app_metrics, \
         update_historical_monthly_app_metrics
@@ -127,6 +128,7 @@ def sweep_metrics(db, redis):
 
 def refresh_metrics_matviews(db):
     with db.scoped_session() as session:
+        start_time = time.time()
         logger.info('index_metrics.py | refreshing metrics matviews')
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_day_bucket')
         session.execute('REFRESH MATERIALIZED VIEW route_metrics_month_bucket')
@@ -136,7 +138,7 @@ def refresh_metrics_matviews(db):
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_week')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_trailing_month')
         session.execute('REFRESH MATERIALIZED VIEW app_name_metrics_all_time')
-        logger.info('index_metrics.py | refreshed metrics matviews')
+        logger.info(f"index_metrics.py | refreshed metrics matviews in: {time.time()-start_time} sec")
 
 # Perform eth web3 call to fetch endpoint info
 def fetch_discovery_node_info(sp_id, sp_factory_instance):
@@ -224,9 +226,15 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     visited_node_timestamps_str = redis_get_or_restore(redis, metrics_visited_nodes)
     visited_node_timestamps = json.loads(visited_node_timestamps_str) if visited_node_timestamps_str else {}
 
-    one_iteration_ago = datetime.utcnow() - timedelta(minutes=METRICS_INTERVAL)
+    now = datetime.utcnow()
+    one_iteration_ago = now - timedelta(minutes=METRICS_INTERVAL)
     one_iteration_ago_str = one_iteration_ago.strftime(datetime_format_secondary)
-    end_time = datetime.utcnow().strftime(datetime_format_secondary)
+    end_time = now.strftime(datetime_format_secondary)
+
+    # personal unique metrics for the day and the month
+    summed_unique_metrics = get_summed_unique_metrics(now)
+    summed_unique_daily_count = summed_unique_metrics['daily']
+    summed_unique_monthly_count = summed_unique_metrics['monthly']
 
     # Merge & persist metrics for our personal node
     personal_route_metrics_str = redis_get_or_restore(redis, personal_route_metrics)
@@ -263,11 +271,21 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
         logger.info(f"did attempt to receive route and app metrics from {node} at {start_time_obj} ({start_time})")
 
+        # add other nodes' summed unique daily and monthly counts to this node's
+        if new_route_metrics:
+            logger.info(f"summed unique metrics from {node}: {new_route_metrics['summed']}")
+            summed_unique_daily_count += new_route_metrics['summed']['daily']
+            summed_unique_monthly_count += new_route_metrics['summed']['monthly']
+            new_route_metrics = new_route_metrics['deduped']
+
         merge_route_metrics(new_route_metrics or {}, end_time, db)
         merge_app_metrics(new_app_metrics or {}, end_time, db)
 
         if new_route_metrics is not None and new_app_metrics is not None:
             visited_node_timestamps[node] = end_time
+
+    # persist updated summed unique counts
+    persist_summed_unique_counts(db, end_time, summed_unique_daily_count, summed_unique_monthly_count)
 
     logger.info(f"visited node timestamps: {visited_node_timestamps}")
     if visited_node_timestamps:
@@ -293,6 +311,7 @@ def update_route_metrics_count(my_metrics, other_metrics):
         if timestamp in my_metrics:
             my_metrics[timestamp] = {
                 'unique_count': max(values['unique_count'], my_metrics[timestamp]['unique_count']),
+                'summed_unique_count': max(values['summed_unique_count'], my_metrics[timestamp]['summed_unique_count']),
                 'total_count': max(values['total_count'], my_metrics[timestamp]['total_count'])
             }
         else:
