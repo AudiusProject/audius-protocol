@@ -1,8 +1,11 @@
 import logging # pylint: disable=C0302
 from datetime import datetime
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, Integer
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.functions import GenericFunction
 from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUser
 from src.tasks.generate_trending import time_delta_map
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_repost_counts, get_karma, get_save_counts, \
     populate_playlist_metadata, get_users_ids, get_users_by_id, populate_track_metadata, \
@@ -10,10 +13,18 @@ from src.queries.query_helpers import get_repost_counts, get_karma, get_save_cou
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_playlists import get_unpopulated_playlists
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
-from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSION
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.api.v1.helpers import extend_playlist, extend_track, format_offset, format_limit, \
     to_dict, decode_string_id
+
+class jsonb_array_length(GenericFunction): # pylint: disable=too-many-ancestors
+    name = 'jsonb_array_length'
+    type = Integer
+
+@compiles(jsonb_array_length, 'postgresql')
+def compile_jsonb_array_length(element, compiler, **kw):
+    return "%s(%s)" % (element.name, compiler.process(element.clauses))
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +55,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
     zq = score_params['zq']
     xf = score_params['xf']
     pt = score_params['pt']
+    mt = score_params['mt']
 
     delta = time_delta_map.get(time_range) or time_delta_map.get('week')
 
@@ -68,6 +80,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
             Playlist.is_current == True,
             Playlist.is_delete == False,
             Playlist.is_private == False,
+            jsonb_array_length(Playlist.playlist_contents['track_ids']) >= mt,
             AggregateUser.following_count < zq
         )
         .group_by(Save.save_item_id, Playlist.created_at, Playlist.playlist_owner_id)
@@ -174,8 +187,8 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
         return (playlists, playlist_ids)
     return wrapped
 
-def make_trending_cache_key(time_range, version=DEFAULT_TRENDING_VERSION):
-    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSION else ''
+def make_trending_cache_key(time_range, version=DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS]):
+    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS] else ''
     return f"generated-trending-playlists{version_name}:{time_range}"
 
 def get_trending_playlists(args, strategy):

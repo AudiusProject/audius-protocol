@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import redis
 from sqlalchemy import func
 
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 from src.models import Track, RepostType, Follow, SaveType, User, \
@@ -17,7 +18,7 @@ from src.api.v1.helpers import extend_track, format_offset, format_limit, \
 from src.queries.get_trending_tracks import make_trending_cache_key, TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.utils.redis_cache import get_pickled_key
 from src.utils.config import shared_config
-from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSION
+from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
 
 redis_url = shared_config["redis"]["url"]
 redis = redis.Redis.from_url(url=redis_url)
@@ -171,8 +172,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
 
     return list(tracks_map.values())
 
-def make_underground_trending_cache_key(version=DEFAULT_TRENDING_VERSION):
-    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSION else ''
+def make_underground_trending_cache_key(version=DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS]):
+    version_name = f":{version.name}" if version != DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS] else ''
     return f"{UNDERGROUND_TRENDING_CACHE_KEY}{version_name}"
 
 def make_get_unpopulated_tracks(session, redis_instance, strategy):
