@@ -346,7 +346,8 @@ const discoveryNodeWebServerUp = async () => {
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP, options],
-    [Service.ETH_CONTRACTS, SetupCommand.UP, options]
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
   ]
 
   const sequential = [
