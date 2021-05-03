@@ -306,8 +306,62 @@ class SnapbackSM {
 
     let peerSet = new Set(peerList) // convert to Set to get uniques
 
-    // TODO decide if return as set or list
+    // TODO decide if return as set or list (for now just return as is, consider changing when doing monitoring work)
     return peerSet
+  }
+
+  /**
+   * Determines if a peer node is sufficiently healthy and able to process syncRequests, or if it needs to be cycled out
+   *
+   * Peer health criteria:
+   * - query verbose health check with timeout
+   *    - ensure 200 response
+   *    - ensure min free storage
+   *    - ensure min free memory
+   *    - ensure min CPUs
+   *    - ensure min version, spID etc? seems overkill
+   *
+   * - LATER gateway health - ping randomly selected shared CID
+   *    - depends on nodes sync status, cannot request CID node hasn't synced yet
+   *
+   * - LATER sync health
+   *    - sync step records success/failure in redis
+   *
+   * - LATER upload health - TBD
+   *
+   * @param {string} endpoint
+   * @returns {Boolean}
+   */
+  async determinePeerHealth (endpoint) {
+    let healthy = true
+
+    try {
+      // Axios request will throw on timeout or non-200 response
+      await axios({
+        method: 'get',
+        baseURL: endpoint,
+        url: '/health_check/verbose',
+        timeout: 2000 // TODO config var
+      })
+
+      // On 200 response, ensure certain conditions in response
+
+    } catch (e) {
+      healthy = false
+    }
+
+    return true
+  }
+
+  /**
+   * Select new secondary via libs
+   * 
+   * await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
+   *
+   * log statement to begin tracking
+   */
+  async updateReplicaSet (userId, wallet, primary, secondary1, secondary2, unhealthyReplica) {
+    return true
   }
 
   /**
@@ -322,8 +376,8 @@ class SnapbackSM {
     const nodeUsers = await this.getNodeUsers()
     const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary == this.endpoint))
 
-    this.log(`NODEUSERS ${JSON.stringify(nodeUsers)}`)
-    this.log(`NODEPRIMARYUSERS ${JSON.stringify(nodePrimaryUsers)}`)
+    // this.log(`NODEUSERS ${JSON.stringify(nodeUsers)}`)
+    // this.log(`NODEPRIMARYUSERS ${JSON.stringify(nodePrimaryUsers)}`)
 
     // Build content node peer set
     const peerSet = await this.computeContentNodePeerSet(nodeUsers)
@@ -373,6 +427,54 @@ class SnapbackSM {
       }
     )
 
+    /**
+     * Determine health for every peer, if unhealthy call no-op function
+     * Filter out all users on unhealthy nodes before progressing to sync step
+     * NOTE - intentionally performed sequentially, but prob better in parallel chunks
+     */
+    const unhealthyPeers = new Set()
+    for await (const peer of peerSet) {
+      const peerIsHealthy = await this.determinePeerHealth(peer)
+      if (!peerIsHealthy) {
+        unhealthyPeers.add(peer)
+      }
+    }
+
+    /**
+     * Remove all unhealthy peers from nodeVectorClockQueryList to ensure no syncRequests are sent to it
+     * Record user's on unhealthy peers to be used in reconfig step below
+     * For each user, need userId, wallet, current replica set, unhealthy replica
+     */
+
+    // Convert nodeUsers list to map keyed by user wallet
+    const nodeUsersByWallet = Object.assign({}, ...nodeUsers.map(nodeUser => {
+      return { [nodeUser.wallet]: nodeUser }
+    }))
+
+    const healthyNodeVectorClockQueryList = {}
+    const usersRequiringReconfig = []
+    for (const [peer, secondaryUserWallets] of Object.entries(nodeVectorClockQueryList)) {
+      if (unhealthyPeers.has(peer)) {
+        for (const wallet of secondaryUserWallets) {
+          const userInfo = nodeUsersByWallet[wallet]
+          // TODO error handle - userInfo is null
+
+          usersRequiringReconfig.push({
+            ...userInfo,
+            unhealthyReplica: peer
+          })
+        }
+      } else {
+        healthyNodeVectorClockQueryList[peer] = secondaryUserWallets
+      }
+    }
+
+    nodeVectorClockQueryList = healthyNodeVectorClockQueryList
+
+    /**
+     * Retrieve clock statuses for every secondary user from node
+     * TODO move to helper function
+     */
     this.log(`Processing ${usersToProcess.length} users`)
     // Cached primary clock values for currently processing user set
     let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
@@ -412,9 +514,10 @@ class SnapbackSM {
     )
     this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
 
-    // Issue syncs if necessary
-    // For each user in the initially returned nodePrimaryUsers,
-    //  compare local primary clock value to value from secondary retrieved in bulk above
+    /**
+     * Issue syncs for all users with secondary node clock value behind primary node clock value
+     * TODO move to helper function
+     */
     let numSyncsIssued = 0
     await Promise.all(
       usersToProcess.map(
@@ -464,6 +567,13 @@ class SnapbackSM {
         }
       )
     )
+
+    /**
+     * Issue reconfig ops for user replica sets on unhealthy peers
+     */
+    for await (const userInfo of usersRequiringReconfig) {
+      await this.updateReplicaSet(userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica)
+    }
 
     // Increment and adjust current slice by ModuloBase
     const previousModuloSlice = this.currentModuloSlice

@@ -575,6 +575,7 @@ def get_content_node_users(replica_type):
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+
 @bp.route("/ursm_content_nodes", methods=("GET",))
 def get_ursm_content_nodes():
     try:
