@@ -9,7 +9,7 @@ const CONTENT_NODE_TYPE = 'content-node'
 
 // PROD
 const ETH_PROVIDER_ENDPOINT = 'https://eth.audius.co'
-const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.audius.co'
+const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider2.audius.co'
 const USER_METADATA_ENDPOINT = 'https://usermetadata.audius.co/'
 const IDENTITY_SERVICE_ENDPOINT = 'https://identityservice.audius.co'
 const DATA_CONTRACTS_PROVIDER_ENDPOINT = 'https://poa-gateway.audius.co'
@@ -243,8 +243,8 @@ const run = async () => {
   let userIdsFail = []
 
   // const numUsersToProcess = numOfUsers
-  const numUsersToProcess = 140000
-  for (offset = 120000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  const numUsersToProcess = 170000
+  for (offset = 165700; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     const batchStart = Date.now()
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
