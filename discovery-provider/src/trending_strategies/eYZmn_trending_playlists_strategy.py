@@ -10,4 +10,4 @@ class TrendingPlaylistsStrategyeYZmn(BaseTrendingStrategy):
         return z(time, track)
 
     def get_score_params(self):
-        return {'zq': 1000, 'xf': False, 'pt': 0}
+        return {'zq': 1000, 'xf': False, 'pt': 0, 'mt': 0}
