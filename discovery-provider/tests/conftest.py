@@ -46,6 +46,7 @@ def app():
     alembic_dir = os.getcwd()
     alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
     alembic_config.set_main_option("sqlalchemy.url", str(DB_URL))
+    alembic_config.set_main_option("mode", "test")
     with helpers.cd(alembic_dir):
         alembic.command.upgrade(alembic_config, "head")
 
