@@ -24,7 +24,8 @@ def update_views(self, db):
         end = time.time()
 
         logger.info(
-            f"index_materialized_views.py | Finished updating materialized views in: {end - start_time} sec. Vacuuming: {end - vacuum_start} sec."
+            f"index_materialized_views.py | Finished updating materialized views in: {end - start_time} sec. \
+              Vacuuming: {end - vacuum_start} sec."
         )
 
 
