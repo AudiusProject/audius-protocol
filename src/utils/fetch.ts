@@ -31,7 +31,7 @@ export const withTimeout = async (
 export const fetchUntilSuccess = async (endpoints: string[]): Promise<any> => {
   // Pick a random endpoint and make a call to that endpoint
   const endpoint = endpoints[Math.floor(Math.random() * endpoints.length)]
-  console.log('Attempting endpoint: ', endpoint)
+  console.info('Attempting endpoint: ', endpoint)
   try {
     return await fetchWithTimeout(endpoint)
   } catch (e) {
