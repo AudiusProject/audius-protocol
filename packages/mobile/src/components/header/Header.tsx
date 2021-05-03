@@ -20,8 +20,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'AvenirNextLTPro-Heavy',
     textShadowColor: 'rgba(126, 27, 204, 0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4
   }
 })
 

@@ -55,10 +55,17 @@ const reducer = (state: SearchState = initialState, action: SearchActions) => {
         isOpen: false
       }
     case UPDATE_QUERY: {
-      return {
+      const updatedState = {
         ...state,
         query: action.query
       }
+      if (action.query === '') {
+        updatedState.results = {
+          ...initialState.results
+        }
+        updatedState.resultQuery = ''
+      }
+      return updatedState
     }
     case SUBMIT_QUERY: {
       return {
