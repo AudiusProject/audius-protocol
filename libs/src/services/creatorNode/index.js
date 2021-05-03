@@ -5,6 +5,7 @@ const uuid = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
+const POLL_STATUS_INTERVAL = 3000 // 3s
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -371,7 +372,7 @@ class CreatorNode {
       if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/track_content`, uuid)
 
       // Check the transcode status every 5s
-      await wait(5000)
+      await wait(POLL_STATUS_INTERVAL)
     }
 
     await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/track_content`, uuid)
