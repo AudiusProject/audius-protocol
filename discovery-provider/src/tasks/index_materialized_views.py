@@ -14,8 +14,17 @@ def update_views(self, db):
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY album_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
+
+        # Manually vacuum the search views
+        vacuum_start = time.time()
+        session.execute("VACUUM ANALYZE track_lexeme_dict")
+        session.execute("VACUUM ANALYZE user_lexeme_dict")
+        session.execute("VACUUM ANALYZE playlist_lexeme_dict")
+        session.execute("VACUUM ANALYZE album_lexeme_dict")
+        end = time.time()
+
         logger.info(
-            f"index_materialized_views.py | Finished updating materialized views in: {time.time()-start_time} sec"
+            f"index_materialized_views.py | Finished updating materialized views in: {end - start_time} sec. Vacuuming: {end - vacuum_start} sec."
         )
 
 
