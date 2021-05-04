@@ -371,7 +371,7 @@ class CreatorNode {
       if (status && status === 'DONE') return resp
       if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/track_content_async`, uuid)
 
-      // Check the transcode status every 5s
+      // Check the transcode status every 3s
       await wait(POLL_STATUS_INTERVAL)
     }
 
