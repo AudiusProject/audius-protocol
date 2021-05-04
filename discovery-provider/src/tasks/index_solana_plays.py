@@ -227,7 +227,7 @@ is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, T
 '''
 def process_solana_plays(solana_client):
     try:
-        base58.base58decode_check(TRACK_LISTEN_PROGRAM)
+        base58.b58decode_check(TRACK_LISTEN_PROGRAM)
     except ValueError:
         logger.info("index_solana_plays.py | Invalid program configured, exiting")
         return
