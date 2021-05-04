@@ -5,7 +5,6 @@ const cors = require('cors')
 const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
-const { userNodeMiddleware } = require('./userNodeMiddleware')
 const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
 const {
   userReqLimiter,
@@ -27,7 +26,6 @@ const app = express()
 //  - loggingMiddleware must be first to ensure proper error handling
 app.use(loggingMiddleware)
 app.use(bodyParser.json({ limit: '1mb' }))
-app.use(userNodeMiddleware)
 app.use(readOnlyMiddleware)
 app.use(cors())
 

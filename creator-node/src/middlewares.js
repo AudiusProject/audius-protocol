@@ -59,10 +59,6 @@ async function syncLockMiddleware (req, res, next) {
 async function ensurePrimaryMiddleware (req, res, next) {
   const serviceRegistry = req.app.get('serviceRegistry')
 
-  if (config.get('isUserMetadataNode')) {
-    return next()
-  }
-
   const start = Date.now()
 
   if (!req.session || !req.session.wallet) {
@@ -89,6 +85,12 @@ async function ensurePrimaryMiddleware (req, res, next) {
   } catch (e) {
     return sendResponse(req, res, errorResponseServerError(e))
   }
+
+  // Special case for UserMetadata promotion - unblocks legacy non-creator users writing to UM
+  if (creatorNodeEndpoints.length === 0 && config.get('isUserMetadataNode')) {
+    return next()
+  }
+
   const primary = creatorNodeEndpoints[0]
 
   // Error if this node is not primary for user.
@@ -103,7 +105,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   req.session.creatorNodeEndpoints = creatorNodeEndpoints
 
   req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
-  next()
+  return next()
 }
 
 /** Blocks writes if node has used over `maxStorageUsedPercent` of its capacity. */
@@ -155,7 +157,7 @@ async function ensureStorageMiddleware (req, res, next) {
 async function triggerSecondarySyncs (req) {
   const { snapbackSM } = serviceRegistry
 
-  if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
+  if (config.get('snapbackDevModeEnabled')) {
     return
   }
 
@@ -192,12 +194,10 @@ async function triggerSecondarySyncs (req) {
  * @notice TODO - this can all be cached on startup, but we can't validate the spId on startup unless the
  *    services has been registered, and we can't register the service unless the service starts up.
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
+ *
+ * @notice will error if called in UM pre-registration
  */
 async function getOwnEndpoint ({ libs }) {
-  if (config.get('isUserMetadataNode')) {
-    throw new Error('Not available for userMetadataNode')
-  }
-
   let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
 
   if (!creatorNodeEndpoint) {
@@ -251,10 +251,6 @@ async function getOwnEndpoint ({ libs }) {
  */
 async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
   const { libs } = serviceRegistry
-
-  if (config.get('isUserMetadataNode')) {
-    throw new Error('Not available for userMetadataNode')
-  }
 
   logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()
@@ -324,6 +320,11 @@ async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, block
 
       try {
         const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
+        // Prematurely exit if this is a UM node processing a legacy user
+        if (config.get('isUserMetadataNode') && fetchedUser.length >= 1 && !fetchedUser[0].creator_node_endpoint) {
+          return []
+        }
 
         if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('creator_node_endpoint')) {
           throw new Error('Missing or malformatted user fetched from discprov.')

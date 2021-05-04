@@ -46,8 +46,8 @@ class SnapbackSM {
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
-    // Throw an error if running as creator node and no libs are provided
-    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
+    // Error if missing required configs
+    if (!this.audiusLibs || !this.spID || !this.endpoint) {
       throw new Error('Missing required configs - cannot start')
     }
 
