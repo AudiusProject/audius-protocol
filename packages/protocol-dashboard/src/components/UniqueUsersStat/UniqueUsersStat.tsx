@@ -13,16 +13,14 @@ type OwnProps = {}
 
 type UniqueUsersStatProps = OwnProps
 
-const UniqueUsersStat: React.FC<UniqueUsersStatProps> = (
-  props: UniqueUsersStatProps
-) => {
+const UniqueUsersStat: React.FC<UniqueUsersStatProps> = () => {
   const { apiCalls } = useTrailingApiCalls(Bucket.MONTH)
   let error, stat
   if (apiCalls === MetricError.ERROR) {
     error = true
     stat = null
   } else {
-    stat = apiCalls?.unique_count ?? null
+    stat = apiCalls?.summed_unique_count ?? null
   }
   return (
     <Stat

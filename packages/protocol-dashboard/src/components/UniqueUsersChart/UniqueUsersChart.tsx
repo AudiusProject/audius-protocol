@@ -5,9 +5,9 @@ import { Bucket, MetricError } from 'store/cache/analytics/slice'
 
 type OwnProps = {}
 
-type TotalApiCallsChartProps = OwnProps
+type UniqueUsersChartProps = OwnProps
 
-const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = () => {
+const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
   const [bucket, setBucket] = useState(Bucket.MONTH)
 
   const { apiCalls } = useApiCalls(bucket)
@@ -17,8 +17,8 @@ const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = () => {
     labels = []
     data = []
   } else {
-    labels = apiCalls?.map(a => a.timestamp) ?? null
-    data = apiCalls?.map(a => a.unique_count || 0) ?? null
+    labels = apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+    data = apiCalls?.map(a => a.summed_unique_count) ?? null
   }
   return (
     <LineChart
@@ -30,8 +30,9 @@ const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = () => {
       error={error}
       options={[Bucket.ALL_TIME, Bucket.MONTH, Bucket.WEEK]}
       onSelectOption={(option: string) => setBucket(option as Bucket)}
+      showLeadingDay
     />
   )
 }
 
-export default TotalApiCallsChart
+export default UniqueUsersChart

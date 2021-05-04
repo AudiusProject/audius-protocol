@@ -2,8 +2,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export type TimeSeriesRecord = {
   timestamp: string
-  count: number
+  count?: number
+  total_count?: number
   unique_count?: number
+  summed_unique_count?: number
 }
 
 export type CountRecord = {
@@ -11,8 +13,8 @@ export type CountRecord = {
 }
 
 export enum Bucket {
-  ALL_TIME = 'all time', // Granularity: year
-  YEAR = 'year', // Ganularity: month
+  ALL_TIME = 'all_time', // Granularity: year
+  YEAR = 'year', // Granularity: month
   MONTH = 'month', // Granularity: week
   WEEK = 'week', // Granularity: day
   DAY = 'day' // Granularity: hour

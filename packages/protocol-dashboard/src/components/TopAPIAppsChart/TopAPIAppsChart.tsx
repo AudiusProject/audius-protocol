@@ -12,7 +12,7 @@ type OwnProps = {
 }
 
 const messages = {
-  title: 'Top API Apps by Total Requests',
+  title: 'Top 3rd Party API Apps by Total Requests',
   yLabel: 'Total Requests',
   viewMore: 'View Full Leaderboard'
 }

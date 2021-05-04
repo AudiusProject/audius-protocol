@@ -24,8 +24,7 @@ import { useDiscoveryProviders } from '../discoveryProvider/hooks'
 import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
 import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
-import { performWithFallback } from 'utils/performWithFallback'
-import { fetchWithTimeout } from '../../../utils/fetch'
+import { fetchUntilSuccess, fetchWithTimeout } from '../../../utils/fetch'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -69,10 +68,6 @@ export const formatBucketText = (bucket: string) =>
 const getStartTime = (bucket: Bucket, clampDays: boolean = false) => {
   switch (bucket) {
     case Bucket.ALL_TIME:
-      return dayjs()
-        .subtract(1, 'year')
-        .startOf('hour')
-        .unix()
     case Bucket.YEAR:
       return dayjs()
         .subtract(1, 'year')
@@ -94,52 +89,6 @@ const getStartTime = (bucket: Bucket, clampDays: boolean = false) => {
         .startOf('hour')
         .unix()
   }
-}
-
-const joinCountDatasets = (datasets: CountRecord[]) => {
-  const result: CountRecord = {}
-
-  for (let dataset of datasets) {
-    Object.keys(dataset).forEach(key => {
-      if (key in result) {
-        result[key] += dataset[key]
-      } else {
-        result[key] = dataset[key]
-      }
-    })
-  }
-
-  return result
-}
-
-const joinTimeSeriesDatasets = (datasets: TimeSeriesRecord[][]) => {
-  if (!datasets.length) return []
-  const joined: TimeSeriesRecord[] = []
-
-  // Joined dataset should be of length "max" of each child dataset
-  let maxLength = 0
-  let maxIndex = 0
-  datasets.forEach((dataset, i) => {
-    if (dataset.length > maxLength) {
-      maxLength = dataset.length
-      maxIndex = i
-    }
-  })
-  for (let i = 0; i < maxLength; ++i) {
-    const { timestamp } = datasets[maxIndex][i]
-    let count: number = 0
-    let unique_count: number = 0
-    datasets.forEach(dataset => {
-      if (!dataset[i]) return
-      count += dataset[i].count
-      if (dataset[i].unique_count) {
-        unique_count += dataset[i].unique_count!
-      }
-    })
-    joined.push({ timestamp, count, unique_count })
-  }
-
-  return joined
 }
 
 // -------------------------------- Selectors  ---------------------------------
@@ -173,6 +122,42 @@ export const getTopApps = (state: AppState, { bucket }: { bucket: Bucket }) =>
 
 // -------------------------------- Thunk Actions  ---------------------------------
 
+async function fetchRoutesTimeSeries(
+  bucket: Bucket,
+  nodes: DiscoveryProvider[]
+) {
+  let error = false
+  let metric: TimeSeriesRecord[] = []
+  try {
+    const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
+    const res = await fetchUntilSuccess(
+      nodes.map(
+        node =>
+          `${node.endpoint}/v1/metrics/aggregates/routes/${bucket}?bucket_size=${bucket_size}`
+      )
+    )
+    metric = res.data
+  } catch (e) {
+    console.error(e)
+    error = true
+  }
+  if (error) {
+    return MetricError.ERROR
+  }
+
+  return metric
+}
+
+export function fetchApiCalls(
+  bucket: Bucket,
+  nodes: DiscoveryProvider[]
+): ThunkAction<void, AppState, Audius, Action<string>> {
+  return async dispatch => {
+    const metric = await fetchRoutesTimeSeries(bucket, nodes)
+    dispatch(setApiCalls({ metric, bucket }))
+  }
+}
+
 async function fetchTimeSeries(
   route: string,
   bucket: Bucket,
@@ -181,52 +166,33 @@ async function fetchTimeSeries(
 ) {
   const startTime = getStartTime(bucket, clampDays)
   let error = false
-  const datasets = (
-    await Promise.all(
-      nodes.map(async node => {
-        try {
-          const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
-          const url = `${node.endpoint}/v1/metrics/${route}?bucket_size=${bucket_size}&start_time=${startTime}`
-          const res = await fetchWithTimeout(url)
-          return res.data
-        } catch (e) {
-          console.error(e)
-          error = true
-          return null
-        }
-      })
+  let metric: TimeSeriesRecord[] = []
+  try {
+    const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
+    const res = await fetchUntilSuccess(
+      nodes.map(
+        node =>
+          `${node.endpoint}/v1/metrics/${route}?bucket_size=${bucket_size}&start_time=${startTime}`
+      )
     )
-  ).filter(Boolean)
-
+    metric = res.data.reverse()
+  } catch (e) {
+    console.error(e)
+    error = true
+  }
   if (error) {
     return MetricError.ERROR
   }
 
-  const metric = joinTimeSeriesDatasets(datasets).reverse()
   return metric
-}
-
-export function fetchApiCalls(
-  bucket: Bucket,
-  nodes: DiscoveryProvider[]
-): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
-    const metric = await fetchTimeSeries('routes', bucket, nodes)
-    dispatch(setApiCalls({ metric, bucket }))
-  }
 }
 
 export function fetchPlays(
   bucket: Bucket,
   nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
-    const metric = await fetchTimeSeries(
-      'plays',
-      bucket,
-      nodes.slice(0, 1),
-      true
-    )
+  return async dispatch => {
+    const metric = await fetchTimeSeries('plays', bucket, nodes, true)
     dispatch(setPlays({ metric, bucket }))
   }
 }
@@ -289,24 +255,16 @@ export function fetchTotalStaked(
   }
 }
 
-const getTrailingAPI = (endpoint: string) => async () => {
-  const url = `${endpoint}/v1/metrics/routes/trailing/month`
-  const json = await fetchWithTimeout(url)
+const getTrailingAPI = async (nodes: DiscoveryProvider[]) => {
+  const json = await fetchUntilSuccess(
+    nodes.map(
+      node => `${node.endpoint}/v1/metrics/aggregates/routes/trailing/month`
+    )
+  )
   return {
-    count: json?.data?.count ?? 0,
-    unique_count: json?.data?.unique_count ?? 0
-  } as CountRecord
-}
-
-const getTrailingAPILegacy = (
-  endpoint: string,
-  startTime: number
-) => async () => {
-  const url = `${endpoint}/v1/metrics/routes?bucket_size=century&start_time=${startTime}`
-  const json = await fetchWithTimeout(url)
-  return {
-    count: json?.data?.[0]?.count ?? 0,
-    unique_count: json?.data?.[0]?.unique_count ?? 0
+    total_count: json?.data?.total_count ?? 0,
+    unique_count: json?.data?.unique_count ?? 0,
+    summed_unique_count: json?.data?.summed_unique_count ?? 0
   } as CountRecord
 }
 
@@ -314,63 +272,35 @@ export function fetchTrailingApiCalls(
   bucket: Bucket,
   nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
-    const startTime = getStartTime(bucket)
+  return async dispatch => {
     let error = false
-    const datasets = (
-      await Promise.all(
-        nodes.map(async node => {
-          try {
-            const res = await performWithFallback(
-              getTrailingAPI(node.endpoint),
-              getTrailingAPILegacy(node.endpoint, startTime)
-            )
-            return res
-          } catch (e) {
-            console.error(e)
-            error = true
-            return {}
-          }
-        })
-      )
-    ).filter(Boolean)
+    let metric = {}
+    try {
+      metric = await getTrailingAPI(nodes)
+    } catch (e) {
+      console.error(e)
+      error = true
+    }
     if (error) {
       dispatch(setTrailingApiCalls({ metric: MetricError.ERROR, bucket }))
       return
     }
-    const metric = joinCountDatasets(datasets)
-
     dispatch(setTrailingApiCalls({ metric, bucket }))
   }
 }
 
-const getTrailingTopApps = (
-  endpoint: string,
+const getTrailingTopApps = async (
+  nodes: DiscoveryProvider[],
   bucket: Bucket,
   limit: number
-) => async () => {
-  const bucketPaths: { [bucket: string]: string | undefined } = {
-    [Bucket.WEEK]: 'week',
-    [Bucket.MONTH]: 'month',
-    [Bucket.ALL_TIME]: 'all_time'
-  }
-  const bucketPath = bucketPaths[bucket]
-  if (!bucketPath) throw new Error('Invalid bucket')
-  const url = `${endpoint}/v1/metrics/app_name/trailing/${bucketPath}?limit=${limit}`
-  const json = await fetchWithTimeout(url)
-  if (!json.data) return {}
-  return json
-}
-
-const getTopAppsLegacy = (
-  endpoint: string,
-  startTime: number,
-  limit: number
-) => async () => {
-  const url = `${endpoint}/v1/metrics/app_name?start_time=${startTime}&limit=${limit}&include_unknown=true`
-  const json = await fetchWithTimeout(url)
-  if (!json.data) return {}
-  return json
+) => {
+  const json = await fetchUntilSuccess(
+    nodes.map(
+      node =>
+        `${node.endpoint}/v1/metrics/aggregates/apps/${bucket}?limit=${limit}`
+    )
+  )
+  return json.data as { name: string; count: number }[]
 }
 
 export function fetchTopApps(
@@ -378,42 +308,31 @@ export function fetchTopApps(
   nodes: DiscoveryProvider[],
   limit: number = 500
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
-    const startTime = getStartTime(bucket)
+  return async dispatch => {
     let error = false
-    const datasets = (
-      await Promise.all(
-        nodes.map(async node => {
-          try {
-            const res = await performWithFallback(
-              getTrailingTopApps(node.endpoint, bucket, limit),
-              getTopAppsLegacy(node.endpoint, startTime, limit)
-            )
-            if (!res.data) return {}
-            let apps: CountRecord = {}
-            res.data.forEach((app: { name: string; count: number }) => {
-              const name =
-                app.name === 'unknown' ? 'Audius Apps + Unknown' : app.name
-              if (app.count > 0) {
-                apps[name] = app.count
-              }
-            })
-            return apps
-          } catch (e) {
-            console.error(e)
-            error = true
-            return {}
+    let metric: CountRecord = {}
+    try {
+      const res = await getTrailingTopApps(nodes, bucket, limit)
+      if (res) {
+        let apps: CountRecord = {}
+        res.forEach((app: { name: string; count: number }) => {
+          const name =
+            app.name === 'unknown' ? 'Audius Apps + Unknown' : app.name
+          if (app.count > 0) {
+            apps[name] = app.count
           }
         })
-      )
-    ).filter(Boolean)
+        metric = apps
+      }
+    } catch (e) {
+      console.error(e)
+      error = true
+    }
 
     if (error) {
       dispatch(setTopApps({ metric: MetricError.ERROR, bucket }))
       return
     }
-
-    const metric = joinCountDatasets(datasets)
 
     const keys = Object.keys(metric)
     keys.sort((a, b) => {
@@ -432,7 +351,7 @@ export function fetchTrailingTopGenres(
   bucket: Bucket,
   nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
-  return async (dispatch, getState, aud) => {
+  return async dispatch => {
     const node = nodes[0]
     if (!node) return
     try {
@@ -647,29 +566,26 @@ export const useTopApps = (
   limit?: number,
   filter?: (name: string, count: number) => boolean
 ) => {
-  const [doOnce, setDoOnce] = useState<Bucket | null>(null)
+  const [hasFetched, setHasFetched] = useState<boolean>(false)
   let topApps = useSelector(state => getTopApps(state as AppState, { bucket }))
   const { nodes } = useDiscoveryProviders({})
   const dispatch = useDispatch()
   useEffect(() => {
     if (
-      doOnce !== bucket &&
+      !hasFetched &&
       nodes.length &&
       (topApps === null ||
         topApps === undefined ||
         limit === undefined ||
         Object.keys(topApps).length < limit)
     ) {
-      setDoOnce(bucket)
       dispatch(fetchTopApps(bucket, nodes, limit))
     }
-  }, [dispatch, topApps, bucket, nodes, doOnce, limit])
+  }, [dispatch, topApps, bucket, nodes, hasFetched, limit])
 
   useEffect(() => {
-    if (topApps) {
-      setDoOnce(null)
-    }
-  }, [topApps, setDoOnce])
+    setHasFetched(!!topApps)
+  }, [topApps, setHasFetched])
 
   if (filter && topApps && topApps !== MetricError.ERROR) {
     topApps = filterTopApps(topApps, filter)

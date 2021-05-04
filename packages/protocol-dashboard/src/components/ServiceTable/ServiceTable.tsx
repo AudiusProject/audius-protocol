@@ -5,22 +5,16 @@ import styles from './ServiceTable.module.css'
 import Table from 'components/Table'
 import Error from 'components/Error'
 
-export type ServiceRow = {
+type ServiceRow = {
   endpoint: string
   version: string
-}
-
-type Service = {
-  endpoint: string
-  version: string
-  spID: number
 }
 
 type OwnProps = {
   className?: string
   isLoading?: boolean
   title: string
-  data: Array<ServiceRow>
+  data: ServiceRow[]
   limit?: number
   moreText?: string
   onRowClick:
