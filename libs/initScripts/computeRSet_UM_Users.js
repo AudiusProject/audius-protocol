@@ -59,7 +59,7 @@ const URSM_BOOTSTRAPPER_PRIVATE_KEY = getEnv('URSM_BOOTSTRAPPER_PRIVATE_KEY')
 // const URSM_BOOTSTRAPPER_PRIVATE_KEY = '17d40644d08b96f827ebe8799981f0e6466cfb4f38033092afbde62c43c609c9' // data; has to be address #9
 
 // const NUM_USERS_PER_BATCH_REQUEST = 500
-const NUM_USERS_PER_BATCH_REQUEST = 1
+const NUM_USERS_PER_BATCH_REQUEST = 10
 const MAX_SYNC_TIMEOUT = 120000 /* 2 min */
 
 const configureAndInitLibs = async () => {
@@ -133,16 +133,27 @@ async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, aud
 async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
   // TODO: update with actual sp ids of audius CNs
   // const audiusInfraSpIds = new Set([1, 2, 3, 4/*, UMSpId] */]) // when UM is registered, exclude it as secondary
-  const audiusInfraSpIds = new Set([UMSpId, 17]) // when UM is registered, exclude it as secondary
+
+  // Following nodes have been excluded due to flakiness
+  // Exclude modulational
+  // Exclude https://creatornode.audius4.prod-us-west-2.staked.cloud
+  // Excluded https://content-a.mainnet.audius.radar.tech, 24
+  // Excluded https://creatornode.audius6.prod-us-west-2.staked.cloud, 19
+  const audiusInfraSpIds = new Set([UMSpId, 1, 2, 3, 17, 15, 12, 19, 24]) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
   const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
+  // console.log('---')
+  // console.log(sps)
+  // console.log('---')
   sps
-    .filter(sp => !audiusInfraSpIds.has(sp.spID))
+    .filter(sp => !audiusInfraSpIds.has(parseInt(sp.spID)))
     .forEach(sp => {
       spIdToEndpointAndCount[sp.spID] = { endpoint: sp.endpoint, selected: 0 }
     })
 
+  // console.log(sps)
+  // console.log('---')
 
   // Do health check for all non-Audius SPs
   const healthCheckedSPs = await Promise.all(
@@ -157,6 +168,8 @@ async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
     .filter(response => response.status === 200)
     .map(response => parseInt(response.id))
 
+  console.log(spIds)
+  // throw new Error('fake')
   return { spIdToEndpointAndCount, spIds }
 }
 
@@ -206,20 +219,27 @@ const writeDataToFile = (spIdToEndpointAndCount, userIdToRSet, offset) => {
   })
 }
 
-const syncSecondary = async ({ primary, secondary, wallet }) => {
-  try {
-    await axios({
-      baseURL: secondary,
-      url: '/sync',
-      method: 'post',
-      data: {
-        wallet: [wallet],
-        creator_node_endpoint: primary,
-        immediate: false /* whether or not this is a blocking request and handled right away */
-      }
-    })
-  } catch (e) {
-    console.error(`Could not sync from primary=${primary} to secondary=${secondary} for wallet=${wallet}`, e)
+const syncSecondary = async ({ primary, secondary, wallet, userId }) => {
+  let retries = 5
+  while (retries > 0) {
+    try {
+      await axios({
+        baseURL: secondary,
+        url: '/sync',
+        method: 'post',
+        data: {
+          wallet: [wallet],
+          creator_node_endpoint: primary,
+          immediate: true /* whether or not this is a blocking request and handled right away */
+        }
+      })
+      break
+    } catch (e) {
+      console.error(`userId=${userId} | Could not sync from primary=${primary} to secondary=${secondary} for wallet=${wallet}`, e)
+    }
+    retries--;
+    await Util.wait(500)
+    console.error(`userId=${userId} | Retrying sync primary=${primary} to secondary=${secondary} for wallet=${wallet}`)
   }
 }
 
@@ -240,7 +260,8 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
         return syncSecondary({
           primary: USER_METADATA_ENDPOINT,
           secondary: spIdToEndpointAndCount[spId].endpoint,
-          wallet: userIdToWallet[userId]
+          wallet: userIdToWallet[userId],
+          userId: userId
         })
       })
   )
@@ -276,7 +297,7 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
           }))
       )
 
-      console.log(`userId=${userId} | UM clock: ${UMClockValue} secondaries=${JSON.stringify(clockValuesAcrossSecondaries.map(value => value.clockValue))} | Time passed: ${Date.now() - startSyncTime}ms`)
+      console.log(`userId=${userId} secondaryIds=${replicaSetSecondarySpIds} | UM clock: ${UMClockValue} secondaryClockValues=${JSON.stringify(clockValuesAcrossSecondaries.map(value => value.clockValue))} | Time passed: ${Date.now() - startSyncTime}ms`)
 
       // If secondaries are synced up with UM, exit out of for loop
       if (
@@ -301,7 +322,7 @@ async function syncAcrossSecondariesAndEnsureClockIsSynced (replicaSetSecondaryS
     throw new Error(errorMsg)
   }
 
-  console.log(`Successful sync for userId=${userId}!`)
+  console.log(`userId=${userId} | Successful sync`)
 }
 
 const setReplicaSet = async ({
@@ -324,13 +345,13 @@ const setReplicaSet = async ({
     [secondary1.spId, secondary2.spId]
   )
 
-  console.log('tx for updating rset', tx)
+  console.dir(tx, { depth: 5 })
   const newCreatorNodeEndpoint = CreatorNode.buildEndpoint(
     primary.endpoint, [secondary1.endpoint, secondary2.endpoint]
   )
   await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
 
-  console.log(`Successful contract write for userId=${userId}!`)
+  console.log(`userId=${userId} | Successful contract write, ${primary.spId}, secondaries=${secondary1.spId},${secondary2.spId}`)
 }
 
 const updateSingleUser = async (
@@ -374,8 +395,8 @@ const run = async () => {
   let userIdsFail = []
 
   // const numUsersToProcess = numOfUsers
-  const numUsersToProcess = 25
-  for (offset = 18; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  const numUsersToProcess = 3000
+  for (offset = 2500; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
@@ -435,7 +456,7 @@ const run = async () => {
     console.log(`\nSyncing across new secondaries....\n`)
     let userIdToRSetArr = Object.entries(userIdToRSet)
 
-    let sliceLength = 1
+    let sliceLength = 5
     let i
     for (i = 0; i < userIdsWithNoCreatorNodeEndpoint.length; i += sliceLength) {
       const range = userIdsWithNoCreatorNodeEndpoint.slice(i, i + sliceLength)
@@ -475,8 +496,8 @@ const run = async () => {
   }
 
   const end = Date.now() - start
-  console.log(`Sucessful upgrades for users=${userIdsSuccess}`)
-  console.log(`Failed upgrades for userIds=${JSON.stringify(userIdsFail, null, 2)}`)
+  console.log(`Sucessful upgrades for ${userIdsSuccess.length} users=${userIdsSuccess}`)
+  console.log(`Failed upgrades for ${userIdsFail.length} userIds=${JSON.stringify(userIdsFail, null, 2)}`)
   console.log(`\nTime Taken: ${end}ms`)
 }
 
