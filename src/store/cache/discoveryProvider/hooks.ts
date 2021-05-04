@@ -92,10 +92,16 @@ const processDP = async (
 // -------------------------------- Thunk Actions  --------------------------------
 
 // Async function to get
-export function fetchDiscoveryProviders(
-  props: UseDiscoveryProvidersProps = {}
-): ThunkAction<void, AppState, Audius, Action<string>> {
+export function fetchDiscoveryProviders(): ThunkAction<
+  void,
+  AppState,
+  Audius,
+  Action<string>
+> {
   return async (dispatch, getState, aud) => {
+    const status = getStatus(getState())
+    if (status) return
+
     dispatch(setLoading())
     const discoveryProviders = await aud.ServiceProviderClient.getServiceProviderList(
       ServiceType.DiscoveryProvider
@@ -172,9 +178,9 @@ export const useDiscoveryProviders = ({
   const dispatch = useDispatch()
   useEffect(() => {
     if (!status) {
-      dispatch(fetchDiscoveryProviders({ owner, sortBy, limit }))
+      dispatch(fetchDiscoveryProviders())
     }
-  }, [dispatch, status, owner, sortBy, limit])
+  }, [dispatch, status])
 
   return { status, nodes }
 }

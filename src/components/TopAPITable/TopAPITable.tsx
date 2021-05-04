@@ -9,14 +9,9 @@ import { Bucket, MetricError } from 'store/cache/analytics/slice'
 import { useIsMobile } from 'utils/hooks'
 
 const messages = {
-  title: 'Top API Apps by Total Requests',
+  title: 'Top 3rd Party API Apps by Total Requests',
   rank: 'Rank',
   totalReq: 'Total Requests'
-}
-
-export type ServiceRow = {
-  endpoint: string
-  version: string
 }
 
 export type APIAppRequests = {
@@ -41,7 +36,6 @@ const filterCount = (name: string, count: number): boolean =>
 
 const TopAPITable: React.FC<TopAPITableProps> = ({
   className,
-  limit,
   alwaysShowMore
 }: TopAPITableProps) => {
   const isMobile = useIsMobile()

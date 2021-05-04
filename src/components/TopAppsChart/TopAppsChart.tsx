@@ -30,7 +30,7 @@ const TopAppsChart: React.FC<TopAppsChartProps> = () => {
 
   return (
     <BarChart
-      title="Top Apps"
+      title="Top 3rd Party Apps"
       column1="apps"
       column2="requests"
       data={data}
