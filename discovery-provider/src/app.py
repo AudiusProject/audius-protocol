@@ -19,7 +19,7 @@ from flask_cors import CORS
 
 from src import exceptions
 from src import api_helpers
-from src.queries import queries, search, search_queries, health_check, notifications
+from src.queries import queries, search, search_queries, health_check, notifications, block_confirmation
 from src.api.v1 import api as api_v1
 from src.utils import helpers
 from src.utils.multi_provider import MultiProvider
@@ -293,6 +293,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(block_confirmation.bp)
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
