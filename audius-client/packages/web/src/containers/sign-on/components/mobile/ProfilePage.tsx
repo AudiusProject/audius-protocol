@@ -142,14 +142,19 @@ const ProfilePage = (props: ProfilePageProps) => {
   const onInstagramLogin = async (uuid: string, profile: InstagramProfile) => {
     try {
       if (profile.profile_pic_url_hd) {
-        const profileUrl = profile.profile_pic_url_hd
-        const imageBlob = await fetch(profileUrl).then(r => r.blob())
-        const artworkFile = new File([imageBlob], 'Artwork', {
-          type: 'image/jpeg'
-        })
-        const file = await resizeImage(artworkFile)
-        const url = URL.createObjectURL(file)
-        setInstagramProfile(uuid, profile, { url, file })
+        try {
+          const profileUrl = profile.profile_pic_url_hd
+          const imageBlob = await fetch(profileUrl).then(r => r.blob())
+          const artworkFile = new File([imageBlob], 'Artwork', {
+            type: 'image/jpeg'
+          })
+          const file = await resizeImage(artworkFile)
+          const url = URL.createObjectURL(file)
+          setInstagramProfile(uuid, profile, { url, file })
+        } catch (e) {
+          console.error('Failed to fetch profile_pic_url_hd', e)
+          setInstagramProfile(uuid, profile)
+        }
       } else {
         setInstagramProfile(uuid, profile)
       }
