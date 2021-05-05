@@ -31,6 +31,8 @@ export enum Name {
   SETTINGS_CHANGE_THEME = 'Settings: Change Theme',
   SETTINGS_START_TWITTER_OAUTH = 'Settings: Start Twitter OAuth',
   SETTINGS_COMPLETE_TWITTER_OAUTH = 'Settings: Complete Twitter OAuth',
+  SETTINGS_START_INSTAGRAM_OAUTH = 'Settings: Start Instagram OAuth',
+  SETTINGS_COMPLETE_INSTAGRAM_OAUTH = 'Settings: Complete Instagram OAuth',
   SETTINGS_RESEND_ACCOUNT_RECOVERY = 'Settings: Resend Account Recovery',
   SETTINGS_LOG_OUT = 'Settings: Log Out',
   VISUALIZER_OPEN = 'Visualizer: Open',
@@ -110,9 +112,6 @@ export enum Name {
   REMIX_COSIGN = 'Remix: CoSign',
   REMIX_COSIGN_INDICATOR = 'Remix: CoSign Indicator',
   REMIX_HIDE = 'Remix: Hide',
-  CLAIM_AUDIO_REQUEST = 'Claim $AUDIO: Request',
-  CLAIM_AUDIO_SUCCESS = 'Claim $AUDIO: Success',
-  CLAIM_AUDIO_FAILURE = 'Claim $AUDIO: Failure',
   SEND_AUDIO_REQUEST = 'Send $AUDIO: Request',
   SEND_AUDIO_SUCCESS = 'Send $AUDIO: Success',
   SEND_AUDIO_FAILURE = 'Send $AUDIO: Failure',
@@ -192,13 +191,26 @@ type SignInFinish = {
 // Settigns
 type SettingsChangeTheme = {
   eventName: Name.SETTINGS_CHANGE_THEME
-  mode: 'dark' | 'light' | 'auto'
+  mode: 'dark' | 'light' | 'matrix' | 'auto'
 }
-type SettignsStartTwitterOauth = {
+type SettingsStartTwitterOauth = {
   eventName: Name.SETTINGS_START_TWITTER_OAUTH
+  handle: string
 }
 type SettingsCompleteTwitterOauth = {
   eventName: Name.SETTINGS_COMPLETE_TWITTER_OAUTH
+  handle: string
+  screen_name: string
+  is_verified: boolean
+}
+type SettingsStartInstagramOauth = {
+  eventName: Name.SETTINGS_START_INSTAGRAM_OAUTH
+  handle: string
+}
+type SettingsCompleteInstagramOauth = {
+  eventName: Name.SETTINGS_COMPLETE_INSTAGRAM_OAUTH
+  handle: string
+  username: string
   is_verified: boolean
 }
 type SettingsResetAccountRecovery = {
@@ -689,21 +701,6 @@ type RemixHide = {
   handle: string
 }
 
-type ClaimAudioRequest = {
-  eventName: Name.CLAIM_AUDIO_REQUEST
-  wallet: WalletAddress
-}
-
-type ClaimAudioSuccess = {
-  eventName: Name.CLAIM_AUDIO_SUCCESS
-  wallet: WalletAddress
-}
-
-type ClaimAudioFailure = {
-  eventName: Name.CLAIM_AUDIO_FAILURE
-  wallet: WalletAddress
-}
-
 type SendAudioRequest = {
   eventName: Name.SEND_AUDIO_REQUEST
   from: WalletAddress
@@ -748,8 +745,10 @@ export type AllTrackingEvents =
   | SignInOpen
   | SignInFinish
   | SettingsChangeTheme
-  | SettignsStartTwitterOauth
+  | SettingsStartTwitterOauth
   | SettingsCompleteTwitterOauth
+  | SettingsStartInstagramOauth
+  | SettingsCompleteInstagramOauth
   | SettingsResetAccountRecovery
   | SettignsLogOut
   | VisualizerOpen
@@ -829,9 +828,6 @@ export type AllTrackingEvents =
   | RemixCosign
   | RemixCosignIndicator
   | RemixHide
-  | ClaimAudioRequest
-  | ClaimAudioSuccess
-  | ClaimAudioFailure
   | SendAudioRequest
   | SendAudioSuccess
   | SendAudioFailure

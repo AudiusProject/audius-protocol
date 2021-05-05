@@ -17,7 +17,7 @@ const TwitterButton = props => {
   })
 
   return (
-    <div onClick={props.onClick} className={cn(buttonClassNames)}>
+    <div className={cn(buttonClassNames)}>
       <IconTwitter
         className={cn({ [props.iconClassName]: !!props.iconClassName })}
       />
