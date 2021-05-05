@@ -44,6 +44,7 @@ type UserBadgesProps = {
   // badges off of the store. The override allows for it to be used
   // in a controlled context where the desired store state is not available.
   isVerifiedOverride?: boolean
+  overrideTier?: BadgeTier
 }
 
 const UserBadges: React.FC<UserBadgesProps> = ({
@@ -52,9 +53,11 @@ const UserBadges: React.FC<UserBadgesProps> = ({
   className,
   useSVGTiers = false,
   inline = false,
-  isVerifiedOverride
+  isVerifiedOverride,
+  overrideTier
 }) => {
-  const { tier, isVerified } = useSelectTierInfo(userId)
+  let { tier, isVerified } = useSelectTierInfo(userId)
+  tier = overrideTier || tier
   const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
   const audioBadge = tierMap[tier]
 

@@ -816,7 +816,7 @@ class AudiusAPIClient {
       emptySearchResponse
 
     const adapted = adapter.adaptSearchResponse(searchResponse)
-    return processSearchResults({ searchText: query, ...adapted })
+    return processSearchResults(adapted)
   }
 
   async getSearchAutocomplete({
@@ -841,7 +841,6 @@ class AudiusAPIClient {
       emptySearchResponse
     const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
     return processSearchResults({
-      searchText: query,
       isAutocomplete: true,
       ...adapted
     })
