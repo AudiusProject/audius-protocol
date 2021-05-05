@@ -3,7 +3,6 @@ import { UserCollectionMetadata } from 'models/Collection'
 import { UserMetadata } from 'models/User'
 import * as adapter from './ResponseAdapter'
 import { APIResponse, APISearch } from './types'
-import { trimToAlphaNumeric } from 'utils/formatUtil'
 import { removeNullable } from 'utils/typeUtils'
 
 const SEARCH_MAX_SAVED_RESULTS = 10
@@ -91,7 +90,6 @@ export const processSearchResults = async ({
   saved_albums: savedAlbums = [],
   saved_playlists: savedPlaylists = [],
   followed_users: followedUsers = [],
-  searchText = null,
   isAutocomplete = false
 }: ProcessSearchResultsArgs) => {
   const maxSaved = isAutocomplete
@@ -128,22 +126,6 @@ export const processSearchResults = async ({
     maxSaved,
     maxTotal
   )
-
-  // Move any exact handle or name matches to the front of our returned users list
-  const compSearchText = trimToAlphaNumeric(searchText).toLowerCase()
-  const foundIndex = combinedUsers.findIndex(user => {
-    if (!user.name) return -1
-    return (
-      trimToAlphaNumeric(user.name).toLowerCase() === compSearchText ||
-      trimToAlphaNumeric(user.handle_lc) === compSearchText
-    )
-  })
-
-  if (foundIndex !== -1) {
-    const user = combinedUsers[foundIndex]
-    combinedUsers.splice(foundIndex, 1)
-    combinedUsers.unshift(user)
-  }
 
   return {
     tracks: combinedTracks,

@@ -60,7 +60,8 @@ const SearchBarResult = memo(props => {
     creatorNodeEndpoint,
     size,
     defaultImage,
-    isVerifiedUser
+    isVerifiedUser,
+    tier
   } = props
   const isUser = kind === Kind.USERS
 
@@ -87,6 +88,7 @@ const SearchBarResult = memo(props => {
               userId={userId}
               badgeSize={10}
               isVerifiedOverride={isVerifiedUser}
+              overrideTier={tier}
             />
           )}
         </span>
@@ -103,6 +105,8 @@ const SearchBarResult = memo(props => {
                 className={styles.verified}
                 userId={userId}
                 badgeSize={8}
+                isVerifiedOverride={isVerifiedUser}
+                overrideTier={tier}
               />
             )}
           </span>

@@ -39,6 +39,8 @@
 
 .frosted {
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
 }
 
 .headerBoxShadow {
