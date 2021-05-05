@@ -41,7 +41,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
-    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
+    this.snapbackDevModeEnabled = true // this.nodeConfig.get('snapbackDevModeEnabled')
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
@@ -97,8 +97,7 @@ class SnapbackSM {
           this.log(`StateMachineQueue error processing ${e}`)
         }
 
-        // const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
-        const stateMachineJobInterval = DevDelayInMS
+        const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
 
         this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
         await utils.timeout(stateMachineJobInterval)
@@ -315,11 +314,11 @@ class SnapbackSM {
    *
    * Peer health criteria:
    * - query verbose health check with timeout
-   *    - ensure 200 response
-   *    - ensure min free storage
-   *    - ensure min free memory
-   *    - ensure min CPUs
-   *    - ensure min version, spID etc? seems overkill
+   *    - TODO ensure 200 response
+   *    - TODO ensure min free storage
+   *    - TODO ensure min free memory
+   *    - TODO ensure min CPUs
+   *    - TODO ensure min version, spID etc? seems overkill
    *
    * - LATER gateway health - ping randomly selected shared CID
    *    - depends on nodes sync status, cannot request CID node hasn't synced yet
@@ -344,74 +343,177 @@ class SnapbackSM {
         timeout: 2000 // TODO config var
       })
 
-      // On 200 response, ensure certain conditions in response
-
     } catch (e) {
       healthy = false
     }
 
-    return true
+    return healthy
   }
 
   /**
+   * Update replica set on chain for user, given current configs
    * Select new secondary via libs
-   * 
-   * await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
-   *
-   * log statement to begin tracking
    */
   async updateReplicaSet (userId, wallet, primary, secondary1, secondary2, unhealthyReplica) {
-    return true
+    // await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
+
+    this.log(`Updating Replica Set for userID ${userId} & wallet ${wallet} from old replicaSet [${primary},${secondary1},${secondary2}] due to unhealthy replica ${unhealthyReplica}`)
+  }
+
+  buildSecondaryNodesToUserWalletsMap (usersRequiringSyncRequests) {
+    const secondaryNodesToUserWalletsMap = {}
+
+    usersRequiringSyncRequests.forEach(userInfo => {
+      const secondaries = ([secondary1, secondary2]).filter(Boolean)
+
+      secondaries.forEach(secondary => {
+        // Initialize empty array for node in map if needed
+        if (!secondaryNodesToUserWalletsMap[secondary]) {
+          secondaryNodesToUserWalletsMap[secondary] = []
+        }
+
+        // Push wallet into map
+        secondaryNodesToUserWalletsMap[secondary].push(userInfo.wallet)
+      })
+    })
+
+    return secondaryNodesToUserWalletsMap
+  }
+
+  async retrieveClockStatusesForSecondaryUsersFromNodes (secondaryNodesToUserWalletsMap) {
+    const secondaryNodesToUserClockStatusesMap = {}
+
+    const secondaryNodes = Object.keys(secondaryNodesToUserWalletsMap)
+
+    await Promise.all(secondaryNodes.map(async (secondaryNode) => {
+      secondaryNodesToUserClockStatusesMap[secondaryNode] = {}
+
+      const secondaryNodeUserWallets = secondaryNodesToUserWalletsMap[secondaryNode]
+
+      const axiosReqParams = {
+        baseURL: secondaryNode,
+        url: '/users/batch_clock_status',
+        method: 'post',
+        data: { 'walletPublicKeys': secondaryNodeUserWallets }
+      }
+
+      // TODO convert to axios-retry, wrap in try-catch
+      const userClockStatuses = (await axios(axiosReqParams)).data.data.users
+
+      userClockStatuses.forEach(userClockStatus => {
+        
+      })
+    }))
   }
 
   /**
+   * New description
+   * - get all users with this node in replica set DONE
+   * - compute chunk of users for current processing run DONE
+   * - compute peerset of all replicas in users list DONE
+   * - check all peer health and record unhealthy peers DONE
+   * - define updateReplicaSet = [] DONE
+   * - define syncOps = [] DONE
+   * - for every user: DONE
+   *    - if replica is in unhealthy set, add to updateReplicaSet
+   *    - else if this.node = primary, add to syncOps
+   * - from syncOps array, build map of secondary node -> user_wallets[] DONE
+   * - for every secondary node, query batch_clock_status[user_wallets]
+   *    - store into secondaryNodeUserClockStatuses map of node -> (map of user -> clock_status)
+   * - for every secondary syncOp in syncOps
+   *    - trigger sync
+   * - for every updateReplicaSet in updateReplicaSets:
+   *    - update replica set
+   * 
+   * 
    * Main state machine processing function
-   *
-   * Determines which users need to be processed and enqueues syncs to secondaries
+   * - Processes all users in chunks
+   * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
+   * - For every user on a healthy replica, ensures replica is synced up 
+   * - Determines which users need to be processed and enqueues syncs to secondaries
    */
   async processStateMachineOperation () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
-    // Retrieve list of all users which have this node as replica
-    const nodeUsers = await this.getNodeUsers()
-    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary == this.endpoint))
-
-    // this.log(`NODEUSERS ${JSON.stringify(nodeUsers)}`)
-    // this.log(`NODEPRIMARYUSERS ${JSON.stringify(nodePrimaryUsers)}`)
-
-    // Build content node peer set
-    const peerSet = await this.computeContentNodePeerSet(nodeUsers)
-    this.log(`PEERSET ${JSON.stringify(Array.from(peerSet))}`)
+    // Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
+    let nodeUsers = await this.getNodeUsers()
 
     /**
+     * Select chunk of users to process in this run
+     *  - User is selected if (user_id % ModuloBase = currentModuloSlice)
+     *  - nodeUsers = array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+     */
+    nodeUsers = nodeUsers.filter(nodeUser => (nodeUser.user_id % ModuloBase === this.currentModuloSlice))
+    let nodeUserWallets = nodeUsers.map(nodeUser => nodeUser.wallet)
+
+    // Compute content node peerset from nodeUsers
+    const peerSet = await this.computeContentNodePeerSet(nodeUsers)
+  
+    /**
+     * Determine health for every peer, for later use
+     * @dev intentionally performed sequentially, but prob better in parallel chunks
+     */
+    const unhealthyPeers = new Set()
+    for await (const peer of peerSet) {
+      const peerIsHealthy = await this.determinePeerHealth(peer)
+      if (!peerIsHealthy) {
+        unhealthyPeers.add(peer)
+      }
+    }
+
+    const usersRequiringReplicaSetUpdates = []
+    const usersRequiringSyncRequests = []
+
+    /**
+     * For every node user, record sync requests to issue to secondaries if this node is primary
+     *    and record replica set updates to issue for any unhealthy replicas
+     *
+     * TODO consider splitting into two for loops for cleanliness
+     */
+    for (const nodeUser of nodeUsers) {
+      const { primary, secondary1, secondary2 } = nodeUser
+
+      if (primary == this.endpoint) {
+        const secondaries = ([secondary1, secondary2]).filter(Boolean)
+        for (const secondary of secondaries) {
+          if(unhealthyPeers.has(secondary)) {
+            usersRequiringReplicaSetUpdates.push({ ...nodeUser, unhealthyReplica: secondary })
+          } else {
+            usersRequiringSyncRequests.push({ ...nodeUser, endpoint: secondary})
+          }
+        }
+      } else {
+        const replicas = ([primary, secondary1, secondary2]).filter(Boolean).filter(replica => replica !== this.endpoint)
+        for (const replica of replicas) {
+          if (unhealthyPeers.has(replica)) {
+            usersRequiringReplicaSetUpdates.push({ ...nodeUser, unhealthyReplica: replica })
+          }
+        }
+      }
+    }
+
+    // Build map of secondary node to secondary user wallets array for later use
+    const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(usersRequiringSyncRequests)
+
+    // Retrieve clock statuses for all secondary users from secondary nodes
+    const secondaryNodesToUserClockStatusesMap = await this.retrieveClockStatusesForSecondaryUsersFromNodes(secondaryNodesToUserWalletsMap)
+
+    
+    
+    /**
      * Build map of content node to list of all users that need to be processed
-     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
      */
 
     // Generate list of wallets by node to query clock number
     // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
     let nodeVectorClockQueryList = {}
 
-    // Users actually selected to process
-    let usersToProcess = []
-
-    // Wallets being processed in this state machine operation
-    let wallets = []
-
+    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary == this.endpoint))
     nodePrimaryUsers.forEach(
       (user) => {
-        // determine if user should be processed by checking if user_id % moduloBase = currentModuloSlice
-        const userId = user.user_id
-        const modResult = userId % ModuloBase
-        const shouldProcess = (modResult === this.currentModuloSlice)
-        if (!shouldProcess) {
-          return
-        }
-
         // Add to list of currently processing users
-        usersToProcess.push(user)
+        nodeUsers.push(user)
         const userWallet = user.wallet
-        wallets.push(userWallet)
 
         // Conditionally asign secondary if present
         const secondary1 = (user.secondary1) ? user.secondary1 : null
@@ -428,54 +530,10 @@ class SnapbackSM {
     )
 
     /**
-     * Determine health for every peer, if unhealthy call no-op function
-     * Filter out all users on unhealthy nodes before progressing to sync step
-     * NOTE - intentionally performed sequentially, but prob better in parallel chunks
-     */
-    const unhealthyPeers = new Set()
-    for await (const peer of peerSet) {
-      const peerIsHealthy = await this.determinePeerHealth(peer)
-      if (!peerIsHealthy) {
-        unhealthyPeers.add(peer)
-      }
-    }
-
-    /**
-     * Remove all unhealthy peers from nodeVectorClockQueryList to ensure no syncRequests are sent to it
-     * Record user's on unhealthy peers to be used in reconfig step below
-     * For each user, need userId, wallet, current replica set, unhealthy replica
-     */
-
-    // Convert nodeUsers list to map keyed by user wallet
-    const nodeUsersByWallet = Object.assign({}, ...nodeUsers.map(nodeUser => {
-      return { [nodeUser.wallet]: nodeUser }
-    }))
-
-    const healthyNodeVectorClockQueryList = {}
-    const usersRequiringReconfig = []
-    for (const [peer, secondaryUserWallets] of Object.entries(nodeVectorClockQueryList)) {
-      if (unhealthyPeers.has(peer)) {
-        for (const wallet of secondaryUserWallets) {
-          const userInfo = nodeUsersByWallet[wallet]
-          // TODO error handle - userInfo is null
-
-          usersRequiringReconfig.push({
-            ...userInfo,
-            unhealthyReplica: peer
-          })
-        }
-      } else {
-        healthyNodeVectorClockQueryList[peer] = secondaryUserWallets
-      }
-    }
-
-    nodeVectorClockQueryList = healthyNodeVectorClockQueryList
-
-    /**
      * Retrieve clock statuses for every secondary user from node
      * TODO move to helper function
      */
-    this.log(`Processing ${usersToProcess.length} users`)
+    this.log(`Processing ${nodeUsers.length} users`)
     // Cached primary clock values for currently processing user set
     let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
     // Process nodeVectorClockQueryList and cache user clock values on each node
@@ -520,7 +578,7 @@ class SnapbackSM {
      */
     let numSyncsIssued = 0
     await Promise.all(
-      usersToProcess.map(
+      nodeUsers.map(
         async (user) => {
           try {
             let userWallet = null
@@ -742,6 +800,8 @@ class SnapbackSM {
  *
  * @dev We maintain this map to maximize query performance; Bull does not provide any api for querying
  *    jobs by property and would require a linear iteration over the full job list
+ *
+ * TODO - move to separate file
  */
 class SyncDeDuplicator {
   constructor () {
