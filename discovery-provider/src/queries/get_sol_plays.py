@@ -19,8 +19,10 @@ def get_sol_play(sol_tx_signature):
             )
         )
         query_results = base_query.first()
+        logger.error(query_results)
         if query_results:
             sol_play = helpers.model_to_dictionary(query_results)
+            logger.error(sol_play)
 
     return sol_play
 
