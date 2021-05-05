@@ -11,6 +11,7 @@ import {
 } from 'store/wallet/slice'
 import BN from 'bn.js'
 import { createSelector } from 'reselect'
+import User from 'models/User'
 
 export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
 
@@ -54,25 +55,12 @@ export const getWeiBalanceForUser = (
   const accountUser = getAccountUser(state)
   const user = getUser(state, { id: userId })
 
-  const wei: StringWei = (() => {
-    if (accountUser?.user_id === userId && state.wallet.totalBalance) {
-      return state.wallet.totalBalance
-    }
-    const userOwnerWalletBalance = user?.balance ?? ('0' as StringWei)
-    const userAssociatedWalletBalance =
-      user?.associated_wallets_balance ?? ('0' as StringWei)
-    const total = new BN(userOwnerWalletBalance).add(
-      new BN(userAssociatedWalletBalance)
-    )
-    return total.toString() as StringWei
-  })()
-
-  return wei
+  if (accountUser?.user_id === userId && state.wallet.totalBalance) {
+    return state.wallet.totalBalance
+  }
+  if (!user) return '0' as StringWei
+  return getUserBalance(user)
 }
-
-/** Gets tier number, highest tier being badgeTiers.length, lowest being 1  */
-export const getTierNumber = (tier: BadgeTier) =>
-  badgeTiers.length - badgeTiers.findIndex(t => t.tier === tier)
 
 export const makeGetTierAndVerifiedForUser = () =>
   createSelector(
@@ -81,15 +69,41 @@ export const makeGetTierAndVerifiedForUser = () =>
       wei,
       isVerified
     ): { tier: BadgeTier; isVerified: boolean; tierNumber: number } => {
-      const audio = stringWeiToAudioBN(wei)
-
-      const index = badgeTiers.findIndex(t => {
-        return t.minAudio.lte(audio)
-      })
-
-      const tier = index === -1 ? 'none' : badgeTiers[index].tier
-      const tierNumber = index === -1 ? 0 : 4 - index
-
+      const { tier, tierNumber } = getTierAndNumberForBalance(wei)
       return { tier, isVerified, tierNumber }
     }
   )
+
+// Helpers
+
+export const getTierAndNumberForBalance = (balance: StringWei) => {
+  const audio = stringWeiToAudioBN(balance)
+
+  const index = badgeTiers.findIndex(t => {
+    return t.minAudio.lte(audio)
+  })
+
+  const tier = index === -1 ? 'none' : badgeTiers[index].tier
+  const tierNumber = index === -1 ? 0 : 4 - index
+
+  return { tier, tierNumber }
+}
+
+/** Gets tier number, highest tier being badgeTiers.length, lowest being 1  */
+export const getTierNumber = (tier: BadgeTier) =>
+  badgeTiers.length - badgeTiers.findIndex(t => t.tier === tier)
+
+export const getUserBalance = (user: User) => {
+  const userOwnerWalletBalance = user?.balance ?? ('0' as StringWei)
+  const userAssociatedWalletBalance =
+    user?.associated_wallets_balance ?? ('0' as StringWei)
+  const total = new BN(userOwnerWalletBalance).add(
+    new BN(userAssociatedWalletBalance)
+  )
+  return total.toString() as StringWei
+}
+
+export const getTierForUser = (user: User) => {
+  const balance = getUserBalance(user)
+  return getTierAndNumberForBalance(balance).tier
+}

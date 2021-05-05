@@ -163,18 +163,21 @@
   border-radius: 4px;
 }
 
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active),
+/**
+ * To make this bg color work with both hover & keyboard selection, we set bg color in the ant
+ * active state, AND unset bg color in the ant built in hover state. Active state must take precedence (!important),
+ * otherwise unsetting in hover will unset us everywhere.
+ */
+.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) {
+  background-color: var(--secondary) !important;
+}
 .searchBox :global(.ant-select-dropdown-menu-item:hover) {
-  background-color: var(--secondary);
+  background-color: unset;
 }
 
 .searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > .resultText,
-.searchBox :global(.ant-select-dropdown-menu-item:hover) > div > div > .resultText {
+.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > div > .resultText {
   color: var(--static-white);
-}
-.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active) > div > div > div > .resultText,
-.searchBox :global(.ant-select-dropdown-menu-item:hover) > div > div > div > .resultText {
-    color: var(--static-white);
 }
 
 .allResultsOptionWrapper {

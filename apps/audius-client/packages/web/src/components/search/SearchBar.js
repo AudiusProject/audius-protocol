@@ -301,6 +301,7 @@ class SearchBar extends Component {
                   defaultImage={opt.defaultImage}
                   secondary={opt.secondary}
                   isVerifiedUser={opt.isVerifiedUser}
+                  tier={opt.tier}
                 />
               </Option>
             ))}
