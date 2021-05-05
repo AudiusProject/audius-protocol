@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 
 # Get single play from table
 def get_sol_play(sol_tx_signature):
+    if not sol_tx_signature:
+        raise Exception("Missing tx signature")
+
     db = get_db_read_replica()
     sol_play = None
     with db.scoped_session() as session:
@@ -19,10 +22,8 @@ def get_sol_play(sol_tx_signature):
             )
         )
         query_results = base_query.first()
-        logger.error(query_results)
         if query_results:
             sol_play = helpers.model_to_dictionary(query_results)
-            logger.error(sol_play)
 
     return sol_play
 
