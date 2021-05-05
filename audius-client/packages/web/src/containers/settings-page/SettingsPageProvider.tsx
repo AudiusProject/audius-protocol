@@ -158,8 +158,6 @@ class SettingsPage extends PureComponent<
       updateEmailFrequency,
       updateCastMethod,
       goToRoute,
-      onTwitterClick,
-      onTwitterCompleteOauth,
       recordSignOut,
       recordAccountRecovery,
       recordDownloadDesktopApp,
@@ -180,8 +178,6 @@ class SettingsPage extends PureComponent<
       theme,
       toggleTheme: this.toggleTheme,
       onInstagramLogin,
-      onTwitterClick,
-      onTwitterCompleteOauth,
       recordSignOut,
       recordAccountRecovery,
       notificationSettings,
@@ -282,7 +278,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
           ? 'light'
           : themeSettings.toLocaleLowerCase()
       const trackEvent: TrackEvent = make(Name.SETTINGS_CHANGE_THEME, {
-        mode: theme as 'dark' | 'light' | 'auto'
+        mode: theme as 'dark' | 'light' | 'matrix' | 'auto'
       })
       dispatch(trackEvent)
     },
@@ -294,17 +290,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       const trackEvent: TrackEvent = make(
         Name.SETTINGS_RESEND_ACCOUNT_RECOVERY,
         {}
-      )
-      dispatch(trackEvent)
-    },
-    onTwitterClick: () => {
-      const trackEvent: TrackEvent = make(Name.SETTINGS_START_TWITTER_OAUTH, {})
-      dispatch(trackEvent)
-    },
-    onTwitterCompleteOauth: (isVerified: boolean) => {
-      const trackEvent: TrackEvent = make(
-        Name.SETTINGS_COMPLETE_TWITTER_OAUTH,
-        { is_verified: isVerified }
       )
       dispatch(trackEvent)
     },

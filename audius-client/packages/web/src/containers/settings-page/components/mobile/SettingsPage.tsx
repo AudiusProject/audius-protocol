@@ -92,7 +92,6 @@ type OwnProps = {
   updateEmailFrequency: (frequency: EmailFrequency) => void
   updateCastMethod: (castMethod: Cast) => void
   recordSignOut: (callback?: () => void) => void
-  onTwitterCompleteOauth: (isVerified: boolean) => void
   showMatrix: boolean
 }
 
