@@ -10,7 +10,6 @@ import AppContext from 'AppContext'
 import App from './containers/App'
 import './services/webVitals'
 import './index.css'
-import './utils/polyfill'
 
 declare global {
   interface Window {
