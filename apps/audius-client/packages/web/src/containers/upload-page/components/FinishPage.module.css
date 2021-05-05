@@ -81,6 +81,10 @@ sbuttons {
   align-items: center;
 }
 
+.createdBy {
+  margin-right: 4px;
+}
+
 .iconVerified {
   margin-left: 4px;
 }
