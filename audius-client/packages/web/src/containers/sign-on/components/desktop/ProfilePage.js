@@ -10,6 +10,8 @@ import DesktopTwitterOverlay from 'containers/sign-on/components/desktop/Twitter
 import MobileTwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
 import ProfileForm from 'containers/sign-on/components/ProfileForm'
 
+const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION
+
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'
 }
@@ -108,7 +110,9 @@ export class ProfilePage extends Component {
     try {
       if (profile.profile_pic_url_hd) {
         try {
-          const profileUrl = profile.profile_pic_url_hd
+          const profileUrl = `${GENERAL_ADMISSION}/proxy/simple?url=${encodeURIComponent(
+            profile.profile_pic_url_hd
+          )}`
           const imageBlob = await fetch(profileUrl).then(r => r.blob())
           const artworkFile = new File([imageBlob], 'Artwork', {
             type: 'image/jpeg'
