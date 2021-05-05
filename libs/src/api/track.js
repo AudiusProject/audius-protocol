@@ -21,11 +21,8 @@ const TRACK_REQUIRED_PROPS = [
 ]
 
 class Track extends Base {
-  constructor (useTrackContentPolling, ...args) {
+  constructor (...args) {
     super(...args)
-
-    this.useTrackContentPolling = useTrackContentPolling
-
     this.getTracks = this.getTracks.bind(this)
     this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
     this.getUnlistedTracks = this.getUnlistedTracks.bind(this)
@@ -337,8 +334,7 @@ class Track extends Base {
         trackFile,
         coverArtFile,
         metadata,
-        onProgress,
-        this.useTrackContentPolling
+        onProgress
       )
 
       phase = phases.ADDING_TRACK

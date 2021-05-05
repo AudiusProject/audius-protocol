@@ -1,6 +1,7 @@
 const assert = require('assert')
 const request = require('supertest')
 const sinon = require('sinon')
+const fs = require('fs')
 const path = require('path')
 
 const BlacklistManager = require('../src/blacklistManager')
@@ -12,7 +13,6 @@ const { generateTimestampAndSignature } = require('../src/apiSigning')
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
-const { uploadTrack } = require('./lib/helpers')
 
 // Dummy keys from circle config.yml
 const DELEGATE_OWNER_WALLET = '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
@@ -21,7 +21,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
-  let app, server, libsMock, mockServiceRegistry
+  let app, server, libsMock
 
   beforeEach(async () => {
     const ipfs = ipfsClient.ipfs
@@ -35,7 +35,6 @@ describe('test ContentBlacklist', function () {
 
     app = appInfo.app
     server = appInfo.server
-    mockServiceRegistry = appInfo.mockServiceRegistry
 
     // Clear redis
     await redis.del(BlacklistManager.getRedisSegmentCIDKey())
@@ -622,18 +621,15 @@ describe('test ContentBlacklist', function () {
       .send(associateRequest)
 
     // Upload a track
-    let trackUploadResponse = await uploadTrack(
-      testAudioFilePath,
-      cnodeUserUUID,
-      mockServiceRegistry.ipfs,
-      mockServiceRegistry.blacklistManager
-    )
-
+    const file = fs.readFileSync(testAudioFilePath)
+    // set track content
     const {
-      transcodedTrackUUID,
-      track_segments: trackSegments,
-      source_file: sourceFile
-    } = trackUploadResponse
+      body: { data: { transcodedTrackUUID, track_segments: trackSegments, source_file: sourceFile } }
+    } = await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', sessionToken)
 
     // set track metadata
     const trackMetadata = {

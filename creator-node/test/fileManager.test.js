@@ -1,19 +1,20 @@
 const assert = require('assert')
 const sinon = require('sinon')
 const uuid = require('uuid/v4')
-const fs = require('fs-extra')
+const fs = require('fs')
+const fsExtra = require('fs-extra')
 const path = require('path')
 const proxyquire = require('proxyquire')
 
-const { serviceRegistry } = require('../src/serviceRegistry')
-const ipfs = serviceRegistry.ipfs
+const { ipfs } = require('../src/ipfsClient')
 const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
 const { sortKeys } = require('../src/apiSigning')
 const DiskManager = require('../src/diskManager')
 
-const storagePath = config.get('storagePath')
+let storagePath = config.get('storagePath')
+storagePath = storagePath.charAt(0) === '/' ? storagePath.slice(1) : storagePath
 
 const reqFnStubs = {
   ipfsAPI: ipfs,
@@ -61,8 +62,18 @@ describe('test fileManager', () => {
      * Then: an error is thrown
      */
     it('should throw error if cnodeUserUUID is not present', async () => {
+      const reqOverride = {
+        session: {},
+        logger: {
+          info: () => {}
+        },
+        app: {
+          get: () => { return DiskManager.getConfigStoragePath() }
+        }
+      }
+
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath, ipfs)
+        await saveFileToIPFSFromFS(reqOverride, srcPath)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -78,7 +89,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS(req, srcPath)
         assert.fail('Should not have passed if ipfs is down.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'ipfs is down!')
@@ -99,7 +110,7 @@ describe('test fileManager', () => {
       )
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS(req, srcPath)
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -118,7 +129,7 @@ describe('test fileManager', () => {
       sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS(req, srcPath)
       } catch (e) {
         assert.fail(e.message)
       }
@@ -248,7 +259,7 @@ describe('test removeTrackFolder()', async function () {
   // copy test dir into /test_file_storage dir to be deleted by removeTrackFolder()
   beforeEach(async function () {
     // uses `fs-extra` module for recursive directory copy since base `fs` module doesn't provide this
-    await fs.copy(testTrackUploadDir, storagePath)
+    await fsExtra.copy(testTrackUploadDir, storagePath)
   })
 
   afterEach(async function () {

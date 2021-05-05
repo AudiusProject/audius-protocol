@@ -174,8 +174,7 @@ class AudiusLibs {
     comstockConfig,
     captchaConfig,
     isServer,
-    isDebug = false,
-    useTrackContentPolling = false
+    isDebug = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -209,8 +208,6 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
-
-    this.useTrackContentPolling = useTrackContentPolling
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -336,7 +333,7 @@ class AudiusLibs {
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new User(this.ServiceProvider, ...services)
     this.Account = new Account(this.User, ...services)
-    this.Track = new Track(this.useTrackContentPolling, ...services)
+    this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(...services)
   }
