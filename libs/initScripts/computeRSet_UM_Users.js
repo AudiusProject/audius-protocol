@@ -139,7 +139,7 @@ async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
   // Exclude https://creatornode.audius4.prod-us-west-2.staked.cloud
   // Excluded https://content-a.mainnet.audius.radar.tech, 24
   // Excluded https://creatornode.audius6.prod-us-west-2.staked.cloud, 19
-  const audiusInfraSpIds = new Set([UMSpId, 1, 2, 3, 17, 15, 12, 19, 24]) // when UM is registered, exclude it as secondary
+  const audiusInfraSpIds = new Set([UMSpId, 1, 2, 3, 17, 15, 12, 18, 19, 24]) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
   const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
@@ -395,8 +395,8 @@ const run = async () => {
   let userIdsFail = []
 
   // const numUsersToProcess = numOfUsers
-  const numUsersToProcess = 3000
-  for (offset = 2500; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  const numUsersToProcess = 5000
+  for (offset = 4000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
