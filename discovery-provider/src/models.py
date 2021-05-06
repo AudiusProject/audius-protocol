@@ -34,7 +34,11 @@ def validate_field_helper(field, value, model, field_type):
     if field in ('created_at', 'updated_at'):
         return value
 
-    # remove null terminator character from varchar and text types
+    # remove null characters from varchar and text fields
+    # Postgres does not support these well and it throws this error if you try to insert
+    # `Fatal error in main loop A string literal cannot contain NUL (0x00) characters`
+    # the fix is to replace those characters with empty with empty string
+    # https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
     if type(field_type) in (String, Text) and value:
         value = value.replace("\x00", "")
 
