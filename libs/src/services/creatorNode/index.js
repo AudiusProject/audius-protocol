@@ -356,11 +356,12 @@ class CreatorNode {
    * we want to fully use polling for track content, and remove the existing method
    */
   async uploadTrackAudioPolling (file, onProgress) {
+    let route = `${this.creatorNodeEndpoint}/track_content_async`
     let uuid
     try {
       ({ data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress))
     } catch (e) {
-      await this._handleErrorHelper(e)
+      await this._handleErrorHelper(e, route)
     }
 
     const start = Date.now()
@@ -369,13 +370,13 @@ class CreatorNode {
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), `/track_content_async`, uuid)
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), route, uuid)
 
       // Check the transcode status every 3s
       await wait(POLL_STATUS_INTERVAL)
     }
 
-    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), `/track_content_async`, uuid)
+    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
   }
 
   /**
