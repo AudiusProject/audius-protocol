@@ -12,8 +12,7 @@ const MaxSyncMonitoringDurationInMs = 360000
 const SyncMonitoringRetryDelayMs = 15000
 
 // Base value used to filter users over a 24 hour period
-// const ModuloBase = 24
-const ModuloBase = 2
+const ModuloBase = 24
 
 // For local dev, configure this to be the interval when SnapbackSM is fired
 const DevDelayInMS = 3000
