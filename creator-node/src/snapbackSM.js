@@ -317,23 +317,10 @@ class SnapbackSM {
   }
 
   /**
-   * Determines if a peer node is sufficiently healthy and able to process syncRequests, or if it needs to be cycled out
+   * Determines if a peer node is sufficiently healthy and able to process syncRequests
    *
    * Peer health criteria:
-   * - query verbose health check with timeout
-   *    - ensure 200 response
-   *    - TODO ensure min free storage
-   *    - TODO ensure min free memory
-   *    - TODO ensure min CPUs
-   *    - TODO ensure min version, spID etc? seems overkill
-   *
-   * - LATER gateway health - ping randomly selected shared CID
-   *    - depends on nodes sync status, cannot request CID node hasn't synced yet
-   *
-   * - LATER sync health
-   *    - sync step records success/failure in redis
-   *
-   * - LATER upload health - TBD
+   * - verbose health check returns 200 within timeout
    *
    * TODO - consider moving this pure function to libs
    *
