@@ -34,8 +34,6 @@ def validate_field_helper(field, value, model, field_type):
     if field in ('created_at', 'updated_at'):
         return value
 
-    logger.info(f' field, value, model, fieldType {field}, {value}, {model}, {field_type}')
-
     # remove null terminator character from varchar and text types
     if type(field_type) in (String, Text) and value:
         value = value.replace("\x00", "")
