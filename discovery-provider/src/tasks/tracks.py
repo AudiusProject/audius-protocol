@@ -319,7 +319,8 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.create_date = track_metadata["create_date"]
     track_record.release_date = track_metadata["release_date"]
     track_record.file_type = track_metadata["file_type"]
-    track_record.description = track_metadata["description"]
+    track_record.description = track_metadata["description"].replace("\x00", "") \
+        if track_metadata["description"] else track_metadata["description"]
     track_record.license = track_metadata["license"]
     track_record.isrc = track_metadata["isrc"]
     track_record.iswc = track_metadata["iswc"]
