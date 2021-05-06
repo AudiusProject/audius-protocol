@@ -31,14 +31,14 @@ def validate_field_helper(field, value, model, field_type):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
     # also not totally necessary as these fields are created server side
+    if field in ('created_at', 'updated_at'):
+        return value
+
     logger.info(f' field, value, model, fieldType {field}, {value}, {model}, {field_type}')
 
     # remove null terminator character from varchar and text types
     if field_type.lower() in ('varchar', 'text'):
         value = value.replace("\x00", "")
-    
-    if field in ('created_at', 'updated_at'):
-        return value
 
     to_validate = {
         field: value
