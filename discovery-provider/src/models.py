@@ -26,7 +26,7 @@ from src.model_validator import ModelValidator
 Base = declarative_base()
 logger = logging.getLogger(__name__)
 
-
+# field_type is the sqlalchemy type from the model object
 def validate_field_helper(field, value, model, field_type):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
@@ -37,7 +37,7 @@ def validate_field_helper(field, value, model, field_type):
     logger.info(f' field, value, model, fieldType {field}, {value}, {model}, {field_type}')
 
     # remove null terminator character from varchar and text types
-    if field_type.lower() in ('varchar', 'text'):
+    if type(field_type) in (String, Text):
         value = value.replace("\x00", "")
 
     to_validate = {
