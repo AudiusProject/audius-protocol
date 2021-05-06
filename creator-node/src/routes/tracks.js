@@ -2,6 +2,8 @@ const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
 const path = require('path')
+const tus = require('tus-node-server')
+const uuid = require('uuid/v4')
 
 const config = require('../config.js')
 const models = require('../models')
@@ -10,6 +12,7 @@ const {
   saveFileToIPFSFromFS,
   removeTrackFolder,
   handleTrackContentUpload
+  // handleResumableTrackContentUpload
 } = require('../fileManager')
 const {
   handleResponse,
@@ -37,37 +40,118 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
+const DiskManager = require('../diskManager')
 
+const server = new tus.Server()
 const readFile = promisify(fs.readFile)
+const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
+const tusRoute = path.join(tmpTrackArtifactsPath, '*', '*')
+
 module.exports = function (app) {
-  /**
-   * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
-   * @note this track content route is used in conjunction with the polling.
-   */
-  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
-    if (req.fileSizeError || req.fileFilterError) {
-      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
-      return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
+    // save file under randomly named folders to avoid collisions
+    const randomFileName = uuid()
+    // ex: '/file_storage/files/tmp_track_artifacts/<uuid>'
+    const fileDir = path.join(tmpTrackArtifactsPath, randomFileName)
+
+    // create directories for original file and segments
+    // TODO: some reason this doesn't work locally.. has to do with permissions?
+    // manually created tmp track dirs instead
+    fs.mkdirSync(fileDir, { recursive: true }) // '/file_storage/files/tmp_track_artifacts/<uuid>'
+    fs.mkdirSync(fileDir + '/segments') // '/file_storage/files/tmp_track_artifacts/<uuid>/segments'
+
+    server.datastore = new tus.FileStore({
+      path: fileDir
+      // Custom file names
+      // namingFunction: () => {}
+    })
+
+    const resp = await server.handle.bind(server)(req, res, next)
+
+    // req.logger.info('i am the tus route', getTusRoute())
+  })
+
+  app.all(tusRoute, async function (req, res, next) {
+    // create datastore off of req data probably?
+
+    // check that if in req headers that if
+    /* Upload-Offset === upload-length (i think the first might be in the body) {
+      FileProcessingQueue.add(the stupid task with the data needed)
     }
 
-    await FileProcessingQueue.addTranscodeTask(
-      {
-        logContext: req.logContext,
-        req: {
-          fileName: req.fileName,
-          fileDir: req.fileDir,
-          fileDestination: req.file.destination,
-          session: {
-            cnodeUserUUID: req.session.cnodeUserUUID
-          }
-        }
-      }
-    )
-    return successResponse({ uuid: req.logContext.requestID })
-  }))
+    */
+    console.log('hello patch')
+
+    const pathMinusID = req.originalUrl.split('/')
+    const actualPath = (pathMinusID.slice(0, pathMinusID.length - 1)).join('/')
+
+    server.datastore = new tus.FileStore({
+      path: actualPath
+      // Custom file names
+      // namingFunction: () => {}
+    })
+
+    const resp = await server.handle.bind(server)(req, res, next)
+    console.log('what is the head respposne dawg')
+  })
+
+  // app.head(path.join(tmpTrackArtifactsPath, '*', '*'), async function (req, res, next) {
+  //   // create datastore off of req data probably? -> needs to have the randomfilename to make data store
+  //   console.log('hello head')
+
+  //   server.datastore = new tus.FileStore({
+  //     path: req.originalUrl // upload url -- the specific location of the file to be uploaded
+  //     // Custom file names
+  //     // namingFunction: () => {}
+  //   })
+
+  //   const resp = await server.handle.bind(server)(req, res, next)
+  //   console.log('what is the head respposne dawg')
+  // })
+
+  // /**
+  //  * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
+  //  * @note this track content route is used in conjunction with the polling.
+  //  */
+  // app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResumableTrackContentUpload, /* handleTrackContentUpload, */ async (req, res) => {
+  // // req.file looks like '{"fieldname":"file","originalname":"April.mp3","encoding":"7bit","mimetype":"audio/mpeg","destination":"/file_storage/files/tmp_track_artifacts/f0507863-3ef7-4f7f-ad9d-ecdf3f0d2cad","filename":"f0507863-3ef7-4f7f-ad9d-ecdf3f0d2cad.mp3","path":"/file_storage/files/tmp_track_artifacts/f0507863-3ef7-4f7f-ad9d-ecdf3f0d2cad/f0507863-3ef7-4f7f-ad9d-ecdf3f0d2cad.mp3","size":2010218}'
+  //   if (req.fileSizeError || req.fileFilterError) {
+  //     removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+  //     return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+  //   }
+
+  //   await FileProcessingQueue.addTranscodeTask(
+  //     {
+  //       logContext: req.logContext,
+  //       req: {
+  //         fileName: req.fileName,
+  //         fileDir: req.fileDir,
+  //         fileDestination: req.file.destination,
+  //         session: {
+  //           cnodeUserUUID: req.session.cnodeUserUUID
+  //         }
+  //       }
+  //     }
+  //   )
+  //   // return successResponse({ uuid: req.logContext.requestID })
+  // })
+
+  // server.on(tus.EVENTS.EVENT_UPLOAD_COMPLETE, (event) => {
+  //   console.log(`Upload complete for file ${event.file.id}`)
+  // })
+
+  // const server = new tus.Server()
+
+  // app.use('/file_storage/files/tmp_track_artifacts/*/*', async function (req, res, next) {
+  //   server.datastore = new tus.FileStore({
+  //     path: req.fileDir
+  //   })
+  //   server.handle.bind(server)
+  //   next()
+  // })
 
   /**
      * upload track segment files and make avail - will later be associated with Audius track
