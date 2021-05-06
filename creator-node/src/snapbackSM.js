@@ -12,7 +12,8 @@ const MaxSyncMonitoringDurationInMs = 360000
 const SyncMonitoringRetryDelayMs = 15000
 
 // Base value used to filter users over a 24 hour period
-const ModuloBase = 24
+// const ModuloBase = 24
+const ModuloBase = 2
 
 // For local dev, configure this to be the interval when SnapbackSM is fired
 const DevDelayInMS = 3000
@@ -41,7 +42,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
-    this.snapbackDevModeEnabled = true // this.nodeConfig.get('snapbackDevModeEnabled')
+    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
@@ -138,11 +139,16 @@ class SnapbackSM {
 
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
+
+    logger.info(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode`)
   }
 
-  // Class level log output
   log (msg) {
     logger.info(`SnapbackSM: ${msg}`)
+  }
+
+  logError (msg) {
+    logger.error(`SnapbackSM ERROR: ${msg}`)
   }
 
   // Initialize queue object with provided name and unix timestamp
@@ -195,7 +201,6 @@ class SnapbackSM {
     // Fetch discovery node currently connected to libs as this can change
     const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
 
-    // Re-initialize if no discovery provider selected by libs instance
     if (!discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
     }
@@ -209,6 +214,8 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
+
+    // Will throw error on non-200 response
     const resp = await axios(requestParams)
 
     return resp.data.data
@@ -290,22 +297,22 @@ class SnapbackSM {
 
   /**
    * @param {Array} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @returns {Array} array of content node endpoint strings
+   * @returns {Set} Set of content node endpoint strings
    */
-  async computeContentNodePeerSet (nodeUserInfoList) {
+  computeContentNodePeerSet (nodeUserInfoList) {
+    // Aggregate all nodes from user replica sets
     let peerList = (
       nodeUserInfoList.map(userInfo => userInfo.primary)
-      .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
-      .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
     )
 
     peerList = peerList.filter(Boolean) // filter out falsey values
 
-    peerList = peerList.filter(peer => (peer != this.endpoint)) // remove self from peerList
+    peerList = peerList.filter(peer => (peer !== this.endpoint)) // remove self from peerList
 
-    let peerSet = new Set(peerList) // convert to Set to get uniques
+    const peerSet = new Set(peerList) // convert to Set to get uniques
 
-    // TODO decide if return as set or list (for now just return as is, consider changing when doing monitoring work)
     return peerSet
   }
 
@@ -314,7 +321,7 @@ class SnapbackSM {
    *
    * Peer health criteria:
    * - query verbose health check with timeout
-   *    - TODO ensure 200 response
+   *    - ensure 200 response
    *    - TODO ensure min free storage
    *    - TODO ensure min free memory
    *    - TODO ensure min CPUs
@@ -328,6 +335,8 @@ class SnapbackSM {
    *
    * - LATER upload health - TBD
    *
+   * TODO - consider moving this pure function to libs
+   *
    * @param {string} endpoint
    * @returns {Boolean}
    */
@@ -337,12 +346,11 @@ class SnapbackSM {
     try {
       // Axios request will throw on timeout or non-200 response
       await axios({
-        method: 'get',
         baseURL: endpoint,
         url: '/health_check/verbose',
+        method: 'get',
         timeout: 2000 // TODO config var
       })
-
     } catch (e) {
       healthy = false
     }
@@ -351,8 +359,10 @@ class SnapbackSM {
   }
 
   /**
-   * Update replica set on chain for user, given current configs
-   * Select new secondary via libs
+   * Submit POA:UserReplicaSetFactory.updateReplicaSet() transaction to move user off unhealthy node
+   *
+   * @dev TODO use libs for CreatorNodeSelection logic + relayed chain call
+   * @dev One issue - since it doesn't actually rectify broken replica sets, this will log every time it is processed
    */
   async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplica) {
     // await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
@@ -360,34 +370,40 @@ class SnapbackSM {
     this.log(`Updating Replica Set for userID ${userId} & wallet ${wallet} from old replicaSet [${primary},${secondary1},${secondary2}] due to unhealthy replica ${unhealthyReplica}`)
   }
 
-  buildSecondaryNodesToUserWalletsMap (usersRequiringSyncRequests) {
+  /**
+   * Converts provided array of SyncRequests to issue to a map(secondaryNode => userWallets[]) for easier access
+   *
+   * @param {Array} requiredSyncRequests array of objects with schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   */
+  buildSecondaryNodesToUserWalletsMap (requiredSyncRequests) {
     const secondaryNodesToUserWalletsMap = {}
 
-    usersRequiringSyncRequests.forEach(userInfo => {
-      const { wallet, secondary1, secondary2 } = userInfo
-      const secondaries = ([secondary1, secondary2]).filter(Boolean)
+    requiredSyncRequests.forEach(userInfo => {
+      const { wallet, endpoint: secondary } = userInfo
 
-      secondaries.forEach(secondary => {
-        // Initialize empty array for node in map if needed
-        if (!secondaryNodesToUserWalletsMap[secondary]) {
-          secondaryNodesToUserWalletsMap[secondary] = []
-        }
+      if (!secondaryNodesToUserWalletsMap[secondary]) {
+        secondaryNodesToUserWalletsMap[secondary] = []
+      }
 
-        // Push wallet into map
-        secondaryNodesToUserWalletsMap[secondary].push(wallet)
-      })
+      secondaryNodesToUserWalletsMap[secondary].push(wallet)
     })
 
     return secondaryNodesToUserWalletsMap
   }
 
+  /**
+   * Given map(secondaryNode => userWallets[]), retrieves clock values for every (secondaryNode, userWallet) pair
+   *
+   * @returns map(secondaryNode => map(userWallet => secondaryClockValue))
+   */
   async retrieveClockStatusesForSecondaryUsersFromNodes (secondaryNodesToUserWalletsMap) {
-    const secondaryNodesToUserClockStatusesMap = {}
+    const secondaryNodesToUserClockValuesMap = {}
 
     const secondaryNodes = Object.keys(secondaryNodesToUserWalletsMap)
 
+    // TODO change to batched parallel requests
     await Promise.all(secondaryNodes.map(async (secondaryNode) => {
-      secondaryNodesToUserClockStatusesMap[secondaryNode] = {}
+      secondaryNodesToUserClockValuesMap[secondaryNode] = {}
 
       const secondaryNodeUserWallets = secondaryNodesToUserWalletsMap[secondaryNode]
 
@@ -399,48 +415,65 @@ class SnapbackSM {
       }
 
       // TODO convert to axios-retry, wrap in try-catch
-      const userClockStatuses = (await axios(axiosReqParams)).data.data.users
+      const userClockValuesResp = (await axios(axiosReqParams)).data.data.users
 
-      userClockStatuses.forEach(userClockStatus => {
-        
+      userClockValuesResp.forEach(userClockValueResp => {
+        const { walletPublicKey, clock } = userClockValueResp
+        try {
+          secondaryNodesToUserClockValuesMap[secondaryNode][walletPublicKey] = clock
+        } catch (e) {
+          this.log(`Error updating secondaryNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`)
+          throw e
+        }
       })
     }))
+
+    return secondaryNodesToUserClockValuesMap
   }
 
-  /** TODO */
-  async issueSyncRequests (usersRequiringSyncRequests, secondaryNodesToUserClockStatusesMap) {
-    const userWallets = usersRequiringSyncRequests.map(user => user.wallet)
+  /**
+   * Issues SyncRequests for every (user, secondary) pair if needed
+   * Only issues requests if primary clock value is greater than secondary clock value
+   *
+   * @param {Array} requiredSyncRequests array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   *      `endpoint` field indicates secondary on which to issue SyncRequest
+   * @param {Object} secondaryNodesToUserClockStatusesMap map(secondaryNode => map(userWallet => secondaryClockValue))
+   * @returns {Number} number of sync requests issued
+   */
+  async issueSyncRequests (requiredSyncRequests, secondaryNodesToUserClockStatusesMap) {
+    // Retrieve clock values for all users on this node, which is their primary
+    const userWallets = requiredSyncRequests.map(user => user.wallet)
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
 
     let numSyncRequestsIssued = 0
 
-    await Promise.all(usersRequiringSyncRequests.map(async (user) => {
+    // TODO change to chunked parallel
+    await Promise.all(requiredSyncRequests.map(async (user) => {
       try {
-        // TODO - ensure non-null wallet (is this needed?)
-        const { secondary1, secondary2, wallet } = user.wallet
+        const { wallet, endpoint: secondary } = user
 
+        // TODO - throw on null wallet (is this needed?)
+
+        // Determine if secondary requires a sync by comparing clock values against primary (this node)
         const userPrimaryClockVal = userPrimaryClockValues[wallet]
+        const userSecondaryClockVal = secondaryNodesToUserClockStatusesMap[secondary][wallet]
+        const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
 
-        // Determine if either secondary requires a sync by comparing clock values against primary (this node)
-        const secondaries = ([secondary1, secondary2]).filter(Boolean)
-        await Promise.all(secondaries.map(async (secondary) => {
-          const userSecondaryClockVal = secondaryNodesToUserClockStatusesMap[secondary][wallet]
-          const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
+        if (syncRequired) {
+          // TODO ensure try-catched with log
+          await this.enqueueSync({
+            userWallet: wallet,
+            secondaryEndpoint: secondary,
+            primaryEndpoint: this.endpoint,
+            syncType: SyncType.Recurring
+          })
 
-          if (syncRequired) {
-            await this.enqueueSync({
-              userWallet: wallet,
-              secondaryEndpoint: secondary,
-              primaryEndpoint: this.endpoint,
-              syncType: SyncType.Recurring
-            })
-
-            numSyncRequestsIssued += 1
-          }
-        }))
+          numSyncRequestsIssued += 1
+        }
 
         // Issue syncRequest if required
       } catch (e) {
+        // TODO improve error
         this.log(`Caught error for user ${user.wallet}, ${JSON.stringify(user)}, ${e.message}`)
       }
     }))
@@ -449,36 +482,22 @@ class SnapbackSM {
   }
 
   /**
-   * New description
-   * - get all users with this node in replica set DONE
-   * - compute chunk of users for current processing run DONE
-   * - compute peerset of all replicas in users list DONE
-   * - check all peer health and record unhealthy peers DONE
-   * - define updateReplicaSet = [] DONE
-   * - define syncOps = [] DONE
-   * - for every user: DONE
-   *    - if replica is in unhealthy set, add to updateReplicaSet
-   *    - else if this.node = primary, add to syncOps
-   * - from syncOps array, build map of secondary node -> user_wallets[] DONE
-   * - for every secondary node, query batch_clock_status[user_wallets] DONE
-   *    - store into secondaryNodeUserClockStatuses map of node -> (map of user -> clock_status) DONE
-   * - for every secondary syncOp in syncOps DONE
-   *    - trigger sync DONE
-   * - for every updateReplicaSet in updateReplicaSets: DONE
-   *    - update replica set
-   *
-   *
    * Main state machine processing function
    * - Processes all users in chunks
    * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
-   * - For every user on a healthy replica, ensures replica is synced up
-   * - Determines which users need to be processed and enqueues syncs to secondaries
+   * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
    */
   async processStateMachineOperation () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
     // Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
-    let nodeUsers = await this.getNodeUsers()
+    let nodeUsers
+    try {
+      nodeUsers = await this.getNodeUsers()
+    } catch (e) {
+      this.logError(`Error in ProcessStateMachineOperation():getNodeUsers() || ${e.message} || Exiting`)
+      return
+    }
 
     /**
      * Select chunk of users to process in this run
@@ -490,10 +509,10 @@ class SnapbackSM {
     )
 
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-    const peerSet = await this.computeContentNodePeerSet(nodeUsers)
+    const peerSet = this.computeContentNodePeerSet(nodeUsers)
 
     /**
-     * Determine health for every peer
+     * Determine health for every peer & build list of unhealthy peers
      * TODO change from sequential to chunked parallel
      */
     const unhealthyPeers = new Set()
@@ -503,15 +522,17 @@ class SnapbackSM {
         unhealthyPeers.add(peer)
       }
     }
+    this.log(`processStateMachineOperation():determinePeerHealth() || unhealthy peers: ${Array.from(unhealthyPeers)}`)
 
-    // TODO document
-    const usersRequiringReplicaSetUpdates = []
-    const usersRequiringSyncRequests = []
+    // Lists to aggregate all required ReplicaSetUpdate ops and SyncRequest ops
+    const requiredUpdateReplicaSetOps = []
+    const requiredSyncRequests = []
 
     /**
      * For every node user, record sync requests to issue to secondaries if this node is primary
      *    and record replica set updates to issue for any unhealthy replicas
      *
+     * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
      * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
      */
     for (const nodeUser of nodeUsers) {
@@ -521,43 +542,49 @@ class SnapbackSM {
         const secondaries = ([secondary1, secondary2]).filter(Boolean)
         for (const secondary of secondaries) {
           if (unhealthyPeers.has(secondary)) {
-            usersRequiringReplicaSetUpdates.push({ ...nodeUser, unhealthyReplica: secondary })
+            requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
           } else {
-            usersRequiringSyncRequests.push({ ...nodeUser, endpoint: secondary })
+            requiredSyncRequests.push({ ...nodeUser, endpoint: secondary })
           }
         }
       } else {
         const replicas = ([primary, secondary1, secondary2]).filter(Boolean).filter(replica => replica !== this.endpoint)
         for (const replica of replicas) {
           if (unhealthyPeers.has(replica)) {
-            usersRequiringReplicaSetUpdates.push({ ...nodeUser, unhealthyReplica: replica })
+            requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
           }
         }
       }
     }
 
-    // Build map of secondary node to secondary user wallets array for later use
-    const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(usersRequiringSyncRequests)
+    // Build map of secondary node to secondary user wallets array
+    const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(requiredSyncRequests)
 
     // Retrieve clock statuses for all secondary users from secondary nodes
     const secondaryNodesToUserClockStatusesMap = await this.retrieveClockStatusesForSecondaryUsersFromNodes(secondaryNodesToUserWalletsMap)
 
     // Issue all required sync requests
-    const numSyncRequestsIssued = await this.issueSyncRequests(usersRequiringSyncRequests, secondaryNodesToUserClockStatusesMap)
+    const numSyncRequestsIssued = await this.issueSyncRequests(requiredSyncRequests, secondaryNodesToUserClockStatusesMap)
 
     // Issue all required replica set updates
-    for await (const userInfo of usersRequiringReplicaSetUpdates) {
-      await this.issueUpdateReplicaSetOp(userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica)
+    for await (const userInfo of requiredUpdateReplicaSetOps) {
+      await this.issueUpdateReplicaSetOp(
+        userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica
+      )
     }
+    const numUpdateReplicaOpsIssued = requiredUpdateReplicaSetOps.length
 
     // Increment and adjust current slice by ModuloBase
     const previousModuloSlice = this.currentModuloSlice
     this.currentModuloSlice += 1
     this.currentModuloSlice = this.currentModuloSlice % ModuloBase
 
-    this.log(`------------------END Process SnapbackSM Operation || Issued ${numSyncRequestsIssued} SyncRequest ops in slice ${previousModuloSlice} of ${ModuloBase}. Moving to slice ${this.currentModuloSlice} ------------------`)
+    this.log(`------------------END Process SnapbackSM Operation || Issued ${numSyncRequestsIssued} SyncRequest ops & ${numUpdateReplicaOpsIssued} UpdateReplicaSet ops in slice ${previousModuloSlice} of ${ModuloBase}. Moving to slice ${this.currentModuloSlice} ------------------`)
   }
 
+  /**
+   * DEPRECATED replaced by this.processStateMachineOperation()
+   */
   async processStateMachineOperationOld () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
