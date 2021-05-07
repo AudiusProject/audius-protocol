@@ -188,6 +188,8 @@ class SnapbackSM {
    * Retrieve users with this node as replica (primary or secondary)
    *  - Makes single request to discovery node to retrieve all users
    *
+   * @notice This route depends on a new discprov route and cannot be consumed until every discprov exposes that route
+   *
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
@@ -211,6 +213,30 @@ class SnapbackSM {
     }
     const resp = await axios(requestParams)
 
+    return resp.data.data
+  }
+
+  /**
+   * Retrieve users with this node as primary
+   * Leaving this route in until all discovery providers update to new version and expose new `/users/content_node/all` route
+   */
+  async getNodePrimaryUsers () {
+    const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    if (!currentlySelectedDiscProv) {
+      // Re-initialize if no discovery provider has been selected
+      throw new Error('No discovery provider currently selected, exiting')
+    }
+
+    let requestParams = {
+      method: 'get',
+      baseURL: currentlySelectedDiscProv,
+      url: `users/creator_node`,
+      params: {
+        creator_node_endpoint: this.endpoint
+      }
+    }
+    let resp = await axios(requestParams)
+    this.log(`Discovery provider: ${currentlySelectedDiscProv}`)
     return resp.data.data
   }
 
@@ -316,12 +342,8 @@ class SnapbackSM {
   async processStateMachineOperation () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
-    // Retrieve list of all users which have this node as replica
-    const nodeUsers = await this.getNodeUsers()
-    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary === this.endpoint))
-
-    // Build content node peer set (Note this is not currently used)
-    await this.computeContentNodePeerSet(nodeUsers)
+    // Retrieve list of all users that have this node as primary
+    const nodePrimaryUsers = await this.getNodePrimaryUsers()
 
     /**
      * Build map of content node to list of all users that need to be processed
