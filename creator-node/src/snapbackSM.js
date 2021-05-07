@@ -97,8 +97,7 @@ class SnapbackSM {
           this.log(`StateMachineQueue error processing ${e}`)
         }
 
-        // const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
-        const stateMachineJobInterval = DevDelayInMS
+        const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
 
         this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
         await utils.timeout(stateMachineJobInterval)
@@ -291,7 +290,7 @@ class SnapbackSM {
 
   /**
    * @param {Array} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @returns {Array} array of content node endpoint strings
+   * @returns {Set} Set of content node endpoint strings
    */
   async computeContentNodePeerSet (nodeUserInfoList) {
     let peerList = (
@@ -306,7 +305,6 @@ class SnapbackSM {
 
     let peerSet = new Set(peerList) // convert to Set to get uniques
 
-    // TODO decide if return as set or list
     return peerSet
   }
 
@@ -322,12 +320,8 @@ class SnapbackSM {
     const nodeUsers = await this.getNodeUsers()
     const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary == this.endpoint))
 
-    this.log(`NODEUSERS ${JSON.stringify(nodeUsers)}`)
-    this.log(`NODEPRIMARYUSERS ${JSON.stringify(nodePrimaryUsers)}`)
-
     // Build content node peer set
     const peerSet = await this.computeContentNodePeerSet(nodeUsers)
-    this.log(`PEERSET ${JSON.stringify(Array.from(peerSet))}`)
 
     /**
      * Build map of content node to list of all users that need to be processed

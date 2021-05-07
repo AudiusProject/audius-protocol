@@ -542,7 +542,8 @@ def get_previously_private_playlists_route():
 
 
 # Get the users with a given `creator_node_endpoint` as primary
-# This route is deprecated in favor of `/users/content_node` below, but left for backwards-compatibility
+# NOTE This route is deprecated in favor of `/users/content_node` below
+#       It is left here for backwards-compatibility
 @bp.route("/users/creator_node", methods=("GET",))
 def get_creator_node_users():
     try:
@@ -574,6 +575,7 @@ def get_content_node_users(replica_type):
         return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 @bp.route("/ursm_content_nodes", methods=("GET",))
 def get_ursm_content_nodes():
