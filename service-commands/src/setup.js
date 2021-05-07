@@ -91,7 +91,8 @@ const execShellCommands = async (commands, service, { verbose }) => {
       await execShellCommand(command, service, { verbose })
     }
   } catch (e) {
-    throw new Error(e.message)
+    console.error(e)
+    process.exit(1);
   }
 }
 
@@ -108,7 +109,8 @@ const SetupCommand = Object.freeze({
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
   HEALTH_CHECK: 'health-check',
   UNSET_SHELL_ENV: 'unset-shell-env',
-  UP_UM: 'up-um'
+  UP_UM: 'up-um',
+  UP_WEB_SERVER: 'up-web-server'
 })
 
 /**
@@ -124,6 +126,7 @@ const Service = Object.freeze({
   NETWORK: 'network',
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
+  SOLANA_PROGRAMS: 'solana-programs',
   IPFS: 'ipfs',
   IPFS_2: 'ipfs-2',
   IPFS_3: 'ipfs-3',
@@ -249,7 +252,9 @@ const performHealthCheckWithRetry = async (
     try {
       await wait(4000)
       await performHealthCheck(service, serviceNumber)
-      console.log(`Successful health check for ${service}${serviceNumber || ''}`.happy)
+      console.log(
+        `Successful health check for ${service}${serviceNumber || ''}`.happy
+      )
       return
     } catch (e) {
       console.log(`${e}`)
@@ -283,13 +288,17 @@ const performHealthCheck = async (service, serviceNumber) => {
  * @returns {Promise<void>}
  */
 const discoveryNodeUp = async () => {
-  console.log('\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'.error)
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
 
   const options = { verbose: true }
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP, options],
-    [Service.ETH_CONTRACTS, SetupCommand.UP, options]
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
   ]
 
   const sequential = [
@@ -322,11 +331,63 @@ const discoveryNodeUp = async () => {
 }
 
 /**
+ * Brings up all services relevant to the discovery node, but
+ * with only the discovery web server and redis. Useful in running against a custom
+ * database.
+ * @returns {Promise<void>}
+ */
+const discoveryNodeWebServerUp = async () => {
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
+
+  const options = { verbose: true }
+
+  const inParallel = [
+    [Service.CONTRACTS, SetupCommand.UP, options],
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
+  ]
+
+  const sequential = [
+    [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
+    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.UP_WEB_SERVER],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.REGISTER,
+      { ...options, retries: 2 }
+    ]
+  ]
+
+  const start = Date.now()
+
+  // Start up the docker network `audius_dev`
+  await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Run parallel ops
+  await Promise.all(inParallel.map(s => runSetupCommand(...s)))
+
+  // Run sequential ops
+  for (const s of sequential) {
+    await runSetupCommand(...s)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`Services brought up in ${durationSeconds}s`.info)
+}
+
+/**
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
 const allUp = async ({ numCreatorNodes = 4 }) => {
-  console.log('\n\n========================================\n\nNOTICE - Please make sure your \'/etc/hosts\' file is up to date.\n\n========================================\n\n'.error)
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
 
   const options = { verbose: true }
 
@@ -334,7 +395,8 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
     [Service.IPFS, SetupCommand.UP, options],
     [Service.IPFS_2, SetupCommand.UP, options],
     [Service.CONTRACTS, SetupCommand.UP, options],
-    [Service.ETH_CONTRACTS, SetupCommand.UP, options]
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
   ]
 
   const creatorNodeCommands = _.range(1, numCreatorNodes + 1).reduce(
@@ -376,23 +438,13 @@ const allUp = async ({ numCreatorNodes = 4 }) => {
       SetupCommand.REGISTER,
       { ...options, retries: 2 }
     ],
-    [
-      Service.USER_METADATA_NODE,
-      SetupCommand.UNSET_SHELL_ENV
-    ],
-    [
-      Service.USER_METADATA_NODE,
-      SetupCommand.UP_UM
-    ],
-    [
-      Service.USER_METADATA_NODE,
-      SetupCommand.HEALTH_CHECK
-    ],
+    [Service.USER_METADATA_NODE, SetupCommand.UNSET_SHELL_ENV],
+    [Service.USER_METADATA_NODE, SetupCommand.UP_UM],
+    [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
-    // Intentionally disabled until migration has been run on production
-    // [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
 
   const start = Date.now()
@@ -420,6 +472,7 @@ module.exports = {
   getContentNodeContainerName,
   allUp,
   discoveryNodeUp,
+  discoveryNodeWebServerUp,
   SetupCommand,
   Service
 }

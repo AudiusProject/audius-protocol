@@ -208,12 +208,18 @@ def parse_playlist_event(
 
             playlist_content_array = []
             for track_id in event_args._orderedTrackIds:
-                track_time_array_length = len(intermediate_track_time_lookup_dict[track_id])
-                if track_time_array_length > 1:
-                    track_time = intermediate_track_time_lookup_dict[track_id].pop(0)
-                elif track_time_array_length == 1:
-                    track_time = intermediate_track_time_lookup_dict[track_id][0]
+                if track_id in intermediate_track_time_lookup_dict:
+                    track_time_array_length = len(intermediate_track_time_lookup_dict[track_id])
+                    if track_time_array_length > 1:
+                        track_time = intermediate_track_time_lookup_dict[track_id].pop(0)
+                    elif track_time_array_length == 1:
+                        track_time = intermediate_track_time_lookup_dict[track_id][0]
+                    else:
+                        track_time = block_integer_time
                 else:
+                    logger.info(
+                        f"index.py | playlist.py | Track {track_id} not found, using track_time={block_integer_time}"
+                    )
                     track_time = block_integer_time
                 playlist_content_array.append({"track": track_id, "time": track_time})
 

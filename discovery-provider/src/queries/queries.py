@@ -32,8 +32,9 @@ from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
-from src.queries.get_users_cnode import get_users_cnode, ReplicaType
+from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
+from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.utils.redis_metrics import record_metrics
 
@@ -542,8 +543,8 @@ def get_previously_private_playlists_route():
 
 
 # Get the users with a given `creator_node_endpoint` as primary
-# NOTE This route is deprecated in favor of `/users/content_node` below
-#       It is left here for backwards-compatibility
+# NOTE This route is deprecated in favor of `/users/content_node` in src/api/v1/users.py:UsersByContentNode()
+#       It cannot be removed for backwards-compatibility
 @bp.route("/users/creator_node", methods=("GET",))
 def get_creator_node_users():
     try:
@@ -556,27 +557,7 @@ def get_creator_node_users():
         return api_helpers.error_response(str(e), 400)
 
 
-# New route to call get_users_cnode with replica_type param
-# - Leaving `/users/creator_node` above untouched for backwards-compatibility
-@bp.route("/users/content_node/<replica_type>", methods=("GET",))
-def get_content_node_users(replica_type):
-    try:
-        if "creator_node_endpoint" not in request.args:
-            raise exceptions.ArgumentError("Missing creator_node_endpoint")
-        cnode_url = request.args.get("creator_node_endpoint")
-
-        if replica_type == 'primary':
-            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
-        elif replica_type == 'secondary':
-            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
-        else:
-            users = get_users_cnode(cnode_url, ReplicaType.ALL)
-
-        return api_helpers.success_response(users)
-    except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400)
-
-
+# Get the list of content nodes registered on UserReplicaSetManager
 @bp.route("/ursm_content_nodes", methods=("GET",))
 def get_ursm_content_nodes():
     try:
@@ -588,10 +569,35 @@ def get_ursm_content_nodes():
         return api_helpers.error_response(str(e), 400)
 
 
+# Get this discovery provider's ipfs peer info
 @bp.route("/ipfs_peer_info", methods=("GET",))
 def get_ipfs_peer_info_route():
     try:
         ipfs_peer_info = get_ipfs_peer_info()
         return api_helpers.success_response(ipfs_peer_info)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+# Get details for a single play written to Solana
+@bp.route("/get_sol_play", methods=("GET",))
+def get_sol_play_tx():
+    try:
+        # Assign value only if not None or empty string
+        tx_sig = request.args.get("tx_sig") or None
+        sig = get_sol_play(tx_sig)
+        return api_helpers.success_response(sig)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+# Get details for latest track listen milestones
+# Used to parse and issue notifications
+@bp.route("/track_listen_milestones", methods=("GET",))
+def get_track_listen_milestone_data():
+    try:
+        # Assign value only if not None or empty string
+        data = get_track_listen_milestones(100)
+        return api_helpers.success_response(data)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

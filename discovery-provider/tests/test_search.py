@@ -49,7 +49,7 @@ def setup_search(db):
             track_id=2,
             is_current=True,
             is_delete=False,
-            owner_id=1,
+            owner_id=2,
             route_id='',
             track_segments=[],
             genre="",
@@ -88,6 +88,26 @@ def setup_search(db):
             wallet="",
             updated_at=now,
             created_at=now
+        ),
+        User(
+            blockhash=hex(2),
+            blocknumber=2,
+            user_id=2,
+            is_current=True,
+            handle="",
+            wallet="",
+            updated_at=now,
+            created_at=now
+        ),
+        User(
+            blockhash=hex(3),
+            blocknumber=3,
+            user_id=3,
+            is_current=True,
+            handle="",
+            wallet="",
+            updated_at=now,
+            created_at=now
         )
     ]
 
@@ -102,7 +122,8 @@ def setup_search(db):
             session.flush()
 
         # Refresh the lexeme matview
-        session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_track;")
+        session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict;")
 
 def test_gets_all_results(app):
     """Tests we get all results, including downloaded"""
@@ -110,7 +131,7 @@ def test_gets_all_results(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the", 10, 0, False, False, None, False)
+        res = track_search_query(session, "the track", 10, 0, False, False, None, False)
         assert len(res) == 2
 
 def test_gets_downloadable_results(app):
@@ -119,5 +140,5 @@ def test_gets_downloadable_results(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the", 10, 0, False, False, None, True)
+        res = track_search_query(session, "the track", 10, 0, False, False, None, True)
         assert len(res) == 1

@@ -6,12 +6,11 @@ const MonitoringQueueMock = require('./monitoringQueueMock')
 redisClient.set('ipfsGatewayReqs', 0)
 redisClient.set('ipfsStandaloneReqs', 0)
 
-async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null) {
+async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null, setMockFn = null) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
   // as all files that consume it
   clearRequireCache()
-  console.log('cleared all require caches')
 
   // run all migrations before each test
   await clearDatabase()
@@ -25,6 +24,14 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock()
   }
+
+  // Update the import to be the mocked ServiceRegistry instance
+  require.cache[require.resolve('../../src/serviceRegistry')] = {
+    exports: { serviceRegistry: mockServiceRegistry }
+  }
+
+  // If one needs to set mock settings, pass in a callback to set it before initializing app
+  if (setMockFn) setMockFn()
 
   const appInfo = require('../../src/app')(8000, mockServiceRegistry)
   appInfo.mockServiceRegistry = mockServiceRegistry

@@ -29,7 +29,14 @@ def get_historical_app_metrics():
     with db.scoped_session() as session:
         return _get_historical_app_metrics(session)
 
-def _get_historical_app_metrics(session):
+def _get_historical_app_metrics(session, min_count=100):
+    """
+    gets historical app metrics monthly and daily request counts.
+
+    Args:
+        session: Database session
+        min_count: Minimum count an app must have in order to be returned
+    """
     today = date.today()
     thirty_days_ago = today - timedelta(days=30)
     first_day_of_month = today.replace(day=1)
@@ -40,6 +47,7 @@ def _get_historical_app_metrics(session):
             AggregateDailyAppNameMetrics.application_name,
             AggregateDailyAppNameMetrics.count
         )
+        .filter(min_count <= AggregateDailyAppNameMetrics.count)
         .filter(thirty_days_ago <= AggregateDailyAppNameMetrics.timestamp)
         .filter(AggregateDailyAppNameMetrics.timestamp < today)
         .all()
@@ -58,6 +66,7 @@ def _get_historical_app_metrics(session):
             AggregateMonthlyAppNameMetrics.application_name,
             AggregateMonthlyAppNameMetrics.count
         )
+        .filter(min_count <= AggregateMonthlyAppNameMetrics.count)
         .filter(AggregateMonthlyAppNameMetrics.timestamp < first_day_of_month)
         .all()
     )

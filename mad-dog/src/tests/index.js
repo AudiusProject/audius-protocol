@@ -3,6 +3,7 @@ const { snapbackSMParallelSyncTest } = require('./test_snapbackSM.js')
 const IpldBlacklistTest = require('./test_ipldBlacklist')
 const { userReplicaSetBlockSaturationTest } = require('./test_ursmBlockSaturation.js')
 const { userReplicaSetManagerTest } = require('./test_userReplicaSetManager.js')
+const { solanaTrackListenCountsTest } = require('./test_solPlays.js')
 
 
 module.exports = {
@@ -10,5 +11,6 @@ module.exports = {
   snapbackSMParallelSyncTest,
   IpldBlacklistTest,
   userReplicaSetManagerTest,
-  userReplicaSetBlockSaturationTest
+  userReplicaSetBlockSaturationTest,
+  solanaTrackListenCountsTest
 }

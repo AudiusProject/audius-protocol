@@ -193,13 +193,14 @@ class SnapbackSM {
    * Retrieve users with this node as replica (primary or secondary)
    *  - Makes single request to discovery node to retrieve all users
    *
+   * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
+   *
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getNodeUsers () {
     // Fetch discovery node currently connected to libs as this can change
     const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
-
     if (!discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
     }
@@ -208,7 +209,34 @@ class SnapbackSM {
     const requestParams = {
       method: 'get',
       baseURL: discoveryProviderEndpoint,
-      url: `users/content_node/all`,
+      url: `v1/full/users/content_node/all`,
+      params: {
+        creator_node_endpoint: this.endpoint
+      }
+    }
+    const resp = await axios(requestParams)
+
+    return resp.data.data
+  }
+
+  /**
+   * Retrieve users with this node as primary
+   * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
+   *
+   * @returns {Array} array of objects
+   *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
+   */
+  async getNodePrimaryUsers () {
+    // Fetch discovery node currently connected to libs as this can change
+    const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    if (!currentlySelectedDiscProv) {
+      throw new Error('No discovery provider currently selected, exiting')
+    }
+
+    let requestParams = {
+      method: 'get',
+      baseURL: currentlySelectedDiscProv,
+      url: `users/creator_node`,
       params: {
         creator_node_endpoint: this.endpoint
       }
@@ -719,12 +747,37 @@ class SnapbackSM {
   async processStateMachineOperationOld () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
-    // Retrieve list of all users which have this node as replica
-    const nodeUsers = await this.getNodeUsers()
-    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary === this.endpoint))
+    // Retrieve list of all users that have this node as primary
+    let nodePrimaryUsers
+    try {
+      // Returns all users that have this node in their replica set via discprov route `/users/content_node/all`
+      const nodeUsers = await this.getNodeUsers()
 
-    // Build content node peer set (Note this is not currently used)
-    await this.computeContentNodePeerSet(nodeUsers)
+      // Filter to subset of users that have this node as their primary
+      nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
+
+      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
+
+      /**
+       * If getNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
+       * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
+       * This route returns only users with this node as their primary
+       */
+    } catch (e) {
+      nodePrimaryUsers = await this.getNodePrimaryUsers()
+      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via legacy discprov route`)
+
+      // Ensure every object in response array contains required fields
+    } finally {
+      nodePrimaryUsers.forEach(nodePrimaryUser => {
+        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
+        const responseFields = Object.keys(nodePrimaryUser)
+        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
+        if (!allRequiredFieldsPresent) {
+          throw new Error('Unexpected response format during getNodeUsers() or getNodePrimaryUsers() call')
+        }
+      })
+    }
 
     /**
      * Build map of content node to list of all users that need to be processed
