@@ -74,28 +74,45 @@ module.exports = function (app) {
     // req.logger.info('i am the tus route', getTusRoute())
   })
 
-  app.all(tusRoute, async function (req, res, next) {
-    // create datastore off of req data probably?
-
-    // check that if in req headers that if
-    /* Upload-Offset === upload-length (i think the first might be in the body) {
-      FileProcessingQueue.add(the stupid task with the data needed)
-    }
-
-    */
+  app.all(tusRoute, authMiddleware, async function (req, res, next) {
     console.log('hello patch')
 
-    const pathMinusID = req.originalUrl.split('/')
-    const actualPath = (pathMinusID.slice(0, pathMinusID.length - 1)).join('/')
+    const urlArr = req.originalUrl.split('/')
+    const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
 
     server.datastore = new tus.FileStore({
-      path: actualPath
+      path: fileDir
       // Custom file names
       // namingFunction: () => {}
     })
 
     const resp = await server.handle.bind(server)(req, res, next)
     console.log('what is the head respposne dawg')
+
+    if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
+    // Check if the file uploaded fits criteria
+    // if (req.fileSizeError || req.fileFilterError) {
+    // removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+    // return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+    // }
+
+      const fileName = (urlArr.slice(urlArr.length - 1)).join('/')
+
+      // Add transcode task
+      await FileProcessingQueue.addTranscodeTask(
+        {
+          logContext: req.logContext,
+          req: {
+            fileName: fileName,
+            fileDir,
+            fileDestination: fileDir,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            }
+          }
+        }
+      )
+    }
   })
 
   // app.head(path.join(tmpTrackArtifactsPath, '*', '*'), async function (req, res, next) {

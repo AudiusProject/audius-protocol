@@ -761,7 +761,7 @@ class CreatorNode {
     } else {
       console.log(url, file, requestId)
       try {
-        const uuid = await this.startResumableUpload(file, url, headers, onProgress)
+        const { uuid, fileName, fileDir } = await this.startResumableUpload(file, url, headers, onProgress)
 
         return { data: { uuid } }
       } catch (e) {
@@ -786,11 +786,11 @@ class CreatorNode {
           filetype: file.type,
           userId: this.userStateManager.getCurrentUser().user_id
         },
-        headers,
+        headers: { ...headers, filesize: file.size, filetype: file.type },
         // An optional integer representing the size of the file in bytes
         uploadSize: file.size,
         // Maximum size of PATCH request body in bytes
-        chunkSize: 1000,
+        chunkSize: 1000000,
         removeFingerprintOnSuccess: true,
         // Adds a request ID to (v4 uuid) to X-Request-ID header
         // addRequestId: true,
@@ -816,7 +816,16 @@ class CreatorNode {
           console.log('whati sthe upload response', upload)
 
           // resolve(upload._req.getHeaders('X-Request-ID'))
-          resolve(headers['X-Request-ID'])
+
+          const urlArr = upload.url.split('/')
+          const fileName = urlArr.slice(urlArr.length - 1)[0]
+          const fileDir = '/' + urlArr.slice(3, urlArr.length - 1).join('/')
+
+          resolve({
+            uuid: headers['X-Request-ID'],
+            fileName,
+            fileDir
+          })
         },
         fingerprint: function (file, options) {
           console.log('hello what is these things', file, options)
