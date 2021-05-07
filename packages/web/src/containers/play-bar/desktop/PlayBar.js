@@ -31,10 +31,10 @@ import { getTheme } from 'store/application/ui/theme/selectors'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
 import VolumeBar from 'components/play-bar/VolumeBar'
 import PlayButton from 'components/play-bar/PlayButton'
-import NextButton from 'components/play-bar/NextButton'
-import PreviousButton from 'components/play-bar/PreviousButton'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
+import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
+import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
 import RepostButton from 'components/general/RepostButton'
 import FavoriteButton from 'components/general/FavoriteButton'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -51,10 +51,12 @@ import {
   PlaybackSource
 } from 'services/analytics'
 import { make } from 'store/analytics/actions'
+import { Genre } from 'utils/genres'
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200
 const RESTART_THRESHOLD_SEC = 3
+const SKIP_DURATION_SEC = 15
 
 class PlayBar extends Component {
   constructor(props) {
@@ -224,11 +226,42 @@ class PlayBar extends Component {
   }
 
   onPrevious = () => {
-    const shouldGoToPrevious = this.state.trackPosition < RESTART_THRESHOLD_SEC
-    if (shouldGoToPrevious) {
-      this.props.previous()
+    const {
+      audio,
+      seek,
+      previous,
+      reset,
+      currentQueueItem: { track }
+    } = this.props
+    if (track.genre === Genre.PODCASTS) {
+      const position = audio.getPosition()
+      const newPosition = position - SKIP_DURATION_SEC
+      seek(Math.max(0, newPosition))
     } else {
-      this.props.reset(true /* shouldAutoplay */)
+      const shouldGoToPrevious =
+        this.state.trackPosition < RESTART_THRESHOLD_SEC
+      if (shouldGoToPrevious) {
+        previous()
+      } else {
+        reset(true /* shouldAutoplay */)
+      }
+    }
+  }
+
+  onNext = () => {
+    const {
+      audio,
+      seek,
+      next,
+      currentQueueItem: { track }
+    } = this.props
+    if (track.genre === Genre.PODCASTS) {
+      const duration = audio.getDuration()
+      const position = audio.getPosition()
+      const newPosition = position + SKIP_DURATION_SEC
+      seek(Math.min(newPosition, duration))
+    } else {
+      next()
     }
   }
 
@@ -332,7 +365,7 @@ class PlayBar extends Component {
                 />
               </div>
               <div className={styles.previousButton}>
-                <PreviousButton onClick={this.onPrevious} />
+                <PreviousButtonProvider onClick={this.onPrevious} />
               </div>
               <div className={styles.playButton}>
                 <PlayButton
@@ -342,7 +375,7 @@ class PlayBar extends Component {
                 />
               </div>
               <div className={styles.nextButton}>
-                <NextButton onClick={this.props.next} />
+                <NextButtonProvider onClick={this.onNext} />
               </div>
               <div className={styles.repeatButton}>
                 <RepeatButtonProvider

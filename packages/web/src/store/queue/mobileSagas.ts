@@ -62,6 +62,7 @@ function* getTrackInfo(id: ID, uid: UID) {
     isDelete: track.is_delete,
     ownerId: track.owner_id,
     trackId: id,
+    genre: track.genre,
     uri: m3u8
   }
 }
