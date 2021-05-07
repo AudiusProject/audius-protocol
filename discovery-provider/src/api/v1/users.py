@@ -15,6 +15,7 @@ from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_associated_user_id import get_associated_user_id
+from src.queries.get_users_cnode import get_users_cnode, ReplicaType
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, get_current_user_id, make_full_response, make_response, search_parser, success_response, abort_bad_request_param, \

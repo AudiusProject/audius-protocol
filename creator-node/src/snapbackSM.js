@@ -204,7 +204,7 @@ class SnapbackSM {
     const requestParams = {
       method: 'get',
       baseURL: discoveryProviderEndpoint,
-      url: `users/content_node/all`,
+      url: `v1/full/users/content_node/all`,
       params: {
         creator_node_endpoint: this.endpoint
       }
@@ -352,6 +352,8 @@ class SnapbackSM {
       // Filter to subset of users that have this node as their primary
       nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
 
+      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
+
       /**
        * If getNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
        * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
@@ -359,6 +361,7 @@ class SnapbackSM {
        */
     } catch (e) {
       nodePrimaryUsers = await this.getNodePrimaryUsers()
+      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via legacy discprov route`)
 
       // Ensure every object in response array contains required fields
     } finally {
