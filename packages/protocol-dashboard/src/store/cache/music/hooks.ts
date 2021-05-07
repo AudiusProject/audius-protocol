@@ -6,6 +6,7 @@ import AppState from 'store/types'
 import { DiscoveryProvider, Playlist, Track } from 'types'
 import { useDiscoveryProviders } from '../discoveryProvider/hooks'
 import { useEffect, useState } from 'react'
+import imageBlank from 'assets/img/imageBlank2x.png'
 import {
   MusicError,
   setTopAlbums,
@@ -35,7 +36,7 @@ export function fetchTopTracks(
       const tracks: Track[] = res.data.slice(0, 4).map((d: any) => ({
         title: d.title,
         handle: d.user.handle,
-        artwork: d.artwork['480x480'],
+        artwork: d.artwork?.['480x480'] ?? imageBlank,
         url: `${AUDIUS_URL}/tracks/${d.id}`,
         userUrl: `${AUDIUS_URL}/users/${d.user.id}`
       }))
@@ -57,7 +58,7 @@ export function fetchTopPlaylists(
       const playlists: Playlist[] = res.data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
-        artwork: d.artwork['480x480'],
+        artwork: d.artwork?.['480x480'] ?? imageBlank,
         plays: d.total_play_count,
         url: `${AUDIUS_URL}/playlists/${d.id}`
       }))
@@ -79,7 +80,7 @@ export function fetchTopAlbums(
       const albums: Playlist[] = res.data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
-        artwork: d.artwork['480x480'],
+        artwork: d.artwork?.['480x480'] ?? imageBlank,
         plays: d.total_play_count,
         url: `${AUDIUS_URL}/playlists/${d.id}`
       }))
