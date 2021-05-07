@@ -425,6 +425,7 @@ class SnapbackSM {
    *      `endpoint` field indicates secondary on which to issue SyncRequest
    * @param {Object} secondaryNodesToUserClockStatusesMap map(secondaryNode => map(userWallet => secondaryClockValue))
    * @returns {Number} number of sync requests issued
+   * @returns {Array} array of all SyncRequest errors
    */
   async issueSyncRequests (requiredSyncRequests, secondaryNodesToUserClockStatusesMap) {
     // Retrieve clock values for all users on this node, which is their primary
@@ -432,6 +433,7 @@ class SnapbackSM {
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
 
     let numSyncRequestsIssued = 0
+    let syncRequestErrors = []
 
     // TODO change to chunked parallel
     await Promise.all(requiredSyncRequests.map(async (user) => {
@@ -446,7 +448,6 @@ class SnapbackSM {
         const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
 
         if (syncRequired) {
-          // TODO ensure try-catched with log
           await this.enqueueSync({
             userWallet: wallet,
             secondaryEndpoint: secondary,
@@ -457,14 +458,12 @@ class SnapbackSM {
           numSyncRequestsIssued += 1
         }
 
-        // Issue syncRequest if required
       } catch (e) {
-        // TODO improve error
-        this.log(`Caught error for user ${user.wallet}, ${JSON.stringify(user)}, ${e.message}`)
+        syncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
     }))
 
-    return numSyncRequestsIssued
+    return { numSyncRequestsIssued, syncRequestErrors }
   }
 
   /**
@@ -474,98 +473,244 @@ class SnapbackSM {
    * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
    */
   async processStateMachineOperation () {
-    this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
+    // Record all stages of this function along with associated information for use in logging
+    let decisionTree = [{
+      stage: '1/ BEGIN processStateMachineOperation()',
+      vals: {
+        currentModuloSlice: this.currentModuloSlice
+      },
+      time: Date.now()
+    }]
 
-    // Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
-    let nodeUsers
+    const printDecisionTreeObj = (decisionTree) => {
+      try {
+        this.log('processStateMachineOperation Decision Tree', JSON.stringify(decisionTree))
+      } catch (e) {
+        this.logError('Error printing processStateMachineOperation Decision Tree', decisionTree)
+      }
+    }
+
     try {
-      nodeUsers = await this.getNodeUsers()
-    } catch (e) {
-      this.logError(`Error in ProcessStateMachineOperation():getNodeUsers() || ${e.message} || Exiting`)
-      return
-    }
+      // Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
+      let nodeUsers
+      try {
+        nodeUsers = await this.getNodeUsers()
+        decisionTree.push({ stage: '2/ getNodeUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
 
-    /**
-     * Select chunk of users to process in this run
-     *  - User is selected if (user_id % ModuloBase = currentModuloSlice)
-     *  - nodeUsers = array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-     */
-    nodeUsers = nodeUsers.filter(
-      nodeUser => (nodeUser.user_id % ModuloBase === this.currentModuloSlice)
-    )
-
-    // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-    const peerSet = this.computeContentNodePeerSet(nodeUsers)
-
-    /**
-     * Determine health for every peer & build list of unhealthy peers
-     * TODO change from sequential to chunked parallel
-     */
-    const unhealthyPeers = new Set()
-    for await (const peer of peerSet) {
-      const peerIsHealthy = await this.determinePeerHealth(peer)
-      if (!peerIsHealthy) {
-        unhealthyPeers.add(peer)
+      } catch (e) {
+        decisionTree.push({ stage: '2/ getNodeUsers() Error', vals: e.message, time: Date.now() })
+        throw new Error('processStateMachineOperation():getNodeUsers() Error')
       }
-    }
-    this.log(`processStateMachineOperation():determinePeerHealth() || unhealthy peers: ${Array.from(unhealthyPeers)}`)
 
-    // Lists to aggregate all required ReplicaSetUpdate ops and SyncRequest ops
-    const requiredUpdateReplicaSetOps = []
-    const requiredSyncRequests = []
-
-    /**
-     * For every node user, record sync requests to issue to secondaries if this node is primary
-     *    and record replica set updates to issue for any unhealthy replicas
-     *
-     * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
-     * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
-     */
-    for (const nodeUser of nodeUsers) {
-      const { primary, secondary1, secondary2 } = nodeUser
-
-      if (primary === this.endpoint) {
-        const secondaries = ([secondary1, secondary2]).filter(Boolean)
-        for (const secondary of secondaries) {
-          if (unhealthyPeers.has(secondary)) {
-            requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
-          } else {
-            requiredSyncRequests.push({ ...nodeUser, endpoint: secondary })
-          }
-        }
-      } else {
-        const replicas = ([primary, secondary1, secondary2]).filter(Boolean).filter(replica => replica !== this.endpoint)
-        for (const replica of replicas) {
-          if (unhealthyPeers.has(replica)) {
-            requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
-          }
-        }
-      }
-    }
-
-    // Build map of secondary node to secondary user wallets array
-    const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(requiredSyncRequests)
-
-    // Retrieve clock statuses for all secondary users from secondary nodes
-    const secondaryNodesToUserClockStatusesMap = await this.retrieveClockStatusesForSecondaryUsersFromNodes(secondaryNodesToUserWalletsMap)
-
-    // Issue all required sync requests
-    const numSyncRequestsIssued = await this.issueSyncRequests(requiredSyncRequests, secondaryNodesToUserClockStatusesMap)
-
-    // Issue all required replica set updates
-    for await (const userInfo of requiredUpdateReplicaSetOps) {
-      await this.issueUpdateReplicaSetOp(
-        userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica
+      /**
+       * Select chunk of users to process in this run
+       *  - User is selected if (user_id % ModuloBase = currentModuloSlice)
+       *  - nodeUsers = array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+       */
+      nodeUsers = nodeUsers.filter(
+        nodeUser => (nodeUser.user_id % ModuloBase === this.currentModuloSlice)
       )
+      decisionTree.push({
+        stage: '3/ select nodeUsers modulo slice',
+        vals: { nodeUsersSubsetLength: nodeUsers.length, moduloBase: ModuloBase, currentModuloSlice: this.currentModuloSlice },
+        time: Date.now()
+      })
+
+      // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
+      let peerSet
+      try {
+        peerSet = this.computeContentNodePeerSet(nodeUsers)
+
+        decisionTree.push({
+          stage: '4/ computeContentNodePeerSet() Success',
+          vals: { peerSetLength: peerSet.size },
+          time: Date.now()
+        })
+
+      } catch (e) {
+        decisionTree.push({ stage: '4/ computeContentNodePeerSet() Error', vals: e.message, time: Date.now() })
+        throw new Error('processStateMachineOperation():computeContentNodePeerSet() Error')
+      }
+
+      /**
+       * Determine health for every peer & build list of unhealthy peers
+       * TODO change from sequential to chunked parallel
+       */
+      const unhealthyPeers = new Set()
+      try {
+        for await (const peer of peerSet) {
+          const peerIsHealthy = await this.determinePeerHealth(peer)
+          if (!peerIsHealthy) {
+            unhealthyPeers.add(peer)
+          }
+        }
+
+        decisionTree.push({
+          stage: '5/ determinePeerHealth() Success',
+          vals: {
+            unhealthyPeerSetLength: unhealthyPeers.size,
+            healthyPeerSetLength: peerSet.size - unhealthyPeers.size,
+            unhealthyPeers: Array.from(unhealthyPeers)
+          },
+          time: Date.now()
+        })
+
+      } catch (e) {
+        decisionTree.push({ stage: '5/ determinePeerHealth() Error', vals: e.message, time: Date.now() })
+        throw new Error('processStateMachineOperation():determinePeerHealth() Error')
+      }
+
+      // Lists to aggregate all required ReplicaSetUpdate ops and SyncRequest ops
+      const requiredUpdateReplicaSetOps = []
+      const requiredSyncRequests = []
+
+      /**
+       * For every node user, record sync requests to issue to secondaries if this node is primary
+       *    and record replica set updates to issue for any unhealthy replicas
+       *
+       * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
+       * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
+       */
+      for (const nodeUser of nodeUsers) {
+        const { primary, secondary1, secondary2 } = nodeUser
+
+        if (primary === this.endpoint) {
+          const secondaries = ([secondary1, secondary2]).filter(Boolean)
+          for (const secondary of secondaries) {
+            if (unhealthyPeers.has(secondary)) {
+              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
+            } else {
+              requiredSyncRequests.push({ ...nodeUser, endpoint: secondary })
+            }
+          }
+        } else {
+          const replicas = ([primary, secondary1, secondary2]).filter(Boolean).filter(replica => replica !== this.endpoint)
+          for (const replica of replicas) {
+            if (unhealthyPeers.has(replica)) {
+              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
+            }
+          }
+        }
+      }
+      decisionTree.push({
+        stage: '6/ Build requiredUpdateReplicaSetOps and requiredSyncRequests arrays',
+        vals: {
+          requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
+          requiredSyncRequestsLength: requiredSyncRequests.length
+        },
+        time: Date.now()
+      })
+
+      // Build map of secondary node to secondary user wallets array
+      const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(requiredSyncRequests)
+      decisionTree.push({
+        stage: '7/ buildSecondaryNodesToUserWalletsMap() Success',
+        vals: { numSecondaryNodes: Object.keys(secondaryNodesToUserWalletsMap).length },
+        time: Date.now()
+      })
+
+      // Retrieve clock statuses for all secondary users from secondary nodes
+      let secondaryNodesToUserClockStatusesMap
+      try {
+        secondaryNodesToUserClockStatusesMap = await this.retrieveClockStatusesForSecondaryUsersFromNodes(
+          secondaryNodesToUserWalletsMap
+        )
+        decisionTree.push({
+          stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Success',
+          vals: { },
+          time: Date.now()
+        })
+
+      } catch (e) {
+        decisionTree.push({
+          stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():retrieveClockStatusesForSecondaryUsersFromNodes() Error')
+      }
+
+      // Issue all required sync requests
+      let numSyncRequestsIssued, syncRequestErrors
+      try {
+        const resp = await this.issueSyncRequests(requiredSyncRequests, secondaryNodesToUserClockStatusesMap)
+        numSyncRequestsIssued = resp.numSyncRequestsIssued
+        syncRequestErrors = resp.syncRequestErrors
+
+        if (syncRequestErrors.length > numSyncRequestsIssued) {
+          throw new Error()
+        }
+
+        decisionTree.push({
+          stage: '9/ issueSyncRequests() Success',
+          vals: {
+            numSyncRequestsIssued,
+            numSyncRequestErrors: syncRequestErrors.length,
+            syncRequestErrors
+          },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: '9/ issueSyncRequests() Error',
+          vals: {
+            numSyncRequestsIssued,
+            numSyncRequestErrors: (syncRequestErrors ? syncRequestErrors.length : null),
+            syncRequestErrors
+          },
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():issueSyncRequests() Error')
+      }
+
+      /**
+       * Issue all required replica set updates
+       * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
+       */
+      let numUpdateReplicaOpsIssued
+      try {
+        for await (const userInfo of requiredUpdateReplicaSetOps) {
+          await this.issueUpdateReplicaSetOp(
+            userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica
+          )
+        }
+        numUpdateReplicaOpsIssued = requiredUpdateReplicaSetOps.length
+        decisionTree.push({
+          stage: '10/ issueUpdateReplicaSetOp() Success',
+          vals: { numUpdateReplicaOpsIssued },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: '10/ issueUpdateReplicaSetOp() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
+      }
+
+      // Increment and adjust current slice by ModuloBase
+      const previousModuloSlice = this.currentModuloSlice
+      this.currentModuloSlice += 1
+      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
+
+      decisionTree.push({
+        stage: '11/ END processStateMachineOperation()',
+        vals: {
+          currentModuloSlice: previousModuloSlice,
+          nextModuloSlice: this.currentModuloSlice,
+          moduloBase: ModuloBase,
+          numSyncRequestsIssued,
+          numUpdateReplicaOpsIssued
+        },
+        time: Date.now()
+      })
+
+      // Log error without throwing - next run will attempt to rectify
+    } catch (e) {
+      decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
+      printDecisionTreeObj(decisionTree)
     }
-    const numUpdateReplicaOpsIssued = requiredUpdateReplicaSetOps.length
-
-    // Increment and adjust current slice by ModuloBase
-    const previousModuloSlice = this.currentModuloSlice
-    this.currentModuloSlice += 1
-    this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-
-    this.log(`------------------END Process SnapbackSM Operation || Issued ${numSyncRequestsIssued} SyncRequest ops & ${numUpdateReplicaOpsIssued} UpdateReplicaSet ops in slice ${previousModuloSlice} of ${ModuloBase}. Moving to slice ${this.currentModuloSlice} ------------------`)
   }
 
   /**
