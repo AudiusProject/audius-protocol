@@ -192,7 +192,12 @@ export function fetchPlays(
   nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async dispatch => {
-    const metric = await fetchTimeSeries('plays', bucket, nodes, true)
+    let metric = await fetchTimeSeries('plays', bucket, nodes, true)
+    if (metric !== MetricError.ERROR) {
+      metric = metric.filter(
+        m => m.timestamp !== '1620345600' && m.timestamp !== '1620259200'
+      )
+    }
     dispatch(setPlays({ metric, bucket }))
   }
 }
