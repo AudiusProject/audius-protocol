@@ -27,7 +27,7 @@ from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
-from src.utils.redis_metrics import METRICS_INTERVAL
+from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -349,7 +349,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
-                "schedule": crontab(minute=0, hour=1)
+                "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL)
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",
