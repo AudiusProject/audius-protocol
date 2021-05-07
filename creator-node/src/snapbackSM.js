@@ -1,6 +1,5 @@
 const Bull = require('bull')
 const axios = require('axios')
-const _ = require('lodash')
 
 const utils = require('./utils')
 const models = require('./models')
