@@ -9,7 +9,7 @@ import Lineup from 'containers/lineup/Lineup'
 import { useDispatch } from 'react-redux'
 import { isMobile } from 'utils/clientUtil'
 import { useFlag } from 'containers/remote-config/hooks'
-import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
+import { FeatureFlags } from 'services/remote-config'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import {
   BASE_URL,
@@ -99,10 +99,6 @@ const useLineupReset = () => {
 
 export const useIsTrendingUndergroundEnabled = () => {
   return useFlag(FeatureFlags.TRENDING_UNDERGROUND)
-}
-
-export const getIsTrendingUndergroundEnabled = () => {
-  return getFeatureEnabled(FeatureFlags.ENABLE_USER_REPLICA_SET_MANAGER)
 }
 
 const TrendingUndergroundPage = (props: TrendingUndergroundPageProps) => {
