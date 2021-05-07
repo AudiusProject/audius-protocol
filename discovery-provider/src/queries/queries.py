@@ -559,6 +559,8 @@ def get_creator_node_users():
 
 # New route to call get_users_cnode with replica_type param
 # - Leaving `/users/creator_node` above untouched for backwards-compatibility
+# Only consumed by content node
+# Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2 }
 @bp.route("/users/content_node/<replica_type>", methods=("GET",))
 def get_content_node_users(replica_type):
     try:

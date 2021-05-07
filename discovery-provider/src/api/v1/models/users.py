@@ -56,3 +56,11 @@ user_model_full = ns.clone("user_full", user_model, {
     "metadata_multihash": fields.String,
     "has_collectibles": fields.Boolean(required=True)
 })
+
+user_replica_set = ns.model("user_replica_set", {
+    "user_id": fields.Integer(required=True),
+    "wallet": fields.String(required=True),
+    "primary": fields.String(required=True),
+    "secondary1": fields.String(required=True),
+    "secondary2": fields.String(required=True)
+})

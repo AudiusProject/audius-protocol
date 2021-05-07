@@ -1,5 +1,6 @@
 const Bull = require('bull')
 const axios = require('axios')
+const _ = require('lodash')
 
 const utils = require('./utils')
 const models = require('./models')
@@ -188,7 +189,7 @@ class SnapbackSM {
    * Retrieve users with this node as replica (primary or secondary)
    *  - Makes single request to discovery node to retrieve all users
    *
-   * @notice This route depends on a new discprov route and cannot be consumed until every discprov exposes that route
+   * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
    *
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
@@ -196,8 +197,6 @@ class SnapbackSM {
   async getNodeUsers () {
     // Fetch discovery node currently connected to libs as this can change
     const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
-
-    // Re-initialize if no discovery provider selected by libs instance
     if (!discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
     }
@@ -218,12 +217,15 @@ class SnapbackSM {
 
   /**
    * Retrieve users with this node as primary
-   * Leaving this route in until all discovery providers update to new version and expose new `/users/content_node/all` route
+   * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
+   *
+   * @returns {Array} array of objects
+   *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getNodePrimaryUsers () {
+    // Fetch discovery node currently connected to libs as this can change
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!currentlySelectedDiscProv) {
-      // Re-initialize if no discovery provider has been selected
       throw new Error('No discovery provider currently selected, exiting')
     }
 
@@ -235,8 +237,8 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
-    let resp = await axios(requestParams)
-    this.log(`Discovery provider: ${currentlySelectedDiscProv}`)
+    const resp = await axios(requestParams)
+
     return resp.data.data
   }
 
@@ -343,7 +345,33 @@ class SnapbackSM {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
     // Retrieve list of all users that have this node as primary
-    const nodePrimaryUsers = await this.getNodePrimaryUsers()
+    let nodePrimaryUsers
+    try {
+      // Returns all users that have this node in their replica set via discprov route `/users/content_node/all`
+      const nodeUsers = await this.getNodeUsers()
+
+      // Filter to subset of users that have this node as their primary
+      nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
+
+      /**
+       * If getNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
+       * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
+       * This route returns only users with this node as their primary
+       */
+    } catch (e) {
+      nodePrimaryUsers = await this.getNodePrimaryUsers()
+
+      // Ensure every object in response array contains required fields
+    } finally {
+      nodePrimaryUsers.forEach(nodePrimaryUser => {
+        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
+        const responseFields = Object.keys(nodePrimaryUser)
+        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
+        if (!allRequiredFieldsPresent) {
+          throw new Error('Unexpected response format during getNodeUsers() or getNodePrimaryUsers() call')
+        }
+      })
+    }
 
     /**
      * Build map of content node to list of all users that need to be processed
