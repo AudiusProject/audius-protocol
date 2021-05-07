@@ -1,12 +1,16 @@
-const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
+const path = require('path')
 
 const config = require('../config.js')
-const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
-const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
+const {
+  saveFileFromBufferToIPFSAndDisk,
+  saveFileToIPFSFromFS,
+  removeTrackFolder,
+  handleTrackContentUpload
+} = require('../fileManager')
 const {
   handleResponse,
   handleResponseWithHeartbeat,
@@ -25,9 +29,12 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
+const { getSegmentsDuration } = require('../segmentDuration')
+
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 
@@ -37,9 +44,35 @@ const SaveFileToIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
   /**
-   * upload track segment files and make avail - will later be associated with Audius track
-   * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
+   * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
+   * @note this track content route is used in conjunction with the polling.
    */
+  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError || req.fileFilterError) {
+      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+      return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+    }
+
+    await FileProcessingQueue.addTranscodeTask(
+      {
+        logContext: req.logContext,
+        req: {
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          fileDestination: req.file.destination,
+          session: {
+            cnodeUserUUID: req.session.cnodeUserUUID
+          }
+        }
+      }
+    )
+    return successResponse({ uuid: req.logContext.requestID })
+  }))
+
+  /**
+     * upload track segment files and make avail - will later be associated with Audius track
+     * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
+     */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
     if (req.fileSizeError) {
       // Prune upload artifacts
@@ -81,7 +114,7 @@ module.exports = function (app) {
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const transcodeFileIPFSResp = await saveFileToIPFSFromFS(req, transcodedFilePath)
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, req.app.get('ipfsAPI'))
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -89,7 +122,7 @@ module.exports = function (app) {
 
       const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
         const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-        const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
+        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, req.app.get('ipfsAPI'))
         return { multihash, srcPath: segmentFilePath, dstPath }
       }))
 

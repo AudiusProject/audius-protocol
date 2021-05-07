@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Audius Discovery Provider / Flask
 # Exports environment variables necessary for Flask app

@@ -43,8 +43,7 @@ const audiusLibsConfig = {
     ethWeb3,
     ethContractsConfig.ownerWallet
   ),
-  isServer: true,
-  enableUserReplicaSetManagerContract: true
+  isServer: true
 }
 
 async function initializeLibConfig (ownerWallet) {
