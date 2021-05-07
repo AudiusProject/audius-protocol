@@ -5,7 +5,7 @@ import { onStartup } from '../../onStartup'
 import { shuffle } from '../utils/helpers'
 
 const LOG_PREFIX = 'servelet: api | '
-const DISCOVERY_PROVIDER_REFRESH_INTERVAL = 10 * 60 * 1000 // ten minutes
+const DISCOVERY_PROVIDER_REFRESH_INTERVAL = 60 * 1000 // one minute
 
 export const router = express.Router()
 
