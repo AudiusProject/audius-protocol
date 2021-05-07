@@ -295,13 +295,13 @@ class SnapbackSM {
   async computeContentNodePeerSet (nodeUserInfoList) {
     let peerList = (
       nodeUserInfoList.map(userInfo => userInfo.primary)
-      .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
-      .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
     )
 
     peerList = peerList.filter(Boolean) // filter out falsey values
 
-    peerList = peerList.filter(peer => (peer != this.endpoint)) // remove self from peerList
+    peerList = peerList.filter(peer => (peer !== this.endpoint)) // remove self from peerList
 
     let peerSet = new Set(peerList) // convert to Set to get uniques
 
@@ -318,10 +318,10 @@ class SnapbackSM {
 
     // Retrieve list of all users which have this node as replica
     const nodeUsers = await this.getNodeUsers()
-    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary == this.endpoint))
+    const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary === this.endpoint))
 
-    // Build content node peer set
-    const peerSet = await this.computeContentNodePeerSet(nodeUsers)
+    // Build content node peer set (Note this is not currently used)
+    await this.computeContentNodePeerSet(nodeUsers)
 
     /**
      * Build map of content node to list of all users that need to be processed
