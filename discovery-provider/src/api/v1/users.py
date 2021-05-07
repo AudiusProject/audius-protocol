@@ -398,33 +398,6 @@ class FavoritedTracks(Resource):
         return success_response(favorites)
 
 
-users_by_content_node_route_parser = reqparse.RequestParser()
-users_by_content_node_route_parser.add_argument('creator_node_endpoint', required=True, type=str)
-users_by_content_node_response = make_full_response("users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set)))
-@full_ns.route("/content_node/<string:replica_type>")
-class UsersByContentNode(Resource):
-    @full_ns.marshal_with(users_by_content_node_response)
-    @cache(ttl_sec=30)
-    def get(self, replica_type):
-        """ New route to call get_users_cnode with replica_type param (only consumed by content node)
-            - Leaving `/users/creator_node` above untouched for backwards-compatibility
-
-            Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2 }
-        """
-        args = users_by_content_node_route_parser.parse_args()
-
-        cnode_url = args.get("creator_node_endpoint")
-
-        if replica_type == 'primary':
-            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
-        elif replica_type == 'secondary':
-            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
-        else:
-            users = get_users_cnode(cnode_url, ReplicaType.ALL)
-
-        return success_response(users)
-    
-
 tags_route_parser = reqparse.RequestParser()
 tags_route_parser.add_argument('user_id', required=False, type=str)
 tags_route_parser.add_argument('limit', required=False, type=int)
@@ -700,3 +673,30 @@ class AssociatedWalletByUserId(Resource):
         args = user_associated_wallet_route_parser.parse_args()
         user_id = get_associated_user_id({ "wallet" :args.get('associated_wallet') })
         return success_response({ "user_id": encode_int_id(user_id) if user_id else None })
+
+
+users_by_content_node_route_parser = reqparse.RequestParser()
+users_by_content_node_route_parser.add_argument('creator_node_endpoint', required=True, type=str)
+users_by_content_node_response = make_full_response("users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set)))
+@full_ns.route("/content_node/<string:replica_type>")
+class UsersByContentNode(Resource):
+    @full_ns.marshal_with(users_by_content_node_response)
+    # @cache(ttl_sec=30)
+    def get(self, replica_type):
+        """ New route to call get_users_cnode with replica_type param (only consumed by content node)
+            - Leaving `/users/creator_node` above untouched for backwards-compatibility
+
+            Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2 }
+        """
+        args = users_by_content_node_route_parser.parse_args()
+
+        cnode_url = args.get("creator_node_endpoint")
+
+        if replica_type == 'primary':
+            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
+        elif replica_type == 'secondary':
+            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
+        else:
+            users = get_users_cnode(cnode_url, ReplicaType.ALL)
+
+        return success_response(users)
