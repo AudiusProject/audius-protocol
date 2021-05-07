@@ -32,7 +32,7 @@ from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
 from src.queries.get_previously_private_playlists import get_previously_private_playlists
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
-from src.queries.get_users_cnode import get_users_cnode, ReplicaType
+from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
