@@ -723,8 +723,8 @@ class SnapbackSM {
     const nodeUsers = await this.getNodeUsers()
     const nodePrimaryUsers = nodeUsers.filter(userInfo => (userInfo.primary === this.endpoint))
 
-    // Build content node peer set
-    const peerSet = await this.computeContentNodePeerSet(nodeUsers)
+    // Build content node peer set (Note this is not currently used)
+    await this.computeContentNodePeerSet(nodeUsers)
 
     /**
      * Build map of content node to list of all users that need to be processed
