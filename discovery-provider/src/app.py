@@ -19,7 +19,7 @@ from flask_cors import CORS
 
 from src import exceptions
 from src import api_helpers
-from src.queries import queries, search, search_queries, health_check, notifications
+from src.queries import queries, search, search_queries, health_check, notifications, block_confirmation
 from src.api.v1 import api as api_v1
 from src.utils import helpers
 from src.utils.multi_provider import MultiProvider
@@ -27,7 +27,7 @@ from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
-from src.utils.redis_metrics import METRICS_INTERVAL
+from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -293,6 +293,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
+    app.register_blueprint(block_confirmation.bp)
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
@@ -348,7 +349,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
-                "schedule": crontab(minute=0, hour=1)
+                "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL)
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",
