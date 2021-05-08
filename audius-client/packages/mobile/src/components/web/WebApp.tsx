@@ -479,13 +479,16 @@ const WebApp = ({
 
   const contextRef = useContext(WebRefContext)
 
-  const setWebRef = useCallback((ref: RefObject<MessagePostingWebView>) => {
-    // @ts-ignore
-    webRef.current = ref
-    // @ts-ignore
-    contextRef.webRef.current = ref
-  }, [])
-  
+  const setWebRef = useCallback(
+    (ref: RefObject<MessagePostingWebView>) => {
+      // @ts-ignore
+      webRef.current = ref
+      // @ts-ignore
+      contextRef.webRef.current = ref
+    },
+    [webRef, contextRef]
+  )
+
   const [atTop, setAtTop] = useState(true)
   const onScroll = (navState: any) => {
     if (Platform.OS === 'ios') return
