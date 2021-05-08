@@ -99,8 +99,10 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
 
   const textRef = useRef<TextInput>(null)
   useEffect(() => {
-    if (isOpen) textRef.current?.focus()
-    else textRef.current?.blur()
+    if (textRef.current) {
+      if (isOpen) textRef.current.focus()
+      else textRef.current.blur()
+    }
   }, [textRef, isOpen])
 
   const dispatchWeb = useDispatchWebAction()
@@ -148,7 +150,9 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
 
   const clearSearch = useCallback(() => {
     setQuery('')
-    textRef.current?.focus()
+    if (textRef.current) {
+      textRef.current.focus()
+    }
   }, [textRef, setQuery])
 
   const searchResultQuery = useSelector(getSearchResultQuery)
