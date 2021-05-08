@@ -119,7 +119,7 @@ const SearchHistory = () => {
   // Only update history on component load and clearing of search history
   useEffect(() => {
     if (hasFetched) setDisplayHistory(searchHistory.current)
-  }, [hasFetched, setDisplayHistory])
+  }, [hasFetched, setDisplayHistory, searchHistory])
 
   const onClearHistory = useCallback(() => {
     setDisplayHistory([])
