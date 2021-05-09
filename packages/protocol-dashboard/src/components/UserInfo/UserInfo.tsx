@@ -24,6 +24,7 @@ import desktopStyles from './UserInfo.module.css'
 import mobileStyles from './UserInfoMobile.module.css'
 import { createStyles } from 'utils/mobile'
 import UserImage from 'components/UserImage'
+import Bounds from 'components/Bounds'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -105,6 +106,7 @@ const UserInfo = ({
       </div>
     </StandaloneBox>
   )
+  const isOperator = (user as Operator)?.serviceProvider ?? false
   const isValidBounds =
     (user as Operator)?.serviceProvider?.validBounds ?? false
   const makeClaimBox = <StandaloneBox> {messages.makeClaim} </StandaloneBox>
@@ -188,6 +190,7 @@ const UserInfo = ({
       />
       <div className={styles.userName}>{name !== wallet && name}</div>
       <div className={styles.userWallet}>{wallet}</div>
+      {isOperator && <Bounds wallet={wallet} />}
       <MyEstimatedRewards wallet={wallet} />
     </>
   )
