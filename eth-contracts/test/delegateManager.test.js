@@ -26,7 +26,7 @@ const testEndpoint4 = 'https://localhost:5009'
 const testEndpoint5 = 'https://localhost:5010'
 
 
-const INITIAL_BAL = _lib.audToWeiBN(1000000)
+const INITIAL_BAL = _lib.audToWeiBN(10000000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
@@ -2627,6 +2627,102 @@ contract('DelegateManager', async (accounts) => {
         ),
         "Governance: Transaction failed."
       )
+    })
+
+    it('lets a service provider return to valid bounds when a delegator changes delegation', async () => {
+      /**
+       * Test case to address behavior exercised in Postmortem: $AUDIO Claim Error (Claim of 0 $AUDIO)
+       * on 05-08-2021.
+       *
+       * Confirm initial state of serviceType and serviceProvider
+       * Delegate stake to Staker
+       * Verify that the Staker is within bounds (validBounds = true)
+       * Claim to send the Staker out of bounds
+       * Verify that the Staker has exceeded bounds (validBounds = false)
+       * Decrease delegated stake to Staker
+       * Verify that the Staker has returned to be within bounds (validBounds = true)
+       */
+      const minStakeBN = _lib.toBN(serviceTypeMinStake)
+      const maxStakeBN = _lib.toBN(serviceTypeMaxStake)
+
+      // Confirm initial serviceType info
+      const stakeInfo0 = await serviceTypeManager.getServiceTypeInfo.call(testDiscProvType)
+      assert.isTrue(stakeInfo0.isValid, 'Expected isValid == true')
+      assert.isTrue(stakeInfo0.minStake.eq(minStakeBN), 'Expected same minStake')
+      assert.isTrue(stakeInfo0.maxStake.eq(maxStakeBN), 'Expected same maxStake')
+
+      // Confirm initial SP details
+      const spDetails0 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      const totalStaked0 = await staking.totalStakedFor(stakerAccount)
+      console.log(totalStaked0.toString())
+      console.log(spDetails0.deployerStake.toString())
+      console.log(spDetails0.minAccountStake.toString())
+      console.log(spDetails0.maxAccountStake.toString())
+      console.log('\n')
+
+      assert.isTrue(totalStaked0.eq(DEFAULT_AMOUNT), 'Expected totalStake == default amount')
+      assert.isTrue(spDetails0.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
+      assert.isTrue(spDetails0.validBounds, 'Expected validBounds == true')
+      assert.isTrue(totalStaked0.gt(spDetails0.minAccountStake), 'Expected totalStake > minAccountStake')
+      assert.isTrue(totalStaked0.lt(spDetails0.maxAccountStake), 'Expected totalStake < maxAccountStake')
+
+      // Delegate stake to Staker, pushing them to the upper maxAmount bound
+      const delegationAmount = _lib.audToWeiBN(9999880)
+      await token.approve(
+        stakingAddress,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+      await delegateManager.delegateStake(
+        stakerAccount,
+        delegationAmount,
+        { from: delegatorAccount1 }
+      )
+
+      const spDetails1 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      const totalStaked1 = await staking.totalStakedFor(stakerAccount)
+      console.log(totalStaked1.toString())
+      console.log(spDetails1.deployerStake.toString())
+      console.log(spDetails1.minAccountStake.toString())
+      console.log(spDetails1.maxAccountStake.toString())
+      console.log('\n')
+
+      assert.isTrue(totalStaked1.eq(
+        DEFAULT_AMOUNT.add(delegationAmount)
+      ), 'Expected totalStake == default amount + delegated amount')
+      assert.isTrue(spDetails1.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
+      assert.isTrue(spDetails1.validBounds, 'Expected validBounds == true')
+      assert.isTrue(totalStaked1.eq(spDetails1.maxAccountStake), 'Expected totalStake == maxAccountStake')
+
+      // Initiate a claim round which will send the Staker over bounds
+      await claimsManager.initiateRound({ from: stakerAccount })
+      await delegateManager.claimRewards(stakerAccount, { from: stakerAccount })
+
+      const spDetails2 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      const totalStaked2 = await staking.totalStakedFor(stakerAccount)
+      assert.isFalse(spDetails2.validBounds, 'Expected validBounds == false')
+      assert.isTrue(totalStaked2.gt(spDetails2.maxAccountStake), 'Expected totalStake > maxAccountStake')
+
+      // Undelegate to return the staker back in bounds
+      const delegatedStake = await getTotalDelegatorStake(delegatorAccount1)
+      await delegateManager.requestUndelegateStake(
+        stakerAccount,
+        delegatedStake,
+        { from: delegatorAccount1 }
+      )
+      const undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
+      await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+      await delegateManager.undelegateStake({ from: delegatorAccount1 })
+
+      const spDetails3 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
+      const totalStaked3 = await staking.totalStakedFor(stakerAccount)
+
+      // Ensure that we are above min stake and below max stake
+      assert.isTrue(totalStaked3.gt(spDetails1.minAccountStake), 'Expected totalStake > minAccountStake')
+      assert.isTrue(totalStaked3.lt(spDetails1.maxAccountStake), 'Expected totalStake < maxAccountStake')
+
+      // Without a contract change this fails as the DelegateManager does not update validBounds
+      assert.isTrue(spDetails3.validBounds, 'Expected validBounds == true')
     })
   })
 })
