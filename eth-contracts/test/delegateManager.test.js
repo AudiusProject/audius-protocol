@@ -2654,11 +2654,6 @@ contract('DelegateManager', async (accounts) => {
       // Confirm initial SP details
       const spDetails0 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
       const totalStaked0 = await staking.totalStakedFor(stakerAccount)
-      console.log(totalStaked0.toString())
-      console.log(spDetails0.deployerStake.toString())
-      console.log(spDetails0.minAccountStake.toString())
-      console.log(spDetails0.maxAccountStake.toString())
-      console.log('\n')
 
       assert.isTrue(totalStaked0.eq(DEFAULT_AMOUNT), 'Expected totalStake == default amount')
       assert.isTrue(spDetails0.deployerStake.eq(DEFAULT_AMOUNT), 'Expected deployerStake == default amount')
@@ -2681,11 +2676,6 @@ contract('DelegateManager', async (accounts) => {
 
       const spDetails1 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
       const totalStaked1 = await staking.totalStakedFor(stakerAccount)
-      console.log(totalStaked1.toString())
-      console.log(spDetails1.deployerStake.toString())
-      console.log(spDetails1.minAccountStake.toString())
-      console.log(spDetails1.maxAccountStake.toString())
-      console.log('\n')
 
       assert.isTrue(totalStaked1.eq(
         DEFAULT_AMOUNT.add(delegationAmount)
