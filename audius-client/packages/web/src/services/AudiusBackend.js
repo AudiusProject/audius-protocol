@@ -16,7 +16,8 @@ import {
   IntKeys,
   getRemoteVar,
   StringKeys,
-  BooleanKeys
+  BooleanKeys,
+  FeatureFlags
 } from 'services/remote-config'
 import {
   waitForLibsInit,
@@ -27,7 +28,10 @@ import {
 import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
 import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import { Timer } from 'utils/performance'
-import { waitForRemoteConfig } from './remote-config/Provider'
+import {
+  getFeatureEnabled,
+  waitForRemoteConfig
+} from './remote-config/Provider'
 import { monitoringCallbacks } from './serviceMonitoring'
 import { isElectron } from 'utils/clientUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
@@ -777,7 +781,8 @@ class AudiusBackend {
     try {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
-        unauthenticatedUuid
+        unauthenticatedUuid,
+        getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
       )
       return listen
     } catch (err) {
