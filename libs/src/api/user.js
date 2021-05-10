@@ -640,6 +640,7 @@ class Users extends Base {
     if (addOps.length > 0) {
       // Execute update promises concurrently
       // TODO - what if one or more of these fails?
+      // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(addOps)
       const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
       const latestTx = sortedOpsDesc[0].txReceipt
@@ -689,6 +690,7 @@ class Users extends Base {
 
     let ops; let latestBlockNumber = -Infinity; let latestBlockHash
     if (updateOps.length > 0) {
+      // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(updateOps)
       const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
       const latestTx = sortedOpsDesc[0].txReceipt
