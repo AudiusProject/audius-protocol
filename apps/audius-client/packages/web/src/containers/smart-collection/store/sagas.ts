@@ -19,7 +19,7 @@ import Track from 'models/Track'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { Status } from 'store/types'
 import { EXPLORE_PAGE } from 'utils/route'
-import { fetchRandomTracks } from 'store/recommendation/sagas'
+import { getLuckyTracks } from 'store/recommendation/sagas'
 
 const COLLECTIONS_LIMIT = 25
 
@@ -94,7 +94,7 @@ function* fetchMostLoved() {
 }
 
 function* fetchFeelingLucky() {
-  const tracks = yield call(fetchRandomTracks, COLLECTIONS_LIMIT)
+  const tracks = yield call(getLuckyTracks, COLLECTIONS_LIMIT)
 
   const trackIds = tracks.map((track: Track) => ({
     time: track.created_at,

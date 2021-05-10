@@ -22,6 +22,7 @@ import { encodeHashId, decodeHashId } from 'utils/route/hashIds'
 import { StemTrackMetadata } from 'models/Track'
 import { SearchKind } from 'containers/search-page/store/types'
 import { processSearchResults } from './helper'
+import { getRemoteVar, IntKeys } from '../remote-config'
 
 declare global {
   interface Window {
@@ -33,6 +34,7 @@ const FULL_ENDPOINT_MAP = {
   trending: '/tracks/trending',
   trendingIds: '/tracks/trending/ids',
   trendingUnderground: '/tracks/trending/underground',
+  recommended: '/tracks/recommended',
   following: (userId: OpaqueID) => `/users/${userId}/following`,
   followers: (userId: OpaqueID) => `/users/${userId}/followers`,
   trackRepostUsers: (trackId: OpaqueID) => `/tracks/${trackId}/reposts`,
@@ -65,7 +67,7 @@ const ENDPOINT_MAP = {
 const TRENDING_LIMIT = 100
 
 type QueryParams = {
-  [key: string]: string | number | undefined | boolean | Array<string> | null
+  [key: string]: string | number | undefined | boolean | string[] | null
 }
 
 export type GetTrackArgs = {
@@ -94,6 +96,12 @@ type GetTrendingUndergroundArgs = {
 type GetTrendingIdsArgs = {
   limit?: number
   genre?: Nullable<string>
+}
+
+type GetRecommendedArgs = {
+  genre: Nullable<string>
+  exclusionList: number[]
+  currentUserId: Nullable<ID>
 }
 
 type GetFollowingArgs = {
@@ -369,6 +377,32 @@ class AudiusAPIClient {
       }
     )
     return res
+  }
+
+  async getRecommended({
+    genre,
+    exclusionList,
+    currentUserId
+  }: GetRecommendedArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      genre,
+      limit: getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
+      exclusion_list:
+        exclusionList.length > 0 ? exclusionList.map(String) : undefined,
+      user_id: encodedCurrentUserId || undefined
+    }
+    const recommendedResponse: Nullable<APIResponse<
+      APITrack[]
+    >> = await this._getResponse(FULL_ENDPOINT_MAP.recommended, params)
+
+    if (!recommendedResponse) return []
+
+    const adapted = recommendedResponse.data
+      .map(adapter.makeTrack)
+      .filter(removeNullable)
+    return adapted
   }
 
   async getFollowing({
