@@ -44,7 +44,10 @@ class PlaylistFactoryClient extends ContractClient {
       this.contractRegistryKey,
       contractAddress
     )
-    return parseInt(tx.events.PlaylistCreated.returnValues._playlistId, 10)
+    return {
+      playlistId: parseInt(tx.events.PlaylistCreated.returnValues._playlistId, 10),
+      txReceipt: tx
+    }
   }
 
   async deletePlaylist (playlistId) {
@@ -66,7 +69,10 @@ class PlaylistFactoryClient extends ContractClient {
       this.contractRegistryKey,
       contractAddress
     )
-    return parseInt(tx.events.PlaylistDeleted.returnValues._playlistId, 10)
+    return {
+      playlistId: parseInt(tx.events.PlaylistDeleted.returnValues._playlistId, 10),
+      txReceipt: tx
+    }
   }
 
   async addPlaylistTrack (playlistId, addedTrackId) {

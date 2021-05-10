@@ -312,13 +312,15 @@ class Users extends Base {
     } else {
       userId = (await this.contracts.UserFactoryClient.addUser(newMetadata.handle)).userId
     }
-    await this._addUserOperations(userId, newMetadata)
+    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } = await this._addUserOperations(
+      userId, newMetadata
+    )
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
 
     this.userStateManager.setCurrentUser({ ...newMetadata })
-    return userId
+    return { blockHash, blockNumber, userId }
   }
 
   /**
@@ -337,8 +339,11 @@ class Users extends Base {
     if (!users || !users[0]) throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
 
     const oldMetadata = users[0]
-    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } = await this._updateUserOperations(
+      newMetadata, oldMetadata, userId
+    )
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+    return { blockHash, blockNumber }
   }
 
   /**
@@ -388,7 +393,9 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    const { latestBlockHash, latestBlockNumber } = await this._updateUserOperations(
+      newMetadata, oldMetadata, userId
+    )
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -396,7 +403,7 @@ class Users extends Base {
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
 
-    return userId
+    return { blockHash: latestBlockHash, blockNumber: latestBlockNumber, userId }
   }
 
   /**
@@ -629,10 +636,18 @@ class Users extends Base {
       addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]))
     }
 
-    // Execute update promises concurrently
-    // TODO - what if one or more of these fails?
-    const ops = await Promise.all(addOps)
-    return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
+    let ops; let latestBlockNumber = -Infinity; let latestBlockHash
+    if (addOps.length > 0) {
+      // Execute update promises concurrently
+      // TODO - what if one or more of these fails?
+      ops = await Promise.all(addOps)
+      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const latestTx = sortedOpsDesc[0].txReceipt
+      latestBlockNumber = latestTx.blockNumber
+      latestBlockHash = latestTx.blockHash
+    }
+
+    return { ops, latestBlockNumber, latestBlockHash }
   }
 
   async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
@@ -672,10 +687,16 @@ class Users extends Base {
       }
     }
 
-    const ops = await Promise.all(updateOps)
-    const latestBlockNumber = Math.max(...ops.map(op => op.txReceipt.blockNumber))
+    let ops; let latestBlockNumber = -Infinity; let latestBlockHash
+    if (updateOps.length > 0) {
+      ops = await Promise.all(updateOps)
+      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const latestTx = sortedOpsDesc[0].txReceipt
+      latestBlockNumber = latestTx.blockNumber
+      latestBlockHash = latestTx.blockHash
+    }
 
-    return { ops: ops, latestBlockNumber }
+    return { ops, latestBlockNumber, latestBlockHash }
   }
 
   _validateUserMetadata (metadata) {
