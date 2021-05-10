@@ -432,12 +432,12 @@ class SnapbackSM {
   /**
    * Converts provided array of SyncRequests to issue to a map(secondaryNode => userWallets[]) for easier access
    *
-   * @param {Array} requiredSyncRequests array of objects with schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   * @param {Array} potentialSyncRequests array of objects with schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    */
-  buildSecondaryNodesToUserWalletsMap (requiredSyncRequests) {
+  buildSecondaryNodesToUserWalletsMap (potentialSyncRequests) {
     const secondaryNodesToUserWalletsMap = {}
 
-    requiredSyncRequests.forEach(userInfo => {
+    potentialSyncRequests.forEach(userInfo => {
       const { wallet, endpoint: secondary } = userInfo
 
       if (!secondaryNodesToUserWalletsMap[secondary]) {
@@ -494,22 +494,25 @@ class SnapbackSM {
    * Issues SyncRequests for every (user, secondary) pair if needed
    * Only issues requests if primary clock value is greater than secondary clock value
    *
-   * @param {Array} requiredSyncRequests array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   * @param {Array} potentialSyncRequests array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    *      `endpoint` field indicates secondary on which to issue SyncRequest
    * @param {Object} secondaryNodesToUserClockStatusesMap map(secondaryNode => map(userWallet => secondaryClockValue))
    * @returns {Number} number of sync requests issued
    * @returns {Array} array of all SyncRequest errors
    */
-  async issueSyncRequests (requiredSyncRequests, secondaryNodesToUserClockStatusesMap) {
+  async issueSyncRequests (potentialSyncRequests, secondaryNodesToUserClockStatusesMap) {
+    // TODO ensure all syncRequests are for users with primary == self
+
     // Retrieve clock values for all users on this node, which is their primary
-    const userWallets = requiredSyncRequests.map(user => user.wallet)
+    const userWallets = potentialSyncRequests.map(user => user.wallet)
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
 
+    let numSyncRequestsRequired = 0
     let numSyncRequestsIssued = 0
     let syncRequestErrors = []
 
     // TODO change to chunked parallel
-    await Promise.all(requiredSyncRequests.map(async (user) => {
+    await Promise.all(potentialSyncRequests.map(async (user) => {
       try {
         const { wallet, endpoint: secondary } = user
 
@@ -521,6 +524,8 @@ class SnapbackSM {
         const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
 
         if (syncRequired) {
+          numSyncRequestsRequired += 1
+
           await this.enqueueSync({
             userWallet: wallet,
             secondaryEndpoint: secondary,
@@ -535,7 +540,7 @@ class SnapbackSM {
       }
     }))
 
-    return { numSyncRequestsIssued, syncRequestErrors }
+    return { numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors }
   }
 
   /**
@@ -632,9 +637,9 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():determinePeerHealth() Error')
       }
 
-      // Lists to aggregate all required ReplicaSetUpdate ops and SyncRequest ops
+      // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops
       const requiredUpdateReplicaSetOps = []
-      const requiredSyncRequests = []
+      const potentialSyncRequests = []
 
       /**
        * For every node user, record sync requests to issue to secondaries if this node is primary
@@ -652,7 +657,7 @@ class SnapbackSM {
             if (unhealthyPeers.has(secondary)) {
               requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
             } else {
-              requiredSyncRequests.push({ ...nodeUser, endpoint: secondary })
+              potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
             }
           }
         } else {
@@ -665,16 +670,16 @@ class SnapbackSM {
         }
       }
       decisionTree.push({
-        stage: '6/ Build requiredUpdateReplicaSetOps and requiredSyncRequests arrays',
+        stage: '6/ Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
         vals: {
           requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
-          requiredSyncRequestsLength: requiredSyncRequests.length
+          potentialSyncRequestsLength: potentialSyncRequests.length
         },
         time: Date.now()
       })
 
       // Build map of secondary node to secondary user wallets array
-      const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(requiredSyncRequests)
+      const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(potentialSyncRequests)
       decisionTree.push({
         stage: '7/ buildSecondaryNodesToUserWalletsMap() Success',
         vals: { numSecondaryNodes: Object.keys(secondaryNodesToUserWalletsMap).length },
@@ -702,9 +707,10 @@ class SnapbackSM {
       }
 
       // Issue all required sync requests
-      let numSyncRequestsIssued, syncRequestErrors
+      let numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors
       try {
-        const resp = await this.issueSyncRequests(requiredSyncRequests, secondaryNodesToUserClockStatusesMap)
+        const resp = await this.issueSyncRequests(potentialSyncRequests, secondaryNodesToUserClockStatusesMap)
+        numSyncRequestsRequired = resp.numSyncRequestsRequired
         numSyncRequestsIssued = resp.numSyncRequestsIssued
         syncRequestErrors = resp.syncRequestErrors
 
@@ -715,6 +721,7 @@ class SnapbackSM {
         decisionTree.push({
           stage: '9/ issueSyncRequests() Success',
           vals: {
+            numSyncRequestsRequired,
             numSyncRequestsIssued,
             numSyncRequestErrors: syncRequestErrors.length,
             syncRequestErrors
@@ -725,6 +732,7 @@ class SnapbackSM {
         decisionTree.push({
           stage: '9/ issueSyncRequests() Error',
           vals: {
+            numSyncRequestsRequired,
             numSyncRequestsIssued,
             numSyncRequestErrors: (syncRequestErrors ? syncRequestErrors.length : null),
             syncRequestErrors
