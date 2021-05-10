@@ -3,8 +3,6 @@ const solanaWeb3 = require('@solana/web3.js')
 const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
 const borsh = require('borsh')
-const { logger } = require('./logging')
-
 
 const VALID_SIGNER = config.get('solanaValidSigner')
 const AUDIUS_ETH_REGISTRY_PROGRAM = config.get('solanaAudiusEthRegistryAddress') ? new solanaWeb3.PublicKey(
@@ -176,13 +174,12 @@ async function createAndVerifyMessage (
 
   let feePayerAccount = getFeePayer()
 
-  logger.info(`Sending transaction trackId=${trackId} userId=${userId}`)
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     solanaConnection,
     transaction,
     [feePayerAccount],
     {
-      commitment: "confirmed"
+      commitment: 'confirmed'
     }
   )
 
