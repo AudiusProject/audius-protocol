@@ -89,6 +89,7 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
+    const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
@@ -97,9 +98,6 @@ class SnapbackSM {
           this.log(`StateMachineQueue error processing ${e}`)
         }
 
-        const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
-
-        this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
         await utils.timeout(stateMachineJobInterval)
 
         await this.stateMachineQueue.add({ starttime: Date.now() })
@@ -139,7 +137,7 @@ class SnapbackSM {
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
 
-    logger.info(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode`)
+    this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${stateMachineJobInterval}ms`)
   }
 
   log (msg) {
@@ -194,11 +192,12 @@ class SnapbackSM {
    *  - Makes single request to discovery node to retrieve all users
    *
    * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
+   *    It will throw if the route doesn't exist
    *
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodeUsers () {
+  async getAllNodeUsers (decisionTree) {
     // Fetch discovery node currently connected to libs as this can change
     const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!discoveryProviderEndpoint) {
@@ -214,9 +213,18 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
-    const resp = await axios(requestParams)
 
-    return resp.data.data
+    // Will throw error on non-200 response
+    const resp = await axios(requestParams)
+    const allNodeUsers = resp.data.data
+
+    decisionTree.push({
+      stage: '2.A/ getNodeUsers():getAllNodeUsers() Success',
+      vals: { requestParams, numAllNodeUsers: allNodeUsers.length },
+      time: Date.now()
+    })
+
+    return allNodeUsers
   }
 
   /**
@@ -226,14 +234,14 @@ class SnapbackSM {
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodePrimaryUsers () {
+  async getNodePrimaryUsers (decisionTree) {
     // Fetch discovery node currently connected to libs as this can change
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!currentlySelectedDiscProv) {
       throw new Error('No discovery provider currently selected, exiting')
     }
 
-    let requestParams = {
+    const requestParams = {
       method: 'get',
       baseURL: currentlySelectedDiscProv,
       url: `users/creator_node`,
@@ -244,8 +252,45 @@ class SnapbackSM {
 
     // Will throw error on non-200 response
     const resp = await axios(requestParams)
+    const nodePrimaryUsers = resp.data.data
 
-    return resp.data.data
+    decisionTree.push({
+      stage: '2.A/ getNodeUsers():getAllNodeUsers() Failure; fallback getNodePrimaryUsers() Success',
+      vals: { requestParams, numNodePrimaryUsers: nodePrimaryUsers.length },
+      time: Date.now()
+    })
+
+    return nodePrimaryUsers
+  }
+
+  /**
+   * Wrapper function to handle backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
+   * This only works if both functions have a consistent return format
+   */
+  async getNodeUsers (decisionTree) {
+    let nodeUsers
+
+    // Use new function to retrieve all node users
+    try {
+      nodeUsers = await this.getAllNodeUsers(decisionTree)
+
+      // On failure, fallback to old function to retrieve all node primary users
+    } catch (e) {
+      nodeUsers = await this.getNodePrimaryUsers()
+
+      // Ensure every object in response array contains all required fields
+    } finally {
+      nodeUsers.forEach(nodeUser => {
+        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
+        const responseFields = Object.keys(nodeUser)
+        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
+        if (!allRequiredFieldsPresent) {
+          throw new Error('Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
+        }
+      })
+    }
+
+    return nodeUsers
   }
 
   /**
@@ -485,7 +530,6 @@ class SnapbackSM {
 
           numSyncRequestsIssued += 1
         }
-
       } catch (e) {
         syncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
@@ -512,22 +556,24 @@ class SnapbackSM {
 
     const printDecisionTreeObj = (decisionTree) => {
       try {
-        this.log('processStateMachineOperation Decision Tree', JSON.stringify(decisionTree))
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
       } catch (e) {
-        this.logError('Error printing processStateMachineOperation Decision Tree', decisionTree)
+        this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
     }
 
     try {
-      // Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
+      /**
+       * Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
+       * Or retrieve primary users only if connected to old discprov
+       */
       let nodeUsers
       try {
-        nodeUsers = await this.getNodeUsers()
+        nodeUsers = await this.getNodeUsers(decisionTree)
         decisionTree.push({ stage: '2/ getNodeUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
-
       } catch (e) {
         decisionTree.push({ stage: '2/ getNodeUsers() Error', vals: e.message, time: Date.now() })
-        throw new Error('processStateMachineOperation():getNodeUsers() Error')
+        throw new Error('processStateMachineOperation():getAllNodeUsers() Error')
       }
 
       /**
@@ -554,7 +600,6 @@ class SnapbackSM {
           vals: { peerSetLength: peerSet.size },
           time: Date.now()
         })
-
       } catch (e) {
         decisionTree.push({ stage: '4/ computeContentNodePeerSet() Error', vals: e.message, time: Date.now() })
         throw new Error('processStateMachineOperation():computeContentNodePeerSet() Error')
@@ -582,7 +627,6 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-
       } catch (e) {
         decisionTree.push({ stage: '5/ determinePeerHealth() Error', vals: e.message, time: Date.now() })
         throw new Error('processStateMachineOperation():determinePeerHealth() Error')
@@ -648,7 +692,6 @@ class SnapbackSM {
           vals: { },
           time: Date.now()
         })
-
       } catch (e) {
         decisionTree.push({
           stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Error',
@@ -737,6 +780,7 @@ class SnapbackSM {
       // Log error without throwing - next run will attempt to rectify
     } catch (e) {
       decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
+    } finally {
       printDecisionTreeObj(decisionTree)
     }
   }
@@ -751,7 +795,7 @@ class SnapbackSM {
     let nodePrimaryUsers
     try {
       // Returns all users that have this node in their replica set via discprov route `/users/content_node/all`
-      const nodeUsers = await this.getNodeUsers()
+      const nodeUsers = await this.getAllNodeUsers()
 
       // Filter to subset of users that have this node as their primary
       nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
@@ -759,7 +803,7 @@ class SnapbackSM {
       this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
 
       /**
-       * If getNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
+       * If getAllNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
        * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
        * This route returns only users with this node as their primary
        */
@@ -774,7 +818,7 @@ class SnapbackSM {
         const responseFields = Object.keys(nodePrimaryUser)
         const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
         if (!allRequiredFieldsPresent) {
-          throw new Error('Unexpected response format during getNodeUsers() or getNodePrimaryUsers() call')
+          throw new Error('Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
         }
       })
     }
