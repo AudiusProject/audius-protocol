@@ -14,6 +14,9 @@ class ReplicaType(Enum):
 def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
     '''
     Query all users with `cnode_endpoint_string` in replica set
+    If replica_type=ReplicaType.PRIMARY -> returns users with `cnode_endpoint_string` as primary
+    Else if replica_type=ReplicaType.SECONDARY -> returns users with `cnode_endpoint_string` as secondary1 or secondary2
+    Else (only other option is replica_type=ReplicaType.ALL)
 
     Only returns values where 1/2 secondaries are non-null
     '''
@@ -53,7 +56,7 @@ def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
                 if replica_type == ReplicaType.PRIMARY
                 else '(t.secondary1 = :cnode_endpoint_string OR t.secondary2 = :cnode_endpoint_string) AND'
                 if replica_type == ReplicaType.SECONDARY
-                else ""
+                else '(t.primary = :cnode_endpoint_string OR t.secondary1 = :cnode_endpoint_string OR t.secondary2 = :cnode_endpoint_string) AND'
             }
             t.secondary1 is not NULL;
             """
