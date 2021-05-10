@@ -24,7 +24,6 @@ import { useRemoteVar } from 'containers/remote-config/hooks'
 import { StringKeys } from 'services/remote-config'
 import { getTheme, isDarkMode } from 'utils/theme/theme'
 import Theme from 'models/Theme'
-import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
 import { isMobile } from 'utils/clientUtil'
 import cn from 'classnames'
 
@@ -127,17 +126,12 @@ const TrendingRewardsBody = ({
     {
       key: 'playlists',
       text: mobile ? messages.playlists : messages.topPlaylists
-    }
-  ]
-
-  // Add underground audio if enabled
-  const { isEnabled: isUndergroundEnabled } = useIsTrendingUndergroundEnabled()
-  if (isUndergroundEnabled) {
-    tabOptions.push({
+    },
+    {
       key: 'underground',
       text: messages.underground
-    })
-  }
+    }
+  ]
 
   const navigate = useNavigateToPage()
 
@@ -167,9 +161,7 @@ const TrendingRewardsBody = ({
             onSelectOption={option =>
               setModalType(option as TrendingRewardsModalType)
             }
-            textClassName={cn(styles.slider, {
-              [styles.compactSlider]: isUndergroundEnabled
-            })}
+            textClassName={cn(styles.slider, styles.compactSlider)}
             activeTextClassName={styles.activeSlider}
             key={`rewards-slider-${tabOptions.length}`}
           />

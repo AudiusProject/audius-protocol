@@ -39,7 +39,6 @@ import {
   INTIMATE_PLAYLISTS
 } from 'containers/explore-page/collections'
 import { ExploreCollectionsVariant } from 'containers/explore-page/store/types'
-import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
 
 const messages = {
   featuredPlaylists: 'Playlists We Love Right Now',
@@ -53,8 +52,9 @@ reposts, and follows. Refreshes often so if you like a track, favorite it.`,
   lifestyleSubtitle: 'Playlists made by Audius users, sorted by mood and feel'
 }
 
-const justForYou = [
+export const justForYou = [
   TRENDING_PLAYLISTS,
+  TRENDING_UNDERGROUND,
   HEAVY_ROTATION,
   LET_THEM_DJ,
   BEST_NEW_RELEASES,
@@ -81,14 +81,6 @@ export type ExplorePageProps = {
   goToRoute: (route: string) => void
 }
 
-export const useJustForYouTiles = (isUnderground: boolean) => {
-  const justForYouTiles = [...justForYou]
-  if (isUnderground) {
-    justForYouTiles.splice(1, 0, TRENDING_UNDERGROUND)
-  }
-  return justForYouTiles
-}
-
 const ExplorePage = ({
   title,
   description,
@@ -106,8 +98,6 @@ const ExplorePage = ({
     setDidLoad: setDidLoadProfile
   } = useOrderedLoad(profiles.length)
 
-  const { isEnabled: isUnderground } = useIsTrendingUndergroundEnabled()
-  const justForYouTiles = useJustForYouTiles(!!isUnderground)
   const header = <Header primary={title} containerStyles={styles.header} />
   const onClickCard = useCallback(
     (url: string) => {
@@ -134,13 +124,9 @@ const ExplorePage = ({
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
-        layout={
-          isUnderground
-            ? Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT
-            : Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT
-        }
+        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}
       >
-        {justForYouTiles.map(i => {
+        {justForYou.map(i => {
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
