@@ -393,7 +393,7 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockHash, latestBlockNumber } = await this._updateUserOperations(
+    let { latestBlockHash, latestBlockNumber } = await this._updateUserOperations(
       newMetadata, oldMetadata, userId
     )
 
@@ -402,6 +402,11 @@ class Users extends Base {
 
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+
+    if (!latestBlockHash || !latestBlockNumber) {
+      latestBlockHash = txReceipt.blockHash
+      latestBlockNumber = txReceipt.blockNumber
+    }
 
     return { blockHash: latestBlockHash, blockNumber: latestBlockNumber, userId }
   }
