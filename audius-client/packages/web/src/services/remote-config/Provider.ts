@@ -122,7 +122,8 @@ export function getFeatureEnabled(flag: FeatureFlags) {
   const defaultVal = flagDefaults[flag]
   try {
     const enabled = state.didInitialize
-      ? provider.isFeatureEnabled(flag as string, state.userId) ?? defaultVal
+      ? provider.isFeatureEnabled((flag as unknown) as string, state.userId) ??
+        defaultVal
       : defaultVal
     return enabled
   } catch (err) {
