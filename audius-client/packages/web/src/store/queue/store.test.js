@@ -1,8 +1,9 @@
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { take } from 'redux-saga/effects'
-import { RepeatMode } from 'store/queue/types'
+import { RepeatMode, Source } from 'store/queue/types'
 import reducer, * as actions from 'store/queue/slice'
+import accountReducer from 'store/account/reducer'
 import playerReducer, * as playerActions from 'store/player/slice'
 import * as sagas from 'store/queue/sagas'
 import * as cacheActions from 'store/cache/actions'
@@ -10,8 +11,7 @@ import { noopReducer } from 'store/testHelper'
 import { Kind } from 'store/types'
 import AudioStream from 'audio/AudioStream'
 import * as matchers from 'redux-saga-test-plan/matchers'
-import { getQueueAutoplay } from './sagas'
-import { Source } from './types'
+import { getQueueAutoplay } from 'store/queue/sagas'
 
 const initialTracks = {
   entries: {
@@ -58,6 +58,11 @@ const makeInitialPlayer = (config = {}) => ({
   // object to allow components to subscribe to changes.
   playing: false,
   counter: 0,
+  ...config
+})
+
+const makeInitialAccount = (config = {}) => ({
+  userId: null,
   ...config
 })
 
@@ -134,11 +139,11 @@ describe('watchPause', () => {
 
 describe('watchNext', () => {
   it('autoplay tracks', async () => {
-    const randomTracks = [
+    const recommendedTracks = [
       {
         id: 1,
         uid: 'kind:TRACKS-id:1-count:1',
-        source: Source.RANDOM_TRACKS
+        source: Source.RECOMMENDED_TRACKS
       }
     ]
     const initialQueue = makeInitialQueue({ index: 1 })
@@ -149,22 +154,25 @@ describe('watchNext', () => {
       trackId: playingEntry.id,
       playing: true
     })
+    const initialAccount = makeInitialAccount({ userId: 1 })
     const { storeState } = await expectSaga(sagas.watchNext, actions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
           queue: reducer,
-          player: playerReducer
+          player: playerReducer,
+          account: accountReducer
         }),
         {
           player: initialPlayer,
           tracks: initialTracks,
-          queue: initialQueue
+          queue: initialQueue,
+          account: initialAccount
         }
       )
-      .provide([[matchers.call.fn(getQueueAutoplay), randomTracks]])
+      .provide([[matchers.call.fn(getQueueAutoplay), recommendedTracks]])
       .dispatch(actions.next({}))
-      .put(actions.add({ entries: [randomTracks[0]] }))
+      .put(actions.add({ entries: [recommendedTracks[0]] }))
       .put(
         actions.play({
           uid: nextPlayingEntry.uid,
@@ -281,17 +289,20 @@ describe('watchNext', () => {
     nextPlayingEntry,
     nextPayload = {}
   ) {
+    const initialAccount = makeInitialAccount({ userId: 1 })
     return await expectSaga(sagas.watchNext, actions)
       .withReducer(
         combineReducers({
           tracks: noopReducer(initialTracks),
           queue: reducer,
-          player: playerReducer
+          player: playerReducer,
+          account: accountReducer
         }),
         {
           player: initialPlayer,
           tracks: initialTracks,
-          queue: initialQueue
+          queue: initialQueue,
+          account: initialAccount
         }
       )
       .dispatch(actions.next(nextPayload))

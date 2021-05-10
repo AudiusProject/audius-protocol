@@ -3,37 +3,36 @@ import {
   call,
   put,
   select,
-  takeLatest,
-  takeEvery
+  takeEvery,
+  takeLatest
 } from 'redux-saga/effects'
-
 import {
-  play,
-  pause,
-  next,
-  previous,
   add,
-  remove,
-  clear
+  clear,
+  next,
+  pause,
+  play,
+  previous,
+  remove
 } from 'store/queue/slice'
 import * as playerActions from 'store/player/slice'
 import * as cacheActions from 'store/cache/actions'
 import {
-  getUid,
   getId as getQueueTrackId,
   getIndex,
-  getSource,
-  getRepeat,
-  getUndershot,
   getLength,
-  getOvershot
+  getOvershot,
+  getRepeat,
+  getSource,
+  getUid,
+  getUndershot
 } from 'store/queue/selectors'
 import { getId } from 'store/cache/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getCollection } from 'store/cache/collections/selectors'
 import {
-  getUid as getPlayerUid,
-  getTrackId as getPlayerTrackId
+  getTrackId as getPlayerTrackId,
+  getUid as getPlayerUid
 } from 'store/player/selectors'
 import { Kind } from 'store/types'
 import { Queueable, RepeatMode, Source } from 'store/queue/types'
@@ -42,13 +41,14 @@ import { makeUid, Uid } from 'utils/uid'
 import mobileSagas from './mobileSagas'
 import { make } from 'store/analytics/actions'
 import { Name, PlaybackSource } from 'services/analytics'
-import { UID, ID } from 'models/common/Identifiers'
-import Track from '../../models/Track'
-import { fetchRandomTracks } from '../recommendation/sagas'
+import { ID, UID } from 'models/common/Identifiers'
+import Track from 'models/Track'
+import { getRecommendedTracks } from '../recommendation/sagas'
+import { getUserId } from 'store/account/selectors'
+import { Nullable } from '../../utils/typeUtils'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
-const AUTOPLAY_LIMIT = 2
 
 export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
   if (entry.kind === Kind.COLLECTIONS) {
@@ -204,6 +204,7 @@ export function* watchNext() {
     const id = yield select(getQueueTrackId)
     const track = yield select(getTrack, { id })
     const source = yield select(getSource)
+    const userId = yield select(getUserId)
     if (track && track.is_delete) {
       yield put(next({ skip }))
     } else {
@@ -211,8 +212,13 @@ export function* watchNext() {
       const length = yield select(getLength)
       if (index >= 0) {
         if (index + 1 >= length) {
-          const randomTracks: Queueable[] = yield call(getQueueAutoplay)
-          yield put(add({ entries: randomTracks }))
+          const recommendedTracks: Queueable[] = yield call(
+            getQueueAutoplay,
+            track?.genre,
+            track ? [track.track_id] : [],
+            userId
+          )
+          yield put(add({ entries: recommendedTracks }))
         }
         const uid = yield select(getUid)
         yield put(play({ uid, trackId: id, source }))
@@ -290,13 +296,23 @@ export function* watchRemove() {
   })
 }
 
-export function* getQueueAutoplay(): Generator<any, Queueable[], any> {
-  const tracks: Track[] = yield call(fetchRandomTracks, AUTOPLAY_LIMIT)
-  return tracks.map(({ track_id }) => ({
+export function* getQueueAutoplay(
+  genre: string,
+  exclusionList: number[],
+  currentUserId: Nullable<ID>
+): Generator<any, Queueable[], any> {
+  const tracks: Track[] = yield call(
+    getRecommendedTracks,
+    genre,
+    exclusionList,
+    currentUserId
+  )
+  const result = tracks.map(({ track_id }) => ({
     id: track_id,
     uid: makeUid(Kind.TRACKS, track_id),
-    source: Source.RANDOM_TRACKS
+    source: Source.RECOMMENDED_TRACKS
   }))
+  return result
 }
 
 const sagas = () => {

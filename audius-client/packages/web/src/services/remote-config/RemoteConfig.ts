@@ -41,7 +41,12 @@ export enum IntKeys {
   /**
    * Instagram handle taken check timeout
    */
-  INSTAGRAM_HANDLE_CHECK_TIMEOUT = 'INSTAGRAM_HANDLE_CHECK_TIMEOUT'
+  INSTAGRAM_HANDLE_CHECK_TIMEOUT = 'INSTAGRAM_HANDLE_CHECK_TIMEOUT',
+
+  /**
+   * Number of random (recommended) tracks to fetch and add to the autoplay queue
+   */
+  AUTOPLAY_LIMIT = 'AUTOPLAY_LIMIT'
 }
 
 export enum BooleanKeys {
