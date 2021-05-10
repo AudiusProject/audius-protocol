@@ -56,7 +56,9 @@ def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
                 if replica_type == ReplicaType.PRIMARY
                 else '(t.secondary1 = :cnode_endpoint_string OR t.secondary2 = :cnode_endpoint_string) AND'
                 if replica_type == ReplicaType.SECONDARY
-                else '(t.primary = :cnode_endpoint_string OR t.secondary1 = :cnode_endpoint_string OR t.secondary2 = :cnode_endpoint_string) AND'
+                else '(t.primary = :cnode_endpoint_string OR '
+                    't.secondary1 = :cnode_endpoint_string OR '
+                    't.secondary2 = :cnode_endpoint_string) AND'
             }
             t.secondary1 is not NULL;
             """
