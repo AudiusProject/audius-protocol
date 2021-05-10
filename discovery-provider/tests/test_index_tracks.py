@@ -1,10 +1,8 @@
 import random
-from datetime import datetime, timedelta
-from sqlalchemy.sql import null
-from src.models import Block, User, Track
+from datetime import datetime
+from src.models import Block, User
 from src.tasks.tracks import parse_track_event, lookup_track_record, track_event_types_lookup
 from src.utils.db_session import get_db
-from src.utils.user_event_constants import user_event_types_lookup
 
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
@@ -13,101 +11,102 @@ class AttrDict(dict):
 
 
 def get_new_track_event():
-  event_type = track_event_types_lookup['new_track']
-  new_track_event = AttrDict({
-    '_id': 1,
-    '_trackOwnerId': 1,
-    '_multihashDigest': b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg',
-    '_multihashHashFn': 18,
-    '_multihashSize': 32
-  })
-  return event_type, AttrDict({ "blockHash": "0x", "args": new_track_event })
+    event_type = track_event_types_lookup['new_track']
+    new_track_event = AttrDict({
+        '_id': 1,
+        '_trackOwnerId': 1,
+        '_multihashDigest':
+            b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg',
+        '_multihashHashFn': 18,
+        '_multihashSize': 32
+    })
+    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
 
 def get_update_track_event():
-  event_type = track_event_types_lookup['update_track']
-  update_track_event = AttrDict({
-    '_trackId': 1,
-    '_trackOwnerId': 1,
-    '_multihashDigest': b'\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q',
-    '_multihashHashFn': 18,
-    '_multihashSize': 32
-  })
-  return event_type, AttrDict({ "blockHash": "0x", "args": update_track_event })
+    event_type = track_event_types_lookup['update_track']
+    update_track_event = AttrDict({
+        '_trackId': 1,
+        '_trackOwnerId': 1,
+        '_multihashDigest': b'\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q',
+        '_multihashHashFn': 18,
+        '_multihashSize': 32
+    })
+    return event_type, AttrDict({"blockHash": "0x", "args": update_track_event})
 
 def get_delete_track_event():
-  event_type = track_event_types_lookup['delete_track']
-  delete_track_event = AttrDict({
-    '_trackId': 1
-  })
-  return event_type, AttrDict({ "blockHash": "0x", "args": delete_track_event })
+    event_type = track_event_types_lookup['delete_track']
+    delete_track_event = AttrDict({
+        '_trackId': 1
+    })
+    return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
 
 
 class IPFSClient:
-  def get_metadata(self, multihash, format, endpoint):
-    return {
-      "owner_id": 1,
-      "title": "real magic bassy flip",
-      "length": None,
-      "cover_art": None,
-      "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
-      "tags": "realmagic,rickyreed,theroom",
-      "genre": "R&B/Soul",
-      "mood": "Empowering",
-      "credits_splits": None,
-      "created_at": "2020-07-11 08:22:15",
-      "create_date": None,
-      "updated_at": "2020-07-11 08:22:15",
-      "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
-      "file_type": None,
-      "track_segments": [
-        {
-          "duration": 6.016,
-          "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp"
+    def get_metadata(self, multihash, format, endpoint):
+        return {
+            "owner_id": 1,
+            "title": "real magic bassy flip",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+            "tags": "realmagic,rickyreed,theroom",
+            "genre": "R&B/Soul",
+            "mood": "Empowering",
+            "credits_splits": None,
+            "created_at": "2020-07-11 08:22:15",
+            "create_date": None,
+            "updated_at": "2020-07-11 08:22:15",
+            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+            "file_type": None,
+            "track_segments": [
+                {
+                    "duration": 6.016,
+                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp"
+                }
+            ],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "field_visibility": {
+                "mood": True,
+                "tags": True,
+                "genre": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True
+            },
+            "remix_of": {
+                "tracks": [
+                    {
+                        "parent_track_id": 75808
+                    }
+                ]
+            },
+            "repost_count": 12,
+            "save_count": 21,
+            "description": None,
+            "license": "All rights reserved",
+            "isrc": None,
+            "iswc": None,
+            "download": {
+                "cid": None,
+                "is_downloadable": False,
+                "requires_follow": False
+            },
+            "track_id": 77955,
+            "stem_of": None
         }
-      ],
-      "has_current_user_reposted": False,
-      "is_current": True,
-      "is_unlisted": False,
-      "field_visibility": {
-        "mood": True,
-        "tags": True,
-        "genre": True,
-        "share": True,
-        "play_count": True,
-        "remixes": True
-      },
-      "remix_of": {
-        "tracks": [
-          {
-            "parent_track_id": 75808
-          }
-        ]
-      },
-      "repost_count": 12,
-      "save_count": 21,
-      "description": None,
-      "license": "All rights reserved",
-      "isrc": None,
-      "iswc": None,
-      "download": {
-        "cid": None,
-        "is_downloadable": False,
-        "requires_follow": False
-      },
-      "track_id": 77955,
-      "stem_of": None
-    }
 
 
 class Web3:
-  def toHex(self, blockHash):
-    return '0x'
+    def toHex(self, blockHash):
+        return '0x'
 
 class UpdateTask:
     ipfs_client = IPFSClient()
     web3 = Web3()
 
-# ========================================== Start Tests ========================================== 
+# ========================================== Start Tests ==========================================
 def test_index_tracks(app):
     """Tests that tracks are indexed correctly"""
     with app.app_context():
@@ -124,13 +123,13 @@ def test_index_tracks(app):
 
         # Some sqlalchemy user instance
         track_record = lookup_track_record(
-          update_task,
-          session,
-          entry,
-          1, # event track id
-          block_number,
-          block_timestamp,
-          '0x' # txhash
+            update_task,
+            session,
+            entry,
+            1, # event track id
+            block_number,
+            block_timestamp,
+            '0x' # txhash
         )
 
         assert track_record.updated_at == None
@@ -141,11 +140,11 @@ def test_index_tracks(app):
         assert track_record.is_delete == False
 
         block_hash = f"0x{block_number}"
-        # Create track's owner user before 
+        # Create track's owner user before
         block = Block(
-          blockhash=block_hash,
-          number=block_number,
-          is_current=True
+            blockhash=block_hash,
+            number=block_number,
+            is_current=True
         )
         session.add(block)
         session.flush()
@@ -156,20 +155,21 @@ def test_index_tracks(app):
             handle='ray',
             blockhash=block_hash,
             blocknumber=block_number,
-            creator_node_endpoint='http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,http://cn3_creator-node_1:4002',
+            creator_node_endpoint=
+            'http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,http://cn3_creator-node_1:4002',
             created_at=datetime.utcfromtimestamp(block_timestamp),
             updated_at=datetime.utcfromtimestamp(block_timestamp)
         )
         session.add(track_owner)
 
         parse_track_event(
-          None, # self - not used
-          session,
-          update_task, # only need the ipfs client for get_metadata
-          entry, # Contains the event args used for updating
-          event_type, # String that should one of user_event_types_lookup
-          track_record, # User ORM instance
-          block_timestamp # Used to update the user.updated_at field
+            None, # self - not used
+            session,
+            update_task, # only need the ipfs client for get_metadata
+            entry, # Contains the event args used for updating
+            event_type, # String that should one of user_event_types_lookup
+            track_record, # User ORM instance
+            block_timestamp # Used to update the user.updated_at field
         )
 
         # updated_at should be updated every parse_track_event
@@ -211,13 +211,13 @@ def test_index_tracks(app):
         event_type, entry = get_delete_track_event()
 
         parse_track_event(
-          None, # self - not used
-          session,
-          update_task, # only need the ipfs client for get_metadata
-          entry, # Contains the event args used for updating
-          event_type, # String that should one of user_event_types_lookup
-          track_record, # User ORM instance
-          block_timestamp # Used to update the user.updated_at field
+            None, # self - not used
+            session,
+            update_task, # only need the ipfs client for get_metadata
+            entry, # Contains the event args used for updating
+            event_type, # String that should one of user_event_types_lookup
+            track_record, # User ORM instance
+            block_timestamp # Used to update the user.updated_at field
         )
 
         # updated_at should be updated every parse_track_event
