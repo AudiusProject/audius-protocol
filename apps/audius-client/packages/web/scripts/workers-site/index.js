@@ -46,6 +46,14 @@ async function handleEvent(event) {
     return await fetch(newRequest)
   }
 
+  const isSitemap = pathname.startsWith('/sitemaps')
+  if (isSitemap) {
+    const destinationURL = SITEMAP + pathname + search + hash
+    const newRequest = new Request(destinationURL, event.request)
+    return await fetch(newRequest)
+  }
+
+
   const options = {}
   // Always map requests to `/`
   options.mapRequestToAsset = request => {

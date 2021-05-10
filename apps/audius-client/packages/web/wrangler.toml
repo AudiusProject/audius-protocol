@@ -8,8 +8,8 @@ entry-point = "./scripts/workers-site"
 
 [env.staging]
 name = "audius-staging"
-vars = { ENVIRONMENT = "staging", GA = "https://general-admission.staging.audius.co" }
+vars = { ENVIRONMENT = "staging", GA = "https://general-admission.staging.audius.co", SITEMAP = "http://staging.audius.co.s3-website-us-west-1.amazonaws.com" }
 
 [env.production]
 name = "audius"
-vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co" }
+vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", SITEMAP = "http://audius.co.s3-website-us-west-1.amazonaws.com" }
