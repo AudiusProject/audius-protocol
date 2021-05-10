@@ -8,14 +8,8 @@ import Page from 'components/general/Page'
 import Lineup from 'containers/lineup/Lineup'
 import { useDispatch } from 'react-redux'
 import { isMobile } from 'utils/clientUtil'
-import { useFlag } from 'containers/remote-config/hooks'
-import { FeatureFlags } from 'services/remote-config'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import {
-  BASE_URL,
-  NOT_FOUND_PAGE,
-  TRENDING_UNDERGROUND_PAGE
-} from 'utils/route'
+import { BASE_URL, TRENDING_UNDERGROUND_PAGE } from 'utils/route'
+
 import { useMobileHeader } from 'components/general/header/mobile/hooks'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import styles from './TrendingUndergroundPage.module.css'
@@ -97,27 +91,10 @@ const useLineupReset = () => {
   }, [dispatch])
 }
 
-export const useIsTrendingUndergroundEnabled = () => {
-  return useFlag(FeatureFlags.TRENDING_UNDERGROUND)
-}
-
 const TrendingUndergroundPage = (props: TrendingUndergroundPageProps) => {
   const mobile = isMobile()
-  const { isEnabled, isLoaded } = useIsTrendingUndergroundEnabled()
-
-  // If we haven't loaded remote config yet, wait
-  // If we have, then either show trending underground
-  // or navigate to 404
-  const navigate = useNavigateToPage()
-  useEffect(() => {
-    if (isLoaded && !isEnabled) {
-      navigate(NOT_FOUND_PAGE)
-    }
-  }, [isEnabled, isLoaded, navigate])
 
   useLineupReset()
-
-  if (!isEnabled || !isLoaded) return null
 
   return (
     <>

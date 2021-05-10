@@ -1,8 +1,4 @@
 /* FeatureFlags must be lowercase snake case */
-export enum FeatureFlags {
-  TRENDING_UNDERGROUND = 'trending_underground'
-}
+export enum FeatureFlags {}
 
-export const flagDefaults: { [key in FeatureFlags]: boolean } = {
-  [FeatureFlags.TRENDING_UNDERGROUND]: false
-}
+export const flagDefaults: { [key in FeatureFlags]: boolean } = {}

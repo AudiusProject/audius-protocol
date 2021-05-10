@@ -53,8 +53,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { getTab } from 'containers/explore-page/store/selectors'
 import { setTab } from 'containers/explore-page/store/actions'
-import { useJustForYouTiles } from '../desktop/ExplorePage'
-import { useIsTrendingUndergroundEnabled } from 'containers/trending-underground/TrendingUndergroundPage'
+import { justForYou } from '../desktop/ExplorePage'
 
 const messages = {
   pageName: 'Explore',
@@ -134,9 +133,6 @@ const ExplorePage = ({
   goToRoute
 }: ExplorePageProps) => {
   useMainPageHeader()
-
-  const { isEnabled: isUnderground } = useIsTrendingUndergroundEnabled()
-  const justForYou = useJustForYouTiles(!!isUnderground)
 
   const justForYouTiles = justForYou.map(
     (t: SmartCollection | ExploreCollection) => {
@@ -252,12 +248,7 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div
-          className={cn(styles.section, {
-            [styles.doubleHeaderSection]: !isUnderground,
-            [styles.tripleHeaderSection]: isUnderground
-          })}
-        >
+        <div className={cn(styles.section, styles.tripleHeaderSection)}>
           {justForYouTiles}
         </div>
       </TabBodyHeader>,
@@ -291,14 +282,7 @@ const ExplorePage = ({
         )}
       </TabBodyHeader>
     ]
-  }, [
-    playlistCards,
-    profileCards,
-    justForYouTiles,
-    lifestyleTiles,
-    status,
-    isUnderground
-  ])
+  }, [playlistCards, profileCards, justForYouTiles, lifestyleTiles, status])
 
   const initialTab = useSelector(getTab)
   const dispatch = useDispatch()
