@@ -1589,11 +1589,20 @@ class AudiusBackend {
             [AuthHeaders.Signature]: signature
           }
         }
-      ).then(res => res.json())
+      ).then(res => {
+        if (res.status !== 200) {
+          return {
+            success: false,
+            error: new Error('Invalid Server Response'),
+            isRequestError: true
+          }
+        }
+        return res.json()
+      })
       return notifications
     } catch (e) {
       console.error(e)
-      return { success: false, error: e }
+      return { success: false, error: e, isRequestError: true }
     }
   }
 

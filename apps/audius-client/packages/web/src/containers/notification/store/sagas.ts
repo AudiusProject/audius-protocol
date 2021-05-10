@@ -392,23 +392,38 @@ const checkIfNotifcationsChanged = (
 
 export function* getNotifications(isFirstFetch: boolean) {
   try {
-    const isOpen = yield select(getNotificationPanelIsOpen)
-    const status = yield select(getNotificationStatus)
+    const isOpen: ReturnType<typeof getNotificationPanelIsOpen> = yield select(
+      getNotificationPanelIsOpen
+    )
+    const status: ReturnType<typeof getNotificationStatus> = yield select(
+      getNotificationStatus
+    )
     if ((!isOpen || isFirstFetch) && status !== Status.LOADING) {
       isFirstFetch = false
       const limit = NOTIFICATION_LIMIT_DEFAULT
+      const hasAccount: ReturnType<typeof getHasAccount> = yield select(
+        getHasAccount
+      )
+      if (!hasAccount) return
       const dateOffset = moment().toISOString()
       const notificationsResponse = yield call(
         AudiusBackend.getNotifications,
         limit,
         dateOffset
       )
-      if (notificationsResponse.error) {
-        const isReachable = yield select(getIsReachable)
+      if (
+        !notificationsResponse ||
+        (notificationsResponse.error && notificationsResponse.isRequestError)
+      ) {
+        const isReachable: ReturnType<typeof getIsReachable> = yield select(
+          getIsReachable
+        )
         if (isReachable) {
           yield put(
             notificationActions.fetchNotificationsFailed(
-              `Error in notification polling daemon, server returned error: ${notificationsResponse.error.message}`
+              `Error in notification polling daemon, server returned error: ${
+                notificationsResponse?.error?.message ?? 'no error defined'
+              }`
             )
           )
         }
