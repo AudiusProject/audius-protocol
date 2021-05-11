@@ -2,13 +2,9 @@ import random
 from datetime import datetime
 from src.models import Block, User
 from src.tasks.tracks import parse_track_event, lookup_track_record, track_event_types_lookup
+from src.utils import helpers
 from src.utils.db_session import get_db
-
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
-
+from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 def get_new_track_event():
     event_type = track_event_types_lookup['new_track']
@@ -40,71 +36,63 @@ def get_delete_track_event():
     })
     return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
 
-
-class IPFSClient:
-    def get_metadata(self, multihash, format, endpoint):
-        return {
-            "owner_id": 1,
-            "title": "real magic bassy flip",
-            "length": None,
-            "cover_art": None,
-            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
-            "tags": "realmagic,rickyreed,theroom",
-            "genre": "R&B/Soul",
-            "mood": "Empowering",
-            "credits_splits": None,
-            "created_at": "2020-07-11 08:22:15",
-            "create_date": None,
-            "updated_at": "2020-07-11 08:22:15",
-            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
-            "file_type": None,
-            "track_segments": [
+multihash = helpers.multihash_digest_to_cid(b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg')
+ipfs_client = IPFSClient({
+    multihash: {
+        "owner_id": 1,
+        "title": "real magic bassy flip",
+        "length": None,
+        "cover_art": None,
+        "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+        "tags": "realmagic,rickyreed,theroom",
+        "genre": "R&B/Soul",
+        "mood": "Empowering",
+        "credits_splits": None,
+        "created_at": "2020-07-11 08:22:15",
+        "create_date": None,
+        "updated_at": "2020-07-11 08:22:15",
+        "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+        "file_type": None,
+        "track_segments": [
+            {
+                "duration": 6.016,
+                "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp"
+            }
+        ],
+        "has_current_user_reposted": False,
+        "is_current": True,
+        "is_unlisted": False,
+        "field_visibility": {
+            "mood": True,
+            "tags": True,
+            "genre": True,
+            "share": True,
+            "play_count": True,
+            "remixes": True
+        },
+        "remix_of": {
+            "tracks": [
                 {
-                    "duration": 6.016,
-                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp"
+                    "parent_track_id": 75808
                 }
-            ],
-            "has_current_user_reposted": False,
-            "is_current": True,
-            "is_unlisted": False,
-            "field_visibility": {
-                "mood": True,
-                "tags": True,
-                "genre": True,
-                "share": True,
-                "play_count": True,
-                "remixes": True
-            },
-            "remix_of": {
-                "tracks": [
-                    {
-                        "parent_track_id": 75808
-                    }
-                ]
-            },
-            "repost_count": 12,
-            "save_count": 21,
-            "description": None,
-            "license": "All rights reserved",
-            "isrc": None,
-            "iswc": None,
-            "download": {
-                "cid": None,
-                "is_downloadable": False,
-                "requires_follow": False
-            },
-            "track_id": 77955,
-            "stem_of": None
-        }
-
-
-class Web3:
-    def toHex(self, blockHash):
-        return '0x'
-
-class UpdateTask:
-    ipfs_client = IPFSClient()
-    web3 = Web3()
+            ]
+        },
+        "repost_count": 12,
+        "save_count": 21,
+        "description": None,
+        "license": "All rights reserved",
+        "isrc": None,
+        "iswc": None,
+        "download": {
+            "cid": None,
+            "is_downloadable": False,
+            "requires_follow": False
+        },
+        "track_id": 77955,
+        "stem_of": None
+    }
+})
+web3 = Web3()
 
 # ========================================== Start Tests ==========================================
 def test_index_tracks(app):
@@ -112,7 +100,7 @@ def test_index_tracks(app):
     with app.app_context():
         db = get_db()
 
-    update_task = UpdateTask()
+    update_task = UpdateTask(ipfs_client, web3)
 
     with db.scoped_session() as session:
         # ================== Test New Track Event ==================
@@ -179,8 +167,9 @@ def test_index_tracks(app):
         assert track_record.created_at == datetime.utcfromtimestamp(block_timestamp)
         assert track_record.owner_id == entry.args._trackOwnerId
         assert track_record.is_delete == False
-
-        track_metadata = update_task.ipfs_client.get_metadata('', '', '')
+        
+        multihash = helpers.multihash_digest_to_cid(b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg')
+        track_metadata = update_task.ipfs_client.get_metadata(multihash, '', '')
 
         assert track_record.title == track_metadata["title"]
         assert track_record.length == 0

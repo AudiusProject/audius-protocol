@@ -4,11 +4,7 @@ from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
 from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
-
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 def get_add_user_event():
     event_type = user_event_types_lookup['add_user']
@@ -91,58 +87,49 @@ def get_update_creator_node_endpoint_event():
     return event_type, AttrDict({"blockHash": "0x", "args": update_creator_node_endpoint_event})
 
 # 'update_is_verified': 'UpdateIsVerified',
+multihash = helpers.multihash_digest_to_cid(b'\x94uU\x06@\xa2\x93\xf1$d:\xe8m|rj\x02y\x93\xdf\x9bf?\xe7h\xb3y\xa6\x19\x0c\x81\xb0')
 
-
-class IPFSClient:
-    # TODO: make dynamic based on multihash, return different metadata
-    def get_metadata(self, multihash, format, endpoint):
-        return {
-            "is_creator": True,
-            "is_verified": False,
-            "name": "raymont",
-            "handle": "rayjacobson",
-            "profile_picture": None,
-            "profile_picture_sizes": "Qmdad2B9JPnJ9duZgfD5mVNDwKZUTNoqZp8xdDB9bmcewk",
-            "cover_photo": None,
-            "cover_photo_sizes": "QmQnJ8uXf886crAticzPGgrfqxq68kAxBXXcK73geFakUo",
-            "bio": "ðŸŒ\n;",
-            "location": "chik fil yay!",
-            "creator_node_endpoint":
-            "https://creatornode2.audius.co,https://creatornode.audius.co,https://content-node.audius.co",
-            "associated_wallets": {
-                "0xEfFe2E2Dfc7945ED6Fd4C07c0B668589C52819BF": {
-                    "signature":
-                    "0xdde72a90dad4a0027ca87630a2b5615240d9ad545f2fc50e24952a2b4f2c5a" +
-                    "f76c96b9e06df5801d3e3374e247b799ac3e6dfd22b4df117fe1d6190789c5bb781b"
-                },
-                "0x0aDd827a4d1ad41c4D4612B4f1Df84b9d9654782": {
-                    "signature":
-                    "0xd13fc25e87dac94ba95af9e352111816aa25c1dc7ff48437660e2350a4f7a6f" +
-                    "413011759fa6980ba5f55b0fc66d55122afd5497b5795992cf6749bbe06553abc1b"
-                }
+ipfs_client = IPFSClient({
+    multihash: {
+        "is_creator": True,
+        "is_verified": False,
+        "name": "raymont",
+        "handle": "rayjacobson",
+        "profile_picture": None,
+        "profile_picture_sizes": "Qmdad2B9JPnJ9duZgfD5mVNDwKZUTNoqZp8xdDB9bmcewk",
+        "cover_photo": None,
+        "cover_photo_sizes": "QmQnJ8uXf886crAticzPGgrfqxq68kAxBXXcK73geFakUo",
+        "bio": "ðŸŒ\n;",
+        "location": "chik fil yay!",
+        "creator_node_endpoint":
+        "https://creatornode2.audius.co,https://creatornode.audius.co,https://content-node.audius.co",
+        "associated_wallets": {
+            "0xEfFe2E2Dfc7945ED6Fd4C07c0B668589C52819BF": {
+                "signature":
+                "0xdde72a90dad4a0027ca87630a2b5615240d9ad545f2fc50e24952a2b4f2c5a" +
+                "f76c96b9e06df5801d3e3374e247b799ac3e6dfd22b4df117fe1d6190789c5bb781b"
             },
-            "collectibles": {
-                "73:::0x417cf58dc18edd17025689d13af2b85f403e130c": {},
-                "order": ["73:::0x417cf58dc18edd17025689d13af2b85f403e130c"]
-            },
-            "user_id": 1
-        }
-
-class Web3:
-    def toHex(self, blockHash):
-        return '0x'
-
-class UpdateTask:
-    ipfs_client = IPFSClient()
-    web3 = Web3()
-
+            "0x0aDd827a4d1ad41c4D4612B4f1Df84b9d9654782": {
+                "signature":
+                "0xd13fc25e87dac94ba95af9e352111816aa25c1dc7ff48437660e2350a4f7a6f" +
+                "413011759fa6980ba5f55b0fc66d55122afd5497b5795992cf6749bbe06553abc1b"
+            }
+        },
+        "collectibles": {
+            "73:::0x417cf58dc18edd17025689d13af2b85f403e130c": {},
+            "order": ["73:::0x417cf58dc18edd17025689d13af2b85f403e130c"]
+        },
+        "user_id": 1
+    }
+})
+web3 = Web3()
 
 def test_index_users(app):
     """Tests that users are indexed correctly"""
     with app.app_context():
         db = get_db()
 
-    update_task = UpdateTask()
+    update_task = UpdateTask(ipfs_client, web3)
 
     with db.scoped_session() as session:
         # ================== Test Add User Event ==================
@@ -329,7 +316,7 @@ def test_index_users(app):
         # add_user should be updated fields: handle, handle_lc, wallet
         assert user_record.creator_node_endpoint == entry.args._creatorNodeEndpoint
 
-        # ================== Test Update User Porfile Photo Event ==================
+        # ================== Test Update User Profile Photo Event ==================
         event_type, entry = get_update_profile_photo_event()
 
         # `profile_picture` field is none by default
@@ -392,7 +379,9 @@ def test_index_users(app):
             user_record, # User ORM instance
             block_timestamp # Used to update the user.updated_at field
         )
-        ipfs_metadata = update_task.ipfs_client.get_metadata('', '', '')
+        
+        multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
+        ipfs_metadata = update_task.ipfs_client.get_metadata(multihash, '', '')
 
         assert user_record.profile_picture == ipfs_metadata["profile_picture"]
         assert user_record.cover_photo == ipfs_metadata["cover_photo"]

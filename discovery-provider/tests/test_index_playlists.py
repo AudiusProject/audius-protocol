@@ -4,11 +4,7 @@ from src.tasks.playlists import parse_playlist_event, lookup_playlist_record
 from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
 from src.utils import helpers
-
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 # event_type: PlaylistCreated
 def get_playlist_created_event():
@@ -96,20 +92,14 @@ def get_playlist_deleted_event():
     })
     return event_type, AttrDict({"blockHash": "0x", "args": playlist_deleted_event})
 
-
-class Web3:
-    def toHex(self, blockHash):
-        return '0x'
-
-class UpdateTask:
-    web3 = Web3()
-
-update_task = UpdateTask()
-
 def test_index_playlist(app):
     """Tests that playlists are indexed correctly"""
     with app.app_context():
         db = get_db()
+    
+    ipfs_client = IPFSClient({})
+    web3 = Web3()
+    update_task = UpdateTask(ipfs_client, web3)
 
     with db.scoped_session() as session:
         # ================= Test playlist_created Event =================
