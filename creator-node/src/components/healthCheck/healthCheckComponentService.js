@@ -69,7 +69,7 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     databaseSize,
     totalMemory,
     usedMemory,
-    usedTCPMemory
+    usedTCPMemory,
     storagePathSize,
     storagePathUsed,
     maxFileDescriptors,
