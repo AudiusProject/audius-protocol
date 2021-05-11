@@ -3,7 +3,7 @@ const {
   getTotalMemory,
   getUsedMemory,
   getNodeProcessMemoryUsage,
-  getUsedTCPMemory,
+  getUsedTCPMemory
 } = require('./memory')
 const {
   getStoragePathSize,
