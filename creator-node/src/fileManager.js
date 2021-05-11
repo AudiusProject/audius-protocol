@@ -4,6 +4,7 @@ const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
 const promiseAny = require('promise.any')
+const tus = require('tus-node-server')
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -15,6 +16,8 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
+
+const server = new tus.Server()
 
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
@@ -431,36 +434,90 @@ const trackFileUpload = multer({
   storage: trackDiskStorage,
   limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
-    const fileExtension = getFileExtension(file.originalname).slice(1)
-    // the function should call `cb` with a boolean to indicate if the file should be accepted
-    if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
-      req.logger.info(`Filetype: ${fileExtension}`)
-      req.logger.info(`Mimetype: ${file.mimetype}`)
+    try {
+      checkFileType(req, { fileName: file.originalname, fileMimeType: file.mimetype })
       cb(null, true)
-    } else {
-      req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${file.mimetype}`
-      cb(new Error(req.fileFilterError))
+    } catch (e) {
+      req.fileFilterError = e.message
+      cb(e)
     }
   }
 })
 
 const handleTrackContentUpload = (req, res, next) => {
-  trackFileUpload.single('file')(req, res, (err) => {
-    if (err) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        req.fileSizeError = err
-      } else if (err instanceof multer.MulterError) {
-        req.logger.error(`Multer error: ${err}`)
-      } else {
-        req.logger.error(`Content upload error: ${err}`)
+  // If this condition is met, use the multer package to handle track upload
+  if (req.headers['use-resumable-track-upload'] === 'false') {
+    trackFileUpload.single('file')(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          req.fileSizeError = err
+        } else if (err instanceof multer.MulterError) {
+          req.logger.error(`Multer error: ${err}`)
+        } else {
+          req.logger.error(`Content upload error: ${err}`)
+        }
       }
-    }
+      next()
+    })
+  } else {
+    // Else, use the tus-node-server (resumable upload) package to handle track upload
     next()
-  })
+  }
+}
+
+// File has already been uploaded. Take the file metadata and set it in the req obj.
+const handleTrackContentTranscode = (req, res, next) => {
+  const { filename, filedir } = req.headers
+  req.fileName = filename
+  req.fileDir = filedir
+  req.file = { destination: filedir }
+
+  next()
 }
 
 function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
+}
+
+/**
+ * Checks the file type. Throws an error if not accepted.
+ * @param {Object} req express request object
+ * @param {Object} param
+ * @param {string} param.fileName the file name
+ * @param {string} param.fileMimeType the file type
+ */
+function checkFileType (req, { fileName, fileMimeType }) {
+  const fileExtension = getFileExtension(fileName).slice(1)
+  // the function should call `cb` with a boolean to indicate if the file should be accepted
+  if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(fileMimeType)) {
+    req.logger.info(`Filetype: ${fileExtension}`)
+    req.logger.info(`Mimetype: ${fileMimeType}`)
+  } else {
+    throw new Error(`File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${fileMimeType}`)
+  }
+}
+
+/**
+ * Checks the file size. Throws an error if file is too big.
+ * @param {number} fileSize file size in bytes
+ */
+function checkFileSize (fileSize) {
+  if (fileSize > MAX_AUDIO_FILE_SIZE) {
+    throw new Error(`File exceeded maximum size (${MAX_AUDIO_FILE_SIZE}): fileSize=${fileSize}`)
+  }
+}
+
+/**
+ * Wrapper fn
+ * @param {Object} req express request object
+ * @param {Object} param
+ * @param {string} param.fileName the file name
+ * @param {string} param.fileMimeType the file type
+ * @param {number} param.fileSize file size in bytes
+ */
+function checkFile (req, { fileName, fileMimeType, fileSize }) {
+  checkFileType(req, { fileName, fileMimeType })
+  checkFileSize(fileSize)
 }
 
 /**
@@ -493,5 +550,8 @@ module.exports = {
   uploadTempDiskStorage,
   trackFileUpload,
   handleTrackContentUpload,
-  hasEnoughStorageSpace
+  hasEnoughStorageSpace,
+  checkFile,
+  getFileExtension,
+  handleTrackContentTranscode
 }

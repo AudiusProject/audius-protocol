@@ -175,7 +175,8 @@ class AudiusLibs {
     captchaConfig,
     isServer,
     isDebug = false,
-    useTrackContentPolling = false
+    useTrackContentPolling = false,
+    useResumableTrackUpload = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -210,7 +211,9 @@ class AudiusLibs {
     this.Playlist = null
     this.File = null
 
+    console.log('libs index.js -- what is useTrackContentPolling useResumableTrackUpload', useTrackContentPolling, useResumableTrackUpload)
     this.useTrackContentPolling = useTrackContentPolling
+    this.useResumableTrackUpload = useResumableTrackUpload
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -308,7 +311,9 @@ class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks
+        this.creatorNodeConfig.monitoringCallbacks,
+        this.useTrackContentPolling,
+        this.useResumableTrackUpload
       )
       await this.creatorNode.init()
     }
@@ -336,7 +341,7 @@ class AudiusLibs {
     this.ServiceProvider = new ServiceProvider(...services)
     this.User = new User(this.ServiceProvider, ...services)
     this.Account = new Account(this.User, ...services)
-    this.Track = new Track(this.useTrackContentPolling, ...services)
+    this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(...services)
   }

@@ -7,6 +7,7 @@ const uuid = require('../../utils/uuid')
 const getUuid = require('uuid/v4')
 const SchemaValidator = require('../schemaValidator')
 
+const CHUNK_SIZE = 2000000 // 2MB
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
 
@@ -105,7 +106,9 @@ class CreatorNode {
     schemas,
     passList = null,
     blockList = null,
-    monitoringCallbacks = {}
+    monitoringCallbacks = {},
+    useTrackContentPolling,
+    useResumableTrackUpload
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -123,6 +126,9 @@ class CreatorNode {
     this.passList = passList
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
+
+    this.useTrackContentPolling = useTrackContentPolling
+    this.useResumableTrackUpload = useResumableTrackUpload && tus.isSupported
   }
 
   async init () {
@@ -231,7 +237,7 @@ class CreatorNode {
    * @param {object} metadata the metadata for the track
    * @param {function?} onProgress an optional on progerss callback
    */
-  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}, useTrackContentPolling) {
+  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
@@ -252,11 +258,7 @@ class CreatorNode {
     }
 
     let uploadPromises = []
-    if (useTrackContentPolling) {
-      uploadPromises.push(this.uploadTrackAudioPolling(trackFile, onTrackProgress))
-    } else {
-      uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
-    }
+    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
     if (coverArtFile) uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
@@ -345,41 +347,96 @@ class CreatorNode {
    * @return {Object} response body
    */
   async uploadTrackAudio (file, onProgress) {
-    const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
+    let trackUploadResp
+    if (this.useResumableTrackUpload) {
+      console.log('DOING RESUMABLE TRACK UPLOAD')
+      // If true, use tus-client-js to upload a track with chunking and resumable upload
+      trackUploadResp = await this._uploadResumableTrackFile(file, onProgress)
+    } else {
+      // Else, upload the entire track at once
+      console.log('NOT DOING RESUMABLE TRACK UPLOAD')
+      const headers = { 'use-resumable-track-upload': this.useResumableTrackUpload }
+      trackUploadResp = (await this._uploadFile(file, '/track_content_upload', onProgress, {}, 1, headers)).data
+    }
+
+    // {fileDir: "/file_storage/files/tmp_track_artifacts/e442083a-2a5d-47c7-8c11-4a99ed71e1fb", fileName: "e442083a-2a5d-47c7-8c11-4a99ed71e1fb.mp3"}
+    console.log('uploadTrackAudio resp', trackUploadResp)
+    const { fileDir, fileName } = trackUploadResp
+
+    let trackTranscodeResp
+    if (this.useTrackContentPolling) {
+      console.log('DOING THE TRACK POLLING')
+      trackTranscodeResp = await this.handleAsyncTrackUpload(fileDir, fileName)
+    } else {
+      console.log('NOT DOING THE TRACK POLLING')
+      // vv add the trackUploadResp frrom upper part data to req headers
+      trackTranscodeResp = (await this._uploadFile(file, '/track_content', (loaded, total) => {}, {}, 1, { fileDir, fileName })).data
+    }
+
+    /*
+    source_file: "3be5d55e-09b9-440a-9af4-ca026f1fe214.mp3"
+    track_segments: (30) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}]
+    transcodedTrackCID: "QmTFVv1igCdQwiVKNTdR2MZdrE9vgH9mgS8meeLn5W6Hbw"
+    transcodedTrackUUID: "cf7d0d7b-49c0-46ff-8e54-2863840bc6a6"
+    */
+    console.log('ok trackTranscodeResp', trackTranscodeResp)
+
+    return trackTranscodeResp
+  }
+
+  // /**
+  //  * Track upload flow with polling.
+  //  * @param {File} file track to upload
+  //  * @param {function?} onProgress called with loaded bytes and total bytes
+  //  * @return {Object} response body
+  //  *
+  //  * @note Rename this function to `uploadTrackAudio` and update the actual route when
+  //  * we want to fully use polling for track content, and remove the existing method
+  //  */
+  // async uploadTrackAudioPolling (file, onProgress) {
+  //   let route = `${this.creatorNodeEndpoint}/track_content_async`
+  //   let uuid
+  //   try {
+  //     ({ data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress, {}, 1))
+  //   } catch (e) {
+  //     await this._handleErrorHelper(e, route)
+  //   }
+
+  //   return this.pollProcessingStatus('transcode', uuid)
+  // }
+  async handleAsyncTrackUpload(fileDir, fileName) {
+    const { uuid } = await this.addTranscodeTask(fileDir, fileName)
+    return this.pollProcessingStatus('transcode', uuid)
+  }
+
+  async addTranscodeTask(fileDir, fileName) {
+    const { data: body } = await this._makeRequest({
+      url: '/track_content_async',
+      headers: {
+        fileDir,
+        fileName
+      },
+      method: 'post'
+    })
+
     return body
   }
 
-  /**
-   * Track upload flow with polling.
-   * @param {File} file track to upload
-   * @param {function?} onProgress called with loaded bytes and total bytes
-   * @return {Object} response body
-   *
-   * @note Rename this function to `uploadTrackAudio` and update the actual route when
-   * we want to fully use polling for track content, and remove the existing method
-   */
-  async uploadTrackAudioPolling (file, onProgress) {
-    let route = `${this.creatorNodeEndpoint}/track_content_async`
-    let uuid
-    try {
-      ({ data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress, {}, 1, true))
-    } catch (e) {
-      await this._handleErrorHelper(e, route)
-    }
-
+  async pollProcessingStatus (taskType, uuid) {
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
-      const { status, resp } = await this.getProcessingStatus('transcode', uuid)
+      const { status, resp } = await this.getProcessingStatus(taskType, uuid)
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), route, uuid)
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
 
       // Check the transcode status every 3s
       await wait(POLL_STATUS_INTERVAL)
     }
 
-    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
+    // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
+    await this._handleErrorHelper(new Error(`${taskType} took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
   }
 
   /**
@@ -692,146 +749,151 @@ class CreatorNode {
    * @param {function?} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
-  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 1, useResumableUpload = false) {
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 1, customHeaders = {}) {
     await this.ensureConnected()
+    console.log('potato chip')
 
-    // form data is from browser, not imported npm module
-    let formData = new FormData()
-    formData.append('file', file)
-    Object.keys(extraFormDataOptions).forEach(key => {
-      formData.append(key, extraFormDataOptions[key])
-    })
-
-    let headers = {}
-    if (this.isServer) {
-      headers = formData.getHeaders()
-    }
-    headers['X-Session-ID'] = this.authToken
-
-    // TODO: this is only for the not resumable upload
-    const requestId = getUuid()
-    headers['X-Request-ID'] = requestId
+    const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions, customHeaders)
 
     let total
     const url = this.creatorNodeEndpoint + route
 
-    console.log('i am in _uploadFile with resumable logic: ', useResumableUpload, route)
-
-    // The _uploadFile logic without resumable upload logic
-    if (!useResumableUpload) {
-      try {
-        // Hack alert!
-        //
-        // Axios auto-detects browser vs node based on
-        // the existance of XMLHttpRequest at the global namespace, which
-        // is imported by a web3 module, causing Axios to incorrectly
-        // presume we're in a browser env when we're in a node env.
-        // For uploads to work in a node env,
-        // axios needs to correctly detect we're in node and use the `http` module
-        // rather than XMLHttpRequest. We force that here.
-        // https://github.com/axios/axios/issues/1180
-        const isBrowser = typeof window !== 'undefined'
-        console.debug(`Uploading file to ${url}`)
-        const resp = await axios.post(
-          url,
-          formData,
-          {
-            headers: headers,
-            adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
-            // Add a 10% inherit processing time for the file upload.
-            onUploadProgress: (progressEvent) => {
-              if (!total) total = progressEvent.total
-              console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
-              onProgress(progressEvent.loaded, total)
-            }
+    console.log('potato')
+    try {
+      // Hack alert!
+      //
+      // Axios auto-detects browser vs node based on
+      // the existance of XMLHttpRequest at the global namespace, which
+      // is imported by a web3 module, causing Axios to incorrectly
+      // presume we're in a browser env when we're in a node env.
+      // For uploads to work in a node env,
+      // axios needs to correctly detect we're in node and use the `http` module
+      // rather than XMLHttpRequest. We force that here.
+      // https://github.com/axios/axios/issues/1180
+      const isBrowser = typeof window !== 'undefined'
+      console.log(`Uploading file to ${url}`)
+      const resp = await axios.post(
+        url,
+        formData,
+        {
+          headers: headers,
+          adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
+          // Add a 10% inherit processing time for the file upload.
+          onUploadProgress: (progressEvent) => {
+            if (!total) total = progressEvent.total
+            console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
+            onProgress(progressEvent.loaded, total)
           }
-        )
-        if (resp.data && resp.data.error) {
-          throw new Error(JSON.stringify(resp.data.error))
         }
-        onProgress(total, total)
-        return resp.data
-      } catch (e) {
-        if (!e.response && retries > 0) {
-          console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
-          console.warn(e)
-          return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
-        }
-        await this._handleErrorHelper(e, url, requestId)
+      )
+      if (resp.data && resp.data.error) {
+        throw new Error(JSON.stringify(resp.data.error))
       }
-    } else {
-      console.log(url, file, requestId)
-      try {
-        const { uuid, fileName, fileDir } = await this.startResumableUpload(file, url, headers, onProgress)
-
-        return { data: { uuid } }
-      } catch (e) {
-        console.error('BIG FAT SAD', e)
-        this._handleErrorHelper(e, url, requestId)
+      onProgress(total, total)
+      return resp.data
+    } catch (e) {
+      console.log('ok whats the error here.....', e)
+      if (!e.response && retries > 0) {
+        console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
+        console.warn(e)
+        return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
       }
+      await this._handleErrorHelper(e, url, requestId)
+    }
+  }
 
-      console.log('what is the upload thing', uuid)
+  async _uploadResumableTrackFile (file, onProgress) {
+    await this.ensureConnected()
+    const { headers } = this.createFormDataAndUploadHeaders(file, {}, { "use-resumable-track-upload": true })
+
+    const url = this.creatorNodeEndpoint + '/track_content_upload' 
+
+    console.log('IT IS TIME FOR THE RESUMABLE UPLOAD DAWG', headers)
+    try {
+      const uuid = await this.startResumableUpload(file, url, headers, onProgress)
+      // return { data: { uuid } }
+      return uuid
+    } catch (e) {
+      this._handleErrorHelper(e, url, headers['X-Request-ID'])
+    }    
+  }
+
+  /**
+   * Create headers for file upload
+   * @param {Object} file the file to upload 
+   * @param {boolean} [isTrackUpload] flag to determine if uploading track. If true, add track upload headers
+   * @returns 
+   */
+  createFormDataAndUploadHeaders(file, extraFormDataOptions = {}, headers = {}) {
+    try {
+      // form data is from browser, not imported npm module
+      let formData = new FormData()
+      formData.append('file', file)
+      Object.keys(extraFormDataOptions).forEach(key => {
+        formData.append(key, extraFormDataOptions[key])
+      })
+
+      if (this.isServer) {
+        headers = formData.getHeaders()
+      }
+      headers['X-Session-ID'] = this.authToken
+
+      const requestId = getUuid()
+      headers['X-Request-ID'] = requestId
+      return { headers, formData }
+    } catch (e) {
+      console.log('whats going on with the haedrs', e)
     }
   }
 
   async startResumableUpload (file, url, headers, onProgress) {
+    console.log('i am in startResumableUpload', url)
+    const randomFileName = uuid()
+    // https://github.com/tus/tus-js-client/blob/master/docs/api.md
     return new Promise((resolve, reject) => {
       const upload = new tus.Upload(file, {
         // Endpoint is the upload creation URL from your tus server
         endpoint: url,
         // Retry delays will enable tus-js-client to automatically retry on errors
         retryDelays: [0, 3000, 5000, 10000, 20000],
-        // Attach additional meta data about the file for the server
-        metadata: {
-          filename: file.name,
+        // Attach additional metadata about the file for the server
+        headers: {
+          ...headers,
+          filesize: file.size,
           filetype: file.type,
-          userId: this.userStateManager.getCurrentUser().user_id
+          filename: file.name,
+          randomfilename: randomFileName // does not have extension
         },
-        headers: { ...headers, filesize: file.size, filetype: file.type },
         // An optional integer representing the size of the file in bytes
         uploadSize: file.size,
         // Maximum size of PATCH request body in bytes
-        chunkSize: 1000000,
+        chunkSize: CHUNK_SIZE,
+        // When the same file is uploaded again after first success, do not reuse the previous upload
         removeFingerprintOnSuccess: true,
-        // Adds a request ID to (v4 uuid) to X-Request-ID header
-        // addRequestId: true,
         // Callback for errors which cannot be fixed using retries
         onError: async function (error) {
-          console.log('Failed because: ' + error)
-          // await this._handleErrorHelper(error, url, requestId)
+          console.log('am i in here too?', error)
+          await this._handleErrorHelper(error, url, headers['X-Request-ID'])
           reject(error)
         },
         // Callback for reporting upload progress
         onProgress: function (bytesUploaded, bytesTotal) {
-          // TODO: figure out how to get this working with what already exists
           const percentage = (bytesUploaded / bytesTotal * 100).toFixed(2)
-
-          console.log(bytesUploaded, bytesTotal, percentage + '%')
-          console.log('what is onProgress', onProgress)
+          console.log('am i in onProgress?', percentage)
           onProgress(bytesUploaded, bytesTotal)
         },
         // Callback for once the upload is completed
         onSuccess: function () {
           onProgress(file.size, file.size)
-          console.log('Download %s from %s', upload.file.name, upload.url)
-          console.log('whati sthe upload response', upload)
-
-          // resolve(upload._req.getHeaders('X-Request-ID'))
-
-          const urlArr = upload.url.split('/')
-          const fileName = urlArr.slice(urlArr.length - 1)[0]
-          const fileDir = '/' + urlArr.slice(3, urlArr.length - 1).join('/')
-
-          resolve({
-            uuid: headers['X-Request-ID'],
-            fileName,
-            fileDir
-          })
+          console.log('WHAT IS THE LOVELY UPLOAD THING', upload)
+          const patchUrlArr = upload.url.split('/')
+          const fileDir = '/' + patchUrlArr.slice(3, patchUrlArr.length-1).join('/')
+          const fileName = patchUrlArr.slice(patchUrlArr.length-1)[0]
+          resolve({ fileDir, fileName })
         },
+        // A fn used to generate a unique str from a corresponding file. Used to store the URL for an upload to resume
         fingerprint: function (file, options) {
-          console.log('hello what is these things', file, options)
           const { filename, filetype, userId } = options.metadata
-          // TODO: probably hash this somehow / figure out something to get this working?
           return Promise.resolve(filename + filetype + userId)
         }
       })
@@ -840,7 +902,6 @@ class CreatorNode {
       upload.findPreviousUploads().then(function (previousUploads) {
         // Found previous uploads so we select the first one.
         if (previousUploads.length) {
-          console.log('resumable upload found', previousUploads.length)
           upload.resumeFromPreviousUpload(previousUploads[0])
         }
 
