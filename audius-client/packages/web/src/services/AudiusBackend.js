@@ -407,7 +407,10 @@ class AudiusBackend {
         captchaConfig: isElectron()
           ? undefined
           : { siteKey: RECAPTCHA_SITE_KEY },
-        isServer: false
+        isServer: false,
+        useTrackContentPolling: getFeatureEnabled(
+          FeatureFlags.USE_TRACK_CONTENT_POLLING
+        )
       })
       await audiusLibs.init()
       window.audiusLibs = audiusLibs
