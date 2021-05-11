@@ -298,6 +298,9 @@ const NowPlaying = g(
         const position = timing.position
         const newPosition = position - SKIP_DURATION_SEC
         seek(Math.max(0, newPosition))
+        // Update mediakey so scrubber updates
+        setTiming({ position: newPosition, duration: timing.duration })
+        setMediaKey(mediaKey => mediaKey + 1)
       } else {
         const shouldGoToPrevious = timing.position < RESTART_THRESHOLD_SEC
         if (shouldGoToPrevious) {
@@ -312,6 +315,9 @@ const NowPlaying = g(
       if (track.genre === Genre.PODCASTS) {
         const newPosition = timing.position + SKIP_DURATION_SEC
         seek(Math.min(newPosition, timing.duration))
+        // Update mediakey so scrubber updates
+        setTiming({ position: newPosition, duration: timing.duration })
+        setMediaKey(mediaKey => mediaKey + 1)
       } else {
         next()
       }
@@ -386,7 +392,7 @@ const NowPlaying = g(
         <div className={styles.timeControls}>
           <Scrubber
             // Include the duration in the media key because the play counter can
-            // potentially udpate before the duration coming from the native layer if present
+            // potentially update before the duration coming from the native layer if present
             mediaKey={`${uid}${mediaKey}${timing.duration}`}
             isPlaying={isPlaying && !isBuffering}
             isDisabled={!uid}
