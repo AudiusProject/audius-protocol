@@ -69,7 +69,8 @@ class PlayBar extends Component {
       playCounter: null,
       trackId: null,
       // Capture intent to set initial volume before audio is playing
-      initialVolume: null
+      initialVolume: null,
+      mediaKey: 0
     }
     this.seekInterval = null
   }
@@ -101,6 +102,7 @@ class PlayBar extends Component {
 
     if (playCounter !== this.state.playCounter) {
       this.setState({
+        mediaKey: this.state.mediaKey + 1,
         playCounter: playCounter,
         trackPosition: 0,
         listenRecorded: false
@@ -237,6 +239,9 @@ class PlayBar extends Component {
       const position = audio.getPosition()
       const newPosition = position - SKIP_DURATION_SEC
       seek(Math.max(0, newPosition))
+      this.setState({
+        mediaKey: this.state.mediaKey + 1
+      })
     } else {
       const shouldGoToPrevious =
         this.state.trackPosition < RESTART_THRESHOLD_SEC
@@ -260,6 +265,9 @@ class PlayBar extends Component {
       const position = audio.getPosition()
       const newPosition = position + SKIP_DURATION_SEC
       seek(Math.min(newPosition, duration))
+      this.setState({
+        mediaKey: this.state.mediaKey + 1
+      })
     } else {
       next()
     }
@@ -271,13 +279,13 @@ class PlayBar extends Component {
   render() {
     const {
       currentQueueItem: { uid, track, user },
-      playCounter,
       audio,
       isPlaying,
       isBuffering,
       userId,
       theme
     } = this.props
+    const { mediaKey } = this.state
 
     let trackTitle = ''
     let artistName = ''
@@ -341,7 +349,7 @@ class PlayBar extends Component {
           <div className={styles.playBarControls}>
             <div className={styles.timeControls}>
               <Scrubber
-                mediaKey={`${uid}${playCounter}`}
+                mediaKey={`${uid}${mediaKey}`}
                 isPlaying={isPlaying && !isBuffering}
                 isDisabled={!uid}
                 includeTimestamps
