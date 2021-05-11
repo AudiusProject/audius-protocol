@@ -12,6 +12,9 @@ const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
 const { pinCID } = require('./pinCID')
 
+// this import is never used but we need so heapdumps get taken when we run `kill -USR2 <pid>`
+const heapdump = require('heapdump')
+
 const exitWithError = (...msg) => {
   logger.error(...msg)
   process.exit(1)
