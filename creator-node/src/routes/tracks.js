@@ -148,6 +148,19 @@ module.exports = function (app) {
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
+    if (req.fileSizeError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileSizeError)
+    }
+    if (req.fileFilterError) {
+      // Prune upload artifacts
+      removeTrackFolder(req, req.fileDir)
+
+      return errorResponseBadRequest(req.fileFilterError)
+    }
+
     const routeTimeStart = Date.now()
     let codeBlockTimeStart
     const cnodeUserUUID = req.session.cnodeUserUUID
