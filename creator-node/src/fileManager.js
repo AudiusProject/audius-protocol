@@ -9,6 +9,7 @@ const config = require('./config')
 const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
+const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -496,11 +497,18 @@ function checkFileSize (fileSize) {
  * @param {string} param.fileMimeType the file type
  * @param {number} param.fileSize file size in bytes
  */
-function checkFile (req, { fileName, fileMimeType, fileSize }) {
-  checkFileType(req, { fileName, fileMimeType })
-  checkFileSize(fileSize)
-}
 
+function checkFileMiddleware (req, res, next) {
+  const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
+  try {
+    checkFileType(req, { fileName, fileMimeType })
+    checkFileSize(fileSize)
+  } catch (e) {
+    return sendResponse(req, res, errorResponseBadRequest(e.message))
+  }
+
+  return next()
+}
 /**
  * Checks if the Content Node storage has reached the `maxStorageUsedPercent` defined in the config. `storagePathSize`
  * and `storagePathUsed` are values taken off of the Content Node monitoring system.
@@ -532,6 +540,6 @@ module.exports = {
   trackFileUpload,
   handleTrackContentUpload,
   hasEnoughStorageSpace,
-  checkFile,
-  getFileExtension
+  getFileExtension,
+  checkFileMiddleware
 }

@@ -11,8 +11,8 @@ const {
   saveFileToIPFSFromFS,
   removeTrackFolder,
   handleTrackContentUpload,
-  checkFile,
-  getFileExtension
+  getFileExtension,
+  checkFileMiddleware
 } = require('../fileManager')
 const {
   handleResponse,
@@ -55,32 +55,35 @@ const getFileName = (req) => {
 const SaveFileToIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
-  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
+  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, checkFileMiddleware, async function (req, res, next) {
     // Use the tus-node-server package to handle track upload
-    try {
-      // Ensure that the track uploaded is proper
-      const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
-      checkFile(req, { fileName, fileMimeType, fileSize: parseInt(fileSize) })
-    } catch (e) {
-      return errorResponseBadRequest(e.message)
-    }
 
     // Save file under randomly named folders to avoid collisions
     const fileDir = path.join(tmpTrackArtifactsPath, req.headers.randomfilename)
-    req.logger.info(`Created track disk storage: ${fileDir}, ${req.headers.randomfilename}`)
 
+    try {
     // Create directories for original file and segments
-    fs.mkdirSync(fileDir, { recursive: true })
-    fs.mkdirSync(fileDir + '/segments')
+      fs.mkdirSync(fileDir, { recursive: true })
+      fs.mkdirSync(fileDir + '/segments')
 
-    server.datastore = new tus.FileStore({
-      path: fileDir,
-      // Custom file naming
-      namingFunction: getFileName
-    })
+      req.logger.info(`Created track disk storage: ${fileDir}, ${req.headers.randomfilename}`)
 
-    // Initialze resumable upload flow
-    await server.handle.bind(server)(req, res, next)
+      server.datastore = new tus.FileStore({
+        path: fileDir,
+        // Custom file naming
+        namingFunction: getFileName
+      })
+
+      // Initialze resumable upload flow
+      const resp = await server.handle.bind(server)(req, res, next)
+
+      if (resp.statusCode > 299 || resp.statusCode < 200) {
+        // TODO: add resp details
+        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${req.headers.randomfilename}`)
+      }
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e.toString()))
+    }
   })
 
   // Route that handles the resumable upload HEAD and PATCH requests.
@@ -94,9 +97,6 @@ module.exports = function (app) {
     })
 
     const resp = await server.handle.bind(server)(req, res, next)
-
-    // TODO: if patch/head fails, remove track dirs by checking resp's status code and exit
-    // if (resp.statusCode)
 
     if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
       const fileName = (urlArr.slice(urlArr.length - 1)).join('/')
