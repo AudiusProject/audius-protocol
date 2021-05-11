@@ -804,7 +804,7 @@ class CreatorNode {
     })
 
     if (this.isServer) {
-      headers = formData.getHeaders()
+      headers = { ...headers, ...formData.getHeaders() }
     }
     headers['X-Session-ID'] = this.authToken
 
