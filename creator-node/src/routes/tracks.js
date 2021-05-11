@@ -48,6 +48,7 @@ const readFile = promisify(fs.readFile)
 const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
 const resumableUploadRoute = path.join(tmpTrackArtifactsPath, '*', '*')
 
+// Structure: <uuid>.<file_extension>. e.g. 1234-1234-1234-1234.mp3
 const getFileName = (req) => {
   return req.headers.randomfilename + getFileExtension(req.headers.filename)
 }
@@ -109,11 +110,14 @@ module.exports = function (app) {
     })
 
     await server.handle.bind(server)(req, res, next)
+    // TODO: if patch/head fails, remove track dirs by checking resp's status code
   })
 
+  /**
+   * Add a track transcode task into the worker queue. If the track file is uploaded properly, return successResponse
+   * @note this track content route is used in conjunction with the polling.
+   */
   app.post('/track_content_async', authMiddleware, handleResponse(async function (req, res) {
-    // TODO: why didn't the fileprocessingqueue not fail...
-    // i think cus done(e) instead of throw e
     const { filename: fileName, filedir: fileDir } = req.headers
     await FileProcessingQueue.addTranscodeTask(
       {
@@ -133,9 +137,9 @@ module.exports = function (app) {
   }))
 
   /**
-     * upload track segment files and make avail - will later be associated with Audius track
-     * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
-     */
+   * upload track segment files and make avail - will later be associated with Audius track
+   * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
+   */
   app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentTranscode, handleResponseWithHeartbeat(async (req, res) => {
     const routeTimeStart = Date.now()
     let codeBlockTimeStart

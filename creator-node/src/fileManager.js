@@ -4,7 +4,6 @@ const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
 const promiseAny = require('promise.any')
-const tus = require('tus-node-server')
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -16,8 +15,6 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
-
-const server = new tus.Server()
 
 /**
  * Adds file to IPFS then saves file to disk under /multihash name

@@ -211,7 +211,6 @@ class AudiusLibs {
     this.Playlist = null
     this.File = null
 
-    console.log('libs index.js -- what is useTrackContentPolling useResumableTrackUpload', useTrackContentPolling, useResumableTrackUpload)
     this.useTrackContentPolling = useTrackContentPolling
     this.useResumableTrackUpload = useResumableTrackUpload
 
