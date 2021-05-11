@@ -72,7 +72,8 @@
   },
   "//": {
     "dependenciesComments": {
-      "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336"
+      "lodash": "Vuln in < 4.17.13, fixed by https://github.com/lodash/lodash/pull/4336",
+      "heapdump": "Not used in code but we use the dependency to take heap dumps via the command line"
     },
     "scriptsComments": {
       "coverage": "Runs nyc on tests/ dir and outputs results in ./nyc_output. Can be used for vscode extensions.",
