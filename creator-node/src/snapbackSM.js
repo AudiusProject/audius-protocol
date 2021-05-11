@@ -379,7 +379,7 @@ class SnapbackSM {
         .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
     )
 
-    peerList = peerList.filter(Boolean) // filter out falsey values
+    peerList = peerList.filter(Boolean) // filter out false-y values to account for incomplete replica sets
 
     peerList = peerList.filter(peer => (peer !== this.endpoint)) // remove self from peerList
 
@@ -495,17 +495,17 @@ class SnapbackSM {
    * Issues SyncRequests for every (user, secondary) pair if needed
    * Only issues requests if primary clock value is greater than secondary clock value
    *
-   * @param {Array} potentialSyncRequests array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   * @param {Array} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    *      `endpoint` field indicates secondary on which to issue SyncRequest
    * @param {Object} secondaryNodesToUserClockStatusesMap map(secondaryNode => map(userWallet => secondaryClockValue))
    * @returns {Number} number of sync requests issued
    * @returns {Array} array of all SyncRequest errors
    */
-  async issueSyncRequests (potentialSyncRequests, secondaryNodesToUserClockStatusesMap) {
+  async issueSyncRequests (userReplicaSets, secondaryNodesToUserClockStatusesMap) {
     // TODO ensure all syncRequests are for users with primary == self
 
     // Retrieve clock values for all users on this node, which is their primary
-    const userWallets = potentialSyncRequests.map(user => user.wallet)
+    const userWallets = userReplicaSets.map(user => user.wallet)
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
 
     let numSyncRequestsRequired = 0
@@ -513,7 +513,7 @@ class SnapbackSM {
     let syncRequestErrors = []
 
     // TODO change to chunked parallel
-    await Promise.all(potentialSyncRequests.map(async (user) => {
+    await Promise.all(userReplicaSets.map(async (user) => {
       try {
         const { wallet, endpoint: secondary } = user
 
@@ -645,7 +645,9 @@ class SnapbackSM {
         const { primary, secondary1, secondary2 } = nodeUser
 
         if (primary === this.endpoint) {
+          // filter out false-y values to account for incomplete replica sets
           const secondaries = ([secondary1, secondary2]).filter(Boolean)
+
           for (const secondary of secondaries) {
             if (unhealthyPeers.has(secondary)) {
               requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
@@ -654,7 +656,11 @@ class SnapbackSM {
             }
           }
         } else {
-          const replicas = ([primary, secondary1, secondary2]).filter(Boolean).filter(replica => replica !== this.endpoint)
+          // filter out false-y values to account for incomplete replica sets
+          let replicas = ([primary, secondary1, secondary2]).filter(Boolean)
+          // filter out this endpoint
+          replicas = replicas.filter(replica => replica !== this.endpoint)
+
           for (const replica of replicas) {
             if (unhealthyPeers.has(replica)) {
               requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
