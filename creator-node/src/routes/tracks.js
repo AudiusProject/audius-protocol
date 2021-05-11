@@ -87,7 +87,7 @@ module.exports = function (app) {
   })
 
   // Route that handles the resumable upload HEAD and PATCH requests.
-  app.all(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
+    try {
     const urlArr = req.originalUrl.split('/')
     const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
 
@@ -97,6 +97,10 @@ module.exports = function (app) {
     })
 
     const resp = await server.handle.bind(server)(req, res, next)
+      if (resp.statusCode > 299 || resp.statusCode < 200) {
+        // TODO: add resp details
+        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${req.headers.randomfilename}`)
+      }
 
     if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
       const fileName = (urlArr.slice(urlArr.length - 1)).join('/')
@@ -114,6 +118,9 @@ module.exports = function (app) {
           }
         }
       )
+    }
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e.toString()))
     }
   })
 
