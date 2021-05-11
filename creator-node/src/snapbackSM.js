@@ -76,6 +76,7 @@ class SnapbackSM {
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
 
+    // Short-circuit if (isUserMetadataNode = true)
     const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
     if (isUserMetadata) {
       this.log(`SnapbackSM disabled for userMetadataNode. ${this.endpoint}, isUserMetadata=${isUserMetadata}`)
@@ -83,32 +84,31 @@ class SnapbackSM {
     }
 
     /**
-     * Initialize stateMachineQueue job processor
-     *  - is responsible for adding jobs to sync queue
-     *  - processes jobs at recurring interval
+     * Initialize all queue processors
      */
+
+    // Initialize stateMachineQueue job processor
+    // - Re-adds job to queue after processing current job, with a fixed delay
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
           await this.processStateMachineOperation()
         } catch (e) {
           this.log(`StateMachineQueue error processing ${e}`)
-        } finally {
-          const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
-
-          this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
-          await utils.timeout(stateMachineJobInterval)
-
-          await this.stateMachineQueue.add({ starttime: Date.now() })
-          done()
         }
+
+        const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
+
+        this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
+        await utils.timeout(stateMachineJobInterval)
+
+        await this.stateMachineQueue.add({ starttime: Date.now() })
+
+        done()
       }
     )
 
-    /**
-     * Initialize manualSyncQueue job processor
-     *  - will trigger sync to secondary per job config
-     */
+    // Initialize manualSyncQueue job processor
     this.manualSyncQueue.process(
       this.MaxManualRequestSyncJobConcurrency,
       async (job, done) => {
@@ -122,10 +122,7 @@ class SnapbackSM {
       }
     )
 
-    /**
-     * Initialize recurringSyncQueue job processor
-     *  - will trigger sync to secondary per job config
-     */
+    // Initialize recurringSyncQueue job processor
     this.recurringSyncQueue.process(
       this.MaxRecurringRequestSyncJobConcurrency,
       async (job, done) => {
@@ -139,7 +136,7 @@ class SnapbackSM {
       }
     )
 
-    // Enqueue first state machine operation
+    // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
   }
 
@@ -187,11 +184,47 @@ class SnapbackSM {
     }
   }
 
-  // Retrieve users with this node as primary
+  /**
+   * Retrieve users with this node as replica (primary or secondary)
+   *  - Makes single request to discovery node to retrieve all users
+   *
+   * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
+   *
+   * @returns {Array} array of objects
+   *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
+   */
+  async getNodeUsers () {
+    // Fetch discovery node currently connected to libs as this can change
+    const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    if (!discoveryProviderEndpoint) {
+      throw new Error('No discovery provider currently selected, exiting')
+    }
+
+    // Request all users that have this node as a replica (either primary or secondary)
+    const requestParams = {
+      method: 'get',
+      baseURL: discoveryProviderEndpoint,
+      url: `v1/full/users/content_node/all`,
+      params: {
+        creator_node_endpoint: this.endpoint
+      }
+    }
+    const resp = await axios(requestParams)
+
+    return resp.data.data
+  }
+
+  /**
+   * Retrieve users with this node as primary
+   * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
+   *
+   * @returns {Array} array of objects
+   *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
+   */
   async getNodePrimaryUsers () {
+    // Fetch discovery node currently connected to libs as this can change
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!currentlySelectedDiscProv) {
-      // Re-initialize if no discovery provider has been selected
       throw new Error('No discovery provider currently selected, exiting')
     }
 
@@ -203,8 +236,8 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
-    let resp = await axios(requestParams)
-    this.log(`Discovery provider: ${currentlySelectedDiscProv}`)
+    const resp = await axios(requestParams)
+
     return resp.data.data
   }
 
@@ -283,19 +316,69 @@ class SnapbackSM {
   }
 
   /**
+   * @param {Array} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @returns {Set} Set of content node endpoint strings
+   */
+  async computeContentNodePeerSet (nodeUserInfoList) {
+    let peerList = (
+      nodeUserInfoList.map(userInfo => userInfo.primary)
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
+    )
+
+    peerList = peerList.filter(Boolean) // filter out falsey values
+
+    peerList = peerList.filter(peer => (peer !== this.endpoint)) // remove self from peerList
+
+    let peerSet = new Set(peerList) // convert to Set to get uniques
+
+    return peerSet
+  }
+
+  /**
    * Main state machine processing function
    *
    * Determines which users need to be processed and enqueues syncs to secondaries
    */
   async processStateMachineOperation () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
-    if (this.audiusLibs == null) {
-      logger.error(`Invalid libs instance`)
-      return
+
+    // Retrieve list of all users that have this node as primary
+    let nodePrimaryUsers
+    try {
+      // Returns all users that have this node in their replica set via discprov route `/users/content_node/all`
+      const nodeUsers = await this.getNodeUsers()
+
+      // Filter to subset of users that have this node as their primary
+      nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
+
+      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
+
+      /**
+       * If getNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
+       * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
+       * This route returns only users with this node as their primary
+       */
+    } catch (e) {
+      nodePrimaryUsers = await this.getNodePrimaryUsers()
+      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via legacy discprov route`)
+
+      // Ensure every object in response array contains required fields
+    } finally {
+      nodePrimaryUsers.forEach(nodePrimaryUser => {
+        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
+        const responseFields = Object.keys(nodePrimaryUser)
+        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
+        if (!allRequiredFieldsPresent) {
+          throw new Error('Unexpected response format during getNodeUsers() or getNodePrimaryUsers() call')
+        }
+      })
     }
 
-    // Retrieve users list for this node
-    let usersList = await this.getNodePrimaryUsers()
+    /**
+     * Build map of content node to list of all users that need to be processed
+     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
+     */
 
     // Generate list of wallets by node to query clock number
     // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
@@ -307,11 +390,7 @@ class SnapbackSM {
     // Wallets being processed in this state machine operation
     let wallets = []
 
-    /**
-     * Build map of content node to list of all users that need to be processed
-     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
-     */
-    usersList.forEach(
+    nodePrimaryUsers.forEach(
       (user) => {
         // determine if user should be processed by checking if user_id % moduloBase = currentModuloSlice
         const userId = user.user_id
@@ -380,7 +459,7 @@ class SnapbackSM {
     this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
 
     // Issue syncs if necessary
-    // For each user in the initially returned usersList,
+    // For each user in the initially returned nodePrimaryUsers,
     //  compare local primary clock value to value from secondary retrieved in bulk above
     let numSyncsIssued = 0
     await Promise.all(
@@ -436,10 +515,8 @@ class SnapbackSM {
     const previousModuloSlice = this.currentModuloSlice
     this.currentModuloSlice += 1
     this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-    this.log(`Updated modulo slice from ${previousModuloSlice} to ${this.currentModuloSlice} out of ${ModuloBase}`)
 
-    this.log(`Issued ${numSyncsIssued} sync ops`)
-    this.log(`------------------END Process SnapbackSM Operation, slice ${previousModuloSlice} / ${ModuloBase} ------------------`)
+    this.log(`------------------END Process SnapbackSM Operation || Issued ${numSyncsIssued} SyncRequest ops in slice ${previousModuloSlice} of ${ModuloBase}. Moving to slice ${this.currentModuloSlice} ------------------`)
   }
 
   /**
