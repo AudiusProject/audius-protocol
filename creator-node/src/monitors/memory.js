@@ -1,5 +1,5 @@
 const si = require('systeminformation')
-var sockstat = require('sockstat')
+const sockstat = require('sockstat')
 
 const getTotalMemory = async () => {
   const mem = await si.mem()
