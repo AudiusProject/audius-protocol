@@ -2,7 +2,8 @@ const { getDatabaseSize, getDatabaseConnections, getDatabaseConnectionInfo, getD
 const {
   getTotalMemory,
   getUsedMemory,
-  getNodeProcessMemoryUsage
+  getNodeProcessMemoryUsage,
+  getUsedTCPMemory,
 } = require('./memory')
 const {
   getStoragePathSize,
@@ -76,6 +77,12 @@ const NODE_PROCESS_MEMORY_USAGE = {
   name: 'nodeProcessMemoryUsage',
   func: getNodeProcessMemoryUsage,
   type: 'json'
+}
+
+const USED_TCP_MEMORY = {
+  name: 'usedTCPMemory',
+  func: getUsedTCPMemory,
+  type: 'int'
 }
 
 const STORAGE_PATH_SIZE = {
@@ -160,6 +167,7 @@ const MONITORS = {
   TOTAL_MEMORY,
   USED_MEMORY,
   NODE_PROCESS_MEMORY_USAGE,
+  USED_TCP_MEMORY,
   STORAGE_PATH_SIZE,
   STORAGE_PATH_USED,
   FILESYSTEM_SIZE,

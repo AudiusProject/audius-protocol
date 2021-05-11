@@ -1,4 +1,5 @@
 const si = require('systeminformation')
+var sockstat = require('sockstat');
 
 const getTotalMemory = async () => {
   const mem = await si.mem()
@@ -16,8 +17,14 @@ const getNodeProcessMemoryUsage = async () => {
   return JSON.stringify(mem)
 }
 
+const getUsedTCPMemory = async () => {
+  const stats = await sockstat.get()
+  return stats.tcp.mem
+}
+
 module.exports = {
   getTotalMemory,
   getUsedMemory,
-  getNodeProcessMemoryUsage
+  getNodeProcessMemoryUsage,
+  getUsedTCPMemory
 }

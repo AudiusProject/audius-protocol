@@ -116,6 +116,7 @@ describe('Test Health Check Verbose', function () {
       databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
+      usedTCPMemory: 922,
       storagePathSize: 62725623808,
       storagePathUsed: 54063878144,
       maxFileDescriptors: 524288,
