@@ -433,6 +433,7 @@ class SnapbackSM {
    * Converts provided array of SyncRequests to issue to a map(secondaryNode => userWallets[]) for easier access
    *
    * @param {Array} potentialSyncRequests array of objects with schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   * @returns {Object} map of secondary endpoint strings to array of wallet strings of users with that node as secondary
    */
   buildSecondaryNodesToUserWalletsMap (potentialSyncRequests) {
     const secondaryNodesToUserWalletsMap = {}
@@ -453,7 +454,7 @@ class SnapbackSM {
   /**
    * Given map(secondaryNode => userWallets[]), retrieves clock values for every (secondaryNode, userWallet) pair
    *
-   * @returns map(secondaryNode => map(userWallet => secondaryClockValue))
+   * @returns {Object} map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
    */
   async retrieveClockStatusesForSecondaryUsersFromNodes (secondaryNodesToUserWalletsMap) {
     const secondaryNodesToUserClockValuesMap = {}
@@ -559,14 +560,6 @@ class SnapbackSM {
       time: Date.now()
     }]
 
-    const printDecisionTreeObj = (decisionTree) => {
-      try {
-        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
-      } catch (e) {
-        this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
-      }
-    }
-
     try {
       /**
        * Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
@@ -596,7 +589,7 @@ class SnapbackSM {
       })
 
       // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-      let peerSet
+      let peerSet = []
       try {
         peerSet = this.computeContentNodePeerSet(nodeUsers)
 
@@ -789,7 +782,12 @@ class SnapbackSM {
     } catch (e) {
       decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
     } finally {
-      printDecisionTreeObj(decisionTree)
+      // Log decision tree
+      try {
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
+      } catch (e) {
+        this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
+      }
     }
   }
 
