@@ -7,7 +7,6 @@ const getTotalMemory = async () => {
 
 const getUsedMemory = async () => {
   const mem = await si.mem()
-
   // Excluding buffers/cache
   return mem.active
 }
