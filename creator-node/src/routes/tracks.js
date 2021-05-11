@@ -12,8 +12,7 @@ const {
   removeTrackFolder,
   handleTrackContentUpload,
   checkFile,
-  getFileExtension,
-  handleTrackContentTranscode
+  getFileExtension
 } = require('../fileManager')
 const {
   handleResponse,
@@ -56,51 +55,36 @@ const getFileName = (req) => {
 const SaveFileToIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
-  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, async function (req, res, next) {
-    // If this condition is met, use the tus-node-server package to handle track upload
-    if (req.headers['use-resumable-track-upload'] === 'true') {
-      try {
-        // Ensure that the track uploaded is proper
-        const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
-        checkFile(req, { fileName, fileMimeType, fileSize: parseInt(fileSize) })
-      } catch (e) {
-        return errorResponseBadRequest(e.message)
-      }
-
-      // Save file under randomly named folders to avoid collisions
-      const fileDir = path.join(tmpTrackArtifactsPath, req.headers.randomfilename)
-      req.logger.info(`Created track disk storage: ${fileDir}, ${req.headers.randomfilename}`)
-
-      // Create directories for original file and segments
-      fs.mkdirSync(fileDir, { recursive: true })
-      fs.mkdirSync(fileDir + '/segments')
-
-      server.datastore = new tus.FileStore({
-        path: fileDir,
-        // Custom file naming
-        namingFunction: getFileName
-      })
-
-      // Initialze resumable upload flow
-      await server.handle.bind(server)(req, res, next)
-    } else {
-      // Else, file is already uploaded via the multer package
-
-      // If any error occurs in uploading track, prune track dir and return error response
-      await handleResponse(() => {
-        if (req.fileSizeError || req.fileFilterError) {
-          removeTrackFolder(req, req.fileDir)
-          return errorResponseBadRequest(req.fileFilterError || req.fileSizeError)
-        }
-
-        // Return file data as a success response
-        return successResponse({ fileDir: req.fileDir, fileName: req.fileName })
-      })(req, res, next)
+  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
+    // Use the tus-node-server package to handle track upload
+    try {
+      // Ensure that the track uploaded is proper
+      const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
+      checkFile(req, { fileName, fileMimeType, fileSize: parseInt(fileSize) })
+    } catch (e) {
+      return errorResponseBadRequest(e.message)
     }
+
+    // Save file under randomly named folders to avoid collisions
+    const fileDir = path.join(tmpTrackArtifactsPath, req.headers.randomfilename)
+    req.logger.info(`Created track disk storage: ${fileDir}, ${req.headers.randomfilename}`)
+
+    // Create directories for original file and segments
+    fs.mkdirSync(fileDir, { recursive: true })
+    fs.mkdirSync(fileDir + '/segments')
+
+    server.datastore = new tus.FileStore({
+      path: fileDir,
+      // Custom file naming
+      namingFunction: getFileName
+    })
+
+    // Initialze resumable upload flow
+    await server.handle.bind(server)(req, res, next)
   })
 
   // Route that handles the resumable upload HEAD and PATCH requests.
-  app.all(resumableUploadRoute, authMiddleware, async function (req, res, next) {
+  app.all(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
     const urlArr = req.originalUrl.split('/')
     const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
 
@@ -109,30 +93,53 @@ module.exports = function (app) {
       namingFunction: getFileName
     })
 
-    await server.handle.bind(server)(req, res, next)
-    // TODO: if patch/head fails, remove track dirs by checking resp's status code
+    const resp = await server.handle.bind(server)(req, res, next)
+
+    // TODO: if patch/head fails, remove track dirs by checking resp's status code and exit
+    // if (resp.statusCode)
+
+    if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
+      const fileName = (urlArr.slice(urlArr.length - 1)).join('/')
+
+      await FileProcessingQueue.addTranscodeTask(
+        {
+          logContext: req.logContext,
+          req: {
+            fileName,
+            fileDir,
+            fileDestination: fileDir,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            }
+          }
+        }
+      )
+    }
   })
 
   /**
-   * Add a track transcode task into the worker queue. If the track file is uploaded properly, return successResponse
+   * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
    * @note this track content route is used in conjunction with the polling.
    */
-  app.post('/track_content_async', authMiddleware, handleResponse(async function (req, res) {
-    const { filename: fileName, filedir: fileDir } = req.headers
+  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError || req.fileFilterError) {
+      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+      return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+    }
+
     await FileProcessingQueue.addTranscodeTask(
       {
         logContext: req.logContext,
         req: {
-          fileName,
-          fileDir,
-          fileDestination: fileDir,
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          fileDestination: req.file.destination,
           session: {
             cnodeUserUUID: req.session.cnodeUserUUID
           }
         }
       }
     )
-
     return successResponse({ uuid: req.logContext.requestID })
   }))
 
@@ -140,7 +147,7 @@ module.exports = function (app) {
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentTranscode, handleResponseWithHeartbeat(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
     const routeTimeStart = Date.now()
     let codeBlockTimeStart
     const cnodeUserUUID = req.session.cnodeUserUUID

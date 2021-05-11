@@ -442,34 +442,18 @@ const trackFileUpload = multer({
 })
 
 const handleTrackContentUpload = (req, res, next) => {
-  // If this condition is met, use the multer package to handle track upload
-  if (req.headers['use-resumable-track-upload'] === 'false') {
-    trackFileUpload.single('file')(req, res, (err) => {
-      if (err) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          req.fileSizeError = err
-        } else if (err instanceof multer.MulterError) {
-          req.logger.error(`Multer error: ${err}`)
-        } else {
-          req.logger.error(`Content upload error: ${err}`)
-        }
+  trackFileUpload.single('file')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        req.fileSizeError = err
+      } else if (err instanceof multer.MulterError) {
+        req.logger.error(`Multer error: ${err}`)
+      } else {
+        req.logger.error(`Content upload error: ${err}`)
       }
-      next()
-    })
-  } else {
-    // Else, use the tus-node-server (resumable upload) package to handle track upload
+    }
     next()
-  }
-}
-
-// File has already been uploaded. Take the file metadata and set it in the req obj.
-const handleTrackContentTranscode = (req, res, next) => {
-  const { filename, filedir } = req.headers
-  req.fileName = filename
-  req.fileDir = filedir
-  req.file = { destination: filedir }
-
-  next()
+  })
 }
 
 function getFileExtension (fileName) {
@@ -549,6 +533,5 @@ module.exports = {
   handleTrackContentUpload,
   hasEnoughStorageSpace,
   checkFile,
-  getFileExtension,
-  handleTrackContentTranscode
+  getFileExtension
 }
