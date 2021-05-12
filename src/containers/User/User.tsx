@@ -106,8 +106,8 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
   const title = isOwner
     ? messages.owner
     : isServiceProvider
-    ? messages.operator
-    : messages.user
+      ? messages.operator
+      : messages.user
   return (
     <Page
       title={title}

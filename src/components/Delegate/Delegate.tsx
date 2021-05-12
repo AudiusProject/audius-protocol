@@ -139,7 +139,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
           <Tooltip
             position={Position.TOP}
             text={messages.pendingClaimDisabled}
-            isDisabled={isIncreaseDelegationDisabled}
+            isDisabled={!isIncreaseDelegationDisabled}
             className={styles.delegateBtnTooltip}
           >
             <IncreaseDelegation
@@ -155,7 +155,7 @@ const DelegateSection: React.FC<DelegateSectionProps> = ({
                 ? messages.pendingDecreaseDisabled
                 : messages.pendingClaimDisabled
             }
-            isDisabled={isDecreaseDelegationDisabled}
+            isDisabled={!isDecreaseDelegationDisabled}
             className={styles.delegateBtnTooltip}
           >
             <DecreaseDelegation
