@@ -58,7 +58,13 @@ def parse_instruction_data(data):
     source_length = int.from_bytes(decoded[track_id_end:track_id_end + 4],
                                    "little")
     source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
-    source = str(decoded[source_start:source_end], 'utf-8')
+
+    # Source is not expected to be null, but may be
+    source = None
+    try:
+        source = str(decoded[source_start:source_end], 'utf-8')
+    except ValueError:
+        logger.error(f"Failed to parse source from {decoded[source_start:source_end]}", exc_info=True)
 
     timestamp = int.from_bytes(decoded[source_end:source_end + 8], "little")
 
