@@ -125,10 +125,7 @@ const UserInfo = ({
   const showUndelegate =
     isLoggedIn && !isOwner && isDoneLoading && !hasClaim && !delegates.isZero()
   const showClaim =
-    isLoggedIn &&
-    !isOwner &&
-    claimStatus === Status.Success &&
-    hasClaim
+    isLoggedIn && !isOwner && claimStatus === Status.Success && hasClaim
 
   const isClaimDisabled = !isValidBounds
 
