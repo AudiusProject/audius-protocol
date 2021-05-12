@@ -498,6 +498,12 @@ const config = convict({
     env: 'recaptchaServiceKey',
     default: ''
   },
+  cognitoAPISecret: {
+    doc: 'API Secret for Congnito',
+    format: String,
+    env: 'cognitoAPISecret',
+    default: ''
+  },
   solanaEndpoint: {
     doc: 'solanaEndpoint',
     format: String,
@@ -507,19 +513,19 @@ const config = convict({
   solanaTrackListenCountAddress: {
     doc: 'solanaTrackListenCountAddress',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaTrackListenCountAddress'
   },
   solanaAudiusEthRegistryAddress: {
     doc: 'solanaAudiusEthRegistryAddress',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaAudiusEthRegistryAddress'
   },
   solanaValidSigner: {
     doc: 'solanaValidSigner',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaValidSigner'
   },
   solanaFeePayerWallet: {
