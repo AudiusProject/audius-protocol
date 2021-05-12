@@ -47,8 +47,8 @@ def parse_instruction_data(data):
     user_id = None
     try:
         user_id = int(decoded[user_id_start:user_id_end])
-    except ValueError as e:
-        logger.error(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}")
+    except ValueError:
+        logger.error(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}", exc_info=True)
 
     track_id_length = int.from_bytes(decoded[user_id_end:user_id_end + 4],
                                      "little")
