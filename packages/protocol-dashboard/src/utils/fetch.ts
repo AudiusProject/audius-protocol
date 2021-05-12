@@ -33,18 +33,8 @@ export const fetchUntilSuccess = async (endpoints: string[]): Promise<any> => {
     'https://discoveryprovider.audius.co',
     'https://discoveryprovider2.audius.co',
     'https://discoveryprovider3.audius.co',
-    'https://discoveryprovider.audius1.prod-us-west-2.staked.cloud',
-    'https://discoveryprovider.audius6.prod-us-west-2.staked.cloud',
-    'https://discoveryprovider.mumbaudius.com',
-    'https://audius-discovery.nz.modulational.com',
-    'https://audius-dp.johannesburg.creatorseed.com',
     'https://dn2.monophonic.digital',
-    'https://dn1.monophonic.digital',
-    'https://audius-discovery-1.altego.net',
-    'https://audius-disco.ams-x01.nl.supercache.org',
-    'https://audius-disco.dfw-x01.us.supercache.org',
-    'https://discovery-us-01.audius.openplayer.org',
-    'https://discovery-au-01.audius.openplayer.org'
+    'https://dn1.monophonic.digital'
   ]
 
   try {
