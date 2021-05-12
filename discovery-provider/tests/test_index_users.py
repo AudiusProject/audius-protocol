@@ -87,7 +87,10 @@ def get_update_creator_node_endpoint_event():
     return event_type, AttrDict({"blockHash": "0x", "args": update_creator_node_endpoint_event})
 
 # 'update_is_verified': 'UpdateIsVerified',
-multihash = helpers.multihash_digest_to_cid(b'\x94uU\x06@\xa2\x93\xf1$d:\xe8m|rj\x02y\x93\xdf\x9bf?\xe7h\xb3y\xa6\x19\x0c\x81\xb0')
+multihash = helpers.multihash_digest_to_cid(
+    b'\x94uU\x06@\xa2\x93\xf1$d:\xe8m|rj\x02y' +
+    b'\x93\xdf\x9bf?\xe7h\xb3y\xa6\x19\x0c\x81\xb0'
+)
 
 ipfs_client = IPFSClient({
     multihash: {
@@ -379,9 +382,9 @@ def test_index_users(app):
             user_record, # User ORM instance
             block_timestamp # Used to update the user.updated_at field
         )
-        
-        multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
-        ipfs_metadata = update_task.ipfs_client.get_metadata(multihash, '', '')
+
+        entry_multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
+        ipfs_metadata = update_task.ipfs_client.get_metadata(entry_multihash, '', '')
 
         assert user_record.profile_picture == ipfs_metadata["profile_picture"]
         assert user_record.cover_photo == ipfs_metadata["cover_photo"]

@@ -36,7 +36,10 @@ def get_delete_track_event():
     })
     return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
 
-multihash = helpers.multihash_digest_to_cid(b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg')
+multihash = helpers.multihash_digest_to_cid(
+    b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82' +
+    b'\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg'
+)
 ipfs_client = IPFSClient({
     multihash: {
         "owner_id": 1,
@@ -167,9 +170,12 @@ def test_index_tracks(app):
         assert track_record.created_at == datetime.utcfromtimestamp(block_timestamp)
         assert track_record.owner_id == entry.args._trackOwnerId
         assert track_record.is_delete == False
-        
-        multihash = helpers.multihash_digest_to_cid(b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg')
-        track_metadata = update_task.ipfs_client.get_metadata(multihash, '', '')
+
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}' +
+            b'\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg'
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, '', '')
 
         assert track_record.title == track_metadata["title"]
         assert track_record.length == 0

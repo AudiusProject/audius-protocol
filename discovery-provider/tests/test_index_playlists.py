@@ -96,7 +96,7 @@ def test_index_playlist(app):
     """Tests that playlists are indexed correctly"""
     with app.app_context():
         db = get_db()
-    
+
     ipfs_client = IPFSClient({})
     web3 = Web3()
     update_task = UpdateTask(ipfs_client, web3)
@@ -108,7 +108,7 @@ def test_index_playlist(app):
         block_number = random.randint(1, 10000)
         block_timestamp = 1585336422
 
-        # Some sqlalchemy user instance
+        # Some sqlalchemy playlist instance
         playlist_record = lookup_playlist_record(
             update_task,
             session,
