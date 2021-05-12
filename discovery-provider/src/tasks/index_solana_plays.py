@@ -43,7 +43,7 @@ def parse_instruction_data(data):
     user_id_length = int.from_bytes(decoded[0:4], "little")
     user_id_start, user_id_end = 4, 4 + user_id_length
 
-    # Client send a GUID for anonymous user ID listens, which will be recorded as None
+    # Client send a GUID for anonymous user ID listens, which will be recorded as userId=None
     user_id = None
     try:
         user_id = int(decoded[user_id_start:user_id_end])
