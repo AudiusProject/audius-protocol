@@ -10,7 +10,8 @@ const {
   userReplicaSetManagerTest,
   IpldBlacklistTest,
   userReplicaSetBlockSaturationTest,
-  solanaTrackListenCountsTest
+  solanaTrackListenCountsTest,
+  trackListenCountsTest,
 } = require('./tests/')
 
 // Configuration.
@@ -237,6 +238,17 @@ async function main () {
         await testRunner([test])
         break
       }
+      case 'test-listencount': {
+        const test = makeTest(
+          'trackListenCountsTest',
+          trackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
+        await testRunner([test])
+        break
+      }
       case 'test-ci': {
         const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -279,13 +291,23 @@ async function main () {
           }
         )
 
+        const trackListenCountTest = makeTest(
+          'trackListenCountsTest',
+          trackListenCountsTest,
+          {
+            numUsers: 1
+          }
+        )
+
+
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
           ursmTest,
           ursmBlockSaturationTest,
-          solTrackListenCountTest
+          solTrackListenCountTest,
+          trackListenCountTest 
         ]
 
         await testRunner(tests)
