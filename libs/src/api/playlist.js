@@ -85,8 +85,13 @@ class Playlists extends Base {
     let createInitialIdsArray = trackIds.slice(0, maxInitialTracks)
     let postInitialIdsArray = trackIds.slice(maxInitialTracks)
     let playlistId
+    let receipt = {}
     try {
-      playlistId = await this.contracts.PlaylistFactoryClient.createPlaylist(userId, playlistName, isPrivate, isAlbum, createInitialIdsArray)
+      const response = await this.contracts.PlaylistFactoryClient.createPlaylist(
+        userId, playlistName, isPrivate, isAlbum, createInitialIdsArray
+      )
+      playlistId = response.playlistId
+      receipt = response.txReceipt
 
       // Add remaining tracks
       await Promise.all(postInitialIdsArray.map(trackId => {
@@ -95,13 +100,13 @@ class Playlists extends Base {
 
       // Order tracks
       if (postInitialIdsArray.length > 0) {
-        await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
+        receipt = await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
       }
     } catch (e) {
       console.error(e)
       return { playlistId, error: true }
     }
-    return { playlistId, error: false }
+    return { blockHash: receipt.blockHash, blockNumber: receipt.blockNumber, playlistId, error: false }
   }
 
   /**
