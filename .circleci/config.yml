@@ -666,6 +666,8 @@ workflows:
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
+          requires:
+            - test-discovery-provider
 
       - test-identity-service
       - docker-build-and-push:
